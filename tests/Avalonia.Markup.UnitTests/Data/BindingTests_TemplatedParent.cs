@@ -4,12 +4,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_TemplatedParent
+    public class BindingTests_TemplatedParent : ScopedTestBase
     {
         [Fact]
         public void OneWay_Binding_Should_Be_Set_Up()

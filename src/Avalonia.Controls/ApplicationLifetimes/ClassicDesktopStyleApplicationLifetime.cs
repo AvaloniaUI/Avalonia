@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -99,16 +99,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
-            var options = AvaloniaLocator.Current.GetService<ClassicDesktopStyleApplicationLifetimeOptions>();
-            
-            if(options != null && options.ProcessUrlActivationCommandLine && args.Length > 0)
-            {
-                if (Application.Current is IApplicationPlatformEvents events)
-                {
-                    events.RaiseUrlsOpened(args);
-                }
-            }
-
             var lifetimeEvents = AvaloniaLocator.Current.GetService<IPlatformLifetimeEventsImpl>(); 
 
             if (lifetimeEvents != null)
@@ -188,7 +178,10 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     if (w.Owner is null)
                     {
                         var ignoreCancel = force || (ShutdownMode == ShutdownMode.OnMainWindowClose && w != MainWindow);
-                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic, ignoreCancel);
+                        var reason = e.IsOSShutdown ?
+                            WindowCloseReason.OSShutdown :
+                            WindowCloseReason.ApplicationShutdown;
+                        w.CloseCore(reason, isProgrammatic, ignoreCancel);
                     }
                 }
 
@@ -219,11 +212,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
         }
         
         private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e) => DoShutdown(e, false);
-    }
-    
-    public class ClassicDesktopStyleApplicationLifetimeOptions
-    {
-        public bool ProcessUrlActivationCommandLine { get; set; }
     }
 }
 

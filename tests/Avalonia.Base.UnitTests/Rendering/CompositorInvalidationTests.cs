@@ -38,6 +38,31 @@ public class CompositorInvalidationTests : CompositorTestsBase
             s.AssertRects(new Rect(30, 50, 20, 10));
         }
     }
+    
+    [Fact]
+    public void Sibling_Controls_Should_Invalidate_Union_Rect_When_Removed()
+    {
+        using (var s = new CompositorCanvas())
+        {
+            var control = new Border()
+            {
+                Background = Brushes.Red, Width = 20, Height = 10,
+                [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 10
+            };
+            var control2 = new Border()
+            {
+                Background = Brushes.Blue, Width = 20, Height = 10,
+                [Canvas.LeftProperty] = 30, [Canvas.TopProperty] = 50
+            };
+            s.Canvas.Children.Add(control);
+            s.Canvas.Children.Add(control2);
+            s.RunJobs();
+            s.Events.Rects.Clear();
+            s.Canvas.Children.Remove(control);
+            s.Canvas.Children.Remove(control2);
+            s.AssertRects(new Rect(30, 10, 20, 50));
+        }
+    }
 
     [Fact]
     public void Control_Should_Invalidate_Both_Own_Rects_When_Moved()

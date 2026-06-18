@@ -19,13 +19,13 @@ namespace Avalonia.X11
         public int RandrEventBase { get; }
         public int RandrErrorBase { get; }
         
-        public Version RandrVersion { get; }
+        public Version? RandrVersion { get; }
         
         public int XInputOpcode { get; }
         public int XInputEventBase { get; }
         public int XInputErrorBase { get; }
         
-        public Version XInputVersion { get; }
+        public Version? XInputVersion { get; }
 
         public IntPtr LastActivityTimestamp { get; set; }
         public XVisualInfo? TransparentVisualInfo { get; }

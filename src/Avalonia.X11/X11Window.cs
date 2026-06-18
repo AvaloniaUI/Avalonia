@@ -16,6 +16,7 @@ using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -29,8 +30,6 @@ using Avalonia.Platform.Storage.FileIO;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
-
-#nullable enable
 
 namespace Avalonia.X11
 {
@@ -46,6 +45,7 @@ namespace Avalonia.X11
         private bool _triggeredExpose;
         private IInputRoot? _inputRoot;
         private readonly MouseDevice _mouse;
+        private readonly PenDevice _pen;
         private readonly TouchDevice _touch;
         private readonly IKeyboardDevice _keyboard;
         private readonly ITopLevelNativeMenuExporter? _nativeMenuExporter;
@@ -65,11 +65,13 @@ namespace Avalonia.X11
         private double? _scalingOverride;
         private bool _disabled;
         private TransparencyHelper? _transparencyHelper;
+        private WindowActivationTrackingHelper? _activationTracker;
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
         private bool _useCompositorDrivenRenderWindowResize = false;
         private bool _usePositioningFlags = false;
         private X11WindowMode _mode;
+        private IWindowIconImpl? _iconImpl;
 
         private enum XSyncState
         {
@@ -95,9 +97,10 @@ namespace Avalonia.X11
             _mode = mode;
             _mode.Init(this);
             _popup = popupParent != null;
-			_overrideRedirect = _popup || overrideRedirect;
+            _overrideRedirect = _popup || overrideRedirect;
             _x11 = platform.Info;
-            _mouse = new MouseDevice();
+            _mouse = Avalonia.Input.MouseDevice.Primary;
+            _pen = new PenDevice();
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
 
@@ -122,8 +125,9 @@ namespace Avalonia.X11
 
             // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
             _useRenderWindow = glfeature != null;
-            
+
             var glx = glfeature as GlxPlatformGraphics;
+            var egl = glfeature as EglPlatformGraphics;
             if (glx != null)
             {
                 visualInfo = *glx.Display.VisualInfo;
@@ -131,11 +135,13 @@ namespace Avalonia.X11
                 // the target sufrace currently is
                 _useCompositorDrivenRenderWindowResize = true;
             }
+            else if (egl != null)
+            {
+                visualInfo = X11EglHelper.GetVisualInfo(_x11, egl.Display);
+            }
             else if (glfeature == null)
                 visualInfo = _x11.TransparentVisualInfo;
 
-            var egl = glfeature as EglPlatformGraphics;
-            
             var visual = IntPtr.Zero;
             var depth = 24;
             if (visualInfo != null)
@@ -170,15 +176,26 @@ namespace Avalonia.X11
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
                 new UIntPtr((uint)valueMask), ref attr);
+            AppendPid(_handle);
 
             if (_useRenderWindow)
+            {
+                var renderValueMask = SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
+                                      SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore;
+                // A window with a non-default visual must be created with a matching colormap, otherwise X11
+                // raises BadMatch. This is required by nvidia when a custom visual is selected for the EGL config.
+                if (visualInfo != null)
+                    renderValueMask |= SetWindowValuemask.ColorMap;
+
                 _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, defaultWidth, defaultHeight, 0, depth,
                     (int)CreateWindowArgs.InputOutput,
                     visual,
-                    new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
-                                       SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
+                    new UIntPtr((uint)renderValueMask), ref attr);
+            }
             else
+            {
                 _renderHandle = _handle;
+            }
 
             Handle = new PlatformHandle(_handle, "XID");
 
@@ -205,7 +222,7 @@ namespace Avalonia.X11
                 SetWmClass(_handle, _platform.Options.WmClass);
             }
 
-            var surfaces = new List<object>
+            var surfaces = new List<IPlatformRenderSurface>
             {
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
@@ -220,6 +237,7 @@ namespace Avalonia.X11
             surfaces.Add(new SurfacePlatformHandle(this));
 
             Surfaces = surfaces.ToArray();
+            UpdateEffectiveSystemDecorations();
             UpdateMotifHints();
             UpdateSizeHints(null);
 
@@ -227,6 +245,11 @@ namespace Avalonia.X11
             
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
             _transparencyHelper.SetTransparencyRequest(Array.Empty<WindowTransparencyLevel>());
+
+            _activationTracker = new(_platform, this);
+            _activationTracker.ActivationChanged += HandleActivation;
+
+            _platform.Globals.NetSupportedChanged += OnNetSupportedChanged;
 
             CreateIC();
 
@@ -242,28 +265,36 @@ namespace Avalonia.X11
 
             _mode.AppendWmProtocols(data);
 
-            XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.XA_ATOM, 32,
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.ATOM, 32,
                     PropertyMode.Replace, data.ToArray(), data.Count);
 
             if (_x11.HasXSync)
             {
                 _xSyncCounter = XSyncCreateCounter(_x11.Display, _xSyncValue);
                 XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_SYNC_REQUEST_COUNTER,
-                    _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
+                    _x11.Atoms.CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
             }
 
             _storageProvider = new FallbackStorageProvider(new[]
             {
                 () => _platform.Options.UseDBusFilePicker
-                    ? DBusSystemDialog.TryCreateAsync(Handle)
+                    ? DBusSystemDialog.TryCreateAsync(() => Task.FromResult<IPortalParentLease?>(
+                        new TrivialPortalParentLease($"x11:{Handle.Handle:X}")))
                     : Task.FromResult<IStorageProvider?>(null),
                 () => GtkSystemDialog.TryCreate(this),
-                () => Task.FromResult(InputRoot is TopLevel tl
+                // TODO: This will be incompatible with "root element is not a TopLevel" scenarios,
+                // HACK: this relies on focus root being TopLevel which currently is true
+                () => Task.FromResult(InputRoot.FocusRoot is TopLevel tl
                     ? (IStorageProvider?)new ManagedStorageProvider(tl)
                     : null)
             });
 
             platform.X11Screens.Changed += OnScreensChanged;
+
+            // The render surface (EGL/GLX) is created on the deferred display connection, which is a separate
+            // X11 connection from the one the windows were created on. Force a round-trip so the server has
+            // actually created the windows before anything on the other connection tries to use them.
+            XSync(_x11.Display, false);
         }
 
         private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -306,24 +337,30 @@ namespace Avalonia.X11
                               MotifDecorations.Maximize | MotifDecorations.Minimize | MotifDecorations.ResizeH;
 
             if (_popup 
-                || _systemDecorations == SystemDecorations.None) 
+                || _windowDecorations == WindowDecorations.None) 
                 decorations = 0;
 
-            if (!_canResize || !IsEnabled)
-            {
-                functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
-                decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
-            }
-            if (!IsEnabled)
-            {
-                functions &= ~(MotifFunctions.Resize | MotifFunctions.Minimize);
+            var isDisabled = !IsEnabled;
 
-                UpdateSizeHints(null, true);
-            }
-            else
+            if (!_canResize || isDisabled)
             {
-                UpdateSizeHints(null);
+                functions &= ~MotifFunctions.Resize;
+                decorations &= ~MotifDecorations.ResizeH;
             }
+
+            if (!_canMinimize || isDisabled)
+            {
+                functions &= ~MotifFunctions.Minimize;
+                decorations &= ~MotifDecorations.Minimize;
+            }
+
+            if (!_canMaximize || isDisabled)
+            {
+                functions &= ~MotifFunctions.Maximize;
+                decorations &= ~MotifDecorations.Maximize;
+            }
+
+            UpdateSizeHints(null, isDisabled);
 
             var hints = new MotifWmHints
             {
@@ -335,6 +372,50 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle,
                 _x11.Atoms._MOTIF_WM_HINTS, _x11.Atoms._MOTIF_WM_HINTS, 32,
                 PropertyMode.Replace, ref hints, 5);
+        }
+
+        /// <summary>
+        /// Append `_NET_WM_PID` atom to X11 window
+        /// </summary>
+        /// <param name="windowXId"></param>
+        private void AppendPid(IntPtr windowXId)
+        {
+            // See https://github.com/AvaloniaUI/Avalonia/issues/17444
+            var pid = (uint)s_pid;
+            // The type of `_NET_WM_PID` is `CARDINAL` which is 32-bit unsigned integer, see https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html
+            XChangeProperty(_x11.Display, windowXId,
+                _x11.Atoms._NET_WM_PID, _x11.Atoms.CARDINAL, 32,
+                PropertyMode.Replace, ref pid, 1);
+
+            const int maxLength = 1024;
+            var name = stackalloc byte[maxLength];
+            var result = gethostname(name, maxLength);
+            if (result != 0)
+            {
+                // Fail
+                return;
+            }
+
+            var length = 0;
+            while (length < maxLength && name[length] != 0)
+            {
+                length++;
+            }
+
+            XChangeProperty(_x11.Display, windowXId,
+                _x11.Atoms.WM_CLIENT_MACHINE, _x11.Atoms.STRING, 8,
+                PropertyMode.Replace, name, length);
+        }
+
+        [DllImport("libc")]
+        private static extern int gethostname(byte* name, int len);
+
+        private static readonly int s_pid = GetProcessId();
+
+        private static int GetProcessId()
+        {
+            var pid = Environment.ProcessId;
+            return pid;
         }
 
         private void UpdateSizeHints(PixelSize? preResize, bool forceDisableResize = false)
@@ -415,7 +496,7 @@ namespace Avalonia.X11
         
         public double DesktopScaling => RenderScaling;
 
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
@@ -442,13 +523,40 @@ namespace Avalonia.X11
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
-        public bool IsClientAreaExtendedToDecorations { get; }
+        public bool IsClientAreaExtendedToDecorations { get; private set; }
 
         public Action? Closed { get; set; }
         public Action<PixelPoint>? PositionChanged { get; set; }
         public Action? LostFocus { get; set; }
 
+        public PlatformAllowedWindowActions AllowedWindowActions => GetAllowedActions(_platform.Globals.NetSupported);
+
+        public Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged { get; set; }
+
         public Compositor Compositor => _platform.Compositor;
+
+        private PlatformAllowedWindowActions GetAllowedActions(IntPtr[]? netSupported)
+        {
+            if (netSupported == null)
+                return PlatformAllowedWindowActions.All;
+
+            var actions = PlatformAllowedWindowActions.None;
+
+            if (netSupported.Contains(_x11.Atoms._NET_WM_ACTION_MAXIMIZE_VERT)
+                && netSupported.Contains(_x11.Atoms._NET_WM_ACTION_MAXIMIZE_HORZ))
+                actions |= PlatformAllowedWindowActions.Maximize;
+
+            if (netSupported.Contains(_x11.Atoms._NET_WM_ACTION_FULLSCREEN))
+                actions |= PlatformAllowedWindowActions.Fullscreen;
+
+            if (netSupported.Contains(_x11.Atoms._NET_WM_ACTION_MINIMIZE))
+                actions |= PlatformAllowedWindowActions.Minimize;
+
+            return actions;
+        }
+
+        private void OnNetSupportedChanged() =>
+            AllowedWindowActionsChanged?.Invoke(AllowedWindowActions);
         
         private void OnEvent(ref XEvent ev)
         {
@@ -457,6 +565,8 @@ namespace Avalonia.X11
             
             if(_mode.OnEvent(ref ev))
                 return;
+
+            _activationTracker?.OnEvent(ref ev);
 
             if (ev.type == XEventName.MapNotify)
             {
@@ -471,24 +581,6 @@ namespace Avalonia.X11
                       ev.VisibilityEvent.state < 2))
             {
                 EnqueuePaint();
-            }
-            else if (ev.type == XEventName.FocusIn)
-            {
-                if (ActivateTransientChildIfNeeded())
-                    return;
-                // See: https://github.com/fltk/fltk/issues/295
-                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
-                    return;
-                Activated?.Invoke();
-                _imeControl?.SetWindowActive(true);
-            }
-            else if (ev.type == XEventName.FocusOut)
-            {
-                // See: https://github.com/fltk/fltk/issues/295
-                if ((NotifyMode)ev.FocusChangeEvent.mode is not NotifyMode.NotifyNormal)
-                    return;
-                _imeControl?.SetWindowActive(false);
-                Deactivated?.Invoke();
             }
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
@@ -627,9 +719,25 @@ namespace Avalonia.X11
             }
         }
 
+        private void HandleActivation(bool active)
+        {
+            if (active)
+            {
+                if (ActivateTransientChildIfNeeded())
+                    return;
+                Activated?.Invoke();
+                _imeControl?.SetWindowActive(true);
+            }
+            else
+            {
+                _imeControl?.SetWindowActive(false);
+                Deactivated?.Invoke();
+            }
+        }
+
         private Thickness? GetFrameExtents()
         {
-            if (_systemDecorations != SystemDecorations.Full)
+            if (_windowDecorations != WindowDecorations.Full)
                 return new Thickness(0);
 
             XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_FRAME_EXTENTS, IntPtr.Zero,
@@ -681,6 +789,8 @@ namespace Avalonia.X11
             return false;
         }
 
+        public bool WindowStateGetterIsUsable => true;
+
         private WindowState _lastWindowState;
         public WindowState WindowState
         {
@@ -689,7 +799,6 @@ namespace Avalonia.X11
             {
                 if(_lastWindowState == value)
                     return;
-                _lastWindowState = value;
                 if (value == WindowState.Minimized)
                 {
                     XIconifyWindow(_x11.Display, _handle, _x11.DefaultScreen);
@@ -717,62 +826,61 @@ namespace Avalonia.X11
                     SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
                         IntPtr.Zero);
                 }
-                WindowStateChanged?.Invoke(value);
             }
         }
 
-        private void OnPropertyChange(IntPtr atom, bool hasValue)
+        private void OnPropertyChange(IntPtr property, bool hasValue)
         {
-            if (atom == _x11.Atoms._NET_FRAME_EXTENTS)
+            if (property == _x11.Atoms._NET_FRAME_EXTENTS)
             {
                 // Occurs once the window has been mapped, which is the earliest the extents
                 // can be retrieved, so invoke event to force update of TopLevel.FrameSize.
                 Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
             }
 
-            if (atom == _x11.Atoms._NET_WM_STATE)
+            if (property == _x11.Atoms._NET_WM_STATE)
             {
-                WindowState state = WindowState.Normal;
-                if(hasValue)
+                var atoms = hasValue
+                    ? XGetWindowPropertyAsIntPtrArray(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE,
+                          (IntPtr)Atom.XA_ATOM)
+                      ?? []
+                    : [];
+                int maximized = 0;
+                bool hasMinimized = false, hasFullscreen = false;
+                foreach (var atom in atoms)
                 {
+                    if (atom == _x11.Atoms._NET_WM_STATE_HIDDEN) 
+                        hasMinimized = true;
 
-                    XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE, IntPtr.Zero, new IntPtr(256),
-                        false, (IntPtr)Atom.XA_ATOM, out _, out _, out var nitems, out _,
-                        out var prop);
-                    int maximized = 0;
-                    var pitems = (IntPtr*)prop.ToPointer();
-                    for (var c = 0; c < nitems.ToInt32(); c++)
-                    {
-                        if (pitems[c] == _x11.Atoms._NET_WM_STATE_HIDDEN)
-                        {
-                            state = WindowState.Minimized;
-                            break;
-                        }
-
-                        if(pitems[c] == _x11.Atoms._NET_WM_STATE_FULLSCREEN)
-                        {
-                            state = WindowState.FullScreen;
-                            break;
-                        }
-
-                        if (pitems[c] == _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ ||
-                            pitems[c] == _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT)
-                        {
-                            maximized++;
-                            if (maximized == 2)
-                            {
-                                state = WindowState.Maximized;
-                                break;
-                            }
-                        }
-                    }
-                    XFree(prop);
+                    if (atom == _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ ||
+                        atom == _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT) 
+                        maximized++;
+                    
+                    if(atom == _x11.Atoms._NET_WM_STATE_FULLSCREEN) 
+                        hasFullscreen = true;
                 }
+
+                var state = hasMinimized ? WindowState.Minimized
+                    : hasFullscreen ? WindowState.FullScreen
+                    : maximized == 2 ? WindowState.Maximized
+                    : WindowState.Normal;
+                
                 if (_lastWindowState != state)
                 {
                     _lastWindowState = state;
                     WindowStateChanged?.Invoke(state);
+
+                    XGetGeometry(_x11.Display, _handle, out var _, out var _, out var _, out var width, out var height,
+                        out var _, out var _);
+                    var newSize = new PixelSize(width, height);
+                    if (newSize != _realSize)
+                    {
+                        _realSize = newSize;
+                        Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
+                    }
                 }
+
+                _activationTracker?.OnNetWmStateChanged(atoms);
             }
 
         }
@@ -801,8 +909,11 @@ namespace Avalonia.X11
             return rv;
         }
         
-        private SystemDecorations _systemDecorations = SystemDecorations.Full;
+        private WindowDecorations _requestedWindowDecorations = WindowDecorations.Full;
+        private WindowDecorations _windowDecorations = WindowDecorations.Full;
         private bool _canResize = true;
+        private bool _canMinimize = true;
+        private bool _canMaximize = true;
         private const int MaxWindowDimension = 100000;
 
         private (Size minSize, Size maxSize) _scaledMinMaxSize =
@@ -855,7 +966,44 @@ namespace Avalonia.X11
         private void ScheduleInput(RawInputEventArgs args)
         {
             if (args is RawPointerEventArgs mouse)
+            {
                 mouse.Position = mouse.Position / RenderScaling;
+                
+                // Chrome hit-test for drawn decorations
+                if (NeedsDrawnDecorations
+                    && mouse.Type == RawPointerEventType.LeftButtonDown
+                    && _inputRoot is { } inputRoot)
+                {
+                    var chromeRole = inputRoot.HitTestChromeElement(mouse.Position);
+                    if (chromeRole is { } role)
+                    {
+                        var moveResizeSide = role switch
+                        {
+                            WindowDecorationsElementRole.TitleBar => NetWmMoveResize._NET_WM_MOVERESIZE_MOVE,
+                            WindowDecorationsElementRole.ResizeN when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOP,
+                            WindowDecorationsElementRole.ResizeS when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOM,
+                            WindowDecorationsElementRole.ResizeE when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_RIGHT,
+                            WindowDecorationsElementRole.ResizeW when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_LEFT,
+                            WindowDecorationsElementRole.ResizeNE when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPRIGHT,
+                            WindowDecorationsElementRole.ResizeNW when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPLEFT,
+                            WindowDecorationsElementRole.ResizeSE when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT,
+                            WindowDecorationsElementRole.ResizeSW when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT,
+                            _ => (NetWmMoveResize?)null
+                        };
+                        
+                        if (moveResizeSide.HasValue)
+                        {
+                            var pos = GetCursorPos(_x11);
+                            XUngrabPointer(_x11.Display, IntPtr.Zero);
+                            SendNetWMMessage(_x11.Atoms._NET_WM_MOVERESIZE,
+                                (IntPtr)pos.x, (IntPtr)pos.y,
+                                (IntPtr)moveResizeSide.Value,
+                                (IntPtr)1, (IntPtr)1);
+                            return;
+                        }
+                    }
+                }
+            }
             if (args is RawDragEvent drag)
                 drag.Location = drag.Location / RenderScaling;
             
@@ -893,11 +1041,6 @@ namespace Avalonia.X11
                 _xSyncState = XSyncState.None;
                 XSyncSetCounter(_x11.Display, _xSyncCounter, _xSyncValue);
             }
-        }
-        
-        public void Invalidate(Rect rect)
-        {
-
         }
 
         public IInputRoot InputRoot
@@ -965,6 +1108,17 @@ namespace Avalonia.X11
                 return;
             _cleaningUp = true;
             
+            // Remove from AT-SPI tree before closing
+            _platform.UntrackWindow(this);
+            if (_platform.AtSpiServer is { } atSpiServer
+                && _inputRoot?.FocusRoot is Control atSpiControl)
+            {
+                var atSpiPeer = atSpiControl.GetAutomationPeer()?.GetAutomationRoot()
+                    ?? atSpiControl.GetAutomationPeer();
+                if (atSpiPeer is not null)
+                    atSpiServer.RemoveWindow(atSpiPeer);
+            }
+
             // Before doing anything else notify the TopLevel that ITopLevelImpl is no longer valid
             if (_handle != IntPtr.Zero)
                 Closed?.Invoke();
@@ -976,6 +1130,12 @@ namespace Avalonia.X11
             {
                 _rawEventGrouper.Dispose();
                 _rawEventGrouper = null;
+            }
+            
+            if (_activationTracker != null)
+            {
+                _activationTracker.Dispose();
+                _activationTracker = null;
             }
             
             if (_transparencyHelper != null)
@@ -1009,13 +1169,14 @@ namespace Avalonia.X11
                 _platform.XI2?.OnWindowDestroyed(_handle);
                 var handle = _handle;
                 _handle = IntPtr.Zero;
-                _mouse.Dispose();
+                _pen.Dispose();
                 _touch.Dispose();
                 if (!fromDestroyNotification) 
                     XDestroyWindow(_x11.Display, handle);
             }
 
             _platform.X11Screens.Changed -= OnScreensChanged;
+            _platform.Globals.NetSupportedChanged -= OnNetSupportedChanged;
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
             {                
@@ -1023,7 +1184,7 @@ namespace Avalonia.X11
             }
         }
 
-        private bool ActivateTransientChildIfNeeded()
+        internal bool ActivateTransientChildIfNeeded()
         {
             if (_disabled)
             {
@@ -1037,7 +1198,7 @@ namespace Avalonia.X11
         public void SetParent(IWindowImpl? parent)
         {
             if (parent == null || parent.Handle == null || parent.Handle.Handle == IntPtr.Zero)
-                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_TRANSIENT_FOR);
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.WM_TRANSIENT_FOR);
             else
                 XSetTransientForHint(_x11.Display, _handle, parent.Handle.Handle);
         }
@@ -1045,6 +1206,16 @@ namespace Avalonia.X11
         public void Show(bool activate, bool isDialog)
         {
             _mode.Show(activate, isDialog);
+
+            _platform.TrackWindow(this);
+            if (_platform.AtSpiServer is { } server
+                && _inputRoot?.FocusRoot is Control c)
+            {
+                var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(c);
+                var rootPeer = peer?.GetAutomationRoot() ?? peer;
+                if (rootPeer is not null)
+                    server.AddWindow(rootPeer);
+            }
         }
 
         public void Hide() => _mode.Hide();
@@ -1053,9 +1224,25 @@ namespace Avalonia.X11
 
         public PixelPoint PointToScreen(Point point) => _mode.PointToScreen(point);
         
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
-            _systemDecorations = enabled == SystemDecorations.Full ? SystemDecorations.Full : SystemDecorations.None;
+            _requestedWindowDecorations = enabled;
+            UpdateEffectiveSystemDecorations();
+        }
+
+        private void UpdateEffectiveSystemDecorations()
+        {
+            // When extending client area or forcing drawn decorations, always hide WM decorations (we draw our own)
+            var effective = UseManagedDecorations
+                ? WindowDecorations.None
+                : (_requestedWindowDecorations == WindowDecorations.Full
+                    ? WindowDecorations.Full
+                    : WindowDecorations.None);
+
+            if (_windowDecorations == effective)
+                return;
+
+            _windowDecorations = effective;
             UpdateMotifHints();
             UpdateSizeHints(null);
         }
@@ -1105,6 +1292,18 @@ namespace Avalonia.X11
             _canResize = value;
             UpdateMotifHints();
             UpdateSizeHints(null);
+        }
+
+        public void SetCanMinimize(bool value)
+        {
+            _canMinimize = value;
+            UpdateMotifHints();
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+            _canMaximize = value;
+            UpdateMotifHints();
         }
 
         public void SetCursor(ICursorImpl? cursor)
@@ -1164,6 +1363,7 @@ namespace Avalonia.X11
         }
 
         public IMouseDevice MouseDevice => _mouse;
+        public IPenDevice PenDevice => _pen;
         public TouchDevice TouchDevice => _touch;
 
         public IPopupImpl? CreatePopup() 
@@ -1190,10 +1390,10 @@ namespace Avalonia.X11
                     ptr1 = l0,
                     ptr2 = l1 ?? IntPtr.Zero,
                     ptr3 = l2 ?? IntPtr.Zero,
-                    ptr4 = l3 ?? IntPtr.Zero
+                    ptr4 = l3 ?? IntPtr.Zero,
+                    ptr5 = l4 ?? IntPtr.Zero
                 }
             };
-            xev.ClientMessageEvent.ptr4 = l4 ?? IntPtr.Zero;
             XSendEvent(_x11.Display, _x11.RootWindow, false,
                 new IntPtr((int)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask)), ref xev);
 
@@ -1242,7 +1442,7 @@ namespace Avalonia.X11
             if (string.IsNullOrEmpty(title))
             {
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME);
-                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_NAME);
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.WM_NAME);
             }
             else
             {
@@ -1256,7 +1456,7 @@ namespace Avalonia.X11
             }
         }
 
-        public void SetWmClass(IntPtr handle, string wmClass)
+        public void SetWmClass(IntPtr handle, string? wmClass)
         {
             // See https://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS
             // We don't actually parse the application's command line, so we only use RESOURCE_NAME and argv[0]
@@ -1354,12 +1554,23 @@ namespace Avalonia.X11
             }
         }
 
+        private bool _extendingClientAreaToDecorations;
+        private bool UseManagedDecorations => _extendingClientAreaToDecorations || _platform.Options.ForceDrawnDecorationsInternal;
+        private bool NeedsDrawnDecorations => UseManagedDecorations || _requestedWindowDecorations == WindowDecorations.BorderOnly;
+
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
-        }
+            if (!_platform.Options.EnableDrawnDecorationsInternal)
+                return;
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
+            if (_extendingClientAreaToDecorations == extendIntoClientAreaHint)
+                return;
+
+            _extendingClientAreaToDecorations = extendIntoClientAreaHint;
+            UpdateEffectiveSystemDecorations();
+
+            IsClientAreaExtendedToDecorations = extendIntoClientAreaHint;
+            ExtendClientAreaToDecorationsChanged?.Invoke(extendIntoClientAreaHint);
         }
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
@@ -1370,6 +1581,11 @@ namespace Avalonia.X11
 
         public void SetIcon(IWindowIconImpl? icon)
         {
+            if (ReferenceEquals(_iconImpl, icon))
+                return;
+
+            _iconImpl = icon;
+
             if (icon != null)
             {
                 var data = ((X11IconData)icon).Data;
@@ -1396,14 +1612,10 @@ namespace Avalonia.X11
 
             if (!_mapped)
             {
-                XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE, IntPtr.Zero, new IntPtr(256),
-                    false, (IntPtr)Atom.XA_ATOM, out _, out _, out var nitems, out _,
-                    out var prop);
-                var ptr = (IntPtr*)prop.ToPointer();
-                var newAtoms = new HashSet<IntPtr>();
-                for (var c = 0; c < nitems.ToInt64(); c++) 
-                    newAtoms.Add(*(ptr+c));
-                XFree(prop);
+                var newAtoms = new HashSet<IntPtr>(XGetWindowPropertyAsIntPtrArray(_x11.Display, _handle,
+                    _x11.Atoms._NET_WM_STATE,
+                    (IntPtr)Atom.XA_ATOM) ?? []);
+                
                 foreach(var atom in atoms)
                     if (enable)
                         newAtoms.Add(atom);
@@ -1441,7 +1653,15 @@ namespace Avalonia.X11
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
-        public bool NeedsManagedDecorations => false;
+        public bool NeedsManagedDecorations => NeedsDrawnDecorations;
+
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
+            NeedsDrawnDecorations
+                ? PlatformRequestedDrawnDecoration.Border
+                  | PlatformRequestedDrawnDecoration.ResizeGrips
+                  | PlatformRequestedDrawnDecoration.TitleBar
+                  | PlatformRequestedDrawnDecoration.Shadow
+                : PlatformRequestedDrawnDecoration.None;
 
         public bool IsEnabled => !_disabled && !_mode.BlockInput;
 
@@ -1478,83 +1698,9 @@ namespace Avalonia.X11
                 _ => _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL
             };
 
-            XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.ATOM,
                 32, PropertyMode.Replace, new[] { atom }, 1);
 
-        }
-
-        /// <inheritdoc/>
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> outputZOrder)
-        {
-            // a mapping of parent windows to their children, sorted by z-order (bottom to top)
-            var windowsChildren = new Dictionary<IntPtr, List<IntPtr>>();
-
-            var indexInWindowsSpan = new Dictionary<IntPtr, int>();
-            for (var i = 0; i < windows.Length; i++)
-                if (windows[i].PlatformImpl is { Handle: { } handle })
-                    indexInWindowsSpan[handle.Handle] = i;
-
-            foreach (var window in windows)
-            {
-                if (window.PlatformImpl is not X11Window x11Window)
-                    continue;
-
-                var node = x11Window.Handle.Handle;
-                while (node != IntPtr.Zero)
-                {
-                    if (windowsChildren.ContainsKey(node))
-                    {
-                        break;
-                    }
-
-                    if (XQueryTree(_x11.Display, node, out _, out var parent,
-                            out var childrenPtr, out var childrenCount) == 0)
-                    {
-                        break;
-                    }
-
-                    if (childrenPtr != IntPtr.Zero)
-                    {
-                        var children = (IntPtr*)childrenPtr;
-                        windowsChildren[node] = new List<IntPtr>(childrenCount);
-                        for (var i = 0; i < childrenCount; i++)
-                        {
-                            windowsChildren[node].Add(children[i]);
-                        }
-                        XFree(childrenPtr);
-                    }
-
-                    node = parent;
-                }
-            }
-
-            var stack = new Stack<IntPtr>();
-            var zOrder = 0;
-            stack.Push(_x11.RootWindow);
-
-            while (stack.Count > 0)
-            {
-                var currentWindow = stack.Pop();
-
-                if (!windowsChildren.TryGetValue(currentWindow, out var children))
-                {
-                    continue;
-                }
-
-                if (indexInWindowsSpan.TryGetValue(currentWindow, out var index))
-                {
-                    outputZOrder[index] = zOrder;
-                }
-
-                zOrder++;
-
-                // Children are returned bottom to top, so we need to push them in reverse order
-                // In order to traverse bottom children first
-                for (int i = children.Count - 1; i >= 0; i--)
-                {
-                    stack.Push(children[i]);
-                }
-            }
         }
 
         public void TakeFocus()

@@ -184,7 +184,14 @@ internal enum UiaPropertyId
     OutlineThickness,
     CenterPoint,
     Rotatation,
-    Size
+    Size,
+    IsSelectionPattern2Available,
+    Selection2FirstSelectedItem,
+    Selection2LastSelectedItem,
+    Selection2CurrentSelectedItem,
+    Selection2ItemCount,
+    HeadingLevel,
+    IsDialog
 }
 
 internal enum UiaPatternId
@@ -270,21 +277,44 @@ internal enum UiaControlTypeId
     AppBar
 };
 
-#if NET8_0_OR_GREATER
+internal enum UiaLandmarkType
+{
+    Custom = 80000,
+    Form,
+    Main,
+    Navigation,
+    Search,
+};
+
+internal enum UiaHeadingLevel
+{
+    None = 80050,
+    Level1,
+    Level2,
+    Level3,
+    Level4,
+    Level5,
+    Level6,
+    Level7,
+    Level8,
+    Level9
+};
+
+internal enum UiaLiveSetting
+{
+    Off = 0,
+    Polite,
+    Assertive,
+};
+
 [GeneratedComInterface]
-#else
-[ComImport()]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
 [Guid("d6dd68d1-86fd-4332-8666-9abedea2d24c")]
 internal partial interface IRawElementProviderSimple
 {
     ProviderOptions GetProviderOptions();
     [return: MarshalAs(UnmanagedType.Interface)]
     object? GetPatternProvider(int patternId);
-#if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(ComVariantMarshaller))]
-#endif
     object? GetPropertyValue(int propertyId);
     IRawElementProviderSimple? GetHostRawElementProvider();
 }

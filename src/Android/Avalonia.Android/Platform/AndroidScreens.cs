@@ -5,9 +5,12 @@ using Android.Hardware.Display;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using AndroidX.Core.View;
+using AndroidX.Window.Layout;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Platform;
 using AndroidOrientation = global::Android.Content.Res.Orientation;
+using AndroidRotation = global::Android.Views.SurfaceOrientation;
 
 namespace Avalonia.Android.Platform;
 
@@ -19,19 +22,39 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
 
         var naturalOrientation = ScreenOrientation.Portrait;
         var rotation = display.Rotation;
+        IsPrimary = display.DisplayId == Display.DefaultDisplay;
 
-        if (OperatingSystem.IsAndroidVersionAtLeast(30)
-            && display.DisplayId == context.Display?.DisplayId
-            && context.Resources?.DisplayMetrics is { } primaryMetrics)
+        if (OperatingSystem.IsAndroidVersionAtLeast(30))
         {
-            IsPrimary = true;
-            Scaling = primaryMetrics.Density;
-            Bounds = WorkingArea = new(0, 0, primaryMetrics.WidthPixels, primaryMetrics.HeightPixels);
+            var metricsCalc = WindowMetricsCalculator.Companion.OrCreate;
+            // a display context is guaranteed to be created for a display on API 30 and above, but we fallback to the app context if OEM messes up
+            var displayContext = context.CreateDisplayContext(display) ?? context;
+            // Get the bounds of the display
+            var metrics = metricsCalc.ComputeMaximumWindowMetrics(displayContext);
+            Bounds = new(metrics.Bounds.Left, metrics.Bounds.Top, metrics.Bounds.Width(), metrics.Bounds.Height());
 
-            var orientation = context.Resources.Configuration?.Orientation;
+            var windowInsets = new WindowInsetsCompat.Builder().Build();
+            if (windowInsets?.GetInsets(WindowInsetsCompat.Type.SystemBars()) is { } inset)
+            {
+                WorkingArea = new(Bounds.X + inset.Left,
+                    Bounds.Y + inset.Top,
+                    Bounds.Width - (inset.Left + inset.Right),
+                    Bounds.Height - (inset.Top + inset.Bottom));
+            }
+            else
+            {
+                WorkingArea = Bounds;
+            }
+
+            if (context.Resources?.Configuration is { } config)
+            {
+                Scaling = config.DensityDpi / (float)global::Android.Util.DisplayMetricsDensity.Default;
+            }
+
+            var orientation = displayContext.Resources?.Configuration?.Orientation;
             if (orientation == AndroidOrientation.Square)
                 naturalOrientation = ScreenOrientation.None;
-            else if (rotation is SurfaceOrientation.Rotation0 or SurfaceOrientation.Rotation180)
+            else if (rotation is AndroidRotation.Rotation0 or AndroidRotation.Rotation180)
                 naturalOrientation = orientation == AndroidOrientation.Landscape ?
                     ScreenOrientation.Landscape :
                     ScreenOrientation.Portrait;
@@ -42,17 +65,8 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
         }
         else
         {
-            IsPrimary = false;
-            // These Display methods are deprecated since 31 SDK,
-            // But Android doesn't have any replacement, except for the primary screen. 
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CA1422 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
             var displayMetrics = new DisplayMetrics();
             display.GetRealMetrics(displayMetrics);
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CS0618 // Type or member is obsolete
             Scaling = displayMetrics.Density;
             Bounds = WorkingArea = new(0, 0, displayMetrics.WidthPixels, displayMetrics.HeightPixels);
         }
@@ -60,14 +74,14 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
         CurrentOrientation = (display.Rotation, naturalOrientation) switch
         {
             (_, ScreenOrientation.None) => ScreenOrientation.None,
-            (SurfaceOrientation.Rotation0, ScreenOrientation.Landscape) => ScreenOrientation.Landscape,
-            (SurfaceOrientation.Rotation90, ScreenOrientation.Landscape) => ScreenOrientation.Portrait,
-            (SurfaceOrientation.Rotation180, ScreenOrientation.Landscape) => ScreenOrientation.LandscapeFlipped,
-            (SurfaceOrientation.Rotation270, ScreenOrientation.Landscape) => ScreenOrientation.PortraitFlipped,
-            (SurfaceOrientation.Rotation0, _) => ScreenOrientation.Portrait,
-            (SurfaceOrientation.Rotation90, _) => ScreenOrientation.Landscape,
-            (SurfaceOrientation.Rotation180, _) => ScreenOrientation.PortraitFlipped,
-            (SurfaceOrientation.Rotation270, _) => ScreenOrientation.LandscapeFlipped,
+            (AndroidRotation.Rotation0, ScreenOrientation.Landscape) => ScreenOrientation.Landscape,
+            (AndroidRotation.Rotation90, ScreenOrientation.Landscape) => ScreenOrientation.Portrait,
+            (AndroidRotation.Rotation180, ScreenOrientation.Landscape) => ScreenOrientation.LandscapeFlipped,
+            (AndroidRotation.Rotation270, ScreenOrientation.Landscape) => ScreenOrientation.PortraitFlipped,
+            (AndroidRotation.Rotation0, _) => ScreenOrientation.Portrait,
+            (AndroidRotation.Rotation90, _) => ScreenOrientation.Landscape,
+            (AndroidRotation.Rotation180, _) => ScreenOrientation.PortraitFlipped,
+            (AndroidRotation.Rotation270, _) => ScreenOrientation.LandscapeFlipped,
             _ => ScreenOrientation.Portrait
         };
     }
@@ -111,7 +125,7 @@ internal sealed class AndroidScreens : ScreensBase<Display, AndroidScreen>, IDis
 
     protected override Screen? ScreenFromTopLevelCore(ITopLevelImpl topLevel)
     {
-        var display = ((TopLevelImpl)topLevel).View.Display;
+        var display = ((TopLevelImpl)topLevel).View?.Display;
         return display is not null && TryGetScreen(display, out var screen) ? screen : null;
     }
 

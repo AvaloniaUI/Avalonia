@@ -10,13 +10,12 @@ namespace Avalonia.Input
     /// <summary>
     /// Handles keyboard navigation for a window.
     /// </summary>
-    [Unstable]
-    public sealed class KeyboardNavigationHandler : IKeyboardNavigationHandler
+    internal sealed class KeyboardNavigationHandler : IKeyboardNavigationHandler
     {
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot? _owner;
+        private InputElement? _owner;
         
         /// <summary>
         /// Sets the owner of the keyboard navigation handler.
@@ -26,7 +25,7 @@ namespace Avalonia.Input
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
         [PrivateApi]
-        public void SetOwner(IInputRoot owner)
+        public void SetOwner(InputElement owner)
         {
             if (_owner != null)
             {
@@ -56,7 +55,7 @@ namespace Avalonia.Input
 
         private static IInputElement? GetNextPrivate(
             IInputElement? element,
-            IInputRoot? owner,
+            InputElement? owner,
             NavigationDirection direction,
             KeyDeviceType? keyDeviceType)
         {
@@ -98,22 +97,12 @@ namespace Avalonia.Input
             return result;
         }
 
-        /// <summary>
-        /// Moves the focus in the specified direction.
-        /// </summary>
-        /// <param name="element">The current element.</param>
-        /// <param name="direction">The direction to move.</param>
-        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
-        public void Move(
+        /// <inheritdoc />
+        public bool Move(
             IInputElement? element,
             NavigationDirection direction,
-            KeyModifiers keyModifiers = KeyModifiers.None)
-        {
-            MovePrivate(element, direction, keyModifiers, null);
-        }
-
-        // TODO12: remove MovePrivate, and make Move return boolean. Or even remove whole KeyboardNavigationHandler.
-        private bool MovePrivate(IInputElement? element, NavigationDirection direction, KeyModifiers keyModifiers, KeyDeviceType? deviceType)
+            KeyModifiers keyModifiers = KeyModifiers.None,
+            KeyDeviceType? deviceType = null)
         {
             var next = GetNextPrivate(element, _owner, direction, deviceType);
 
@@ -140,7 +129,7 @@ namespace Avalonia.Input
                 var current = FocusManager.GetFocusManager(e.Source as IInputElement)?.GetFocusedElement();
                 var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
                     NavigationDirection.Next : NavigationDirection.Previous;
-                e.Handled = MovePrivate(current, direction, e.KeyModifiers, e.KeyDeviceType);
+                e.Handled = Move(current, direction, e.KeyModifiers, e.KeyDeviceType);
             }
             else if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
             {
@@ -153,7 +142,7 @@ namespace Avalonia.Input
                     Key.Down => NavigationDirection.Down,
                     _ => throw new ArgumentOutOfRangeException()
                 };
-                e.Handled = MovePrivate(current, direction, e.KeyModifiers, e.KeyDeviceType);
+                e.Handled = Move(current, direction, e.KeyModifiers, e.KeyDeviceType);
             }
         }
 

@@ -14,6 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 
@@ -28,7 +29,7 @@ namespace Avalonia.Browser
         
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
-        private readonly ClipboardImpl _clipboard;
+        private readonly Clipboard _clipboard;
         private readonly IInsetsManager _insetsManager;
         private readonly JSObject _container;
         private readonly BrowserInputHandler _inputHandler;
@@ -60,7 +61,7 @@ namespace Avalonia.Browser
             _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = new BrowserNativeControlHost(nativeControlHost);
             _storageProvider = new BrowserStorageProvider();
-            _clipboard = new ClipboardImpl();
+            _clipboard = new Clipboard(new ClipboardImpl());
 
             _container = container;
 
@@ -70,6 +71,8 @@ namespace Avalonia.Browser
             _surface.SizeChanged += OnSizeChanged;
             _surface.ScalingChanged += OnScalingChanged;
             Compositor = _surface.Compositor;
+
+            Handle = new JSObjectControlHandle(container);
         }
 
         private void OnScalingChanged()
@@ -130,7 +133,7 @@ namespace Avalonia.Browser
         public Size? FrameSize => null;
         public double RenderScaling => _surface?.Scaling ?? 1;
 
-        public IEnumerable<object> Surfaces => _surface?.GetRenderSurfaces() ?? [];
+        public IPlatformRenderSurface[] Surfaces => _surface?.GetRenderSurfaces() ?? [];
 
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }

@@ -7,9 +7,9 @@ namespace Sample.App
     partial class SampleView
     {
         [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
-        internal global::Avalonia.ReactiveUI.RoutedViewHost ClrNamespaceRoutedViewHost => this.FindNameScope()?.Find<global::Avalonia.ReactiveUI.RoutedViewHost>("ClrNamespaceRoutedViewHost");
+        internal global::Avalonia.Controls.ColorPicker ClrNamespaceColorPicker => this.FindNameScope()?.Find<global::Avalonia.Controls.ColorPicker>("ClrNamespaceColorPicker");
         [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
-        internal global::Avalonia.ReactiveUI.RoutedViewHost UriRoutedViewHost => this.FindNameScope()?.Find<global::Avalonia.ReactiveUI.RoutedViewHost>("UriRoutedViewHost");
+        internal global::Avalonia.Controls.ColorPicker UriColorPicker => this.FindNameScope()?.Find<global::Avalonia.Controls.ColorPicker>("UriColorPicker");
         [global::System.CodeDom.Compiler.GeneratedCode("Avalonia.Generators.NameGenerator.OnlyPropertiesCodeGenerator", "$GeneratorVersion")]
         internal global::Controls.CustomTextBox UserNameTextBox => this.FindNameScope()?.Find<global::Controls.CustomTextBox>("UserNameTextBox");
     }

@@ -199,6 +199,12 @@ internal class AndroidStorageProvider : IStorageProvider
         return uris.Select(u => new AndroidStorageFile(_activity, u)).FirstOrDefault();
     }
 
+    public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
+        return new SaveFilePickerResult { File = file };
+    }
+
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {
         var intent = new Intent(Intent.ActionOpenDocumentTree)

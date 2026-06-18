@@ -4,7 +4,9 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -184,7 +186,7 @@ namespace Avalonia.Controls
         protected override Type StyleKeyOverride => typeof(TextBox);
 
         /// <inheritdoc />
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
@@ -202,7 +204,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var keymap = Application.Current!.PlatformSettings?.HotkeyConfiguration;
+            var keymap = this.GetPlatformSettings()?.HotkeyConfiguration;
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 
@@ -216,7 +218,7 @@ namespace Avalonia.Controls
                 string? text = null;
                 try
                 {
-                    text = await clipboard.GetTextAsync();
+                    text = await clipboard.TryGetTextAsync();
                 }
                 catch (TimeoutException)
                 {
@@ -281,7 +283,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             if (HidePromptOnLeave && MaskProvider != null)
             {

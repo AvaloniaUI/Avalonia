@@ -1,4 +1,4 @@
-using Avalonia.Compatibility;
+using System;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -8,11 +8,11 @@ namespace Avalonia.Platform
     {
         public virtual RuntimePlatformInfo GetRuntimeInfo() => new()
         {
-            IsDesktop = OperatingSystemEx.IsWindows()
-                        || OperatingSystemEx.IsMacOS() || OperatingSystemEx.IsMacCatalyst()
-                        || OperatingSystemEx.IsLinux() || OperatingSystemEx.IsFreeBSD(),
-            IsMobile = OperatingSystemEx.IsAndroid() || (OperatingSystemEx.IsIOS() && !OperatingSystemEx.IsMacCatalyst()),
-            IsTV = OperatingSystemEx.IsTvOS()
+            IsDesktop = OperatingSystem.IsWindows()
+                        || OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst()
+                        || OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD(),
+            IsMobile = OperatingSystem.IsAndroid() || (OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst()),
+            IsTV = OperatingSystem.IsTvOS()
         };
     }
 }

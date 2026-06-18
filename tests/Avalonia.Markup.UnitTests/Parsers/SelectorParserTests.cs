@@ -1,11 +1,12 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Markup.Parsers;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class SelectorParserTests
+    public class SelectorParserTests : ScopedTestBase
     {
         static SelectorParserTests()
         {

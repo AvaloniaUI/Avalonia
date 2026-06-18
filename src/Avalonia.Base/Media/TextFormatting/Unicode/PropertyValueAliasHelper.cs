@@ -21,6 +21,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.BassaVah, "Bass"},
                 { Script.Batak, "Batk"},
                 { Script.Bengali, "Beng"},
+                { Script.BeriaErfe, "Berf"},
                 { Script.Bhaiksuki, "Bhks"},
                 { Script.Bopomofo, "Bopo"},
                 { Script.Brahmi, "Brah"},
@@ -140,6 +141,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Shavian, "Shaw"},
                 { Script.Sharada, "Shrd"},
                 { Script.Siddham, "Sidd"},
+                { Script.Sidetic, "Sidt"},
                 { Script.Khudawadi, "Sind"},
                 { Script.Sinhala, "Sinh"},
                 { Script.Sogdian, "Sogd"},
@@ -157,6 +159,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Tamil, "Taml"},
                 { Script.Tangut, "Tang"},
                 { Script.TaiViet, "Tavt"},
+                { Script.TaiYo, "Tayo"},
                 { Script.Telugu, "Telu"},
                 { Script.Tifinagh, "Tfng"},
                 { Script.Tagalog, "Tglg"},
@@ -166,6 +169,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Tirhuta, "Tirh"},
                 { Script.Tangsa, "Tnsa"},
                 { Script.Todhri, "Todr"},
+                { Script.TolongSiki, "Tols"},
                 { Script.Toto, "Toto"},
                 { Script.TuluTigalari, "Tutg"},
                 { Script.Ugaritic, "Ugar"},
@@ -182,11 +186,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static string GetTag(Script script)
         {
-            if(!s_scriptToTag.ContainsKey(script))
+            if (!s_scriptToTag.TryGetValue(script, out var value))
             {
                 return "Zzzz";
             }
-            return s_scriptToTag[script];
+            return value;
         }
 
         private static readonly Dictionary<string, Script> s_tagToScript = 
@@ -206,6 +210,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Bass", Script.BassaVah},
                 { "Batk", Script.Batak},
                 { "Beng", Script.Bengali},
+                { "Berf", Script.BeriaErfe},
                 { "Bhks", Script.Bhaiksuki},
                 { "Bopo", Script.Bopomofo},
                 { "Brah", Script.Brahmi},
@@ -325,6 +330,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Shaw", Script.Shavian},
                 { "Shrd", Script.Sharada},
                 { "Sidd", Script.Siddham},
+                { "Sidt", Script.Sidetic},
                 { "Sind", Script.Khudawadi},
                 { "Sinh", Script.Sinhala},
                 { "Sogd", Script.Sogdian},
@@ -342,6 +348,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Taml", Script.Tamil},
                 { "Tang", Script.Tangut},
                 { "Tavt", Script.TaiViet},
+                { "Tayo", Script.TaiYo},
                 { "Telu", Script.Telugu},
                 { "Tfng", Script.Tifinagh},
                 { "Tglg", Script.Tagalog},
@@ -351,6 +358,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Tirh", Script.Tirhuta},
                 { "Tnsa", Script.Tangsa},
                 { "Todr", Script.Todhri},
+                { "Tols", Script.TolongSiki},
                 { "Toto", Script.Toto},
                 { "Tutg", Script.TuluTigalari},
                 { "Ugar", Script.Ugaritic},
@@ -367,11 +375,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static Script GetScript(string tag)
         {
-            if(!s_tagToScript.ContainsKey(tag))
+            if (!s_tagToScript.TryGetValue(tag, out var value))
             {
                 return Script.Unknown;
             }
-            return s_tagToScript[tag];
+            return value;
         }
 
         private static readonly Dictionary<string, GeneralCategory> s_tagToGeneralCategory = 
@@ -418,11 +426,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static GeneralCategory GetGeneralCategory(string tag)
         {
-            if(!s_tagToGeneralCategory.ContainsKey(tag))
+            if (!s_tagToGeneralCategory.TryGetValue(tag, out var value))
             {
                 return GeneralCategory.Other;
             }
-            return s_tagToGeneralCategory[tag];
+            return value;
         }
 
         private static readonly Dictionary<string, LineBreakClass> s_tagToLineBreakClass = 
@@ -468,6 +476,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "BK", LineBreakClass.MandatoryBreak},
                 { "CJ", LineBreakClass.ConditionalJapaneseStarter},
                 { "CR", LineBreakClass.CarriageReturn},
+                { "HH", LineBreakClass.UnambiguousHyphen},
                 { "LF", LineBreakClass.LineFeed},
                 { "NL", LineBreakClass.NextLine},
                 { "SA", LineBreakClass.ComplexContext},
@@ -479,11 +488,43 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static LineBreakClass GetLineBreakClass(string tag)
         {
-            if(!s_tagToLineBreakClass.ContainsKey(tag))
+            if (!s_tagToLineBreakClass.TryGetValue(tag, out var value))
             {
                 return LineBreakClass.Unknown;
             }
-            return s_tagToLineBreakClass[tag];
+            return value;
+        }
+
+        private static readonly Dictionary<string, WordBreakClass> s_tagToWordBreakClass = 
+            new Dictionary<string,WordBreakClass>{
+                { "XX", WordBreakClass.Other},
+                { "CR", WordBreakClass.CarriageReturn},
+                { "LF", WordBreakClass.LineFeed},
+                { "NL", WordBreakClass.Newline},
+                { "Extend", WordBreakClass.Extend},
+                { "ZWJ", WordBreakClass.ZWJ},
+                { "RI", WordBreakClass.RegionalIndicator},
+                { "FO", WordBreakClass.Format},
+                { "KA", WordBreakClass.Katakana},
+                { "HL", WordBreakClass.HebrewLetter},
+                { "LE", WordBreakClass.ALetter},
+                { "SQ", WordBreakClass.SingleQuote},
+                { "DQ", WordBreakClass.DoubleQuote},
+                { "MB", WordBreakClass.MidNumLet},
+                { "ML", WordBreakClass.MidLetter},
+                { "MN", WordBreakClass.MidNum},
+                { "NU", WordBreakClass.Numeric},
+                { "EX", WordBreakClass.ExtendNumLet},
+                { "WSegSpace", WordBreakClass.WSegSpace},
+        };
+
+        public static WordBreakClass GetWordBreakClass(string tag)
+        {
+            if (!s_tagToWordBreakClass.TryGetValue(tag, out var value))
+            {
+                return WordBreakClass.Other;
+            }
+            return value;
         }
 
         private static readonly Dictionary<string, BidiPairedBracketType> s_tagToBidiPairedBracketType = 
@@ -495,11 +536,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static BidiPairedBracketType GetBidiPairedBracketType(string tag)
         {
-            if(!s_tagToBidiPairedBracketType.ContainsKey(tag))
+            if (!s_tagToBidiPairedBracketType.TryGetValue(tag, out var value))
             {
                 return BidiPairedBracketType.None;
             }
-            return s_tagToBidiPairedBracketType[tag];
+            return value;
         }
 
         private static readonly Dictionary<string, BidiClass> s_tagToBidiClass = 
@@ -531,11 +572,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static BidiClass GetBidiClass(string tag)
         {
-            if(!s_tagToBidiClass.ContainsKey(tag))
+            if (!s_tagToBidiClass.TryGetValue(tag, out var value))
             {
                 return BidiClass.LeftToRight;
             }
-            return s_tagToBidiClass[tag];
+            return value;
         }
 
     }

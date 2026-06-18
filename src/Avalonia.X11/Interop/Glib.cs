@@ -1,9 +1,10 @@
 #nullable enable
+
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Platform.Interop;
-using static Avalonia.X11.Interop.Glib;
+
 namespace Avalonia.X11.Interop;
 
 internal static unsafe class Glib
@@ -75,7 +76,7 @@ internal static unsafe class Glib
     private static readonly GDestroyNotify s_gcHandleDestroyNotify = handle => GCHandle.FromIntPtr(handle).Free();
 
     private static readonly GSourceFunc s_sourceFuncDispatchCallback =
-        handle => ((Func<bool>)GCHandle.FromIntPtr(handle).Target)() ? 1 : 0;
+        handle => ((Func<bool>)GCHandle.FromIntPtr(handle).Target!)() ? 1 : 0;
     
     [DllImport(GlibName)]
     private static extern uint g_idle_add_full (int priority, GSourceFunc function, IntPtr data, GDestroyNotify notify);
@@ -108,7 +109,7 @@ internal static unsafe class Glib
     public delegate int GUnixFDSourceFunc(int fd, GIOCondition condition, IntPtr user_data);
 
     private static readonly GUnixFDSourceFunc s_unixFdSourceCallback = (fd, cond, handle) =>
-        ((Func<int, GIOCondition, bool>)GCHandle.FromIntPtr(handle).Target)(fd, cond) ? 1 : 0;
+        ((Func<int, GIOCondition, bool>)GCHandle.FromIntPtr(handle).Target!)(fd, cond) ? 1 : 0;
     
     [DllImport(GlibName)]
     public static extern uint g_unix_fd_add_full (int priority,
@@ -152,6 +153,7 @@ internal static unsafe class Glib
     }
 
     public static IDisposable ConnectSignal<T>(IntPtr obj, string name, T handler)
+        where T : notnull
     {
         var handle = GCHandle.Alloc(handler);
         var ptr = Marshal.GetFunctionPointerForDelegate(handler);

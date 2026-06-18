@@ -7,10 +7,10 @@ partial class X11Window
 {
     public abstract class X11WindowMode
     {
-        public X11Window Window { get; private set; }
+        public X11Window Window { get; private set; } = null!;
         protected IntPtr Display;
-        protected X11Info X11;
-        protected AvaloniaX11Platform Platform;
+        protected X11Info X11 = null!;
+        protected AvaloniaX11Platform Platform = null!;
         protected IntPtr Handle => Window._handle;
         protected IntPtr RenderHandle => Window._renderHandle;
         public virtual bool BlockInput => false;

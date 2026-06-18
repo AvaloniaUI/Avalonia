@@ -58,17 +58,17 @@ describe("Input event tests", () => {
             .object()
 
         it("PointerMovedEventMessage", () => {
-            const message = new PointerMovedEventMessage(mouseEvent)
+            const message = new PointerMovedEventMessage(mouseEvent, 1)
             expect(message.toString())
                 .equal(`pointer-moved:${modifiers}:${x}:${y}`)
         })
         it("PointerPressedEventMessage", () => {
-            const message = new PointerPressedEventMessage(mouseEvent)
+            const message = new PointerPressedEventMessage(mouseEvent, 1)
             expect(message.toString())
                 .equal(`pointer-pressed:${modifiers}:${x}:${y}:${button}`)
         })
         it("PointerReleasedEventMessage", () => {
-            const message = new PointerReleasedEventMessage(mouseEvent)
+            const message = new PointerReleasedEventMessage(mouseEvent, 1)
             expect(message.toString())
                 .equal(`pointer-released:${modifiers}:${x}:${y}:${button}`)
         })
@@ -85,7 +85,7 @@ describe("Input event tests", () => {
                 .setup(x => x.deltaX).returns(-deltaX)
                 .setup(x => x.deltaY).returns(-deltaY)
                 .object()
-            const message = new ScrollEventMessage(wheelEvent)
+            const message = new ScrollEventMessage(wheelEvent, 1)
 
             expect(message.toString())
                 .equal(`scroll:${modifiers}:${x}:${y}:${deltaX}:${deltaY}`)

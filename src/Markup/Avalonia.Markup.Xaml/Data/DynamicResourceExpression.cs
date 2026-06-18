@@ -133,7 +133,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             if (host is not null)
             {
                 host.ResourcesChanged += ResourcesChanged;
-                
+
                 if (!_overrideThemeVariant && _host is IThemeVariantHost themeVariantHost)
                 {
                     _themeVariant = themeVariantHost.ActualThemeVariant;
@@ -147,6 +147,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             if (host is not null)
             {
                 host.ResourcesChanged -= ResourcesChanged;
+
                 if (!_overrideThemeVariant && _host is IThemeVariantHost themeVariantHost)
                     themeVariantHost.ActualThemeVariantChanged -= ActualThemeVariantChanged;
             }

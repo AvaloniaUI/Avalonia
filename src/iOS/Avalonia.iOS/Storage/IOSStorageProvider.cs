@@ -26,7 +26,7 @@ internal class IOSStorageProvider : IStorageProvider
 
     public bool CanOpen => true;
 
-    public bool CanSave => false;
+    public bool CanSave => true;
 
     public bool CanPickFolder => true;
 
@@ -161,10 +161,78 @@ internal class IOSStorageProvider : IStorageProvider
         return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(uri, wellKnownFolder));
     }
 
-    public Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
+    public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
-        return Task.FromException<IStorageFile?>(
-            new PlatformNotSupportedException("Save file picker is not supported by iOS"));
+        /* 
+            This requires a bit of dialog here...
+            To save a file, we need to present the user with a document picker
+            This requires a temp file to be created and used to "export" the file to.
+            When the user picks the file location and name, UIDocumentPickerViewController
+            will give back the URI to the real file location, which we can then use 
+            to give back as an IStorageFile.
+            https://developer.apple.com/documentation/uikit/uidocumentpickerviewcontroller
+            Yes, it is weird, but without the temp file it will explode.
+        */
+
+        // Create a temporary file to use with the document picker
+        var tempFileName = StorageProviderHelpers.NameWithExtension(
+            options.SuggestedFileName ?? "document", 
+            options.DefaultExtension, 
+            options.FileTypeChoices?.FirstOrDefault());
+        
+        var tempDir = NSFileManager.DefaultManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
+        if (tempDir == null)
+        {
+            throw new InvalidOperationException("Failed to get temporary directory for save file picker");
+        }
+
+        var isDirectoryCreated = NSFileManager.DefaultManager.CreateDirectory(tempDir, true, null, out var error);
+        if (!isDirectoryCreated)
+        {
+            throw new InvalidOperationException("Failed to create temporary directory for save file picker");
+        }
+        
+        var tempFileUrl = tempDir.Append(tempFileName, false);
+        
+        // Create an empty file at the temp location
+        NSData.FromBytes(0, 0).Save(tempFileUrl, false);
+        
+        UIDocumentPickerViewController documentPicker;
+        if (OperatingSystem.IsIOSVersionAtLeast(14))
+        {
+            documentPicker = new UIDocumentPickerViewController(new[] { tempFileUrl }, asCopy: true);
+        }
+        else
+        {
+#pragma warning disable CA1422
+            documentPicker = new UIDocumentPickerViewController(tempFileUrl, UIDocumentPickerMode.ExportToService);
+#pragma warning restore CA1422
+        }
+        
+        using (documentPicker)
+        {
+            if (OperatingSystem.IsIOSVersionAtLeast(13))
+            {
+                documentPicker.DirectoryUrl = GetUrlFromFolder(options.SuggestedStartLocation);
+            }
+            
+            documentPicker.Title = options.Title;
+            
+            var tcs = new TaskCompletionSource<NSUrl[]>();
+            documentPicker.Delegate = new PickerDelegate(urls => tcs.TrySetResult(urls));
+            var urls = await ShowPicker(documentPicker, tcs);
+
+            // Clean up the temporary directory
+            NSFileManager.DefaultManager.Remove(tempDir, out _);
+            
+            return urls.FirstOrDefault() is { } url ? new IOSStorageFile(url) : null;
+        }
+    }
+
+    public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
+        return new SaveFilePickerResult { File = file };
     }
 
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)

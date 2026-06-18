@@ -6,6 +6,13 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
+    internal enum CaptureSource
+    {
+        Explicit,
+        Implicit,
+        Platform
+    }
+
     public class Pointer : IPointer, IDisposable
     {
         private static int s_NextFreePointerId = 1000;
@@ -30,53 +37,104 @@ namespace Avalonia.Input
 
         protected virtual void PlatformCapture(IInputElement? element)
         {
-            
+
         }
-        
+
+        internal void PlatformCaptureLost()
+        {
+            if (Captured != null)
+                Capture(null, CaptureSource.Platform);
+        }
+
         public void Capture(IInputElement? control)
         {
-            if (Captured is Visual v1)
-                v1.DetachedFromVisualTree -= OnCaptureDetached;
+            Capture(control, CaptureSource.Explicit);
+        }
+
+        internal void Capture(IInputElement? control, CaptureSource source)
+        {
             var oldCapture = Captured;
-            Captured = control;
-            PlatformCapture(control);
-            if (oldCapture is Visual v2)
+            var oldSource = CaptureSource;
+
+            // If a handler marks Implicit capture as handled, we still want them to have another chance if the element is captured explicitly.
+            if (oldCapture == control && oldSource == source)
+                return;
+
+            var oldVisual = oldCapture as Visual;
+            var newVisual = control as Visual;
+
+            IInputElement? commonParent = null;
+            if (oldVisual != null || newVisual != null)
             {
-                var commonParent = FindCommonParent(control, oldCapture);
-                foreach (var notifyTarget in v2.GetSelfAndVisualAncestors().OfType<IInputElement>())
+                commonParent = FindCommonParent(control, oldCapture);
+                var visual = oldVisual ?? newVisual!; // We want the capture to be cancellable even if there is no currently captured element.
+                foreach (var notifyTarget in visual.GetSelfAndVisualAncestors().OfType<IInputElement>())
+                {
+                    var args = new PointerCaptureChangingEventArgs(notifyTarget, this, control, source);
+                    notifyTarget.RaiseEvent(args);
+                    if (args.Handled)
+                        return;
+                    if (notifyTarget == commonParent)
+                        break;
+                }
+            }
+
+            if (oldVisual != null)
+                oldVisual.DetachedFromVisualTree -= OnCaptureDetached;
+            Captured = control;
+            CaptureSource = source;
+
+            // However, we still want to notify the platform only if the captured element actually changed.
+            if (oldCapture != control && source != CaptureSource.Platform)
+                PlatformCapture(control);
+
+            if (oldVisual != null)
+                foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
                 {
                     if (notifyTarget == commonParent)
                         break;
                     notifyTarget.RaiseEvent(new PointerCaptureLostEventArgs(notifyTarget, this));
                 }
-            }
 
-            if (Captured is Visual v3)
-                v3.DetachedFromVisualTree += OnCaptureDetached;
+            if (newVisual != null)
+                newVisual.DetachedFromVisualTree += OnCaptureDetached;
 
             if (Captured != null)
                 CaptureGestureRecognizer(null);
 
-            if(Captured == null && CapturedGestureRecognizer == null)
+            if (Captured == null && CapturedGestureRecognizer == null)
             {
                 IsGestureRecognitionSkipped = false;
             }
+
+            // Update the pointer-over + cursor immediately following the capture change
+            if (Type != PointerType.Touch)
+            {
+                var oldInputRoot = oldVisual?.PresentationSource?.InputRoot;
+                var newInputRoot = newVisual?.PresentationSource?.InputRoot;
+
+                oldInputRoot?.PointerOverInvalidated();
+
+                if (oldInputRoot != newInputRoot)
+                    newInputRoot?.PointerOverInvalidated();
+            }
         }
 
-        static IInputElement? GetNextCapture(Visual parent)
+        static IInputElement? GetNextCapture(Visual? parent)
         {
             return parent as IInputElement ?? parent.FindAncestorOfType<IInputElement>();
         }
 
         private void OnCaptureDetached(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            Capture(GetNextCapture(e.Parent));
+            Capture(GetNextCapture(e.AttachmentPoint));
         }
 
 
         public IInputElement? Captured { get; private set; }
-            
+
         public PointerType Type { get; }
+
         public bool IsPrimary { get; }
 
         /// <summary>
@@ -86,12 +144,11 @@ namespace Avalonia.Input
 
         public bool IsGestureRecognitionSkipped { get; set; }
 
+        internal CaptureSource CaptureSource { get; private set; } = CaptureSource.Platform;
+
         public void Dispose()
         {
-            if (Captured != null)
-            {
-                Capture(null);
-            }
+            // callers are responsible for calling Capture(null, source) with an appropriate source
         }
 
         /// <summary>

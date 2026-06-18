@@ -188,7 +188,7 @@ namespace Avalonia.Base.UnitTests.Layout
             };
             var raised = 0;
 
-            void ValidateBounds(object sender, EventArgs e)
+            void ValidateBounds(object? sender, EventArgs e)
             {
                 Assert.Equal(new Rect(0, 0, 100, 100), border1.Bounds);
                 Assert.Equal(new Rect(0, 0, 100, 100), border2.Bounds);
@@ -225,7 +225,7 @@ namespace Avalonia.Base.UnitTests.Layout
                 LayoutManager = layoutManager.Object,
             };
 
-            void Handler(object sender, EventArgs e) {}
+            void Handler(object? sender, EventArgs e) {}
 
             layoutManager.Invocations.Clear();
             target.LayoutUpdated += Handler;
@@ -432,6 +432,35 @@ namespace Avalonia.Base.UnitTests.Layout
                     foreach (var prop in properies)
                         Assert.Throws<ArgumentException>(() => target.SetValue(prop, value));
                 }
+            });
+        }
+
+        [Fact]
+        public void Constraint_And_Negative_Margin()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var textBlock = new TextBlock
+            {
+                Margin = new Thickness(-10),
+                Text = "Lorem ipsum dolor sit amet",
+            };
+
+            var border = new Border
+            {
+                MaxWidth = 100,
+                Child = textBlock,
+            };
+
+            border.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            border.Arrange(new Rect(default, border.DesiredSize));
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(new Size(100, 0), border.DesiredSize);
+                Assert.Equal(new Rect(0, 0, 100, 0), border.Bounds);
+                Assert.Equal(new Size(100, 0), textBlock.DesiredSize);
+                Assert.Equal(new Rect(-10, -10, 120, 20), textBlock.Bounds);
             });
         }
 

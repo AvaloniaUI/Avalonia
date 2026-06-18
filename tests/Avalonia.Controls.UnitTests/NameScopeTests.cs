@@ -1,9 +1,10 @@
 using System;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class NameScopeTests
+    public class NameScopeTests : ScopedTestBase
     {
         [Fact]
         public void Register_Registers_Element()
@@ -55,7 +56,8 @@ namespace Avalonia.Controls.UnitTests
          that the object graph is completely ready to use after it's built
          rather than have pending continuations queued by SynchronizationContext.
         */
-        object _found = null;
+        private object? _found;
+
         async void FindAsync(INameScope scope, string name)
         {
             _found = await scope.FindAsync(name);

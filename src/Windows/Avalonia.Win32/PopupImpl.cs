@@ -111,7 +111,9 @@ namespace Avalonia.Win32
             {
                 ShowInTaskbar = false,
                 IsResizable = false,
-                Decorations = SystemDecorations.None,
+                IsMinimizable = false,
+                IsMaximizable = false,
+                Decorations = WindowDecorations.None,
             };
 
             _parent = parent;

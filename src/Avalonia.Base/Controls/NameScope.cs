@@ -14,8 +14,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the NameScope attached property.
         /// </summary>
-        public static readonly AttachedProperty<INameScope> NameScopeProperty =
-            AvaloniaProperty.RegisterAttached<NameScope, StyledElement, INameScope>("NameScope");
+        public static readonly AttachedProperty<INameScope?> NameScopeProperty =
+            AvaloniaProperty.RegisterAttached<NameScope, StyledElement, INameScope?>("NameScope");
 
         /// <inheritdoc/>
         public bool IsCompleted { get; private set; }
@@ -30,7 +30,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="styled">The styled element.</param>
         /// <returns>The value of the NameScope attached property.</returns>
-        public static INameScope GetNameScope(StyledElement styled)
+        public static INameScope? GetNameScope(StyledElement styled)
         {
             _ = styled ?? throw new ArgumentNullException(nameof(styled));
 
@@ -42,7 +42,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="styled">The styled element.</param>
         /// <param name="value">The value to set.</param>
-        public static void SetNameScope(StyledElement styled, INameScope value)
+        public static void SetNameScope(StyledElement styled, INameScope? value)
         {
             _ = styled ?? throw new ArgumentNullException(nameof(styled));
 
@@ -68,9 +68,8 @@ namespace Avalonia.Controls
             else
             {
                 _inner.Add(name, element);
-                if (_pendingSearches.TryGetValue(name, out var tcs))
+                if (_pendingSearches.Remove(name, out var tcs))
                 {
-                    _pendingSearches.Remove(name);
                     tcs.SetResult(element);
                 }
             }

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Mixins
 {
-    public class PressedMixinTests
+    public class PressedMixinTests : ScopedTestBase
     {
         private MouseTestHelper _mouse = new MouseTestHelper();
 

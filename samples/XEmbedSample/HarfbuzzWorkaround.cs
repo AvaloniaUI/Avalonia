@@ -46,7 +46,7 @@ public unsafe class HarfbuzzWorkaround
         var libraryPathBytes = Marshal.AllocHGlobal(4096);
         var handle = NativeLibrary.Load("libHarfBuzzSharp", typeof(HarfBuzzSharp.Blob).Assembly, null);
         dlinfo(handle, RTLD_DI_ORIGIN, libraryPathBytes);
-        var libraryOrigin = Marshal.PtrToStringUTF8(libraryPathBytes);
+        var libraryOrigin = Marshal.PtrToStringUTF8(libraryPathBytes) ?? string.Empty;
         Marshal.FreeHGlobal(libraryPathBytes);
         var libraryPath = Path.Combine(libraryOrigin, "libHarfBuzzSharp.so");
         

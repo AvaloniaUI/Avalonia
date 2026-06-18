@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageAttachedMethodsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="270">
+      <StackPanel Margin="12" Spacing="8">
+
+        <!-- SetHasNavigationBar -->
+        <TextBlock Text="SetHasNavigationBar" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock Text="Controls whether the navigation bar is visible for a specific page. Does not affect other pages in the stack."
+                   FontSize="11"
+                   Opacity="0.6"
+                   TextWrapping="Wrap" />
+        <CheckBox x:Name="HasNavBarCheck"
+                  Content="Show navigation bar"
+                  IsChecked="True" />
+
+        <Separator />
+
+        <!-- SetHasBackButton -->
+        <TextBlock Text="SetHasBackButton" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock Text="Shows or hides the back button for a specific page, regardless of the global IsBackButtonVisible setting."
+                   FontSize="11"
+                   Opacity="0.6"
+                   TextWrapping="Wrap" />
+        <CheckBox x:Name="HasBackButtonCheck"
+                  Content="Show back button"
+                  IsChecked="True" />
+
+        <Separator />
+
+        <!-- SetBackButtonContent -->
+        <TextBlock Text="SetBackButtonContent" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock Text="Sets custom content for the back button on a page. Accepts any string or Control. Leave blank to use the default arrow icon."
+                   FontSize="11"
+                   Opacity="0.6"
+                   TextWrapping="Wrap" />
+        <ComboBox x:Name="BackButtonCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Default icon" />
+          <ComboBoxItem Content="← Back" />
+          <ComboBoxItem Content="Cancel" />
+          <ComboBoxItem Content="✓ Done" />
+        </ComboBox>
+
+        <Separator />
+
+        <!-- SetHeader -->
+        <TextBlock Text="SetHeader" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock Text="Sets the page header displayed in the navigation bar. Accepts any string or Control."
+                   FontSize="11"
+                   Opacity="0.6"
+                   TextWrapping="Wrap" />
+        <ComboBox x:Name="HeaderCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="String: page title" />
+          <ComboBoxItem Content="Title + Subtitle" />
+          <ComboBoxItem Content="Search box" />
+          <ComboBoxItem Content="None (hidden)" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Navigation" FontWeight="SemiBold" FontSize="13" />
+        <Button Content="Push Page with Above Settings"
+                HorizontalAlignment="Stretch"
+                Click="OnPush" />
+        <Button Content="Pop"
+                HorizontalAlignment="Stretch"
+                Click="OnPop" />
+        <Button Content="Pop to Root"
+                HorizontalAlignment="Stretch"
+                Click="OnPopToRoot" />
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>

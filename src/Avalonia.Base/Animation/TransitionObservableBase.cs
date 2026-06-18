@@ -23,6 +23,11 @@ namespace Avalonia.Animation
         }
 
         /// <summary>
+        /// For unit tests only!
+        /// </summary>
+        internal IObservable<double> Progress => _progress;
+
+        /// <summary>
         /// Produces value at given progress time point.
         /// </summary>
         /// <param name="progress">Transition progress.</param>

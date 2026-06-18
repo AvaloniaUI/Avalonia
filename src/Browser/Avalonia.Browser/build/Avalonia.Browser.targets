@@ -13,8 +13,7 @@
   
   <!-- Fallback for applications without StaticWebAssetsEnabled (legacy WASM SDK) -->
   <ItemGroup Condition="'$(ShouldIncludeAvaloniaLegacyAssets)' == 'true'">
-    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' == ''" Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" />
-    <WasmExtraFilesToDeploy Condition="'$(WasmRuntimeAssetsLocation)' != ''" Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" TargetPath="$(WasmRuntimeAssetsLocation)/%(FileName)%(Extension)" />
+    <WasmExtraFilesToDeploy Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" TargetPath="$(_AvaloniaRuntimeAssetsLocation)/%(FileName)%(Extension)" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(ShouldIncludeNativeSkiaSharp)' == 'true' or '$(ShouldIncludeNativeHarfBuzzSharp)' == 'true'">

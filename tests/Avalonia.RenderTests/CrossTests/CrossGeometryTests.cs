@@ -8,8 +8,6 @@ using Xunit;
 
 #if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests;
-#elif AVALONIA_D2D
-namespace Avalonia.Direct2D1.RenderTests;
 #else
 namespace Avalonia.RenderTests.WpfCompare;
 #endif

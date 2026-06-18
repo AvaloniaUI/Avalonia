@@ -19,6 +19,11 @@ internal class NoopStorageProvider : BclStorageProvider
         return Task.FromResult<IStorageFile?>(null);
     }
 
+    public override Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        return Task.FromResult(new SaveFilePickerResult());
+    }
+
     public override bool CanPickFolder => false;
     public override Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {

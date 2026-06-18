@@ -28,6 +28,7 @@ internal static class AvaloniaXamlDiagnosticCodes
     public const string RequiredTemplatePartMissing = "AVLN2205";
     public const string OptionalTemplatePartMissing = "AVLN2206";
     public const string TemplatePartWrongType = "AVLN2207";
+    public const string ItemContainerInsideTemplate = "AVLN2208";
 
     // XAML emit errors 3000-3999.
     public const string EmitError = "AVLN3000";
@@ -39,15 +40,18 @@ internal static class AvaloniaXamlDiagnosticCodes
     // Reserved 5000-9998
     public const string Obsolete = "AVLN5001";
 
-    internal static string XamlXDiagnosticCodeToAvalonia(object xamlException)
+    internal static string XamlXDiagnosticCodeToAvalonia(object codeOrException)
     {
-        return xamlException switch
+        return codeOrException switch
         {
             XamlXWellKnownDiagnosticCodes wellKnownDiagnosticCodes => wellKnownDiagnosticCodes switch
             {
                 XamlXWellKnownDiagnosticCodes.Obsolete => Obsolete,
                 _ => throw new ArgumentOutOfRangeException()
             },
+
+            // ExperimentalAttribute reports its own code
+            string code => code,
 
             XamlDataContextException => DataContextResolvingError,
             XamlBindingsTransformException => BindingsError,

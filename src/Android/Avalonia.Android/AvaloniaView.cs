@@ -5,6 +5,8 @@ using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
+using AndroidX.CustomView.Widget;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
@@ -15,10 +17,11 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Android
 {
-    public class AvaloniaView : FrameLayout
+    public partial class AvaloniaView : FrameLayout
     {
         private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
+        private readonly ExploreByTouchHelper _accessHelper;
 
         private IDisposable? _timerSubscription;
         private bool _surfaceCreated;
@@ -26,15 +29,20 @@ namespace Avalonia.Android
         public AvaloniaView(Context context) : base(context)
         {
             _view = new ViewImpl(this);
+
             AddView(_view.View);
 
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
 
-            this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+            SetBackgroundColor(global::Android.Graphics.Color.Transparent);
             OnConfigurationChanged();
 
-            _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+            _view.InternalView!.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+            _view.InternalView.SurfaceWindowDestroyed += InternalView_SurfaceWindowDestroyed;
+
+            _accessHelper = new AvaloniaAccessHelper(this);
+            ViewCompat.SetAccessibilityDelegate(this, _accessHelper);
         }
 
         private void InternalView_SurfaceWindowCreated(object? sender, EventArgs e)
@@ -44,7 +52,16 @@ namespace Avalonia.Android
             if (Visibility == ViewStates.Visible)
             {
                 OnVisibilityChanged(true);
+
+                _root?.InvalidateMeasure();
+                Invalidate();
             }
+        }
+
+        private void InternalView_SurfaceWindowDestroyed(object? sender, EventArgs e)
+        {
+            OnVisibilityChanged(false);
+            _surfaceCreated = false;
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
@@ -62,13 +79,6 @@ namespace Avalonia.Android
             _surfaceCreated = false;
             _root?.Dispose();
             _root = null!;
-        }
-
-        public override bool DispatchKeyEvent(KeyEvent? e)
-        {
-            if (!_view.View.DispatchKeyEvent(e))
-                return base.DispatchKeyEvent(e);
-            return true;
         }
 
         [SupportedOSPlatform("android24.0")]
@@ -90,7 +100,7 @@ namespace Avalonia.Android
                 return;
             if (isVisible && _timerSubscription == null)
             {
-                if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
+                if (AndroidPlatform.Timer is { } timer)
                 {
                     _timerSubscription = timer.SubscribeView(this);
                 }
@@ -131,8 +141,7 @@ namespace Avalonia.Android
         {
             public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
-                View.Focusable = true;
-                View.FocusChange += ViewImpl_FocusChange;
+                View!.FocusChange += ViewImpl_FocusChange;
             }
 
             private void ViewImpl_FocusChange(object? sender, FocusChangeEventArgs e)

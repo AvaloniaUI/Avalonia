@@ -9,8 +9,8 @@ namespace Avalonia.Rendering
     /// The render loop is responsible for advancing the animation timer and updating the scene
     /// graph for visible windows.
     /// </remarks>
-    [NotClientImplementable]
-    internal interface IRenderLoop
+    [PrivateApi]
+    public interface IRenderLoop
     {
         /// <summary>
         /// Adds an update task.
@@ -20,17 +20,23 @@ namespace Avalonia.Rendering
         /// Registered update tasks will be polled on each tick of the render loop after the
         /// animation timer has been pulsed.
         /// </remarks>
-        void Add(IRenderLoopTask i);
+        internal void Add(IRenderLoopTask i);
 
         /// <summary>
         /// Removes an update task.
         /// </summary>
         /// <param name="i">The update task.</param>
-        void Remove(IRenderLoopTask i);
+        internal void Remove(IRenderLoopTask i);
 
         /// <summary>
         /// Indicates if the rendering is done on a non-UI thread.
         /// </summary>
-        bool RunsInBackground { get; }
+        internal bool RunsInBackground { get; }
+
+        /// <summary>
+        /// Wakes up the render loop to schedule the next tick.
+        /// Thread-safe: can be called from any thread.
+        /// </summary>
+        internal void Wakeup();
     }
 }

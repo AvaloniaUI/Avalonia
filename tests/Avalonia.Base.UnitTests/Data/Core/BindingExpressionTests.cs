@@ -8,7 +8,7 @@ using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 
@@ -95,7 +95,7 @@ public abstract partial class BindingExpressionTests
             var target = new TargetClass { DataContext = dataContext };
             var nodes = new List<ExpressionNode>();
             var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
-            var path = CompiledBindingPathFromExpressionBuilder.Build(expression, enableDataValidation);
+            var path = BindingExpressionVisitor<TIn>.BuildPath(expression);
 
             if (relativeSource is not null && relativeSource.Mode is not RelativeSourceMode.Self)
                 throw new NotImplementedException();
@@ -451,7 +451,7 @@ public abstract partial class BindingExpressionTests
                 return value;
 
             var s = value?.ToString() ?? string.Empty;
-            
+
             if (s.StartsWith(prefix))
                 return s.Substring(prefix.Length);
             else

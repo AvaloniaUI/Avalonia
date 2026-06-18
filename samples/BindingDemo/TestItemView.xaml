@@ -2,9 +2,9 @@
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:viewModels="using:BindingDemo.ViewModels"
         x:Class="BindingDemo.TestItemView"
-        x:DataType="viewModels:MainWindowViewModel+TestItem">
+        x:DataType="{x:Type viewModels:MainWindowViewModel+TestItem, x:TypeArguments=x:String}">
   <StackPanel>
-    <TextBlock Classes="h1" Text="{Binding StringValue}"/>
+    <TextBlock Classes="h1" Text="{Binding Value}"/>
     <TextBox Text="{Binding Detail}" AcceptsReturn="True"/>
   </StackPanel>
 </UserControl>

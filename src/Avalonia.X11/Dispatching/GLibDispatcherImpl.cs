@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -238,7 +237,7 @@ internal class GlibDispatcherImpl :
         }
         else
         {
-            var externalLogger = _platform.Options.ExterinalGLibMainLoopExceptionLogger;
+            var externalLogger = _platform.Options.ExternalGLibMainLoopExceptionLogger;
             if (externalLogger != null)
                 externalLogger.Invoke(e);
             else

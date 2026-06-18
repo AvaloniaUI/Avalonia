@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Collections.Pooled;
+using Avalonia.Diagnostics;
 
 namespace Avalonia.Interactivity
 {
@@ -79,6 +80,10 @@ namespace Avalonia.Interactivity
             e = e ?? throw new ArgumentNullException(nameof(e));
 
             e.Source = source;
+
+            using var _ = Diagnostic.RaisingRoutedEvent()?
+                .AddTag(Diagnostic.Tags.Control, e.Source)
+                .AddTag(Diagnostic.Tags.RoutedEvent, e.RoutedEvent);
 
             if (_event.RoutingStrategies == RoutingStrategies.Direct)
             {

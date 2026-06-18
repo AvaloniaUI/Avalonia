@@ -52,7 +52,7 @@ namespace Avalonia.Build.Tasks
             string[] references, string projectDirectory,
             bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance,
             XamlCompilerDiagnosticsFilter diagnosticsFilter, string strongNameKey,
-            bool skipXamlCompilation, bool debuggerLaunch, bool verboseExceptions)
+            bool skipXamlCompilation, bool debuggerLaunch, bool verboseExceptions, bool createSourceInfo)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace Avalonia.Build.Tasks
 	                var compileRes = CompileCore(
                         engine, typeSystem, projectDirectory, verifyIl,
                         defaultCompileBindings, logImportance, diagnosticsFilter,
-                        debuggerLaunch, verboseExceptions);
+                        debuggerLaunch, verboseExceptions, createSourceInfo);
 	                if (compileRes == null)
 	                    return new CompileResult(true);
 	                if (compileRes == false)
@@ -89,7 +89,7 @@ namespace Avalonia.Build.Tasks
 
                 var refWriterParameters = new WriterParameters { WriteSymbols = false };
                 if (!string.IsNullOrWhiteSpace(strongNameKey))
-	                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+	                refWriterParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
                 refAsm?.Write(refOutput, refWriterParameters);
 
                 return new CompileResult(true, true);
@@ -107,7 +107,8 @@ namespace Avalonia.Build.Tasks
             MessageImportance logImportance,
             XamlCompilerDiagnosticsFilter diagnosticsFilter,
             bool debuggerLaunch,
-            bool verboseExceptions)
+            bool verboseExceptions,
+            bool createSourceInfo)
         {
             if (debuggerLaunch)
             {
@@ -210,6 +211,7 @@ namespace Avalonia.Build.Tasks
             {
                 EnableIlVerification = verifyIl,
                 DefaultCompileBindings = defaultCompileBindings,
+                CreateSourceInfo = createSourceInfo,
                 DynamicSetterContainerProvider = new DefaultXamlDynamicSetterContainerProvider(dynamicSettersBuilder)
             };
 
@@ -265,6 +267,7 @@ namespace Avalonia.Build.Tasks
             };
             loaderDispatcherDef.Methods.Add(loaderDispatcherMethod);
             loaderDispatcherDef.Methods.Add(loaderDispatcherMethodOld);
+            typeSystem.AddCompilerGeneratedAttribute(loaderDispatcherDef);
 
 
             var stringEquals = asm.MainModule.ImportReference(asm.MainModule.TypeSystem.String.Resolve().Methods.First(
@@ -371,7 +374,7 @@ namespace Avalonia.Build.Tasks
 
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
-                            typeSystem.CreateTypeBuilder(classTypeDefinition);
+                            typeSystem.CreateTypeBuilder(classTypeDefinition, compilerGeneratedType: false); // don't add CompilerGeneratedAttribute to the user's type
 
                         ((List<XamlDocumentResource>)parsedXamlDocuments).Add(new XamlDocumentResource(
                             parsed, res.Uri, res, classType,
@@ -455,8 +458,8 @@ namespace Avalonia.Build.Tasks
                                 .Methods.First(m => m.Name == document.TypeBuilderProvider.PopulateMethod.Name);
 
                             var designLoaderFieldType = typeSystem
-                                .GetType("System.Action`1")
-                                .MakeGenericType(typeSystem.GetType("System.Object"));
+                                .WellKnownTypes.GetActionOfT(1)
+                                .MakeGenericType(typeSystem.WellKnownTypes.Object);
 
                             var designLoaderFieldTypeReference = (GenericInstanceType)typeSystem.GetTypeReference(designLoaderFieldType);
                             designLoaderFieldTypeReference.GenericArguments[0] =
@@ -474,6 +477,7 @@ namespace Avalonia.Build.Tasks
                             var designLoaderField = new FieldDefinition("!XamlIlPopulateOverride",
                                 FieldAttributes.Static | FieldAttributes.Private, designLoaderFieldTypeReference);
                             classTypeDefinition.Fields.Add(designLoaderField);
+                            typeSystem.AddCompilerGeneratedAttribute(designLoaderField);
 
                             const string TrampolineName = "!XamlIlPopulateTrampoline";
                             var trampolineMethodWithoutSP = new Lazy<MethodDefinition>(() => CreateTrampolineMethod(false));
@@ -489,6 +493,7 @@ namespace Avalonia.Build.Tasks
                                 trampoline.Parameters.Add(new ParameterDefinition(classTypeDefinition));
 
                                 classTypeDefinition.Methods.Add(trampoline);
+                                typeSystem.AddCompilerGeneratedAttribute(trampoline);
 
                                 var regularStart = Instruction.Create(OpCodes.Nop);
                             

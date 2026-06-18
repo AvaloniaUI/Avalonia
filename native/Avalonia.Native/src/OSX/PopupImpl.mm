@@ -45,8 +45,9 @@ public:
     
     virtual bool ShouldTakeFocusOnShow() override
     {
+        auto parent = Parent.tryGet();
         // Don't steal the focus from another windows if our parent is inactive
-        if (Parent != nullptr && Parent->Window != nullptr && ![Parent->Window isKeyWindow])
+        if (parent != nullptr && parent->Window != nullptr && ![parent->Window isKeyWindow])
             return false;
 
         return WindowBaseImpl::ShouldTakeFocusOnShow();

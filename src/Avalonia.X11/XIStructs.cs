@@ -205,7 +205,7 @@ namespace Avalonia.X11
         public IntPtr Time;
         public int Deviceid; /* id of the device that changed */
         public int Sourceid; /* Source for the new classes. */
-        public int Reason; /* Reason for the change */
+        public XiDeviceChangeReason Reason; /* Reason for the change */
         public int NumClasses;
         public XIAnyClassInfo** Classes; /* same as in XIDeviceInfo */
     }
@@ -270,6 +270,12 @@ namespace Avalonia.X11
     {
         None = 0,
         XIPointerEmulated = (1 << 16)
+    }
+
+    internal enum XiDeviceChangeReason : int
+    {
+        XISlaveSwitch = 1,
+        XIDeviceChange = 2
     }
 
     [StructLayout(LayoutKind.Sequential)]

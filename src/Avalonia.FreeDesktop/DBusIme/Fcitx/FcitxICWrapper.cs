@@ -1,21 +1,21 @@
 using System;
 using System.Threading.Tasks;
 using Avalonia.Reactive;
-using Tmds.DBus.SourceGenerator;
+using Avalonia.FreeDesktop.DBusIme.Fcitx.DBus;
 
 namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 {
     internal class FcitxICWrapper
     {
-        private readonly OrgFcitxFcitxInputContext1? _modern;
-        private readonly OrgFcitxFcitxInputContext? _old;
+        private readonly InputContext1? _modern;
+        private readonly InputContext? _old;
 
-        public FcitxICWrapper(OrgFcitxFcitxInputContext old)
+        public FcitxICWrapper(InputContext old)
         {
             _old = old;
         }
 
-        public FcitxICWrapper(OrgFcitxFcitxInputContext1 modern)
+        public FcitxICWrapper(InputContext1 modern)
         {
             _modern = modern;
         }
@@ -38,18 +38,18 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             return await (_modern?.ProcessKeyEventAsync(keyVal, keyCode, state, type > 0, time) ?? Task.FromResult(false));
         }
 
-        public ValueTask<IDisposable> WatchCommitStringAsync(Action<Exception?, string> handler) =>
+        public ValueTask<IDisposable> WatchCommitStringAsync(Action<string> handler) =>
             _old?.WatchCommitStringAsync(handler)
             ?? _modern?.WatchCommitStringAsync(handler)
             ?? new ValueTask<IDisposable>(Disposable.Empty);
 
-        public ValueTask<IDisposable> WatchForwardKeyAsync(Action<Exception?, (uint keyval, uint state, int type)> handler) =>
+        public ValueTask<IDisposable> WatchForwardKeyAsync(Action<(uint keyval, uint state, int type)> handler) =>
             _old?.WatchForwardKeyAsync(handler)
-            ?? _modern?.WatchForwardKeyAsync((e, ev) => handler.Invoke(e, (ev.Keyval, ev.State, ev.Type ? 1 : 0)))
+            ?? _modern?.WatchForwardKeyAsync(ev => handler.Invoke((ev.Keyval, ev.State, ev.Type ? 1 : 0)))
             ?? new ValueTask<IDisposable>(Disposable.Empty);
 
         public ValueTask<IDisposable> WatchUpdateFormattedPreeditAsync(
-            Action<Exception?, ((string?, int)[]? str, int cursorpos)> handler) =>
+            Action<((string?, int)[]? str, int cursorpos)> handler) =>
             _old?.WatchUpdateFormattedPreeditAsync(handler!)
             ?? _modern?.WatchUpdateFormattedPreeditAsync(handler!)
             ?? new ValueTask<IDisposable>(Disposable.Empty);

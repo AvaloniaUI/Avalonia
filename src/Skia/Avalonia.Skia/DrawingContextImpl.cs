@@ -27,6 +27,7 @@ namespace Avalonia.Skia
         private readonly Stack<(SKMatrix matrix, PaintWrapper paint)> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
+        private readonly Stack<TextOptions> _textOptionsStack = new();
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
@@ -169,8 +170,7 @@ namespace Avalonia.Skia
                 public ISkiaSharpPlatformGraphicsApiLease? TryLeasePlatformGraphicsApi()
                 {
                     CheckLease();
-                    if (_context._gpu is ISkiaGpuWithPlatformGraphicsContext gpu &&
-                        gpu.PlatformGraphicsContext is { } context)
+                    if (_context._gpu?.PlatformGraphicsContext is { } context)
                         return new PlatformApiLease(this, context);
                     return null;
                 }
@@ -223,6 +223,7 @@ namespace Avalonia.Skia
         public SKSurface? Surface { get; }
 
         public RenderOptions RenderOptions { get; set; }
+        public TextOptions TextOptions { get; set; }
 
         private void CheckLease()
         {
@@ -244,14 +245,16 @@ namespace Avalonia.Skia
             var drawableImage = (IDrawableBitmapImpl)source;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
+            var isUpscaling = d.Width > s.Width || d.Height > s.Height;
 
             var paint = SKPaintCache.Shared.Get();
+            var samplingOptions = RenderOptions.BitmapInterpolationMode.ToSKSamplingOptions(isUpscaling);
 
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
-            paint.FilterQuality = RenderOptions.BitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = RenderOptions.BitmapBlendingMode.ToSKBlendMode();
+            paint.IsAntialias = RenderOptions.EdgeMode != EdgeMode.Aliased;
 
-            drawableImage.Draw(this, s, d, paint);
+            drawableImage.Draw(this, s, d, samplingOptions, paint);
             SKPaintCache.Shared.ReturnReset(paint);
         }
 
@@ -602,23 +605,32 @@ namespace Avalonia.Skia
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun;
 
-                var textRenderOptions = RenderOptions;
+                // Determine effective TextOptions for text rendering. Start with current pushed TextOptions.
+                var effectiveTextOptions = TextOptions;
 
+                // If subpixel rendering is disabled globally, map subpixel modes to grayscale.
                 if (_disableSubpixelTextRendering)
                 {
-                    switch (textRenderOptions.TextRenderingMode)
+                    var mode = effectiveTextOptions.TextRenderingMode;
+
+                    if (mode == TextRenderingMode.SubpixelAntialias ||
+                        (mode == TextRenderingMode.Unspecified && (RenderOptions.EdgeMode == EdgeMode.Antialias || RenderOptions.EdgeMode == EdgeMode.Unspecified)))
                     {
-                        case TextRenderingMode.Unspecified
-                            when textRenderOptions.EdgeMode == EdgeMode.Antialias || textRenderOptions.EdgeMode == EdgeMode.Unspecified:
-                        case TextRenderingMode.SubpixelAntialias:
-                            {
-                                textRenderOptions = textRenderOptions with { TextRenderingMode = TextRenderingMode.Antialias };
-                                break;
-                            }
+                        effectiveTextOptions = effectiveTextOptions with { TextRenderingMode = TextRenderingMode.Antialias };
                     }
                 }
 
-                var textBlob = glyphRunImpl.GetTextBlob(textRenderOptions);
+                var renderOptions = RenderOptions;
+
+                // If TextRenderingMode is unspecified in TextOptions, use the one from RenderOptions.
+#pragma warning disable CS0618
+                if (effectiveTextOptions.TextRenderingMode == TextRenderingMode.Unspecified && renderOptions.TextRenderingMode != TextRenderingMode.Unspecified)
+                {
+                    effectiveTextOptions = effectiveTextOptions with { TextRenderingMode = renderOptions.TextRenderingMode };
+                }
+#pragma warning restore CS0618
+
+                var textBlob = glyphRunImpl.GetTextBlob(effectiveTextOptions, RenderOptions);
 
                 Canvas.DrawText(textBlob, (float)glyphRun.BaselineOrigin.X,
                     (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
@@ -629,7 +641,7 @@ namespace Avalonia.Skia
         public IDrawingContextLayerImpl CreateLayer(PixelSize size)
         {
             CheckLease();
-            return CreateRenderTarget(size, true);
+            return CreateRenderTarget(size, true, false);
         }
 
         /// <inheritdoc />
@@ -753,9 +765,23 @@ namespace Avalonia.Skia
             RenderOptions = RenderOptions.MergeWith(renderOptions);
         }
 
+        public void PushTextOptions(TextOptions textOptions)
+        {
+            CheckLease();
+
+            _textOptionsStack.Push(TextOptions);
+
+            TextOptions = TextOptions.MergeWith(textOptions);
+        }
+
         public void PopRenderOptions()
         {
             RenderOptions = _renderOptionsStack.Pop();
+        }
+
+        public void PopTextOptions()
+        {
+            TextOptions = _textOptionsStack.Pop();
         }
 
         /// <inheritdoc />
@@ -844,7 +870,9 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public Matrix Transform
         {
-            get { return _currentTransform ??= Canvas.TotalMatrix.ToAvaloniaMatrix(); }
+            // There is a Canvas.TotalMatrix (non 4x4 overload), but internally it still uses 4x4 matrix.
+            // We want to avoid SKMatrix4x4 -> SKMatrix -> Matrix conversion by directly going SKMatrix4x4 -> Matrix.
+            get { return _currentTransform ??= Canvas.TotalMatrix44.ToAvaloniaMatrix(); }
             set
             {
                 CheckLease();
@@ -860,7 +888,9 @@ namespace Avalonia.Skia
                     transform *= _postTransform.Value;
                 }
 
-                Canvas.SetMatrix(transform.ToSKMatrix());
+                // Canvas.SetMatrix internally uses 4x4 matrix, even with SKMatrix(3x3) overload.
+                // We want to avoid Matrix -> SKMatrix -> SKMatrix4x4 conversion by directly going Matrix -> SKMatrix4x4.
+                Canvas.SetMatrix(transform.ToSKMatrix44());
             }
         }
 
@@ -886,146 +916,168 @@ namespace Avalonia.Skia
             switch (gradientBrush)
             {
                 case ILinearGradientBrush linearGradient:
-                {
-                    var start = linearGradient.StartPoint.ToPixels(targetRect).ToSKPoint();
-                    var end = linearGradient.EndPoint.ToPixels(targetRect).ToSKPoint();
-
-                    // would be nice to cache these shaders possibly?
-                    if (linearGradient.Transform is null)
                     {
-                        using (var shader =
-                            SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
+                        var start = linearGradient.StartPoint.ToPixels(targetRect).ToSKPoint();
+                        var end = linearGradient.EndPoint.ToPixels(targetRect).ToSKPoint();
+
+                        // would be nice to cache these shaders possibly?
+                        if (linearGradient.Transform is null)
                         {
-                            paintWrapper.Paint.Shader = shader;
-                        }
-                    }
-                    else
-                    {
-                        var transformOrigin = linearGradient.TransformOrigin.ToPixels(targetRect);
-                        var offset = Matrix.CreateTranslation(transformOrigin);
-                        var transform = (-offset) * linearGradient.Transform.Value * (offset);
-
-                        using (var shader =
-                            SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode, transform.ToSKMatrix()))
-                        {
-                            paintWrapper.Paint.Shader = shader;
-                        }   
-                    }
-
-                    break;
-                }
-                case IRadialGradientBrush radialGradient:
-                {
-                    var centerPoint = radialGradient.Center.ToPixels(targetRect);
-                    var center = centerPoint.ToSKPoint();
-                    
-                    var radiusX = (radialGradient.RadiusX.ToValue(targetRect.Width));
-                    var radiusY = (radialGradient.RadiusY.ToValue(targetRect.Height));
-
-                    var originPoint = radialGradient.GradientOrigin.ToPixels(targetRect);
-                    
-                    Matrix? transform = null;
-                    
-                    if (radiusX != radiusY)
-                        transform =
-                            Matrix.CreateTranslation(-centerPoint)
-                            * Matrix.CreateScale(1, radiusY / radiusX)
-                            * Matrix.CreateTranslation(centerPoint);
-                    
-                    
-                    if (radialGradient.Transform != null)
-                    {
-                        var transformOrigin = radialGradient.TransformOrigin.ToPixels(targetRect);
-                        var offset = Matrix.CreateTranslation(transformOrigin);
-                        var brushTransform = (-offset) * radialGradient.Transform.Value * (offset);
-                        transform = transform.HasValue ? transform * brushTransform : brushTransform;
-                    }
-                    
-                    if (originPoint.Equals(centerPoint))
-                    {
-                        // when the origin is the same as the center the Skia RadialGradient acts the same as D2D
-                        using (var shader =
-                               transform.HasValue
-                                   ? SKShader.CreateRadialGradient(center, (float)radiusX, stopColors, stopOffsets, tileMode,
-                                       transform.Value.ToSKMatrix())
-                                   : SKShader.CreateRadialGradient(center, (float)radiusX, stopColors, stopOffsets, tileMode)
-                              )
-                        {
-                            paintWrapper.Paint.Shader = shader;
-                        }
-                    }
-                    else
-                    {
-                        // when the origin is different to the center use a two point ConicalGradient to match the behaviour of D2D
-
-                        if (radiusX != radiusY)
-                            // Adjust the origin point for radiusX/Y transformation by reversing it
-                            originPoint = originPoint.WithY(
-                                (originPoint.Y - centerPoint.Y) * radiusX / radiusY + centerPoint.Y);
-                        
-                        var origin = originPoint.ToSKPoint();
-                        
-                        // reverse the order of the stops to match D2D
-                        var reversedColors = new SKColor[stopColors.Length];
-                        Array.Copy(stopColors, reversedColors, stopColors.Length);
-                        Array.Reverse(reversedColors);
-
-                        // and then reverse the reference point of the stops
-                        var reversedStops = new float[stopOffsets.Length];
-                        for (var i = 0; i < stopOffsets.Length; i++)
-                        {
-                            reversedStops[i] = stopOffsets[i];
-                            if (reversedStops[i] > 0 && reversedStops[i] < 1)
+                            using (var shader =
+                                SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
                             {
-                                reversedStops[i] = Math.Abs(1 - stopOffsets[i]);
+                                paintWrapper.Paint.Shader = shader;
                             }
                         }
-                            
-                        // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
-                        using (var shader = SKShader.CreateCompose(
-                                   SKShader.CreateColor(reversedColors[0]),
-                                   transform.HasValue
-                                       ? SKShader.CreateTwoPointConicalGradient(center, (float)radiusX, origin, 0,
-                                           reversedColors, reversedStops, tileMode, transform.Value.ToSKMatrix())
-                                       : SKShader.CreateTwoPointConicalGradient(center, (float)radiusX, origin, 0,
-                                           reversedColors, reversedStops, tileMode)
+                        else
+                        {
+                            var transformOrigin = linearGradient.TransformOrigin.ToPixels(targetRect);
+                            var offset = Matrix.CreateTranslation(transformOrigin);
+                            var transform = (-offset) * linearGradient.Transform.Value * (offset);
 
-                               )
-                              )
+                            using (var shader =
+                                SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode, transform.ToSKMatrix()))
+                            {
+                                paintWrapper.Paint.Shader = shader;
+                            }
+                        }
+
+                        break;
+                    }
+                case IRadialGradientBrush radialGradient:
+                    {
+                        var centerPoint = radialGradient.Center.ToPixels(targetRect);
+                        var center = centerPoint.ToSKPoint();
+
+                        var radiusX = (radialGradient.RadiusX.ToValue(targetRect.Width));
+                        var radiusY = (radialGradient.RadiusY.ToValue(targetRect.Height));
+
+                        var originPoint = radialGradient.GradientOrigin.ToPixels(targetRect);
+
+                        Matrix? transform = null;
+
+                        if (radiusX != radiusY)
+                            transform =
+                                Matrix.CreateTranslation(-centerPoint)
+                                * Matrix.CreateScale(1, radiusY / radiusX)
+                                * Matrix.CreateTranslation(centerPoint);
+
+
+                        if (radialGradient.Transform != null)
+                        {
+                            var transformOrigin = radialGradient.TransformOrigin.ToPixels(targetRect);
+                            var offset = Matrix.CreateTranslation(transformOrigin);
+                            var brushTransform = (-offset) * radialGradient.Transform.Value * (offset);
+                            transform = transform.HasValue ? transform * brushTransform : brushTransform;
+                        }
+
+                        if (originPoint.Equals(centerPoint))
+                        {
+                            // when the origin is the same as the center the Skia RadialGradient acts the same as D2D
+                            using (var shader =
+                                       transform.HasValue
+                                           ? SKShader.CreateRadialGradient(center, (float)radiusX, stopColors, stopOffsets, tileMode,
+                                               transform.Value.ToSKMatrix())
+                                           : SKShader.CreateRadialGradient(center, (float)radiusX, stopColors, stopOffsets, tileMode)
+                                      )
+                            {
+                                paintWrapper.Paint.Shader = shader;
+                            }
+                        }
+                        else
+                        {
+                            // when the origin is different to the center use a two point ConicalGradient to match the behaviour of D2D
+                            if (radiusX != radiusY)
+                                // Adjust the origin point for radiusX/Y transformation by reversing it
+                                originPoint = originPoint.WithY(
+                                    (originPoint.Y - centerPoint.Y) * radiusX / radiusY + centerPoint.Y);
+
+                            var origin = originPoint.ToSKPoint();
+
+                            var endOffset = stopOffsets[stopOffsets.Length - 1];
+
+                            var start = origin;
+                            var radiusStart = 0f;
+                            var end = center;
+                            var radiusEnd = (float)radiusX;
+                            var reverse = (centerPoint.X != originPoint.X  || centerPoint.Y != originPoint.Y) && endOffset == 1;
+
+                            if (reverse)
+                            {
+                                // reverse the order of the stops to match D2D
+                                (start, radiusStart, end, radiusEnd) = (end, radiusEnd, start, radiusStart);
+
+                                var count = stopOffsets.Length;
+
+                                var reversedColors = new SKColor[stopColors.Length];
+                                // and then reverse the reference point of the stops
+                                var reversedStops = new float[count];
+
+                                for (var i = 0; i < count; i++)
+                                {
+                                    var offset = radialGradient.GradientStops[i].Offset;
+
+                                    offset = 1 - offset;
+
+                                    if (MathUtilities.IsZero(offset))
+                                    {
+                                        offset = 0;
+                                    }
+
+                                    var reversedIndex = count - 1 - i;
+
+                                    reversedStops[reversedIndex] = (float)offset;
+                                    reversedColors[reversedIndex] = stopColors[i];
+                                }
+                               
+                                stopColors = reversedColors;
+                                stopOffsets = reversedStops;
+                            }
+
+                            // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
+                            using (var shader = SKShader.CreateCompose(
+                                       SKShader.CreateColor(stopColors[0]),
+                                       transform.HasValue
+                                           ? SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
+                                              stopColors, stopOffsets, tileMode, transform.Value.ToSKMatrix())
+                                           : SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
+                                              stopColors, stopOffsets, tileMode)
+                                        )
+                                    )
+                            {
+                                paintWrapper.Paint.Shader = shader;
+                            }
+                        }
+
+                        break;
+                    }
+                case IConicGradientBrush conicGradient:
+                    {
+                        var center = conicGradient.Center.ToPixels(targetRect).ToSKPoint();
+
+                        // Skia's default is that angle 0 is from the right hand side of the center point
+                        // but we are matching CSS where the vertical point above the center is 0.
+                        var angle = (float)(conicGradient.Angle - 90);
+                        var rotation = SKMatrix.CreateRotationDegrees(angle, center.X, center.Y);
+
+                        if (conicGradient.Transform is { })
+                        {
+
+                            var transformOrigin = conicGradient.TransformOrigin.ToPixels(targetRect);
+                            var offset = Matrix.CreateTranslation(transformOrigin);
+                            var transform = (-offset) * conicGradient.Transform.Value * (offset);
+
+                            rotation = rotation.PreConcat(transform.ToSKMatrix());
+                        }
+
+                        using (var shader =
+                            SKShader.CreateSweepGradient(center, stopColors, stopOffsets, rotation))
                         {
                             paintWrapper.Paint.Shader = shader;
                         }
+
+                        break;
                     }
-
-                    break;
-                }
-                case IConicGradientBrush conicGradient:
-                {
-                    var center = conicGradient.Center.ToPixels(targetRect).ToSKPoint();
-
-                    // Skia's default is that angle 0 is from the right hand side of the center point
-                    // but we are matching CSS where the vertical point above the center is 0.
-                    var angle = (float)(conicGradient.Angle - 90);
-                    var rotation = SKMatrix.CreateRotationDegrees(angle, center.X, center.Y);
-
-                    if (conicGradient.Transform is { })
-                    {
-                            
-                        var transformOrigin = conicGradient.TransformOrigin.ToPixels(targetRect);
-                        var offset = Matrix.CreateTranslation(transformOrigin);
-                        var transform = (-offset) * conicGradient.Transform.Value * (offset);
-
-                        rotation = rotation.PreConcat(transform.ToSKMatrix());
-                    }
-
-                    using (var shader = 
-                        SKShader.CreateSweepGradient(center, stopColors, stopOffsets, rotation))
-                    {
-                        paintWrapper.Paint.Shader = shader;
-                    }
-
-                    break;
-                }
             }
         }
 
@@ -1040,11 +1092,11 @@ namespace Avalonia.Skia
         {
             var calc = new TileBrushCalculator(tileBrush, tileBrushImage.PixelSize.ToSizeWithDpi(_intermediateSurfaceDpi), targetBox.Size);
             var intermediate = CreateRenderTarget(
-                PixelSize.FromSizeWithDpi(calc.IntermediateSize, _intermediateSurfaceDpi), false);
+                PixelSize.FromSizeWithDpi(calc.IntermediateSize, _intermediateSurfaceDpi), false, true);
 
             paintWrapper.AddDisposable(intermediate);
 
-            using (var context = intermediate.CreateDrawingContext(true))
+            using (var context = intermediate.CreateDrawingContext())
             {
                 var sourceRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(96));
                 var targetRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(_intermediateSurfaceDpi));
@@ -1132,9 +1184,9 @@ namespace Avalonia.Skia
             if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
             {
                 using var intermediate = CreateRenderTarget(
-                    PixelSize.FromSizeWithDpi(intermediateSize, _intermediateSurfaceDpi), false);
+                    PixelSize.FromSizeWithDpi(intermediateSize, _intermediateSurfaceDpi), false, true);
 
-                using (var ctx = intermediate.CreateDrawingContext(true))
+                using (var ctx = intermediate.CreateDrawingContext())
                 {
                     ctx.PushRenderOptions(RenderOptions);
                     ctx.Clear(Colors.Transparent);
@@ -1235,7 +1287,6 @@ namespace Avalonia.Skia
             using(var shader = tile.ToShader(tileX, tileY, shaderTransform.ToSKMatrix(), 
                       new SKRect(0, 0, tile.CullRect.Width, tile.CullRect.Height)))
             {
-                paintWrapper.Paint.FilterQuality = SKFilterQuality.None;
                 paintWrapper.Paint.Shader = shader;
             }
         }
@@ -1280,18 +1331,6 @@ namespace Avalonia.Skia
             var ab = rightAlpha / 255d;
             var r = (ca * aa + cb * ab * (1 - aa)) / (aa + ab * (1 - aa));
             return (byte)(r * 255);
-        }
-
-        private static Color Blend(Color left, Color right)
-        {
-            var aa = left.A / 255d;
-            var ab = right.A / 255d;
-            return new Color(
-                (byte)((aa + ab * (1 - aa)) * 255),
-                Blend(left.R, left.A, right.R, right.A),
-                Blend(left.G, left.A, right.G, right.A),
-                Blend(left.B, left.A, right.B, right.A)                
-            );
         }
 
         internal PaintWrapper CreateAcrylicPaint (SKPaint paint, IExperimentalAcrylicMaterial material)
@@ -1448,9 +1487,10 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="pixelSize">The size of the render target.</param>
         /// <param name="isLayer">Whether the render target is being created for a layer.</param>
+        /// <param name="useScaledDrawing">Auto-scales to DPI</param>
         /// <param name="format">Pixel format.</param>
         /// <returns></returns>
-        private SurfaceRenderTarget CreateRenderTarget(PixelSize pixelSize, bool isLayer, PixelFormat? format = null)
+        private SurfaceRenderTarget CreateRenderTarget(PixelSize pixelSize, bool isLayer, bool useScaledDrawing, PixelFormat? format = null)
         {
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
@@ -1463,6 +1503,7 @@ namespace Avalonia.Skia
                 Gpu = _gpu,
                 Session = _session,
                 DisableManualFbo = !isLayer,
+                UseScaledDrawing = useScaledDrawing
             };
 
             return new SurfaceRenderTarget(createInfo);
@@ -1511,16 +1552,6 @@ namespace Avalonia.Skia
                 _disposable1 = null;
                 _disposable2 = null;
                 _disposable3 = null;
-            }
-
-            public IDisposable ApplyTo(SKPaint paint)
-            {
-                var state = new PaintState(paint, paint.Color, paint.Shader);
-
-                paint.Color = Paint.Color;
-                paint.Shader = Paint.Shader;
-
-                return state;
             }
 
             /// <summary>

@@ -1,0 +1,108 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:TextTestApp"
+    x:Class="TextTestApp.MainWindow"
+    Title="Text Test App" Width="700" Height="700">
+
+    <DockPanel>
+      <Border DockPanel.Dock="Bottom" Background="WhiteSmoke" BorderThickness="0,1,0,0" BorderBrush="Silver" Padding="2">
+        <DockPanel>
+          <ToggleSwitch Name="_hitRangeToggle" DockPanel.Dock="Right" OnContent="HitTestTextRange" OffContent="HitTestTextPosition" IsCheckedChanged="OnHitTestMethodChanged" />
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <TextBlock Text="HitTestPoint:" Margin="5,0" />
+            <TextBlock Name="_coordinates" MinWidth="120" />
+            <Border Width="5" BorderThickness="1,0,0,0" BorderBrush="Silver" UseLayoutRounding="True" Margin="5,0,0,0" />
+            <TextBlock Text="TextPosition:" Margin="5,0" />
+            <TextBlock Name="_hit" MinWidth="60" />
+            <Border Width="5" BorderThickness="1,0,0,0" BorderBrush="Silver" UseLayoutRounding="True" Margin="5,0,0,0" />
+          </StackPanel>
+        </DockPanel>
+      </Border>
+
+      <DockPanel DockPanel.Dock="Top" Margin="5">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+          <Label Content="_Font:" Target="{Binding ElementName=_font}" VerticalAlignment="Center" Margin="5,0,0,0" />
+          <ComboBox Name="_font" ItemsSource="{Binding SystemFonts, Source={x:Static FontManager.Current}}" />
+          <Label Content="Fea_tures:" Target="{Binding ElementName=_features}" VerticalAlignment="Center" Margin="5,0,0,0" />
+          <TextBox Name="_features" VerticalAlignment="Center" Text="calt clig kern liga" />
+          <Label Content="_Size:" Target="{Binding ElementName=_size}" VerticalAlignment="Center" Margin="5,0,0,0" />
+          <TextBox Name="_size" VerticalAlignment="Center" Text="64" />
+          <Button VerticalAlignment="Center" Click="OnNewWindowClick" ToolTip.Tip="New window" Margin="5,0,0,0">+</Button>
+        </StackPanel>
+
+        <Label Content="_Text:" Target="{Binding ElementName=_text}"  VerticalAlignment="Center"/>
+        <TextBox Name="_text" Text="Hello!" VerticalAlignment="Center" />
+      </DockPanel>
+
+      <Grid RowDefinitions="*,5,*">
+        <local:InteractiveLineControl Name="_rendering" DockPanel.Dock="Top" Margin="16" HorizontalAlignment="Center" 
+                                  
+                                      Text="{Binding Text, ElementName=_text}"
+                                      FontFamily="{Binding SelectedValue, ElementName=_font}"
+                                      FontFeatures="{Binding Text, ElementName=_features}"
+                                      FontSize="{Binding Text, ElementName=_size}"
+                                      Background="BlanchedAlmond"
+                                      ExtentStroke="Black"
+                                      BaselineStroke="Blue"
+                                      TextBoundsStroke="Goldenrod"
+                                      RunBoundsStroke="Gold"
+                                      NextHitStroke="Green"
+                                      PreviousHitStroke="Blue"
+                                      BackspaceHitStroke="Red"
+                                      DistanceStroke="Black"
+                                  
+                                      PointerMoved="OnPointerMoved"
+          />
+        
+        <GridSplitter Grid.Row="1" />
+
+        <TabControl Grid.Row="2" DockPanel.Dock="Bottom" Background="White" BorderBrush="Whitesmoke" BorderThickness="0,1,0,0">
+          <TabItem Header="Shaped Buffer">
+            <ListBox Name="_buffer" Grid.IsSharedSizeScope="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" SelectionMode="Multiple" SelectionChanged="OnBufferSelectionChanged" Background="Transparent">
+              <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                  <Setter Property="Padding" Value="0"/>
+                  <Setter Property="Background" Value="White" />
+                </Style>
+              </ListBox.Styles>
+              <Border Background="WhiteSmoke" BorderBrush="Silver" BorderThickness="0,1">
+                <local:GridRow ColumnSpacing="10">
+                  <TextBlock Text="" />
+                  <TextBlock Text="Index" />
+                  <TextBlock Text="Characters" />
+                  <TextBlock Text="Codepoints" />
+                  <TextBlock Text="Glyph" />
+                  <TextBlock Text="Glyph ID" />
+                  <TextBlock Text="Advance" />
+                  <TextBlock Text="Offset" />
+                  <TextBlock Text="Ink Bounds" />
+                </local:GridRow>
+              </Border>
+            </ListBox>
+          </TabItem>
+          <TabItem Header="Character Hits">
+            <ListBox Name="_hits" Grid.IsSharedSizeScope="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" SelectionChanged="OnHitsSelectionChanged" Background="Transparent">
+              <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                  <Setter Property="Padding" Value="0"/>
+                  <Setter Property="Background" Value="White" />
+                </Style>
+              </ListBox.Styles>
+              <Border Background="WhiteSmoke" BorderBrush="Silver" BorderThickness="0,1">
+                <local:GridRow ColumnSpacing="10">
+                  <TextBlock Text="" />
+                  <TextBlock Text="Backspace Hit" />
+                  <TextBlock Text="Previous Hit" />
+                  <TextBlock Text="Index" />
+                  <TextBlock Text="Next Hit" />
+                  <TextBlock Text="Codepoint" />
+                  <TextBlock Text="Character" />
+                  <TextBlock Text="Distance" />
+                </local:GridRow>
+              </Border>
+            </ListBox>
+          </TabItem>
+        </TabControl>
+      </Grid>
+    </DockPanel>
+</Window>

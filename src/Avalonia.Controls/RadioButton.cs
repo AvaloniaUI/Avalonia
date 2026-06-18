@@ -52,7 +52,7 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _groupManager?.Remove(this, GroupName);
-            EnsureRadioGroupManager(e.Root);
+            EnsureRadioGroupManager(e.PresentationSource);
             base.OnAttachedToVisualTree(e);
         }
 
@@ -106,9 +106,9 @@ namespace Avalonia.Controls
         }
         
         [MemberNotNull(nameof(_groupManager))]
-        private void EnsureRadioGroupManager(IRenderRoot? root = null)
+        private void EnsureRadioGroupManager(IPresentationSource? source = null)
         {
-            _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(root ?? this.GetVisualRoot());
+            _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(source ?? this.GetPresentationSource());
             _groupManager.Add(this);
         }
     }

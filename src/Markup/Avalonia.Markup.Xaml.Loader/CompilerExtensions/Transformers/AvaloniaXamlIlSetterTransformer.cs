@@ -23,7 +23,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (!(node is XamlAstObjectNode on
-                  && on.Type.GetClrType().FullName == "Avalonia.Styling.Setter"))
+                  && on.Type.GetClrType().Is("Avalonia.Styling", "Setter")))
                 return node;
 
             IXamlType? targetType = null;
@@ -77,9 +77,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     .FirstOrDefault(x => x.Property.GetClrProperty().Name == "PropertyPath");
                 if (propertyPath == null)
                     throw new XamlStyleTransformException("Setter without a property or property path is not valid", node);
-                if (propertyPath.Values[0] is IXamlIlPropertyPathNode ppn
-                    && ppn.PropertyType != null)
-                    propType = ppn.PropertyType;
                 else
                     throw new XamlStyleTransformException("Unable to get the property path property type", node);
             }
@@ -171,7 +168,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 Getter = setterType.Methods.First(m => m.Name == "get_Value");
                 var method = setterType.Methods.First(m => m.Name == "set_Value");
-                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.IBinding, false));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.BindingBase, false));
                 Setters.Add(new XamlIlDirectCallPropertySetter(method, types.UnsetValueType, false));
                 Setters.Add(new XamlIlDirectCallPropertySetter(method, targetType, targetType.AcceptsNull()));
             }

@@ -1,5 +1,6 @@
 using System;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 
 namespace Avalonia.OpenGL.Egl
 {
@@ -8,7 +9,7 @@ namespace Avalonia.OpenGL.Egl
         public abstract IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context);
     }
 
-    public abstract class EglPlatformSurfaceRenderTargetBase : IGlPlatformSurfaceRenderTargetWithCorruptionInfo
+    public abstract class EglPlatformSurfaceRenderTargetBase : IGlPlatformSurfaceRenderTarget
     {
         protected EglContext Context { get; }
 
@@ -22,18 +23,21 @@ namespace Avalonia.OpenGL.Egl
             
         }
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw()
+        public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             if (Context.IsLost)
                 throw new RenderTargetCorruptedException();
             
-            return BeginDrawCore();
+            return BeginDrawCore(sceneInfo);
         }
 
-        public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore();
+        protected virtual bool SkipWaits => false;
+
+        public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo);
 
         protected IGlPlatformSurfaceRenderingSession BeginDraw(EglSurface surface,
-            PixelSize size, double scaling, Action? onFinish = null, bool isYFlipped = false)
+            PixelSize size, double scaling, Action? onFinish = null, bool isYFlipped = false,
+            Action? beforeSwap = null)
         {
 
             var restoreContext = Context.MakeCurrent(surface);
@@ -41,14 +45,32 @@ namespace Avalonia.OpenGL.Egl
             try
             {
                 var egli = Context.Display.EglInterface;
-                egli.WaitClient();
-                egli.WaitGL();
-                egli.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
-                
+                if (!SkipWaits)
+                {
+                    egli.WaitClient();
+                    egli.WaitGL();
+                    egli.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
+                }
+
                 Context.GlInterface.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, 0);
                 
+                // Workaround for driver quirk https://github.com/NVIDIA/egl-wayland2/issues/46
+                // This is NVIDIA-specific, but setting buffers to GL_BACK won't hurt for other drivers too
+                if (Context.Version.Type == GlProfileType.OpenGL)
+                {
+                    var gl = Context.GlInterface;
+                    gl.Viewport(0, 0, size.Width, size.Height);
+                    if (gl.IsReadBufferAvailable)
+                        gl.ReadBuffer(GlConsts.GL_BACK);
+                    if (gl.IsWriteBufferAvailable)
+                        gl.WriteBuffer(GlConsts.GL_BACK);
+                    if(gl.IsDrawBufferAvailable)
+                        gl.DrawBuffer(GlConsts.GL_BACK);
+                }
+
+                
                 success = true;
-                return new Session(Context.Display, Context, surface, size, scaling,  restoreContext, onFinish, isYFlipped);
+                return new Session(Context.Display, Context, surface, size, scaling,  restoreContext, onFinish, isYFlipped, SkipWaits, beforeSwap);
             }
             finally
             {
@@ -64,10 +86,13 @@ namespace Avalonia.OpenGL.Egl
             private readonly EglDisplay _display;
             private readonly IDisposable _restoreContext;
             private readonly Action? _onFinish;
+            private readonly Action? _beforeSwap;
+            private readonly bool _skipWaits;
 
             public Session(EglDisplay display, EglContext context,
                 EglSurface glSurface, PixelSize size, double scaling,
-                IDisposable restoreContext, Action? onFinish, bool isYFlipped)
+                IDisposable restoreContext, Action? onFinish, bool isYFlipped, bool skipWaits,
+                Action? beforeSwap = null)
             {
                 Size = size;
                 Scaling = scaling;
@@ -77,16 +102,24 @@ namespace Avalonia.OpenGL.Egl
                 _glSurface = glSurface;
                 _restoreContext = restoreContext;
                 _onFinish = onFinish;
+                _beforeSwap = beforeSwap;
+                _skipWaits = skipWaits;
             }
 
             public void Dispose()
             {
                 _context.GlInterface.Flush();
-                _display.EglInterface.WaitGL();
+                if (!_skipWaits)
+                    _display.EglInterface.WaitGL();
+                _beforeSwap?.Invoke();
                 _glSurface.SwapBuffers();
-                _display.EglInterface.WaitClient();
-                _display.EglInterface.WaitGL();
-                _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
+                if (!_skipWaits)
+                {
+                    _display.EglInterface.WaitClient();
+                    _display.EglInterface.WaitGL();
+                    _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
+                }
+
                 _restoreContext.Dispose();
                 _onFinish?.Invoke();
             }
@@ -97,6 +130,9 @@ namespace Avalonia.OpenGL.Egl
             public bool IsYFlipped { get; }
         }
 
+        public virtual PlatformRenderTargetState State =>
+            IsCorrupted ? PlatformRenderTargetState.Corrupted : PlatformRenderTargetState.Ready;
+        
         public virtual bool IsCorrupted => Context.IsLost;
     }
 }

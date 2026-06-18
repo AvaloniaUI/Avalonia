@@ -7,6 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Automation.Peers;
 using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -64,7 +65,7 @@ namespace Avalonia.Controls
         public event EventHandler? CalendarOpened;
 
         /// <summary>
-        /// Occurs when <see cref="P:Avalonia.Controls.DatePicker.Text" />
+        /// Occurs when <see cref="P:Avalonia.Controls.CalendarDatePicker.Text" />
         /// is assigned a value that cannot be interpreted as a date.
         /// </summary>
         public event EventHandler<CalendarDatePickerDateValidationErrorEventArgs>? DateValidationError;
@@ -194,6 +195,8 @@ namespace Avalonia.Controls
 
             UpdatePseudoClasses();
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new CalendarDatePickerAutomationPeer(this);
 
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -326,17 +329,6 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
-        {
-            if (property == SelectedDateProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-
-            base.UpdateDataValidation(property, state, error);
-        }
-
-        /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
@@ -401,7 +393,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
             if(IsEnabled && _textBox != null && e.NavigationMethod == NavigationMethod.Tab)
@@ -417,7 +409,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             base.OnLostFocus(e);
 
@@ -581,7 +573,7 @@ namespace Avalonia.Controls
 
         private void Calendar_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-             
+
             if (e.InitialPressMouseButton == MouseButton.Left)
             {
                 e.Handled = true;
@@ -724,15 +716,22 @@ namespace Avalonia.Controls
         /// </returns>
         private DateTime? ParseText(string text)
         {
-            DateTime newSelectedDate;
+            DateTime? newSelectedDate;
 
             // TryParse is not used in order to be able to pass the exception to
             // the TextParseError event
             try
             {
-                newSelectedDate = SelectedDateFormat == CalendarDatePickerFormat.Custom && !string.IsNullOrEmpty(CustomDateFormatString) ?
-                    DateTime.ParseExact(text, CustomDateFormatString, DateTimeHelper.GetCurrentDateFormat()) :
-                    DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                if (TextConverter != null)
+                {
+                    newSelectedDate = TextConverter.ConvertBack(text, typeof(DateTime?), null, CultureInfo.CurrentCulture) as DateTime?;
+                }
+                else
+                {
+                    newSelectedDate = SelectedDateFormat == CalendarDatePickerFormat.Custom && !string.IsNullOrEmpty(CustomDateFormatString) ?
+                        DateTime.ParseExact(text, CustomDateFormatString, DateTimeHelper.GetCurrentDateFormat()) :
+                        DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                }
 
                 if (Calendar.IsValidDateSelection(this._calendar!, newSelectedDate))
                 {
@@ -765,6 +764,10 @@ namespace Avalonia.Controls
 
         private string? DateTimeToString(DateTime d)
         {
+            if (TextConverter != null)
+            {
+                return TextConverter.Convert(d, typeof(string), null, CultureInfo.CurrentCulture) as string;
+            }
             DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
 
             switch (SelectedDateFormat)
@@ -790,7 +793,7 @@ namespace Avalonia.Controls
                         return true;
                     }
                 case Key.Down:
-                    { 
+                    {
                         if ((e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control)
                         {
                             TogglePopUp();
@@ -827,7 +830,7 @@ namespace Avalonia.Controls
                         }
                     }
                     DateTime? d = SetTextBoxValue(s);
-                    
+
                     if (SelectedDate != d)
                     {
                         SetCurrentValue(SelectedDateProperty, d);
@@ -864,7 +867,9 @@ namespace Avalonia.Controls
                 DateTime? d = ParseText(s);
                 if (d != null)
                 {
-                    SetValue(TextProperty, s);
+                    // make sure displayed text is reformatted to correct date format
+                    string? newtext = DateTimeToString((DateTime)d);
+                    SetValue(TextProperty, newtext);
                     return d;
                 }
                 else
@@ -891,39 +896,39 @@ namespace Avalonia.Controls
             if (_textBox != null)
             {
                 SetCurrentValue(TextProperty, String.Empty);
-                
-                if (string.IsNullOrEmpty(Watermark) && !UseFloatingWatermark)
+
+                if (string.IsNullOrEmpty(PlaceholderText) && !UseFloatingPlaceholder)
                 {
                     DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
                     _defaultText = string.Empty;
-                    var watermarkFormat = "<{0}>";
-                    string watermarkText;
+                    var placeholderFormat = "<{0}>";
+                    string placeholderText;
 
                     switch (SelectedDateFormat)
                     {
                         case CalendarDatePickerFormat.Custom:
                             {
-                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, CustomDateFormatString);
+                                placeholderText = string.Format(CultureInfo.CurrentCulture, placeholderFormat, CustomDateFormatString);
                                 break;
                             }
                         case CalendarDatePickerFormat.Long:
                             {
-                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.LongDatePattern.ToString());
+                                placeholderText = string.Format(CultureInfo.CurrentCulture, placeholderFormat, dtfi.LongDatePattern.ToString());
                                 break;
                             }
                         case CalendarDatePickerFormat.Short:
                         default:
                             {
-                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.ShortDatePattern.ToString());
+                                placeholderText = string.Format(CultureInfo.CurrentCulture, placeholderFormat, dtfi.ShortDatePattern.ToString());
                                 break;
                             }
                     }
 
-                    _textBox.Watermark = watermarkText;
+                    _textBox.PlaceholderText = placeholderText;
                 }
                 else
                 {
-                    _textBox.ClearValue(TextBox.WatermarkProperty);
+                    _textBox.ClearValue(TextBox.PlaceholderTextProperty);
                 }
             }
         }

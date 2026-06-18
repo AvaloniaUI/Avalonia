@@ -11,7 +11,7 @@ using Avalonia.Threading;
 
 namespace ControlCatalog.Pages
 {
-    public class ScreenPage : UserControl
+    public class ScreenPage : ContentPage
     {
         private double _leftMost;
         private double _topMost;

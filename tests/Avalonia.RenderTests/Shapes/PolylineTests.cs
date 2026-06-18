@@ -4,17 +4,82 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Shapes
-#endif
 {
     public class PolylineTests : TestBase
     {
         public PolylineTests()
             : base(@"Shapes\Polyline")
         {
+        }
+
+        [Theory]
+        [InlineData(FillRule.EvenOdd)]
+        [InlineData(FillRule.NonZero)]
+        public async Task Polyline_FillRule(FillRule fillRule)
+        {
+            var target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 260,
+                Height = 180,
+                Child = new Polyline
+                {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 2,
+                    Fill = Brushes.OrangeRed,
+                    Points = new Points
+                    {
+                        new Point(10, 170),
+                        new Point(60, 20),
+                        new Point(110, 170),
+                        new Point(20, 70),
+                        new Point(240, 70),
+                        new Point(130, 170),
+                        new Point(190, 20),
+                        new Point(10, 170),
+                    },
+                    Stretch = Stretch.Uniform,
+                    FillRule = fillRule
+                }
+            };
+
+            var testName = $"{nameof(Polyline_FillRule)}_{fillRule}";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
+        }
+
+        [Fact]
+        public async Task Polyline_FillRule_NoFill()
+        {
+            var target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 260,
+                Height = 180,
+                Child = new Polyline
+                {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 2,
+                    Fill = null,
+                    Points = new Points
+                    {
+                        new Point(10, 170),
+                        new Point(60, 20),
+                        new Point(110, 170),
+                        new Point(20, 70),
+                        new Point(240, 70),
+                        new Point(130, 170),
+                        new Point(190, 20),
+                        new Point(10, 170),
+                    },
+                    Stretch = Stretch.Uniform,
+                    FillRule = FillRule.EvenOdd
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]

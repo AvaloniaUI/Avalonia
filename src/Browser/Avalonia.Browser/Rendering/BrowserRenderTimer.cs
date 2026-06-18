@@ -18,19 +18,16 @@ internal class BrowserRenderTimer : IRenderTimer
 
     public bool RunsInBackground { get; }
 
-    public event Action<TimeSpan>? Tick
+    public Action<TimeSpan>? Tick
     {
-        add
+        set
         {
             if (!BrowserWindowingPlatform.IsThreadingEnabled)
                 StartOnThisThread();
 
-            _tick += value;
+            _tick = value;
         }
-        remove
-        {
-            _tick -= value;
-        }
+        get => _tick;
     }
 
     public void StartOnThisThread()

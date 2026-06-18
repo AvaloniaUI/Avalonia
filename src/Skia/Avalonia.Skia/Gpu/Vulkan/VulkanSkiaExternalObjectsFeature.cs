@@ -93,7 +93,7 @@ internal class VulkanSkiaExternalObjectsFeature : IExternalObjectsRenderInterfac
                     Size = info.MemorySize
                 }
             };
-            using var renderTarget = new GRBackendRenderTarget(_properties.Width, _properties.Height, 1, imageInfo);
+            using var renderTarget = new GRBackendRenderTarget(_properties.Width, _properties.Height, imageInfo);
             using var surface = SKSurface.Create(_gpu.GrContext, renderTarget,
                 _properties.TopLeftOrigin ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
                 _properties.Format == PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm
@@ -107,6 +107,10 @@ internal class VulkanSkiaExternalObjectsFeature : IExternalObjectsRenderInterfac
             
             return new ImmutableBitmap(image);
         }
+
+        public IBitmapImpl SnapshotWithTimelineSemaphores(IPlatformRenderInterfaceImportedSemaphore waitForSemaphore,
+            ulong waitForValue, IPlatformRenderInterfaceImportedSemaphore signalSemaphore, ulong signalValue) =>
+            throw new NotSupportedException();
 
         public IBitmapImpl SnapshotWithAutomaticSync() => throw new NotSupportedException();
     }

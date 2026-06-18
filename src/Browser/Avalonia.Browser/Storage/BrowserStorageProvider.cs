@@ -16,6 +16,8 @@ internal class BrowserStorageProvider : IStorageProvider
     internal static ReadOnlySpan<byte> BrowserBookmarkKey => "browser"u8;
     internal const string PickerCancelMessage = "The user aborted a request";
     internal const string NoPermissionsMessage = "Permissions denied";
+    internal const string FileFolderNotFoundMessage = "A requested file or directory could not be found";
+    internal const string TypeMissmatchMessage = "The path supplied exists, but was not an entry of requested type";
 
     public bool CanOpen => true;
     public bool CanSave => true;
@@ -86,6 +88,12 @@ internal class BrowserStorageProvider : IStorageProvider
                 }
             }
         }
+    }
+
+    public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
+        return new SaveFilePickerResult { File = file };
     }
 
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
@@ -233,11 +241,13 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
             throw new InvalidOperationException("Destination folder must be initialized the StorageProvider API.");
         }
 
-        var storageItem = await StorageHelper.MoveAsync(FileHandle, folder.FileHandle);
-        if (storageItem is null)
+        var itemHandle = await StorageHelper.MoveAsync(FileHandle, folder.FileHandle);
+        if (itemHandle is null)
         {
             return null;
         }
+        
+        var storageItem = StorageHelper.StorageItemFromHandle(itemHandle)!;
 
         var kind = storageItem.GetPropertyAsString("kind");
         return kind switch
@@ -354,12 +364,13 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
     {
         try
         {
-            var storageFile = await StorageHelper.CreateFile(FileHandle, name);
-            if (storageFile is null)
+            var fileHandle = await StorageHelper.CreateFile(FileHandle, name);
+            if (fileHandle is null)
             {
                 return null;
             }
-
+            
+            var storageFile = StorageHelper.StorageItemFromHandle(fileHandle)!;
             return new JSStorageFile(storageFile);
         }
         catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
@@ -372,17 +383,63 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
     {
         try
         {
-            var storageFile = await StorageHelper.CreateFolder(FileHandle, name);
-            if (storageFile is null)
+            var folderHandler = await StorageHelper.CreateFolder(FileHandle, name);
+            if (folderHandler is null)
             {
                 return null;
             }
-
-            return new JSStorageFolder(storageFile);
+            
+            var storageFolder = StorageHelper.StorageItemFromHandle(folderHandler)!;
+            return new JSStorageFolder(storageFolder);
         }
         catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
         {
             throw new UnauthorizedAccessException("User denied permissions to open the file", ex);
         }
     }
+
+    public async Task<IStorageFolder?> GetFolderAsync(string name)
+    {
+        try
+        {
+            var folderHandle = await StorageHelper.GetFolder(FileHandle, name);
+            if (folderHandle is null)
+            {
+                return null;
+            }
+            
+            var storageFolder = StorageHelper.StorageItemFromHandle(folderHandle)!;
+
+            return new JSStorageFolder(storageFolder);
+        }
+        catch (JSException ex) when (ShouldSupressErrorOnFileAccess(ex))
+        {
+            return null;
+        }
+    }
+
+    public async Task<IStorageFile?> GetFileAsync(string name)
+    {
+        try
+        {
+            var fileHandle = await StorageHelper.GetFile(FileHandle, name);
+            if (fileHandle is null)
+            {
+                return null;
+            }
+            
+            var storageFile = StorageHelper.StorageItemFromHandle(fileHandle)!;
+
+            return new JSStorageFile(storageFile);
+        }
+        catch (JSException ex) when (ShouldSupressErrorOnFileAccess(ex))
+        {
+            return null;
+        }
+    }
+
+    private static bool ShouldSupressErrorOnFileAccess(JSException ex) =>
+        ex.Message == BrowserStorageProvider.NoPermissionsMessage ||
+        ex.Message.Contains(BrowserStorageProvider.TypeMissmatchMessage, StringComparison.Ordinal) ||
+        ex.Message.Contains(BrowserStorageProvider.FileFolderNotFoundMessage, StringComparison.Ordinal);
 }

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class RelativePanelTests
+    public class RelativePanelTests : ScopedTestBase
     {
         [Fact]
         public void Lays_Out_1_Child_Next_the_other()

@@ -10,15 +10,6 @@ using Avalonia.UnitTests;
 
 namespace Avalonia.Markup.Xaml.UnitTests
 {
-    static class XamlLoaderInit
-    {
-        [ModuleInitializer]
-        public static void Init()
-        {
-            var _ = typeof(Binding);
-        }
-    }
-    
     public class XamlTestBase : ScopedTestBase
     {
         public XamlTestBase()

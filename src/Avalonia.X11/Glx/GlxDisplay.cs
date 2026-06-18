@@ -119,13 +119,13 @@ namespace Avalonia.X11.Glx
         public GlxContext CreateContext(IGlContext share) => CreateContext(CreatePBuffer(), share,
             share.SampleCount, share.StencilSize, true);
 
-        private GlxContext CreateContext(IntPtr defaultXid, IGlContext share,
+        private GlxContext CreateContext(IntPtr defaultXid, IGlContext? share,
             int sampleCount, int stencilSize, bool ownsPBuffer)
         {
-            var sharelist = ((GlxContext)share)?.Handle ?? IntPtr.Zero;
+            var sharelist = ((GlxContext?)share)?.Handle ?? IntPtr.Zero;
             IntPtr handle = default;
             
-            GlxContext Create(GlVersion profile)
+            GlxContext? Create(GlVersion profile)
             {
                 var profileMask = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
                 if (profile.Type == GlProfileType.OpenGL && 
@@ -149,7 +149,7 @@ namespace Avalonia.X11.Glx
                     if (handle != IntPtr.Zero)
                     {
                         _version = profile;
-                        return new GlxContext(new GlxInterface(), handle, this, (GlxContext)share, profile,
+                        return new GlxContext(new GlxInterface(), handle, this, (GlxContext?)share, profile,
                             sampleCount, stencilSize, _x11, defaultXid, ownsPBuffer);
                         
                     }
@@ -162,7 +162,7 @@ namespace Avalonia.X11.Glx
                 return null;
             }
 
-            GlxContext rv = null;
+            GlxContext? rv = null;
             if (_version.HasValue)
             {
                 rv = Create(_version.Value);

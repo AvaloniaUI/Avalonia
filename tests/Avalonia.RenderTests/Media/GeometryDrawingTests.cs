@@ -1,14 +1,7 @@
 ﻿using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-
-using Avalonia.Direct2D1.RenderTests;
-
-namespace Avalonia.Direct2D1.RenderTests.Media
-#endif
 {
     public class GeometryDrawingTests : TestBase
     {

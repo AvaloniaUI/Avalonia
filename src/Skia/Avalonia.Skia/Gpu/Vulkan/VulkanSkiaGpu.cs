@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Vulkan;
 using Avalonia.Platform;
-using Avalonia.Rendering;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Vulkan;
@@ -13,7 +13,7 @@ internal class VulkanSkiaGpu : ISkiaGpu
     public IVulkanPlatformGraphicsContext Vulkan { get; private set; }
     public GRContext GrContext { get; private set; }
 
-    public VulkanSkiaGpu(IVulkanPlatformGraphicsContext vulkan, long? maxResourceBytes)
+    public VulkanSkiaGpu(IVulkanPlatformGraphicsContext vulkan, long? maxResourceBytes, bool? useStencilBuffers)
     {
         Vulkan = vulkan;
         var device = vulkan.Device;
@@ -48,7 +48,9 @@ internal class VulkanSkiaGpu : ISkiaGpu
                 GetProcedureAddress = GetProcAddressWrapper
             };
 
-            GrContext = GRContext.CreateVulkan(ctx) ??
+            var avoidStencilBuffers = useStencilBuffers == false;
+            
+            GrContext = GRContext.CreateVulkan(ctx, new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers }) ??
                          throw new VulkanException("Unable to create GrContext from IVulkanDevice");
             
             if (maxResourceBytes.HasValue)
@@ -72,15 +74,36 @@ internal class VulkanSkiaGpu : ISkiaGpu
     }
 
     public bool IsLost => Vulkan.IsLost;
+
+    public IPlatformGraphicsContext? PlatformGraphicsContext => Vulkan;
+
     public IDisposable EnsureCurrent() => Vulkan.EnsureCurrent();
     
     
-    public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<object> surfaces)
+    public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
     {
         var target = Vulkan.CreateRenderTarget(surfaces);
         return new VulkanSkiaRenderTarget(this, target);
     }
 
+    public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+    {
+        var factory = Vulkan.TryGetFeature<IVulkanKhrSurfacePlatformSurfaceFactory>();
+        foreach (var surface in surfaces)
+        {
+            if (surface is IVulkanKhrSurfacePlatformSurface
+                || (factory?.CanRenderToSurface(Vulkan, surface) == true))
+            {
+                return surface.IsReady;
+            }
+        }
+
+        return false;
+    }
+
     
     public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session) => null;
+
+    public IScopedResource<GRContext> TryGetGrContext() =>
+        ScopedResource<GRContext>.Create(GrContext, EnsureCurrent().Dispose);
 }

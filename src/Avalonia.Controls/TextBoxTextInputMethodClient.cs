@@ -13,7 +13,6 @@ namespace Avalonia.Controls
         private TextPresenter? _presenter;
         private bool _selectionChanged;
         private bool _isInChange;
-        private ITextInputMethodImpl? _im;
 
         public override Visual TextViewVisual => _presenter!;
 
@@ -119,6 +118,7 @@ namespace Avalonia.Controls
             if (_parent != null)
             {
                 _parent.PropertyChanged -= OnParentPropertyChanged;
+                _parent.Tapped -= OnParentTapped;
             }
 
             _parent = parent;
@@ -126,17 +126,14 @@ namespace Avalonia.Controls
             if (_parent != null)
             {
                 _parent.PropertyChanged += OnParentPropertyChanged;
-                _im = (_parent.VisualRoot as ITextInputMethodRoot)?.InputMethod;
-            }
-            else
-            {
-                _im = null;
+                _parent.Tapped += OnParentTapped;
             }
 
             var oldPresenter = _presenter;
 
             if (oldPresenter != null)
             {
+                oldPresenter.CurrentImClient = null;
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
 
                 oldPresenter.CaretBoundsChanged -= (s, e) => RaiseCursorRectangleChanged();
@@ -146,12 +143,19 @@ namespace Avalonia.Controls
 
             if (_presenter != null)
             {
+
+                _presenter.CurrentImClient = this;
                 _presenter.CaretBoundsChanged += (s, e) => RaiseCursorRectangleChanged();
             }
 
             RaiseTextViewVisualChanged();
 
             RaiseCursorRectangleChanged();
+        }
+
+        private void OnParentTapped(object? sender, Input.TappedEventArgs e)
+        {
+            RaiseInputPaneActivationRequested();
         }
 
         public override void SetPreeditText(string? preeditText) => SetPreeditText(preeditText, null);
@@ -167,17 +171,6 @@ namespace Avalonia.Controls
             _presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, cursorPos);
         }
 
-        public override void ShowInputPanel()
-        {
-            base.ShowInputPanel();
-
-            if (_parent is { } && _im is { })
-            {
-                _im.SetOptions(TextInputOptions.FromStyledElement(_parent));
-                _im.SetClient(this);
-            }
-        }
-
         private static string GetTextLineText(TextLine textLine)
         {
             if (textLine.Length == 0)
@@ -191,11 +184,7 @@ namespace Avalonia.Controls
             {
                 if (run.Length > 0)
                 {
-#if NET6_0_OR_GREATER
                     builder.Append(run.Text.Span);
-#else
-                    builder.Append(run.Text.Span.ToArray());
-#endif
                 }
             }
 

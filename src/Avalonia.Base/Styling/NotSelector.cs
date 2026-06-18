@@ -39,7 +39,7 @@ namespace Avalonia.Styling
         {
             if (_selectorString == null)
             {
-                _selectorString = $"{_previous?.ToString(owner)}:not({_argument})";
+                _selectorString = $"{_previous?.ToString(owner, true)}:not({_argument})";
             }
 
             return _selectorString;

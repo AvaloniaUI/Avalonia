@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
-    public class TextPresenter_Tests
+    public class TextPresenter_Tests : ScopedTestBase
     {
         [Fact]
         public void TextPresenter_Can_Contain_Null_With_Password_Char_Set()
@@ -72,7 +72,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Assert.Equal(1, presenter.TextLayout.TextLines.Count);
                 Assert.Equal(1, presenter.TextLayout.TextLines[0].TextRuns.Count);
                 Assert.NotNull(presenter.TextLayout.TextLines[0].TextRuns[0].Properties);
-                Assert.Equal(fontStretch, presenter.TextLayout.TextLines[0].TextRuns[0].Properties.Typeface.Stretch);
+                Assert.Equal(fontStretch, presenter.TextLayout.TextLines[0].TextRuns[0].Properties!.Typeface.Stretch);
+            }
+        }
+
+        [Fact]
+        public void Measure_And_Arrange_Should_Use_WidthIncludingTrailingWhitespace_For_Bounds()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new TextPresenter
+                {
+                    Text = "fy",
+                    FontStyle = FontStyle.Italic,
+                    FontSize = 48,
+                    UseLayoutRounding = false
+                };
+
+                presenter.Measure(Size.Infinity);
+
+                var expectedSize = new Size(presenter.TextLayout.WidthIncludingTrailingWhitespace, presenter.TextLayout.Height);
+
+                Assert.Equal(expectedSize, presenter.DesiredSize);
+
+                presenter.Arrange(new Rect(default, presenter.DesiredSize));
+
+                Assert.Equal(new Rect(default, expectedSize), presenter.Bounds);
             }
         }
     }

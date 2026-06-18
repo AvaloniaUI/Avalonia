@@ -9,9 +9,12 @@ namespace Avalonia.Controls.Shapes
         public static readonly StyledProperty<IList<Point>> PointsProperty =
             AvaloniaProperty.Register<Polygon, IList<Point>>("Points");
 
+        public static readonly StyledProperty<FillRule> FillRuleProperty =
+            AvaloniaProperty.Register<Polygon, FillRule>(nameof(FillRule));
+
         static Polygon()
         {
-            AffectsGeometry<Polygon>(PointsProperty);
+            AffectsGeometry<Polygon>(PointsProperty, FillRuleProperty);
         }
 
         public Polygon()
@@ -25,9 +28,18 @@ namespace Avalonia.Controls.Shapes
             set => SetValue(PointsProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets how the interior of the polygon is determined when a <see cref="Shape.Fill"/> is applied.
+        /// </summary>
+        public FillRule FillRule
+        {
+            get => GetValue(FillRuleProperty);
+            set => SetValue(FillRuleProperty, value);
+        }
+
         protected override Geometry CreateDefiningGeometry()
         {
-            return new PolylineGeometry { Points = Points, IsFilled = true };
+            return new PolylineGeometry(Points, isFilled: true, fillRule: FillRule);
         }
     }
 }

@@ -8,4 +8,4 @@ namespace BuildTests.Android;
     Label = "BuildTests.Android",
     MainLauncher = true,
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
-public class MainActivity : AvaloniaMainActivity<App>;
+public class MainActivity : AvaloniaMainActivity;

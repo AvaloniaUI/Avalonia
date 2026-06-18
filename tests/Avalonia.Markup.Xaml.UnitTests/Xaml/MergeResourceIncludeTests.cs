@@ -11,15 +11,17 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
 
-public class MergeResourceIncludeTests
+public class MergeResourceIncludeTests : XamlTestBase
 {
     static MergeResourceIncludeTests()
     {
         RuntimeHelpers.RunClassConstructor(typeof(RelativeSource).TypeHandle);
     }
 
-    [Fact]
-    public void MergeResourceInclude_Works_With_Single_Resource()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MergeResourceInclude_Works_With_Single_Resource(bool createSourceInfo)
     {
         var documents = new[]
         {
@@ -41,8 +43,9 @@ public class MergeResourceIncludeTests
     </UserControl.Resources>
 </UserControl>")
         };
-        
-        var objects = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+
+        var config = new RuntimeXamlLoaderConfiguration { CreateSourceInfo = createSourceInfo };
+        var objects = AvaloniaRuntimeXamlLoader.LoadGroup(documents, config);
         var contentControl = Assert.IsType<UserControl>(objects[1]);
 
         var resources = Assert.IsType<ResourceDictionary>(contentControl.Resources);

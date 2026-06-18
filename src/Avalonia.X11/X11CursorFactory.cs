@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Internal;
-
-#nullable enable
 
 namespace Avalonia.X11
 {
@@ -17,7 +15,7 @@ namespace Avalonia.X11
         private static IntPtr _nullCursor;
 
         private readonly IntPtr _display;
-        private Dictionary<CursorFontShape, IntPtr> _cursors;
+        private Dictionary<StandardCursorType, IntPtr> _cursors;
 
         private static readonly Dictionary<StandardCursorType, CursorFontShape> s_mapping =
             new Dictionary<StandardCursorType, CursorFontShape>
@@ -47,33 +45,33 @@ namespace Avalonia.X11
                 {StandardCursorType.TopRightCorner, CursorFontShape.XC_top_right_corner},
             };
 
+        private static readonly Dictionary<StandardCursorType, string> s_libraryCursors = new()
+        {
+            {StandardCursorType.DragCopy, "dnd-copy"},
+            {StandardCursorType.DragLink, "dnd-link"},
+            {StandardCursorType.DragMove, "dnd-move"},
+            // TODO: Check if other platforms have dnd-none, dnd-no-drop and dnd-ask
+        };
+
         public X11CursorFactory(IntPtr display)
         {
             _display = display;
             _nullCursor = GetNullCursor(display);
             
-            // 78 = number of items in CursorFontShape enum
-            // Unlikely to change, but, do we have a Src Gen for this?
-            _cursors = new Dictionary<CursorFontShape, IntPtr>(78);
+            _cursors = new Dictionary<StandardCursorType, IntPtr>();
         }
 
         public ICursorImpl GetCursor(StandardCursorType cursorType)
         {
             IntPtr handle;
             if (cursorType == StandardCursorType.None)
-            {
                 handle = _nullCursor;
-            }
             else
-            {
-                handle = s_mapping.TryGetValue(cursorType, out var shape)
-                ? GetCursorHandleLazy(shape)
-                : GetCursorHandleLazy(CursorFontShape.XC_left_ptr);
-            }
+                handle = GetCursorHandleCached(cursorType);
             return new CursorImpl(handle);
         }
 
-        public unsafe ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public unsafe ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
         {
             return new XImageCursor(_display, cursor, hotSpot);
         }
@@ -86,13 +84,13 @@ namespace Avalonia.X11
             return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);
         }
 
-        private unsafe class XImageCursor : CursorImpl, IFramebufferPlatformSurface, IPlatformHandle
+        private unsafe class XImageCursor : CursorImpl, IPlatformHandle
         {
             private readonly IntPtr _display;
             private readonly PixelSize _pixelSize;
             private readonly UnmanagedBlob _blob;
 
-            public XImageCursor(IntPtr display, IBitmapImpl bitmap, PixelPoint hotSpot)
+            public XImageCursor(IntPtr display, Bitmap bitmap, PixelPoint hotSpot)
             {
                 var size = Marshal.SizeOf<XcursorImage>() +
                     (bitmap.PixelSize.Width * bitmap.PixelSize.Height * 4);
@@ -110,15 +108,12 @@ namespace Avalonia.X11
                 image->xhot = hotSpot.X;
                 image->yhot = hotSpot.Y;
                 image->pixels = (IntPtr)(image + 1);
-               
-                using (var cpuContext = platformRenderInterface.CreateBackendContext(null))
-                using (var renderTarget = cpuContext.CreateRenderTarget(new[] { this }))
-                using (var ctx = renderTarget.CreateDrawingContext(true))
-                {
-                    var r = new Rect(_pixelSize.ToSize(1)); 
-                    ctx.DrawBitmap(bitmap, 1, r, r);
-                }
 
+                bitmap.CopyPixels(new LockedFramebuffer(
+                    _blob.Address + Marshal.SizeOf<XcursorImage>(),
+                    _pixelSize, _pixelSize.Width * 4,
+                    new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul, null));
+                
                 Handle = XLib.XcursorImageLoadCursor(display, _blob.Address);
             }
 
@@ -129,22 +124,27 @@ namespace Avalonia.X11
                 XLib.XFreeCursor(_display, Handle);
                 _blob.Dispose();
             }
-
-            public ILockedFramebuffer Lock()
-            {
-                return new LockedFramebuffer(
-                    _blob.Address + Marshal.SizeOf<XcursorImage>(),
-                    _pixelSize, _pixelSize.Width * 4,
-                    new Vector(96, 96), PixelFormat.Bgra8888, null);
-            }
-            
-            public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
         }
         
-        private nint GetCursorHandleLazy(CursorFontShape shape)
+        private nint GetCursorHandleCached(StandardCursorType type)
         {
-            if (!_cursors.TryGetValue(shape, out var handle))
-                _cursors[shape] = handle = XLib.XCreateFontCursor(_display, shape);
+            if (!_cursors.TryGetValue(type, out var handle))
+            {
+                if(s_libraryCursors.TryGetValue(type, out var cursorName))
+                    handle = XLib.XcursorLibraryLoadCursor(_display, cursorName);
+                else if(s_mapping.TryGetValue(type, out var cursorShape))
+                    handle = XLib.XCreateFontCursor(_display, cursorShape);
+
+                if (handle == IntPtr.Zero)
+                {
+                    if (type != StandardCursorType.Arrow)
+                        handle = GetCursorHandleCached(StandardCursorType.Arrow);
+                    else
+                        handle = _nullCursor;
+                }
+                
+                _cursors[type] = handle;
+            }
 
             return handle;
         }

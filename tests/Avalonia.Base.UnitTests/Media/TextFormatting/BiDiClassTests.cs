@@ -1,9 +1,9 @@
-﻿using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Media.TextFormatting.Unicode;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
@@ -16,8 +16,9 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             _outputHelper = outputHelper;
         }
 
-        [Theory(Skip = "Only run when the Unicode spec changes.")]
+        [Theory(Skip = "Only run when we update Unicode data.")]
         [ClassData(typeof(BiDiClassTestDataGenerator))]
+        [SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters", Justification = "Parameters match BiDi fields")]
         public void Should_Resolve(
             int lineNumber,
             int[] codePoints,

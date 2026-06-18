@@ -65,7 +65,7 @@ public partial class XYFocus
 
     private static bool IsValidCandidate(InputElement candidate, KeyDeviceType? inputKeyDeviceType)
     {
-        return candidate.Focusable && candidate.IsEnabled && candidate.IsVisible
+        return candidate.Focusable && candidate.IsEffectivelyEnabled && candidate.IsEffectivelyVisible
                // Only allow candidate focus, if original key device type could focus it.
                && XYFocusHelpers.IsAllowedXYNavigationMode(candidate, inputKeyDeviceType);
     }
@@ -78,7 +78,7 @@ public partial class XYFocus
             return false;
         }
 
-        var closestScroller = candidate.FindAncestorOfType<IInternalScroller>(true);
+        var closestScroller = candidate.FindAncestorOfType<IScrollable>(true);
         return ReferenceEquals(closestScroller, activeScroller);
     }
 
@@ -93,7 +93,7 @@ public partial class XYFocus
         var parent = activeScroller.Parent;
         while (parent != null)
         {
-            if (parent is IInternalScroller and Visual visual
+            if (parent is IScrollable and Visual visual
                 && visual.IsVisualAncestorOf(candidate))
             {
                 return true;
@@ -105,12 +105,11 @@ public partial class XYFocus
     
     private static bool IsOccluded(InputElement element, Rect elementBounds)
     {
-        // if (element is CHyperlink hyperlink)
-        // {
-        //     element = hyperlink.GetContainingFrameworkElement();
-        // }
-
-        var root = (InputElement)element.GetVisualRoot()!;
+        // TODO: The check for bounds is no longer correct
+        
+        var root = (InputElement?)element.VisualRoot;
+        if (root == null)
+            return true;
         
         // Check if the element is within the visible area of the window
         var visibleBounds = new Rect(0, 0, root.Bounds.Width, root.Bounds.Height);
@@ -118,7 +117,7 @@ public partial class XYFocus
         return !visibleBounds.Intersects(elementBounds);
     }
 
-    private static Rect? GetBoundsForRanking(InputElement element, bool ignoreClipping)
+    internal static Rect? GetBoundsForRanking(InputElement element, bool ignoreClipping)
     {
         if (element.GetTransformedBounds() is { } bounds)
         {

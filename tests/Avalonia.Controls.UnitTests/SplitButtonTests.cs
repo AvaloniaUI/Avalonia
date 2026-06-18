@@ -13,7 +13,7 @@ public class SplitButtonTests : ScopedTestBase
     public void SplitButton_CommandParameter_Does_Not_Change_While_Execution()
     {
         var target = new SplitButton();
-        object lastParamenter = "A";
+        object? lastParamenter = "A";
         var generator = new Random();
         var command = new TestCommand(parameter =>
         {
@@ -56,12 +56,12 @@ public class SplitButtonTests : ScopedTestBase
         }
     }
 
-    private static KeyEventArgs CreateKeyDownEvent(Key key, Interactive source = null)
+    private static KeyEventArgs CreateKeyDownEvent(Key key, Interactive? source = null)
     {
         return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
     }
 
-    private static KeyEventArgs CreateKeyUpEvent(Key key, Interactive source = null)
+    private static KeyEventArgs CreateKeyUpEvent(Key key, Interactive? source = null)
     {
         return new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = key, Source = source };
     }

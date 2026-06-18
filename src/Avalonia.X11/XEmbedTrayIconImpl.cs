@@ -26,12 +26,12 @@ namespace Avalonia.X11
             NotImplemented();
         }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
              NotImplemented();
         }
 
-        public void SetToolTipText(string text)
+        public void SetToolTipText(string? text)
         {
             NotImplemented();
         }
@@ -41,7 +41,7 @@ namespace Avalonia.X11
             NotImplemented();
         }
 
-        public INativeMenuExporter MenuExporter { get; }
-        public Action OnClicked { get; set; }
+        public INativeMenuExporter? MenuExporter { get; }
+        public Action? OnClicked { get; set; }
     }
 }

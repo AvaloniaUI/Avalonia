@@ -1169,7 +1169,7 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             };
 
-            var result = new List<string>();
+            var result = new List<string?>();
             var current = (IInputElement)start;
 
             do
@@ -1215,14 +1215,14 @@ namespace Avalonia.Base.UnitTests.Input
                 }
             };
 
-            var result = new List<string>();
+            var result = new List<string?>();
             var current = (IInputElement)start;
 
             do
             {
                 result.Add(((Control)current).Name);
                 current = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
-            } while (current is object && current != start);
+            } while (current is not null && current != start);
 
             Assert.Equal(new[]
             {
@@ -1311,7 +1311,7 @@ namespace Avalonia.Base.UnitTests.Input
 
             top.ApplyTemplate();
 
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
             var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next) as Button;
 

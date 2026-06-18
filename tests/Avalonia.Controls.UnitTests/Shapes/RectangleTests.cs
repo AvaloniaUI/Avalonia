@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Shapes
 {
-    public class RectangleTests
+    public class RectangleTests : ScopedTestBase
     {
         [Fact]
         public void Measure_Does_Not_Set_RenderedGeometry_Rect()

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ProvisioningType>manual</ProvisioningType>
+    <TargetFramework>$(AvsCurrentMacCatalystTargetFramework)</TargetFramework>
+    <!-- Used to support Desktop Mode Idiom, min supported version is 13.1, which supports iPad scaling. -->
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <UseInterpreter>true</UseInterpreter>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="../../src/iOS/Avalonia.iOS/Avalonia.iOS.csproj" />
+    <ProjectReference Include="../ControlCatalog/ControlCatalog.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../ControlCatalog.iOS/*.cs" />
+    <InterfaceDefinition Include="../ControlCatalog.iOS/Resources/*.xib" />
+  </ItemGroup>
+  
+</Project>

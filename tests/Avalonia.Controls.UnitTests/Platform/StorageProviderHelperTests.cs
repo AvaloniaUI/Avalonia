@@ -2,11 +2,12 @@ using System;
 using System.Linq;
 using System.Text;
 using Avalonia.Platform.Storage.FileIO;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Platform;
 
-public class StorageProviderHelperTests
+public class StorageProviderHelperTests : ScopedTestBase
 {
     [Fact]
     public void Can_Encode_And_Decode_Bookmark()

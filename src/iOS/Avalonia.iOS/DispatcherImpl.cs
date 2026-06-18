@@ -22,7 +22,8 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
     private readonly IntPtr _mainLoop;
     private readonly IntPtr _mainQueue;
     private Thread? _loopThread;
-    private bool _backgroundProcessingRequested, _signaled;
+    private bool _backgroundProcessingRequested;
+    private int _signaled;
 
     private unsafe DispatcherImpl()
     {
@@ -60,15 +61,12 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
 
     public unsafe void Signal()
     {
-        lock (_sync)
+        if (Interlocked.CompareExchange(ref _signaled, 1, 0) != 0)
         {
-            if (_signaled)
-                return;
-            _signaled = true;
-
-            Interop.dispatch_async_f(_mainQueue, IntPtr.Zero, &CheckSignaled);
-            Interop.CFRunLoopWakeUp(_mainLoop);
+            return;
         }
+        Interop.dispatch_async_f(_mainQueue, IntPtr.Zero, &CheckSignaled);
+        Interop.CFRunLoopWakeUp(_mainLoop);
     }
 
     public void UpdateTimer(long? dueTimeInMs)
@@ -91,14 +89,7 @@ internal class DispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
 
     private void CheckSignaled()
     {
-        bool signaled;
-        lock (_sync)
-        {
-            signaled = _signaled;
-            _signaled = false;
-        }
-
-        if (signaled)
+        if (Interlocked.Exchange(ref _signaled, 0) != 0)
         {
             Signaled?.Invoke();
         }

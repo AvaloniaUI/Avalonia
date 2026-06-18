@@ -8,7 +8,7 @@ namespace Avalonia.Native.Interop
 {
     partial interface IAvnString
     {
-        public string String { get; }
+        public string? String { get; }
         public byte[] Bytes { get; }
     }
 
@@ -73,7 +73,7 @@ namespace Avalonia.Native.Interop
             _items = items.Select(s => s.ToAvnString()).ToArray();
         }
 
-        public string[] ToStringArray() => _items.Select(n => n.String).ToArray();
+        public string[] ToStringArray() => _items.Select(n => n.String ?? string.Empty).ToArray();
 
         public uint Count => (uint)_items.Length;
         public IAvnString Get(uint index) => _items[(int)index];
@@ -91,10 +91,10 @@ namespace Avalonia.Native.Interop.Impl
 {
     unsafe partial class __MicroComIAvnStringProxy
     {
-        private string _managed;
-        private byte[] _bytes;
+        private string? _managed;
+        private byte[]? _bytes;
 
-        public string String
+        public string? String
         {
             get
             {
@@ -124,7 +124,7 @@ namespace Avalonia.Native.Interop.Impl
             }
         }
 
-        public override string ToString() => String;
+        public override string? ToString() => String;
     }
     
     partial class __MicroComIAvnStringArrayProxy
@@ -134,7 +134,7 @@ namespace Avalonia.Native.Interop.Impl
             var arr = new string[Count];
             for(uint c = 0; c<arr.Length;c++)
                 using (var s = Get(c))
-                    arr[c] = s.String;
+                    arr[c] = s.String ?? string.Empty;
             return arr;
         }
     }

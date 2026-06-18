@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Vulkan;
 using Avalonia.Win32.Interop;
 
@@ -26,10 +27,10 @@ internal class VulkanSupport
 
     internal class VulkanSurfaceFactory : IVulkanKhrSurfacePlatformSurfaceFactory
     {
-        public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, object surface) =>
+        public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface surface) =>
             surface is INativePlatformHandleSurface handle && handle.HandleDescriptor == "HWND";
 
-        public IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, object handle) =>
+        public IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface handle) =>
             new HwndVulkanSurface((INativePlatformHandleSurface)handle);
     }
 

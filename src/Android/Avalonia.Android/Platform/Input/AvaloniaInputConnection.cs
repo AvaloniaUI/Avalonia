@@ -157,8 +157,7 @@ namespace Avalonia.Android.Platform.Input
                     }
                 case ImeAction.Next:
                     {
-                        FocusManager.GetFocusManager(_toplevel.InputRoot)?
-                            .TryMoveFocus(NavigationDirection.Next);
+                        ((FocusManager?)_toplevel.InputRoot?.FocusManager)?.TryMoveFocus(NavigationDirection.Next);
                         break;
                     }
             }
@@ -279,20 +278,20 @@ namespace Avalonia.Android.Platform.Input
 
         public ICharSequence? GetSelectedTextFormatted([GeneratedEnum] GetTextFlags flags)
         {
-            return new SpannableString(_editBuffer.SelectedText);
+            return new Java.Lang.String(_editBuffer.SelectedText ?? "");
         }
 
         public ICharSequence? GetTextAfterCursorFormatted(int n, [GeneratedEnum] GetTextFlags flags)
         {
             var end = Math.Min(_editBuffer.Selection.End, _editBuffer.Text.Length);
-            return new SpannableString(_editBuffer.Text.Substring(end, Math.Min(n, _editBuffer.Text.Length - end)));
+            return SafeSubstring(_editBuffer.Text, end, Math.Min(n, _editBuffer.Text.Length - end));
         }
 
         public ICharSequence? GetTextBeforeCursorFormatted(int n, [GeneratedEnum] GetTextFlags flags)
         {
             var start = Math.Max(0, _editBuffer.Selection.Start - n);
             var length = _editBuffer.Selection.Start - start;
-            return _editBuffer.Text == null ? null : new SpannableString(_editBuffer.Text.Substring(start, length));
+            return SafeSubstring(_editBuffer.Text, start, length);
         }
 
         public bool PerformPrivateCommand(string? action, Bundle? data)
@@ -329,6 +328,14 @@ namespace Avalonia.Android.Platform.Input
             {
                 EndBatchEdit();
             }
+        }
+
+        private static ICharSequence? SafeSubstring(string? text, int start, int length)
+        {
+            if (text == null || text.Length < start + length)
+                return null;
+            else
+                return new Java.Lang.String(text.Substring(start, length));
         }
     }
 }

@@ -1,5 +1,7 @@
 using Avalonia.Layout;
 using Avalonia.Metadata;
+using Avalonia.Platform;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -18,7 +20,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Padding"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> PaddingProperty =
-            AvaloniaProperty.Register<Decorator, Thickness>(nameof(Padding));
+            AvaloniaProperty.Register<Decorator, Thickness>(nameof(Padding), validate: MarginProperty.ValidateValue);
 
         /// <summary>
         /// Initializes static members of the <see cref="Decorator"/> class.

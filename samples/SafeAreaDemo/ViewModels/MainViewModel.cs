@@ -72,7 +72,7 @@ namespace SafeAreaDemo.ViewModels
 
                 if (_insetsManager != null)
                 {
-                    _insetsManager.DisplayEdgeToEdge = value;
+                    _insetsManager.DisplayEdgeToEdgePreference = value;
                 }
 
                 this.RaisePropertyChanged();
@@ -129,7 +129,7 @@ namespace SafeAreaDemo.ViewModels
             {
                 _insetsManager.SafeAreaChanged += InsetsManager_SafeAreaChanged;
 
-                _displayEdgeToEdge = _insetsManager.DisplayEdgeToEdge;
+                _displayEdgeToEdge = _insetsManager.DisplayEdgeToEdgePreference;
                 _hideSystemBars = !(_insetsManager.IsSystemBarVisible ?? false);
             }
 

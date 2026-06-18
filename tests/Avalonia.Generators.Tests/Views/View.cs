@@ -36,11 +36,12 @@ public static class View
         return await reader.ReadToEndAsync();
     }
 
-    public static CSharpCompilation CreateAvaloniaCompilation(string excludedPattern = null)
+    public static CSharpCompilation CreateAvaloniaCompilation(string? excludedPattern = null)
     {
         var compilation = CSharpCompilation
             .Create("AvaloniaLib", options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
             .AddReferences(MetadataReference.CreateFromFile(typeof(string).Assembly.Location))
+            .AddReferences(MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(typeof(IServiceProvider).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(typeof(ITypeDescriptorContext).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(typeof(ISupportInitialize).Assembly.Location))

@@ -9,7 +9,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
     /// <summary>
     /// Tests for ContentControls that are not attached to a logical tree.
     /// </summary>
-    public class ContentPresenterTests_Unrooted
+    public class ContentPresenterTests_Unrooted : ScopedTestBase
     {
         [Fact]
         public void Setting_Content_To_Control_Should_Not_Set_Child_Unless_UpdateChild_Called()

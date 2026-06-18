@@ -39,7 +39,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return false;
             }
 
-            if (type.FullName == "System.TimeSpan")
+            if (type.Is("System", "TimeSpan"))
             {
                 var tsText = text.Trim();
 
@@ -348,7 +348,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             // Keep it in the end, so more specific parsers can be applied.
-            var elementType = GetElementType(type, context.Configuration.WellKnownTypes);
+            var elementType = GetElementType(type);
             if (elementType is not null)
             {
                 string[] items;
@@ -421,7 +421,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         return ReturnOnParseError($"x:Array element {element.Type.GetClrType().Name} is not assignable to the array element type {elementType.Name}", out result);
                     }
                 }
-                
+
                 if (types.AvaloniaList.MakeGenericType(elementType).IsAssignableFrom(type))
                 {
                     result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, type, elementType, nodes);
@@ -439,24 +439,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     result = new AvaloniaXamlIlArrayConstantAstNode(node, listType, elementType, nodes);
                     return true;
                 }
-
-                result = null;
-                return false;
             }
-            
+
             result = null;
             return false;
         }
 
-        private static IXamlType? GetElementType(IXamlType type, XamlTypeWellKnownTypes types)
+        private static IXamlType? GetElementType(IXamlType type)
         {
             if (type.IsArray)
             {
                 return type.ArrayElementType;
             }
 
-            return type.GetAllInterfaces().FirstOrDefault(i =>
-                    i.FullName.StartsWith(types.IEnumerableT.FullName))?
+            return type.GetAllInterfaces().FirstOrDefault(static i =>
+                    i.Name.StartsWith("IEnumerable`1", StringComparison.Ordinal) &&
+                    i.Namespace == "System.Collections.Generic")?
                 .GenericArguments[0];
         }
     }

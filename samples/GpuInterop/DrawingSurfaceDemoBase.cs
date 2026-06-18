@@ -33,7 +33,11 @@ public abstract class DrawingSurfaceDemoBase : Control, IGpuDemo
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         if (_initialized)
+        {
+            Surface?.Dispose();
             FreeGraphicsResources();
+        }
+
         _initialized = false;
         base.OnDetachedFromLogicalTree(e);
     }
@@ -67,12 +71,12 @@ public abstract class DrawingSurfaceDemoBase : Control, IGpuDemo
     void UpdateFrame()
     {
         _updateQueued = false;
-        var root = this.GetVisualRoot();
-        if (root == null)
+        var source = this.GetPresentationSource();
+        if (source == null)
             return;
         
         _visual!.Size = new (Bounds.Width, Bounds.Height);
-        var size = PixelSize.FromSize(Bounds.Size, root.RenderScaling);
+        var size = PixelSize.FromSize(Bounds.Size, source.RenderScaling);
         RenderFrame(size);
         if (SupportsDisco && Disco > 0)
             QueueNextFrame();

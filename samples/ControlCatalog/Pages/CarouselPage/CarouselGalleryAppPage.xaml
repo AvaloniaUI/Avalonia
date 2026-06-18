@@ -1,0 +1,557 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CarouselGalleryAppPage"
+             Background="#F8F9FB">
+  <UserControl.Resources>
+    <!-- White pip colors for the hero dark background -->
+    <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#7FFFFFFF" />
+    <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#BFFFFFFF" />
+    <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#BFFFFFFF" />
+    <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#3FFFFFFF" />
+    <SolidColorBrush x:Key="PipsPagerNavigationButtonForeground" Color="#7FFFFFFF" />
+    <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundPointerOver" Color="#BFFFFFFF" />
+    <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundPressed" Color="#BFFFFFFF" />
+  </UserControl.Resources>
+
+
+  <DockPanel>
+
+    <!-- Right info panel — visible when width >= 640px -->
+    <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="290" IsVisible="False">
+      <StackPanel Margin="16" Spacing="16">
+
+        <TextBlock Text="Curated Gallery" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Art gallery editorial app showcasing a full-bleed hero Carousel synced with a pill-shaped PipsPager, a peek Collection Highlights scroll list, Curators' Choice cards, and a Join the Circle subscription section. Navigation via DrawerPage side menu." />
+
+        <Separator />
+
+        <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. DrawerPage: root, side placement" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. Hamburger overlaid on hero opens the drawer pane" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. Hero: full-bleed Carousel + PipsPager (pill dots)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="4. PipsPager synced bidirectionally with Carousel" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="5. Mouse drag on hero navigates carousel slides" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="Key Code" FontSize="13" FontWeight="SemiBold" />
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8">
+          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     FontSize="10" TextWrapping="Wrap"
+                     Text="HeroCarousel.SelectionChanged&#xA;  += OnHeroSelectionChanged;&#xA;HeroPager.SelectedIndexChanged&#xA;  += OnPagerIndexChanged;&#xA;&#xA;// Bidirectional sync guard&#xA;if (_syncing) return;&#xA;_syncing = true;&#xA;HeroPager.SelectedPageIndex&#xA;  = HeroCarousel.SelectedIndex;&#xA;_syncing = false;" />
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+
+  <DrawerPage x:Name="RootDrawer"
+              DrawerLength="260"
+              IsGestureEnabled="True">
+    <DrawerPage.Styles>
+      <!-- Hide the DrawerPage built-in top bar so only our custom hero overlay bar is shown -->
+      <Style Selector="DrawerPage#RootDrawer /template/ Border#PART_TopBar">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+    </DrawerPage.Styles>
+
+    <!-- Drawer header -->
+    <DrawerPage.DrawerHeader>
+      <Border Background="#3525CD" Padding="20,32,20,20">
+        <StackPanel Spacing="4">
+          <TextBlock Text="CURATED"
+                     FontSize="20"
+                     FontWeight="Bold"
+                     Foreground="White"
+                     LetterSpacing="-0.4" />
+          <TextBlock Text="The Digital Gallery"
+                     FontSize="12"
+                     Foreground="#C3C0FF"
+                     Opacity="0.85" />
+        </StackPanel>
+      </Border>
+    </DrawerPage.DrawerHeader>
+
+    <!-- Drawer menu -->
+    <DrawerPage.Drawer>
+      <StackPanel Background="#F8F9FB">
+        <ListBox x:Name="DrawerMenu"
+                 Background="Transparent"
+                 SelectionChanged="OnDrawerMenuSelectionChanged">
+          <ListBoxItem Padding="20,14">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+              <Path Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
+                    Fill="#3525CD" Width="20" Height="20" Stretch="Uniform" />
+              <TextBlock Text="Discover" FontSize="15" FontWeight="SemiBold"
+                         Foreground="#191C1E" VerticalAlignment="Center" />
+            </StackPanel>
+          </ListBoxItem>
+          <ListBoxItem Padding="20,14">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+              <Path Data="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"
+                    Fill="#464555" Width="20" Height="20" Stretch="Uniform" />
+              <TextBlock Text="Collection" FontSize="15"
+                         Foreground="#464555" VerticalAlignment="Center" />
+            </StackPanel>
+          </ListBoxItem>
+          <ListBoxItem Padding="20,14">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+              <Path Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"
+                    Fill="#464555" Width="20" Height="20" Stretch="Uniform" />
+              <TextBlock Text="Archive" FontSize="15"
+                         Foreground="#464555" VerticalAlignment="Center" />
+            </StackPanel>
+          </ListBoxItem>
+          <ListBoxItem Padding="20,14">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+              <Path Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                    Fill="#464555" Width="20" Height="20" Stretch="Uniform" />
+              <TextBlock Text="Profile" FontSize="15"
+                         Foreground="#464555" VerticalAlignment="Center" />
+            </StackPanel>
+          </ListBoxItem>
+        </ListBox>
+
+        <Separator Margin="20,8" />
+
+        <StackPanel Margin="20,8" Spacing="0">
+          <TextBlock Text="EXHIBITIONS"
+                     FontSize="11"
+                     FontWeight="Bold"
+                     Foreground="#777587"
+                     LetterSpacing="1.2"
+                     Margin="0,0,0,16" />
+
+          <Grid ColumnDefinitions="4,*" Margin="0,0,0,14">
+            <Border Grid.Column="0" Width="4" Height="38"
+                    CornerRadius="2" Background="#3525CD"
+                    VerticalAlignment="Center" Margin="0,0,14,0" />
+            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="Neon Pulse" FontSize="14" FontWeight="SemiBold"
+                         Foreground="#191C1E" />
+              <TextBlock Text="Opens March 20" FontSize="11" Foreground="#777587" />
+            </StackPanel>
+          </Grid>
+
+          <Grid ColumnDefinitions="4,*" Margin="0,0,0,14">
+            <Border Grid.Column="0" Width="4" Height="38"
+                    CornerRadius="2" Background="#4F46E5"
+                    VerticalAlignment="Center" Margin="0,0,14,0" />
+            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="Fragmented Forms" FontSize="14" FontWeight="SemiBold"
+                         Foreground="#191C1E" />
+              <TextBlock Text="Now Open" FontSize="11" Foreground="#4F46E5" />
+            </StackPanel>
+          </Grid>
+
+          <Grid ColumnDefinitions="4,*">
+            <Border Grid.Column="0" Width="4" Height="38"
+                    CornerRadius="2" Background="#B84B00"
+                    VerticalAlignment="Center" Margin="0,0,14,0" />
+            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="The Digital Horizon" FontSize="14" FontWeight="SemiBold"
+                         Foreground="#191C1E" />
+              <TextBlock Text="Closing Soon" FontSize="11" Foreground="#B84B00" />
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </StackPanel>
+    </DrawerPage.Drawer>
+
+    <!-- Main content: hero carousel IS the header -->
+    <DrawerPage.Content>
+      <Grid RowDefinitions="Auto,*">
+
+        <!-- Row 0: Hero carousel header — also handles mouse drag for swipe navigation -->
+        <Grid Height="320"
+              PointerPressed="OnHeroPointerPressed"
+              PointerReleased="OnHeroPointerReleased"
+              PointerCaptureLost="OnHeroPointerCaptureLost">
+
+          <!-- Full-bleed hero carousel -->
+          <Carousel x:Name="HeroCarousel"
+                    IsSwipeEnabled="True">
+            <Carousel.PageTransition>
+              <PageSlide Duration="0.35" Orientation="Horizontal" />
+            </Carousel.PageTransition>
+
+            <!-- Hero 1 -->
+            <Grid>
+              <Image Source="/Assets/ModernApp/gallery_city.jpg" Stretch="UniformToFill" />
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#88000000" Offset="0" />
+                    <GradientStop Color="#00000000" Offset="0.35" />
+                    <GradientStop Color="#00000000" Offset="0.55" />
+                    <GradientStop Color="#CC000000" Offset="1" />
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="20,0,20,44" Spacing="4">
+                <TextBlock Text="FEATURED EXHIBITION"
+                           FontSize="11" FontWeight="Bold"
+                           Foreground="#C3C0FF" LetterSpacing="1.5" />
+                <TextBlock Text="Neon Pulse: The New Abstract"
+                           FontSize="22" FontWeight="Bold"
+                           Foreground="White" TextWrapping="Wrap" LetterSpacing="-0.4" />
+              </StackPanel>
+            </Grid>
+
+            <!-- Hero 2 -->
+            <Grid>
+              <Image Source="/Assets/ModernApp/gallery_alpine.jpg" Stretch="UniformToFill" />
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#88000000" Offset="0" />
+                    <GradientStop Color="#00000000" Offset="0.35" />
+                    <GradientStop Color="#00000000" Offset="0.55" />
+                    <GradientStop Color="#CC000000" Offset="1" />
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="20,0,20,44" Spacing="4">
+                <TextBlock Text="NOW OPEN"
+                           FontSize="11" FontWeight="Bold"
+                           Foreground="#C3C0FF" LetterSpacing="1.5" />
+                <TextBlock Text="Fragmented Forms: Sculpture Today"
+                           FontSize="22" FontWeight="Bold"
+                           Foreground="White" TextWrapping="Wrap" LetterSpacing="-0.4" />
+              </StackPanel>
+            </Grid>
+
+            <!-- Hero 3 -->
+            <Grid>
+              <Image Source="/Assets/ModernApp/gallery_venice.jpg" Stretch="UniformToFill" />
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#88000000" Offset="0" />
+                    <GradientStop Color="#00000000" Offset="0.35" />
+                    <GradientStop Color="#00000000" Offset="0.55" />
+                    <GradientStop Color="#CC000000" Offset="1" />
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="20,0,20,44" Spacing="4">
+                <TextBlock Text="CLOSING SOON"
+                           FontSize="11" FontWeight="Bold"
+                           Foreground="#FFCDD2" LetterSpacing="1.5" />
+                <TextBlock Text="The Digital Horizon: Web3 &amp; Generative Art"
+                           FontSize="22" FontWeight="Bold"
+                           Foreground="White" TextWrapping="Wrap" LetterSpacing="-0.4" />
+              </StackPanel>
+            </Grid>
+          </Carousel>
+
+          <!-- PipsPager overlaid near bottom of hero — pill-shaped, no nav arrows -->
+          <PipsPager x:Name="HeroPager"
+                     NumberOfPages="3"
+                     IsPreviousButtonVisible="False"
+                     IsNextButtonVisible="False"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Bottom"
+                     Margin="0,0,0,18">
+            <PipsPager.Styles>
+              <Style Selector="PipsPager /template/ ListBox ListBoxItem">
+                <Setter Property="Width" Value="24" />
+                <Setter Property="Height" Value="24" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="2,0" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="ClipToBounds" Value="False" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Template">
+                  <ControlTemplate>
+                    <Grid Background="Transparent">
+                      <Border Name="Pip"
+                              Width="6" Height="6" CornerRadius="3"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Background="#7FFFFFFF">
+                        <Border.Transitions>
+                          <Transitions>
+                            <DoubleTransition Property="Width" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                            <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                            <BrushTransition Property="Background" Duration="0:0:0.2" />
+                          </Transitions>
+                        </Border.Transitions>
+                      </Border>
+                    </Grid>
+                  </ControlTemplate>
+                </Setter>
+              </Style>
+              <Style Selector="PipsPager /template/ ListBox ListBoxItem:pointerover /template/ Border#Pip">
+                <Setter Property="Width" Value="8" />
+                <Setter Property="Height" Value="8" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="Background" Value="#BFFFFFFF" />
+              </Style>
+              <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ Border#Pip">
+                <Setter Property="Width" Value="22" />
+                <Setter Property="Height" Value="6" />
+                <Setter Property="CornerRadius" Value="3" />
+                <Setter Property="Background" Value="#FFFFFFFF" />
+              </Style>
+              <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected:pointerover /template/ Border#Pip">
+                <Setter Property="Width" Value="22" />
+                <Setter Property="Height" Value="6" />
+                <Setter Property="CornerRadius" Value="3" />
+                <Setter Property="Background" Value="#E8FFFFFF" />
+              </Style>
+            </PipsPager.Styles>
+          </PipsPager>
+
+          <!-- Top bar overlaid on hero -->
+          <Grid ColumnDefinitions="Auto,*,Auto"
+                VerticalAlignment="Top"
+                Margin="4,8,4,0">
+            <Button Grid.Column="0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="12,8"
+                    Click="OnHamburgerClick">
+              <Path Data="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+                    Fill="White" Width="22" Height="22" Stretch="Uniform" />
+            </Button>
+            <TextBlock Grid.Column="1"
+                       Text="Curated"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       LetterSpacing="-0.3" />
+            <Button Grid.Column="2"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="12,8">
+              <Path Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                    Fill="White" Width="22" Height="22" Stretch="Uniform" />
+            </Button>
+          </Grid>
+
+        </Grid>
+
+        <!-- Row 1: Scrollable body -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+          <StackPanel>
+
+            <!-- Collection Highlights -->
+            <StackPanel Margin="0,28,0,0">
+              <Grid ColumnDefinitions="*,Auto" Margin="20,0,20,16">
+                <TextBlock Text="Collection Highlights"
+                           FontSize="18" FontWeight="Bold"
+                           Foreground="#191C1E" LetterSpacing="-0.3" />
+                <TextBlock Grid.Column="1"
+                           Text="SEE ALL"
+                           FontSize="12" FontWeight="Bold"
+                           Foreground="#3525CD" LetterSpacing="0.8"
+                           VerticalAlignment="Center" />
+              </Grid>
+
+              <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                            VerticalScrollBarVisibility="Disabled"
+                            Margin="20,0,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+
+                  <Border Width="180" Height="210" CornerRadius="12" ClipToBounds="True">
+                    <Grid>
+                      <Image Source="/Assets/ModernApp/gallery_paris.jpg" Stretch="UniformToFill" />
+                      <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12,10">
+                        <StackPanel Spacing="2">
+                          <TextBlock Text="SCULPTURE" FontSize="10" FontWeight="Bold"
+                                     Foreground="#C3C0FF" LetterSpacing="1" />
+                          <TextBlock Text="Fragmented Grace" FontSize="13"
+                                     FontWeight="SemiBold" Foreground="White" />
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                  </Border>
+
+                  <Border Width="180" Height="210" CornerRadius="12" ClipToBounds="True">
+                    <Grid>
+                      <Image Source="/Assets/ModernApp/gallery_bay.jpg" Stretch="UniformToFill" />
+                      <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12,10">
+                        <StackPanel Spacing="2">
+                          <TextBlock Text="OIL PAINTING" FontSize="10" FontWeight="Bold"
+                                     Foreground="#C3C0FF" LetterSpacing="1" />
+                          <TextBlock Text="Ephemeral Blue" FontSize="13"
+                                     FontWeight="SemiBold" Foreground="White" />
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                  </Border>
+
+                  <Border Width="180" Height="210" CornerRadius="12" ClipToBounds="True">
+                    <Grid>
+                      <Image Source="/Assets/ModernApp/gallery_tropical.jpg" Stretch="UniformToFill" />
+                      <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12,10">
+                        <StackPanel Spacing="2">
+                          <TextBlock Text="TEXTILE" FontSize="10" FontWeight="Bold"
+                                     Foreground="#C3C0FF" LetterSpacing="1" />
+                          <TextBlock Text="Interwoven Lines" FontSize="13"
+                                     FontWeight="SemiBold" Foreground="White" />
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                  </Border>
+
+                  <Border Width="180" Height="210" CornerRadius="12" ClipToBounds="True">
+                    <Grid>
+                      <Image Source="/Assets/ModernApp/gallery_alpine.jpg" Stretch="UniformToFill" />
+                      <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12,10">
+                        <StackPanel Spacing="2">
+                          <TextBlock Text="PHOTOGRAPHY" FontSize="10" FontWeight="Bold"
+                                     Foreground="#C3C0FF" LetterSpacing="1" />
+                          <TextBlock Text="Silent Mountains" FontSize="13"
+                                     FontWeight="SemiBold" Foreground="White" />
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                  </Border>
+
+                  <!-- Padding card to reveal peek of last item -->
+                  <Border Width="20" Height="210" />
+
+                </StackPanel>
+              </ScrollViewer>
+            </StackPanel>
+
+            <!-- Curators' Choice -->
+            <StackPanel Margin="20,32,20,0" Spacing="12">
+              <TextBlock Text="Curators' Choice"
+                         FontSize="20" FontWeight="Bold"
+                         Foreground="#191C1E" HorizontalAlignment="Center"
+                         LetterSpacing="-0.3" />
+              <TextBlock Text="Hand-picked selections from our global network of artists."
+                         FontSize="13" Foreground="#777587"
+                         HorizontalAlignment="Center" TextAlignment="Center"
+                         TextWrapping="Wrap" Margin="0,0,0,8" />
+
+              <!-- Two-column layout: large card left, two stacked badge cards right -->
+              <Grid ColumnDefinitions="*,130">
+
+                <!-- Left: main feature card -->
+                <Border Grid.Column="0" Background="White" CornerRadius="16"
+                        Padding="20" Margin="0,0,10,0"
+                        BoxShadow="0 2 16 0 #12191C1E">
+                  <StackPanel Spacing="10">
+                    <Path Data="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5z"
+                          Fill="#3525CD" Width="22" Height="22" Stretch="Uniform"
+                          HorizontalAlignment="Left" />
+                    <TextBlock Text="The Digital Horizon"
+                               FontSize="17" FontWeight="Bold"
+                               Foreground="#191C1E" TextWrapping="Wrap" />
+                    <TextBlock Text="Exploring Web3 and Generative Art"
+                               FontSize="13" Foreground="#777587" TextWrapping="Wrap" />
+                    <Button Content="EXPLORE"
+                            Margin="0,10,0,0" Padding="20,11"
+                            FontSize="11" FontWeight="Bold" LetterSpacing="0.8"
+                            CornerRadius="22" Foreground="White" HorizontalAlignment="Left">
+                      <Button.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                          <GradientStop Color="#3525CD" Offset="0" />
+                          <GradientStop Color="#4F46E5" Offset="1" />
+                        </LinearGradientBrush>
+                      </Button.Background>
+                    </Button>
+                  </StackPanel>
+                </Border>
+
+                <!-- Right: two stacked badge cards -->
+                <StackPanel Grid.Column="1" Spacing="10">
+
+                  <Border Background="White" CornerRadius="16"
+                          BoxShadow="0 2 16 0 #12191C1E"
+                          Padding="12">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Spacing="8" Margin="0,12">
+                      <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"
+                            Fill="#B84B00" Width="28" Height="28" Stretch="Uniform"
+                            HorizontalAlignment="Center" />
+                      <TextBlock Text="TRENDING"
+                                 FontSize="10" FontWeight="Bold"
+                                 Foreground="#B84B00" LetterSpacing="1"
+                                 HorizontalAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+
+                  <Border Background="#EDEEF0" CornerRadius="16" Padding="12">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Spacing="8" Margin="0,12">
+                      <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.41 14.06L6.17 11.64l1.42-1.41 2.99 3 6.01-6.01 1.42 1.41-7.42 7.43z"
+                            Fill="#464555" Width="28" Height="28" Stretch="Uniform"
+                            HorizontalAlignment="Center" />
+                      <TextBlock Text="VERIFIED"
+                                 FontSize="10" FontWeight="Bold"
+                                 Foreground="#464555" LetterSpacing="1"
+                                 HorizontalAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+
+            <!-- Join the Circle -->
+            <Border Margin="20,32,20,32" CornerRadius="20" Padding="24" ClipToBounds="True">
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                  <GradientStop Color="#3525CD" Offset="0" />
+                  <GradientStop Color="#4F46E5" Offset="1" />
+                </LinearGradientBrush>
+              </Border.Background>
+              <StackPanel Spacing="10">
+                <TextBlock Text="Join the Circle"
+                           FontSize="20" FontWeight="Bold"
+                           Foreground="White" LetterSpacing="-0.3" />
+                <TextBlock Text="Receive exclusive invitations to private viewings and new drop alerts."
+                           FontSize="13" Foreground="#C3C0FF"
+                           TextWrapping="Wrap" Opacity="0.9" LineHeight="20" />
+                <TextBox PlaceholderText="Your email address"
+                         Margin="0,6,0,0"
+                         CornerRadius="12"
+                         BorderThickness="1"
+                         Padding="14,12"
+                         Foreground="White"
+                         PlaceholderForeground="#9896D8">
+                  <TextBox.Resources>
+                    <SolidColorBrush x:Key="TextControlBackground" Color="#3C38B5" />
+                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#4440BE" />
+                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#3C38B5" />
+                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="#5552C8" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#7370D8" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#8B88E8" />
+                  </TextBox.Resources>
+                </TextBox>
+                <Button Content="SUBSCRIBE"
+                        Margin="0,2,0,0" Padding="24,12"
+                        FontSize="12" FontWeight="Bold" LetterSpacing="1"
+                        CornerRadius="24" Foreground="#3525CD" Background="White"
+                        HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
+
+      </Grid>
+    </DrawerPage.Content>
+  </DrawerPage>
+
+    </Border>
+  </DockPanel>
+</UserControl>

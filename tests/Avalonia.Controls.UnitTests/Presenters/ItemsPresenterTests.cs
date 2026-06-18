@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
-    public class ItemsPresenterTests
+    public class ItemsPresenterTests : ScopedTestBase
     {
         [Fact]
         public void Should_Register_With_Host_When_TemplatedParent_Set()
@@ -37,7 +37,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(target.Panel, child);
         }
 
-        public class NonVirtualizingPanel
+        public class NonVirtualizingPanel : ScopedTestBase
         {
             [Fact]
             public void Creates_Containers_For_Initial_Items()

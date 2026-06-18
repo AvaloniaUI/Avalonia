@@ -69,7 +69,7 @@ internal class iOSScreens : ScreensBase<UIScreen, iOSScreen>
 
     protected override Screen? ScreenFromTopLevelCore(ITopLevelImpl topLevel)
     {
-        var uiScreen = (topLevel as AvaloniaView.TopLevelImpl)?.View.Window.Screen;
+        var uiScreen = (topLevel as AvaloniaView.TopLevelImpl)?.View.Window?.Screen;
         return uiScreen is not null && TryGetScreen(uiScreen, out var screen) ? screen : null;
     }
 }

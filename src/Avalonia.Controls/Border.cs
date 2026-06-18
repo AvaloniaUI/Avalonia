@@ -1,6 +1,3 @@
-using System;
-using Avalonia.Collections;
-using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -41,7 +38,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> BorderThicknessProperty =
-            AvaloniaProperty.Register<Border, Thickness>(nameof(BorderThickness));
+            AvaloniaProperty.Register<Border, Thickness>(nameof(BorderThickness), validate: MarginProperty.ValidateValue);
 
         /// <summary>
         /// Defines the <see cref="CornerRadius"/> property.
@@ -156,7 +153,7 @@ namespace Avalonia.Controls
                     var borderThickness = BorderThickness;
 
                     if (UseLayoutRounding)
-                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
+                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale);
 
                     _layoutThickness = borderThickness;
                 }

@@ -1,12 +1,6 @@
-using System.Collections.Generic;
-using System.Threading;
-using Microsoft.CodeAnalysis;
+using Avalonia.Generators.Common;
+using Avalonia.Generators.Common.Domain;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Avalonia.Generators.NameGenerator;
 
-internal interface INameGenerator
-{
-    IEnumerable<GeneratedPartialClass> GenerateNameReferences(IEnumerable<AdditionalText> additionalFiles, CancellationToken cancellationToken);
-}
-
-internal record GeneratedPartialClass(string FileName, string Content);

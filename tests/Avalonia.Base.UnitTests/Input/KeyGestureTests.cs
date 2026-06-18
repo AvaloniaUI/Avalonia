@@ -13,6 +13,9 @@ namespace Avalonia.Base.UnitTests.Input
             new object[]{"Control++", new KeyGesture(Key.OemPlus, KeyModifiers.Control) },
             new object[]{ "Shift+⌘+A", new KeyGesture(Key.A, KeyModifiers.Meta | KeyModifiers.Shift) },
             new object[]{ "Shift+Cmd+A", new KeyGesture(Key.A, KeyModifiers.Meta | KeyModifiers.Shift) },
+            new object[]{"None", new KeyGesture(Key.None)},
+            new object[]{"Alt+Shift", new KeyGesture(Key.None, KeyModifiers.Alt | KeyModifiers.Shift)},
+
         };
 
         public static readonly IEnumerable<object[]> ToStringData = new object[][]
@@ -23,6 +26,8 @@ namespace Avalonia.Base.UnitTests.Input
             new object[]{new KeyGesture(Key.A, KeyModifiers.Alt | KeyModifiers.Shift), "Shift+Alt+A"},
             new object[]{new KeyGesture(Key.A, KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Shift), "Ctrl+Shift+Alt+A"},
             new object[]{new KeyGesture(Key.A, KeyModifiers.Meta | KeyModifiers.Shift), "Shift+Cmd+A"},
+            new object[]{new KeyGesture(Key.None), "None"},
+            new object[]{new KeyGesture(Key.None, KeyModifiers.Alt | KeyModifiers.Shift), "Shift+Alt"},
         };
 
         [Theory]

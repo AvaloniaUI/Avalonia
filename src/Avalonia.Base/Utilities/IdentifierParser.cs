@@ -3,10 +3,7 @@ using System.Globalization;
 
 namespace Avalonia.Utilities
 {
-#if !BUILDTASK
-    public
-#endif
-    static class IdentifierParser
+    internal static class IdentifierParser
     {
         public static ReadOnlySpan<char> ParseIdentifier(this
 #if NET7SDK
@@ -44,6 +41,17 @@ namespace Avalonia.Utilities
                        cat == UnicodeCategory.Format ||
                        cat == UnicodeCategory.DecimalDigitNumber;
             }
+        }
+
+        internal static ReadOnlySpan<char> ParseNumber(this ref CharacterReader r)
+        {
+            return r.TakeWhile(c => IsValidNumberChar(c));
+        }
+
+        private static bool IsValidNumberChar(char c)
+        {
+            var cat = CharUnicodeInfo.GetUnicodeCategory(c);
+            return cat == UnicodeCategory.DecimalDigitNumber;
         }
     }
 }

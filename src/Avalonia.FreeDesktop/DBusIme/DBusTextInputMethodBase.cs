@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop.DBusIme
 {
@@ -31,8 +31,9 @@ namespace Avalonia.FreeDesktop.DBusIme
     {
         private List<IDisposable> _disposables = new List<IDisposable>();
         private Queue<string> _onlineNamesQueue = new Queue<string>();
-        protected Connection Connection { get; }
+        protected DBusConnection Connection { get; }
         private readonly string[] _knownNames;
+        private CancellationTokenSource? _watchCts;
         private bool _connecting;
         private string? _currentName;
         private DBusCallQueue _queue;
@@ -46,39 +47,65 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         protected bool IsConnected => _currentName != null;
 
-        public DBusTextInputMethodBase(Connection connection, params string[] knownNames)
+        public DBusTextInputMethodBase(DBusConnection connection, params string[] knownNames)
         {
             _queue = new DBusCallQueue(QueueOnErrorAsync);
             Connection = connection;
             _knownNames = knownNames;
-            _ = WatchAsync();
+            WatchAsync();
         }
 
         public TextInputMethodClient? Client => _client;
 
         public bool IsActive => _client is not null;
 
-        private async Task WatchAsync()
+        private void WatchAsync()
         {
-            var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
-            try
-            {
-                _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
-            }
-            catch (DBusException e)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"WatchNameOwnerChangedAsync failed: {e}");
-            }
+            _watchCts = new CancellationTokenSource();
+            var cancellationToken = _watchCts.Token;
             foreach (var name in _knownNames)
+                _ = WatchNameAsync(name);
+
+            async Task WatchNameAsync(string name)
             {
                 try
                 {
-                    var nameOwner = await dbus.GetNameOwnerAsync(name);
-                    OnNameChange(null, (name, null, nameOwner));
+                    using var watcher = await Connection.WatchNameOwnerAsync(name);
+                    var owner = watcher.GetCurrentOwner();
+                    OnOwnerChanged(name, owner);
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        if (owner is not null)
+                        {
+                            var ct = watcher.GetOwnerChangedCancellationToken(owner);
+                            using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, cancellationToken);
+                            try
+                            {
+                                await Task.Delay(Timeout.Infinite, linked.Token);
+                            }
+                            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                            { }
+                        }
+                        else
+                        {
+                            try
+                            {
+                                await watcher.WaitForOwnerAsync(cancellationToken);
+                            }
+                            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                            { }
+                        }
+                        owner = watcher.GetCurrentOwner();
+                        OnOwnerChanged(name, owner);
+                    }
                 }
-                catch (DBusException e)
+                catch (Exception e)
                 {
-                    Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"GetNameOwnerAsync failed: {e}");
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)
+                            ?.Log(this, $"WatchNameOwner for '{name}' failed: {e}");
+                    }
                 }
             }
         }
@@ -88,22 +115,11 @@ namespace Avalonia.FreeDesktop.DBusIme
         protected string GetAppName() =>
             Application.Current?.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia";
 
-        private async void OnNameChange(Exception? e, (string ServiceName, string? OldOwner, string? NewOwner) args)
+        private async void OnOwnerChanged(string serviceName, string? newOwner)
         {
-            if (e is not null)
+            if (newOwner is not null && _currentName is null)
             {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnNameChange failed: {e}");
-                return;
-            }
-
-            if (!_knownNames.Contains(args.ServiceName))
-            {
-                return;
-            }
-
-            if (args.NewOwner is not null && _currentName is null)
-            {
-                _onlineNamesQueue.Enqueue(args.ServiceName);
+                _onlineNamesQueue.Enqueue(serviceName);
                 if (!_connecting)
                 {
                     _connecting = true;
@@ -133,11 +149,10 @@ namespace Avalonia.FreeDesktop.DBusIme
                         _connecting = false;
                     }
                 }
-
             }
 
             // IME has crashed
-            if (args.NewOwner is null && args.ServiceName == _currentName)
+            if (newOwner is null && serviceName == _currentName)
             {
                 _currentName = null;
                 foreach (var s in _disposables)
@@ -146,9 +161,6 @@ namespace Avalonia.FreeDesktop.DBusIme
 
                 OnDisconnected();
                 Reset();
-
-                // Watch again
-                _ = WatchAsync();
             }
         }
 
@@ -195,6 +207,7 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         public async void Dispose()
         {
+            _watchCts?.Cancel();
             foreach(var d in _disposables)
                 d.Dispose();
             _disposables.Clear();

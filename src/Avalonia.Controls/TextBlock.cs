@@ -97,11 +97,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="LetterSpacing"/> property.
         /// </summary>
-        public static readonly AttachedProperty<double> LetterSpacingProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, double>(
-                nameof(LetterSpacing),
-                0,
-                inherits: true);
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextElement.LetterSpacingProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="MaxLines"/> property.
@@ -162,6 +159,7 @@ namespace Avalonia.Controls
                 nameof(Inlines), t => t.Inlines, (t, v) => t.Inlines = v);
 
         private TextLayout? _textLayout;
+        private TextRunCache? _textRunCache;
         protected Size _constraint = new(double.NaN, double.NaN);
         protected IReadOnlyList<TextRun>? _textRuns;
         private InlineCollection? _inlines;
@@ -366,7 +364,10 @@ namespace Avalonia.Controls
 
         internal bool HasComplexContent => Inlines != null && Inlines.Count > 0;
 
-        private protected Size GetMaxSizeFromConstraint()
+        /// <summary>
+        /// Gets the maximum available size based on the constraint of the control
+        /// </summary>
+        protected Size GetMaxSizeFromConstraint()
         {
             var maxWidth = double.IsNaN(_constraint.Width) ? 0.0 : _constraint.Width;
             var maxHeight = double.IsNaN(_constraint.Height) ? 0.0 : _constraint.Height;
@@ -604,8 +605,13 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var padding = Padding;
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale);
+            }
+
             var top = padding.Top;
             var textHeight = TextLayout.Height;
 
@@ -628,7 +634,7 @@ namespace Avalonia.Controls
 
         protected virtual void RenderTextLayout(DrawingContext context, Point origin)
         {
-            TextLayout.Draw(context, origin + new Point(TextLayout.OverhangLeading, 0));
+            TextLayout.Draw(context, origin);
         }
 
         private bool _clearTextInternal;
@@ -655,10 +661,10 @@ namespace Avalonia.Controls
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
-                FontFeatures,
                 FontSize,
                 TextDecorations,
-                Foreground);
+                Foreground,
+                fontFeatures: FontFeatures);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
                 defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
@@ -685,13 +691,25 @@ namespace Avalonia.Controls
                 TextTrimming,
                 maxSize.Width,
                 maxSize.Height,
-                MaxLines);
+                MaxLines,
+                _textRunCache ??= new TextRunCache());
         }
 
         /// <summary>
-        /// Invalidates <see cref="TextLayout"/>.
+        /// Invalidates <see cref="TextLayout"/> and the <see cref="TextRunCache"/>.
         /// </summary>
         protected void InvalidateTextLayout()
+        {
+            _textRunCache?.Invalidate();
+            InvalidateVisual();
+            InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Invalidates <see cref="TextLayout"/> while preserving the <see cref="TextRunCache"/>.
+        /// Use when only layout-affecting properties change (e.g., TextWrapping, TextAlignment).
+        /// </summary>
+        private void InvalidateTextLayoutKeepCache()
         {
             InvalidateVisual();
             InvalidateMeasure();
@@ -708,8 +726,14 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var padding = Padding;
+
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            }
+
             var deflatedSize = availableSize.Deflate(padding);
 
             if (_constraint != deflatedSize)
@@ -719,7 +743,7 @@ namespace Avalonia.Controls
                 _textLayout = null;
                 _constraint = deflatedSize;
 
-                //Force arrange so text will be properly alligned.
+                //Force arrange so text will be properly aligned.
                 InvalidateArrange();
             }
            
@@ -731,7 +755,7 @@ namespace Avalonia.Controls
 
                 foreach (var inline in inlines!)
                 {
-                    inline.BuildTextRun(textRuns);
+                    inline.BuildTextRun(textRuns, deflatedSize);
                 }
 
                 _textRuns = textRuns;
@@ -740,19 +764,24 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
-            var size = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height).Inflate(padding), 1, 1);
-
-            return size;
+            // The textWidth used here is matching that TextPresenter uses to measure the text.
+            return new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var scale = LayoutHelper.GetLayoutScale(this);
-            var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+            var scale = 1.0;
+            var padding = Padding;
+
+            if (UseLayoutRounding)
+            {
+                scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(Padding, scale);
+            }
 
             var availableSize = finalSize.Deflate(padding);
 
-            //ToDo: Introduce a text run cache to be able to reuse shaped runs etc.
+            // Dispose the TextLayout but preserve the TextRunCache so shaped runs are reused.
             _textLayout?.Dispose();
             _textLayout = null;
             _constraint = availableSize;
@@ -782,9 +811,11 @@ namespace Avalonia.Controls
                                 //Fixes: #17194
                                 VisualChildren.Add(control);
 
+                                var offsetY = TextLineImpl.GetBaselineOffset(textLine, drawable);
+
                                 control.Arrange(
-                                    new Rect(new Point(currentX, currentY),
-                                    new Size(control.DesiredSize.Width, textLine.Height)));
+                                    new Rect((new Point(currentX, currentY + offsetY)),
+                                    control.DesiredSize));
                             }
 
                             currentX += drawable.Size.Width;
@@ -817,29 +848,31 @@ namespace Avalonia.Controls
 
             switch (change.Property.Name)
             {
+                // Properties that affect shaping: invalidate the run cache + layout.
                 case nameof(FontSize):
                 case nameof(FontWeight):
                 case nameof(FontStyle):
                 case nameof(FontFamily):
                 case nameof(FontStretch):
-
-                case nameof(TextWrapping):
-                case nameof(TextTrimming):
-                case nameof(TextAlignment):
-
                 case nameof(FlowDirection):
-
-                case nameof(Padding):
-                case nameof(LineHeight):
                 case nameof(LetterSpacing):
-                case nameof(MaxLines):
-
                 case nameof(Text):
                 case nameof(TextDecorations):
                 case nameof(FontFeatures):
                 case nameof(Foreground):
                     {
                         InvalidateTextLayout();
+                        break;
+                    }
+                // Properties that do not affect shaping: preserve the run cache.
+                case nameof(TextWrapping):
+                case nameof(TextTrimming):
+                case nameof(TextAlignment):
+                case nameof(Padding):
+                case nameof(LineHeight):
+                case nameof(MaxLines):
+                    {
+                        InvalidateTextLayoutKeepCache();
                         break;
                     }
                 case nameof(Inlines):
@@ -877,12 +910,12 @@ namespace Avalonia.Controls
 
             return;
 
-            void Invalidated(object? sender, EventArgs e) => InvalidateMeasure();
+            void Invalidated(object? sender, EventArgs e) => InvalidateTextLayout();
         }
 
         void IInlineHost.Invalidate()
         {
-            InvalidateMeasure();
+            InvalidateTextLayout();
         }
 
         IAvaloniaList<Visual> IInlineHost.VisualChildren => VisualChildren;

@@ -56,14 +56,19 @@ namespace Avalonia.Android.Platform.Input
         {
             get
             {
-                if(_textInputMethod.Client is not { } client || Selection.Start < 0 || Selection.End >= client.SurroundingText.Length)
+                var client = _textInputMethod.Client;
+                var text = client?.SurroundingText;
+
+                if (string.IsNullOrEmpty(text))
                 {
                     return "";
                 }
 
                 var selection = Selection;
+                var start = Math.Max(0, selection.Start);
+                var end = Math.Min(text.Length, selection.End);
 
-                return client.SurroundingText.Substring(selection.Start, selection.End - selection.Start);
+                return start >= end ? "" : text.Substring(start, end - start);
             }
         }
 
@@ -96,7 +101,7 @@ namespace Avalonia.Android.Platform.Input
             SelectionStart = Selection.Start,
             SelectionEnd = Selection.End,
             StartOffset = 0,
-            Text = new SpannableString(Text)
+            Text = new Java.Lang.String(Text)
         };
 
         internal void Remove(int index, int length)

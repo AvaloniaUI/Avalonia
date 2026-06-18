@@ -1,16 +1,14 @@
-﻿using System;
-using Avalonia.Controls.Documents;
+﻿using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBlockTests
+    public class TextBlockTests : ScopedTestBase
     {
         [Fact]
         public void DefaultBindingMode_Should_Be_OneWay()
@@ -26,6 +24,12 @@ namespace Avalonia.Controls.UnitTests
             var textBlock = new TextBlock();
 
             Assert.Equal(null, textBlock.Text);
+        }
+
+        [Fact]
+        public void LetterSpacing_Property_Uses_TextElement_Definition()
+        {
+            Assert.Same(TextElement.LetterSpacingProperty, TextBlock.LetterSpacingProperty);
         }
 
         [Fact]
@@ -66,9 +70,9 @@ namespace Avalonia.Controls.UnitTests
 
                 var textLayout = textBlock.TextLayout;
 
-                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.MinTextWidth, textLayout.Height), 1, 1);
+                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.Width, textLayout.Height), 1);
 
-                Assert.Equal(textBlock.DesiredSize, constraint);
+                Assert.Equal(constraint, textBlock.DesiredSize);
             }
         }
 
@@ -83,7 +87,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var textLayout = textBlock.TextLayout;
 
-                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1, 1);
+                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1);
 
                 textBlock.Arrange(new Rect(constraint));
 
@@ -118,7 +122,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var textLayout = textBlock.TextLayout;
 
-                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1, 1);
+                var constraint = LayoutHelper.RoundLayoutSizeUp(new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height), 1);
 
                 Assert.Equal(constraint, textBlock.DesiredSize);
             }
@@ -135,7 +139,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(target.IsMeasureValid);
 
-                target.Inlines.Add(new Run("Hello"));
+                target.Inlines!.Add(new Run("Hello"));
 
                 Assert.False(target.IsMeasureValid);
 
@@ -171,7 +175,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new TextBlock();
 
-                target.Inlines.Add(new TextBox { Text = "Hello"});
+                target.Inlines!.Add(new TextBox { Text = "Hello"});
 
                 target.Measure(Size.Infinity);
 
@@ -195,7 +199,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var textBox = new TextBox { Text = "Hello", Template = TextBoxTests.CreateTemplate() };
 
-                target.Inlines.Add(textBox);
+                target.Inlines!.Add(textBox);
 
                 target.Measure(Size.Infinity);
 
@@ -222,7 +226,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var inline = new Run("Hello");
 
-                target.Inlines.Add(inline);
+                target.Inlines!.Add(inline);
 
                 target.Measure(Size.Infinity);
 
@@ -262,7 +266,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var run = new Run("Hello");
 
-                target.Inlines.Add(run);
+                target.Inlines!.Add(run);
 
                 target.Measure(Size.Infinity);
 
@@ -302,7 +306,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new TextBlock();
 
-                target.Inlines.Add(new Border());
+                target.Inlines!.Add(new Border());
 
                 target.Measure(Size.Infinity);
 
@@ -325,7 +329,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var run = new InlineUIContainer(control);
 
-                target.Inlines.Add(run);
+                target.Inlines!.Add(run);
 
                 target.Measure(Size.Infinity);
 
@@ -348,7 +352,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void InlineUIContainer_Child_Schould_Be_Arranged()
+        public void InlineUIContainer_Child_Should_Be_Arranged()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -372,13 +376,38 @@ namespace Avalonia.Controls.UnitTests
                 target.Arrange(new Rect(target.DesiredSize));
 
                 Assert.True(button.IsMeasureValid);
-                Assert.Equal(80, button.DesiredSize.Width);
+                Assert.Equal(58, button.DesiredSize.Width);
 
                 target.Arrange(new Rect(new Size(200, 50)));
 
                 Assert.True(button.IsArrangeValid);
 
-                Assert.Equal(60, button.Bounds.Left);
+                Assert.Equal(43, button.Bounds.Left);
+            }
+        }
+
+        [Fact]
+        public void InlineUIContainer_Child_Should_Be_Constrained()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TextBlock();
+
+                GeometryDrawing drawing = new GeometryDrawing();
+                drawing.Geometry = new RectangleGeometry(new Rect(0, 0, 500, 500));
+                DrawingImage image = new DrawingImage(drawing);
+
+                Image imageControl = new Image { Source = image };
+                InlineUIContainer container = new InlineUIContainer(imageControl);
+
+                target.Inlines!.Add(new Run("The child should not be limited by position on line."));
+                target.Inlines.Add(container);
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(target.DesiredSize));
+
+                Assert.True(imageControl.IsMeasureValid);
+                Assert.Equal(100, imageControl.Bounds.Width);
             }
         }
 
@@ -389,7 +418,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new TextBlock();
 
-                target.Inlines.Add(new Run("Hello World"));
+                target.Inlines!.Add(new Run("Hello World"));
 
                 Assert.Equal(null, target.Text);
 
@@ -410,7 +439,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new TextBlock();
 
-                target.Inlines.Add(new Run("Hello World"));
+                target.Inlines!.Add(new Run("Hello World"));
 
                 Assert.Equal(1, target.Inlines.Count);
 
@@ -456,6 +485,107 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(target.DesiredSize.Width > 0);
             Assert.True(target.DesiredSize.Height > 0);
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_True_Should_Round_DesiredSize()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980" };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(new Size(28, 15), target.DesiredSize);
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_True_Should_Round_Padding_And_DesiredSize()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", Padding = new(2.25) };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(new Size(32, 19), target.DesiredSize);
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_DesiredSize()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", UseLayoutRounding = false };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(new Size(27.954545454545453, 14.522727272727273), target.DesiredSize);
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_Bounds()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", UseLayoutRounding = false };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(default, target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 27.954545454545453, 14.522727272727273), target.Bounds);
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_Padding_In_MeasureOverride()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", UseLayoutRounding = false, Padding = new(2.25) };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(new Size(32.45454545454545, 19.022727272727273), target.DesiredSize);
+        }
+
+        [Fact]
+        public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_Padding_In_ArrangeOverride()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", UseLayoutRounding = false, Padding = new(2.25) };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(default, target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 32.45454545454545, 19.022727272727273), target.Bounds);
+        }
+
+        [Fact]
+        public void Measure_And_Arrange_Should_Use_WidthIncludingTrailingWhitespace_For_Bounds()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock
+            {
+                Text = "fy",
+                FontStyle = FontStyle.Italic,
+                FontSize = 48,
+                UseLayoutRounding = false,
+                Padding = new Thickness(3, 2, 5, 4)
+            };
+
+            target.Measure(Size.Infinity);
+
+            var expectedSize =
+                new Size(target.TextLayout.WidthIncludingTrailingWhitespace, target.TextLayout.Height)
+                    .Inflate(target.Padding);
+
+            Assert.Equal(expectedSize, target.DesiredSize);
+
+            target.Arrange(new Rect(default, target.DesiredSize));
+
+            Assert.Equal(new Rect(default, expectedSize), target.Bounds);
         }
 
         private class TestTextBlock : TextBlock

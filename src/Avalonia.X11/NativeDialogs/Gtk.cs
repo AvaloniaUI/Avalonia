@@ -1,10 +1,10 @@
+#nullable enable
+
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Interop;
-using Avalonia.Threading;
-using Avalonia.X11.Dispatching;
 using Avalonia.X11.Interop;
 
 // ReSharper disable IdentifierTypo
@@ -61,7 +61,10 @@ namespace Avalonia.X11.NativeDialogs
 
         [DllImport(GtkName)]
         public static extern void gtk_file_chooser_set_select_multiple(IntPtr chooser, bool allow);
-        
+
+        [DllImport(GtkName)]
+        public static extern void gtk_file_chooser_set_local_only(IntPtr chooser, bool local_only);
+
         [DllImport(GtkName)]
         public static extern void gtk_file_chooser_set_do_overwrite_confirmation(IntPtr chooser, bool do_overwrite_confirmation);
 
@@ -98,6 +101,8 @@ namespace Avalonia.X11.NativeDialogs
 
         [DllImport(GtkName)]
         public static extern IntPtr gtk_file_chooser_get_filter(IntPtr chooser);
+        [DllImport(GtkName)]
+        public static extern void gtk_file_chooser_set_filter(IntPtr chooser, IntPtr filter);
         
         [DllImport(GtkName)]
         public static extern void gtk_widget_realize(IntPtr gtkWidget);
@@ -142,7 +147,7 @@ namespace Avalonia.X11.NativeDialogs
         public static IntPtr GetForeignWindow(IntPtr xid) => gdk_x11_window_foreign_new_for_display(s_display, xid);
 
         static object s_startGtkLock = new();
-        static Task<bool> s_startGtkTask;
+        static Task<bool>? s_startGtkTask;
 
         public static Task<bool> StartGtk()
         {

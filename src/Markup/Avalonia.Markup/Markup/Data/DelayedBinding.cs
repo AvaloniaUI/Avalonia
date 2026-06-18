@@ -29,7 +29,7 @@ namespace Avalonia.Markup.Data
         /// <param name="target">The control.</param>
         /// <param name="property">The property on the control to bind to.</param>
         /// <param name="binding">The binding.</param>
-        public static void Add(StyledElement target, AvaloniaProperty property, IBinding binding)
+        public static void Add(StyledElement target, AvaloniaProperty property, BindingBase binding)
         {
             if (target.IsInitialized)
             {
@@ -109,13 +109,13 @@ namespace Avalonia.Markup.Data
 
         private class BindingEntry : Entry
         {
-            public BindingEntry(AvaloniaProperty property, IBinding binding)
+            public BindingEntry(AvaloniaProperty property, BindingBase binding)
             {
                 Binding = binding;
                 Property = property;
             }
 
-            public IBinding Binding { get; }
+            public BindingBase Binding { get; }
             public AvaloniaProperty Property { get; }
 
             public override void Apply(StyledElement control)

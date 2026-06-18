@@ -5,14 +5,14 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ApplicationTests
+    public class ApplicationTests : ScopedTestBase
     {
         [Fact]
         public void Throws_ArgumentNullException_On_Run_If_MainWindow_Is_Null()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                Assert.Throws<ArgumentNullException>(() => { Application.Current.Run(null); });
+                Assert.Throws<ArgumentNullException>(() => { Application.Current!.Run(null!); });
             }
         }
 
@@ -22,7 +22,7 @@ namespace Avalonia.Controls.UnitTests
             // Test for #1765.
             using (UnitTestApplication.Start())
             {
-                var resources = Application.Current.Resources;
+                var resources = Application.Current!.Resources;
                 var raised = false;
 
                 Application.Current.ResourcesChanged += (s, e) => raised = true;
@@ -37,13 +37,13 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start())
             {
-                var application = Application.Current;
+                var application = Application.Current!;
 
                 application.DataContext = "Test";
 
                 application.Bind(Application.NameProperty, new Binding("."));
 
-                Assert.Equal("Test", Application.Current.Name);
+                Assert.Equal("Test", application.Name);
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <RootNamespace>Avalonia</RootNamespace>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -11,16 +11,16 @@
     <AdditionalFiles Include="composition-schema.xml" />
   </ItemGroup>
   <Import Project="..\..\build\Base.props" />
-  <Import Project="..\..\build\Binding.props" />
-  <Import Project="..\..\build\System.Memory.props" />
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\SourceGenerators.props" />
   <ItemGroup>
-    <Compile Include="..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
-    <Compile Include="..\Shared\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
-    <Compile Include="..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
+    <Compile Include="..\Shared\IsExternalInit.cs" Link="Compatibility\IsExternalInit.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
+    <PackageReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">
@@ -28,7 +28,6 @@
     <InternalsVisibleTo Include="Avalonia.Desktop, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Benchmarks, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Controls, PublicKey=$(AvaloniaPublicKey)" />
-    <InternalsVisibleTo Include="Avalonia.Direct2D1, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml.Loader, PublicKey=$(AvaloniaPublicKey)" />
@@ -41,18 +40,18 @@
     <InternalsVisibleTo Include="Avalonia.Native, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.FreeDesktop, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Wayland, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Browser, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Controls.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
-    <InternalsVisibleTo Include="Avalonia.Direct2D1.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.LeakTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Skia.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
-    <InternalsVisibleTo Include="Avalonia.Skia3.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Win32, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.WinUI, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Android, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.iOS, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Tizen, PublicKey=$(AvaloniaPublicKey)" />
@@ -64,8 +63,6 @@
   </ItemGroup>
   
   <ItemGroup Label="Build dependency">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj"
-                      ReferenceOutputAssembly="false"
-                      PrivateAssets="all" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 </Project>

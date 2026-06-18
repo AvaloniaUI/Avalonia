@@ -14,6 +14,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -144,6 +145,7 @@ namespace Avalonia.Controls
             SubmenuOpenedEvent.AddClassHandler<MenuItem>((x, e) => x.OnSubmenuOpened(e));
             AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<MenuItem>(IsOffscreenBehavior.FromClip);
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(OnAccessKeyPressed);
+            PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue<MenuItem>(FeedbackType.Auto);
         }
 
         public MenuItem()
@@ -288,6 +290,12 @@ namespace Avalonia.Controls
             set => SetValue(IsSubMenuOpenProperty, value);
         }
 
+        bool IMenuItem.IsSubMenuOpen
+        {
+            get => IsSubMenuOpen;
+            set => SetCurrentValue(IsSubMenuOpenProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets a value that indicates the submenu that this <see cref="MenuItem"/> is
         /// within should not close when this item is clicked.
@@ -298,18 +306,35 @@ namespace Avalonia.Controls
             set => SetValue(StaysOpenOnClickProperty, value);
         }
 
-        /// <inheritdoc cref="IMenuItem.ToggleType" />
+        bool IMenuItem.StaysOpenOnClick
+        {
+            get => StaysOpenOnClick; 
+            set => SetCurrentValue(StaysOpenOnClickProperty, value);
+        }
+
+        /// <summary>
+        /// Gets toggle type of the menu item.
+        /// </summary>
         public MenuItemToggleType ToggleType
         {
             get => GetValue(ToggleTypeProperty);
             set => SetValue(ToggleTypeProperty, value);
         }
 
-        /// <inheritdoc cref="IMenuItem.IsChecked"/>
+        /// <summary>
+        /// Gets or sets if menu item is checked when <see cref="ToggleType"/> is
+        /// <see cref="MenuItemToggleType.CheckBox"/> or <see cref="MenuItemToggleType.Radio"/>.
+        /// </summary>
         public bool IsChecked
         {
             get => GetValue(IsCheckedProperty);
             set => SetValue(IsCheckedProperty, value);
+        }
+
+        bool IMenuItem.IsChecked
+        {
+            get => IsChecked;
+            set => SetCurrentValue(IsCheckedProperty, value);
         }
 
         bool IRadioButton.IsChecked
@@ -318,7 +343,9 @@ namespace Avalonia.Controls
             set => SetCurrentValue(IsCheckedProperty, value);
         }
 
-        /// <inheritdoc cref="IMenuItem.GroupName"/>
+        /// <summary>
+        /// Gets menu item group name when <see cref="ToggleType"/> is <see cref="MenuItemToggleType.Radio"/>.
+        /// </summary>
         public string? GroupName
         {
             get => GetValue(GroupNameProperty);
@@ -341,7 +368,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IMenuElement? IMenuItem.Parent => Parent as IMenuElement;
 
-        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
+        protected override bool IsEnabledCore => base.IsEnabled && (HasSubMenu || _commandCanExecute);
 
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
@@ -362,7 +389,9 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IEnumerable<IMenuItem> IMenuElement.SubItems => LogicalChildren.OfType<IMenuItem>();
 
-        private IMenuInteractionHandler? MenuInteractionHandler => this.FindLogicalAncestorOfType<MenuBase>()?.InteractionHandler;
+        private IMenuInteractionHandler? MenuInteractionHandler =>
+            this.FindLogicalAncestorOfType<MenuBase>()?.InteractionHandler ??
+            this.FindAncestorOfType<MenuBase>()?.InteractionHandler;
 
         /// <summary>
         /// Opens the submenu.
@@ -445,6 +474,7 @@ namespace Avalonia.Controls
             base.OnAttachedToVisualTree(e);
 
             TryUpdateCanExecute();
+            RegisterInMenuInteractionHandler();
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -465,9 +495,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="MenuItem"/> is clicked.
+        /// Invoked when an unhandled <see cref="ClickEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The click event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
             (var command, var parameter) = (Command, CommandParameter);
@@ -479,10 +511,10 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
-            e.Handled = UpdateSelectionFromEventSource(e.Source, true);
+            ItemsControlFromItemContainer(this)?.UpdateSelectionFromEvent(this, e);
         }
 
         /// <inheritdoc/>
@@ -506,9 +538,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when a submenu is opened on this MenuItem or a child MenuItem.
+        /// Invoked when an unhandled <see cref="SubmenuOpenedEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
         /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <param name="e">Data about the event.</param>
         protected virtual void OnSubmenuOpened(RoutedEventArgs e)
         {
             var menuItem = e.Source as MenuItem;
@@ -550,6 +584,7 @@ namespace Avalonia.Controls
             return new MenuItemAutomationPeer(this);
         }
 
+        // TODO: This is confusing for some ppl. Need to think about alternatives here. 
         protected override void UpdateDataValidation(
             AvaloniaProperty property,
             BindingValueType state,
@@ -566,7 +601,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Closes all submenus of the menu item.
         /// </summary>
@@ -604,12 +639,12 @@ namespace Avalonia.Controls
             }
 
         }
-        
+
         private static void OnAccessKeyPressed(MenuItem sender, AccessKeyPressedEventArgs e)
         {
-            if (e is not { Handled: false, Target: null }) 
+            if (e is not { Handled: false, Target: null })
                 return;
-            
+
             e.Target = sender;
             e.Handled = true;
         }
@@ -710,6 +745,15 @@ namespace Avalonia.Controls
             {
                 GroupNameChanged(change);
             }
+            else if (change.Property == ItemCountProperty)
+            {
+                // A menu item with no sub-menu is effectively disabled if its command binding
+                // failed: this means that the effectively enabled state depends on whether the
+                // number of items in the menu is 0 or not.
+                var (o, n) = change.GetOldAndNewValue<int>();
+                if (o == 0 || n == 0)
+                    UpdateIsEffectivelyEnabled();
+            }
         }
         /// <summary>
         /// Called when the <see cref="GroupName"/> property changes.
@@ -775,15 +819,23 @@ namespace Avalonia.Controls
         {
             var (oldValue, newValue) = e.GetOldAndNewValue<object?>();
 
-            if (oldValue is ILogical oldLogical)
+            if (oldValue is { })
             {
-                LogicalChildren.Remove(oldLogical);
+                if (oldValue is ILogical oldLogical)
+                {
+                    LogicalChildren.Remove(oldLogical);
+                }
+
                 PseudoClasses.Remove(":icon");
             }
 
-            if (newValue is ILogical newLogical)
+            if (newValue is { })
             {
-                LogicalChildren.Add(newLogical);
+                if (newValue is ILogical newLogical)
+                {
+                    LogicalChildren.Add(newLogical);
+                }
+
                 PseudoClasses.Add(":icon");
             }
         }
@@ -859,6 +911,16 @@ namespace Avalonia.Controls
         private void PopupClosed(object? sender, EventArgs e)
         {
             SelectedItem = null;
+        }
+
+        private void RegisterInMenuInteractionHandler()
+        {
+            if (ToggleType != MenuItemToggleType.Radio || MenuInteractionHandler is not DefaultMenuInteractionHandler handler)
+            {
+                return;
+            }
+
+            handler.OnGroupOrTypeChanged(this, null);
         }
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => CanExecuteChangedHandler(sender, e);
