@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Metadata;
+﻿using Avalonia.Metadata;
 using Avalonia.Platform;
 using static Avalonia.Controls.Win32Properties;
 
@@ -21,5 +16,11 @@ namespace Avalonia.Controls.Platform
         /// Gets or sets a custom callback for the window's WndProc
         /// </summary>
         public CustomWndProcHookCallback? WndProcHookCallback { get; set; }
+
+        /// <summary>
+        /// Sets a window corner preference for the window.
+        /// </summary>
+        /// <param name="preference">The value to set.</param>
+        public void SetWindowCornerPreference(WindowCornerPreference preference);
     }
 }
