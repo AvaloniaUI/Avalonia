@@ -8,6 +8,13 @@ public record struct PlatformGraphicsExternalImageProperties
     public ulong MemorySize { get; set; }
     public ulong MemoryOffset { get; set; }
     public bool TopLeftOrigin { get; set; }
+    public uint DrmFormat { get; set; }
+    public ulong DrmModifier { get; set; }
+    public int PlaneCount { get; set; }
+    public int[]? PlaneFds { get; set; }
+    public uint[]? PlaneStrides { get; set; }
+    public uint[]? PlaneOffsets { get; set; }
+    public const ulong DrmModifierInvalid = 0x00ffffffffffffffUL;
 }
 
 public enum PlatformGraphicsExternalImageFormat
@@ -48,6 +55,11 @@ public static class KnownPlatformGraphicsExternalImageHandleTypes
     /// A reference to IOSurface
     /// </summary>
     public const string IOSurfaceRef = nameof(IOSurfaceRef);
+
+    /// <summary>
+    /// A Linux dma-buf file descriptor, imported via EGL_LINUX_DMA_BUF_EXT or VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT.
+    /// </summary>
+    public const string DmaBufFileDescriptor = nameof(DmaBufFileDescriptor);
 }
 
 /// <summary>
