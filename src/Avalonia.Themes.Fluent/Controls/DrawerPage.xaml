@@ -112,14 +112,15 @@
                         VerticalAlignment="Center"/>
                     </Panel>
                   </ToggleButton>
-                  <ContentControl x:Name="PART_TitlePresenter"
-                                  Content="{TemplateBinding Header}"
-                                  VerticalAlignment="Center"
-                                  VerticalContentAlignment="Center"
-                                  FontSize="16"
-                                  FontWeight="SemiBold"
-                                  Margin="8,0,0,0"
-                                  IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  <ContentPresenter x:Name="PART_TitlePresenter"
+                                    Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    VerticalAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Margin="8,0,0,0"
+                                    IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 </DockPanel>
               </Border>
               <Border
@@ -159,14 +160,15 @@
                         VerticalAlignment="Center"/>
                     </Panel>
                   </ToggleButton>
-                  <ContentControl x:Name="PART_BottomTitlePresenter"
-                                  Content="{TemplateBinding Header}"
-                                  VerticalAlignment="Center"
-                                  VerticalContentAlignment="Center"
-                                  FontSize="16"
-                                  FontWeight="SemiBold"
-                                  Margin="8,0,0,0"
-                                  IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  <ContentPresenter x:Name="PART_BottomTitlePresenter"
+                                    Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    VerticalAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Margin="8,0,0,0"
+                                    IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 </DockPanel>
               </Border>
               <ContentPresenter Name="PART_ContentPresenter"

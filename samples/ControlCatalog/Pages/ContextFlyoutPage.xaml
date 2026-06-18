@@ -22,6 +22,7 @@
         <Setter Property="Margin" Value="8" />
         <Setter Property="Focusable" Value="True" />
         <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+        <Setter Property="PlatformFeedback.FeedbackType" Value="Auto"/>
       </Style>
       <Style Selector="Border.context-target > :is(Control)">
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -54,6 +55,15 @@
                           IsHitTestVisible="False" />
               </MenuItem.Icon>
             </MenuItem>
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton1"
+                      IsChecked="True"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton2"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
           </MenuFlyout>
         </Border.ContextFlyout>
         <TextBlock Text="Defined in XAML" />

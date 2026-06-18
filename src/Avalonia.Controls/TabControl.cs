@@ -254,13 +254,7 @@ namespace Avalonia.Controls
             _currentTransition = null;
             _shouldAnimate = false;
 
-            if (_contentPresenter2 is { IsVisible: true })
-            {
-                _contentPresenter2.IsVisible = false;
-                _contentPresenter2.Content = null;
-                _contentPresenter2.ContentTemplate = null;
-                _contentPresenter2.DataContext = null;
-            }
+            ResetTransitionPresenter(_contentPresenter2);
 
             int oldIndex = _previousSelectedIndex;
             _previousSelectedIndex = SelectedIndex;
@@ -306,8 +300,8 @@ namespace Avalonia.Controls
                             _contentPresenter2!.ContentTemplate = template;
                             _contentPresenter2!.IsVisible = true;
 
-                            if (content is Control && template is null)
-                                _contentPresenter2.SetContentWithDataContext(content, container.DataContext);
+                            if (content is Control control && template is null)
+                                SetControlContent(_contentPresenter2, control, container.DataContext);
                             else
                                 _contentPresenter2.Content = content;
 
@@ -320,8 +314,8 @@ namespace Avalonia.Controls
                             if (ContentPart != null)
                             {
                                 var template = SelectContentTemplate(container.GetValue(ContentControl.ContentTemplateProperty));
-                                if (content is Control && template is null)
-                                    ContentPart.SetContentWithDataContext(content, container.DataContext);
+                                if (content is Control control && template is null)
+                                    SetControlContent(ContentPart, control, container.DataContext);
                                 else
                                     ContentPart.Content = content;
                             }
@@ -408,6 +402,7 @@ namespace Avalonia.Controls
             _currentTransition?.Dispose();
             _currentTransition = null;
             _shouldAnimate = false;
+            ResetTransitionPresenter(_contentPresenter2);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -494,6 +489,56 @@ namespace Avalonia.Controls
             from.Opacity = 1;
 
             (_contentPart, _contentPresenter2) = (_contentPresenter2, _contentPart);
+        }
+
+        private void SetControlContent(ContentPresenter presenter, Control content, object? dataContext)
+        {
+            ClearOwningContentPresenter(presenter, content);
+            ClearPresenterContent(ContentPart, presenter, content);
+            ClearPresenterContent(_contentPresenter2, presenter, content);
+            presenter.SetContentWithDataContext(content, dataContext);
+        }
+
+        private void ClearOwningContentPresenter(ContentPresenter targetPresenter, Control content)
+        {
+            if (content.VisualParent is ContentPresenter parent &&
+                !ReferenceEquals(parent, targetPresenter) &&
+                ReferenceEquals(parent.Host, this) &&
+                ReferenceEquals(parent.Content, content))
+            {
+                ClearPresenterContent(parent, content);
+            }
+        }
+
+        private static void ClearPresenterContent(ContentPresenter? presenter, ContentPresenter targetPresenter, Control content)
+        {
+            if (!ReferenceEquals(presenter, targetPresenter))
+                ClearPresenterContent(presenter, content);
+        }
+
+        private static void ClearPresenterContent(ContentPresenter? presenter, Control content)
+        {
+            if (presenter != null && ReferenceEquals(presenter.Content, content))
+            {
+                presenter.Content = null;
+                presenter.ContentTemplate = null;
+                presenter.DataContext = null;
+                presenter.RenderTransform = null;
+                presenter.Opacity = 1;
+            }
+        }
+
+        private static void ResetTransitionPresenter(ContentPresenter? presenter)
+        {
+            if (presenter == null)
+                return;
+
+            presenter.IsVisible = false;
+            presenter.Content = null;
+            presenter.ContentTemplate = null;
+            presenter.DataContext = null;
+            presenter.RenderTransform = null;
+            presenter.Opacity = 1;
         }
 
         private void UpdateTabStripPlacement()

@@ -58,7 +58,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<string?> PreeditTextProperty =
             AvaloniaProperty.Register<TextPresenter, string?>(nameof(PreeditText));
-        
+
         /// <summary>
         /// Defines the <see cref="PreeditText"/> property.
         /// </summary>
@@ -98,6 +98,7 @@ namespace Avalonia.Controls.Presenters
         private DispatcherTimer? _caretTimer;
         private bool _caretBlink;
         private TextLayout? _textLayout;
+        private TextRunCache? _textRunCache;
         private Size _constraint;
 
         private CharacterHit _lastCharacterHit;
@@ -148,7 +149,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(PreeditTextProperty);
             set => SetValue(PreeditTextProperty, value);
         }
-        
+
         public int? PreeditTextCursorPosition
         {
             get => GetValue(PreeditTextCursorPositionProperty);
@@ -366,7 +367,8 @@ namespace Avalonia.Controls.Presenters
                 LetterSpacing,
                 0,
                 FontFeatures,
-                textStyleOverrides);
+                textStyleOverrides,
+                _textRunCache ??= new TextRunCache());
 
             return textLayout;
         }
@@ -425,11 +427,11 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            if(VisualRoot is Visual root)
+            if (VisualRoot is Visual root)
             {
                 var offset = this.TranslatePoint(Bounds.Position, root);
 
-                if(_previousOffset != offset)
+                if (_previousOffset != offset)
                 {
                     _previousOffset = offset;
                 }
@@ -630,6 +632,16 @@ namespace Avalonia.Controls.Presenters
 
         protected virtual void InvalidateTextLayout()
         {
+            _textRunCache?.Invalidate();
+            _textLayout?.Dispose();
+            _textLayout = null;
+
+            InvalidateVisual();
+            InvalidateMeasure();
+        }
+
+        private void InvalidateTextLayoutKeepCache()
+        {
             _textLayout?.Dispose();
             _textLayout = null;
 
@@ -766,7 +778,7 @@ namespace Avalonia.Controls.Presenters
 
             CaretChanged();
         }
-        
+
         private void EnsureCaretTimer()
         {
             if (_caretTimer == null)
@@ -792,7 +804,7 @@ namespace Avalonia.Controls.Presenters
                 _caretTimer = null;
             }
 
-            if (CaretBlinkInterval.TotalMilliseconds > 0) 
+            if (CaretBlinkInterval.TotalMilliseconds > 0)
             {
                 _caretTimer = new DispatcherTimer { Interval = CaretBlinkInterval };
                 _caretTimer.Tick += CaretTimerTick;
@@ -965,7 +977,7 @@ namespace Avalonia.Controls.Presenters
 
         internal void RemoveTextSelectionCanvas()
         {
-            if(_layer != null && TextSelectionHandleCanvas is { } canvas)
+            if (_layer != null && TextSelectionHandleCanvas is { } canvas)
             {
                 canvas.SetPresenter(null);
                 _layer.Remove(canvas);
@@ -986,7 +998,7 @@ namespace Avalonia.Controls.Presenters
                 _caretTimer.Tick -= CaretTimerTick;
             }
         }
-        
+
         private void OnPreeditChanged(string? preeditText, int? cursorPosition)
         {
             if (string.IsNullOrEmpty(preeditText))
@@ -1013,17 +1025,17 @@ namespace Avalonia.Controls.Presenters
                 MoveCaretToTextPosition(change.GetNewValue<int>());
             }
 
-            if(change.Property == PreeditTextProperty)
+            if (change.Property == PreeditTextProperty)
             {
                 OnPreeditChanged(change.NewValue as string, PreeditTextCursorPosition);
             }
-            
-            if(change.Property == PreeditTextCursorPositionProperty)
+
+            if (change.Property == PreeditTextCursorPositionProperty)
             {
                 OnPreeditChanged(PreeditText, PreeditTextCursorPosition);
             }
 
-            if(change.Property == TextProperty || change.Property == CaretIndexProperty)
+            if (change.Property == TextProperty || change.Property == CaretIndexProperty)
             {
                 if (!string.IsNullOrEmpty(PreeditText))
                 {
@@ -1038,6 +1050,7 @@ namespace Avalonia.Controls.Presenters
 
             switch (change.Property.Name)
             {
+                // Properties that affect shaping: invalidate the run cache + layout.
                 case nameof(PreeditText):
                 case nameof(Foreground):
                 case nameof(FontSize):
@@ -1045,24 +1058,36 @@ namespace Avalonia.Controls.Presenters
                 case nameof(FontWeight):
                 case nameof(FontFamily):
                 case nameof(FontStretch):
-
                 case nameof(Text):
-                case nameof(TextAlignment):
-                case nameof(TextWrapping):
-
-                case nameof(LineHeight):
                 case nameof(LetterSpacing):
-
-                case nameof(SelectionStart):
-                case nameof(SelectionEnd):
-                case nameof(SelectionForegroundBrush):
-                case nameof(ShowSelectionHighlight):
-
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):
                 case nameof(FlowDirection):
+                case nameof(SelectionForegroundBrush):
+                case nameof(ShowSelectionHighlight):
                     {
                         InvalidateTextLayout();
+                        break;
+                    }
+                // Properties that do not affect shaping: preserve the run cache.
+                case nameof(TextAlignment):
+                case nameof(TextWrapping):
+                case nameof(LineHeight):
+                    {
+                        InvalidateTextLayoutKeepCache();
+                        break;
+                    }
+                case nameof(SelectionStart):
+                case nameof(SelectionEnd):
+                    {
+                        if (SelectionForegroundBrush != null)
+                        {
+                            InvalidateTextLayout();
+                        }
+                        else
+                        {
+                            InvalidateTextLayoutKeepCache();
+                        }
                         break;
                     }
             }

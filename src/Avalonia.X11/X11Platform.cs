@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.AtSpi;
@@ -228,7 +229,35 @@ namespace Avalonia.X11
 
                 if (renderingMode == X11RenderingMode.Egl)
                 {
-                    if (EglPlatformGraphics.TryCreate() is { } egl)
+                    if (EglPlatformGraphics.TryCreate(() =>
+                        {
+                            var egl = new EglInterface();
+                            var options = new EglDisplayCreationOptions
+                            {
+                                SupportsContextSharing = true,
+                                SupportsMultipleContexts = true,
+                                GlVersions = opts.GlProfiles,
+                                Egl = egl,
+                                // nvidia exposes multiple indistinguishable configs of which only some work,
+                                // so we probe candidates by creating a throwaway window surface and pick a usable one.
+                                ProbeConfig = (probeEgl, display, configs) =>
+                                    X11EglHelper.ChooseConfig(info, probeEgl, display, configs)
+                            };
+
+                            // nvidia requires the display to be created through the X11 platform extension,
+                            // otherwise EGL_NATIVE_VISUAL_ID doesn't match the actual window visual.
+                            var clientExtensions = egl.QueryString(IntPtr.Zero, EglConsts.EGL_EXTENSIONS);
+                            if (egl.IsGetPlatformDisplayExtAvailable
+                                && clientExtensions != null
+                                && (clientExtensions.Contains("EGL_KHR_platform_x11")
+                                    || clientExtensions.Contains("EGL_EXT_platform_x11")))
+                            {
+                                options.PlatformType = EglConsts.EGL_PLATFORM_X11_EXT;
+                                options.PlatformDisplay = info.DeferredDisplay;
+                            }
+
+                            return new EglDisplay(options);
+                        }) is { } egl)
                     {
                         return egl;
                     }

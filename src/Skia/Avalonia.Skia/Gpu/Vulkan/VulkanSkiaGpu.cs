@@ -13,7 +13,7 @@ internal class VulkanSkiaGpu : ISkiaGpu
     public IVulkanPlatformGraphicsContext Vulkan { get; private set; }
     public GRContext GrContext { get; private set; }
 
-    public VulkanSkiaGpu(IVulkanPlatformGraphicsContext vulkan, long? maxResourceBytes)
+    public VulkanSkiaGpu(IVulkanPlatformGraphicsContext vulkan, long? maxResourceBytes, bool? useStencilBuffers)
     {
         Vulkan = vulkan;
         var device = vulkan.Device;
@@ -48,7 +48,9 @@ internal class VulkanSkiaGpu : ISkiaGpu
                 GetProcedureAddress = GetProcAddressWrapper
             };
 
-            GrContext = GRContext.CreateVulkan(ctx) ??
+            var avoidStencilBuffers = useStencilBuffers == false;
+            
+            GrContext = GRContext.CreateVulkan(ctx, new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers }) ??
                          throw new VulkanException("Unable to create GrContext from IVulkanDevice");
             
             if (maxResourceBytes.HasValue)

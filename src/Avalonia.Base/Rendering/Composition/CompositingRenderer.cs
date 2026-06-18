@@ -1,19 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Collections;
-using Avalonia.Collections.Pooled;
 using Avalonia.Diagnostics;
-using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -134,8 +128,16 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     /// <inheritdoc/>
     public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter)
     {
-        // TODO: Optimize
-        return HitTest(p, root, filter).FirstOrDefault();
+        using var _ = Diagnostic.PerformingHitTest();
+
+        if (root.CompositionVisual == null)
+            return null;
+
+        Func<CompositionVisual, bool>? f = filter is null
+            ? null :
+            v => v is not CompositionDrawListVisual dlv || filter(dlv.Visual);
+
+        return CompositionTarget.TryHitTestFirst(p, root.CompositionVisual, f, static v => v is CompositionDrawListVisual) is CompositionDrawListVisual dv ? dv.Visual : null;
     }
 
     /// <inheritdoc/>
@@ -178,7 +180,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
         _dirty.Clear();
         _recalculateChildren.Clear();
         
-        CompositionTarget.PixelSize = PixelSize.FromSizeRounded(_root.ClientSize, _root.RenderScaling);
+        CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
         
         var commit = _compositor.RequestCompositionBatchCommitAsync();
@@ -201,6 +203,13 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     {
         if(_updating)
             return;
+
+        if (!CompositionTarget.IsEnabled)
+        {
+            _queuedUpdate = false;
+            return;
+        }
+
         _updating = true;
         try
         {
@@ -237,6 +246,9 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             return;
 
         CompositionTarget.IsEnabled = true;
+
+        if (_dirty.Count > 0 || _recalculateChildren.Count > 0)
+            QueueUpdate();
     }
 
     /// <inheritdoc />

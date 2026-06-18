@@ -703,6 +703,41 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Same(innerButton, focusManager.GetFocusedElement());
         }
 
+        // https://github.com/AvaloniaUI/Avalonia/issues/13134
+        [Fact]
+        public void SetFocusScope_On_Non_Focusable_Scope_Changes_Scope()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+
+            Button outerButton;
+            TestFocusScope innerScope;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Focusable = false,
+                    Children =
+                    {
+                        (innerScope = new TestFocusScope()),
+                        (outerButton = new Button())
+                    }
+                }
+            };
+
+            outerButton.Focus();
+
+            var focusManager = Assert.IsType<FocusManager>(root.FocusManager);
+            Assert.Same(outerButton, focusManager.GetFocusedElement());
+
+            // Switch to a scope that has no previously focused element and isn't focusable itself.
+            // TestFocusScope is a Panel (Focusable = false) + IFocusScope.
+            focusManager.SetFocusScope(innerScope);
+
+            // Focus must be cleared: the scope is not focusable and has no prior focused element.
+            // Before the fix this was a no-op and outerButton would still be reported as focused.
+            Assert.Null(focusManager.GetFocusedElement());
+        }
+
         [Fact]
         public void Can_Get_First_Focusable_Element()
         {
