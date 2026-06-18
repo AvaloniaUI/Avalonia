@@ -46,14 +46,28 @@ public unsafe class VulkanImage : IDisposable
         public uint MipLevels { get; }
         public Vk Api { get; }
         public PixelSize Size { get; }
-        public ulong MemorySize { get; }
+        public ulong MemorySize { get; private set; }
         public uint CurrentLayout => (uint) _currentLayout;
 
         private bool _hasIOSurface;
+        private readonly bool _dmaBuf;
+
+        /// <summary>The DRM fourcc format of the dma-buf backing, valid only for dma-buf images.</summary>
+        public uint DrmFormat { get; private set; }
+
+        /// <summary>The DRM format modifier chosen by the driver, valid only for dma-buf images.</summary>
+        public ulong DrmModifier { get; private set; }
+
+        /// <summary>Per-plane byte offsets into the dma-buf, valid only for dma-buf images.</summary>
+        public ulong[]? PlaneOffsets { get; private set; }
+
+        /// <summary>Per-plane row strides of the dma-buf, valid only for dma-buf images.</summary>
+        public ulong[]? PlaneStrides { get; private set; }
 
         public VulkanImage(VulkanContext vk, uint format, PixelSize size,
-            bool exportable, IReadOnlyList<string> supportedHandleTypes)
+            bool exportable, IReadOnlyList<string> supportedHandleTypes, bool dmaBuf = false)
         {
+            _dmaBuf = dmaBuf;
             _vk = vk;
             _instance = vk.Instance;
             _device = vk.Device;
@@ -69,20 +83,26 @@ public unsafe class VulkanImage : IDisposable
             
             //MipLevels = MipLevels != 0 ? MipLevels : (uint)Math.Floor(Math.Log(Math.Max(Size.Width, Size.Height), 2));
 
+            if (_dmaBuf)
+            {
+                CreateDmaBufImage();
+            }
+            else
+            {
             var handleType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 (supportedHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureNtHandle)
                  && !supportedHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaqueNtHandle) ?
                     ExternalMemoryHandleTypeFlags.D3D11TextureBit :
                     ExternalMemoryHandleTypeFlags.OpaqueWin32Bit) :
                 ExternalMemoryHandleTypeFlags.OpaqueFDBit;
-            
+
             var externalMemoryCreateInfo = new ExternalMemoryImageCreateInfo
             {
                 SType = StructureType.ExternalMemoryImageCreateInfo,
                 HandleTypes = handleType
             };
 
-            
+
             var ioSurfaceCreateInfo = new ExportMetalObjectCreateInfoEXT
             {
                 SType = StructureType.ExportMetalObjectCreateInfoExt,
@@ -90,12 +110,12 @@ public unsafe class VulkanImage : IDisposable
             };
 
             _hasIOSurface = exportable && RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-            
+
             var imageCreateInfo = new ImageCreateInfo
             {
                 PNext = exportable ?
                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
-                        &ioSurfaceCreateInfo : 
+                        &ioSurfaceCreateInfo :
                         &externalMemoryCreateInfo : null,
                 SType = StructureType.ImageCreateInfo,
                 ImageType = ImageType.Type2D,
@@ -173,6 +193,7 @@ public unsafe class VulkanImage : IDisposable
 
                 Api.BindImageMemory(_device, InternalHandle, _imageMemory, 0).ThrowOnError();
             }
+            }
 
             var componentMapping = new ComponentMapping(
                 ComponentSwizzle.Identity,
@@ -232,7 +253,225 @@ public unsafe class VulkanImage : IDisposable
             ext.GetMemoryF(_device, in info, out var fd).ThrowOnError();
             return fd;
         }
-        
+
+        /// <summary>
+        /// Creates an image whose memory is laid out according to a DRM format modifier, allocates
+        /// dma-buf-exportable dedicated memory for it and records the resulting modifier and per-plane
+        /// layout so the image can be handed to <see cref="KnownPlatformGraphicsExternalImageHandleTypes.DmaBufFileDescriptor"/>
+        /// consumers such as <c>EglExternalObjectsFeature</c>.
+        /// </summary>
+        private void CreateDmaBufImage()
+        {
+            // DRM packed 32-bit formats encode the bit depth as the '2','4' digits, not literal channel
+            // letters: e.g. DRM_FORMAT_ARGB8888 == fourcc('A','R','2','4') == 0x34325241.
+            DrmFormat = Format switch
+            {
+                Format.B8G8R8A8Unorm => DrmFourcc('A', 'R', '2', '4'), // DRM_FORMAT_ARGB8888
+                Format.R8G8B8A8Unorm => DrmFourcc('A', 'B', '2', '4'), // DRM_FORMAT_ABGR8888
+                _ => throw new NotSupportedException($"Format {Format} has no known DRM fourcc mapping")
+            };
+
+            if (!Api.TryGetDeviceExtension<ExtImageDrmFormatModifier>(_instance, _device, out var drmExt))
+                throw new InvalidOperationException("VK_EXT_image_drm_format_modifier is not available");
+
+            // Query which DRM modifiers the driver supports for this format and pick the ones that
+            // can be used both as a render target and as a blit destination.
+            var modifierList = new DrmFormatModifierPropertiesListEXT
+            {
+                SType = StructureType.DrmFormatModifierPropertiesListExt
+            };
+            var formatProperties = new FormatProperties2
+            {
+                SType = StructureType.FormatProperties2,
+                PNext = &modifierList
+            };
+            Api.GetPhysicalDeviceFormatProperties2(_physicalDevice, Format, &formatProperties);
+
+            var modifierProps = new DrmFormatModifierPropertiesEXT[modifierList.DrmFormatModifierCount];
+            fixed (DrmFormatModifierPropertiesEXT* pModifierProps = modifierProps)
+            {
+                modifierList.PDrmFormatModifierProperties = pModifierProps;
+                Api.GetPhysicalDeviceFormatProperties2(_physicalDevice, Format, &formatProperties);
+            }
+
+            const FormatFeatureFlags requiredFeatures =
+                FormatFeatureFlags.ColorAttachmentBit | FormatFeatureFlags.TransferDstBit;
+            // Only consider single-memory-plane layouts: multi-plane modifiers (e.g. AMD DCC) carry
+            // compression metadata that EGL_EXT_image_dma_buf_import implementations generally refuse
+            // to import as a sampleable texture.
+            var singlePlaneModifiers = modifierProps
+                .Where(p => (p.DrmFormatModifierTilingFeatures & requiredFeatures) == requiredFeatures
+                            && p.DrmFormatModifierPlaneCount == 1)
+                .Select(p => p.DrmFormatModifier)
+                .ToArray();
+            if (singlePlaneModifiers.Length == 0)
+                throw new NotSupportedException("No single-plane DRM format modifier supports rendering to this format");
+
+            // DRM_FORMAT_MOD_LINEAR is importable everywhere, so prefer it when the driver offers it.
+            const ulong drmFormatModLinear = 0;
+            var candidateModifiers = singlePlaneModifiers.Contains(drmFormatModLinear)
+                ? new[] { drmFormatModLinear }
+                : singlePlaneModifiers;
+
+            Image image;
+            fixed (ulong* pModifiers = candidateModifiers)
+            {
+                var modifierListCreateInfo = new ImageDrmFormatModifierListCreateInfoEXT
+                {
+                    SType = StructureType.ImageDrmFormatModifierListCreateInfoExt,
+                    DrmFormatModifierCount = (uint)candidateModifiers.Length,
+                    PDrmFormatModifiers = pModifiers
+                };
+                var externalMemoryCreateInfo = new ExternalMemoryImageCreateInfo
+                {
+                    SType = StructureType.ExternalMemoryImageCreateInfo,
+                    HandleTypes = ExternalMemoryHandleTypeFlags.DmaBufBitExt,
+                    PNext = &modifierListCreateInfo
+                };
+                var imageCreateInfo = new ImageCreateInfo
+                {
+                    PNext = &externalMemoryCreateInfo,
+                    SType = StructureType.ImageCreateInfo,
+                    ImageType = ImageType.Type2D,
+                    Format = Format,
+                    Extent = new Extent3D((uint)Size.Width, (uint)Size.Height, 1),
+                    MipLevels = MipLevels,
+                    ArrayLayers = 1,
+                    Samples = SampleCountFlags.Count1Bit,
+                    Tiling = ImageTiling.DrmFormatModifierExt,
+                    Usage = _imageUsageFlags,
+                    SharingMode = SharingMode.Exclusive,
+                    InitialLayout = ImageLayout.Undefined
+                };
+                Api.CreateImage(_device, in imageCreateInfo, null, out image).ThrowOnError();
+            }
+            InternalHandle = image;
+
+            // Find out which modifier the driver actually chose and how many memory planes it has.
+            var imageModifierProps = new ImageDrmFormatModifierPropertiesEXT
+            {
+                SType = StructureType.ImageDrmFormatModifierPropertiesExt
+            };
+            drmExt.GetImageDrmFormatModifierProperties(_device, image, &imageModifierProps).ThrowOnError();
+            DrmModifier = imageModifierProps.DrmFormatModifier;
+
+            var planeCount = 1;
+            foreach (var p in modifierProps)
+                if (p.DrmFormatModifier == DrmModifier)
+                    planeCount = (int)p.DrmFormatModifierPlaneCount;
+
+            Api.GetImageMemoryRequirements(_device, InternalHandle, out var memoryRequirements);
+
+            var dedicatedAllocation = new MemoryDedicatedAllocateInfoKHR
+            {
+                SType = StructureType.MemoryDedicatedAllocateInfoKhr, Image = image
+            };
+            var exportAllocateInfo = new ExportMemoryAllocateInfo
+            {
+                SType = StructureType.ExportMemoryAllocateInfo,
+                HandleTypes = ExternalMemoryHandleTypeFlags.DmaBufBitExt,
+                PNext = &dedicatedAllocation
+            };
+            var memoryAllocateInfo = new MemoryAllocateInfo
+            {
+                PNext = &exportAllocateInfo,
+                SType = StructureType.MemoryAllocateInfo,
+                AllocationSize = memoryRequirements.Size,
+                MemoryTypeIndex = (uint)VulkanMemoryHelper.FindSuitableMemoryTypeIndex(
+                    Api, _physicalDevice, memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.DeviceLocalBit)
+            };
+            Api.AllocateMemory(_device, in memoryAllocateInfo, null, out var imageMemory).ThrowOnError();
+            _imageMemory = imageMemory;
+            MemorySize = memoryRequirements.Size;
+            Api.BindImageMemory(_device, InternalHandle, _imageMemory, 0).ThrowOnError();
+
+            // Query the per-plane offset/stride that the consumer needs to interpret the dma-buf.
+            PlaneOffsets = new ulong[planeCount];
+            PlaneStrides = new ulong[planeCount];
+            var planeAspects = new[]
+            {
+                ImageAspectFlags.MemoryPlane0BitExt, ImageAspectFlags.MemoryPlane1BitExt,
+                ImageAspectFlags.MemoryPlane2BitExt, ImageAspectFlags.MemoryPlane3BitExt
+            };
+            for (var plane = 0; plane < planeCount; plane++)
+            {
+                var subresource = new ImageSubresource
+                {
+                    AspectMask = planeAspects[plane], MipLevel = 0, ArrayLayer = 0
+                };
+                Api.GetImageSubresourceLayout(_device, InternalHandle, in subresource, out var layout);
+                PlaneOffsets[plane] = layout.Offset;
+                PlaneStrides[plane] = layout.RowPitch;
+            }
+        }
+
+        private int ExportDmaBufFd()
+        {
+            if (!Api.TryGetDeviceExtension<KhrExternalMemoryFd>(_instance, _device, out var ext))
+                throw new InvalidOperationException();
+            var info = new MemoryGetFdInfoKHR
+            {
+                Memory = _imageMemory,
+                SType = StructureType.MemoryGetFDInfoKhr,
+                HandleType = ExternalMemoryHandleTypeFlags.DmaBufBitExt
+            };
+            ext.GetMemoryF(_device, in info, out var fd).ThrowOnError();
+            return fd;
+        }
+
+        /// <summary>
+        /// Exports the dma-buf and the metadata required to import it into an EGL/OpenGL consumer.
+        /// The returned file descriptors are owned by the caller and must be closed once the import completes.
+        /// </summary>
+        public (IPlatformHandle handle, PlatformGraphicsExternalImageProperties properties, int[] fds) ExportDmaBuf()
+        {
+            if (!_dmaBuf || PlaneOffsets == null || PlaneStrides == null)
+                throw new InvalidOperationException("Image is not dma-buf backed");
+
+            var planeCount = PlaneOffsets.Length;
+            var fd = ExportDmaBufFd();
+
+            // EGL wants a file descriptor for every plane; all planes of a single allocation share the
+            // same memory, so we hand out duplicates of the same fd and let the importer dup them again.
+            var fds = new int[planeCount];
+            fds[0] = fd;
+            for (var plane = 1; plane < planeCount; plane++)
+                fds[plane] = LibcDup(fd);
+
+            var planeOffsets = new uint[planeCount];
+            var planeStrides = new uint[planeCount];
+            for (var plane = 0; plane < planeCount; plane++)
+            {
+                planeOffsets[plane] = (uint)PlaneOffsets[plane];
+                planeStrides[plane] = (uint)PlaneStrides[plane];
+            }
+
+            var properties = new PlatformGraphicsExternalImageProperties
+            {
+                Width = Size.Width,
+                Height = Size.Height,
+                Format = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+                    ? PlatformGraphicsExternalImageFormat.B8G8R8A8UNorm
+                    : PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm,
+                MemorySize = MemorySize,
+                DrmFormat = DrmFormat,
+                DrmModifier = DrmModifier,
+                PlaneCount = planeCount,
+                PlaneFds = fds,
+                PlaneOffsets = planeOffsets,
+                PlaneStrides = planeStrides
+            };
+
+            return (new PlatformHandle(new IntPtr(fd),
+                KnownPlatformGraphicsExternalImageHandleTypes.DmaBufFileDescriptor), properties, fds);
+        }
+
+        private static uint DrmFourcc(char a, char b, char c, char d) =>
+            (uint)a | ((uint)b << 8) | ((uint)c << 16) | ((uint)d << 24);
+
+        [DllImport("libc", EntryPoint = "dup")]
+        private static extern int LibcDup(int fd);
+
         public IntPtr ExportOpaqueNtHandle()
         {
             if (!Api.TryGetDeviceExtension<KhrExternalMemoryWin32>(_instance, _device, out var ext))
@@ -289,7 +528,7 @@ public unsafe class VulkanImage : IDisposable
                     KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaquePosixFileDescriptor);
         }
 
-        public ImageTiling Tiling => ImageTiling.Optimal;
+        public ImageTiling Tiling => _dmaBuf ? ImageTiling.DrmFormatModifierExt : ImageTiling.Optimal;
 
         public bool IsDirectXBacked => _d3dTexture2D.Handle != null;
         
