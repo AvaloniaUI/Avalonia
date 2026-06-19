@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Utilities;
@@ -176,10 +177,12 @@ namespace Avalonia.Media.Fonts.Tables.Name
 
                 return new NameTable(names);
             }
-            catch
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentOutOfRangeException)
             {
                 // A present-but-malformed 'name' table must not deny the font; callers fall back to a
-                // default family name, the same outcome as an absent 'name'.
+                // default family name, the same outcome as an absent 'name'. Only the parsing-related
+                // exceptions are swallowed (end-of-span from BigEndianBinaryReader, out-of-range from
+                // Memory.Slice) so genuine/fatal failures still surface.
                 return null;
             }
         }

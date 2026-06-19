@@ -115,6 +115,9 @@ namespace Avalonia.UnitTests
         /// <summary>Writes <paramref name="count"/> zero bytes (padding / placeholder data).</summary>
         public BigEndianBuffer Zeros(int count)
         {
+            if (count < 0)
+                 throw new ArgumentOutOfRangeException(nameof(count), count, "count must be non-negative.");
+
             EnsureCapacity(count);
             _length += count; // already zero-initialized
             return this;
