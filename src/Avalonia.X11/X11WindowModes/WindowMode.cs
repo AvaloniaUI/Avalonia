@@ -47,7 +47,7 @@ partial class X11Window
 
         public virtual void Show(bool activate, bool isDialog)
         {
-
+            Window._shown = true;
         }
 
         public abstract PixelPoint PointToScreen(Point pt);
@@ -55,6 +55,7 @@ partial class X11Window
 
         public virtual void Hide()
         {
+            Window._shown = false;
         }
     }
 }
