@@ -39,12 +39,11 @@ namespace ControlCatalog.Pages
                 "Files",
                 async d =>
                 {
-                    var entryAssemblyName = Assembly.GetEntryAssembly()?.GetName().Name + ".dll";
-                    var entryAssemblyPath = Path.Combine(AppContext.BaseDirectory, entryAssemblyName);
+                    var currentFile = Environment.ProcessPath;
 
-                    if (File.Exists(entryAssemblyPath) &&
+                    if (File.Exists(currentFile) &&
                         TopLevel.GetTopLevel(this) is { } topLevel &&
-                        await topLevel.StorageProvider.TryGetFileFromPathAsync(entryAssemblyPath) is { } storageFile)
+                        await topLevel.StorageProvider.TryGetFileFromPathAsync(currentFile) is { } storageFile)
                     {
                         d.Add(DataTransferItem.Create(DataFormat.File, storageFile));
                     }
