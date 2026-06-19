@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -38,9 +39,11 @@ namespace ControlCatalog.Pages
                 "Files",
                 async d =>
                 {
-                    if (Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName is { } name &&
+                    var currentFile = Environment.ProcessPath;
+
+                    if (File.Exists(currentFile) &&
                         TopLevel.GetTopLevel(this) is { } topLevel &&
-                        await topLevel.StorageProvider.TryGetFileFromPathAsync(name) is { } storageFile)
+                        await topLevel.StorageProvider.TryGetFileFromPathAsync(currentFile) is { } storageFile)
                     {
                         d.Add(DataTransferItem.Create(DataFormat.File, storageFile));
                     }
