@@ -1,17 +1,9 @@
-using System;
-using System.Reactive;
-using System.Reactive.Subjects;
 using Moq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Input;
-using Avalonia.Input.Raw;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -44,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TestWindowBase(impl.Object);
                 target.Activated += (s, e) => raised = true;
 
-                impl.Object.Activated();
+                impl.Object.Activated!();
 
                 Assert.True(raised);
             }
@@ -62,7 +54,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TestWindowBase(impl.Object);
                 target.Deactivated += (s, e) => raised = true;
 
-                impl.Object.Deactivated();
+                impl.Object.Deactivated!();
 
                 Assert.True(raised);
             }
@@ -120,7 +112,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TestWindowBase(windowImpl.Object);
 
                 target.Show();
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 Assert.False(target.IsVisible);
             }
@@ -219,7 +211,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TestWindowBase(windowImpl.Object);
 
                 target.Show();
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
                 Assert.True(((CompositingRenderer)target.Renderer).IsDisposed);
             }
         }

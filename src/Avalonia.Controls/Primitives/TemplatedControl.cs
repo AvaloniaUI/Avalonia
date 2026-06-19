@@ -317,7 +317,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (VisualChildren.Count > 0)
                 {
-                    foreach (var child in this.GetTemplateChildren())
+                    foreach (var child in this.GetTemplateDescendants())
                     {
                         child.TemplatedParent = null;
                         ((ISetLogicalParent)child).SetParent(null);
@@ -350,11 +350,11 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         protected override Control GetTemplateFocusTarget()
         {
-            foreach (Control child in this.GetTemplateChildren())
+            foreach (var child in this.GetTemplateDescendants())
             {
-                if (GetIsTemplateFocusTarget(child))
+                if (child is Control control && GetIsTemplateFocusTarget(control))
                 {
-                    return child;
+                    return control;
                 }
             }
 
@@ -362,7 +362,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedToken token)
+        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             var count = VisualChildren.Count;
 
@@ -370,11 +370,11 @@ namespace Avalonia.Controls.Primitives
             {
                 if (VisualChildren[i] is ILogical logical)
                 {
-                    logical.NotifyResourcesChanged(token);
+                    logical.NotifyResourcesChanged(e);
                 }
             }
 
-            base.NotifyChildResourcesChanged(token);
+            base.NotifyChildResourcesChanged(e);
         }
 
         /// <inheritdoc/>

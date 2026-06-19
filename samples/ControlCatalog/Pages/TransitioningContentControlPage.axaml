@@ -1,19 +1,20 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ControlCatalog.ViewModels"
              xmlns:converter="using:ControlCatalog.Converter"
              xmlns:system="using:System"
+             Header="TransitioningContentControl"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:TransitioningContentControlPageViewModel"
              x:Class="ControlCatalog.Pages.TransitioningContentControlPage">
 
-    <UserControl.DataContext>
+    <ContentPage.DataContext>
         <vm:TransitioningContentControlPageViewModel />
-    </UserControl.DataContext>
+    </ContentPage.DataContext>
 
-    <UserControl.Styles>
+    <ContentPage.Styles>
         <Style Selector="HeaderedContentControl">
             <Setter Property="Template">
                 <Setter.Value>
@@ -36,12 +37,12 @@
                 </Setter.Value>
             </Setter>
         </Style>
-    </UserControl.Styles>
+    </ContentPage.Styles>
   
-  <UserControl.Resources>
+  <ContentPage.Resources>
     <converter:MathSubtractConverter x:Key="MathSubtractConverter" />
     <system:Double x:Key="TopMargin">8</system:Double>
-  </UserControl.Resources>
+  </ContentPage.Resources>
   
     <DockPanel LastChildFill="True" 
                Height="{Binding Path=Bounds.Height, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}, Converter={StaticResource MathSubtractConverter},ConverterParameter={StaticResource TopMargin}}">
@@ -81,4 +82,4 @@
             </TransitioningContentControl>
         </Border>
     </DockPanel>
-</UserControl>
+</ContentPage>

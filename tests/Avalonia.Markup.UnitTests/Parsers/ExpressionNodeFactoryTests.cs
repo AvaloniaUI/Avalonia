@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.ExpressionNodes.Reflection;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
@@ -17,6 +17,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("Foo");
 
+            Assert.NotNull(result);
             AssertIsProperty(result[0], "Foo");
         }
 
@@ -25,6 +26,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("_Foo");
 
+            Assert.NotNull(result);
             AssertIsProperty(result[0], "_Foo");
         }
 
@@ -33,6 +35,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("F0o");
 
+            Assert.NotNull(result);
             AssertIsProperty(result[0], "F0o");
         }
 
@@ -49,6 +52,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("Foo.Bar.Baz");
 
+            Assert.NotNull(result);
             Assert.Equal(3, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsProperty(result[1], "Bar");
@@ -60,6 +64,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("!Foo.Bar.Baz");
 
+            Assert.NotNull(result);
             Assert.Equal(4, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsProperty(result[1], "Bar");
@@ -72,6 +77,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("!!Foo.Bar.Baz");
 
+            Assert.NotNull(result);
             Assert.Equal(5, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsProperty(result[1], "Bar");
@@ -85,6 +91,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("Foo[15]");
 
+            Assert.NotNull(result);
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsIndexer(result[1], "15");
@@ -96,6 +103,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("Foo[Key]");
 
+            Assert.NotNull(result);
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsIndexer(result[1], "Key");
@@ -107,6 +115,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("Foo[15,6]");
 
+            Assert.NotNull(result);
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsIndexer(result[1], "15", "6");
@@ -117,6 +126,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("Foo[5, 16]");
 
+            Assert.NotNull(result);
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsIndexer(result[1], "5", "16");
@@ -127,6 +137,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("Foo[15][16]");
 
+            Assert.NotNull(result);
             Assert.Equal(3, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsIndexer(result[1], "15");
@@ -138,6 +149,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("Foo.Bar[5, 6].Baz");
 
+            Assert.NotNull(result);
             Assert.Equal(4, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsProperty(result[1], "Bar");
@@ -150,6 +162,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var result = Parse("Foo^");
 
+            Assert.NotNull(result);
             Assert.Equal(2, result.Count);
             Assert.IsType<DynamicPluginStreamNode>(result[1]);
         }
@@ -166,7 +179,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.Equal(e.Arguments.Cast<string>().ToArray(), args);
         }
 
-        private static List<ExpressionNode> Parse(string path)
+        private static List<ExpressionNode>? Parse(string path)
         {
             var reader = new CharacterReader(path.AsSpan());
             var (astNodes, sourceMode) = BindingExpressionGrammar.Parse(ref reader);

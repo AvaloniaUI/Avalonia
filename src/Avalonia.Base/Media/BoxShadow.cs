@@ -12,6 +12,8 @@ namespace Avalonia.Media
     public struct BoxShadow
     {
         private readonly static char[] s_Separator = new char[] { ' ', '\t' };
+        private const char OpeningParenthesis = '(';
+        private const char ClosingParenthesis = ')';
 
         /// <summary>
         /// Gets or sets the horizontal offset (distance) of the shadow.
@@ -208,7 +210,10 @@ namespace Avalonia.Media
                 throw new FormatException();
             }
 
-            var p = s.Split(s_Separator, StringSplitOptions.RemoveEmptyEntries);
+            var p = StringSplitter.SplitRespectingBrackets(
+                s, s_Separator,
+                OpeningParenthesis, ClosingParenthesis,
+                StringSplitOptions.RemoveEmptyEntries);
             if (p.Length == 1 && p[0] == "none")
             {
                 return default;

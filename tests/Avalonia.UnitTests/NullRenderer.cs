@@ -8,7 +8,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.UnitTests;
 
-public sealed class NullRenderer : IRenderer
+internal sealed class NullRenderer : IRenderer
 {
     public RendererDiagnostics Diagnostics { get; } = new();
 

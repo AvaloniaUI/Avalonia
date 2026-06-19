@@ -14,7 +14,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
     [TemplatePart("PART_VerticalScrollBar",   typeof(ScrollBar))]
-    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider, IInternalScroller
+    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
         /// <summary>
         /// Defines the <see cref="BringIntoViewOnFocusChange "/> property.
@@ -169,6 +169,18 @@ namespace Avalonia.Controls
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
         private bool _isExpanded;
         private IDisposable? _scrollBarExpandSubscription;
+        private ScrollBar? _horizontalScrollBar;
+        private ScrollBar? _verticalScrollBar;
+
+        /// <summary>
+        /// Gets the horizontal scroll bar from the applied template, if any.
+        /// </summary>
+        internal ScrollBar? HorizontalScrollBar => _horizontalScrollBar;
+
+        /// <summary>
+        /// Gets the vertical scroll bar from the applied template, if any.
+        /// </summary>
+        internal ScrollBar? VerticalScrollBar => _verticalScrollBar;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScrollViewer"/> class.
@@ -284,7 +296,7 @@ namespace Avalonia.Controls
             get => HorizontalScrollBarVisibility != ScrollBarVisibility.Disabled;
         }
 
-        bool IInternalScroller.CanHorizontallyScroll => CanHorizontallyScroll;
+        bool IScrollable.CanHorizontallyScroll => CanHorizontallyScroll;
 
         /// <summary>
         /// Gets a value indicating whether the viewer can scroll vertically.
@@ -294,7 +306,7 @@ namespace Avalonia.Controls
             get => VerticalScrollBarVisibility != ScrollBarVisibility.Disabled;
         }
 
-        bool IInternalScroller.CanVerticallyScroll => CanVerticallyScroll;
+        bool IScrollable.CanVerticallyScroll => CanVerticallyScroll;
 
         /// <inheritdoc/>
         public Control? CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
@@ -696,6 +708,14 @@ namespace Avalonia.Controls
 
         private static double Clamp(double value, double min, double max)
         {
+            // A NaN offset must never survive. Offset is two-way coerced between the ScrollViewer and its
+            // ScrollContentPresenter; because NaN != NaN, a NaN offset never compares equal, so the
+            // coerce/raise cycle never converges and recurses until it overflows the stack (see #21444).
+            if (double.IsNaN(value))
+            {
+                return min;
+            }
+
             return (value < min) ? min : (value > max) ? max : value;
         }
 
@@ -766,7 +786,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
 
@@ -825,6 +845,9 @@ namespace Avalonia.Controls
 
             var horizontalScrollBar = e.NameScope.Find<ScrollBar>("PART_HorizontalScrollBar");
             var verticalScrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar");
+
+            _horizontalScrollBar = horizontalScrollBar;
+            _verticalScrollBar = verticalScrollBar;
 
             var horizontalExpanded = GetExpandedObservable(horizontalScrollBar);
             var verticalExpanded = GetExpandedObservable(verticalScrollBar);

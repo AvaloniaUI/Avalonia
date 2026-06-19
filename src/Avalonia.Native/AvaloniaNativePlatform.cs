@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Avalonia.Compatibility;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -12,7 +11,6 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using MicroCom.Runtime;
-#nullable enable
 
 namespace Avalonia.Native
 {
@@ -47,8 +45,8 @@ namespace Avalonia.Native
         {
             if (options.AvaloniaNativeLibraryPath != null)
             {
-                var lib = NativeLibraryEx.Load(options.AvaloniaNativeLibraryPath);
-                if (!NativeLibraryEx.TryGetExport(lib, "CreateAvaloniaNative", out var proc))
+                var lib = NativeLibrary.Load(options.AvaloniaNativeLibraryPath);
+                if (!NativeLibrary.TryGetExport(lib, "CreateAvaloniaNative", out var proc))
                 {
                     throw new InvalidOperationException(
                         "Unable to get \"CreateAvaloniaNative\" export from AvaloniaNativeLibrary library");
@@ -64,6 +62,11 @@ namespace Avalonia.Native
         public void SetupApplicationMenuExporter()
         {
             var exporter = new AvaloniaNativeMenuExporter(_factory);
+        }
+
+        public void SetupApplicationDockMenuExporter()
+        {
+            _ = new AvaloniaNativeMenuExporter(_factory, AvaloniaNativeMenuExporter.MenuTarget.Dock);
         }
 
         public void SetupApplicationName()
@@ -109,8 +112,8 @@ namespace Avalonia.Native
             var clipboardImpl = new ClipboardImpl(_factory.CreateClipboard());
             var clipboard = new Clipboard(clipboardImpl);
 
+            Dispatcher.InitializeUIThreadDispatcher(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()));
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IScreenImpl>().ToConstant(new ScreenImpl(_factory.CreateScreens))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
@@ -119,7 +122,7 @@ namespace Avalonia.Native
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
                 .Bind<IClipboard>().ToConstant(clipboard)
-                .Bind<IRenderTimer>().ToConstant(new ThreadProxyRenderTimer(new AvaloniaNativeRenderTimer(_factory.CreatePlatformRenderTimer())))
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(new ThreadProxyRenderTimer(new AvaloniaNativeRenderTimer(_factory.CreatePlatformRenderTimer()))))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
@@ -199,7 +202,7 @@ namespace Avalonia.Native
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options);
+            return new WindowImpl(_factory, _options ?? new AvaloniaNativePlatformOptions());
         }
 
         public IWindowImpl CreateEmbeddableWindow()
@@ -210,6 +213,14 @@ namespace Avalonia.Native
         public ITopLevelImpl CreateEmbeddableTopLevel()
         {
             return new EmbeddableTopLevelImpl(_factory);
+        }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+        {
+            for (var i = 0; i < windows.Length; i++)
+            {
+                zOrder[i] = (windows[i] as WindowImpl)?.ZOrder?.ToInt64() ?? 0;
+            }
         }
     }
 }

@@ -10,11 +10,7 @@ namespace Avalonia.Win32.Automation;
 /// <summary>
 /// An automation node which serves as the root of an embedded native control automation tree.
 /// </summary>
-#if NET8_0_OR_GREATER
     [GeneratedComClass]
-#elif NET6_0_OR_GREATER
-    [RequiresUnreferencedCode("Requires .NET COM interop")]
-#endif
 internal partial class InteropAutomationNode : AutomationNode, IRawElementProviderFragmentRoot
 {
     private readonly IntPtr _handle;

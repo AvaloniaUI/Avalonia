@@ -169,7 +169,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var glyphRun1 = CreateGlyphRun(shapedBuffer);
                 var bounds1 = glyphRun1.InkBounds;
-                ((GlyphRunImpl)glyphRun1.PlatformImpl.Item).GetTextBlob(new RenderOptions { TextRenderingMode = TextRenderingMode.SubpixelAntialias });
+                ((GlyphRunImpl)glyphRun1.PlatformImpl.Item).GetTextBlob(new TextOptions { TextRenderingMode = TextRenderingMode.SubpixelAntialias }, default);
 
                 var bounds2 = CreateGlyphRun(shapedBuffer).InkBounds;
 
@@ -455,26 +455,18 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private static GlyphRun CreateGlyphRun(ShapedBuffer shapedBuffer)
         {
-            var glyphRun = new GlyphRun(
+            return new GlyphRun(
                 shapedBuffer.GlyphTypeface,
                 shapedBuffer.FontRenderingEmSize,
                 shapedBuffer.Text,
                 shapedBuffer,
                 biDiLevel: shapedBuffer.BidiLevel);
-
-            if (shapedBuffer.BidiLevel == 1)
-            {
-                shapedBuffer.Reverse();
-            }
-
-            return glyphRun;
         }
 
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(renderInterface: new PlatformRenderInterface(),
-                    textShaperImpl: new TextShaperImpl(),
                     fontManagerImpl: new CustomFontManagerImpl()));
 
             return disposable;

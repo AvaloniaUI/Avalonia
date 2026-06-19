@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
   <ItemGroup>
@@ -12,10 +11,10 @@
     <AvaloniaXaml Include="**\*.xaml">
       <SubType>Designer</SubType>
     </AvaloniaXaml>
-    <AvaloniaResource Include="Assets\*" />
-    <AvaloniaResource Include="Assets\Fonts\*" />
+    <AvaloniaResource Include="Assets\**\*" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Assets\Icon.png" />
     <None Remove="Assets\image1.jpg" />
     <None Remove="Assets\image2.jpg" />
     <None Remove="Assets\image3.jpg" />
@@ -40,7 +39,12 @@
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
-    <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Update="NavHeaderItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />

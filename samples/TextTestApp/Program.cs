@@ -22,8 +22,9 @@ namespace TextTestApp
         public static AppBuilder BuildAvaloniaApp()
         {
             return AppBuilder.Configure<App>()
-                        .UsePlatformDetect()
-                        .LogToTrace();
+                .UsePlatformDetect()
+                .WithDeveloperTools()
+                .LogToTrace();
         }
     }
 }

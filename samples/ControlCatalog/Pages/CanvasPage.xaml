@@ -1,5 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="Canvas"
              x:Class="ControlCatalog.Pages.CanvasPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">A panel which lays out its children by explicit coordinates</TextBlock>
@@ -34,4 +35,4 @@
       <Polyline Points="0,0 65,0 78,-26 91,39 104,-39 117,13 130,0 195,0" Stroke="Brown" Canvas.Left="30" Canvas.Top="350"/>
     </Canvas>
   </StackPanel>
-</UserControl>
+</ContentPage>

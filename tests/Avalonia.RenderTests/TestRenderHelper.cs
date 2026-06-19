@@ -5,6 +5,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
 using SixLabors.ImageSharp;
 using Xunit;
+using Avalonia.Input;
 using Avalonia.Platform;
 using System.Threading.Tasks;
 using System;
@@ -13,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -21,30 +22,39 @@ using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
+using Avalonia.Harfbuzz;
 using Avalonia.Skia;
 
 namespace Avalonia.Skia.RenderTests;
 
 static class TestRenderHelper
 {
-    private static readonly TestDispatcherImpl s_dispatcherImpl =
-        new TestDispatcherImpl();
-
     static TestRenderHelper()
     {
         SkiaPlatform.Initialize();
-        AvaloniaLocator.CurrentMutable
-            .Bind<IDispatcherImpl>()
-            .ToConstant(s_dispatcherImpl);
-        
         AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(new StandardAssetLoader());
+        AvaloniaLocator.CurrentMutable.Bind<ITextShaperImpl>().ToConstant(new HarfBuzzTextShaper());
+        AvaloniaLocator.CurrentMutable.Bind<ICursorFactory>().ToConstant(new NullCursorFactory());
+    }
+
+    private sealed class NullCursorFactory : ICursorFactory
+    {
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new NullCursor();
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot) => new NullCursor();
+
+        private sealed class NullCursor : ICursorImpl
+        {
+            public void Dispose() { }
+        }
     }
     
     
     public static Task RenderToFile(Control target, string path, bool immediate, double dpi = 96)
     {
         var dir = Path.GetDirectoryName(path);
-        if (!Directory.Exists(dir)) 
+        Assert.NotNull(dir);
+
+        if (!Directory.Exists(dir))
             Directory.CreateDirectory(dir);
         
         var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
@@ -66,7 +76,7 @@ static class TestRenderHelper
         {
             var timer = new ManualRenderTimer();
 
-            var compositor = new Compositor(new RenderLoop(timer), null, true,
+            var compositor = new Compositor(RenderLoop.FromTimer(timer), null, true,
                 new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
             using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat,
                        factory.DefaultAlphaFormat))
@@ -106,49 +116,27 @@ static class TestRenderHelper
 
     public static void BeginTest()
     {
-        s_dispatcherImpl.MainThread = Thread.CurrentThread;
+        Dispatcher.ResetBeforeUnitTests();
     }
 
     public static void EndTest()
     {
         if (Dispatcher.UIThread.CheckAccess()) 
             Dispatcher.UIThread.RunJobs();
+        Dispatcher.ResetForUnitTests();
     }
     
     public static string GetTestsDirectory()
     {
         var path = Directory.GetCurrentDirectory();
 
-        while (path.Length > 0 && Path.GetFileName(path) != "tests")
+        while (!string.IsNullOrEmpty(path) && Path.GetFileName(path) != "tests")
         {
             path = Path.GetDirectoryName(path);
         }
 
+        Assert.NotNull(path);
         return path;
-    }
-    
-    private class TestDispatcherImpl : IDispatcherImpl
-    {
-        public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
-
-        public Thread MainThread { get; set; }
-
-#pragma warning disable 67
-        public event Action Signaled;
-        public event Action Timer;
-#pragma warning restore 67
-
-        public void Signal()
-        {
-            // No-op
-        }
-
-        public long Now => 0;
-
-        public void UpdateTimer(long? dueTimeInMs)
-        {
-            // No-op
-        }
     }
 
     public static void AssertCompareImages(string actualPath, string expectedPath)

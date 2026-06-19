@@ -10,7 +10,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Immutable Skia bitmap.
     /// </summary>
-    internal class ImmutableBitmap : IDrawableBitmapImpl, IReadableBitmapWithAlphaImpl
+    internal class ImmutableBitmap : IDrawableBitmapImpl, IReadableBitmapImpl
     {
         private readonly SKImage _image;
         private readonly SKBitmap? _bitmap;
@@ -195,7 +195,9 @@ namespace Avalonia.Skia
             if (_bitmap.ColorType.ToAvalonia() is not { } format)
                 throw new NotSupportedException($"Unsupported format {_bitmap.ColorType}");
 
-            return new LockedFramebuffer(_bitmap.GetPixels(), PixelSize, _bitmap.RowBytes, Dpi, format, null);
+            var alphaFormat = _bitmap.AlphaType.ToAlphaFormat();
+
+            return new LockedFramebuffer(_bitmap.GetPixels(), PixelSize, _bitmap.RowBytes, Dpi, format, alphaFormat, null);
         }
     }
 }

@@ -1,0 +1,189 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.LAvenirReservationsView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <TextBlock Text="Reserve a Table" FontSize="24" FontWeight="Bold"
+                 Foreground="#1E293B" Margin="16,20,16,4"/>
+      <TextBlock Text="Select your preferred date and time" FontSize="13"
+                 Foreground="#94A3B8" Margin="16,0,16,16"/>
+
+      <!-- Calendar Card -->
+      <Border CornerRadius="12" Background="White" Padding="8"
+              Margin="16,0,16,16">
+        <Calendar SelectionMode="SingleDate"
+                  DisplayDate="2023-10-01"
+                  SelectedDate="2023-10-15"
+                  FirstDayOfWeek="Monday"
+                  IsTodayHighlighted="False"
+                  HorizontalAlignment="Stretch">
+          <Calendar.Styles>
+            <Style Selector="CalendarDayButton">
+              <Setter Property="Background" Value="Transparent"/>
+              <Setter Property="Foreground" Value="#1E293B"/>
+              <Setter Property="FontSize" Value="13"/>
+              <Setter Property="CornerRadius" Value="8"/>
+              <Setter Property="MinWidth" Value="32"/>
+              <Setter Property="MinHeight" Value="32"/>
+              <Setter Property="Margin" Value="2"/>
+              <Setter Property="HorizontalContentAlignment" Value="Center"/>
+              <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+            <Style Selector="CalendarDayButton:selected">
+              <Setter Property="Background" Value="#4B2BEE"/>
+              <Setter Property="Foreground" Value="White"/>
+              <Setter Property="FontWeight" Value="Bold"/>
+            </Style>
+            <Style Selector="CalendarDayButton:inactive">
+              <Setter Property="Foreground" Value="#CBD5E1"/>
+            </Style>
+            <Style Selector="CalendarItem">
+              <Setter Property="Background" Value="White"/>
+              <Setter Property="BorderThickness" Value="0"/>
+            </Style>
+            <Style Selector="CalendarItem Button">
+              <Setter Property="Foreground" Value="#1E293B"/>
+              <Setter Property="FontWeight" Value="SemiBold"/>
+              <Setter Property="FontSize" Value="16"/>
+            </Style>
+            <Style Selector="Calendar">
+              <Setter Property="BorderThickness" Value="0"/>
+              <Setter Property="Background" Value="White"/>
+            </Style>
+            <Style Selector="CalendarButton">
+              <Setter Property="Foreground" Value="#1E293B"/>
+              <Setter Property="CornerRadius" Value="8"/>
+            </Style>
+          </Calendar.Styles>
+        </Calendar>
+      </Border>
+
+      <!-- Party Size Card -->
+      <Border CornerRadius="12" Background="White" Padding="16"
+              Margin="16,0,16,16">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="Party Size" FontSize="15" FontWeight="SemiBold" Foreground="#1E293B"/>
+            <TextBlock Text="2 Guests &#x2022; Standard Seating" FontSize="12" Foreground="#94A3B8"/>
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12"
+                      VerticalAlignment="Center">
+            <Border Width="32" Height="32" CornerRadius="8"
+                    BorderBrush="#E2E8F0" BorderThickness="1">
+              <TextBlock Text="&#x2212;" FontSize="16" FontWeight="Bold" Foreground="#94A3B8"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="2" FontSize="18" FontWeight="Bold" Foreground="#1E293B"
+                       VerticalAlignment="Center"/>
+            <Border Width="32" Height="32" CornerRadius="8" Background="#4B2BEE">
+              <TextBlock Text="+" FontSize="16" FontWeight="Bold" Foreground="White"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- Available Times -->
+      <TextBlock Text="Available Times" FontSize="16" FontWeight="SemiBold"
+                 Foreground="#1E293B" Margin="16,0,16,12"/>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled"
+                    Margin="0,0,0,16">
+        <StackPanel Orientation="Horizontal" Spacing="8" Margin="16,0">
+          <Border CornerRadius="10" Background="White"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,10">
+            <TextBlock Text="5:00 PM" FontSize="13" FontWeight="Medium" Foreground="#1E293B"/>
+          </Border>
+          <Border CornerRadius="10" Background="White"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,10">
+            <TextBlock Text="5:30 PM" FontSize="13" FontWeight="Medium" Foreground="#1E293B"/>
+          </Border>
+          <Border CornerRadius="10" Background="White"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,10">
+            <TextBlock Text="6:00 PM" FontSize="13" FontWeight="Medium" Foreground="#1E293B"/>
+          </Border>
+          <Border CornerRadius="10" Background="#4B2BEE" Padding="16,10">
+            <TextBlock Text="6:30 PM" FontSize="13" FontWeight="Bold" Foreground="White"/>
+          </Border>
+          <Border CornerRadius="10" Background="White"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,10">
+            <TextBlock Text="7:00 PM" FontSize="13" FontWeight="Medium" Foreground="#1E293B"/>
+          </Border>
+          <Border CornerRadius="10" Background="White"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,10">
+            <TextBlock Text="7:30 PM" FontSize="13" FontWeight="Medium" Foreground="#1E293B"/>
+          </Border>
+          <Border CornerRadius="10" Background="White"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,10">
+            <TextBlock Text="8:00 PM" FontSize="13" FontWeight="Medium" Foreground="#1E293B"/>
+          </Border>
+          <Border CornerRadius="10" Background="White"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,10">
+            <TextBlock Text="8:30 PM" FontSize="13" FontWeight="Medium" Foreground="#1E293B"/>
+          </Border>
+          <Border CornerRadius="10" Background="White"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,10">
+            <TextBlock Text="9:00 PM" FontSize="13" FontWeight="Medium" Foreground="#1E293B"/>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Reservation Summary Card -->
+      <Border CornerRadius="12" Background="White" Padding="16"
+              Margin="16,0,16,16">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Reservation Summary" FontSize="15" FontWeight="SemiBold" Foreground="#1E293B"/>
+          <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+            <TextBlock Text="Date" FontSize="13" Foreground="#94A3B8"/>
+            <TextBlock Grid.Column="1" Text="October 15, 2023" FontSize="13"
+                       FontWeight="Medium" Foreground="#1E293B"/>
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="Time" FontSize="13" Foreground="#94A3B8"/>
+            <TextBlock Grid.Column="1" Text="6:30 PM" FontSize="13"
+                       FontWeight="Medium" Foreground="#1E293B"/>
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="Guests" FontSize="13" Foreground="#94A3B8"/>
+            <TextBlock Grid.Column="1" Text="2" FontSize="13"
+                       FontWeight="Medium" Foreground="#1E293B"/>
+          </Grid>
+          <Border Height="1" Background="#E2E8F0" Margin="0,4"/>
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="Deposit" FontSize="14" FontWeight="SemiBold" Foreground="#1E293B"/>
+            <TextBlock Grid.Column="1" Text="$50.00" FontSize="14"
+                       FontWeight="Bold" Foreground="#4B2BEE"/>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <!-- Confirm Button -->
+      <Button Content="Confirm Reservation"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center"
+              Height="48"
+              CornerRadius="12"
+              Margin="16,0,16,24"
+              FontWeight="Bold"
+              FontSize="14"
+              Foreground="White">
+        <Button.Styles>
+          <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#4B2BEE"/>
+          </Style>
+          <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#3D22CC"/>
+            <Setter Property="Foreground" Value="White"/>
+          </Style>
+          <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#3518B0"/>
+            <Setter Property="Foreground" Value="White"/>
+          </Style>
+        </Button.Styles>
+      </Button>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -2,7 +2,7 @@
 
 namespace ControlCatalog.Pages
 {
-    public partial class DateTimePickerPage : UserControl
+    public partial class DateTimePickerPage : ContentPage
     {
         public DateTimePickerPage()
         {

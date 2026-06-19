@@ -3,7 +3,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class CursorPage : UserControl
+    public partial class CursorPage : ContentPage
     {
         public CursorPage()
         {

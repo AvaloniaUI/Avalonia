@@ -8,7 +8,7 @@ namespace Avalonia.Controls.Diagnostics
     /// Diagnostics interface to retrieve an associated <see cref="IPopupHost"/>.
     /// </summary>
     [NotClientImplementable]
-    public interface IPopupHostProvider
+    internal interface IPopupHostProvider
     {
         /// <summary>
         /// The popup host.

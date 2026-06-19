@@ -44,7 +44,7 @@ internal unsafe class WinApi
 
 
     [DllImport("kernel32.dll")]
-    public static extern IntPtr GetModuleHandle(string lpModuleName);
+    public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern IntPtr CreateWindowEx(

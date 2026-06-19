@@ -10,6 +10,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -1340,7 +1341,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private static void Layout(Control c)
         {
-            (c.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+            c.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         public static IDisposable Start()
@@ -1352,7 +1353,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub(),
+                    textShaperImpl: new HarfBuzzTextShaper(),
                     assetLoader: new StandardAssetLoader()));
         }
 

@@ -101,7 +101,7 @@ protected:
     AutoFitContentView *StandardContainer;
     AvnPoint lastPositionSet;
     bool _shown;
-    std::list<WindowBaseImpl*> _children;
+    std::list<ComObjectWeakPtr<WindowBaseImpl>> _children;
 
 public:
     ComObjectWeakPtr<WindowBaseImpl> Parent = nullptr;

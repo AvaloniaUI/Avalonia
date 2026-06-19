@@ -66,7 +66,7 @@ namespace Avalonia.Controls
             Direction = direction;
         }
 
-        public SpinEventArgs(RoutedEvent routedEvent, SpinDirection direction)
+        public SpinEventArgs(RoutedEvent? routedEvent, SpinDirection direction)
             : base(routedEvent)
         {
             Direction = direction;
@@ -78,7 +78,7 @@ namespace Avalonia.Controls
             UsingMouseWheel = usingMouseWheel;
         }
 
-        public SpinEventArgs(RoutedEvent routedEvent, SpinDirection direction, bool usingMouseWheel)
+        public SpinEventArgs(RoutedEvent? routedEvent, SpinDirection direction, bool usingMouseWheel)
             : base(routedEvent)
         {
             Direction = direction;

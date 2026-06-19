@@ -25,7 +25,7 @@ public static class ElementComposition
             throw new InvalidOperationException("Composition visuals belong to different compositor instances");
         
         visual.ChildCompositionVisual = compositionVisual;
-        visual.GetVisualRoot()?.Renderer.RecalculateChildren(visual);
+        visual.GetPresentationSource()?.Renderer.RecalculateChildren(visual);
     }
 
     /// <summary>

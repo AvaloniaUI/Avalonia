@@ -1,18 +1,19 @@
-<UserControl x:Class="ControlCatalog.Pages.ContextFlyoutPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.ContextFlyoutPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
+             Header="ContextFlyout"
              d:DesignHeight="450"
              d:DesignWidth="800"
              mc:Ignorable="d"
              x:DataType="viewModels:ContextPageViewModel">
-  <UserControl.Styles>
+  <ContentPage.Styles>
     <Style Selector="FlyoutPresenter.NoPadding">
       <Setter Property="Padding" Value="0" />
     </Style>
-  </UserControl.Styles>
+  </ContentPage.Styles>
 
   <StackPanel Orientation="Vertical" Spacing="4">
     <StackPanel.Styles>
@@ -21,6 +22,7 @@
         <Setter Property="Margin" Value="8" />
         <Setter Property="Focusable" Value="True" />
         <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+        <Setter Property="PlatformFeedback.FeedbackType" Value="Auto"/>
       </Style>
       <Style Selector="Border.context-target > :is(Control)">
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -53,6 +55,15 @@
                           IsHitTestVisible="False" />
               </MenuItem.Icon>
             </MenuItem>
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton1"
+                      IsChecked="True"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton2"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
           </MenuFlyout>
         </Border.ContextFlyout>
         <TextBlock Text="Defined in XAML" />
@@ -156,4 +167,4 @@
       </TextBox.ContextFlyout>
     </TextBox>
   </StackPanel>
-</UserControl>
+</ContentPage>

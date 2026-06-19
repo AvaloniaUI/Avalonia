@@ -8,7 +8,8 @@
     <ResourceDictionary>
       <!-- Custom controls defined in other assemblies -->
       <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="avares://ControlSamples/HamburgerMenu/HamburgerMenu.xaml" />
+        <ResourceInclude Source="avares://ControlCatalog/ScrollPage.xaml"/>
+        <ResourceInclude Source="avares://ControlCatalog/NavHeaderItem.xaml"/>
       </ResourceDictionary.MergedDictionaries>
 
       <!-- Resources used only in the control catalog -->
@@ -59,6 +60,15 @@
       <Setter Property="FontSize" Value="12" />
     </Style>
   </Application.Styles>
+  <NativeDock.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="New Window" Click="OnDockNewWindowClicked"/>
+      <NativeMenuItemSeparator/>
+      <NativeMenuItem Header="Show Main Window" Click="OnDockShowMainWindowClicked"/>
+      <NativeMenuItemSeparator/>
+      <NativeMenuItem Header="Add Dock Menu Item" Click="OnDockAddItemClicked"/>
+    </NativeMenu>
+  </NativeDock.Menu>
   <TrayIcon.Icons>
     <TrayIcons>
       <TrayIcon Icon="/Assets/test_icon.ico" MacOSProperties.IsTemplateIcon="true" ToolTipText="Avalonia Tray Icon ToolTip">

@@ -36,7 +36,17 @@ namespace Avalonia.Android
 
             this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 
-            _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+            _root = new EmbeddableControlRoot(_view);
+            _root.Prepare();
+
+            SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+            OnConfigurationChanged();
+
+            _view.InternalView!.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+            _view.InternalView.SurfaceWindowDestroyed += InternalView_SurfaceWindowDestroyed;
+
+            _accessHelper = new AvaloniaAccessHelper(this);
+            ViewCompat.SetAccessibilityDelegate(this, _accessHelper);
         }
 
         private void InternalView_SurfaceWindowCreated(object? sender, EventArgs e)
@@ -46,7 +56,16 @@ namespace Avalonia.Android
             if (Visibility == ViewStates.Visible)
             {
                 OnVisibilityChanged(true);
+
+                _root?.InvalidateMeasure();
+                Invalidate();
             }
+        }
+
+        private void InternalView_SurfaceWindowDestroyed(object? sender, EventArgs e)
+        {
+            OnVisibilityChanged(false);
+            _surfaceCreated = false;
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
@@ -122,7 +141,7 @@ namespace Avalonia.Android
 
             if (isVisible && _timerSubscription == null)
             {
-                if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
+                if (AndroidPlatform.Timer is { } timer)
                 {
                     _timerSubscription = timer.SubscribeView(this);
                 }
@@ -164,7 +183,7 @@ namespace Avalonia.Android
         {
             public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
-                View.FocusChange += ViewImpl_FocusChange;
+                View!.FocusChange += ViewImpl_FocusChange;
             }
 
             private void ViewImpl_FocusChange(object? sender, FocusChangeEventArgs e)

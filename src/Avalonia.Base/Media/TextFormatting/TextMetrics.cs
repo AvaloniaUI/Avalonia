@@ -5,7 +5,7 @@
     /// </summary>
     public readonly record struct TextMetrics
     {
-        public TextMetrics(IGlyphTypeface glyphTypeface, double fontRenderingEmSize)
+        public TextMetrics(GlyphTypeface glyphTypeface, double fontRenderingEmSize)
         {
             var fontMetrics = glyphTypeface.Metrics;
 

@@ -3,7 +3,7 @@
 using System;
 using System.Globalization;
 using System.Reflection;
-using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Avalonia.UnitTests;
 
@@ -21,9 +21,9 @@ public sealed class InvariantCultureAttribute : BeforeAfterTestAttribute
     private CultureInfo? _previousCulture;
     private CultureInfo? _previousUICulture;
 
-    public override void Before(MethodInfo methodUnderTest)
+    public override void Before(MethodInfo methodUnderTest, IXunitTest test)
     {
-        base.Before(methodUnderTest);
+        base.Before(methodUnderTest, test);
 
         _previousCulture = CultureInfo.CurrentCulture;
         _previousUICulture = CultureInfo.CurrentUICulture;
@@ -32,11 +32,11 @@ public sealed class InvariantCultureAttribute : BeforeAfterTestAttribute
         CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
     }
 
-    public override void After(MethodInfo methodUnderTest)
+    public override void After(MethodInfo methodUnderTest, IXunitTest test)
     {
         CultureInfo.CurrentCulture = _previousCulture!;
         CultureInfo.CurrentUICulture = _previousUICulture!;
 
-        base.After(methodUnderTest);
+        base.After(methodUnderTest, test);
     }
 }

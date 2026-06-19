@@ -78,7 +78,9 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Color> FallbackColorProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, Color>(nameof(FallbackColor));
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Raised when any of the material's visual properties change.
+        /// </summary>
         public event EventHandler? Invalidated;
 
         /// <summary>
@@ -110,7 +112,7 @@ namespace Avalonia.Media
 
         /// <summary>
         /// Gets or Sets the Fallback Color.
-        /// This is used on rendering plaforms that dont support acrylic.
+        /// This is used on rendering platforms that don't support acrylic.
         /// </summary>
         public Color FallbackColor
         {

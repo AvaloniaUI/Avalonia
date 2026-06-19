@@ -2,7 +2,7 @@
 
 namespace ControlCatalog.Pages
 {
-    public partial class AcrylicPage : UserControl
+    public partial class AcrylicPage : ContentPage
     {
         public AcrylicPage()
         {

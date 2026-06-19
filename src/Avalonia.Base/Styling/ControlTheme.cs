@@ -50,7 +50,7 @@ namespace Avalonia.Styling
             using var activity = Diagnostic.AttachingStyle()?
                 .AddTag(Diagnostic.Tags.Style, this);
             
-            if (HasSettersOrAnimations && TargetType.IsAssignableFrom(StyledElement.GetStyleKey(target)))
+            if (HasSettersOrAnimations && TargetType.IsAssignableFrom(target.StyleKey))
             {
                 Attach(target, null, type, true);
                 activity?.AddTag(Diagnostic.Tags.SelectorResult, SelectorMatchResult.AlwaysThisType);

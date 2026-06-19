@@ -188,7 +188,7 @@ namespace Avalonia.Base.UnitTests.Layout
             };
             var raised = 0;
 
-            void ValidateBounds(object sender, EventArgs e)
+            void ValidateBounds(object? sender, EventArgs e)
             {
                 Assert.Equal(new Rect(0, 0, 100, 100), border1.Bounds);
                 Assert.Equal(new Rect(0, 0, 100, 100), border2.Bounds);
@@ -225,7 +225,7 @@ namespace Avalonia.Base.UnitTests.Layout
                 LayoutManager = layoutManager.Object,
             };
 
-            void Handler(object sender, EventArgs e) {}
+            void Handler(object? sender, EventArgs e) {}
 
             layoutManager.Invocations.Clear();
             target.LayoutUpdated += Handler;

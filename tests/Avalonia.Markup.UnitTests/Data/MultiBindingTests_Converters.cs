@@ -87,7 +87,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class SumOfDoublesConverter : IMultiValueConverter
         {
-            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
             {
                 return values.OfType<double>().Sum();
             }

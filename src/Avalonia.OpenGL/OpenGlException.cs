@@ -37,11 +37,7 @@ namespace Avalonia.OpenGL
         {
             try
             {
-#if NET6_0_OR_GREATER
                 var errorName = Enum.GetName(errorCode);
-#else
-                var errorName = Enum.GetName(typeof(T), errorCode);
-#endif
                 return new OpenGlException(
                     $"{funcName} failed with error {errorName} (0x{errorCode.ToString("X")})", intErrorCode);
             }

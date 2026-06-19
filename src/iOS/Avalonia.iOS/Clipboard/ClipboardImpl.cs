@@ -65,6 +65,9 @@ internal sealed class ClipboardImpl(UIPasteboard pasteboard)
 
         foreach (var dataFormat in dataTransferItem.Formats)
         {
+            if (dataFormat.Kind == DataFormatKind.InProcess)
+                continue;
+
             var data = await TryGetFoundationDataAsync(dataTransferItem, dataFormat);
             if (data is null)
                 continue;

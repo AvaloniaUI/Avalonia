@@ -3,7 +3,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(AvsCurrentAndroidTargetFramework)</TargetFramework>
     <SupportedOSPlatformVersion>$(AvsMinSupportedAndroidVersion)</SupportedOSPlatformVersion>
-    <Nullable>enable</Nullable>
     <ApplicationId>com.avalonia.safeareademo</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>

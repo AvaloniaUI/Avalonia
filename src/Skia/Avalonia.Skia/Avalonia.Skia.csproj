@@ -4,8 +4,6 @@
     <IncludeLinuxSkia>true</IncludeLinuxSkia>
     <IncludeWasmSkia>true</IncludeWasmSkia>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- No obsolete code usage -->
-    <WarningsAsErrors>$(WarningsAsErrors);CS0618</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\NoiseAsset_256X256_PNG.png" />

@@ -33,6 +33,7 @@ namespace Avalonia.Input.GestureRecognizers
         private TimeSpan _lastTime;
         private TimeSpan _inertiaStartTime;
         private int _currentInertiaGestureId;
+        private Point _delta;
 
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
@@ -133,8 +134,6 @@ namespace Avalonia.Input.GestureRecognizers
                         _trackedRootPoint = new Point(
                             _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? ScrollStartDistance : -ScrollStartDistance),
                             _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? ScrollStartDistance : -ScrollStartDistance));
-
-                        Capture(e.Pointer);
                     }
                 }
 
@@ -142,12 +141,23 @@ namespace Avalonia.Input.GestureRecognizers
                 {
                     var vector = _trackedRootPoint - rootPoint;
 
-                    _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), _pointerPressedPoint - rootPoint);
+                    var oldDelta = _delta;
+                    _delta = _pointerPressedPoint - rootPoint;
+
+                    if (oldDelta == _delta)
+                        return;
+
+                    _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), _delta);
 
                     _lastMoveTimestamp = e.Timestamp;
-                    Target!.RaiseEvent(new ScrollGestureEventArgs(_gestureId, vector));
+                    var scrollEventArgs = new ScrollGestureEventArgs(_gestureId, vector);
+                    Target!.RaiseEvent(scrollEventArgs);
                     _trackedRootPoint = rootPoint;
-                    e.Handled = true;
+                    e.Handled = scrollEventArgs.Handled;
+                    if(e.Handled)
+                    {
+                        Capture(e.Pointer);
+                    }
                 }
             }
         }
@@ -166,7 +176,9 @@ namespace Avalonia.Input.GestureRecognizers
                 _stopWatch?.Stop();
                 _stopWatch = null;
                 _inertia = default;
+                _delta = default;
                 _scrolling = false;
+                _velocityTracker = null;
                 Target!.RaiseEvent(new ScrollGestureEndedEventArgs(_gestureId));
                 _gestureId = 0;
                 _lastMoveTimestamp = null;

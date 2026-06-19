@@ -43,11 +43,7 @@ namespace Avalonia.Media.Fonts
         }
 
         private static string[] SplitNames(string names)
-#if NET6_0_OR_GREATER
             => names.Split(',', StringSplitOptions.TrimEntries);
-#else
-            => Array.ConvertAll(names.Split(','), p => p.Trim());
-#endif
 
         /// <summary>
         /// Gets the primary family name.

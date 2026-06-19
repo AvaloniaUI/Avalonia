@@ -29,6 +29,9 @@ namespace Avalonia.Platform
         /// </summary>
         PixelFormat Format { get; }
 
-        //TODO12: Add AlphaFormat
+        /// <summary>
+        /// Gets the alpha format.
+        /// </summary>
+        AlphaFormat AlphaFormat { get; }
     }
 }

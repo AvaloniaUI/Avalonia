@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CurvedHeaderProfileScrollView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Spacer for dome header + avatar overlap: 110 (flat) + 32 (dome) + 44 (avatar/2) + 16 = 202px -->
+      <Border Height="202"/>
+
+      <!-- Stats row -->
+      <Border BorderBrush="#E5E7EB" BorderThickness="0,1,0,1" Padding="0,12">
+        <Grid ColumnDefinitions="*,*,*" Margin="24,8,24,8">
+          <StackPanel HorizontalAlignment="Center" Spacing="1">
+            <TextBlock Text="128" FontSize="18" FontWeight="Bold"
+                       Foreground="#111827" TextAlignment="Center"/>
+            <TextBlock Text="Posts" FontSize="12" Foreground="#64748b" TextAlignment="Center"/>
+          </StackPanel>
+          <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="1">
+            <TextBlock Text="24.5K" FontSize="18" FontWeight="Bold"
+                       Foreground="#111827" TextAlignment="Center"/>
+            <TextBlock Text="Followers" FontSize="12" Foreground="#64748b" TextAlignment="Center"/>
+          </StackPanel>
+          <StackPanel Grid.Column="2" HorizontalAlignment="Center" Spacing="1">
+            <TextBlock Text="312" FontSize="18" FontWeight="Bold"
+                       Foreground="#111827" TextAlignment="Center"/>
+            <TextBlock Text="Following" FontSize="12" Foreground="#64748b" TextAlignment="Center"/>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- Follow / Message buttons -->
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                  Spacing="12" Margin="0,16,0,16">
+        <Button Content="Follow"
+                Background="#137fec" Foreground="White"
+                CornerRadius="8" Width="120" Height="40"
+                Padding="0"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"/>
+        <Button Content="Message"
+                Background="#dbeafe" Foreground="#137fec"
+                CornerRadius="8" Width="120" Height="40"
+                Padding="0"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"/>
+      </StackPanel>
+
+      <!-- Bio -->
+      <TextBlock TextWrapping="Wrap" Margin="24,0,24,20" FontSize="13"
+                 Foreground="#64748b" TextAlignment="Center"
+                 Text="Crafting beautiful digital experiences. Passionate about design systems, accessibility, and great coffee. Open to collaborations!"/>
+
+      <!-- Posts section -->
+      <TextBlock Text="Posts" FontSize="16" FontWeight="Bold"
+                 Foreground="#111827" Margin="16,0,16,12"/>
+      <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" Margin="14,0">
+
+        <!-- Row 0 -->
+        <Border Margin="2" Height="100" CornerRadius="6" ClipToBounds="True">
+          <Border.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/featured.jpg"
+                        Stretch="UniformToFill"/>
+          </Border.Background>
+        </Border>
+        <Border Grid.Column="1" Margin="2" Height="100" CornerRadius="6" ClipToBounds="True">
+          <Border.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/product1.jpg"
+                        Stretch="UniformToFill"/>
+          </Border.Background>
+        </Border>
+        <Border Grid.Column="2" Margin="2" Height="100" CornerRadius="6" ClipToBounds="True">
+          <Border.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/product2.jpg"
+                        Stretch="UniformToFill"/>
+          </Border.Background>
+        </Border>
+
+        <!-- Row 1 -->
+        <Border Grid.Row="1" Margin="2" Height="100" CornerRadius="6" ClipToBounds="True">
+          <Border.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/product3.jpg"
+                        Stretch="UniformToFill"/>
+          </Border.Background>
+        </Border>
+        <Border Grid.Row="1" Grid.Column="1" Margin="2" Height="100" CornerRadius="6" ClipToBounds="True">
+          <Border.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/update1.jpg"
+                        Stretch="UniformToFill"/>
+          </Border.Background>
+        </Border>
+        <Border Grid.Row="1" Grid.Column="2" Margin="2" Height="100" CornerRadius="6" ClipToBounds="True">
+          <Border.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/update2.jpg"
+                        Stretch="UniformToFill"/>
+          </Border.Background>
+        </Border>
+
+      </Grid>
+
+      <Border Height="24"/>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

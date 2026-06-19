@@ -24,5 +24,11 @@ namespace Avalonia
         /// Enabling this might have performance implications.
         /// </remarks>
         public bool UseOpacitySaveLayer { get; set; } = false;
+        
+        /// <summary>
+        /// Gets whether stencil buffers can be used for various draw operations, improving performance.
+        /// If null (the default), Avalonia chooses whether to enable stencil buffers depending on the platform.
+        /// </summary>
+        public bool? UseStencilBuffers { get; set; }
     }
 }

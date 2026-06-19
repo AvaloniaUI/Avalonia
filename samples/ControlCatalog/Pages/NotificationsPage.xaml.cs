@@ -5,7 +5,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class NotificationsPage : UserControl
+    public partial class NotificationsPage : ContentPage
     {
         private NotificationViewModel _viewModel;
 

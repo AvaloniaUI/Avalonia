@@ -4,7 +4,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class MenuPage : UserControl
+    public partial class MenuPage : ContentPage
     {
         public MenuPage()
         {

@@ -1,6 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:collections="using:System.Collections"
+             Header="ViewBox"
              x:Class="ControlCatalog.Pages.ViewboxPage">
 
     <Grid RowDefinitions="Auto,*,*">
@@ -50,4 +51,4 @@
         </Grid>
 
     </Grid>
-</UserControl>
+</ContentPage>

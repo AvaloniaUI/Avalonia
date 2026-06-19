@@ -6,7 +6,7 @@ namespace Avalonia.Input
     /// Defines the interface for classes that handle keyboard navigation for a window.
     /// </summary>
     [Unstable]
-    public interface IKeyboardNavigationHandler
+    internal interface IKeyboardNavigationHandler
     {
         /// <summary>
         /// Sets the owner of the keyboard navigation handler.
@@ -16,7 +16,7 @@ namespace Avalonia.Input
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
         [PrivateApi]
-        void SetOwner(IInputRoot owner);
+        void SetOwner(InputElement owner);
 
         /// <summary>
         /// Moves the focus in the specified direction.
@@ -24,9 +24,11 @@ namespace Avalonia.Input
         /// <param name="element">The current element.</param>
         /// <param name="direction">The direction to move.</param>
         /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
-        void Move(
+        /// <param name="deviceType">The device type used to move the focus.</param>
+        bool Move(
             IInputElement element, 
             NavigationDirection direction,
-            KeyModifiers keyModifiers = KeyModifiers.None);
+            KeyModifiers keyModifiers = KeyModifiers.None,
+            KeyDeviceType? deviceType = null);
     }
 }

@@ -3,6 +3,49 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Platform;
 
+/// <summary>
+/// Describes the current readiness state of a platform render target.
+/// Flows through the entire rendering pipeline from platform to compositor.
+/// </summary>
+[PrivateApi]
+[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Private API, not meant to be compared")]
+public readonly struct PlatformRenderTargetState
+{
+    /// <summary>
+    /// Indicates if the render target is currently ready to be rendered to.
+    /// </summary>
+    public bool IsReady { get; init; }
+    
+    /// <summary>
+    /// Indicates that the render target is currently not ready but will wake up the render loop
+    /// when it becomes ready (e.g. waiting for a compositor frame callback).
+    /// When true, the compositor should not keep polling for readiness.
+    /// </summary>
+    public bool WillWakeUpRenderLoopWhenReady { get; init; }
+    
+    /// <summary>
+    /// Indicates if the render target is no longer usable and needs to be recreated
+    /// </summary>
+    public bool IsCorrupted { get; init; }
+    
+    /// <summary>
+    /// A readiness state indicating the target is ready to render.
+    /// </summary>
+    public static PlatformRenderTargetState Ready => new() { IsReady = true };
+
+    public static PlatformRenderTargetState NotReadyTryLater => default;
+    
+    public static PlatformRenderTargetState Corrupted => new() { IsCorrupted = true, IsReady = true};
+
+    public static PlatformRenderTargetState Disposed => new() { IsCorrupted = true};
+
+    public static PlatformRenderTargetState NotReadyWillWakeupRenderLoop => new PlatformRenderTargetState()
+    {
+        WillWakeUpRenderLoopWhenReady = true
+    };
+
+}
+
 [PrivateApi]
 [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Private API, not meant to be compared")]
 public struct RenderTargetProperties

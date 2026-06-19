@@ -4,7 +4,7 @@ using Avalonia.Styling;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ThemePage : UserControl
+    public partial class ThemePage : ContentPage
     {
         public static ThemeVariant Pink { get; } = new("Pink", ThemeVariant.Light);
         

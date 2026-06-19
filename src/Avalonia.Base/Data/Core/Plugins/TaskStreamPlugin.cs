@@ -61,10 +61,9 @@ namespace Avalonia.Data.Core.Plugins
             return Observable.Empty<object?>();
         }
 
-        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         private static IObservable<object?> HandleCompleted(Task task)
         {
-            var resultProperty = task.GetType().GetRuntimeProperty("Result");
+            var resultProperty = GetTaskResult(task);
 
             if (resultProperty != null)
             {
@@ -80,6 +79,14 @@ namespace Avalonia.Data.Core.Plugins
             }
 
             return Observable.Empty<object>();
+
+            [DynamicDependency("Result", typeof(Task<>))]
+            [UnconditionalSuppressMessage("Trimming", "IL2070")]
+            [UnconditionalSuppressMessage("Trimming", "IL2075")]
+            PropertyInfo? GetTaskResult(Task obj)
+            {
+                return obj.GetType().GetProperty("Result");
+            }
         }
     }
 }

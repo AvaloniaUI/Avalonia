@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
@@ -47,7 +47,7 @@ public class DirectFbCompositionTests : TestBase
     void Should_Only_Update_Clipped_Rects_When_Retained_Fb_Is_Advertised(bool advertised)
     {
         var timer = new ManualRenderTimer();
-        var compositor = new Compositor(new RenderLoop(timer), null, true,
+        var compositor = new Compositor(RenderLoop.FromTimer(timer), null, true,
             new DispatcherCompositorScheduler(), true, Dispatcher.UIThread, new CompositionOptions
             {
                 UseRegionDirtyRectClipping = true
@@ -83,16 +83,14 @@ public class DirectFbCompositionTests : TestBase
         SKBitmap fb = new SKBitmap(200, 200, SKColorType.Rgba8888, SKAlphaType.Premul);
 
         ILockedFramebuffer LockFb() => new LockedFramebuffer(fb.GetAddress(0, 0), new(fb.Width, fb.Height),
-            fb.RowBytes, new Vector(96, 96), PixelFormat.Rgba8888, null);
+            fb.RowBytes, new Vector(96, 96), PixelFormat.Rgba8888, AlphaFormat.Premul, null);
 
         bool previousFrameIsRetained = false;
-        IFramebufferRenderTarget rt = advertised
-            ? new FuncRetainedFramebufferRenderTarget((out FramebufferLockProperties props) =>
-            {
-                props = new() { PreviousFrameIsRetained = previousFrameIsRetained };
-                return LockFb();
-            })
-            : new FuncFramebufferRenderTarget(LockFb);
+        IFramebufferRenderTarget rt = new FuncFramebufferRenderTarget((_, out props) =>
+        {
+            props = new() { PreviousFrameIsRetained = previousFrameIsRetained };
+            return LockFb();
+        }, advertised);
         
         using var renderer =
             new CompositingRenderer(root, compositor, () => new[] { new FuncFramebufferSurface(() => rt) });
@@ -100,7 +98,7 @@ public class DirectFbCompositionTests : TestBase
         control.Measure(new Size(control.Width, control.Height));
         control.Arrange(new Rect(control.DesiredSize));
         renderer.Start();
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         timer.TriggerTick();
         var image1 =
             $"{nameof(Should_Only_Update_Clipped_Rects_When_Retained_Fb_Is_Advertised)}_advertized-{advertised}_initial";
@@ -112,7 +110,7 @@ public class DirectFbCompositionTests : TestBase
         
         r1.Fill = Brushes.Red;
         r2.Fill = Brushes.Green;
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         timer.TriggerTick();
         var image2 =
             $"{nameof(Should_Only_Update_Clipped_Rects_When_Retained_Fb_Is_Advertised)}_advertized-{advertised}_updated";
