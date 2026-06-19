@@ -76,7 +76,7 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     public WindowTransparencyLevel TransparencyLevel { get; } = WindowTransparencyLevel.Transparent;
     public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = default;
     public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) { }
-    public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+    public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant) { }
 
     public Action? Closed { get; set; }
     public Action? LostFocus { get; set; }

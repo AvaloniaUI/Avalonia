@@ -40,7 +40,7 @@ namespace Avalonia.Android
             _root.Prepare();
 
             SetBackgroundColor(global::Android.Graphics.Color.Transparent);
-            OnConfigurationChanged();
+            OnConfigurationChanged(null);
 
             _view.InternalView!.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
             _view.InternalView.SurfaceWindowDestroyed += InternalView_SurfaceWindowDestroyed;
@@ -76,13 +76,9 @@ namespace Avalonia.Android
             get { return _root?.Content; }
             set
             {
-                _content = null;
+                _content = value;
                 if (_root != null)
                     _root.Content = value;
-                else
-                {
-                    _content = value;
-                }
             }
         }
 
@@ -90,6 +86,7 @@ namespace Avalonia.Android
         {
             _root?.Dispose();
             _root = null;
+            _content = null;
         }
 
         protected override void OnDetachedFromWindow()
@@ -98,7 +95,7 @@ namespace Avalonia.Android
             OnVisibilityChanged(false);
             _surfaceCreated = false;
 
-            if(_accessHelper is { }  accessHelper)
+            if (_accessHelper is { } accessHelper)
             {
                 ViewCompat.SetAccessibilityDelegate(this, null);
                 _accessHelper = null;
@@ -107,9 +104,10 @@ namespace Avalonia.Android
 
         protected override void OnAttachedToWindow()
         {
+            _root?.Content = null;
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
-            if(_content != null)
+            if (_content != null)
             {
                 _root.Content = _content;
             }
@@ -160,7 +158,7 @@ namespace Avalonia.Android
                 _timerSubscription = null;
             }
         }
-        
+
         protected override void OnConfigurationChanged(Configuration? newConfig)
         {
             base.OnConfigurationChanged(newConfig);
@@ -188,7 +186,7 @@ namespace Avalonia.Android
 
             private void ViewImpl_FocusChange(object? sender, FocusChangeEventArgs e)
             {
-                if(!e.HasFocus)
+                if (!e.HasFocus)
                     LostFocus?.Invoke();
             }
         }
