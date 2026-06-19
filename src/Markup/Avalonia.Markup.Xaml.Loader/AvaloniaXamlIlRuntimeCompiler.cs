@@ -28,7 +28,8 @@ using XamlX.IL.Cecil;
 namespace Avalonia.Markup.Xaml.XamlIl
 {
 #if !RUNTIME_XAML_CECIL
-    [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+    [RequiresUnreferencedCode(XamlX.TrimmingMessages.Sre)]
+    [RequiresDynamicCode(XamlX.TrimmingMessages.Sre)]
 #endif
     internal static class AvaloniaXamlIlRuntimeCompiler
     {
@@ -43,7 +44,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
         private static AssemblyBuilder? _sreAsm;
 
         [CompilerDynamicDependencies]
-        [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
         [MemberNotNull(nameof(_sreTypeSystem))]
         [MemberNotNull(nameof(_sreBuilder))]
         [MemberNotNull(nameof(_sreMappings))]
