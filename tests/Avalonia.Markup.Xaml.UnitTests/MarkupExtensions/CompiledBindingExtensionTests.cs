@@ -1863,8 +1863,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <StackPanel>
         <ContentControl Content='{CompiledBinding Action}' Name='action' />
         <ContentControl Content='{CompiledBinding Func}' Name='func' />
-        <ContentControl Content='{CompiledBinding Action16}' Name='action16' />
-        <ContentControl Content='{CompiledBinding Func16}' Name='func16' />
+        <ContentControl Content='{CompiledBinding Func2}' Name='func2' />
         <ContentControl Content='{CompiledBinding CustomDelegateTypeVoid}' Name='customvoid' />
         <ContentControl Content='{CompiledBinding CustomDelegateTypeInt}' Name='customint' />
     </StackPanel>
@@ -1873,9 +1872,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.DataContext = new MethodDataContext();
 
                 Assert.IsAssignableFrom(typeof(Action), window.GetControl<ContentControl>("action").Content);
-                Assert.IsAssignableFrom(typeof(Func<int>), window.GetControl<ContentControl>("func").Content);
-                Assert.IsAssignableFrom(typeof(Action<int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int>), window.GetControl<ContentControl>("action16").Content);
-                Assert.IsAssignableFrom(typeof(Func<int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int>), window.GetControl<ContentControl>("func16").Content);
+                Assert.IsAssignableFrom(typeof(Func<object>), window.GetControl<ContentControl>("func").Content);
+                Assert.IsAssignableFrom(typeof(Func<object, object>), window.GetControl<ContentControl>("func2").Content);
                 Assert.True(typeof(Delegate).IsAssignableFrom(window.GetControl<ContentControl>("customvoid").Content!.GetType()));
                 Assert.True(typeof(Delegate).IsAssignableFrom(window.GetControl<ContentControl>("customint").Content!.GetType()));
             }
@@ -2533,12 +2531,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     {
         public void Action() { }
 
-        public int Func() => 1;
+        public object Func() => 1;
+        public object Func2(object i) => i;
 
-        public void Action16(int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15, int i16) { }
-        public int Func16(int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15, int i16) => i;
-        public void CustomDelegateTypeVoid(int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15, int i16, int i17) { }
-        public int CustomDelegateTypeInt(int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10, int i11, int i12, int i13, int i14, int i15, int i16, int i17) => i;
+        public void CustomDelegateTypeVoid(object i) { }
+        public object CustomDelegateTypeInt(object i) => i;
     }
 
     public class MethodAsCommandDataContext : INotifyPropertyChanged
@@ -2546,7 +2543,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public string Method() => Value = "Called";
-        public string Method1(int i) => Value = $"Called {i}";
+        public string Method1() => Value = "Called";
+        public string Method1(int i) => throw new InvalidOperationException("Binding to method with typed parameters is not supported");
+        public string Method1(object i) => Value = $"Called {i}";
         public string Method2(int i, int j) => Value = $"Called {i},{j}";
         public string Value { get; private set; } = "Not called";
 
