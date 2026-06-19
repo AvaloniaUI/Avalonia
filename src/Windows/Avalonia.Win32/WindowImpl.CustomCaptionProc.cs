@@ -139,8 +139,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_INITMENU:
                     UpdateSystemMenu(GetSystemMenu(hWnd, false));
-                    callDwp = false;
-                    return IntPtr.Zero;
+                    break;
 
                 // Normally, Avalonia doesn't handles non-client input as a special NonClientLeftButtonDown, ignoring move and up events.
                 // What makes it a problem, Avalonia has to mark templated caption buttons as a non-client area.
@@ -365,7 +364,6 @@ namespace Avalonia.Win32
             SetSystemMenuItemEnabled(menu, SysCommands.SC_SIZE, isNormal && _windowProperties.IsResizable);
             SetSystemMenuItemEnabled(menu, SysCommands.SC_MINIMIZE, !isMinimized && !isFullScreen && _windowProperties.IsMinimizable);
             SetSystemMenuItemEnabled(menu, SysCommands.SC_MAXIMIZE, !isMaximized && !isFullScreen && _windowProperties.IsMaximizable);
-            SetSystemMenuItemEnabled(menu, SysCommands.SC_CLOSE, true);
 
             if (isMinimized || isMaximized || isFullScreen)
             {
