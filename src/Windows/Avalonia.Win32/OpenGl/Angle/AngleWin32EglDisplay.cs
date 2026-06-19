@@ -21,17 +21,24 @@ namespace Avalonia.Win32.OpenGl.Angle
 
         protected override bool DisplayLockIsSharedWithContexts => true;
 
+        static EglDisplayOptions GetDisplayOptions(EglInterface egl,
+            Func<bool>? deviceLostCheckCallback = null,
+            Action? disposeCallback = null) => new()
+        {
+            Egl = egl,
+            ContextLossIsDisplayLoss = true,
+            GlVersions = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
+                .Where(x => x.Type == GlProfileType.OpenGLES),
+            DeviceLostCheckCallback = deviceLostCheckCallback,
+            DisposeCallback = disposeCallback
+        };
+        
         public static AngleWin32EglDisplay CreateD3D9Display(EglInterface egl)
         {
             var display = egl.GetPlatformDisplayExt(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero,
                 new[] { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, EGL_NONE });
             
-            return new AngleWin32EglDisplay(display, egl, new EglDisplayOptions()
-            {
-                Egl = egl,
-                ContextLossIsDisplayLoss = true,
-                GlVersions = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
-            }, AngleOptions.PlatformApi.DirectX9);
+            return new AngleWin32EglDisplay(display, egl, GetDisplayOptions(egl), AngleOptions.PlatformApi.DirectX9);
         }
         
         public static AngleWin32EglDisplay CreateSharedD3D11Display(EglInterface egl)
@@ -39,12 +46,7 @@ namespace Avalonia.Win32.OpenGl.Angle
             var display = egl.GetPlatformDisplayExt(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero,
                 new[] { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_NONE });
             
-            return new AngleWin32EglDisplay(display, egl, new EglDisplayOptions()
-            {
-                Egl = egl,
-                ContextLossIsDisplayLoss = true,
-                GlVersions = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
-            }, AngleOptions.PlatformApi.DirectX11);
+            return new AngleWin32EglDisplay(display, egl, GetDisplayOptions(egl), AngleOptions.PlatformApi.DirectX11);
         }
 
         public static unsafe AngleWin32EglDisplay CreateD3D11Display(Win32AngleEglInterface egl)
@@ -155,14 +157,8 @@ namespace Avalonia.Win32.OpenGl.Angle
 
 
                 var rv = new AngleWin32EglDisplay(display, egl,
-                    new EglDisplayOptions
-                    {
-                        DisposeCallback = Cleanup,
-                        Egl = egl,
-                        ContextLossIsDisplayLoss = true,
-                        DeviceLostCheckCallback = () => d3dDevice.DeviceRemovedReason != 0,
-                        GlVersions = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
-                    }, AngleOptions.PlatformApi.DirectX11);
+                    GetDisplayOptions(egl, () => d3dDevice.DeviceRemovedReason != 0, Cleanup),
+                    AngleOptions.PlatformApi.DirectX11);
                 success = true;
                 return rv;
             }

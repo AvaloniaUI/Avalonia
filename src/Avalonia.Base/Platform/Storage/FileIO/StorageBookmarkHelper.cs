@@ -41,10 +41,16 @@ internal static class StorageBookmarkHelper
 
         var arrayLength = HeaderLength + nativeBookmarkBytes.Length;
         var arrayPool = ArrayPool<byte>.Shared.Rent(arrayLength);
+
         try
         {
             // Write platform into first 16 bytes.
             var arraySpan = arrayPool.AsSpan(0, arrayLength);
+
+            // Ensure any leftover data from the pooled array is cleared before we use it so
+            // that bytes we don't overwrite (e.g. header padding) won't leak into the encoded bookmark.
+            arraySpan.Clear();
+
             AvaHeaderPrefix.CopyTo(arraySpan);
             platform.CopyTo(arraySpan.Slice(AvaHeaderPrefix.Length));
 
@@ -52,11 +58,7 @@ internal static class StorageBookmarkHelper
             nativeBookmarkBytes.CopyTo(arraySpan.Slice(HeaderLength));
 
             // We must use span overload because ArrayPool might return way too big array. 
-#if NET6_0_OR_GREATER
             return Convert.ToBase64String(arraySpan);
-#else
-            return Convert.ToBase64String(arraySpan.ToArray(), Base64FormattingOptions.None);
-#endif
         }
         finally
         {
@@ -83,7 +85,7 @@ internal static class StorageBookmarkHelper
         }
 
         Span<byte> decodedBookmark;
-#if NET6_0_OR_GREATER
+
         // Each base64 character represents 6 bits, but to be safe, 
         var arrayPool = ArrayPool<byte>.Shared.Rent(HeaderLength + base64bookmark.Length * 6);
         if (Convert.TryFromBase64Chars(base64bookmark, arrayPool, out int bytesWritten))
@@ -95,9 +97,7 @@ internal static class StorageBookmarkHelper
             nativeBookmark = null;
             return DecodeResult.InvalidFormat;
         }
-#else
-        decodedBookmark = Convert.FromBase64String(base64bookmark).AsSpan();
-#endif
+
         try
         {
             if (decodedBookmark.Length < HeaderLength
@@ -120,9 +120,7 @@ internal static class StorageBookmarkHelper
         }
         finally
         {
-#if NET6_0_OR_GREATER
             ArrayPool<byte>.Shared.Return(arrayPool);
-#endif
         }
     }
 

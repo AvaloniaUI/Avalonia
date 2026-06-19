@@ -8,7 +8,7 @@ namespace Avalonia.Native;
 internal class NativePlatformSettings : DefaultPlatformSettings
 {
     private readonly IAvnPlatformSettings _platformSettings;
-    private PlatformColorValues _lastColorValues;
+    private PlatformColorValues? _lastColorValues;
 
     public NativePlatformSettings(IAvnPlatformSettings platformSettings)
     {

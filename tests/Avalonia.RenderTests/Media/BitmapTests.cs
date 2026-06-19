@@ -4,10 +4,11 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
+using Avalonia.Rendering.Composition;
 using Xunit;
 using Path = System.IO.Path;
 
@@ -25,10 +26,11 @@ namespace Avalonia.Skia.RenderTests
 
         class Framebuffer : ILockedFramebuffer, IFramebufferPlatformSurface
         {
-            public Framebuffer(PixelFormat fmt, PixelSize size)
+            public Framebuffer(PixelFormat fmt, AlphaFormat alphaFormat, PixelSize size)
             {
                 Format = fmt;
                 var bpp = fmt == PixelFormat.Rgb565 ? 2 : 4;
+                AlphaFormat = alphaFormat;
                 Size = size;
                 RowBytes = bpp * size.Width;
                 Address = Marshal.AllocHGlobal(size.Height * RowBytes);
@@ -39,6 +41,8 @@ namespace Avalonia.Skia.RenderTests
             public Vector Dpi { get; } = new Vector(96, 96);
 
             public PixelFormat Format { get; }
+
+            public AlphaFormat AlphaFormat { get; }
 
             public PixelSize Size { get; }
 
@@ -64,11 +68,11 @@ namespace Avalonia.Skia.RenderTests
         {
             var fmt = new PixelFormat(fmte);
             var testName = nameof(FramebufferRenderResultsShouldBeUsableAsBitmap) + "_" + fmt;
-            var fb = new Framebuffer(fmt, new PixelSize(80, 80));
+            var fb = new Framebuffer(fmt, AlphaFormat.Premul, new PixelSize(80, 80));
             var r = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             using(var cpuContext = r.CreateBackendContext(null))
-            using (var target = cpuContext.CreateRenderTarget(new object[] { fb }))
-            using (var ctx = target.CreateDrawingContext(false))
+            using (var target = cpuContext.CreateRenderTarget(new IPlatformRenderSurface[] { fb }))
+            using (var ctx = target.CreateDrawingContext(new IRenderTarget.RenderTargetSceneInfo(fb.Size, 1, CompositionTransparencyLevel.None), out _))
             {
                 ctx.Clear(Colors.Transparent);
                 ctx.PushOpacity(0.8, new Rect(0, 0, 80, 80));

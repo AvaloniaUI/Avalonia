@@ -13,12 +13,8 @@ internal enum SynchronizedInputType
     MouseRightButtonUp = 0x10,
     MouseRightButtonDown = 0x20
 }
-#if NET8_0_OR_GREATER
+
 [GeneratedComInterface(Options = ComInterfaceOptions.ManagedObjectWrapper)]
-#else
-[ComImport()]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
 [Guid("29db1a06-02ce-4cf7-9b42-565d4fab20ee")]
 internal partial interface ISynchronizedInputProvider
 {

@@ -35,10 +35,11 @@ namespace Avalonia.Android
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
 
-            this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+            SetBackgroundColor(global::Android.Graphics.Color.Transparent);
             OnConfigurationChanged();
 
-            _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+            _view.InternalView!.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+            _view.InternalView.SurfaceWindowDestroyed += InternalView_SurfaceWindowDestroyed;
 
             _accessHelper = new AvaloniaAccessHelper(this);
             ViewCompat.SetAccessibilityDelegate(this, _accessHelper);
@@ -51,7 +52,16 @@ namespace Avalonia.Android
             if (Visibility == ViewStates.Visible)
             {
                 OnVisibilityChanged(true);
+
+                _root?.InvalidateMeasure();
+                Invalidate();
             }
+        }
+
+        private void InternalView_SurfaceWindowDestroyed(object? sender, EventArgs e)
+        {
+            OnVisibilityChanged(false);
+            _surfaceCreated = false;
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
@@ -90,7 +100,7 @@ namespace Avalonia.Android
                 return;
             if (isVisible && _timerSubscription == null)
             {
-                if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
+                if (AndroidPlatform.Timer is { } timer)
                 {
                     _timerSubscription = timer.SubscribeView(this);
                 }
@@ -131,7 +141,7 @@ namespace Avalonia.Android
         {
             public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
-                View.FocusChange += ViewImpl_FocusChange;
+                View!.FocusChange += ViewImpl_FocusChange;
             }
 
             private void ViewImpl_FocusChange(object? sender, FocusChangeEventArgs e)

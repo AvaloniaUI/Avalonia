@@ -62,8 +62,6 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT SetExtendClientArea (bool enable) override;
 
-    virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints) override;
-
     virtual HRESULT GetExtendTitleBarHeight (double*ret) override;
 
     virtual HRESULT SetExtendTitleBarHeight (double value) override;
@@ -110,7 +108,6 @@ private:
     NSRect _preZoomSize;
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
-    AvnExtendClientAreaChromeHints _extendClientHints;
     bool _isModal;
 };
 

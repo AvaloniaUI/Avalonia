@@ -25,7 +25,7 @@ public class ScreensTests : ScopedTestBase
 
         // Push 2 screens.
         screens.PushNewScreens([1, 2]);
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         Assert.Equal(2, screens.ScreenCount);
         totalScreens.Add(Assert.IsType<TestScreen>(screens.GetScreen(1)));
@@ -33,7 +33,7 @@ public class ScreensTests : ScopedTestBase
 
         // Push 3 screens, while removing one old.
         screens.PushNewScreens([2, 3, 4]);
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         Assert.Equal(3, screens.ScreenCount);
         Assert.Null(screens.GetScreen(1));
@@ -64,7 +64,7 @@ public class ScreensTests : ScopedTestBase
         Assert.Empty(screens.AllScreens);
 
         screens.PushNewScreens([1]);
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         var screen = screens.GetScreen(1);
 
@@ -73,7 +73,7 @@ public class ScreensTests : ScopedTestBase
         Assert.Equal(new IntPtr(1), screen.TryGetPlatformHandle()!.Handle);
 
         screens.PushNewScreens([1]);
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         Assert.Equal(2, screen.Generation);
         Assert.Equal(new IntPtr(1), screen.TryGetPlatformHandle()!.Handle);
@@ -94,7 +94,7 @@ public class ScreensTests : ScopedTestBase
 
         screens.PushNewScreens([1, 2]);
         screens.PushNewScreens([1, 2]); // OnChanged can be triggered multiple times by different events
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         Assert.Equal(2, screens.ScreenCount);
         Assert.NotEmpty(screens.AllScreens);
@@ -118,7 +118,7 @@ public class ScreensTests : ScopedTestBase
         };
 
         ThreadRunHelper.RunOnDedicatedThread(() => screens.PushNewScreens([1, 2])).GetAwaiter().GetResult();
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         Assert.Equal(1, hasChangedTimes);
     }
@@ -131,7 +131,7 @@ public class ScreensTests : ScopedTestBase
 
         var screens = new TestScreens();
         screens.PushNewScreens([1, 2]);
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         var hasChangedTimes = 0;
         var screen = screens.GetScreen(2);
@@ -144,7 +144,7 @@ public class ScreensTests : ScopedTestBase
         };
 
         screens.PushNewScreens([1]);
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         Assert.Equal(1, hasChangedTimes);
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 
 namespace Avalonia.OpenGL
 {
@@ -19,7 +20,7 @@ namespace Avalonia.OpenGL
 
     public interface IGlPlatformSurfaceRenderTargetFactory
     {
-        bool CanRenderToSurface(IGlContext context, object surface);
-        IGlPlatformSurfaceRenderTarget CreateRenderTarget(IGlContext context, object surface);
+        bool CanRenderToSurface(IGlContext context, IPlatformRenderSurface surface);
+        IGlPlatformSurfaceRenderTarget CreateRenderTarget(IGlContext context, IPlatformRenderSurface surface);
     }
 }

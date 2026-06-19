@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System"
                     x:ClassModifier="internal">
@@ -63,6 +63,7 @@
   <ControlTheme x:Key="{x:Type CalendarDatePicker}" TargetType="CalendarDatePicker">
     <Setter Property="Background" Value="{DynamicResource CalendarDatePickerBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CalendarDatePickerForeground}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarDatePickerBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource CalendarDatePickerBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -92,8 +93,9 @@
                        CornerRadius="{TemplateBinding CornerRadius}"
                        Margin="{TemplateBinding BorderThickness}"
                        Padding="{TemplateBinding Padding}"
-                       Watermark="{TemplateBinding Watermark}"
-                       UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
+                       PlaceholderText="{TemplateBinding PlaceholderText}"
+                       PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                       UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"
                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -112,7 +114,7 @@
                       <Setter Property="Background" Value="Transparent" />
                       <Setter Property="BorderBrush" Value="Transparent" />
                     </Style>
-                    <Style Selector="^ /template/ TextBlock#PART_Watermark, ^ TextBlock#PART_FloatingWatermark">
+                    <Style Selector="^ /template/ TextBlock#PART_Placeholder, ^ TextBlock#PART_FloatingPlaceholder">
                       <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerTextForegroundDisabled}" />
                     </Style>
                   </Style>

@@ -3,11 +3,11 @@
         x:Class="Sample.App.NamedControls">
     <StackPanel>
         <TextBox Name="UserNameTextBox"
-                 Watermark="Username input"
-                 UseFloatingWatermark="True" />
+                 Placeholder="Username input"
+                 UseFloatingPlaceholder="True" />
         <TextBox Name="PasswordTextBox"
-                 Watermark="Password input"
-                 UseFloatingWatermark="True" />
+                 Placeholder="Password input"
+                 UseFloatingPlaceholder="True" />
         <Button Name="SignUpButton"
                 Content="Sign up" />
     </StackPanel>

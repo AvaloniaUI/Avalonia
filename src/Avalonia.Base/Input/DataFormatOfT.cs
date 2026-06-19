@@ -10,8 +10,9 @@ namespace Avalonia.Input;
 /// This class cannot be instantiated directly.
 /// Use universal formats such as <see cref="DataFormat.Text"/> and <see cref="DataFormat.File"/>,
 /// or create custom formats using <see cref="DataFormat.CreateBytesApplicationFormat"/>,
-/// <see cref="DataFormat.CreateStringApplicationFormat"/>, <see cref="DataFormat.CreateBytesPlatformFormat"/>
-/// or <see cref="DataFormat.CreateStringPlatformFormat"/>.
+/// <see cref="DataFormat.CreateStringApplicationFormat"/>, <see cref="DataFormat.CreateBytesPlatformFormat"/>,
+/// <see cref="DataFormat.CreateStringPlatformFormat"/>,
+/// or <see cref="DataFormat.CreateInProcessFormat{T}"/>.
 /// </remarks>
 [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Used to resolve typed overloads.")]
 public sealed class DataFormat<T> : DataFormat

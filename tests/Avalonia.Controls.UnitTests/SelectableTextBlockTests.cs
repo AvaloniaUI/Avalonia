@@ -26,12 +26,12 @@ namespace Avalonia.Controls.UnitTests
                     FontSize = 20
                 };
 
-                target.Inlines.Add(run);
+                target.Inlines!.Add(run);
 
                 target.Measure(Size.Infinity);
 
                 target.SelectionStart = 0;
-                target.SelectionEnd = run.Text.Length;
+                target.SelectionEnd = run.Text!.Length;
 
                 target.Measure(Size.Infinity);
 

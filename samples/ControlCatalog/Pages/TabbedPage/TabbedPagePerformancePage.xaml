@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPagePerformancePage">
+  <Grid ColumnDefinitions="*,240">
+
+    <!-- Left: TabbedPage demo -->
+    <Border Grid.Column="0" Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Top" />
+    </Border>
+
+    <!-- Right: Actions + Statistics -->
+    <Border Grid.Column="1"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1,0,0,0" Padding="12">
+      <ScrollViewer>
+        <StackPanel Spacing="8">
+
+          <TextBlock Text="Actions" FontWeight="SemiBold" />
+          <Button Content="Add 5 Tabs"    HorizontalAlignment="Stretch" Click="OnAdd5" />
+          <Button Content="Add 20 Tabs"   HorizontalAlignment="Stretch" Click="OnAdd20" />
+          <Button Content="Remove Last 5" HorizontalAlignment="Stretch" Click="OnRemove5" />
+          <Button Content="Clear All"     HorizontalAlignment="Stretch" Click="OnClearAll" />
+
+          <Separator />
+
+          <Button Content="Force GC"      HorizontalAlignment="Stretch" Click="OnForceGC" />
+          <Button Content="Refresh Stats" HorizontalAlignment="Stretch" Click="OnRefresh" />
+
+          <Separator />
+
+          <TextBlock Text="Statistics" FontWeight="SemiBold" />
+          <TextBlock x:Name="TabCountText"   Text="Tab count: 0"          FontSize="12" />
+          <TextBlock x:Name="LiveCountText"  Text="Live instances: 0"     FontSize="12" />
+          <TextBlock x:Name="HeapText"       Text="Heap: 0 KB"            FontSize="12" />
+          <TextBlock x:Name="AllocText"      Text="Total allocated: 0 KB" FontSize="12" />
+          <TextBlock x:Name="LastOpTimeText" Text="Last Op: —"            FontSize="12" />
+
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+  </Grid>
+</UserControl>

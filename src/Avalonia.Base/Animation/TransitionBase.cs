@@ -78,7 +78,7 @@ namespace Avalonia.Animation
             set { SetAndRaise(EasingProperty, ref _easing, value); }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="ITransition.Property"/>
         [DisallowNull]
         public AvaloniaProperty? Property
         {

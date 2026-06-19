@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   <SolidColorBrush x:Key='RedBrush' Color='{StaticResource Red}'/>
 </ResourceDictionary>";
                 var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var brush = (SolidColorBrush)resources["RedBrush"];
+                var brush = (SolidColorBrush)resources["RedBrush"]!;
 
                 Assert.Equal(Colors.Red, brush.Color);
             }
@@ -59,7 +59,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var loaded = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
                 var window = Assert.IsType<Window>(loaded[1]);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 var brush = Assert.IsType<SolidColorBrush>(button.Background);
                 Assert.Equal(Colors.Red, brush.Color);
@@ -418,7 +418,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <ResourceDictionary x:Key='NotAThemeVariantKey' />
 </ResourceDictionary>";
                 var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var nested = (ResourceDictionary)resources["NotAThemeVariantKey"];
+                var nested = (ResourceDictionary?)resources["NotAThemeVariantKey"];
 
                 Assert.NotNull(nested);
             }

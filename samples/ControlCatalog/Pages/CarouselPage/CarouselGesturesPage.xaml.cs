@@ -1,0 +1,59 @@
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+
+namespace ControlCatalog.Pages
+{
+    public partial class CarouselGesturesPage : UserControl
+    {
+        private bool _keyboardEnabled = true;
+
+        public CarouselGesturesPage()
+        {
+            InitializeComponent();
+            DemoCarousel.AddHandler(InputElement.KeyDownEvent, OnKeyDown, handledEventsToo: true);
+            DemoCarousel.SelectionChanged += OnSelectionChanged;
+            DemoCarousel.Loaded += (_, _) => DemoCarousel.Focus();
+        }
+
+        private void OnKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (!_keyboardEnabled)
+                return;
+
+            switch (e.Key)
+            {
+                case Key.Left:
+                case Key.Up:
+                    LastActionText.Text = $"Action: Key {e.Key} (Previous)";
+                    break;
+                case Key.Right:
+                case Key.Down:
+                    LastActionText.Text = $"Action: Key {e.Key} (Next)";
+                    break;
+            }
+        }
+
+        private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            StatusText.Text = $"Item: {DemoCarousel.SelectedIndex + 1} / {DemoCarousel.ItemCount}";
+            if (DemoCarousel.IsSwiping)
+                LastActionText.Text = "Action: Swipe";
+        }
+
+        private void OnSwipeEnabledChanged(object? sender, RoutedEventArgs e)
+        {
+            DemoCarousel.IsSwipeEnabled = SwipeCheck.IsChecked == true;
+        }
+
+        private void OnWrapSelectionChanged(object? sender, RoutedEventArgs e)
+        {
+            DemoCarousel.WrapSelection = WrapCheck.IsChecked == true;
+        }
+
+        private void OnKeyboardEnabledChanged(object? sender, RoutedEventArgs e)
+        {
+            _keyboardEnabled = KeyboardCheck.IsChecked == true;
+        }
+    }
+}

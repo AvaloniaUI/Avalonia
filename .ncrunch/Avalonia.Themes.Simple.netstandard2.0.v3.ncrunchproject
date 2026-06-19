@@ -1,8 +1,0 @@
-﻿<ProjectConfiguration>
-  <Settings>
-    <AdditionalFilesToIncludeForProject>
-      <Value>..\Avalonia.Themes.Fluent\Strings\InvariantResources.xaml</Value>
-    </AdditionalFilesToIncludeForProject>
-    <InstrumentOutputAssembly>False</InstrumentOutputAssembly>
-  </Settings>
-</ProjectConfiguration>

@@ -10,7 +10,7 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium;
 
 [Collection("Default")]
-public class TrayIconTests : TestBase, IDisposable
+public class TrayIconTests : TestBase
 {
     private readonly AppiumDriver? _rootSession;
     private const string TrayIconName = "IntegrationTestApp TrayIcon";
@@ -139,8 +139,9 @@ public class TrayIconTests : TestBase, IDisposable
         }
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _rootSession?.Dispose();
+        base.Dispose();
     }
 }

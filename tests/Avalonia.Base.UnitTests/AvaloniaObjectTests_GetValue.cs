@@ -119,9 +119,9 @@ namespace Avalonia.Base.UnitTests
                 FooProperty.OverrideDefaultValue(typeof(Class2), "foooverride");
             }
 
-            public Class1 Parent
+            public Class1? Parent
             {
-                get { return (Class1)InheritanceParent; }
+                get { return (Class1?)InheritanceParent; }
                 set { InheritanceParent = value; }
             }
         }

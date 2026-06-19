@@ -24,6 +24,7 @@ internal static class AppManager
                 .Configure<Application>()
                 .UseWin32()
                 .UseSkia()
+                .UseHarfBuzz()
                 .SetupWithoutStarting();
 
             appBuilder.Instance!.Styles.Add(new FluentTheme());

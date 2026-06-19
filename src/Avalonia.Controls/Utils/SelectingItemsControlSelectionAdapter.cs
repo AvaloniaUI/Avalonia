@@ -91,7 +91,7 @@ namespace Avalonia.Controls.Utils
 
         /// <summary>
         /// Initializes a new instance of the
-        /// <see cref="T:Avalonia.Controls.Utils.SelectingItemsControlSelectionAdapterr" />
+        /// <see cref="T:Avalonia.Controls.Utils.SelectingItemsControlSelectionAdapter" />
         /// class with the specified
         /// <see cref="T:Avalonia.Controls.Primitives.SelectingItemsControl" />
         /// control.

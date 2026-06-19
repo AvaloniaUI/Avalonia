@@ -10,6 +10,14 @@ namespace Avalonia.Android
         public override void HandleOnBackPressed()
         {
             activity.OnBackInvoked();
+
+            if (activity.ShouldNavigateBack)
+            {
+                this.Enabled = false;
+                activity.OnBackPressedDispatcher?.OnBackPressed();
+            }
+
+            this.Enabled = true;
         }
     }
 }

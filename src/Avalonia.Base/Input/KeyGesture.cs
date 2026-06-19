@@ -167,7 +167,7 @@ namespace Avalonia.Input
             if (s_keySynonyms.TryGetValue(keyStr.ToLower(CultureInfo.InvariantCulture), out key))
                 return true;
 
-            if (EnumHelper.TryParse(keyStr, true, out key))
+            if (Enum.TryParse(keyStr, true, out key))
                 return true;
 
             return false;
@@ -187,7 +187,7 @@ namespace Avalonia.Input
                 return KeyModifiers.Meta;
             }
 
-            return EnumHelper.Parse<KeyModifiers>(modifier.ToString(), true);
+            return Enum.Parse<KeyModifiers>(modifier.ToString(), true);
         }
 
         private static Key ResolveNumPadOperationKey(Key key)

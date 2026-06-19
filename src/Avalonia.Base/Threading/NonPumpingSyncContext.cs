@@ -22,11 +22,7 @@ namespace Avalonia.Threading
         {
             if (_inner is null)
             {
-#if NET6_0_OR_GREATER
                 ThreadPool.QueueUserWorkItem(static x => x.d(x.state), (d, state), false);
-#else
-                ThreadPool.QueueUserWorkItem(_ => d(state));
-#endif
             }
             else
             {
@@ -46,9 +42,6 @@ namespace Avalonia.Threading
             }
         }
 
-#if !NET6_0_OR_GREATER
-        [PrePrepareMethod]
-#endif
         public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout) =>
             _impl.Wait(waitHandles, waitAll, millisecondsTimeout);
 

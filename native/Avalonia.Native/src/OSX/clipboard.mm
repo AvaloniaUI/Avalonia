@@ -183,7 +183,9 @@ public:
         
         for (auto i = 0; i < count; ++i)
         {
-            auto item = source->GetItem(i);
+            ComPtr<IAvnClipboardDataItem> item;
+            if(S_OK != source->GetItem(i, item.getPPV()))
+                continue;
             auto writeableItem = [[WriteableClipboardItem alloc] initWithItem:item source:source];
             [writeableItems addObject:writeableItem];
         }
@@ -219,8 +221,8 @@ extern IAvnClipboard* CreateClipboard(NSPasteboard* pb)
 
 @implementation WriteableClipboardItem
 {
-    IAvnClipboardDataItem* _item;
-    IAvnClipboardDataSource* _source;
+    ComPtr<IAvnClipboardDataItem> _item;
+    ComPtr<IAvnClipboardDataSource> _source;
 }
     
 - (nonnull WriteableClipboardItem*) initWithItem:(nonnull IAvnClipboardDataItem*)item source:(nonnull IAvnClipboardDataSource*)source
@@ -228,9 +230,6 @@ extern IAvnClipboard* CreateClipboard(NSPasteboard* pb)
     self = [super init];
     _item = item;
     _source = source;
-    
-    // Each item references its source so it doesn't get disposed too early.
-    source->AddRef();
     
     return self;
 }
@@ -283,8 +282,9 @@ NSString* TryConvertFormatToUti(NSString* format)
 
 - (nonnull NSArray<NSPasteboardType>*) writableTypesForPasteboard:(nonnull NSPasteboard*)pasteboard
 {
-    auto formats = _item->ProvideFormats();
-    if (formats == nullptr)
+    ComPtr<IAvnStringArray> formats;
+    auto hr = _item->ProvideFormats(formats.getPPV());
+    if (hr != S_OK || formats == nullptr)
         return [NSArray array];
     
     auto count = formats->GetCount();
@@ -304,7 +304,6 @@ NSString* TryConvertFormatToUti(NSString* format)
         if (uti != nil)
             [utis addObject:uti];
     }
-    formats->Release();
     
     [utis addObject:GetAvnCustomDataType()];
     
@@ -323,8 +322,9 @@ NSString* TryConvertFormatToUti(NSString* format)
     if ([type isEqualToString:GetAvnCustomDataType()])
         return @"";
     
-    ComPtr<IAvnClipboardDataValue> value(_item->GetValue([type UTF8String]), true);
-    if (value.getRaw() == nullptr)
+    ComPtr<IAvnClipboardDataValue> value;
+    HRESULT hr = _item->GetValue([type UTF8String], value.getPPV());
+    if (hr != S_OK || value.getRaw() == nullptr)
         return nil;
     
     if (value->IsString())
@@ -334,21 +334,6 @@ NSString* TryConvertFormatToUti(NSString* format)
     auto buffer = malloc(length);
     value->CopyBytesTo(buffer);
     return [NSData dataWithBytesNoCopy:buffer length:length];
-}
-
-- (void) dealloc
-{
-    if (_item != nullptr)
-    {
-        _item->Release();
-        _item = nullptr;
-    }
-    
-    if (_source != nullptr)
-    {
-        _source->Release();
-        _source = nullptr;
-    }
 }
 
 @end

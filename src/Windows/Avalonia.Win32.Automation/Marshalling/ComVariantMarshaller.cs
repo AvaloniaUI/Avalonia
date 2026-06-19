@@ -1,5 +1,4 @@
-﻿#if NET7_0_OR_GREATER
-global using ComVariantMarshaller = Avalonia.Win32.Automation.Marshalling.ComVariantMarshaller;
+﻿global using ComVariantMarshaller = Avalonia.Win32.Automation.Marshalling.ComVariantMarshaller;
 using System.Runtime.InteropServices.Marshalling;
 
 namespace Avalonia.Win32.Automation.Marshalling;
@@ -13,4 +12,3 @@ internal static class ComVariantMarshaller
 
     public static void Free(ComVariant unmanaged) => unmanaged.Dispose();
 }
-#endif

@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPagePlacementPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="240">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Tab Placement" FontWeight="SemiBold" FontSize="13" />
+        <RadioButton x:Name="TopRadio" Content="Top" IsChecked="True" GroupName="Placement"
+                     IsCheckedChanged="OnPlacementChanged" />
+        <RadioButton x:Name="BottomRadio" Content="Bottom" GroupName="Placement"
+                     IsCheckedChanged="OnPlacementChanged" />
+        <RadioButton x:Name="LeftRadio" Content="Left" GroupName="Placement"
+                     IsCheckedChanged="OnPlacementChanged" />
+        <RadioButton x:Name="RightRadio" Content="Right" GroupName="Placement"
+                     IsCheckedChanged="OnPlacementChanged" />
+
+        <Separator />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="TabPlacement.Auto resolves to Bottom on iOS/Android and Top on all other platforms. Use an explicit value to override." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Top">
+        <ContentPage Header="Alpha">
+          <TextBlock Text="Alpha tab content"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="18" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage Header="Beta">
+          <TextBlock Text="Beta tab content"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="18" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage Header="Gamma">
+          <TextBlock Text="Gamma tab content"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="18" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage Header="Delta">
+          <TextBlock Text="Delta tab content"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="18" Opacity="0.7" />
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </DockPanel>
+</UserControl>

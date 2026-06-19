@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Markup\Parsers\Nodes\ExpressionGrammer" />
-    <None Include="Markup\Parsers\BindingExpressionGrammar.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />

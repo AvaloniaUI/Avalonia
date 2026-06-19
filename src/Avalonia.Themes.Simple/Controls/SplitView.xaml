@@ -67,8 +67,7 @@
     <Style Selector="^:overlay:left /template/ Panel#PART_PaneRoot">
       <Setter Property="Width"
               Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClosedPaneWidth}" />
-      <!-- ColumnSpan should be 2 -->
-      <Setter Property="Grid.ColumnSpan" Value="1" />
+      <Setter Property="Grid.ColumnSpan" Value="2" />
       <Setter Property="Grid.Column" Value="0" />
     </Style>
     <Style Selector="^:overlay:left /template/ Panel#ContentRoot">
@@ -90,8 +89,7 @@
 
     <!-- CompactOverlay -->
     <Style Selector="^:compactoverlay:left /template/ Panel#PART_PaneRoot">
-      <!-- ColumnSpan should be 2 -->
-      <Setter Property="Grid.ColumnSpan" Value="1" />
+      <Setter Property="Grid.ColumnSpan" Value="2" />
       <Setter Property="Grid.Column" Value="0" />
       <Setter Property="Width"
               Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClosedPaneWidth}" />

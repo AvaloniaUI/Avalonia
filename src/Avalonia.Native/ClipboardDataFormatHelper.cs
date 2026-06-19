@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using Avalonia.Input;
 using Avalonia.Native.Interop;
@@ -28,7 +26,7 @@ internal static class ClipboardDataFormatHelper
         for (var c = 0u; c < count; c++)
         {
             using var nativeFormat = nativeFormats.Get(c);
-            results[c] = ToDataFormat(nativeFormat.String, isTextFormat);
+            results[c] = ToDataFormat(nativeFormat.String ?? string.Empty, isTextFormat);
         }
 
         return results;

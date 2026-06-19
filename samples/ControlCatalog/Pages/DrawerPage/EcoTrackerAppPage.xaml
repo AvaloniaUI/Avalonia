@@ -1,0 +1,302 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.EcoTrackerAppPage">
+
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="EcoBgLight"   Color="#F1F8E9"/>
+    <SolidColorBrush x:Key="EcoDrawerBg"  Color="#1A2A1D"/>
+    <SolidColorBrush x:Key="EcoPrimary"   Color="#2E7D32"/>
+    <SolidColorBrush x:Key="EcoAccent"    Color="#4CAF50"/>
+    <SolidColorBrush x:Key="EcoMuted"     Color="#90A4AE"/>
+    <SolidColorBrush x:Key="EcoBorder"    Color="#2D4A32"/>
+  </UserControl.Resources>
+
+  <DockPanel>
+    <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="300">
+      <StackPanel Margin="16" Spacing="16">
+        <TextBlock Text="EcoTracker" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Sustainability tracker with CompactInline drawer. Compact rail shows icon + uppercase label. Open drawer switches to horizontal icon + text with a smooth crossfade." />
+        <Separator />
+        <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. DrawerPage (CompactInline)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. Detail = NavigationPage" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. Eco leaf replaces hamburger" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="4. Compact → icon + UPPERCASE label" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="5. Open → icon + horizontal text" />
+        </StackPanel>
+        <Separator />
+        <TextBlock Text="Key Code" FontSize="13" FontWeight="SemiBold" />
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8">
+          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     FontSize="10" TextWrapping="Wrap"
+                     Text="&lt;DrawerPage&#xA; DrawerLayoutBehavior=&quot;CompactInline&quot;&#xA; CompactDrawerLength=&quot;72&quot;&#xA; DrawerLength=&quot;250&quot;&gt;&#xA; &lt;DrawerPage.DrawerIcon&gt;&#xA;  &lt;PathIcon Data=&quot;leaf…&quot;/&gt;&#xA; &lt;/DrawerPage.DrawerIcon&gt;" />
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+
+      <DrawerPage x:Name="DrawerPageControl"
+                  DrawerLayoutBehavior="CompactInline"
+                  CompactDrawerLength="72"
+                  DrawerLength="250"
+                  Background="{StaticResource EcoBgLight}"
+                  DrawerBackground="{StaticResource EcoDrawerBg}">
+
+        <DrawerPage.Resources>
+          <SolidColorBrush x:Key="NavigationControlNavBarBackground" Color="#F1F8E9"/>
+        </DrawerPage.Resources>
+
+        <DrawerPage.DrawerIcon>
+          <PathIcon Width="22" Height="22"
+                    Data="M12 3C9 6 6 9 6 13C6 17.4 8.7 21 12 22C15.3 21 18 17.4 18 13C18 9 15 6 12 3Z" />
+        </DrawerPage.DrawerIcon>
+
+        <DrawerPage.DrawerHeader>
+          <StackPanel Background="{StaticResource EcoDrawerBg}" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+              <!-- Toggles drawer open/close -->
+              <Button x:Name="BtnDrawerToggle" Click="OnDrawerToggleClick"
+                      Width="72" Height="48" Padding="0"
+                      Background="Transparent" BorderThickness="0"
+                      HorizontalContentAlignment="Center"
+                      VerticalContentAlignment="Center"
+                      ToolTip.Tip="Toggle drawer">
+                <PathIcon Width="28" Height="28"
+                          Foreground="{StaticResource EcoAccent}"
+                          Data="M12 3C9 6 6 9 6 13C6 17.4 8.7 21 12 22C15.3 21 18 17.4 18 13C18 9 15 6 12 3Z" />
+              </Button>
+              <TextBlock Text="EcoTracker"
+                         Foreground="{StaticResource EcoAccent}"
+                         FontSize="18" FontWeight="Black"
+                         VerticalAlignment="Center"
+                         Classes="openFade"
+                         Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}" />
+            </StackPanel>
+            <TextBlock Text="Welcome back, Alex!"
+                       FontSize="12" Foreground="{StaticResource EcoMuted}"
+                       Margin="72,2,0,12"
+                       Classes="openFade"
+                       Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}" />
+          </StackPanel>
+        </DrawerPage.DrawerHeader>
+
+        <DrawerPage.Drawer>
+          <ContentPage Background="Transparent">
+            <StackPanel Spacing="4" Margin="6,4">
+
+              <Button x:Name="BtnHome" Classes="ecoNavItem ecoNavItemSelected"
+                      Click="OnMenuItemClick" Tag="Home" ToolTip.Tip="Home">
+                <Panel>
+                  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4"
+                              Classes="compactFade"
+                              Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}">
+                    <PathIcon Width="22" Height="22" Foreground="White" HorizontalAlignment="Center"
+                              Data="M3 3h8v8H3V3m10 0h8v8h-8V3M3 13h8v8H3v-8m10 0h8v8h-8v-8" />
+                    <TextBlock Text="HOME" FontSize="8" FontWeight="SemiBold" Foreground="White"
+                               HorizontalAlignment="Center" LetterSpacing="0.5" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="14" Margin="20,0,0,0"
+                              VerticalAlignment="Center"
+                              Classes="openFade"
+                              Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}">
+                    <PathIcon Width="22" Height="22" Foreground="White"
+                              Data="M3 3h8v8H3V3m10 0h8v8h-8V3M3 13h8v8H3v-8m10 0h8v8h-8v-8" />
+                    <TextBlock Text="Home" FontSize="14" FontWeight="Medium" Foreground="White"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                </Panel>
+              </Button>
+
+              <Button x:Name="BtnStats" Classes="ecoNavItem"
+                      Click="OnMenuItemClick" Tag="Stats" ToolTip.Tip="Stats">
+                <Panel>
+                  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4"
+                              Classes="compactFade"
+                              Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}">
+                    <PathIcon Width="22" Height="22" Foreground="White" HorizontalAlignment="Center"
+                              Data="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z" />
+                    <TextBlock Text="STATS" FontSize="8" FontWeight="SemiBold" Foreground="White"
+                               HorizontalAlignment="Center" LetterSpacing="0.5" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="14" Margin="20,0,0,0"
+                              VerticalAlignment="Center"
+                              Classes="openFade"
+                              Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}">
+                    <PathIcon Width="22" Height="22" Foreground="White"
+                              Data="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z" />
+                    <TextBlock Text="Stats" FontSize="14" FontWeight="Medium" Foreground="White"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                </Panel>
+              </Button>
+
+              <Button x:Name="BtnHabits" Classes="ecoNavItem"
+                      Click="OnMenuItemClick" Tag="Habits" ToolTip.Tip="Habits">
+                <Panel>
+                  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4"
+                              Classes="compactFade"
+                              Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}">
+                    <PathIcon Width="22" Height="22" Foreground="White" HorizontalAlignment="Center"
+                              Data="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                    <TextBlock Text="HABITS" FontSize="8" FontWeight="SemiBold" Foreground="White"
+                               HorizontalAlignment="Center" LetterSpacing="0.5" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="14" Margin="20,0,0,0"
+                              VerticalAlignment="Center"
+                              Classes="openFade"
+                              Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}">
+                    <PathIcon Width="22" Height="22" Foreground="White"
+                              Data="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                    <TextBlock Text="Habits" FontSize="14" FontWeight="Medium" Foreground="White"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                </Panel>
+              </Button>
+
+              <Button x:Name="BtnCommunity" Classes="ecoNavItem"
+                      Click="OnMenuItemClick" Tag="Community" ToolTip.Tip="Community">
+                <Panel>
+                  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4"
+                              Classes="compactFade"
+                              Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}">
+                    <PathIcon Width="22" Height="22" Foreground="White" HorizontalAlignment="Center"
+                              Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                    <TextBlock Text="SOCIAL" FontSize="8" FontWeight="SemiBold" Foreground="White"
+                               HorizontalAlignment="Center" LetterSpacing="0.5" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="14" Margin="20,0,0,0"
+                              VerticalAlignment="Center"
+                              Classes="openFade"
+                              Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}">
+                    <PathIcon Width="22" Height="22" Foreground="White"
+                              Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                    <TextBlock Text="Community" FontSize="14" FontWeight="Medium" Foreground="White"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                </Panel>
+              </Button>
+
+            </StackPanel>
+          </ContentPage>
+        </DrawerPage.Drawer>
+
+        <DrawerPage.DrawerFooter>
+          <StackPanel Background="{StaticResource EcoDrawerBg}" Margin="0,4,0,0">
+            <Border Height="1" Background="{StaticResource EcoBorder}" Margin="12,0" />
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,16">
+              <Border Width="72">
+                <Border Width="40" Height="40" CornerRadius="20"
+                        Background="#C8956C" HorizontalAlignment="Center">
+                  <TextBlock Text="AG" FontSize="13" FontWeight="Bold"
+                             Foreground="White"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                </Border>
+              </Border>
+              <StackPanel VerticalAlignment="Center" Spacing="2"
+                          Classes="openFade"
+                          Classes.drawerOpen="{Binding #DrawerPageControl.IsOpen}">
+                <TextBlock Text="Alex Green" FontSize="14" FontWeight="SemiBold"
+                           Foreground="White" />
+                <TextBlock Text="Lvl 24 Earth Guardian" FontSize="11"
+                           Foreground="{StaticResource EcoAccent}" />
+              </StackPanel>
+            </StackPanel>
+          </StackPanel>
+        </DrawerPage.DrawerFooter>
+
+        <DrawerPage.Content>
+          <NavigationPage x:Name="NavPage"
+                          Background="{StaticResource EcoBgLight}"
+                          BarHeight="52">
+            <NavigationPage.Resources>
+              <SolidColorBrush x:Key="NavigationBarBackground" Color="#F1F8E9" />
+              <SolidColorBrush x:Key="NavigationBarForeground" Color="#1A2E1C" />
+            </NavigationPage.Resources>
+          </NavigationPage>
+        </DrawerPage.Content>
+
+      </DrawerPage>
+    </Border>
+  </DockPanel>
+
+  <UserControl.Styles>
+
+    <!-- compactFade: visible by default, hidden when drawer is open -->
+    <Style Selector=":is(Control).compactFade">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="IsHitTestVisible" Value="True" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector=":is(Control).compactFade.drawerOpen">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <!-- openFade: hidden by default, visible when drawer is open -->
+    <Style Selector=":is(Control).openFade">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector=":is(Control).openFade.drawerOpen">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="IsHitTestVisible" Value="True" />
+    </Style>
+    <Style Selector="Button#BtnDrawerToggle /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button#BtnDrawerToggle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#15FFFFFF" />
+    </Style>
+    <Style Selector="Button#BtnDrawerToggle:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#25FFFFFF" />
+    </Style>
+
+    <!-- Nav item base -->
+    <Style Selector="Button.ecoNavItem">
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="MinHeight" Value="48" />
+      <Setter Property="Padding" Value="0,6" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="Button.ecoNavItem /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.ecoNavItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#15FFFFFF" />
+    </Style>
+    <Style Selector="Button.ecoNavItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#25FFFFFF" />
+    </Style>
+
+    <!-- Nav item selected -->
+    <Style Selector="Button.ecoNavItemSelected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#2D4A32" />
+    </Style>
+    <Style Selector="Button.ecoNavItemSelected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#365A3A" />
+    </Style>
+    <Style Selector="Button.ecoNavItemSelected:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#243E28" />
+    </Style>
+
+  </UserControl.Styles>
+
+</UserControl>

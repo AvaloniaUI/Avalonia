@@ -67,6 +67,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("1 ", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -236,6 +237,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("01", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -272,6 +274,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("89", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -304,6 +307,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, textRun.Length);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -342,6 +346,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal("😄", actual);
 
+                Assert.NotNull(textRun.Properties);
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
@@ -435,9 +440,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     maxHeight: 125,
                     textStyleOverrides: spans);
 
-                Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Properties.ForegroundBrush);
-                Assert.Equal(foreground, layout.TextLines[1].TextRuns[0].Properties.ForegroundBrush);
-                Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Properties.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Properties?.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[1].TextRuns[0].Properties?.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Properties?.ForegroundBrush);
             }
         }
 
@@ -470,8 +475,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         [Theory]
         [InlineData("☝🏿", new int[] { 0 })]
-        [InlineData("☝🏿 ab", new int[] { 0, 3, 4, 5 })]
-        [InlineData("ab ☝🏿", new int[] { 0, 1, 2, 3 })]
+        [InlineData("☝🏿 ab", new int[] { 0, 3, 0, 1 })]
+        [InlineData("ab ☝🏿", new int[] { 0, 1, 2, 0 })]
         public void Should_Create_Valid_Clusters_For_Text(string text, int[] clusters)
         {
             using (Start())
@@ -566,7 +571,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(7, textRun.Length);
 
-                var replacementGlyph = Typeface.Default.GlyphTypeface.GetGlyph(Codepoint.ReplacementCodepoint);
+                var replacementGlyph = Typeface.Default.GlyphTypeface.CharacterToGlyphMap[Codepoint.ReplacementCodepoint];
 
                 foreach (var glyphInfo in textRun.GlyphRun.GlyphInfos)
                 {
@@ -865,17 +870,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Brushes.Black,
                     flowDirection: FlowDirection.RightToLeft);
 
-                var firstRun = layout.TextLines[0].TextRuns[0] as ShapedTextRun;
+                var firstRun = Assert.IsType<ShapedTextRun>(layout.TextLines[0].TextRuns[0]);
 
                 var hit = layout.HitTestPoint(new Point());
 
                 Assert.Equal(4, hit.TextPosition);
 
+                var firstRunOffset = TextTestHelper.GetStartCharIndex(firstRun.Text);
                 var currentX = 0.0;
 
                 for (var i = 0; i < firstRun.GlyphRun.GlyphInfos.Count; i++)
                 {
-                    var cluster = firstRun.GlyphRun.GlyphInfos[i].GlyphCluster;
+                    var cluster = firstRun.GlyphRun.GlyphInfos[i].GlyphCluster + firstRunOffset;
                     var advance = firstRun.GlyphRun.GlyphInfos[i].GlyphAdvance;
 
                     hit = layout.HitTestPoint(new Point(currentX, 0));
@@ -891,7 +897,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     currentX += advance;
                 }
 
-                var secondRun = layout.TextLines[0].TextRuns[1] as ShapedTextRun;
+                var secondRun = Assert.IsType<ShapedTextRun>(layout.TextLines[0].TextRuns[1]);
 
                 hit = layout.HitTestPoint(new Point(firstRun.Size.Width, 0));
 
@@ -901,11 +907,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(0, hit.TextPosition);
 
+                var secondRunOffset = TextTestHelper.GetStartCharIndex(secondRun.Text);
                 currentX = firstRun.Size.Width + 0.5;
 
                 for (var i = 0; i < secondRun.GlyphRun.GlyphInfos.Count; i++)
                 {
-                    var cluster = secondRun.GlyphRun.GlyphInfos[i].GlyphCluster;
+                    var cluster = secondRun.GlyphRun.GlyphInfos[i].GlyphCluster + secondRunOffset;
                     var advance = secondRun.GlyphRun.GlyphInfos[i].GlyphAdvance;
 
                     hit = layout.HitTestPoint(new Point(currentX, 0));
@@ -997,7 +1004,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var shapedRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
-                    var clusters = shapedRuns.SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphCluster).ToList();
+                    var runStarts = textLine
+                        .GetTextBounds(textLine.FirstTextSourceIndex, textLine.Length)
+                        .SelectMany(bounds => bounds.TextRunBounds)
+                        .Where(bounds => bounds.TextRun is ShapedTextRun)
+                        .ToDictionary(bounds => (ShapedTextRun)bounds.TextRun, bounds => bounds.TextSourceCharacterIndex);
+
+                    var clusters = shapedRuns.SelectMany(run =>
+                    {
+                        var rawClusters = run.ShapedBuffer.Select(glyph => glyph.GlyphCluster).ToList();
+
+                        if (!runStarts.TryGetValue(run, out var runStart) || rawClusters.Count == 0)
+                        {
+                            return rawClusters;
+                        }
+
+                        // Clusters can be either run-local or text-source relative depending on split history.
+                        if (rawClusters.Min() < runStart)
+                        {
+                            return rawClusters.Select(cluster => cluster + runStart);
+                        }
+
+                        return rawClusters;
+                    }).ToList();
 
                     var glyphAdvances = shapedRuns.SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphAdvance).ToList();
 
@@ -1011,7 +1040,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                         var characterHit = textLine.GetCharacterHitFromDistance(currentX);
 
-                        Assert.Equal(cluster, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+                        Assert.True(cluster == characterHit.FirstCharacterIndex + characterHit.TrailingLength,
+                            $"grapheme={i - grapheme.Length}, j={j}, cluster={cluster}, hit={characterHit.FirstCharacterIndex}+{characterHit.TrailingLength}, currentX={currentX}, textLen={text.Length}, runs={shapedRuns.Count}, clusters=[{string.Join(",", clusters)}]");
 
                         var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
 
@@ -1189,7 +1219,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var typeFace = new Typeface("Courier New");
+                const string monospaceFont = "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono";
+
+                var typeFace = new Typeface(monospaceFont);
+
+                var glyphTypeface = typeFace.GlyphTypeface;
+
                 var textLayout0 = new TextLayout("aaaa", typeFace, 12.0, Brushes.White);
                 Assert.Equal(textLayout0.WidthIncludingTrailingWhitespace, textLayout0.Width);
 
@@ -1217,7 +1252,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(renderInterface: new PlatformRenderInterface(null),
-                    textShaperImpl: new TextShaperImpl(),
                     fontManagerImpl: new CustomFontManagerImpl()));
 
             return disposable;

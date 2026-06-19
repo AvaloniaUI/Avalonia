@@ -302,18 +302,21 @@ namespace Avalonia.Android.Platform
                     _activity.Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 
                     var androidColor = global::Android.Graphics.Color.Argb(color.A, color.R, color.G, color.B);
-                    _activity.Window.SetStatusBarColor(androidColor);
 
-                    if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                    // Status and navigation bar colors can't be changed at all with API level >= 35
+                    if (!OperatingSystem.IsAndroidVersionAtLeast(35))
                     {
-                        // As we can only change the navigation bar's foreground api 26 and newer, we only change the background color if running on those versions
-                        _activity.Window.SetNavigationBarColor(androidColor);
+                        _activity.Window.SetStatusBarColor(androidColor);
+
+                        if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                        {
+                            // As we can only change the navigation bar's foreground api 26 and newer, we only change the background color if running on those versions
+                            _activity.Window.SetNavigationBarColor(androidColor);
+                        }
                     }
                 }
             }
         }
-
-        public bool DisplayEdgeToEdge { get => DisplaysEdgeToEdge; set => DisplayEdgeToEdgePreference = value; }
 
         public bool DisplaysEdgeToEdge => _displaysEdgeToEdge;
 

@@ -352,13 +352,13 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnAttachedToVisualTree(e);
             _parentScroller = this.GetVisualParent() as ScrollContentPresenter;
-            _parentScroller?.AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            _parentScroller?.AddHandler(InputElement.ScrollGestureEndedEvent, OnScrollGestureEnded);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            _parentScroller?.RemoveHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            _parentScroller?.RemoveHandler(InputElement.ScrollGestureEndedEvent, OnScrollGestureEnded);
             _parentScroller = null;
         }
 

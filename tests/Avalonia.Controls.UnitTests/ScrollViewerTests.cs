@@ -28,7 +28,7 @@ namespace Avalonia.Controls.UnitTests
 
             InitializeScrollViewer(target);
 
-            Assert.IsType<TextBlock>(target.Presenter.Child);
+            Assert.IsType<TextBlock>(target.Presenter!.Child);
         }
 
         [Fact]
@@ -42,6 +42,25 @@ namespace Avalonia.Controls.UnitTests
             };
 
             Assert.Equal(new Vector(10, 10), target.Offset);
+        }
+
+        [Fact]
+        public void Setting_Offset_To_NaN_Does_Not_Cause_Infinite_Coerce_Recursion()
+        {
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = "Foo",
+                Extent = new Size(100, 100),
+                Viewport = new Size(10, 10),
+            };
+
+            InitializeScrollViewer(target);
+
+            target.Offset = new Vector(0, double.NaN);
+
+            Assert.False(double.IsNaN(target.Offset.X));
+            Assert.False(double.IsNaN(target.Offset.Y));
         }
 
         [Fact]
@@ -473,7 +492,7 @@ namespace Avalonia.Controls.UnitTests
         public void MenuScrollBar_Should_Be_Visible_When_Specified_Visible()
         {
             Converters.MenuScrollingVisibilityConverter converter = Converters.MenuScrollingVisibilityConverter.Instance;
-            IList<object> args = new List<object> {ScrollBarVisibility.Visible,400d,1800d,500d};
+            var args = new List<object?> {ScrollBarVisibility.Visible,400d,1800d,500d};
             var result = converter.Convert(args, typeof(ScrollBarVisibility), "0", System.Globalization.CultureInfo.CurrentCulture);
             Assert.Equal(true, result);
         }
@@ -590,7 +609,7 @@ namespace Avalonia.Controls.UnitTests
                     [!!Track.ValueProperty] = scrollBar[!!RangeBase.ValueProperty],
                     [!Track.ViewportSizeProperty] = scrollBar[!ScrollBar.ViewportSizeProperty],
                     [!Track.OrientationProperty] = scrollBar[!ScrollBar.OrientationProperty],
-                    [!Track.DeferThumbDragProperty] = scrollBar.TemplatedParent[!ScrollViewer.IsDeferredScrollingEnabledProperty],
+                    [!Track.DeferThumbDragProperty] = scrollBar.TemplatedParent![!ScrollViewer.IsDeferredScrollingEnabledProperty],
                     Thumb = new Thumb
                     {
                         Template = new FuncControlTemplate<Thumb>(CreateThumbTemplate),
@@ -610,9 +629,9 @@ namespace Avalonia.Controls.UnitTests
         private Thumb GetVerticalThumb(ScrollViewer target)
         {
             var scrollbar = Assert.IsType<ScrollBar>(
-                target.GetTemplateChildren().FirstOrDefault(x => x.Name == "PART_VerticalScrollBar"));
+                target.GetTemplateDescendants().FirstOrDefault(x => x.Name == "PART_VerticalScrollBar"));
             var track = Assert.IsType<Track>(
-                scrollbar.GetTemplateChildren().FirstOrDefault(x => x.Name == "track"));
+                scrollbar.GetTemplateDescendants().FirstOrDefault(x => x.Name == "track"));
             return Assert.IsType<Thumb>(track.Thumb);
         }
 
@@ -620,7 +639,7 @@ namespace Avalonia.Controls.UnitTests
         {
             target.ApplyTemplate();
 
-            var presenter = (ScrollContentPresenter)target.Presenter;
+            var presenter = (ScrollContentPresenter)target.Presenter!;
             presenter.AttachToScrollViewer();
             presenter.UpdateChild();
         }

@@ -42,7 +42,8 @@
 - (void) updateRenderTarget
 {
     if(_currentRenderTarget) {
-        [_currentRenderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
+        AvnPixelSize size { MAX(_lastPixelSize.Width, 1), MAX(_lastPixelSize.Height, 1) };
+        [_currentRenderTarget resize:size withScale:static_cast<float>([[self window] backingScaleFactor])];
         [self setNeedsDisplayInRect:[self frame]];
     }
 }

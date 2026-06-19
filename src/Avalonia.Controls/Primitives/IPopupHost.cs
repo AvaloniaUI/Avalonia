@@ -1,11 +1,9 @@
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -15,11 +13,9 @@ namespace Avalonia.Controls.Primitives
     /// <remarks>
     /// A popup host can be either be a popup window created by the operating system
     /// (<see cref="PopupRoot"/>) or an <see cref="OverlayPopupHost"/> which is created
-    /// on an <see cref="OverlayLayer"/>.
+    /// on an <see cref="PopupOverlayLayer"/>.
     /// </remarks>
-    [NotClientImplementable]
-    [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-    public interface IPopupHost : IDisposable, IFocusScope
+    internal interface IPopupHost : IDisposable, IFocusScope
     {
         /// <summary>
         /// Gets or sets the fixed width of the popup.

@@ -79,10 +79,8 @@ namespace Avalonia.Styling
                 throw new InvalidOperationException(
                         $"Cannot set Class Binding property '(Classes.{classPropertyName})' in '{instance.Source}' because the style has an activator.");
 
-            if (Value is IBinding2 binding)
+            if (Value is BindingBase binding)
                 return SetBinding((StyleInstance)instance, ao, binding);
-            else if (Value is IBinding)
-                throw new AvaloniaInternalException("TODO: Make all IBindings implement IBinding2.");
             else if (Value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(Property.PropertyType))
                 return new PropertySetterTemplateInstance(Property, template);
             else if (!Property.IsValidValue(Value))
@@ -108,11 +106,11 @@ namespace Avalonia.Styling
             return Property ?? throw new InvalidOperationException("Setter.Property must be set.");
         }
 
-        private ISetterInstance SetBinding(StyleInstance instance, AvaloniaObject target, IBinding2 binding)
+        private ISetterInstance SetBinding(StyleInstance instance, AvaloniaObject target, BindingBase binding)
         {
             if (!Property!.IsDirect)
             {
-                var expression = binding.Instance(target, Property, null);
+                var expression = binding.CreateInstance(target, Property, null);
                 expression.Attach(target.GetValueStore(), null, target, Property, instance.Priority);
                 return expression;
             }

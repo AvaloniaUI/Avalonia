@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
@@ -31,6 +32,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
     </Transitions>
   </Grid.Transitions>
 </Grid>");
+            Assert.NotNull(parsed.Transitions);
             Assert.Equal(1, parsed.Transitions.Count);
             Assert.Equal(Visual.OpacityProperty, parsed.Transitions[0].Property);
         }
@@ -101,13 +103,13 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
 </Window>
 ");
-                var btn = ((Button)parsed.Content);
+                var btn = (Button)parsed.Content!;
                 btn.ApplyTemplate();
                 var canvas = (Canvas)btn.GetVisualChildren().First()
                     .VisualChildren.First()
                     .VisualChildren.First()
                     .VisualChildren.First();
-                Assert.Equal(Brushes.Red.Color, ((ISolidColorBrush)canvas.Background).Color);
+                Assert.Equal(Brushes.Red.Color, ((ISolidColorBrush)canvas.Background!).Color);
             }
         }
 
@@ -120,8 +122,11 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 w.ApplyTemplate();
                 w.Show();
 
-                Dispatcher.UIThread.RunJobs();
-                var itemsPresenter = ((ItemsControl)w.Content).GetVisualChildren().FirstOrDefault();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                var itemsPresenter = ((ItemsControl)w.Content!).GetVisualChildren().FirstOrDefault();
+                Assert.NotNull(itemsPresenter);
+
                 var item = itemsPresenter
                     .GetVisualChildren().First()
                     .GetVisualChildren().First()
@@ -168,7 +173,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
 </Window>
 ");
-                var tb = ((TextBox)parsed.Content);
+                var tb = (TextBox)parsed.Content!;
                 parsed.Show();
                 tb.ApplyTemplate();
                 Assert.Equal(100, XamlIlBugTestsStaticClassWithAttachedProperty.GetTestInt(tb));
@@ -223,7 +228,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 parsed.DataContext = new List<string>() {"Test"};
                 parsed.Show();
                 parsed.ApplyTemplate();
-                var cc = ((ContentControl)((StackPanel)parsed.Content).Children.Last());
+                var cc = (ContentControl)((StackPanel)parsed.Content!).Children.Last();
                 cc.ApplyTemplate();
                 var templated = cc.GetVisualDescendants().OfType<TextBlock>()
                     .First(x => x.Classes.Contains("target"));
@@ -421,14 +426,62 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 Assert.Equal((IEnumerable<string>)["a", "b", "c"], parsed.MyProp.Select(x => x.Value));
             }
         }
+
+        [Fact]
+        public void Compiled_Binding_Should_Resolve_Named_Root_DataContext_In_ItemTemplate()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = (ListBox)AvaloniaRuntimeXamlLoader.Parse(@"
+<ListBox Name='ListBoxRoot' ItemsSource='{CompiledBinding Items}'
+    xmlns='https://github.com/avaloniaui'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+    x:DataType='local:CompiledBindingRootMock'>
+    <ListBox.ItemTemplate>
+        <DataTemplate x:DataType='local:CompiledBindingItemMock'>
+            <TextBlock Text='{CompiledBinding #ListBoxRoot.DataContext.RootProperty}' />
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>");
+                Assert.NotNull(parsed.ItemTemplate);
+            }
+        }
+
+        [Fact]
+        public void Compiled_Binding_Should_Resolve_Root_Command_From_Nested_ItemTemplate_Namescope()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                 var parsed = (ListBox)AvaloniaRuntimeXamlLoader.Parse(@"
+<ListBox Name='ListBoxRoot' ItemsSource='{CompiledBinding Items}'
+    xmlns='https://github.com/avaloniaui'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+    x:DataType='local:CompiledBindingRootMock'>
+    <ListBox.ItemTemplate>
+        <DataTemplate x:DataType='local:CompiledBindingItemMock'>
+            <ListBox ItemsSource='{CompiledBinding InnerItems}'>
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType='local:CompiledBindingItemMock'>
+                        <TextBlock Text='{CompiledBinding #ListBoxRoot.DataContext.RootProperty}' />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>");
+                Assert.NotNull(parsed.ItemTemplate);
+            }
+        }
     }
 
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
     {
-        public object SavedContext;
-        public void HandleDataContextChanged(object sender, EventArgs args)
+        public object? SavedContext;
+        public void HandleDataContextChanged(object? sender, EventArgs args)
         {
-            SavedContext = ((Control)sender).DataContext;
+            SavedContext = ((Control)sender!).DataContext;
         }
 
         public XamlIlBugTestsEventHandlerCodeBehind()
@@ -448,13 +501,13 @@ namespace Avalonia.Markup.Xaml.UnitTests
   </ItemsControl>
 </Window>
 ", typeof(XamlIlBugTestsEventHandlerCodeBehind).Assembly, this);
-            ((ItemsControl)Content).ItemsSource = new[] {"123"};
+            ((ItemsControl)Content!).ItemsSource = new[] {"123"};
         }
     }
     
     public class XamlIlClassWithCustomProperty : UserControl
     {
-        public string Test { get; set; }
+        public string? Test { get; set; }
 
         public XamlIlClassWithCustomProperty()
         {
@@ -464,7 +517,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
     public class XamlIlBugTestsBrushToColorConverter : IMultiValueConverter
     {
-        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             return (values[0] as ISolidColorBrush)?.Color;
         }
@@ -472,9 +525,9 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
     public class XamlIlBugTestsDataContext : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -496,19 +549,19 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
         public static int GetTestInt(Control control)
         {
-            return (int)control.GetValue(TestIntProperty);
+            return (int)control.GetValue(TestIntProperty)!;
         }
     }
 
     public class XamlIlCheckClrPropertyInfoExtension
     {
-        public string ExpectedPropertyName { get; set; }
+        public string? ExpectedPropertyName { get; set; }
 
         public object ProvideValue(IServiceProvider prov)
         {
-            var pvt = prov.GetService<IProvideValueTarget>();
+            var pvt = prov.GetRequiredService<IProvideValueTarget>();
             var info = (ClrPropertyInfo)pvt.TargetProperty;
-            var v = (int)info.Get(pvt.TargetObject);
+            var v = (int)info.Get(pvt.TargetObject)!;
             return v + 1;
         }
     }
@@ -527,12 +580,12 @@ namespace Avalonia.Markup.Xaml.UnitTests
         
         public class MyTypeConverter : TypeConverter
         {
-            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
             {
                 return sourceType == typeof(string);
             }
 
-            public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+            public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
             {
                 if (value is string s)
                     return s.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(x => new MyType(x.Trim()));
@@ -550,5 +603,18 @@ namespace Avalonia.Markup.Xaml.UnitTests
             set => SetValue(MyPropProperty, value);
         }
         
+    }
+
+    public class CompiledBindingRootMock : UserControl
+    {
+        public string Greeting => "Hello";
+        public string RootProperty => "RootValue";
+        public IReadOnlyList<CompiledBindingItemMock> Items { get; } = [new() { Name = "Outer", InnerItems = [new() { Name = "Inner" }] }];
+    }
+
+    public class CompiledBindingItemMock
+    {
+        public string Name { get; set; } = string.Empty;
+        public IReadOnlyList<CompiledBindingItemMock> InnerItems { get; set; } = Array.Empty<CompiledBindingItemMock>();
     }
 }

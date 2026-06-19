@@ -40,6 +40,9 @@ internal sealed class ClipboardImpl : IClipboardImpl
         {
             foreach (var format in dataTransferItem.Formats)
             {
+                if (format.Kind == DataFormatKind.InProcess)
+                    continue;
+
                 var formatString = ToBrowserFormat(format);
                 if (!IsClipboardFormatSupported(formatString))
                     continue;

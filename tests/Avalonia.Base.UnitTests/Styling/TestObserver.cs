@@ -6,11 +6,11 @@ namespace Avalonia.Base.UnitTests.Styling
     {
         private bool _hasValue;
 
-        private T _value;
+        private T _value = default!;
 
         public bool Completed { get; private set; }
 
-        public Exception Error { get; private set; }
+        public Exception? Error { get; private set; }
 
         public T GetValue()
         {

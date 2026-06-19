@@ -196,6 +196,17 @@ namespace Avalonia.Platform
         void PopRenderOptions();
 
         /// <summary>
+        /// Pushes text options for the drawing context.
+        /// </summary>
+        /// <param name="textOptions">The text options.</param>
+        void PushTextOptions(TextOptions textOptions);
+
+        /// <summary>
+        /// Pops the latest text options.
+        /// </summary>
+        void PopTextOptions();
+
+        /// <summary>
         /// Attempts to get an optional feature from the drawing context implementation.
         /// </summary>
         object? GetFeature(Type t);
@@ -217,7 +228,7 @@ namespace Avalonia.Platform
             (T?)context.GetFeature(typeof(T));
     }
 
-    public interface IDrawingContextLayerImpl : IRenderTargetBitmapImpl
+    public interface IDrawingContextLayerImpl : IBitmapImpl
     {
         /// <summary>
         /// Does optimized blit with Src blend mode.
@@ -229,6 +240,16 @@ namespace Avalonia.Platform
         /// Returns true if layer supports optimized blit.
         /// </summary>
         bool CanBlit { get; }
+        
+        /// <summary>
+        /// Indicates if the render target is no longer usable and needs to be recreated
+        /// </summary>
+        bool IsCorrupted { get; }
+        
+        /// <summary>
+        /// Creates drawing context. It matches the properties of the original drawing context this layer was created from.
+        /// </summary>
+        IDrawingContextImpl CreateDrawingContext();
     }
 
     public interface IDrawingContextLayerWithRenderContextAffinityImpl : IDrawingContextLayerImpl

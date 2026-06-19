@@ -44,8 +44,8 @@ namespace Avalonia.Base.UnitTests
                 Assert.Same(target, s);
                 Assert.Equal(BindingPriority.Unset, e.Priority);
                 Assert.Equal(Class1.FooProperty, e.Property);
-                Assert.Equal("newvalue", (string)e.OldValue);
-                Assert.Equal("foodefault", (string)e.NewValue);
+                Assert.Equal("newvalue", (string?)e.OldValue);
+                Assert.Equal("foodefault", (string?)e.NewValue);
                 ++raised;
             };
 
@@ -113,8 +113,8 @@ namespace Avalonia.Base.UnitTests
             {
                 raised = s == target &&
                          e.Property == Class1.FooProperty &&
-                         (string)e.OldValue == "foodefault" &&
-                         (string)e.NewValue == "newvalue";
+                         (string?)e.OldValue == "foodefault" &&
+                         (string?)e.NewValue == "newvalue";
             };
 
             target.SetValue(Class1.FooProperty, "newvalue");
@@ -132,8 +132,8 @@ namespace Avalonia.Base.UnitTests
             {
                 raised = s == target &&
                          e.Property == Class1.FooProperty &&
-                         (string)e.OldValue == "foodefault" &&
-                         (string)e.NewValue == "newvalue";
+                         (string?)e.OldValue == "foodefault" &&
+                         (string?)e.NewValue == "newvalue";
             };
 
             target.SetValue(Class1.FooProperty, "newvalue", BindingPriority.Style);
@@ -331,6 +331,7 @@ namespace Avalonia.Base.UnitTests
             Class1 target = new Class1();
 
             var d = target.SetValue(Class1.FooProperty, "foo", BindingPriority.Style);
+            Assert.NotNull(d);
             d.Dispose();
 
             Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
@@ -343,6 +344,7 @@ namespace Avalonia.Base.UnitTests
 
             target.SetValue(Class1.FooProperty, "foo", BindingPriority.Style);
             var d = target.SetValue(Class1.FooProperty, "bar", BindingPriority.Style);
+            Assert.NotNull(d);
             d.Dispose();
 
             Assert.Equal("foo", target.GetValue(Class1.FooProperty));
@@ -355,6 +357,7 @@ namespace Avalonia.Base.UnitTests
 
             target.SetValue(Class1.FooProperty, "foo", BindingPriority.LocalValue);
             var d = target.SetValue(Class1.FooProperty, "bar", BindingPriority.Animation);
+            Assert.NotNull(d);
             d.Dispose();
 
             Assert.Equal("foo", target.GetValue(Class1.FooProperty));
@@ -380,9 +383,9 @@ namespace Avalonia.Base.UnitTests
             public static readonly StyledProperty<double?> FredProperty =
                 AvaloniaProperty.Register<Class2, double?>("Fred");
 
-            public Class1 Parent
+            public Class1? Parent
             {
-                get { return (Class1)InheritanceParent; }
+                get { return (Class1?)InheritanceParent; }
                 set { InheritanceParent = value; }
             }
         }

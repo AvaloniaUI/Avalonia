@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 
@@ -14,11 +12,6 @@ namespace Avalonia.Input;
 /// </summary>
 public static class DataTransferExtensions
 {
-    [Obsolete]
-    internal static IDataObject ToLegacyDataObject(this IDataTransfer dataTransfer)
-        => (dataTransfer as DataObjectToDataTransferWrapper)?.DataObject
-           ?? new DataTransferToDataObjectWrapper(dataTransfer);
-
     /// <summary>
     /// Gets whether a <see cref="IDataTransfer"/> supports a specific format.
     /// </summary>

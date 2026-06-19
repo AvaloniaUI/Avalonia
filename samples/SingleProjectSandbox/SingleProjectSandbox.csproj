@@ -5,7 +5,6 @@
     <TargetFrameworks Condition="'$(IncludeMacTargetSamples)' == 'true'">$(TargetFrameworks);$(AvsCurrentMacOSTargetFramework)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
 

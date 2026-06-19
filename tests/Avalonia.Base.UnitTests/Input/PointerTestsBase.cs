@@ -7,9 +7,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Moq;
 
 namespace Avalonia.Base.UnitTests.Input;
@@ -54,9 +52,9 @@ public abstract class PointerTestsBase : ScopedTestBase
         impl.Setup(r => r.PointToScreen(It.IsAny<Point>())).Returns<Point>(p => new PixelPoint((int)p.X, (int)p.Y));
         impl.Setup(r => r.PointToClient(It.IsAny<PixelPoint>())).Returns<PixelPoint>(p => new Point(p.X, p.Y));
         
-        var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+        var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
         var screens = new Mock<IScreenImpl>();
-        screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+        screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
         impl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screens.Object);
 
         return impl;
@@ -78,26 +76,26 @@ public abstract class PointerTestsBase : ScopedTestBase
 
     protected static RawPointerEventArgs CreateRawPointerArgs(
         IPointerDevice pointerDevice,
-        IInputRoot root,
+        TopLevel root,
         RawPointerEventType type,
         Point? position = default)
     {
-        return new RawPointerEventArgs(pointerDevice, 0, root, type, position ?? default, default);
+        return new RawPointerEventArgs(pointerDevice, 0, root.PresentationSource, type, position ?? default, default);
     }
 
     protected static RawPointerEventArgs CreateRawPointerMovedArgs(
         IPointerDevice pointerDevice,
-        IInputRoot root,
+        TopLevel root,
         Point? position = null)
     {
-        return new RawPointerEventArgs(pointerDevice, 0, root, RawPointerEventType.Move,
+        return new RawPointerEventArgs(pointerDevice, 0, root.PresentationSource, RawPointerEventType.Move,
             position ?? default, default);
     }
 
     protected static PointerEventArgs CreatePointerMovedArgs(
         IInputRoot root, IInputElement? source, Point? position = null)
     {
-        return new PointerEventArgs(InputElement.PointerMovedEvent, source, new Mock<IPointer>().Object, (Visual)root,
+        return new PointerEventArgs(InputElement.PointerMovedEvent, source, new Mock<IPointer>().Object, root.RootElement,
             position ?? default, default, PointerPointProperties.None, KeyModifiers.None);
     }
 

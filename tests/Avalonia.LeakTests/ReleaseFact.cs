@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.Runtime.CompilerServices;
+using Xunit;
 
 namespace Avalonia.LeakTests;
 
@@ -7,7 +8,10 @@ namespace Avalonia.LeakTests;
 /// </summary>
 internal sealed class ReleaseFactAttribute : FactAttribute
 {
-    public ReleaseFactAttribute()
+    public ReleaseFactAttribute(
+        [CallerFilePath] string? sourceFilePath = null,
+        [CallerLineNumber] int sourceLineNumber = -1
+    ) : base(sourceFilePath, sourceLineNumber)
     {
 #if DEBUG
         Skip = "Only runs in Release mode";

@@ -1,6 +1,6 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)\..\tools\$(AvsCurrentTargetFramework)\designer\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
+    <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)\..\tools\net8.0\designer\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
     <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\tools\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
     <UsedAvaloniaProducts>$(UsedAvaloniaProducts);AvaloniaUI</UsedAvaloniaProducts>
     <EnableAvaloniaXamlCompilation Condition="'$(EnableAvaloniaXamlCompilation)'==''">true</EnableAvaloniaXamlCompilation>

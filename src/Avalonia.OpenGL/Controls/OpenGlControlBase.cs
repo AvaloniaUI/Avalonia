@@ -90,7 +90,7 @@ namespace Avalonia.OpenGL.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _compositor = (this.GetVisualRoot()?.Renderer as IRendererWithCompositor)?.Compositor;
+            _compositor = (this.GetPresentationSource()?.Renderer as IRendererWithCompositor)?.Compositor;
             RequestNextFrameRendering();
         }
 
@@ -201,11 +201,11 @@ namespace Avalonia.OpenGL.Controls
         private void Update()
         {
             _updateQueued = false;
-            if (VisualRoot is not { } visualRoot)
+            if (this.GetPresentationSource() is not { } source)
                 return;
             if(!EnsureInitialized())
                 return;
-            using (_resources.BeginDraw(GetPixelSize(visualRoot)))
+            using (_resources.BeginDraw(GetPixelSize(source)))
                 OnOpenGlRender(_resources.Context.GlInterface, _resources.Fbo);
         }
 
@@ -263,9 +263,9 @@ namespace Avalonia.OpenGL.Controls
             }
         }
 
-        private PixelSize GetPixelSize(IRenderRoot visualRoot)
+        private PixelSize GetPixelSize(IPresentationSource source)
         {
-            var scaling = visualRoot.RenderScaling;
+            var scaling = source.RenderScaling;
             return new PixelSize(Math.Max(1, (int)(Bounds.Width * scaling)),
                 Math.Max(1, (int)(Bounds.Height * scaling)));
         }

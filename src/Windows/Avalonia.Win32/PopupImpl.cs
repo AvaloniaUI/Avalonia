@@ -115,7 +115,7 @@ namespace Avalonia.Win32
                 IsResizable = false,
                 IsMinimizable = false,
                 IsMaximizable = false,
-                Decorations = SystemDecorations.None,
+                Decorations = WindowDecorations.None,
             };
 
             _parent = parent;

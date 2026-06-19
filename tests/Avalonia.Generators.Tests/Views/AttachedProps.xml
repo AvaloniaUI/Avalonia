@@ -3,6 +3,6 @@
         x:Class="Sample.App.AttachedProps"
         Design.Width="300">
     <TextBox Name="UserNameTextBox"
-             Watermark="Username input"
-             UseFloatingWatermark="True" />
+             Placeholder="Username input"
+             UseFloatingPlaceholder="True" />
 </Window>

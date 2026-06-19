@@ -1,0 +1,268 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.DrawerPageCustomFlyoutPage">
+  <Grid ColumnDefinitions="*,240">
+    <DockPanel Grid.Column="0" Margin="16">
+      <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+              BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+
+        <DrawerPage x:Name="DrawerPageControl"
+                    DrawerBehavior="Flyout"
+                    DrawerBackground="#1A1A2E"
+                    DrawerLength="300">
+
+          <DrawerPage.Drawer>
+            <!--
+              ClipToBounds=False so BackEaseOut overshoot is not clipped by this Panel.
+              The SplitView pane itself clips at its edges.
+            -->
+            <Panel ClipToBounds="False">
+              <!-- Decorative background bubbles — animated continuously in code-behind -->
+              <Ellipse x:Name="Bubble1"
+                       Fill="#2D2D4E" Width="320" Height="320"
+                       HorizontalAlignment="Right" VerticalAlignment="Top"
+                       Margin="0,-80,-80,0" />
+              <Ellipse x:Name="Bubble2"
+                       Fill="#252540" Width="200" Height="200"
+                       HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                       Margin="-60,0,0,20" />
+
+              <DockPanel Margin="28,36,28,28" ClipToBounds="False">
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,32">
+                  <TextBlock Text="MENU" FontSize="12" Foreground="#888899"
+                             FontWeight="SemiBold" LetterSpacing="2" />
+                </StackPanel>
+
+                <StackPanel x:Name="FooterRow"
+                            DockPanel.Dock="Bottom" Orientation="Horizontal"
+                            Spacing="16" Opacity="0">
+                  <StackPanel.RenderTransform>
+                    <TranslateTransform Y="25">
+                      <TranslateTransform.Transitions>
+                        <Transitions>
+                          <DoubleTransition Property="Y" Duration="0:0:0.40"
+                                            Delay="0:0:0.325" Easing="BackEaseOut" />
+                        </Transitions>
+                      </TranslateTransform.Transitions>
+                    </TranslateTransform>
+                  </StackPanel.RenderTransform>
+                  <StackPanel.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.30"
+                                        Delay="0:0:0.325" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </StackPanel.Transitions>
+                  <TextBlock Text="Privacy" FontSize="12" Foreground="#555566" />
+                  <TextBlock Text="Terms"   FontSize="12" Foreground="#555566" />
+                  <TextBlock Text="Help"    FontSize="12" Foreground="#555566" />
+                </StackPanel>
+
+                <!-- Nav items — each one starts 65 ms later than the one above -->
+                <StackPanel Spacing="0" ClipToBounds="False">
+
+                  <Button x:Name="MenuItem1"
+                          Background="Transparent" HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Padding="0,10" Opacity="0"
+                          Click="OnMenuItemClick" Tag="Home">
+                    <Button.RenderTransform>
+                      <TranslateTransform Y="25">
+                        <TranslateTransform.Transitions>
+                          <Transitions>
+                            <DoubleTransition Property="Y" Duration="0:0:0.40"
+                                              Delay="0:0:0.000" Easing="BackEaseOut" />
+                          </Transitions>
+                        </TranslateTransform.Transitions>
+                      </TranslateTransform>
+                    </Button.RenderTransform>
+                    <Button.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.30"
+                                          Delay="0:0:0.000" Easing="CubicEaseOut" />
+                      </Transitions>
+                    </Button.Transitions>
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <PathIcon Width="20" Height="20" Foreground="White"
+                                Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
+                      <TextBlock Text="Home" FontSize="28" FontWeight="Bold"
+                                 Foreground="White" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+
+                  <Button x:Name="MenuItem2"
+                          Background="Transparent" HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Padding="0,10" Opacity="0"
+                          Click="OnMenuItemClick" Tag="Explore">
+                    <Button.RenderTransform>
+                      <TranslateTransform Y="25">
+                        <TranslateTransform.Transitions>
+                          <Transitions>
+                            <DoubleTransition Property="Y" Duration="0:0:0.40"
+                                              Delay="0:0:0.065" Easing="BackEaseOut" />
+                          </Transitions>
+                        </TranslateTransform.Transitions>
+                      </TranslateTransform>
+                    </Button.RenderTransform>
+                    <Button.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.30"
+                                          Delay="0:0:0.065" Easing="CubicEaseOut" />
+                      </Transitions>
+                    </Button.Transitions>
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <PathIcon Width="20" Height="20" Foreground="#9090B0"
+                                Data="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z" />
+                      <TextBlock Text="Explore" FontSize="28" FontWeight="Bold"
+                                 Foreground="#9090B0" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+
+                  <Button x:Name="MenuItem3"
+                          Background="Transparent" HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Padding="0,10" Opacity="0"
+                          Click="OnMenuItemClick" Tag="Messages">
+                    <Button.RenderTransform>
+                      <TranslateTransform Y="25">
+                        <TranslateTransform.Transitions>
+                          <Transitions>
+                            <DoubleTransition Property="Y" Duration="0:0:0.40"
+                                              Delay="0:0:0.130" Easing="BackEaseOut" />
+                          </Transitions>
+                        </TranslateTransform.Transitions>
+                      </TranslateTransform>
+                    </Button.RenderTransform>
+                    <Button.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.30"
+                                          Delay="0:0:0.130" Easing="CubicEaseOut" />
+                      </Transitions>
+                    </Button.Transitions>
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <PathIcon Width="20" Height="20" Foreground="#9090B0"
+                                Data="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" />
+                      <TextBlock Text="Messages" FontSize="28" FontWeight="Bold"
+                                 Foreground="#9090B0" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+
+                  <Button x:Name="MenuItem4"
+                          Background="Transparent" HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Padding="0,10" Opacity="0"
+                          Click="OnMenuItemClick" Tag="Profile">
+                    <Button.RenderTransform>
+                      <TranslateTransform Y="25">
+                        <TranslateTransform.Transitions>
+                          <Transitions>
+                            <DoubleTransition Property="Y" Duration="0:0:0.40"
+                                              Delay="0:0:0.195" Easing="BackEaseOut" />
+                          </Transitions>
+                        </TranslateTransform.Transitions>
+                      </TranslateTransform>
+                    </Button.RenderTransform>
+                    <Button.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.30"
+                                          Delay="0:0:0.195" Easing="CubicEaseOut" />
+                      </Transitions>
+                    </Button.Transitions>
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <PathIcon Width="20" Height="20" Foreground="#9090B0"
+                                Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
+                      <TextBlock Text="Profile" FontSize="28" FontWeight="Bold"
+                                 Foreground="#9090B0" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+
+                  <Button x:Name="MenuItem5"
+                          Background="Transparent" HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Padding="0,10" Opacity="0"
+                          Click="OnMenuItemClick" Tag="Settings">
+                    <Button.RenderTransform>
+                      <TranslateTransform Y="25">
+                        <TranslateTransform.Transitions>
+                          <Transitions>
+                            <DoubleTransition Property="Y" Duration="0:0:0.40"
+                                              Delay="0:0:0.260" Easing="BackEaseOut" />
+                          </Transitions>
+                        </TranslateTransform.Transitions>
+                      </TranslateTransform>
+                    </Button.RenderTransform>
+                    <Button.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.30"
+                                          Delay="0:0:0.260" Easing="CubicEaseOut" />
+                      </Transitions>
+                    </Button.Transitions>
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <PathIcon Width="20" Height="20" Foreground="#9090B0"
+                                Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+                      <TextBlock Text="Settings" FontSize="28" FontWeight="Bold"
+                                 Foreground="#9090B0" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+
+                </StackPanel>
+              </DockPanel>
+            </Panel>
+          </DrawerPage.Drawer>
+
+          <DrawerPage.Content>
+            <NavigationPage x:Name="DetailNav">
+              <NavigationPage.PageTransition>
+                <CrossFade Duration="0:0:0.3" />
+              </NavigationPage.PageTransition>
+            </NavigationPage>
+          </DrawerPage.Content>
+        </DrawerPage>
+      </Border>
+    </DockPanel>
+
+    <Border Grid.Column="1"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1,0,0,0"
+            Padding="16">
+      <ScrollViewer>
+        <StackPanel Spacing="16">
+          <TextBlock Text="How it works" FontSize="16" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+          <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.8"
+                     Text="Dark overlay menu with two animation layers and continuously floating background bubbles." />
+
+          <Separator />
+
+          <TextBlock Text="Open animation" FontSize="13" FontWeight="SemiBold" />
+          <StackPanel Spacing="8">
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                       Text="&#x2022; Items start at Opacity=0, TranslateY=25" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                       Text="&#x2022; Opacity: CubicEaseOut 300 ms" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                       Text="&#x2022; Y: BackEaseOut 400 ms (slight overshoot)" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                       Text="&#x2022; 65 ms stagger between items" />
+          </StackPanel>
+
+          <Separator />
+
+          <TextBlock Text="Background bubbles" FontSize="13" FontWeight="SemiBold" />
+          <StackPanel Spacing="8">
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                       Text="&#x2022; DispatcherTimer at ~60 fps" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                       Text="&#x2022; Sine/cosine wave offsets per bubble" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                       Text="&#x2022; Different phase and frequency per bubble" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                       Text="&#x2022; Starts/stops with drawer open state" />
+          </StackPanel>
+
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</UserControl>

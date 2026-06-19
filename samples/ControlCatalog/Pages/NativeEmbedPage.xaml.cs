@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace ControlCatalog.Pages
 {
-    public partial class NativeEmbedPage : UserControl
+    public partial class NativeEmbedPage : ContentPage
     {
         public NativeEmbedPage()
         {

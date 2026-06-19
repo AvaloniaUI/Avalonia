@@ -51,6 +51,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var selector = default(Selector).OfType<TestLogical1>().Class("foo").Descendant().OfType<TestLogical3>();
             var activator = selector.Match(child).Activator;
 
+            Assert.NotNull(activator);
             Assert.True(await activator.Take(1));
         }
 
@@ -69,6 +70,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var selector = default(Selector).OfType<TestLogical1>().Class("foo").Descendant().OfType<TestLogical3>();
             var activator = selector.Match(child).Activator;
 
+            Assert.NotNull(activator);
             Assert.False(await activator.Take(1));
         }
 
@@ -83,17 +85,19 @@ namespace Avalonia.Base.UnitTests.Styling
             child.LogicalParent = parent;
 
             var selector = default(Selector).OfType<TestLogical1>().Class("foo").Descendant().OfType<TestLogical3>();
-            var activator = selector.Match(child).Activator.ToObservable();
+            var activator = selector.Match(child).Activator;
+            Assert.NotNull(activator);
+            var observable = activator.ToObservable();
 
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
             parent.Classes.Add("foo");
-            Assert.True(await activator.Take(1));
+            Assert.True(await observable.Take(1));
             grandparent.Classes.Add("foo");
-            Assert.True(await activator.Take(1));
+            Assert.True(await observable.Take(1));
             parent.Classes.Remove("foo");
-            Assert.True(await activator.Take(1));
+            Assert.True(await observable.Take(1));
             grandparent.Classes.Remove("foo");
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
         }
 
         [Fact]
@@ -106,7 +110,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
         public abstract class TestLogical : Control
         {
-            public ILogical LogicalParent
+            public ILogical? LogicalParent
             {
                 get => Parent;
                 set => ((ISetLogicalParent)this).SetParent(value);
