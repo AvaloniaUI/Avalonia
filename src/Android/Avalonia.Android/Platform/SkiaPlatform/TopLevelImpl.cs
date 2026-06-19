@@ -255,7 +255,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             AppCompatDelegate.DefaultNightMode = nightMode;
 
-            if (nightMode == AppCompatDelegate.ModeNightFollowSystem && _view.Context is { } context
+            if (nightMode == AppCompatDelegate.ModeNightFollowSystem && _view?.Context is { } context
                 && context.Resources?.Configuration is { } config)
             {
                 var settings =

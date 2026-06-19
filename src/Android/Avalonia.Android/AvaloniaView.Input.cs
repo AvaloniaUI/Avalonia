@@ -29,7 +29,7 @@ namespace Avalonia.Android
         {
             var res = _view.PointerHelper.DispatchMotionEvent(e, out var callBase);
             if (res == false)
-                callBase = !_accessHelper.DispatchHoverEvent(e!) && callBase;
+                callBase = (_accessHelper?.DispatchHoverEvent(e!) == true) && callBase;
 
             var baseResult = callBase && base.DispatchHoverEvent(e);
 
