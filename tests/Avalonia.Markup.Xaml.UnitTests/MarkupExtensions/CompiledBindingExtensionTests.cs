@@ -1904,17 +1904,20 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
-        [Fact]
-        public void Binding_Method_With_Parameter_To_Command_Works()
+        [Theory]
+        [InlineData("5")]
+        [InlineData("hello")]
+        [InlineData(null)]
+        public void Binding_Method_With_Parameter_To_Command_Works(string? parameter)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var xaml = @"
+                var xaml = $@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         x:DataType='local:MethodAsCommandDataContext'>
-    <Button Name='button' Command='{CompiledBinding Method1}' CommandParameter='5'/>
+    <Button Name='button' Command='{{CompiledBinding Method1}}' CommandParameter='{ parameter ?? "{x:Null}" }'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.GetControl<Button>("button");
@@ -1925,7 +1928,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 Assert.NotNull(button.Command);
                 PerformClick(button);
-                Assert.Equal("Called 5", vm.Value);
+                Assert.Equal("Called " + parameter, vm.Value);
             }
         }
 
