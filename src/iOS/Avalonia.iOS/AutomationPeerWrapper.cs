@@ -14,7 +14,7 @@ namespace Avalonia.iOS
 {
     public class AutomationPeerWrapper : UIAccessibilityElement, IUIAccessibilityContainer
     {
-        private static readonly ImmutableHashSet<AutomationControlType> s_containerTypes =
+        private static readonly HashSet<AutomationControlType> s_containerTypes =
         [
             AutomationControlType.Calendar,
             AutomationControlType.ComboBoxItem,
