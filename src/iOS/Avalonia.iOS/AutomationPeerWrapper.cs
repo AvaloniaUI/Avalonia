@@ -32,6 +32,7 @@ namespace Avalonia.iOS
             AutomationControlType.MenuBar,
             AutomationControlType.MenuItem,
             AutomationControlType.Pane,
+            AutomationControlType.ScrollViewer,
             AutomationControlType.SplitButton,
             AutomationControlType.Tab,
             AutomationControlType.TabItem,
