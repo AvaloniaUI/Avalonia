@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -124,6 +125,11 @@ namespace Avalonia.Controls
         protected internal override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
         {
             return NeedsContainer<ListBoxItem>(item, out recycleKey);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ListBoxAutomationPeer(this);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

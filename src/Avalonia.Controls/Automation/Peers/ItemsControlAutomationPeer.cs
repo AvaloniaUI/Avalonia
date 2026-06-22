@@ -1,4 +1,5 @@
-﻿using Avalonia.Automation.Provider;
+﻿using System.Collections.Generic;
+using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 
 namespace Avalonia.Automation.Peers
