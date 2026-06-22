@@ -234,11 +234,8 @@ namespace Avalonia.X11
             // MIT-SHM extension, probed once by X11Info on the deferred display.
             if (_platform.Options.UseXShmFramebuffer is true && depth == 32 && _x11.HasXShm)
             {
-                // Render and receive XShmCompletionEvents on the DeferredDisplay connection, which the
-                // rendering thread owns and drains itself. Do not use `_renderHandle`, because it was
-                // introduced to fix gl, and XShm is only used when gl is disabled (so `_renderHandle` == `_handle`).
                 surfaces.Insert(0,
-                    new X11ShmFramebufferSurface(_x11.DeferredDisplay, _handle, visual, depth,
+                    new X11ShmFramebufferSurface(_x11.DeferredDisplay, _renderHandle, visual, depth,
                         platform.DeferredDisplayDispatcher));
             }
             
