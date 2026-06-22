@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Logging;
 using Avalonia.Platform.Surfaces;
 
 using ShmSeg = System.UInt64;
@@ -25,7 +26,7 @@ internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
 
     public IFramebufferRenderTarget CreateFramebufferRenderTarget()
     {
-        X11ShmDebugLogger.WriteLine("[X11ShmFramebufferSurface] CreateFramebufferRenderTarget");
+        Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmFramebufferSurface] CreateFramebufferRenderTarget");
 
         return new X11ShmImageSwapchain(_context);
     }
@@ -35,7 +36,7 @@ internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
         var p = &@event;
         var xShmCompletionEvent = (XShmCompletionEvent*)p;
         ShmSeg shmseg = xShmCompletionEvent->shmseg;
-        X11ShmDebugLogger.WriteLine($"[X11ShmFramebufferSurface][OnXShmCompletionEvent] shmseg={shmseg}");
+        Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmFramebufferSurface][OnXShmCompletionEvent] shmseg={ShmSeg}", shmseg);
         _context.OnXShmCompletion(shmseg);
     }
 }

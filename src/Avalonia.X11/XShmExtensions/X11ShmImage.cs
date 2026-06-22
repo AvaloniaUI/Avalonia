@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Avalonia.Logging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,7 +58,7 @@ internal unsafe class X11ShmImage : IDisposable
 
         XShmAttach(display, pShmSegmentInfo);
 
-        X11ShmDebugLogger.WriteLine($"[X11ShmImage] CreateX11ShmImage Size={Size} shmid={shmid:X} shmaddr={shmaddr}");
+        Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmImage] CreateX11ShmImage Size={Size} shmid={Shmid:X} shmaddr={ShmAddr}", Size, shmid, shmaddr);
     }
 
     public X11ShmImageManager ShmImageManager { get; }
@@ -82,6 +83,6 @@ internal unsafe class X11ShmImage : IDisposable
 
         Marshal.FreeHGlobal(new IntPtr(PShmSegmentInfo));
 
-        X11ShmDebugLogger.WriteLine($"[X11ShmImage] Dispose");
+        Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmImage] Dispose");
     }
 }

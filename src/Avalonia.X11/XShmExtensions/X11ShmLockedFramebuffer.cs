@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Logging;
 using Avalonia.Platform;
 
 namespace Avalonia.X11.XShmExtensions;
@@ -47,6 +48,6 @@ class X11ShmLockedFramebuffer : ILockedFramebuffer
         XLib.XFreeGC(display, gc);
         XLib.XUnlockDisplay(display);
 
-        X11ShmDebugLogger.WriteLine($"[X11ShmLockedFramebuffer] SendRender XShmPutImage");
+        Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmLockedFramebuffer] SendRender XShmPutImage");
     }
 }

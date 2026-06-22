@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Avalonia.Logging;
 
 namespace Avalonia.X11.XShmExtensions;
 
@@ -54,8 +55,8 @@ internal class X11ShmImageManager : IDisposable
                 }
                 else
                 {
-                    X11ShmDebugLogger.WriteLine(
-                        $"[X11ShmImageManager][GetOrCreateImage] Get X11ShmImage from AvailableQueue.");
+                    Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this,
+                        "[X11ShmImageManager][GetOrCreateImage] Get X11ShmImage from AvailableQueue.");
                     break;
                 }
             }
@@ -68,9 +69,8 @@ internal class X11ShmImageManager : IDisposable
 #nullable disable
 
         var currentPresentationCount = Interlocked.Increment(ref _presentationCount);
-        _ = currentPresentationCount;
-        X11ShmDebugLogger.WriteLine(
-            $"[X11ShmImageManager][GetOrCreateImage] PresentationCount={currentPresentationCount}");
+        Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this,
+            "[X11ShmImageManager][GetOrCreateImage] PresentationCount={PresentationCount}", currentPresentationCount);
 
         return image;
     }
@@ -80,9 +80,8 @@ internal class X11ShmImageManager : IDisposable
     public void OnXShmCompletion(X11ShmImage image)
     {
         var currentPresentationCount = Interlocked.Decrement(ref _presentationCount);
-        _ = currentPresentationCount;
-        X11ShmDebugLogger.WriteLine(
-            $"[X11ShmImageManager][OnXShmCompletion] PresentationCount={currentPresentationCount}");
+        Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this,
+            "[X11ShmImageManager][OnXShmCompletion] PresentationCount={PresentationCount}", currentPresentationCount);
 
         if (_isDisposed)
         {
