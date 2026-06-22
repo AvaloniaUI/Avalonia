@@ -16,6 +16,22 @@ namespace Avalonia.Styling;
 public sealed record ThemeVariant
 {
     /// <summary>
+    /// Inherit theme variant from the parent. If set on Application, system theme is inherited.
+    /// Using Default as the ResourceDictionary.Key marks this dictionary as a fallback in case the theme variant or resource key is not found in other theme dictionaries.
+    /// </summary>
+    public static ThemeVariant Default { get; } = new(nameof(Default));
+
+    /// <summary>
+    /// Use the Light theme variant.
+    /// </summary>
+    public static ThemeVariant Light { get; } = new(nameof(Light));
+
+    /// <summary>
+    /// Use the Dark theme variant.
+    /// </summary>
+    public static ThemeVariant Dark { get; } = new(nameof(Dark));
+
+    /// <summary>
     /// Defines the ActualThemeVariant property.
     /// </summary>
     internal static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
@@ -62,22 +78,6 @@ public sealed record ThemeVariant
     /// Reference to a theme variant which should be used, if resource wasn't found for the requested variant.
     /// </summary>
     public ThemeVariant? InheritVariant { get; }
-
-    /// <summary>
-    /// Inherit theme variant from the parent. If set on Application, system theme is inherited.
-    /// Using Default as the ResourceDictionary.Key marks this dictionary as a fallback in case the theme variant or resource key is not found in other theme dictionaries.
-    /// </summary>
-    public static ThemeVariant Default { get; } = new(nameof(Default));
-
-    /// <summary>
-    /// Use the Light theme variant.
-    /// </summary>
-    public static ThemeVariant Light { get; } = new(nameof(Light));
-
-    /// <summary>
-    /// Use the Dark theme variant.
-    /// </summary>
-    public static ThemeVariant Dark { get; } = new(nameof(Dark));
 
     public override string ToString()
     {
