@@ -54,7 +54,8 @@
            IsLightDismissEnabled="False"
            Topmost="True">
       <Panel MinWidth="100"
-             MinHeight="30">
+             MinHeight="30"
+             Background="Gray">
         <Button Name="TopMostPopupCloseButton"
                 Click="TopMostPopupCloseButton_OnClick"
                 Content="Click to Close" />
