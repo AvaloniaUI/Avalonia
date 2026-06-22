@@ -85,14 +85,20 @@ internal unsafe class X11ShmImage : IDisposable
     {
         // Atomically claim the image pointer; whoever swaps out a non-zero value owns the teardown, so a
         // double dispose is a no-op and never double-frees.
-        if (Interlocked.Exchange(ref _shmImage, IntPtr.Zero) == IntPtr.Zero)
+        var pShmImage = (XImage*)Interlocked.Exchange(ref _shmImage, IntPtr.Zero);
+        if (pShmImage == null)
             return;
 
         var pShmSegmentInfo = (XShmSegmentInfo*)_shmSegmentInfo;
         _shmSegmentInfo = IntPtr.Zero;
 
+        // Teardown order per the MIT-SHM spec: detach the server, destroy the image, then drop the segment.
+        // https://xorg.freedesktop.org/archive/X11R7.7/doc/xextproto/shm.html
         XShmDetach(_deferredDisplay, pShmSegmentInfo);
-
+        // Clear data first so XDestroyImage frees only the XImage structure - the shm segment is ours to drop
+        // below; otherwise XDestroyImage would call free() on the shmat() pointer.
+        pShmImage->data = IntPtr.Zero;
+        XDestroyImage(ref *pShmImage);
         shmdt(pShmSegmentInfo->shmaddr);
         shmctl(pShmSegmentInfo->shmid, IPC_RMID, IntPtr.Zero);
 
