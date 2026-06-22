@@ -11,11 +11,6 @@ namespace Avalonia.X11.XShm;
 /// the in-flight counter used for backpressure. Completion events are routed back here by the shared
 /// <see cref="X11DeferredDisplayDispatcher"/>.
 /// </summary>
-/// <remarks>
-/// All members run on the rendering thread (the compositor render loop or, when rendering on the UI
-/// thread, the UI thread). The same thread submits frames and drains their completions, so no locking is
-/// required and the design is agnostic of which thread renders.
-/// </remarks>
 internal class X11ShmFramebufferRenderTarget : IFramebufferRenderTarget
 {
     /// <summary>
@@ -50,11 +45,10 @@ internal class X11ShmFramebufferRenderTarget : IFramebufferRenderTarget
         Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmFramebufferRenderTarget] Lock");
         properties = default;
 
-        // (5a) Reclaim any buffers the server has finished with before deciding whether we must wait.
+        // Attempt to handle any pending shm completion events
         _dispatcher.DrainPendingEvents();
 
-        // (5b) Apply backpressure: block (pumping completions) until a slot frees up. A window resize does
-        // not bypass this - frames submitted at the old size still count until their completion arrives.
+        // Block until a free slot becomes available
         while (_inFlight >= MaxInFlight)
         {
             _dispatcher.DrainEventsBlockingAtMostOnce();
@@ -103,8 +97,7 @@ internal class X11ShmFramebufferRenderTarget : IFramebufferRenderTarget
     }
 
     /// <summary>
-    /// Called by the dispatcher (via the completion callback) when the server signals completion for one of
-    /// our images.
+    /// Called when X server signals completion for one of our images.
     /// </summary>
     private void OnXShmCompletion(X11ShmImage image)
     {
@@ -167,8 +160,6 @@ internal class X11ShmFramebufferRenderTarget : IFramebufferRenderTarget
 
             var gc = XLib.XCreateGC(display, xid, 0, IntPtr.Zero);
 
-            // The DeferredDisplay connection is owned by the rendering thread, so no XLockDisplay is needed -
-            // XInitThreads already serializes individual Xlib calls.
             var status = XLib.XShmPutImage(display, xid, gc, _image.ShmImage, 0, 0, 0, 0, (uint)Size.Width,
                 (uint)Size.Height, send_event: true);
             XLib.XFlush(display);
