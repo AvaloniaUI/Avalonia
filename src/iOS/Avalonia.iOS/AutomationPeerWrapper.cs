@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -15,48 +14,51 @@ namespace Avalonia.iOS
     public class AutomationPeerWrapper : UIAccessibilityElement, IUIAccessibilityContainer
     {
         private static readonly HashSet<AutomationControlType> s_containerTypes =
-        [
-            AutomationControlType.Calendar,
-            AutomationControlType.ComboBoxItem,
-            AutomationControlType.Custom,
-            AutomationControlType.DataGrid,
-            AutomationControlType.DataItem,
-            AutomationControlType.Document,
-            AutomationControlType.Expander,
-            AutomationControlType.Group,
-            AutomationControlType.Header,
-            AutomationControlType.HeaderItem,
-            AutomationControlType.List,
-            AutomationControlType.ListItem,
-            AutomationControlType.Menu,
-            AutomationControlType.MenuBar,
-            AutomationControlType.MenuItem,
-            AutomationControlType.Pane,
-            AutomationControlType.ScrollViewer,
-            AutomationControlType.SplitButton,
-            AutomationControlType.Tab,
-            AutomationControlType.TabItem,
-            AutomationControlType.Table,
-            AutomationControlType.TitleBar,
-            AutomationControlType.ToolBar,
-            AutomationControlType.Tree,
-            AutomationControlType.TreeItem,
-            AutomationControlType.Window,
-        ];
+            new HashSet<AutomationControlType>()
+            {
+                AutomationControlType.Calendar,
+                AutomationControlType.ComboBoxItem,
+                AutomationControlType.Custom,
+                AutomationControlType.DataGrid,
+                AutomationControlType.DataItem,
+                AutomationControlType.Document,
+                AutomationControlType.Expander,
+                AutomationControlType.Group,
+                AutomationControlType.Header,
+                AutomationControlType.HeaderItem,
+                AutomationControlType.List,
+                AutomationControlType.ListItem,
+                AutomationControlType.Menu,
+                AutomationControlType.MenuBar,
+                AutomationControlType.MenuItem,
+                AutomationControlType.None,
+                AutomationControlType.Pane,
+                AutomationControlType.ScrollViewer,
+                AutomationControlType.SplitButton,
+                AutomationControlType.Tab,
+                AutomationControlType.TabItem,
+                AutomationControlType.Table,
+                AutomationControlType.TitleBar,
+                AutomationControlType.ToolBar,
+                AutomationControlType.Tree,
+                AutomationControlType.TreeItem,
+                AutomationControlType.Window,
+            };
 
 
-        private static readonly ImmutableDictionary<AutomationProperty, Action<AutomationPeerWrapper>> s_propertySetters =
-        [
-            new(AutomationElementIdentifiers.NameProperty, UpdateName),
-            new(AutomationElementIdentifiers.HelpTextProperty, UpdateHelpText),
-            new(AutomationElementIdentifiers.BoundingRectangleProperty, UpdateBoundingRectangle),
+        private static readonly IReadOnlyDictionary<AutomationProperty, Action<AutomationPeerWrapper>> s_propertySetters =
+            new Dictionary<AutomationProperty, Action<AutomationPeerWrapper>>()
+            {
+                { AutomationElementIdentifiers.NameProperty, UpdateName },
+                { AutomationElementIdentifiers.HelpTextProperty, UpdateHelpText },
+                { AutomationElementIdentifiers.BoundingRectangleProperty, UpdateBoundingRectangle },
 
-            new(RangeValuePatternIdentifiers.IsReadOnlyProperty, UpdateIsReadOnly),
-            new(RangeValuePatternIdentifiers.ValueProperty, UpdateValue),
+                { RangeValuePatternIdentifiers.IsReadOnlyProperty, UpdateIsReadOnly },
+                { RangeValuePatternIdentifiers.ValueProperty, UpdateValue },
 
-            new(ValuePatternIdentifiers.IsReadOnlyProperty, UpdateIsReadOnly),
-            new(ValuePatternIdentifiers.ValueProperty, UpdateValue),
-        ];
+                { ValuePatternIdentifiers.IsReadOnlyProperty, UpdateIsReadOnly },
+                { ValuePatternIdentifiers.ValueProperty, UpdateValue },
+            };
 
         private readonly AvaloniaView _view;
 
