@@ -29,6 +29,10 @@ internal static class DispatcherTestServices
     {
         var frame = new DispatcherFrame();
         dispatcher.InvokeAsync(() => frame.Continue = false, priority);
-        Dispatcher.PushFrame(frame);
+        PushFrame(dispatcher, frame);
     }
+
+    // Pumps the dispatcher until the frame is stopped. WPF's PushFrame is static (Avalonia's is an
+    // instance method) - that is the only difference from the Avalonia backend.
+    public static void PushFrame(Dispatcher dispatcher, DispatcherFrame frame) => Dispatcher.PushFrame(frame);
 }

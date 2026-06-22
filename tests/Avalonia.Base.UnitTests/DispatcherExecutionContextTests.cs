@@ -1,5 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 // This file is compiled into BOTH:
@@ -31,6 +33,9 @@ public class DispatcherExecutionContextTests : global::Avalonia.UnitTests.Scoped
 {
     // Sumerian: extremely unlikely to be the machine default, so these tests don't depend on the environment.
     private const string CustomCultureName = "sux-Shaw-UM";
+
+    // A second, distinct culture used as the "calling thread" culture in the cross-thread test.
+    private const string CallSiteCultureName = "kk-KZ";
 
     // Regression test for https://github.com/AvaloniaUI/Avalonia/issues/21451. A dispatcher operation must
     // run under the UI thread's live culture - even one queued *before* the culture was set, whose execution
@@ -132,5 +137,57 @@ public class DispatcherExecutionContextTests : global::Avalonia.UnitTests.Scoped
         DispatcherTestServices.DrainQueue(dispatcher, DispatcherPriority.Background);
 
         Assert.Null(seen);
+    }
+
+    // A dispatcher operation runs under the UI thread's live culture, NOT under the culture of the thread
+    // that happened to queue it - even though that other thread's culture would flow into a plain Task.Run
+    // continuation. This is the cross-thread counterpart of the same-thread test above.
+    [CrossFact]
+    [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Tests the dispatcher itself")]
+    public void Dispatcher_Operations_Use_Live_UI_Thread_Culture_Not_Calling_Thread_Culture()
+    {
+        var dispatcher = Dispatcher.CurrentDispatcher;
+        var uiThreadCulture = CultureInfo.GetCultureInfo(CustomCultureName);
+        var callSiteCulture = CultureInfo.GetCultureInfo(CallSiteCultureName);
+        var oldCulture = Thread.CurrentThread.CurrentCulture;
+
+        // This (test) thread pumps the frame below, i.e. it is the UI thread. Give it a known culture.
+        Thread.CurrentThread.CurrentCulture = uiThreadCulture;
+        try
+        {
+            var frame = new DispatcherFrame();
+            string? taskRunSaw = null;
+            string? invokeSaw = null;
+            string? invokeAsyncSaw = null;
+
+            var callingThread = new Thread(() =>
+            {
+                // A DIFFERENT culture on this non-UI (calling) thread.
+                Thread.CurrentThread.CurrentCulture = callSiteCulture;
+
+                // Baseline: a plain Task.Run continuation DOES flow the calling-thread culture through the EC.
+                taskRunSaw = Task.Run(() => Thread.CurrentThread.CurrentCulture.Name).GetAwaiter().GetResult();
+
+                // Queue work onto the dispatcher from this non-UI thread, then stop the frame.
+                dispatcher.Invoke(() => invokeSaw = Thread.CurrentThread.CurrentCulture.Name);
+                dispatcher.InvokeAsync(() => invokeAsyncSaw = Thread.CurrentThread.CurrentCulture.Name, DispatcherPriority.Normal);
+                dispatcher.InvokeAsync(() => frame.Continue = false, DispatcherPriority.Normal);
+            });
+            callingThread.Start();
+
+            DispatcherTestServices.PushFrame(dispatcher, frame);
+            callingThread.Join();
+
+            // Baseline: Task.Run flows the calling-thread culture (guaranteed by the runtime).
+            Assert.Equal(CallSiteCultureName, taskRunSaw);
+            // Dispatcher operations run under the UI thread's live culture, not the calling thread's culture.
+            Assert.Equal(CustomCultureName, invokeSaw);
+            Assert.Equal(CustomCultureName, invokeAsyncSaw);
+        }
+        finally
+        {
+            Thread.CurrentThread.CurrentCulture = oldCulture;
+            Assert.NotEqual(CustomCultureName, oldCulture.Name);
+        }
     }
 }

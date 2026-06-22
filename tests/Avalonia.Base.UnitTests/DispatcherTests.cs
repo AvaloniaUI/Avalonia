@@ -615,10 +615,6 @@ public partial class DispatcherTests
         }
     }
 
-    // NOTE: ExecutionContext / culture behaviour tests live in the shared DispatcherExecutionContextTests.cs,
-    // which is compiled into both this project and Avalonia.UnitTests.WpfCompare to verify the behaviour
-    // matches WPF.
-
     [Fact]
     public void MediaContextRenderSchedulingDoesNotCaptureAmbientExecutionContext()
     {
@@ -687,70 +683,6 @@ public partial class DispatcherTests
 
         Assert.Null(schedulingException);
         Assert.Null(test);
-    }
-
-    // Avalonia deliberately opts OUT of the runtime's "culture flows with ExecutionContext" behaviour for
-    // dispatcher operations (see CulturePreservingExecutionContext and issue #21451): a dispatcher operation
-    // runs under the UI thread's live culture, NOT under whatever culture was current on the thread that
-    // happened to queue it. This is specific to culture - other ExecutionContext/AsyncLocal state still flows
-    // normally, see ExecutionContextIsPreservedInDispatcherInvokeAsync.
-    [Fact]
-    [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Tests the dispatcher itself")]
-    public void DispatcherOperationsUseLiveUiThreadCultureInsteadOfCapturedCulture()
-    {
-        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
-        var tokenSource = new CancellationTokenSource();
-
-        // "sux-Shaw-UM" (Sumerian) is extremely unlikely to be a machine default, so the test is not affected
-        // by the user's environment.
-        var uiThreadCulture = CultureInfo.GetCultureInfo("sux-Shaw-UM");
-        var callSiteCulture = CultureInfo.GetCultureInfo("kk-KZ");
-
-        var oldCulture = Thread.CurrentThread.CurrentCulture;
-
-        // This thread runs the MainLoop below, i.e. it is the UI thread. Give it a known culture.
-        Thread.CurrentThread.CurrentCulture = uiThreadCulture;
-
-        string? taskRunSaw = null;     // baseline: a plain Task.Run continuation DOES flow the call-site culture
-        string? invokeSaw = null;
-        string? invokeAsyncSaw = null;
-
-        try
-        {
-            var task = Task.Run(() =>
-            {
-                // Set a DIFFERENT culture on this (non-UI) thread, then queue work onto the dispatcher.
-                Thread.CurrentThread.CurrentCulture = callSiteCulture;
-
-                // Baseline: confirms the runtime still flows culture through the ExecutionContext in general.
-                var baseline = Task.Run(() => taskRunSaw = Thread.CurrentThread.CurrentCulture.Name);
-
-                Dispatcher.UIThread.Invoke(() => invokeSaw = Thread.CurrentThread.CurrentCulture.Name);
-
-                _ = Dispatcher.UIThread.InvokeAsync(() => invokeAsyncSaw = Thread.CurrentThread.CurrentCulture.Name);
-
-                _ = Dispatcher.UIThread.InvokeAsync(async () =>
-                {
-                    await Task.WhenAll(baseline);
-                    tokenSource.Cancel();
-                });
-            }, TestContext.Current.CancellationToken);
-
-            Dispatcher.UIThread.MainLoop(tokenSource.Token);
-            task.GetAwaiter().GetResult();
-
-            // Baseline: Task.Run flows the call-site culture (guaranteed by the runtime).
-            Assert.Equal("kk-KZ", taskRunSaw);
-            // Dispatcher operations run under the UI thread's live culture, not the captured call-site culture.
-            Assert.Equal("sux-Shaw-UM", invokeSaw);
-            Assert.Equal("sux-Shaw-UM", invokeAsyncSaw);
-        }
-        finally
-        {
-            Thread.CurrentThread.CurrentCulture = oldCulture;
-            // Ensure that this test does not have a negative impact on other tests.
-            Assert.NotEqual("sux-Shaw-UM", oldCulture.Name);
-        }
     }
 
     [Fact]
