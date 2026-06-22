@@ -65,13 +65,15 @@ partial class BrowserWebGlRenderTarget : BrowserRenderTarget, IGlPlatformSurface
         {
             _target = target;
         }
-        
+
+        public bool IsCorrupted => false;
+
         public void Dispose()
         {
             // No-op
         }
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw()
+        public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             var s = _target._sizeGetter();
             _target.UpdateSize(s.Size);
@@ -96,8 +98,8 @@ partial class WebGlContext : IGlContext, Avalonia.Skia.IGlSkiaSpecificOptionsFea
     [JSImport("WebGlRenderTarget.makeContextCurrent", AvaloniaModule.MainModuleName)]
     private static partial bool MakeContextCurrent(int context);
 
-    [DllImport("libSkiaSharp", EntryPoint = "eglGetProcAddress")]
-    private static extern IntPtr eglGetProcAddress(string name);
+    [LibraryImport("libSkiaSharp", EntryPoint = "eglGetProcAddress", StringMarshalling = StringMarshalling.Utf8)]
+    private static partial IntPtr eglGetProcAddress(string name);
 
     private int _contextId;
     private readonly Thread _thread;

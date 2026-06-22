@@ -8,13 +8,16 @@
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
     <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="FontStyle" Value="Normal" />
+    <Setter Property="Inline.TextDecorations" Value="" />
     <Setter Property="Template">
       <ControlTemplate>
         <LayoutTransformControl LayoutTransform="{TemplateBinding Transform}">
           <Panel>
             <Border Name="PART_TransparencyFallback"
                     IsHitTestVisible="False" />
-            <VisualLayerManager IsPopup="True">
+            <VisualLayerManager Name="PART_VisualLayerManager">
               <ContentPresenter Name="PART_ContentPresenter"
                                 Padding="{TemplateBinding Padding}"
                                 Background="{TemplateBinding Background}"

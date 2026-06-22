@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Metadata;
+﻿using Avalonia.Metadata;
 
 namespace Avalonia.Input.Raw
 {
@@ -7,18 +6,28 @@ namespace Avalonia.Input.Raw
     public class RawDragEvent : RawInputEventArgs
     {
         public Point Location { get; set; }
-        public IDataObject Data { get; }
+
+        public IDataTransfer DataTransfer { get; }
+
         public DragDropEffects Effects { get; set; }
+
         public RawDragEventType Type { get; }
+
         public KeyModifiers KeyModifiers { get; }
 
-        public RawDragEvent(IDragDropDevice inputDevice, RawDragEventType type, 
-            IInputRoot root, Point location, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
-            :base(inputDevice, 0, root)
+        public RawDragEvent(
+            IDragDropDevice inputDevice,
+            RawDragEventType type,
+            IInputRoot root,
+            Point location,
+            IDataTransfer dataTransfer,
+            DragDropEffects effects,
+            RawInputModifiers modifiers)
+            : base(inputDevice, 0, root)
         {
             Type = type;
             Location = location;
-            Data = data;
+            DataTransfer = dataTransfer;
             Effects = effects;
             KeyModifiers = modifiers.ToKeyModifiers();
         }

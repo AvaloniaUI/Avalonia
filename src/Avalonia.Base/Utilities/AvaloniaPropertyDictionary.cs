@@ -244,12 +244,8 @@ namespace Avalonia.Utilities
                     // hi and lo are never negative: there's no overflow using unsigned math
                     var i = (int)(((uint)hi + (uint)lo) >> 1);
 
-#if NET6_0_OR_GREATER
                     // nuint cast to force zero extend instead of sign extend
                     ref var entry = ref Unsafe.Add(ref entry0, (nuint)i);
-#else
-                    ref var entry = ref Unsafe.Add(ref entry0, i);
-#endif
 
                     var entryId = entry.Id;
                     if (entryId == propertyId)
@@ -288,12 +284,8 @@ namespace Avalonia.Utilities
                     // hi and lo are never negative: there's no overflow using unsigned math
                     var i = (int)(((uint)hi + (uint)lo) >> 1);
 
-#if NET6_0_OR_GREATER
                     // nuint cast to force zero extend instead of sign extend
                     ref var entry = ref Unsafe.Add(ref entry0, (nuint)i);
-#else
-                    ref var entry = ref Unsafe.Add(ref entry0, i);
-#endif
 
                     var entryId = entry.Id;
                     if (entryId == propertyId)
@@ -360,7 +352,7 @@ namespace Avalonia.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ref Entry UnsafeGetEntryRef(int index)
         {
-#if NET6_0_OR_GREATER && !DEBUG
+#if !DEBUG
             // This type is performance critical: in release mode, skip any bound check the JIT compiler couldn't elide.
             // The index parameter should always be correct when calling this method: no unchecked user input should get here.
             return ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_entries!), (uint)index);

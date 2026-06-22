@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Markup.Parsers;
@@ -32,8 +33,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             var pn = on.Children.OfType<XamlAstXamlPropertyValueNode>()
                 .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Selector");
 
+            // Missing selector, use the object's target type if available
             if (pn == null)
+            {
+                // We already went through this node
+                if (context.ParentNodes().FirstOrDefault() is AvaloniaXamlIlTargetTypeMetadataNode metadataNode
+                    && metadataNode.Value == on)
+                {
+                    return node;
+                }
+
+                if (FindStyleParentObject(on, context) is { } parentObjectNode)
+                {
+                    return new AvaloniaXamlIlTargetTypeMetadataNode(
+                        on,
+                        new XamlAstClrTypeReference(node, parentObjectNode.Type.GetClrType(), false),
+                        AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
+                }
+
                 return node;
+            }
 
             if (pn.Values.Count != 1)
                 throw new XamlSelectorsTransformException("Selector property should have exactly one value",
@@ -190,11 +209,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 throw new XamlSelectorsTransformException("Unable to parse selector: " + e.Message, node, e);
             }
 
+            // Selectors should resolve control types only.
+            // isMarkupExtension = false to prevent resolving selector types to XExtension.
             var selector = Create(parsed, (p, n) 
-                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
+                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", false, node, true));
             pn.Values[0] = selector;
 
             var templateType = GetLastTemplateTypeFromSelector(selector);
+
+            // Empty selector, use the object's target type if available
+            if (selector == initialNode)
+            {
+                if (FindStyleParentObject(on, context) is { } parentObjectNode)
+                {
+                    return new AvaloniaXamlIlTargetTypeMetadataNode(
+                        on,
+                        new XamlAstClrTypeReference(node, parentObjectNode.Type.GetClrType(), false),
+                        AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
+                }
+
+                return node;
+            }
             
             var styleNode = new AvaloniaXamlIlTargetTypeMetadataNode(on,
                 new XamlAstClrTypeReference(selector, selector.TargetType!, false),
@@ -207,6 +242,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     new XamlAstClrTypeReference(styleNode, templateType, false),
                     AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate)
             };
+        }
+
+        private static XamlAstObjectNode? FindStyleParentObject(XamlAstNode styleNode, AstTransformationContext context)
+        {
+            var avaloniaTypes = context.GetAvaloniaTypes();
+
+            var parentNode = context
+                .ParentNodes()
+                .OfType<XamlAstObjectNode>()
+                .FirstOrDefault(n => !avaloniaTypes.Styles.IsAssignableFrom(n.Type.GetClrType()));
+
+            if (parentNode is not null)
+            {
+                var parentType = parentNode.Type.GetClrType();
+
+                if (avaloniaTypes.StyledElement.IsAssignableFrom(parentType))
+                    return parentNode;
+
+                if (avaloniaTypes.ControlTheme.IsAssignableFrom(parentType))
+                    throw new XamlTransformException("Cannot add a Style without selector to a ControlTheme.", styleNode);
+            }
+
+            return null;
         }
 
         private static IXamlType? GetLastTemplateTypeFromSelector(XamlIlSelectorNode? node)
@@ -252,9 +310,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         
         protected abstract void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen);
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         protected void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, Func<IXamlMethod, bool> method)
         {
-            var selectors = context.Configuration.TypeSystem.GetType("Avalonia.Styling.Selectors");
+            var selectors = context.GetAvaloniaTypes().Selectors;
             var found = selectors.GetMethod(m => m.IsStatic && m.Parameters.Count > 0 && method(m));
             codeGen.EmitCall(found);
         }
@@ -287,7 +346,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             var name = Concrete ? "OfType" : "Is";
             codeGen.Ldtype(TargetType);
             EmitCall(context, codeGen,
-                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].FullName == "System.Type");
+                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].Is("System", "Type"));
         }
     }
     
@@ -316,7 +375,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             codeGen.Ldstr(String);
             var name = _type.ToString();
             EmitCall(context, codeGen,
-                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].FullName == "System.String");
+                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].Is("System", "String"));
         }
     }
 
@@ -420,8 +479,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             EmitCall(context, codeGen,
                 m => m.Name == "PropertyEquals"
                      && m.Parameters.Count == 3
-                     && m.Parameters[1].FullName == "Avalonia.AvaloniaProperty"
-                     && m.Parameters[2].Equals(context.Configuration.WellKnownTypes.Object));
+                     && m.Parameters[1].Is("Avalonia", "AvaloniaProperty")
+                     && m.Parameters[2].Is("System", "Object"));
         }
     }
 
@@ -449,8 +508,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             EmitCall(context, codeGen,
                 m => m.Name == "PropertyEquals"
                      && m.Parameters.Count == 3
-                     && m.Parameters[1].FullName == "Avalonia.AvaloniaProperty"
-                     && m.Parameters[2].Equals(context.Configuration.WellKnownTypes.Object));
+                     && m.Parameters[1].Is("Avalonia", "AvaloniaProperty")
+                     && m.Parameters[2].Is("System", "Object"));
         }
     }
 
@@ -495,6 +554,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             if (_selectors.Count == 0)
@@ -504,7 +564,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 _selectors[0].Emit(context, codeGen);
                 return;
             }
-            var listType = context.Configuration.TypeSystem.GetType("System.Collections.Generic.List`1")
+            var listType = context.Configuration.WellKnownTypes.ListOfT
                 .MakeGenericType(base.Type.GetClrType());
             var add = listType.GetMethod("Add", context.Configuration.WellKnownTypes.Void, false, Type.GetClrType());
             codeGen

@@ -474,7 +474,7 @@ namespace Avalonia.Base.UnitTests.Layout
             root.LayoutManager.InvalidateArrange(control);
             root.LayoutManager.ExecuteInitialLayoutPass();
             
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Render, TestContext.Current.CancellationToken);
             
             Assert.Equal(1, layoutCount);
         }

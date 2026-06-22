@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Controls.Embedding.Offscreen
@@ -27,9 +28,10 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public OffscreenTopLevelImplBase()
             => Compositor = new Compositor(null);
 
-        public abstract IEnumerable<object> Surfaces { get; }
+        public abstract IPlatformRenderSurface[] Surfaces { get; }
 
-        public double DesktopScaling => _scaling;
+        public virtual double DesktopScaling => _scaling;
+
         public IPlatformHandle? Handle { get; }
 
         public Size ClientSize

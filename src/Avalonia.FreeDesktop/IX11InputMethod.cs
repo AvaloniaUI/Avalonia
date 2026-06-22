@@ -18,6 +18,7 @@ namespace Avalonia.FreeDesktop
         public int KeyVal { get; set; }
         public KeyModifiers Modifiers { get; set; }
         public RawKeyEventType Type { get; set; }
+        public bool WithText { get; set; }
     }
     
     internal interface IX11InputMethodControl : IDisposable

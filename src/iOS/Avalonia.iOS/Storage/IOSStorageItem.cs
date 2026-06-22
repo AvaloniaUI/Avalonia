@@ -174,25 +174,35 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
 
     public Task<Stream> OpenReadAsync()
     {
-        return Task.FromResult(CreateStream(FileAccess.Read));
+        return Task.FromResult(CreateStream(FileMode.Open, FileAccess.Read));
     }
 
     public Task<Stream> OpenWriteAsync()
     {
-        return Task.FromResult(CreateStream(FileAccess.Write));
+        return Task.FromResult(CreateStream(FileMode.Create, FileAccess.Write));
     }
 
-    private Stream CreateStream(FileAccess fileAccess)
+    private Stream CreateStream(FileMode fileMode, FileAccess fileAccess)
     {
-        var document = new UIDocument(Url);
+        using var document = new UIDocument(Url);
         var path = document.FileUrl.Path!;
         var scopeCreated = SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
-        var stream = File.Open(path, FileMode.Open, fileAccess);
+
+        FileStream stream;
+        try
+        {
+            stream = new FileStream(path, fileMode, fileAccess);
+        }
+        catch
+        {
+            if (scopeCreated)
+                SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+            throw;
+        }
 
         return scopeCreated ?
             new SecurityScopedStream(stream, Disposable.Create(() =>
             {
-                document.Dispose();
                 SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
             })) :
             stream;
@@ -289,7 +299,7 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
 
             var path = System.IO.Path.Combine(FilePath, name);
             NSFileAttributes? attributes = null;
-            if (NSFileManager.DefaultManager.CreateDirectory(path, false, attributes, out var error))
+            if (NSFileManager.DefaultManager.CreateDirectory(path, true, attributes, out var error))
             {
                 return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(new NSUrl(path, true), SecurityScopedAncestorUrl));
             }
@@ -305,5 +315,37 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
         {
             SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
         }
+    }
+
+    private NSUrl? GetItem(string name, bool isDirectory)
+    {
+        try
+        {
+            SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
+
+            var path = System.IO.Path.Combine(FilePath, name);
+            if (NSFileManager.DefaultManager.FileExists(path, ref isDirectory))
+            {
+                return new NSUrl(path, isDirectory);
+            }
+
+            return null;
+        }
+        finally
+        {
+            SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+        }
+    }
+
+    public Task<IStorageFolder?> GetFolderAsync(string name)
+    {
+        var url = GetItem(name, true);
+        return Task.FromResult<IStorageFolder?>(url is null ? null : new IOSStorageFolder(url));
+    }
+
+    public Task<IStorageFile?> GetFileAsync(string name)
+    {
+        var url = GetItem(name, false);
+        return Task.FromResult<IStorageFile?>(url is null ? null : new IOSStorageFile(url));
     }
 }

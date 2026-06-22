@@ -5,9 +5,9 @@ namespace Avalonia.Controls.UnitTests.Utils;
 
 internal class TestCommand : ICommand
 {
-    private readonly Func<object, bool> _canExecute;
-    private readonly Action<object> _execute;
-    private EventHandler _canExecuteChanged;
+    private readonly Func<object?, bool> _canExecute;
+    private readonly Action<object?> _execute;
+    private EventHandler? _canExecuteChanged;
     private bool _enabled = true;
 
     public TestCommand(bool enabled = true)
@@ -17,7 +17,7 @@ internal class TestCommand : ICommand
         _execute = _ => { };
     }
 
-    public TestCommand(Func<object, bool> canExecute, Action<object> execute = null)
+    public TestCommand(Func<object?, bool> canExecute, Action<object?>? execute = null)
     {
         _canExecute = canExecute;
         _execute = execute ?? (_ => { });
@@ -38,15 +38,15 @@ internal class TestCommand : ICommand
 
     public int SubscriptionCount { get; private set; }
 
-    public event EventHandler CanExecuteChanged
+    public event EventHandler? CanExecuteChanged
     {
         add { _canExecuteChanged += value; ++SubscriptionCount; }
         remove { _canExecuteChanged -= value; --SubscriptionCount; }
     }
 
-    public bool CanExecute(object parameter) => _canExecute(parameter);
+    public bool CanExecute(object? parameter) => _canExecute(parameter);
 
-    public void Execute(object parameter) => _execute(parameter);
+    public void Execute(object? parameter) => _execute(parameter);
 
     public void RaiseCanExecuteChanged() => _canExecuteChanged?.Invoke(this, EventArgs.Empty);
 }

@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.LAvenirDishDetailView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Hero Image + gradient overlay -->
+      <Panel Height="260">
+        <Border x:Name="HeroBg"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <Border>
+          <Border.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+              <GradientStop Color="#4D131022" Offset="0"/>
+              <GradientStop Color="#E6131022" Offset="1"/>
+            </LinearGradientBrush>
+          </Border.Background>
+        </Border>
+      </Panel>
+
+      <!-- Title -->
+      <TextBlock x:Name="TitleLabel" FontSize="26" FontWeight="Bold"
+                 Foreground="White" Margin="16,16,16,0"/>
+
+      <!-- Price + badge -->
+      <StackPanel Orientation="Horizontal" Spacing="12" Margin="16,8,16,0">
+        <TextBlock x:Name="PriceLabel" FontSize="20" FontWeight="Bold" Foreground="#4B2BEE"/>
+        <Border CornerRadius="999" Background="#1A4B2BEE" Padding="10,4"
+                VerticalAlignment="Center">
+          <TextBlock Text="Main Course" FontSize="11" FontWeight="Medium" Foreground="#A78BFA"/>
+        </Border>
+      </StackPanel>
+
+      <!-- Dietary badges -->
+      <StackPanel Orientation="Horizontal" Spacing="8" Margin="16,12,16,0">
+        <Border CornerRadius="8" Background="#1A10B981"
+                BorderBrush="#3310B981" BorderThickness="1" Padding="10,4">
+          <TextBlock Text="Vegetarian" FontSize="11" FontWeight="Medium" Foreground="#34D399"/>
+        </Border>
+        <Border CornerRadius="8" Background="#1A10B981"
+                BorderBrush="#3310B981" BorderThickness="1" Padding="10,4">
+          <TextBlock Text="Gluten-Free" FontSize="11" FontWeight="Medium" Foreground="#34D399"/>
+        </Border>
+      </StackPanel>
+
+      <!-- About This Dish -->
+      <TextBlock Text="About This Dish" FontSize="16" FontWeight="SemiBold"
+                 Foreground="White" Margin="16,20,16,8"/>
+      <TextBlock x:Name="DescriptionLabel" TextWrapping="Wrap" FontSize="13"
+                 Foreground="#94A3B8" LineHeight="20" Margin="16,0"/>
+
+      <!-- Key Ingredients -->
+      <TextBlock Text="Key Ingredients" FontSize="16" FontWeight="SemiBold"
+                 Foreground="White" Margin="16,20,16,12"/>
+      <WrapPanel Margin="16,0">
+        <Border CornerRadius="8" Background="#1A1836" Padding="12,8" Margin="0,0,8,8">
+          <TextBlock Text="Black Truffle" FontSize="12" FontWeight="Medium" Foreground="#94A3B8"/>
+        </Border>
+        <Border CornerRadius="8" Background="#1A1836" Padding="12,8" Margin="0,0,8,8">
+          <TextBlock Text="Arborio Rice" FontSize="12" FontWeight="Medium" Foreground="#94A3B8"/>
+        </Border>
+        <Border CornerRadius="8" Background="#1A1836" Padding="12,8" Margin="0,0,8,8">
+          <TextBlock Text="Parmigiano" FontSize="12" FontWeight="Medium" Foreground="#94A3B8"/>
+        </Border>
+        <Border CornerRadius="8" Background="#1A1836" Padding="12,8" Margin="0,0,8,8">
+          <TextBlock Text="White Wine" FontSize="12" FontWeight="Medium" Foreground="#94A3B8"/>
+        </Border>
+        <Border CornerRadius="8" Background="#1A1836" Padding="12,8" Margin="0,0,8,8">
+          <TextBlock Text="Shallots" FontSize="12" FontWeight="Medium" Foreground="#94A3B8"/>
+        </Border>
+        <Border CornerRadius="8" Background="#1A1836" Padding="12,8" Margin="0,0,8,8">
+          <TextBlock Text="Butter" FontSize="12" FontWeight="Medium" Foreground="#94A3B8"/>
+        </Border>
+      </WrapPanel>
+
+      <!-- Reviews -->
+      <TextBlock Text="Reviews" FontSize="16" FontWeight="SemiBold"
+                 Foreground="White" Margin="16,20,16,12"/>
+      <Border CornerRadius="12" Background="#1A1836" Padding="16" Margin="16,0">
+        <StackPanel Spacing="8">
+          <!-- Stars + rating -->
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="2">
+              <PathIcon Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        Width="14" Height="14" Foreground="#FBBF24"/>
+              <PathIcon Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        Width="14" Height="14" Foreground="#FBBF24"/>
+              <PathIcon Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        Width="14" Height="14" Foreground="#FBBF24"/>
+              <PathIcon Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        Width="14" Height="14" Foreground="#FBBF24"/>
+              <PathIcon Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                        Width="14" Height="14" Foreground="#FBBF24"/>
+            </StackPanel>
+            <TextBlock Text="4.8" FontSize="16" FontWeight="Bold" Foreground="White"/>
+            <TextBlock Text="(124 reviews)" FontSize="12" Foreground="#94A3B8"
+                       VerticalAlignment="Center"/>
+          </StackPanel>
+          <!-- Review quote -->
+          <TextBlock Text="&quot;Absolutely divine! The truffle flavor was perfectly balanced and the presentation was stunning.&quot;"
+                     TextWrapping="Wrap" FontSize="12" FontStyle="Italic" Foreground="#94A3B8"/>
+          <!-- Reviewer -->
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Border Width="24" Height="24" CornerRadius="12" Background="#4B2BEE">
+              <TextBlock Text="M" FontSize="10" FontWeight="Bold" Foreground="White"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="Marie L." FontSize="12" FontWeight="SemiBold" Foreground="White"
+                       VerticalAlignment="Center"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- Bottom padding so content isn't hidden under the floating bar -->
+      <Border Height="80"/>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

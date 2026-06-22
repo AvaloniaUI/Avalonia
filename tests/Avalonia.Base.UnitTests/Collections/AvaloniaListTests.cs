@@ -25,7 +25,7 @@ namespace Avalonia.Base.UnitTests.Collections
         {
             var target = new AvaloniaList<int>();
 
-            Assert.Throws<ArgumentNullException>(() => target.AddRange(null));
+            Assert.Throws<ArgumentNullException>(() => target.AddRange(null!));
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace Avalonia.Base.UnitTests.Collections
         {
             var target = new AvaloniaList<int>();
 
-            Assert.Throws<ArgumentNullException>(() => target.RemoveAll(null));
+            Assert.Throws<ArgumentNullException>(() => target.RemoveAll(null!));
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace Avalonia.Base.UnitTests.Collections
         {
             var target = new AvaloniaList<int>();
 
-            Assert.Throws<ArgumentNullException>(() => target.InsertRange(1, null));
+            Assert.Throws<ArgumentNullException>(() => target.InsertRange(1, null!));
         }
 
         [Fact]
@@ -50,6 +50,22 @@ namespace Avalonia.Base.UnitTests.Collections
             var target = new AvaloniaList<int>();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => target.InsertRange(1, new List<int>() { 1 }));
+        }
+
+        [Fact]
+        public void Move_Should_Move_One_Item()
+        {
+            AvaloniaList<int> target = [1, 2, 3];
+
+            AssertEvent(target, () => target.Move(0, 1), [
+                new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Move,
+                    new[] { 1 },
+                    1,
+                    0)
+            ]);
+
+            Assert.Equal(new[] { 2, 1, 3 }, target);
         }
 
         [Fact]
@@ -75,9 +91,9 @@ namespace Avalonia.Base.UnitTests.Collections
         [Fact]
         public void MoveRange_Can_Move_To_End()
         {
-            var target = new AvaloniaList<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            AvaloniaList<int> target = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-            target.MoveRange(0, 5, 10);
+            target.MoveRange(0, 5, 9);
 
             Assert.Equal(new[] { 6, 7, 8, 9, 10, 1, 2, 3, 4, 5 }, target);
         }
@@ -85,23 +101,33 @@ namespace Avalonia.Base.UnitTests.Collections
         [Fact]
         public void MoveRange_Raises_Correct_CollectionChanged_Event()
         {
-            var target = new AvaloniaList<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
-            var raised = false;
+            AvaloniaList<int> target = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-            target.CollectionChanged += (s, e) =>
-            {
-                Assert.Equal(NotifyCollectionChangedAction.Move, e.Action);
-                Assert.Equal(0, e.OldStartingIndex);
-                Assert.Equal(10, e.NewStartingIndex);
-                Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, e.OldItems);
-                Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, e.NewItems);
-                raised = true;
-            };
+            AssertEvent(target, () => target.MoveRange(0, 9, 9), [
+                new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Move,
+                    new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 },
+                    9,
+                    0)
+            ]);
 
-            target.MoveRange(0, 9, 10);
-
-            Assert.True(raised);
             Assert.Equal(new[] { 10, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, target);
+        }
+
+        [Fact]
+        public void MoveRange_Should_Move_One_Item()
+        {
+            AvaloniaList<int> target = [1, 2, 3];
+
+            AssertEvent(target, () => target.MoveRange(0, 1, 1), [
+                new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Move,
+                    new[] { 1 },
+                    1,
+                    0)
+            ]);
+
+            Assert.Equal(new[] { 2, 1, 3 }, target);
         }
 
         [Fact]
@@ -114,6 +140,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(2, e.NewStartingIndex);
 
@@ -135,6 +162,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3, 4 }, e.NewItems.Cast<int>());
                 Assert.Equal(2, e.NewStartingIndex);
 
@@ -172,6 +200,7 @@ namespace Avalonia.Base.UnitTests.Collections
 
             target.CollectionChanged += (sender, args) =>
             {
+                Assert.NotNull(args.NewItems);
                 eventItems.AddRange(args.NewItems.Cast<object>());
             };
             
@@ -190,7 +219,9 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Replace, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 2 }, e.OldItems.Cast<int>());
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(1, e.OldStartingIndex);
                 Assert.Equal(1, e.NewStartingIndex);
@@ -213,6 +244,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(1, e.NewStartingIndex);
 
@@ -234,6 +266,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3, 4 }, e.NewItems.Cast<int>());
                 Assert.Equal(1, e.NewStartingIndex);
 
@@ -255,6 +288,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 3 }, e.OldItems.Cast<int>());
                 Assert.Equal(2, e.OldStartingIndex);
 
@@ -276,7 +310,9 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Move, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 3 }, e.OldItems.Cast<int>());
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(2, e.OldStartingIndex);
                 Assert.Equal(0, e.NewStartingIndex);
@@ -299,7 +335,9 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Move, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 2, 3 }, e.OldItems.Cast<int>());
+                Assert.NotNull(e.NewItems);
                 Assert.Equal(new[] { 2, 3 }, e.NewItems.Cast<int>());
                 Assert.Equal(1, e.OldStartingIndex);
                 Assert.Equal(0, e.NewStartingIndex);
@@ -342,6 +380,7 @@ namespace Avalonia.Base.UnitTests.Collections
             {
                 Assert.Equal(target, s);
                 Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.NotNull(e.OldItems);
                 Assert.Equal(new[] { 1, 2, 3 }, e.OldItems.Cast<int>());
                 Assert.Equal(0, e.OldStartingIndex);
 
@@ -525,6 +564,49 @@ namespace Avalonia.Base.UnitTests.Collections
             target.RemoveAll(toRemove);
 
             Assert.Equal(0, raised);
+        }
+
+        /// <summary>
+        ///  Assert that <paramref name="items"/> emits <paramref name="expectedEvents"/> when performing <paramref name="action"/>.
+        /// </summary>
+        /// <param name="items">The event source.</param>
+        /// <param name="action">The action to perform.</param>
+        /// <param name="expectedEvents">The expected events.</param>
+        private static void AssertEvent(INotifyCollectionChanged items, Action action, NotifyCollectionChangedEventArgs[] expectedEvents)
+        {
+            var callCount = 0;
+            items.CollectionChanged += OnCollectionChanged;
+
+            Assert.Multiple(() =>
+            {
+                try
+                {
+                    action();
+                }
+                finally
+                {
+                    items.CollectionChanged -= OnCollectionChanged;
+                }
+
+                Assert.Equal(expectedEvents.Length, callCount);
+            });
+
+            return;
+
+            void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs actualEvent)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.True(callCount < expectedEvents.Length);
+                    Assert.Equal(expectedEvents[callCount].Action, actualEvent.Action);
+                    Assert.Equal(expectedEvents[callCount].NewItems, actualEvent.NewItems);
+                    Assert.Equal(expectedEvents[callCount].NewStartingIndex, actualEvent.NewStartingIndex);
+                    Assert.Equal(expectedEvents[callCount].OldItems, actualEvent.OldItems);
+                    Assert.Equal(expectedEvents[callCount].OldStartingIndex, actualEvent.OldStartingIndex);
+                });
+
+                ++callCount;
+            }
         }
     }
 }

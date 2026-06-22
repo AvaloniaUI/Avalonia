@@ -7,7 +7,7 @@ public class ReflectionClrPropertyInfoTests
 {
     public class TestClass
     {
-        public string Test { get; set; }
+        public string? Test { get; set; }
     }
 
     [Fact]
@@ -19,6 +19,6 @@ public class ReflectionClrPropertyInfoTests
         const string result = "qwerty";
         propertyInfo.Set(target, result);
         Assert.Equal(result, target.Test);
-        Assert.Equal(result, (string)propertyInfo.Get(target));
+        Assert.Equal(result, (string?)propertyInfo.Get(target));
     }
 }

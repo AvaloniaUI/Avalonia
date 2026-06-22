@@ -2,7 +2,7 @@
 
 namespace Avalonia.Controls
 {
-    public static class PseudolassesExtensions
+    public static class PseudoClassesExtensions
     {
         /// <summary>
         /// Adds or removes a pseudoclass depending on a boolean value.

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Layout;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class SliderTests
+    public class SliderTests : ScopedTestBase
     {
         [Fact]
         public void Default_Orientation_Should_Be_Horizontal()

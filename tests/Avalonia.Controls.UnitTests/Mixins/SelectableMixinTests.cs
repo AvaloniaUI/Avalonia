@@ -1,10 +1,11 @@
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Mixins
 {
-    public class SelectableMixinTests
+    public class SelectableMixinTests : ScopedTestBase
     {
         [Fact]
         public void Selected_Class_Should_Not_Initially_Be_Added()

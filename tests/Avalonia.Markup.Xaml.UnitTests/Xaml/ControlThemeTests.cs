@@ -1,3 +1,4 @@
+using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -172,6 +173,95 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var border = Assert.IsType<Border>(control.Content);
 
                 Assert.Equal(new CornerRadius(10, 0, 0, 10), border.CornerRadius);
+            }
+        }
+
+        [Fact]
+        public void Can_Use_Classes_In_Setter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $$$"""
+                            <Window xmlns='https://github.com/avaloniaui'
+                                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                    xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'>
+                                <Window.Resources>
+                                    <ControlTheme x:Key='MyTheme' TargetType='ContentControl'>
+                                        <Setter Property='CornerRadius' Value='10, 0, 0, 10' />
+                                        <Setter Property='(Classes.Banned)' Value='true'/>
+                                        <Setter Property='Content'>
+                                            <Template>
+                                                <Border CornerRadius='{TemplateBinding CornerRadius}'/>
+                                            </Template>
+                                        </Setter>
+                                        <Setter Property='Template'>
+                                            <ControlTemplate>
+                                                <Button Content='{TemplateBinding Content}'
+                                                        ContentTemplate='{TemplateBinding ContentTemplate}' />
+                                            </ControlTemplate>
+                                        </Setter>
+
+                                        <Style Selector='^.Banned'>
+                                            <Setter Property="TextBlock.TextDecorations" Value="Strikethrough"/>
+                                        </Style>
+                                    </ControlTheme>
+                                </Window.Resources>
+                                <ContentControl Theme='{StaticResource MyTheme}' />
+                            </Window>
+                            """;
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var control = Assert.IsType<ContentControl>(window.Content);
+                Assert.Same(TextDecorations.Strikethrough,control.GetValue(TextBlock.TextDecorationsProperty));
+            }
+        }
+
+        [Fact]
+        public void Can_Binding_Classes_In_Setter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = $$$"""
+                            <Window xmlns='https://github.com/avaloniaui'
+                                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                    xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+                                    xmlns:vm='using:Avalonia.Markup.Xaml.UnitTests'>
+                                <Window.Resources>
+                                    <ControlTheme x:Key='MyTheme' TargetType='ContentControl' x:DataType='vm:TestViewModel'>
+                                        <Setter Property='CornerRadius' Value='10, 0, 0, 10' />
+                                        <Setter Property='(Classes.Banned)' Value='{Binding Boolean}'/>
+                                        <Setter Property='Content'>
+                                            <Template>
+                                                <Border CornerRadius='{TemplateBinding CornerRadius}'/>
+                                            </Template>
+                                        </Setter>
+                                        <Setter Property='Template'>
+                                            <ControlTemplate>
+                                                <Button Content='{TemplateBinding Content}'
+                                                        ContentTemplate='{TemplateBinding ContentTemplate}' />
+                                            </ControlTemplate>
+                                        </Setter>
+
+                                        <Style Selector='^.Banned'>
+                                            <Setter Property="TextBlock.TextDecorations" Value="Strikethrough"/>
+                                        </Style>
+                                    </ControlTheme>
+                                </Window.Resources>
+                                <Window.DataContext>
+                                   <vm:TestViewModel/>
+                                </Window.DataContext>
+                                <ContentControl Theme='{StaticResource MyTheme}' />
+                            </Window>
+                            """;
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                window.ApplyTemplate();
+                var vm = window.DataContext as TestViewModel;
+                Assert.NotNull(vm);
+                var control = Assert.IsType<ContentControl>(window.Content);
+                Assert.Null(control.GetValue(TextBlock.TextDecorationsProperty));
+                vm.Boolean = true;
+                Assert.Same(TextDecorations.Strikethrough, control.GetValue(TextBlock.TextDecorationsProperty));
             }
         }
 

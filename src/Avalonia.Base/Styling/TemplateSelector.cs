@@ -30,7 +30,7 @@ namespace Avalonia.Styling
         {
             if (_selectorString == null)
             {
-                _selectorString = _parent.ToString(owner) + " /template/ ";
+                _selectorString = _parent.ToString(owner, true) + " /template/ ";
             }
 
             return _selectorString;

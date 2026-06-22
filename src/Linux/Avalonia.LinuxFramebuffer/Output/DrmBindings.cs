@@ -63,7 +63,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         public PixelSize Resolution => new PixelSize(Mode.hdisplay, Mode.vdisplay);
         public bool IsPreferred => Mode.type.HasAllFlags(DrmModeType.DRM_MODE_TYPE_PREFERRED);
 
-        public string Name { get; }
+        public string? Name { get; }
     }
 
     unsafe class DrmEncoder
@@ -141,7 +141,7 @@ namespace Avalonia.LinuxFramebuffer.Output
     public unsafe class DrmCard : IDisposable
     {
         public int Fd { get; private set; }
-        public DrmCard(string path = null)
+        public DrmCard(string? path = null)
         {
             if (path == null)
             {

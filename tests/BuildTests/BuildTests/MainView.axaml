@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:BuildTests"
+             x:Class="BuildTests.MainView"
+             x:DataType="local:MainViewModel"
+             Width="400" Height="300">
+
+  <UserControl.DataContext>
+    <local:MainViewModel />
+  </UserControl.DataContext>
+
+  <TextBlock
+    x:Name="TextBlock"
+    x:FieldModifier="public"
+    Text="{CompiledBinding HelloText}"
+    HorizontalAlignment="Center"
+    VerticalAlignment="Center" />
+
+</UserControl>

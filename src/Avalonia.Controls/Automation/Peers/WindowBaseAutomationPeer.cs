@@ -70,7 +70,7 @@ namespace Avalonia.Automation.Peers
             var oldFocus = _focus;
             var c = focus as Control;
             
-            _focus = c?.VisualRoot == Owner ? c : null;
+            _focus = Owner.IsVisualAncestorOf(c) ? c : null;
             
             if (_focus != oldFocus)
             {
@@ -87,6 +87,11 @@ namespace Avalonia.Automation.Peers
             {
                 OnFocusChanged(KeyboardDevice.Instance!.FocusedElement);
             }
+        }
+
+        private protected override Visual? GetVisualParent()
+        {
+            return null;
         }
     }
 }

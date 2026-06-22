@@ -7,9 +7,9 @@ namespace Avalonia.UnitTests
     public delegate void LogCallback(
         LogEventLevel level,
         string area,
-        object source,
+        object? source,
         string messageTemplate,
-        params object[] propertyValues);
+        params object?[] propertyValues);
 
     public class TestLogSink : ILogSink
     {
@@ -32,13 +32,13 @@ namespace Avalonia.UnitTests
             return true;
         }
 
-        public void Log(LogEventLevel level, string area, object source, string messageTemplate)
+        public void Log(LogEventLevel level, string area, object? source, string messageTemplate)
         {
             _callback(level, area, source, messageTemplate);
         }
 
-        public void Log(LogEventLevel level, string area, object source, string messageTemplate,
-            params object[] propertyValues)
+        public void Log(LogEventLevel level, string area, object? source, string messageTemplate,
+            params object?[] propertyValues)
         {
             _callback(level, area, source, messageTemplate, propertyValues);
         }

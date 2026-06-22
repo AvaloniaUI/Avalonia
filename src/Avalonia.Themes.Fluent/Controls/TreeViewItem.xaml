@@ -25,9 +25,6 @@
   <Thickness x:Key="TreeViewItemExpandCollapseChevronMargin">12, 0, 12, 0</Thickness>
   <StreamGeometry x:Key="TreeViewItemCollapsedChevronPathData">M 1,0 10,10 l -9,10 -1,-1 L 8,10 -0,1 Z</StreamGeometry>
   <StreamGeometry x:Key="TreeViewItemExpandedChevronPathData">M0,1 L10,10 20,1 19,0 10,8 1,0 Z</StreamGeometry>
-  <converters:MarginMultiplierConverter Indent="{StaticResource TreeViewItemIndent}"
-                                        Left="True"
-                                        x:Key="TreeViewItemLeftMarginConverter" />
 
   <ControlTheme x:Key="FluentTreeViewExpandCollapseChevron" TargetType="ToggleButton">
     <Setter Property="Margin" Value="0" />
@@ -76,8 +73,13 @@
                   MinHeight="{TemplateBinding MinHeight}"
                   TemplatedControl.IsTemplateFocusTarget="True">
             <Grid Name="PART_Header"
-                  ColumnDefinitions="Auto, *"
-                  Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeViewItemLeftMarginConverter}}">
+                  ColumnDefinitions="Auto, *">
+              <Grid.Margin>
+                <MultiBinding Converter="{x:Static converters:TreeViewItemIndentConverter.Instance}">
+                  <Binding Path="Level" RelativeSource="{RelativeSource TemplatedParent}" />
+                  <DynamicResource ResourceKey="TreeViewItemIndent" />
+                </MultiBinding>
+              </Grid.Margin>
               <Panel Name="PART_ExpandCollapseChevronContainer"
                      Margin="{StaticResource TreeViewItemExpandCollapseChevronMargin}">
                 <ToggleButton Name="PART_ExpandCollapseChevron"

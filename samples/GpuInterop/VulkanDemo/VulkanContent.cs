@@ -93,7 +93,7 @@ unsafe class VulkanContent : IDisposable
                 PCode = (uint*)ptr,
             };
 
-            api.CreateShaderModule(device, shaderCreateInfo, null, out _vertShader);
+            api.CreateShaderModule(device, in shaderCreateInfo, null, out _vertShader);
         }
 
         fixed (byte* ptr = fragShaderData)
@@ -105,7 +105,7 @@ unsafe class VulkanContent : IDisposable
                 PCode = (uint*)ptr,
             };
 
-            api.CreateShaderModule(device, shaderCreateInfo, null, out _fragShader);
+            api.CreateShaderModule(device, in shaderCreateInfo, null, out _fragShader);
         }
 
         CreateBuffers();
@@ -141,18 +141,14 @@ unsafe class VulkanContent : IDisposable
 
         
         var model = Matrix4x4.CreateFromYawPitchRoll((float)yaw, (float)pitch, (float)roll);
-        var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
-        var projection =
-            Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)((float)image.Size.Width / image.Size.Height),
-                0.01f, 1000);
-        
-        var vertexConstant = new VertextPushConstant()
+
+        var vertexConstant = new VertexPushConstant()
         {
             Disco = (float)disco,
             MinY = _minY,
             MaxY = _maxY,
             Model = model,
-            Time = (float)St.Elapsed.TotalSeconds
+            Time = (float)(St.Elapsed.Ticks % (TimeSpan.TicksPerSecond * 40) / (double)TimeSpan.TicksPerSecond)
         };
 
         var commandBuffer = _context.Pool.CreateCommandBuffer();
@@ -164,16 +160,16 @@ unsafe class VulkanContent : IDisposable
 
         var commandBufferHandle = new CommandBuffer(commandBuffer.Handle);
 
-        api.CmdSetViewport(commandBufferHandle, 0, 1,
-            new Viewport()
-            {
-                Width = (float)image.Size.Width,
-                Height = (float)image.Size.Height,
-                MaxDepth = 1,
-                MinDepth = 0,
-                X = 0,
-                Y = 0
-            });
+        var viewport = new Viewport()
+        {
+            Width = (float)image.Size.Width,
+            Height = (float)image.Size.Height,
+            MaxDepth = 1,
+            MinDepth = 0,
+            X = 0,
+            Y = 0
+        };
+        api.CmdSetViewport(commandBufferHandle, 0, 1, in viewport);
 
         var scissor = new Rect2D
         {
@@ -200,7 +196,7 @@ unsafe class VulkanContent : IDisposable
                 PClearValues = clearValue
             };
 
-            api.CmdBeginRenderPass(commandBufferHandle, beginInfo, SubpassContents.Inline);
+            api.CmdBeginRenderPass(commandBufferHandle, in beginInfo, SubpassContents.Inline);
         }
 
         api.CmdBindPipeline(commandBufferHandle, PipelineBindPoint.Graphics, _pipeline);
@@ -210,8 +206,9 @@ unsafe class VulkanContent : IDisposable
             _pipelineLayout,0,1, &dset, null);
 
         api.CmdPushConstants(commandBufferHandle, _pipelineLayout, ShaderStageFlags.VertexBit | ShaderStageFlags.FragmentBit, 0,
-            (uint)Marshal.SizeOf<VertextPushConstant>(), &vertexConstant);
-        api.CmdBindVertexBuffers(commandBufferHandle, 0, 1, _vertexBuffer, 0);
+            (uint)Marshal.SizeOf<VertexPushConstant>(), &vertexConstant);
+        var offsets = 0ul;
+        api.CmdBindVertexBuffers(commandBufferHandle, 0, 1, in _vertexBuffer, in offsets);
         api.CmdBindIndexBuffer(commandBufferHandle, _indexBuffer, 0, IndexType.Uint16);
 
         api.CmdDrawIndexed(commandBufferHandle, (uint)_indices.Length, 1, 0, 0, 0);
@@ -254,7 +251,7 @@ unsafe class VulkanContent : IDisposable
 
         api.CmdBlitImage(commandBuffer.InternalHandle, _colorAttachment.InternalHandle,
             ImageLayout.TransferSrcOptimal,
-            image.InternalHandle, ImageLayout.TransferDstOptimal, 1, srcBlitRegion, Filter.Linear);
+            image.InternalHandle, ImageLayout.TransferDstOptimal, 1, in srcBlitRegion, Filter.Linear);
         
         commandBuffer.Submit();
     }
@@ -345,7 +342,7 @@ unsafe class VulkanContent : IDisposable
         var api = _context.Api;
         var device = _context.Device;
         api
-            .CreateImage(device, imageCreateInfo, null, out _depthImage).ThrowOnError();
+            .CreateImage(device, in imageCreateInfo, null, out _depthImage).ThrowOnError();
 
         api.GetImageMemoryRequirements(device, _depthImage,
             out var memoryRequirements);
@@ -359,7 +356,7 @@ unsafe class VulkanContent : IDisposable
                 memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.DeviceLocalBit)
         };
 
-        api.AllocateMemory(device, memoryAllocateInfo, null,
+        api.AllocateMemory(device, in memoryAllocateInfo, null,
             out _depthImageMemory).ThrowOnError();
 
         api.BindImageMemory(device, _depthImage, _depthImageMemory, 0);
@@ -384,7 +381,7 @@ unsafe class VulkanContent : IDisposable
         };
 
         api
-            .CreateImageView(device, imageViewCreateInfo, null, out _depthImageView)
+            .CreateImageView(device, in imageViewCreateInfo, null, out _depthImageView)
             .ThrowOnError();
     }
 
@@ -471,7 +468,7 @@ unsafe class VulkanContent : IDisposable
                 PDependencies = &subpassDependency
             };
 
-            api.CreateRenderPass(device, renderPassCreateInfo, null, out _renderPass).ThrowOnError();
+            api.CreateRenderPass(device, in renderPassCreateInfo, null, out _renderPass).ThrowOnError();
 
 
             // create framebuffer
@@ -490,7 +487,7 @@ unsafe class VulkanContent : IDisposable
                     Layers = 1
                 };
 
-                api.CreateFramebuffer(device, framebufferCreateInfo, null, out _framebuffer).ThrowOnError();
+                api.CreateFramebuffer(device, in framebufferCreateInfo, null, out _framebuffer).ThrowOnError();
             }
         }
 
@@ -617,14 +614,14 @@ unsafe class VulkanContent : IDisposable
                 var vertexPushConstantRange = new PushConstantRange()
                 {
                     Offset = 0,
-                    Size = (uint)Marshal.SizeOf<VertextPushConstant>(),
+                    Size = (uint)Marshal.SizeOf<VertexPushConstant>(),
                     StageFlags = ShaderStageFlags.VertexBit
                 };
 
                 var fragPushConstantRange = new PushConstantRange()
                 {
                     //Offset = vertexPushConstantRange.Size,
-                    Size = (uint)Marshal.SizeOf<VertextPushConstant>(),
+                    Size = (uint)Marshal.SizeOf<VertexPushConstant>(),
                     StageFlags = ShaderStageFlags.FragmentBit
                 };
 
@@ -695,7 +692,7 @@ unsafe class VulkanContent : IDisposable
                         PSetLayouts = &setLayout
                     };
 
-                    api.CreatePipelineLayout(device, pipelineLayoutCreateInfo, null, out _pipelineLayout)
+                    api.CreatePipelineLayout(device, in pipelineLayoutCreateInfo, null, out _pipelineLayout)
                         .ThrowOnError();
                 }
 
@@ -813,7 +810,7 @@ unsafe class VulkanContent : IDisposable
     private DescriptorSet _descriptorSet;
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    private struct VertextPushConstant
+    private struct VertexPushConstant
     {
         public float MaxY;
         public float MinY;

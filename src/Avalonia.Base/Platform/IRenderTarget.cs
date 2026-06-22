@@ -1,6 +1,6 @@
 using System;
 using Avalonia.Metadata;
-using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Platform
 {
@@ -14,41 +14,30 @@ namespace Avalonia.Platform
     public interface IRenderTarget : IDisposable
     {
         /// <summary>
-        /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
+        /// Gets the properties of the render target.
         /// </summary>
-        /// <param name="useScaledDrawing">Apply DPI reported by the render target as a hidden transform matrix</param>
-        IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing);
-        
-        /// <summary>
-        /// Indicates if the render target is no longer usable and needs to be recreated
-        /// </summary>
-        public bool IsCorrupted { get; }
-    }
-
-    [PrivateApi]
-    public interface IRenderTargetWithProperties : IRenderTarget
-    {
         RenderTargetProperties Properties { get; }
 
         /// <summary>
         /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
         /// </summary>
-        /// <param name="useScaledDrawing">Apply DPI reported by the render target as a hidden transform matrix</param>
+        /// <param name="sceneInfo">Information about the scene that's about to be rendered into this render target.
+        /// This is expected to be reported to the underlying platform and affect the framebuffer size, however
+        /// the implementation may choose to ignore that information.
+        /// </param>
         /// <param name="properties">Returns various properties about the returned drawing context</param>
-        IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing, out RenderTargetDrawingContextProperties properties);
-    }
-    
-    internal static class RenderTargetExtensions
-    {
-        public static IDrawingContextImpl CreateDrawingContextWithProperties(
-            this IRenderTarget renderTarget,
-            bool useScaledDrawing,
-            out RenderTargetDrawingContextProperties properties)
+        IDrawingContextImpl CreateDrawingContext(RenderTargetSceneInfo sceneInfo, out RenderTargetDrawingContextProperties properties);
+
+        /// <summary>
+        /// Gets the current readiness state of the render target.
+        /// </summary>
+        PlatformRenderTargetState PlatformRenderTargetState => PlatformRenderTargetState.Ready;
+        
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize, CompositionTransparencyLevel TransparencyLevel)
         {
-            if (renderTarget is IRenderTargetWithProperties target)
-                return target.CreateDrawingContext(useScaledDrawing, out properties);
-            properties = default;
-            return renderTarget.CreateDrawingContext(useScaledDrawing);
+            public RenderTargetSceneInfo(PixelSize size, double scaling, CompositionTransparencyLevel transparencyLevel) : this(size, scaling, size.ToSize(scaling), transparencyLevel)
+            {
+            }
         }
     }
 }

@@ -2,6 +2,8 @@
 @clr-access internal
 @clr-map bool int
 @clr-map u_int64_t ulong
+@clr-map uint64_t ulong
+@clr-map int64_t long
 @clr-map long IntPtr
 @cpp-preamble @@
 #pragma once
@@ -397,10 +399,16 @@ enum SystemDecorations
 
 enum AvnAutomationProperty
 {
+    AutomationPeer_AutomationId,
     AutomationPeer_BoundingRectangle,
     AutomationPeer_ClassName,
     AutomationPeer_Name,
     RangeValueProvider_Value,
+    ValueProvider_Value,
+    ToggleProvider_ToggleState,
+    ExpandCollapseProvider_ExpandCollapseState,
+    SelectionItemProvider_IsSelected,
+    SelectionProvider_Selection,
 }
 
 struct AvnSize
@@ -589,15 +597,6 @@ enum AvnMenuItemToggleType
     Radio
 }
 
-enum AvnExtendClientAreaChromeHints
-{
-    AvnNoChrome = 0,
-    AvnSystemChrome = 0x01,
-    AvnPreferSystemChrome = 0x02,
-    AvnOSXThickTitleBar = 0x08,
-    AvnDefaultChrome = AvnPreferSystemChrome,
-}
-
 enum AvnPlatformResizeReason
 {
     ResizeUnspecified,
@@ -650,6 +649,21 @@ enum AvnAutomationControlType
     AutomationTable,
     AutomationTitleBar,
     AutomationSeparator,
+    AutomationExpander,
+    AutomationScrollViewer,
+}
+
+enum AvnLandmarkType
+{
+    LandmarkNone = -1,
+    LandmarkBanner,
+    LandmarkComplementary,
+    LandmarkContentInfo,
+    LandmarkRegion,
+    LandmarkForm,
+    LandmarkMain,
+    LandmarkNavigation,
+    LandmarkSearch,
 }
 
 enum AvnWindowTransparencyMode
@@ -667,6 +681,19 @@ enum AvnPlatformThemeVariant
     HighContrastDark,
 }
 
+enum AvnPointerDeviceType
+{
+    Mouse,
+    Pen,
+}
+
+enum AvnLiveSetting
+{
+    LiveSettingOff,
+    LiveSettingPolite,
+    LiveSettingAssertive,
+}
+
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
@@ -680,7 +707,6 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateStorageProvider(IAvnStorageProvider** ppv);
      HRESULT CreateScreens(IAvnScreenEvents* cb, IAvnScreens** ppv);
      HRESULT CreateClipboard(IAvnClipboard** ppv);
-     HRESULT CreateDndClipboard(IAvnClipboard** ppv);
      HRESULT CreateCursorFactory(IAvnCursorFactory** ppv);
      HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv);
      HRESULT ObtainMetalDisplay(IAvnMetalDisplay** ppv);
@@ -694,6 +720,9 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreatePlatformSettings(IAvnPlatformSettings** ppv);
      HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv);
      HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv);
+     HRESULT ImportMTLSharedEvent([intptr]void* idMtlSharedEvent, IAvnMTLSharedEvent** ppv);
+     HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement** ppv);
+     HRESULT SetDockMenu(IAvnMenu* menu);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -728,6 +757,13 @@ interface IAvnTopLevel : IUnknown
      HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
      
      HRESULT GetCurrentDisplayId(uint* ret);
+
+     HRESULT BeginDragAndDropOperation(
+             AvnDragDropEffects effects,
+             AvnPoint point,
+             IAvnClipboardDataSource* source,
+             IAvnDndResultCallback* callback,
+             [intptr]void* sourceHandle);
 }
 
 [uuid(e5aca675-02b7-4129-aa79-d6e417210bda), cpp-virtual-inherits]
@@ -750,8 +786,6 @@ interface IAvnWindowBase : IAvnTopLevel
      HRESULT SetMainMenu(IAvnMenu* menu);
      HRESULT ObtainNSWindowHandle([intptr]void** retOut);
      HRESULT ObtainNSWindowHandleRetained([intptr]void** retOut);
-     HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
-                                              IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]
@@ -765,6 +799,8 @@ interface IAvnWindow : IAvnWindowBase
 {
      HRESULT SetEnabled(bool enable);
      HRESULT SetCanResize(bool value);
+     HRESULT SetCanMinimize(bool value);
+     HRESULT SetCanMaximize(bool value);
      HRESULT SetDecorations(SystemDecorations value);
      HRESULT SetTitle(char* utf8Title);
      HRESULT SetTitleBarColor(AvnColor color);
@@ -772,7 +808,6 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT GetWindowState(AvnWindowState*ret);
      HRESULT TakeFocusFromChildren();
      HRESULT SetExtendClientArea(bool enable);
-     HRESULT SetExtendClientAreaHints(AvnExtendClientAreaChromeHints hints);
      HRESULT GetExtendTitleBarHeight(double*ret);
      HRESULT SetExtendTitleBarHeight(double value);
      HRESULT GetWindowZOrder(long*ret);
@@ -786,10 +821,15 @@ interface IAvnTopLevelEvents : IUnknown
     HRESULT Paint();
     void Resized([const] AvnSize& size, AvnPlatformResizeReason reason);
     void RawMouseEvent(AvnRawMouseEventType type,
+                                    AvnPointerDeviceType deviceType,
                                     u_int64_t timeStamp,
                                     AvnInputModifiers modifiers,
                                     AvnPoint point,
-                                    AvnVector delta);
+                                    AvnVector delta,
+                                    float pressure,
+                                    float xTilt,
+                                    float yTilt
+                                    );
     bool RawKeyEvent(AvnRawKeyEventType type, u_int64_t timeStamp, AvnInputModifiers modifiers,
                           AvnKey key, AvnPhysicalKey physicalKey, [const] char* keySymbol);
     bool RawTextInputEvent(u_int64_t timeStamp, [const] char* text);
@@ -802,7 +842,7 @@ interface IAvnTopLevelEvents : IUnknown
     
     AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
-                                         IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
+                                         IAvnClipboard* clipboard, [intptr]void* dataTransferHandle);
 }
 
 [uuid(939b6599-40a8-4710-a4c8-5d72d8f174fb)]
@@ -832,7 +872,7 @@ interface IAvnWindowEvents : IAvnWindowBaseEvents
 interface IAvnTextInputMethodClient : IUnknown
 {
     void SetPreeditText(char* preeditText);
-    void SelectInSurroundingText(int start, int length);
+    void SelectInSurroundingText(int start, int end);
 }
 
 [uuid(1382a29f-e260-4c7a-b83f-c99fc72e27c2)]
@@ -841,7 +881,8 @@ interface IAvnTextInputMethod : IUnknown
     HRESULT SetClient(IAvnTextInputMethodClient* client);
     void Reset();
     void SetCursorRect(AvnRect rect);
-    void SetSurroundingText(char* text, int anchorOffset, int cursorOffset);
+    void SetSurroundingText(char* text, int start, int end);
+    void SetSelectionInSurroundingText(int start, int end);
 }
 
 [uuid(e34ae0f8-18b4-48a3-b09d-2e6b19a3cf5e)]
@@ -889,18 +930,19 @@ interface IAvnPlatformThreadingInterface : IUnknown
 interface IAvnSystemDialogEvents : IUnknown
 {
      void OnCompleted(IAvnStringArray*array);
+     void OnCompletedWithFilter(IAvnStringArray*array, int selectedFilterIndex);
 }
 
 [uuid(4d7a47db-a944-4061-abe7-62cb6aa0ffd5)]
 interface IAvnStorageProvider : IUnknown
 {
-     void SelectFolderDialog(IAvnWindow* parentWindowHandle,
+     void SelectFolderDialog(IAvnTopLevel* parentTopLevel,
                              IAvnSystemDialogEvents* events,
                              bool allowMultiple,
                              [const] char* title,
                              [const] char* initialPath);
 
-     void OpenFileDialog(IAvnWindow* parentWindowHandle,
+     void OpenFileDialog(IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  bool allowMultiple,
                                  [const] char* title,
@@ -908,7 +950,7 @@ interface IAvnStorageProvider : IUnknown
                                  [const] char* initialFile,
                                  IAvnFilePickerFileTypes* filters);
 
-     void SaveFileDialog(IAvnWindow* parentWindowHandle,
+     void SaveFileDialog(IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  [const] char* title,
                                  [const] char* initialDirectory,
@@ -921,7 +963,9 @@ interface IAvnStorageProvider : IUnknown
      void ReleaseBookmark(IAvnString*fileUri);
 
      bool OpenSecurityScope(IAvnString*fileUri);
-     void CloseSecurityScope(IAvnString*fileUri);         
+     void CloseSecurityScope(IAvnString*fileUri);
+
+     HRESULT TryResolveFileReferenceUri(IAvnString* fileUri, IAvnString** ret);
 }
 
 [uuid(4d7ab7db-a111-406f-abeb-11cb6aa033d5)]
@@ -953,15 +997,38 @@ interface IAvnScreens : IUnknown
 [uuid(792b1bd4-76cc-46ea-bfd0-9d642154b1b3)]
 interface IAvnClipboard : IUnknown
 {
-     HRESULT GetText(char* type, IAvnString**ppv);
-     HRESULT SetText(char* type, char* utf8Text);
-     HRESULT ObtainFormats(IAvnStringArray**ppv);
-     HRESULT GetStrings(char* type, IAvnStringArray**ppv);
-     HRESULT SetStrings(char* type, IAvnStringArray*ppv);
-     HRESULT SetBytes(char* type, void* utf8Text, int len);
-     HRESULT GetBytes(char* type, IAvnString**ppv);
-    
-     HRESULT Clear();
+    HRESULT GetFormats(int64_t changeCount, IAvnStringArray** ret);
+    HRESULT GetItemCount(int64_t changeCount, int* ret);
+    HRESULT GetItemFormats(int index, int64_t changeCount, IAvnStringArray** ret);
+    HRESULT GetItemValueAsString(int index, int64_t changeCount, [const] char* format, IAvnString** ret);
+    HRESULT GetItemValueAsBytes(int index, int64_t changeCount, [const] char* format, IAvnString** ret);
+    HRESULT Clear(int64_t* ret);
+    HRESULT GetChangeCount(int64_t* ret);
+    HRESULT SetData(IAvnClipboardDataSource* dataSource);
+    bool IsTextFormat([const] char* format);
+}
+
+[uuid(10b39f02-efcb-428b-bee5-a0b012c1fb7d)]
+interface IAvnClipboardDataSource : IUnknown
+{
+    int GetItemCount();
+    HRESULT GetItem(int index, IAvnClipboardDataItem**ppv);
+}
+
+[uuid(e40f36d9-69f4-45fd-9ca2-6e64e80feb6d)]
+interface IAvnClipboardDataItem : IUnknown
+{
+    HRESULT ProvideFormats(IAvnStringArray** ppv);
+    HRESULT GetValue([const] char* format, IAvnClipboardDataValue** ppv);
+}
+
+[uuid(e97f24f6-1c84-4d95-8ffe-5b2c72e016ed)]
+interface IAvnClipboardDataValue : IUnknown
+{
+    bool IsString();
+    IAvnString* AsString();
+    long GetByteLength();
+    void CopyBytesTo(void* buffer);
 }
 
 [uuid(3f998545-f027-4d4d-bd2a-1a80926d984e)]
@@ -1000,6 +1067,9 @@ interface IAvnGlContext : IUnknown
      int GetSampleCount();
      int GetStencilSize();
      [intptr]void* GetNativeHandle();
+     int texImageIOSurface2D(int target, int internal_format,
+     						int width, int height, int format, int type, [intptr]void* ioSurface, int plane);
+     bool GetIOKitRegistryId(uint64_t* value);
 }
 
 [uuid(931062d2-5bc8-4062-8588-83dd8deb99c2)]
@@ -1026,12 +1096,46 @@ interface IAvnMetalDevice : IUnknown
 {
     [intptr]void* GetDevice();
     [intptr]void* GetQueue();
+    bool GetIOKitRegistryId(uint64_t* value);
+    HRESULT ImportIOSurface([intptr]void* handle, AvnPixelFormat pixelFormat, IAvnMetalTexture** ppv);
+    HRESULT ImportSharedEvent([intptr]void*mtlSharedEventInstance, IAvnMTLSharedEvent**ppv);
+    HRESULT SubmitWait(IAvnMTLSharedEvent* ev, uint64_t value);
+    HRESULT SubmitSignal(IAvnMTLSharedEvent* ev, uint64_t value);
 }
 
 [uuid(f1306b71-eca0-426e-8700-105192693b1a)]
 interface IAvnMetalRenderTarget : IUnknown
 {
     HRESULT BeginDrawing(IAvnMetalRenderingSession** ret);
+}
+
+[uuid(a1f4fcde-9152-48bd-bf8a-b1b651134a69)]
+interface IAvnMTLSharedEvent : IUnknown
+{
+    [intptr]void* GetNativeHandle();
+    bool Wait(uint64_t value, uint64_t timeoutMS);
+    void SetSignaledValue(uint64_t value);
+    uint64_t GetSignaledValue();
+}
+
+[uuid(722aad20-a87b-4ce5-b50f-f05cfa4cda39)]
+interface IAvnMetalTexture
+{
+    [intptr]void* GetNativeHandle();
+    int GetWidth();
+    int GetHeight();
+    int GetSampleCount();
+}
+
+[uuid(74027aa2-5262-45a5-a74a-5a53373dcc17)]
+interface IAvnNativeObjectsMemoryManagement
+{
+    void RetainNSObject([intptr] void* obj);
+    void ReleaseNSObject([intptr] void* obj);
+    uint64_t GetRetainCountForNSObject([intptr] void* obj);
+    void RetainCFObject([intptr] void* obj);
+    void ReleaseCFObject([intptr] void* obj);
+    int64_t GetRetainCountForCFObject([intptr] void* obj);
 }
     
 [uuid(e625b406-f04c-484e-946a-4abd2c6015ad)]
@@ -1142,6 +1246,8 @@ interface IAvnApplicationEvents : IUnknown
      void OnReopen ();
      void OnHide ();
      void OnUnhide ();
+     void OnActivate();
+     void OnDeactivate();
 }
 
 [uuid(b4284791-055b-4313-8c2e-50f0a8c72ce9)]
@@ -1169,6 +1275,7 @@ interface IAvnAutomationPeer : IUnknown
      IAvnAutomationPeer* GetLabeledBy();
      IAvnString* GetName();
      IAvnAutomationPeer* GetParent();
+     IAvnAutomationPeer* GetTemplatedParent();
      IAvnAutomationPeer* GetVisualRoot();
      bool HasKeyboardFocus();
      bool IsContentElement();
@@ -1177,6 +1284,7 @@ interface IAvnAutomationPeer : IUnknown
      bool IsKeyboardFocusable();
      void SetFocus();
      bool ShowContextMenu();
+     void BringIntoView();
 
      IAvnAutomationPeer* GetRootPeer();
      
@@ -1208,19 +1316,33 @@ interface IAvnAutomationPeer : IUnknown
      double RangeValueProvider_GetSmallChange();
      double RangeValueProvider_GetLargeChange();
      void RangeValueProvider_SetValue(double value);
-     
+     bool RangeValueProvider_IsReadOnly();
+
      bool IsSelectionItemProvider();
      bool SelectionItemProvider_IsSelected();
-     
+     void SelectionItemProvider_Select();
+     void SelectionItemProvider_AddToSelection();
+     void SelectionItemProvider_RemoveFromSelection();
+
+     IAvnAutomationPeer* ScrollProvider_GetHorizontalScrollBar();
+     IAvnAutomationPeer* ScrollProvider_GetVerticalScrollBar();
+
      bool IsToggleProvider();
      int ToggleProvider_GetToggleState();
      void ToggleProvider_Toggle();
      
      bool IsValueProvider();
      IAvnString* ValueProvider_GetValue();
-     void ValueProvider_SetValue(char* value);
+     void ValueProvider_SetValue([const] char* value);
+     bool ValueProvider_IsReadOnly();
 
      IAvnString* GetHelpText();
+     IAvnString* GetPlaceholderText();
+
+     AvnLandmarkType GetLandmarkType();
+     int GetHeadingLevel();
+
+     AvnLiveSetting GetLiveSetting();
 }
 
 [uuid(b00af5da-78af-4b33-bfff-4ce13a6239a9)]

@@ -83,7 +83,7 @@ namespace Avalonia.Animation
         {
             culture ??= CultureInfo.InvariantCulture;
 
-            using var tokenizer = new StringTokenizer(value, culture, exceptionMessage: $"Invalid KeySpline string: \"{value}\".");
+            using var tokenizer = new SpanStringTokenizer(value, culture, exceptionMessage: $"Invalid KeySpline string: \"{value}\".");
             return new KeySpline(tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble());
         }
 

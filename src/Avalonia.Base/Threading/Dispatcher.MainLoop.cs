@@ -128,7 +128,7 @@ public partial class Dispatcher
     private void ShutdownImpl()
     {
         DispatcherOperation? operation = null;
-        _impl.Timer -= PromoteTimers;
+        _impl.Timer -= OnOSTimer;
         _impl.Signaled -= Signaled;
         do
         {
@@ -141,6 +141,8 @@ public partial class Dispatcher
                 else
                 {
                     operation = null;
+                    _impl.UpdateTimer(null);
+                    _hasShutdownFinished = true;
                 }
             }
 
@@ -150,8 +152,6 @@ public partial class Dispatcher
             }
         } while (operation != null);
 
-        _impl.UpdateTimer(null);
-        _hasShutdownFinished = true;
         ShutdownFinished?.Invoke(this, EventArgs.Empty);
     }
 

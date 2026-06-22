@@ -1,5 +1,5 @@
-﻿using Avalonia.Controls.Platform.Surfaces;
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 
 namespace Avalonia.X11.XShmExtensions;
 
@@ -21,9 +21,10 @@ internal class X11ShmImageSwapchain : IFramebufferRenderTarget
         X11ShmImageManager.Dispose();
     }
 
-    public ILockedFramebuffer Lock()
+    public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo sceneInfo, out FramebufferLockProperties properties)
     {
         X11ShmDebugLogger.WriteLine($"[X11ShmImageSwapchain] Lock");
+        properties = default;
         /*
          1) gets the current window geometry, if it doesn't match the lastSize disposes images and clears queues
          2) calls DrainPresentationQueue();

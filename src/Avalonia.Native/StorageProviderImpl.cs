@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -21,9 +19,16 @@ internal sealed class StorageProviderImpl(TopLevelImpl topLevel, StorageProvider
         return native.OpenFileDialog(topLevel, options);
     }
 
-    public Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
+    public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
-        return native.SaveFileDialog(topLevel, options);
+        var (file, _) = await native.SaveFileDialog(topLevel, options).ConfigureAwait(false);
+        return file;
+    }
+
+    public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        var (file, selectedType) = await native.SaveFileDialog(topLevel, options).ConfigureAwait(false);
+        return new SaveFilePickerResult { File = file, SelectedFileType = selectedType };
     }
 
     public Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)

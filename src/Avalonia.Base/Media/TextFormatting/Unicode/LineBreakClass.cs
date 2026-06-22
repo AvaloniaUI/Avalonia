@@ -37,13 +37,19 @@ namespace Avalonia.Media.TextFormatting.Unicode
         ContingentBreak, //CB
         Unknown, //XX
         Ambiguous, //AI
+        Aksara, //AK
+        AksaraPrebase, //AP
+        AksaraStart, //AS
         MandatoryBreak, //BK
         ConditionalJapaneseStarter, //CJ
         CarriageReturn, //CR
+        UnambiguousHyphen, //HH
         LineFeed, //LF
         NextLine, //NL
         ComplexContext, //SA
         Surrogate, //SG
         Space, //SP
+        ViramaFinal, //VF
+        Virama, //VI
     }
 }

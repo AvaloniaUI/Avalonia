@@ -10,6 +10,8 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Presenters
@@ -117,6 +119,12 @@ namespace Avalonia.Controls.Presenters
             TextBlock.LineHeightProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
+        /// Defines the <see cref="LetterSpacing"/> property
+        /// </summary>
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextElement.LetterSpacingProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
         /// Defines the <see cref="MaxLines"/> property
         /// </summary>
         public static readonly StyledProperty<int> MaxLinesProperty =
@@ -169,6 +177,7 @@ namespace Avalonia.Controls.Presenters
         private Control? _child;
         private bool _createdChild;
         private IRecyclingDataTemplate? _recyclingDataTemplate;
+        private (bool IsSet, object? Value) _overrideDataContext;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
 
         /// <summary>
@@ -326,6 +335,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the letter spacing
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the max lines
         /// </summary>
         public int MaxLines
@@ -403,6 +421,39 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         internal IContentPresenterHost? Host { get; private set; }
 
+        /// <summary>
+        /// Sets the <see cref="Content"/> and <see cref="StyledElement.DataContext"/> properties atomically,
+        /// ensuring that the content's DataContext is never temporarily set to an incorrect value.
+        /// </summary>
+        /// <param name="content">The new content.</param>
+        /// <param name="dataContext">The DataContext to set on the presenter.</param>
+        /// <remarks>
+        /// When <see cref="Content"/> is set to a <see cref="Control"/>, the presenter normally
+        /// clears its <see cref="StyledElement.DataContext"/> to allow the content to inherit it. This method
+        /// overrides that behavior, setting the <see cref="StyledElement.DataContext"/> to the specified value
+        /// before updating the child, preventing any intermediate state where the content could
+        /// inherit an incorrect DataContext from higher up the tree.
+        /// </remarks>
+        internal void SetContentWithDataContext(object? content, object? dataContext)
+        {
+            _overrideDataContext = (true, dataContext);
+
+            try
+            {
+                SetCurrentValue(ContentProperty, content);
+            }
+            finally
+            {
+                // If Content didn't change, UpdateChild wasn't called and the
+                // override wasn't consumed. Apply the DataContext directly.
+                if (_overrideDataContext.IsSet)
+                {
+                    _overrideDataContext = default;
+                    DataContext = dataContext;
+                }
+            }
+        }
+
         /// <inheritdoc/>
         public sealed override void ApplyTemplate()
         {
@@ -467,8 +518,19 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            // Set the DataContext if the data isn't a control.
-            if (contentTemplate is { } || !(content is Control))
+            // Consume the override immediately so any reentrant/cascading calls
+            // to UpdateChild don't incorrectly apply the stale override.
+            var overrideDataContext = _overrideDataContext;
+            _overrideDataContext = default;
+
+            // Set the DataContext: use the caller-provided override if set,
+            // otherwise set to content when a template is present or content
+            // isn't a control, or clear for template-less control content.
+            if (overrideDataContext.IsSet)
+            {
+                DataContext = overrideDataContext.Value;
+            }
+            else if (contentTemplate is { } || !(content is Control))
             {
                 DataContext = content;
             }
@@ -525,7 +587,7 @@ namespace Avalonia.Controls.Presenters
                     var borderThickness = BorderThickness;
 
                     if (UseLayoutRounding)
-                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
+                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale);
 
                     _layoutThickness = borderThickness;
                 }
@@ -618,8 +680,8 @@ namespace Avalonia.Controls.Presenters
 
             if (useLayoutRounding)
             {
-                padding = LayoutHelper.RoundLayoutThickness(padding, scale, scale);
-                borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, scale, scale);
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale);
+                borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, scale);
             }
 
             padding += borderThickness;
@@ -642,8 +704,8 @@ namespace Avalonia.Controls.Presenters
 
             if (useLayoutRounding)
             {
-                sizeForChild = LayoutHelper.RoundLayoutSizeUp(sizeForChild, scale, scale);
-                availableSize = LayoutHelper.RoundLayoutSizeUp(availableSize, scale, scale);
+                sizeForChild = LayoutHelper.RoundLayoutSizeUp(sizeForChild, scale);
+                availableSize = LayoutHelper.RoundLayoutSizeUp(availableSize, scale);
             }
 
             switch (horizontalContentAlignment)
@@ -666,14 +728,14 @@ namespace Avalonia.Controls.Presenters
                     break;
             }
 
+            var origin = new Point(originX, originY);
+
             if (useLayoutRounding)
             {
-                originX = LayoutHelper.RoundLayoutValue(originX, scale);
-                originY = LayoutHelper.RoundLayoutValue(originY, scale);
+                origin = LayoutHelper.RoundLayoutPoint(origin, scale);
             }
 
-            var boundsForChild =
-                new Rect(originX, originY, sizeForChild.Width, sizeForChild.Height).Deflate(padding);
+            var boundsForChild = new Rect(origin, sizeForChild).Deflate(padding);
 
             Child.Arrange(boundsForChild);
 

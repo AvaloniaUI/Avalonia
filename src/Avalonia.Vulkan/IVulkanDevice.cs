@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Vulkan.UnmanagedInterop;
 
 namespace Avalonia.Vulkan;
@@ -37,5 +38,5 @@ public interface IVulkanPlatformGraphicsContext : IPlatformGraphicsContext
     internal VkInstance InstanceHandle { get; }
     internal VkQueue MainQueueHandle { get; }
     internal uint GraphicsQueueFamilyIndex { get; }
-    IVulkanRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
+    IVulkanRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces);
 }

@@ -19,7 +19,7 @@ namespace Avalonia.Controls.Presenters
         public PanelContainerGenerator(ItemsPresenter presenter)
         {
             Debug.Assert(presenter.ItemsControl is not null);
-            Debug.Assert(presenter.Panel is not null or VirtualizingPanel);
+            Debug.Assert(presenter.Panel is not (null or VirtualizingPanel));
             
             _presenter = presenter;
             _presenter.ItemsControl.ItemsView.PostCollectionChanged += OnItemsChanged;
@@ -93,9 +93,29 @@ namespace Avalonia.Controls.Presenters
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     Add(e.NewStartingIndex, e.NewItems!);
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
+                    Remove(e.OldStartingIndex, e.OldItems!.Count);
+                    var insertIndex = e.NewStartingIndex;
+
+                    if (e.NewStartingIndex > e.OldStartingIndex)
+                    {
+                        insertIndex -= e.OldItems.Count - 1;
+                    }
+
+                    Add(insertIndex, e.NewItems!);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     ClearItemsControlLogicalChildren();

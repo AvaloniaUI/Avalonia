@@ -1,25 +1,68 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+﻿<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             Header="Window Customizations"
              x:Class="ControlCatalog.Pages.WindowCustomizationsPage"
              x:DataType="viewModels:MainWindowViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             DataContext="{Binding $parent[Window].DataContext}">
   <StackPanel>
-    <StackPanel Spacing="10" Margin="25" IsEnabled="{OnFormFactor false, Desktop=true}">
-      <TextBlock Classes="h2" Text="Desktop properties" Margin="4" />
-      <CheckBox Content="Extend Client Area to Decorations" IsChecked="{Binding ExtendClientAreaEnabled}" />
-      <CheckBox Content="Title Bar" IsChecked="{Binding SystemTitleBarEnabled}" />
-      <CheckBox Content="Prefer System Chrome" IsChecked="{Binding PreferSystemChromeEnabled}" />
-      <Slider Minimum="-1" Maximum="200" Value="{Binding TitleBarHeight}" />
+
+    <StackPanel
+      Spacing="10"
+      Margin="25"
+      IsEnabled="{OnFormFactor false, Desktop=true}">
+
+      <TextBlock Classes="h2"
+                 Text="Desktop properties"
+                 Margin="4" />
+
+      <CheckBox Content="Extend Client Area to Decorations"
+                IsChecked="{Binding ExtendClientAreaEnabled}" />
+
+      <DockPanel IsEnabled="{Binding ExtendClientAreaEnabled}">
+
+        <Slider Minimum="-1"
+                Maximum="200"
+                Value="{Binding TitleBarHeight}"
+                Margin="8,-10" />
+
+      </DockPanel>
+
+      <CheckBox Content="Can Resize"
+                IsChecked="{Binding CanResize}" />
+
+      <CheckBox Content="Can Minimize"
+                IsChecked="{Binding CanMinimize}" />
+
+      <CheckBox Content="Can Maximize"
+                IsChecked="{Binding CanMaximize}"
+                IsEnabled="{Binding CanResize}" />
+
+      <DockPanel>
+
+        <Label Content="Corner Preference (Windows 11+): "
+               Margin="4"
+               DockPanel.Dock="Left" />
+
+        <ComboBox ItemsSource="{Binding Win32WindowCornerPreferences}"
+                  SelectedItem="{Binding Win32WindowCornerPreference, Mode=TwoWay}"
+                  HorizontalAlignment="Left"
+                  MinWidth="220" />
+
+      </DockPanel>
+
     </StackPanel>
+
     <StackPanel Spacing="10" Margin="25" IsEnabled="{OnFormFactor false, Mobile=true}">
       <TextBlock Classes="h2" Text="Mobile properties" Margin="4" />
       <CheckBox Content="Is System Bar Visible" IsChecked="{Binding IsSystemBarVisible}" />
       <CheckBox Content="Display Edge To Edge" IsChecked="{Binding DisplayEdgeToEdge}" />
       <TextBlock Text="{Binding SafeAreaPadding, StringFormat='Safe Area Padding: {0}'}" />
     </StackPanel>
+
   </StackPanel>
-</UserControl>
+</ContentPage>

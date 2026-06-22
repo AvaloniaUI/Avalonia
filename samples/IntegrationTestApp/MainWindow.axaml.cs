@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using IntegrationTestApp.Models;
 using IntegrationTestApp.Pages;
 using IntegrationTestApp.ViewModels;
+using Page = IntegrationTestApp.Models.Page;
 
 namespace IntegrationTestApp
 {
@@ -37,7 +38,7 @@ namespace IntegrationTestApp
                 {
                     Header = (string?)page.Name,
                     ToolTip = $"Tip:{(string?)page.Name}",
-                    ToggleType = NativeMenuItemToggleType.Radio,
+                    ToggleType = MenuItemToggleType.Radio
                 };
 
                 menuItem.Click += (_, _) =>
@@ -82,6 +83,7 @@ namespace IntegrationTestApp
                 new("ComboBox", () => new ComboBoxPage()),
                 new("ContextMenu", () => new ContextMenuPage()),
                 new("DesktopPage", () => new DesktopPage()),
+                new("DragDrop", () => new DragDropPage()),
                 new("Embedding", () => new EmbeddingPage()),
                 new("Gestures", () => new GesturesPage()),
                 new("ListBox", () => new ListBoxPage()),

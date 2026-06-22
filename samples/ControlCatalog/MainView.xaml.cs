@@ -1,104 +1,172 @@
 using System;
-using System.Collections;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.LogicalTree;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
-using Avalonia.Platform;
-using Avalonia.VisualTree;
 using Avalonia.Styling;
 using ControlCatalog.Models;
-using ControlCatalog.Pages;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
-    public class MainView : UserControl
+    public partial class MainView : DrawerPage
     {
+        private readonly TransparentStyles _transparentStyles = new();
+
         public MainView()
         {
-            AvaloniaXamlLoader.Load(this);
-            
-            var sideBar = this.Get<TabControl>("Sidebar");
+            InitializeComponent();
 
-            var themes = this.Get<ComboBox>("Themes");
-            themes.SelectedItem = App.CurrentTheme;
-            themes.SelectionChanged += (sender, e) =>
-            {
-                if (themes.SelectedItem is CatalogTheme theme)
-                {
-                    App.SetCatalogThemes(theme);
-                }
-            };
-            var themeVariants = this.Get<ComboBox>("ThemeVariants");
-            themeVariants.SelectedItem = Application.Current!.RequestedThemeVariant;
-            themeVariants.SelectionChanged += (sender, e) =>
-            {
-                if (themeVariants.SelectedItem is ThemeVariant themeVariant)
-                {
-                    Application.Current!.RequestedThemeVariant = themeVariant;
-                }
-            };
+            Loaded += MainView_Loaded;
+            Unloaded += MainView_Unloaded;
+        }
 
-            var flowDirections = this.Get<ComboBox>("FlowDirection");
-            flowDirections.SelectionChanged += (sender, e) =>
-            {
-                if (flowDirections.SelectedItem is FlowDirection flowDirection)
-                {
-                    TopLevel.GetTopLevel(this)!.FlowDirection = flowDirection;
-                }
-            };
+        private const double WideBreakpoint = 1008;
+        private const double NarrowBreakpoint = 640;
 
-            var decorations = this.Get<ComboBox>("Decorations");
-            decorations.SelectionChanged += (sender, e) =>
-            {
-                if (VisualRoot is Window window
-                    && decorations.SelectedItem is SystemDecorations systemDecorations)
-                {
-                    window.SystemDecorations = systemDecorations;
-                }
-            };
+        protected override Type StyleKeyOverride => typeof(MainView);
 
-            var transparencyLevels = this.Get<ComboBox>("TransparencyLevels");
-            IDisposable? topLevelBackgroundSideSetter = null, sideBarBackgroundSetter = null, paneBackgroundSetter = null;
-            transparencyLevels.SelectionChanged += (sender, e) =>
-            {
-                topLevelBackgroundSideSetter?.Dispose();
-                sideBarBackgroundSetter?.Dispose();
-                paneBackgroundSetter?.Dispose();
-                if (transparencyLevels.SelectedItem is WindowTransparencyLevel selected)
-                {
-                    var topLevel = (TopLevel)this.GetVisualRoot()!;
-                    topLevel.TransparencyLevelHint = new[] { selected };
+        private void MainView_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext == null)
+                return;
 
-                    if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
-                        topLevel.ActualTransparencyLevel == selected)
-                    {
-                        var transparentBrush = new ImmutableSolidColorBrush(Colors.White, 0);
-                        var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
-                        topLevelBackgroundSideSetter = topLevel.SetValue(BackgroundProperty, transparentBrush, Avalonia.Data.BindingPriority.Style);
-                        sideBarBackgroundSetter = sideBar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
-                        paneBackgroundSetter = sideBar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
-                    }
+            SizeChanged += OnDrawerSizeChanged;
+            UpdateAdaptiveLayout();
+        }
+
+        private void MainView_Unloaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            SizeChanged -= OnDrawerSizeChanged;
+            _lastAppliedMode = null;
+        }
+
+        private SplitViewDisplayMode? _lastAppliedMode;
+        private bool _updatingLayout;
+
+        private void OnDrawerSizeChanged(object? sender, SizeChangedEventArgs e)
+        {
+            if (e.WidthChanged)
+                UpdateAdaptiveLayout();
+        }
+
+        private void UpdateAdaptiveLayout()
+        {
+            if (_updatingLayout || DataContext == null)
+                return;
+
+            var width = Bounds.Width;
+            if (width <= 0)
+                return;
+
+            SplitViewDisplayMode targetMode;
+            if (width >= WideBreakpoint)
+                targetMode = SplitViewDisplayMode.Inline;
+            else if (width >= NarrowBreakpoint)
+                targetMode = SplitViewDisplayMode.CompactInline;
+            else
+                targetMode = SplitViewDisplayMode.Overlay;
+
+            if (_lastAppliedMode == targetMode)
+                return;
+
+            _updatingLayout = true;
+            try
+            {
+                _lastAppliedMode = targetMode;
+                ViewModel.DisplayMode = targetMode;
+
+                if (targetMode == SplitViewDisplayMode.Inline)
+                    ViewModel.IsDrawerOpened = true;
+                else if (targetMode == SplitViewDisplayMode.Overlay)
+                    ViewModel.IsDrawerOpened = false;
+            }
+            finally
+            {
+                _updatingLayout = false;
+            }
+        }
+
+        private void Themes_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is CatalogTheme theme)
+            {
+                App.SetCatalogThemes(theme);
+            }
+        }
+
+        private void ThemeVariants_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (Application.Current is { } app && e.AddedItems.Count > 0 && e.AddedItems[0] is ThemeVariant themeVariant)
+            {
+                app.RequestedThemeVariant = themeVariant;
+            }
+        }
+
+        private void FlowDirection_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is { } topLevel && e.AddedItems.Count > 0 && e.AddedItems[0] is FlowDirection flowDirection)
+            {
+                topLevel.FlowDirection = flowDirection;
+            }
+        }
+
+        private void Decorations_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is Window window && e.AddedItems.Count > 0 && e.AddedItems[0] is WindowDecorations systemDecorations)
+            {
+                window.WindowDecorations = systemDecorations;
+            }
+        }
+
+        private void TransparencyLevels_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is { } topLevel && e.AddedItems.Count > 0 && e.AddedItems[0] is WindowTransparencyLevel transparencyLevel)
+            {
+                topLevel.TransparencyLevelHint = [transparencyLevel];
+
+                if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
+                    transparencyLevel != WindowTransparencyLevel.None)
+                {
+                    topLevel.Background = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
+                    if (!topLevel.Styles.Contains(_transparentStyles))
+                        topLevel.Styles.Add(_transparentStyles);
                 }
-            };
+                else
+                {
+                    topLevel.Background = null;
+                    topLevel.Styles.Remove(_transparentStyles);
+                }
+            }
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+
+            if (ViewModel != null)
+            {
+                ViewModel.Navigator = NavPage;
+            }
         }
 
         internal MainWindowViewModel ViewModel => (MainWindowViewModel)DataContext!;
-        
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
 
-            var decorations = this.Get<ComboBox>("Decorations");
-            if (VisualRoot is Window window)
-                decorations.SelectedIndex = (int)window.SystemDecorations;
+            if (DataContext == null)
+                return;
 
-            var insets = TopLevel.GetTopLevel(this)!.InsetsManager;
+            UpdateAdaptiveLayout();
+
+            var topLevel = TopLevel.GetTopLevel(this)!;
+            if (topLevel is Window window)
+                ViewModel.SelectedDecorationIndex = (int)window.WindowDecorations;
+
+            var insets = topLevel.InsetsManager;
             if (insets != null)
             {
                 // In real life application these events should be unsubscribed to avoid memory leaks.
@@ -108,14 +176,14 @@ namespace ControlCatalog
                     ViewModel.SafeAreaPadding = insets.SafeAreaPadding;
                 };
 
-                ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
+                ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdgePreference;
                 ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
 
                 ViewModel.PropertyChanged += async (sender, args) =>
                 {
                     if (args.PropertyName == nameof(ViewModel.DisplayEdgeToEdge))
                     {
-                        insets.DisplayEdgeToEdge = ViewModel.DisplayEdgeToEdge;
+                        insets.DisplayEdgeToEdgePreference = ViewModel.DisplayEdgeToEdge;
                     }
                     else if (args.PropertyName == nameof(ViewModel.IsSystemBarVisible))
                     {
@@ -124,10 +192,12 @@ namespace ControlCatalog
 
                     // Give the OS some time to apply new values and refresh the view model.
                     await Task.Delay(100);
-                    ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdge;
+                    ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdgePreference;
                     ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
                 };
             }
+
+            ViewModel.SelectedPageIndex = 0;
         }
     }
 }

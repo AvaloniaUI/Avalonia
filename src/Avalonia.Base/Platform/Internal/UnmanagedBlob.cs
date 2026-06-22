@@ -108,21 +108,15 @@ internal class UnmanagedBlob : IDisposable
     public int Size { get; private set; }
     public bool IsDisposed { get; private set; }
 
-    [DllImport("libc", SetLastError = true)]
+    [DllImport("libc")]
     private static extern IntPtr mmap(IntPtr addr, IntPtr length, int prot, int flags, int fd, IntPtr offset);
-    [DllImport("libc", SetLastError = true)]
+    [DllImport("libc")]
     private static extern int munmap(IntPtr addr, IntPtr length);
-    [DllImport("libc", SetLastError = true)]
-    private static extern long sysconf(int name);
-
-    private bool? _useMmap;
-    private bool UseMmap
-        => _useMmap ?? ((_useMmap = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)).Value);
 
     // Could be replaced with https://github.com/dotnet/runtime/issues/40892 when it will be available.
     private IntPtr Alloc(int size)
     {
-        if (!UseMmap)
+        if (!OperatingSystem.IsLinux())
         {
             return Marshal.AllocHGlobal(size);
         }
@@ -131,7 +125,7 @@ internal class UnmanagedBlob : IDisposable
             var rv = mmap(IntPtr.Zero, new IntPtr(size), 3, 0x22, -1, IntPtr.Zero);
             if (rv.ToInt64() == -1 || (ulong)rv.ToInt64() == 0xffffffff)
             {
-                var errno = Marshal.GetLastWin32Error();
+                var errno = Marshal.GetLastSystemError();
                 throw new Exception("Unable to allocate memory: " + errno);
             }
             return rv;
@@ -140,7 +134,7 @@ internal class UnmanagedBlob : IDisposable
 
     private void Free(IntPtr ptr, int len)
     {
-        if (!UseMmap)
+        if (!OperatingSystem.IsLinux())
         {
             Marshal.FreeHGlobal(ptr);
         }
@@ -148,7 +142,7 @@ internal class UnmanagedBlob : IDisposable
         {
             if (munmap(ptr, new IntPtr(len)) == -1)
             {
-                var errno = Marshal.GetLastWin32Error();
+                var errno = Marshal.GetLastSystemError();
                 throw new Exception("Unable to free memory: " + errno);
             }
         }

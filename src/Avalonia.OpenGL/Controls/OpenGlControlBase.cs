@@ -12,6 +12,21 @@ using System.ComponentModel;
 
 namespace Avalonia.OpenGL.Controls
 {
+    /// <summary>
+    /// Base class for controls that render using OpenGL.
+    /// Provides infrastructure for OpenGL context management, surface creation, and rendering lifecycle.
+    /// </summary>
+    /// <remarks>
+    /// <para>The control automatically manages OpenGL context creation, surface setup, and cleanup.</para>
+    /// <para>
+    /// <b>Important:</b> Any interaction with <see cref="GlInterface"/> should only happen within the 
+    /// <see cref="OnOpenGlInit"/>, <see cref="OnOpenGlDeinit"/>, or <see cref="OnOpenGlRender"/> method overrides.
+    /// </para>
+    /// <para>
+    /// Avalonia ensures proper OpenGL context synchronization and makes the context current only during these method calls.
+    /// Accessing OpenGL functions outside of these methods may result in undefined behavior, crashes, or rendering corruption.
+    /// </para>
+    /// </remarks>
     public abstract class OpenGlControlBase : Control
     {
         private CompositionSurfaceVisual? _visual;
@@ -20,8 +35,18 @@ namespace Avalonia.OpenGL.Controls
         private Task<bool>? _initialization;
         private OpenGlControlBaseResources? _resources;
         private Compositor? _compositor;
+
+        [MemberNotNullWhen(true, nameof(_resources))]
+        private bool IsInitializedSuccessfully => _initialization is { Status: TaskStatus.RanToCompletion, Result: true };
+
+        /// <summary>
+        /// Gets the OpenGL version information for the current context.
+        /// </summary>
         protected GlVersion GlVersion => _resources?.Context.Version ?? default;
         
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OpenGlControlBase"/> class.
+        /// </summary>
         public OpenGlControlBase()
         {
             _update = Update;
@@ -29,7 +54,7 @@ namespace Avalonia.OpenGL.Controls
 
         private void DoCleanup()
         {
-            if (_initialization is { Status: TaskStatus.RanToCompletion } && _resources != null)
+            if (IsInitializedSuccessfully)
             {
                 try
                 {
@@ -54,16 +79,18 @@ namespace Avalonia.OpenGL.Controls
             _initialization = null;
         }
 
+        /// <inheritdoc/>
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             DoCleanup();
             base.OnDetachedFromVisualTree(e);
         }
 
+        /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _compositor = (this.GetVisualRoot()?.Renderer as IRendererWithCompositor)?.Compositor;
+            _compositor = (this.GetPresentationSource()?.Renderer as IRendererWithCompositor)?.Compositor;
             RequestNextFrameRendering();
         }
 
@@ -86,14 +113,13 @@ namespace Avalonia.OpenGL.Controls
                     ctx = contextFactory.CreateContext(null);
                     if (ctx.TryGetFeature<IGlContextExternalObjectsFeature>(out var externalObjects))
                         _resources = OpenGlControlBaseResources.TryCreate(ctx, surface, interop, externalObjects);
-                    else
-                        ctx.Dispose();
                 }
                 
                 if(_resources == null)
                 {
                     Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
                         "Unable to initialize OpenGL: current platform does not support multithreaded context sharing and shared memory");
+                    ctx?.Dispose();
                     return false;
                 }
             }
@@ -112,7 +138,8 @@ namespace Avalonia.OpenGL.Controls
             return true;
 
         }
-        
+
+        /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (_visual != null && change.Property == BoundsProperty)
@@ -137,15 +164,13 @@ namespace Avalonia.OpenGL.Controls
             if (_initialization != null)
             {
                 // Check if we've previously failed to initialize OpenGL on this platform
-                if (_initialization is { IsCompleted: true, Result: false } ||
-                    _initialization?.IsFaulted == true)
+                // or if we are still waiting for init to complete
+                if (!IsInitializedSuccessfully)
+                {
                     return false;
+                }
 
-                // Check if we are still waiting for init to complete
-                if (_initialization is { IsCompleted: false })
-                    return false;
-
-                if (_resources!.Context.IsLost)
+                if (_resources.Context.IsLost)
                     ContextLost();
                 else 
                     return true;
@@ -157,8 +182,10 @@ namespace Avalonia.OpenGL.Controls
             {
                 try
                 {
-                    await _initialization;
-                    RequestNextFrameRendering();
+                    if (await _initialization)
+                    {
+                        RequestNextFrameRendering();
+                    }
                 }
                 catch
                 {
@@ -174,11 +201,11 @@ namespace Avalonia.OpenGL.Controls
         private void Update()
         {
             _updateQueued = false;
-            if (VisualRoot is not { } visualRoot)
+            if (this.GetPresentationSource() is not { } source)
                 return;
             if(!EnsureInitialized())
                 return;
-            using (_resources.BeginDraw(GetPixelSize(visualRoot)))
+            using (_resources.BeginDraw(GetPixelSize(source)))
                 OnOpenGlRender(_resources.Context.GlInterface, _resources.Fbo);
         }
 
@@ -218,13 +245,17 @@ namespace Avalonia.OpenGL.Controls
             return true;
         }
 
+        /// <inheritdoc cref="Visual.InvalidateVisual"/>
         [Obsolete("Use RequestNextFrameRendering()"), EditorBrowsable(EditorBrowsableState.Never)]
         // ReSharper disable once MemberCanBeProtected.Global
         public new void InvalidateVisual() => RequestNextFrameRendering();
 
+        /// <summary>
+        /// Requests that the control be rendered on the next frame.
+        /// </summary>
         public void RequestNextFrameRendering()
         {
-            if ((_initialization == null || _initialization is { Status: TaskStatus.RanToCompletion }) &&
+            if ((_initialization == null || IsInitializedSuccessfully) &&
                 !_updateQueued && _compositor != null)
             {
                 _updateQueued = true;
@@ -232,28 +263,44 @@ namespace Avalonia.OpenGL.Controls
             }
         }
 
-        private PixelSize GetPixelSize(IRenderRoot visualRoot)
+        private PixelSize GetPixelSize(IPresentationSource source)
         {
-            var scaling = visualRoot.RenderScaling;
+            var scaling = source.RenderScaling;
             return new PixelSize(Math.Max(1, (int)(Bounds.Width * scaling)),
                 Math.Max(1, (int)(Bounds.Height * scaling)));
         }
-        
+
+        /// <summary>
+        /// Called when the OpenGL context is first created.
+        /// </summary>
+        /// <param name="gl">The interface for making OpenGL calls. Use <see cref="GlInterface.GetProcAddress"/> to access additional APIs not covered by <see cref="GlInterface"/>.</param>
         protected virtual void OnOpenGlInit(GlInterface gl)
         {
             
         }
 
+        /// <summary>
+        /// Called when the OpenGL context is being destroyed.
+        /// </summary>
+        /// <param name="gl">The OpenGL interface for making OpenGL calls. Use <see cref="GlInterface.GetProcAddress"/> to access additional APIs not covered by <see cref="GlInterface"/>.</param>
         protected virtual void OnOpenGlDeinit(GlInterface gl)
         {
             
         }
-        
+
+        /// <summary>
+        /// Called when the OpenGL context is lost and cannot be recovered.
+        /// </summary>
         protected virtual void OnOpenGlLost()
         {
             
         }
-        
+
+        /// <summary>
+        /// Called to render the OpenGL content for the current frame.
+        /// </summary>
+        /// <param name="gl">The OpenGL interface for making OpenGL calls. Use <see cref="GlInterface.GetProcAddress"/> to access additional APIs not covered by <see cref="GlInterface"/>.</param>
+        /// <param name="fb">The framebuffer ID to render into.</param>
         protected abstract void OnOpenGlRender(GlInterface gl, int fb);
     }
 }

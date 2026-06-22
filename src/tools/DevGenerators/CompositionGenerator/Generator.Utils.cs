@@ -8,13 +8,6 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
 {
     public partial class Generator
     {
-        static void CleanDirectory(string path)
-        {
-            Directory.CreateDirectory(path);
-            Directory.Delete(path, true);
-            Directory.CreateDirectory(path);
-        }
-        
         CompilationUnitSyntax Unit()
             => CompilationUnit().WithUsings(List(new[]
                 {
@@ -39,16 +32,6 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         }
 
         static SyntaxToken Semicolon() => Token(SyntaxKind.SemicolonToken);
-
-
-        static FieldDeclarationSyntax DeclareConstant(string type, string name, LiteralExpressionSyntax value)
-            => FieldDeclaration(
-                    VariableDeclaration(ParseTypeName(type),
-                        SingletonSeparatedList(
-                            VariableDeclarator(name).WithInitializer(EqualsValueClause(value))
-                        ))
-                ).WithSemicolonToken(Semicolon())
-                .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.ConstKeyword)));
 
         static FieldDeclarationSyntax DeclareField(string type, string name, params SyntaxKind[] modifiers) =>
             DeclareField(type, name, null, modifiers);

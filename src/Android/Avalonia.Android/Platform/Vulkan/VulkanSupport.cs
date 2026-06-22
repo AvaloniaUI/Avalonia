@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Vulkan;
 
 namespace Avalonia.Android.Platform.Vulkan
 {
-    internal class VulkanSupport
+    internal partial class VulkanSupport
     {
-        [DllImport("libvulkan.so")]
-        private static extern IntPtr vkGetInstanceProcAddr(IntPtr instance, string name);
+        [LibraryImport("libvulkan.so", StringMarshalling = StringMarshalling.Utf8)]
+        private static partial IntPtr vkGetInstanceProcAddr(IntPtr instance, string name);
 
         public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options) =>
             VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions
@@ -24,10 +25,10 @@ namespace Avalonia.Android.Platform.Vulkan
 
         internal class VulkanSurfaceFactory : IVulkanKhrSurfacePlatformSurfaceFactory
         {
-            public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, object surface) =>
+            public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface surface) =>
                 surface is INativePlatformHandleSurface handle;
 
-            public IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, object handle) =>
+            public IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface handle) =>
                 new AndroidVulkanSurface((INativePlatformHandleSurface)handle);
         }
 
@@ -53,6 +54,8 @@ namespace Avalonia.Android.Platform.Vulkan
 
         private static ulong CreateAndroidSurface(nint handle, IVulkanInstance instance)
         {
+            if(handle == IntPtr.Zero)
+                throw new ArgumentException("Surface handle can't be 0x0", nameof(handle));
             var vulkanAndroid = new AndroidVulkanInterface(instance);
             var createInfo = new VkAndroidSurfaceCreateInfoKHR()
             {

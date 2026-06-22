@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -408,6 +409,7 @@ namespace Avalonia.Controls
             {
                 _popup = new Popup();
                 _popup.Child = this;
+                _popup.TakesFocusFromNativeControl = false;
                 _popup.WindowManagerAddShadowHint = false;
 
                 _popup.Opened += OnPopupOpened;
@@ -471,5 +473,8 @@ namespace Avalonia.Controls
         {
             PseudoClasses.Set(":open", newValue);
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+            => new ToolTipAutomationPeer(this);
     }
 }

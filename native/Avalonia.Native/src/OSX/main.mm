@@ -1,6 +1,7 @@
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
+#include "menu.h"
 
 static NSString* s_appTitle = @"Avalonia";
 static int disableSetProcessName = 0;
@@ -129,14 +130,22 @@ public:
         }
     }
     
-    virtual HRESULT SetShowInDock(int show)  override
+    virtual HRESULT SetShowInDock(int show) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            AvnDesiredActivationPolicy = show
-                ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
+            NSApplication* app = [NSApplication sharedApplication];
+            NSApplicationActivationPolicy requestedPolicy = show
+                ? NSApplicationActivationPolicyRegular
+                : NSApplicationActivationPolicyAccessory;
+            
+            if ([app activationPolicy] != requestedPolicy)
+            {
+                [app setActivationPolicy:requestedPolicy];
+            }
+            
             return S_OK;
         }
     }
@@ -304,18 +313,7 @@ public:
         
         @autoreleasepool
         {
-            *ppv = ::CreateClipboard (nil, nil);
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
+            *ppv = ::CreateClipboard(nil);
             return S_OK;
         }
     }
@@ -470,6 +468,32 @@ public:
             return S_OK;
         }
     }
+    
+    virtual HRESULT ImportMTLSharedEvent(void* event, IAvnMTLSharedEvent** ppv) override
+    {
+        START_COM_CALL;
+        *ppv = ::ImportMTLSharedEvent(event);
+        return *ppv != nullptr ? S_OK : E_FAIL;
+    }
+    
+    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override {
+        START_COM_CALL;
+        *ppv = ::CreateMemoryManagementHelper();
+        return S_OK;
+    }
+
+    virtual HRESULT SetDockMenu(IAvnMenu* dockMenu) override
+    {
+        START_COM_CALL;
+
+        @autoreleasepool
+        {
+            auto nativeMenu = dynamic_cast<AvnAppMenu*>(dockMenu);
+            ::SetDockMenu(nativeMenu != nullptr ? nativeMenu->GetNative() : nil);
+            return S_OK;
+        }
+    }
+
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

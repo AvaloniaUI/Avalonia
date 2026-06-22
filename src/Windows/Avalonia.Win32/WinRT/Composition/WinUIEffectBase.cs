@@ -41,15 +41,16 @@ namespace Avalonia.Win32.WinRT.Composition
         }
 
         public uint SourceCount => (uint)(_sources?.Length ?? 0);
-
-        public override void OnUnreferencedFromNative()
+        
+        protected override void Destroyed()
         {
-            if (_sources == null)
-                return;
-            
-            /*foreach(var s in _sources)
-                s.Dispose();*/
-            _sources = null;
+            if (_sources != null)
+            {
+                foreach (var source in _sources)
+                    source.Dispose();
+            }
+
+            base.Destroyed();
         }
     }
     

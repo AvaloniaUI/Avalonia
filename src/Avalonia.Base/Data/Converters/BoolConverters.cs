@@ -1,3 +1,6 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 
 namespace Avalonia.Data.Converters
@@ -23,6 +26,27 @@ namespace Avalonia.Data.Converters
         /// A value converter that returns true when input is false and false when input is true.
         /// </summary>
         public static readonly IValueConverter Not =
-            new FuncValueConverter<bool, bool>(x => !x);
+            new NotConverter();
+
+        private class NotConverter : IValueConverter
+        {
+            public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                if (value is bool val)
+                {
+                    return !val;
+                }
+                return AvaloniaProperty.UnsetValue;
+            }
+
+            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                if (value is bool val)
+                {
+                    return !val;
+                }
+                return AvaloniaProperty.UnsetValue;
+            }
+        }
     }
 }

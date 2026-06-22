@@ -1,14 +1,13 @@
 using System;
+using Avalonia.Metadata;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 
 namespace Avalonia.OpenGL.Surfaces
 {
-    public interface IGlPlatformSurfaceRenderTarget : IDisposable
+    [PrivateApi]
+    public interface IGlPlatformSurfaceRenderTarget : IDisposable, IPlatformRenderSurfaceRenderTarget
     {
-        IGlPlatformSurfaceRenderingSession BeginDraw();
-    }
-
-    public interface IGlPlatformSurfaceRenderTargetWithCorruptionInfo : IGlPlatformSurfaceRenderTarget
-    {
-        bool IsCorrupted { get; }
+        IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo);
     }
 }

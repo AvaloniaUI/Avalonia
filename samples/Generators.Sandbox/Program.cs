@@ -1,5 +1,4 @@
 ﻿using Avalonia;
-using Avalonia.ReactiveUI;
 
 namespace Generators.Sandbox;
 
@@ -9,7 +8,6 @@ internal static class Program
 
     private static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
-            .UseReactiveUI()
             .UsePlatformDetect()
             .LogToTrace();
 }

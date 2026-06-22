@@ -5,13 +5,13 @@ using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
-    internal class GlSkiaGpu : ISkiaGpu, IOpenGlTextureSharingRenderInterfaceContextFeature,
-        ISkiaGpuWithPlatformGraphicsContext
+    internal class GlSkiaGpu : ISkiaGpu, IOpenGlTextureSharingRenderInterfaceContextFeature
     {
         private readonly GRContext _grContext;
         private readonly IGlContext _glContext;
@@ -21,7 +21,7 @@ namespace Avalonia.Skia
         private bool? _canCreateSurfaces;
         private readonly IExternalObjectsRenderInterfaceContextFeature? _externalObjectsFeature;
 
-        public GlSkiaGpu(IGlContext context, long? maxResourceBytes)
+        public GlSkiaGpu(IGlContext context, long? maxResourceBytes, bool? useStencilBuffers)
         {
             _glContext = context;
             using (_glContext.EnsureCurrent())
@@ -40,7 +40,8 @@ namespace Avalonia.Skia
                 
                 using(iface)
                 {
-                    _grContext = GRContext.CreateGl(iface, new GRContextOptions { AvoidStencilBuffers = true });
+                    var avoidStencilBuffers = useStencilBuffers == false;
+                    _grContext = GRContext.CreateGl(iface, new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers });
                     if (maxResourceBytes.HasValue)
                     {
                         _grContext.SetResourceCacheLimit(maxResourceBytes.Value);
@@ -54,12 +55,14 @@ namespace Avalonia.Skia
 
         private class SurfaceWrapper : IGlPlatformSurface
         {
-            private readonly object _surface;
+            private readonly IPlatformRenderSurface _surface;
 
-            public SurfaceWrapper( object surface)
+            public SurfaceWrapper(IPlatformRenderSurface surface)
             {
                 _surface = surface;
             }
+
+            public bool IsReady => _surface.IsReady;
 
             public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
             {
@@ -68,7 +71,7 @@ namespace Avalonia.Skia
             }
         }
 
-        public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
+        public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
         {
             var customRenderTargetFactory = _glContext.TryGetFeature<IGlPlatformSurfaceRenderTargetFactory>();
             foreach (var surface in surfaces)
@@ -84,6 +87,21 @@ namespace Avalonia.Skia
             }
 
             return null;
+        }
+
+        public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+        {
+            var customRenderTargetFactory = _glContext.TryGetFeature<IGlPlatformSurfaceRenderTargetFactory>();
+            foreach (var surface in surfaces)
+            {
+                if (customRenderTargetFactory?.CanRenderToSurface(_glContext, surface) == true
+                    || surface is IGlPlatformSurface)
+                {
+                    return surface.IsReady;
+                }
+            }
+
+            return false;
         }
 
         public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session)
@@ -173,6 +191,8 @@ namespace Avalonia.Skia
                 return this;
             if (featureType == typeof(IExternalObjectsRenderInterfaceContextFeature))
                 return _externalObjectsFeature;
+            if (featureType == typeof(IExternalObjectsHandleWrapRenderInterfaceContextFeature))
+                return _glContext.TryGetFeature(featureType);
             return null;
         }
         

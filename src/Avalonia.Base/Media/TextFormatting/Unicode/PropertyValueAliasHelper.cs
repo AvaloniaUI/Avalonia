@@ -21,6 +21,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.BassaVah, "Bass"},
                 { Script.Batak, "Batk"},
                 { Script.Bengali, "Beng"},
+                { Script.BeriaErfe, "Berf"},
                 { Script.Bhaiksuki, "Bhks"},
                 { Script.Bopomofo, "Bopo"},
                 { Script.Brahmi, "Brah"},
@@ -46,6 +47,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Elbasan, "Elba"},
                 { Script.Elymaic, "Elym"},
                 { Script.Ethiopic, "Ethi"},
+                { Script.Garay, "Gara"},
                 { Script.Georgian, "Geor"},
                 { Script.Glagolitic, "Glag"},
                 { Script.GunjalaGondi, "Gong"},
@@ -54,6 +56,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Grantha, "Gran"},
                 { Script.Greek, "Grek"},
                 { Script.Gujarati, "Gujr"},
+                { Script.GurungKhema, "Gukh"},
                 { Script.Gurmukhi, "Guru"},
                 { Script.Hangul, "Hang"},
                 { Script.Han, "Hani"},
@@ -76,6 +79,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Khojki, "Khoj"},
                 { Script.KhitanSmallScript, "Kits"},
                 { Script.Kannada, "Knda"},
+                { Script.KiratRai, "Krai"},
                 { Script.Kaithi, "Kthi"},
                 { Script.TaiTham, "Lana"},
                 { Script.Lao, "Laoo"},
@@ -112,6 +116,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Nushu, "Nshu"},
                 { Script.Ogham, "Ogam"},
                 { Script.OlChiki, "Olck"},
+                { Script.OlOnal, "Onao"},
                 { Script.OldTurkic, "Orkh"},
                 { Script.Oriya, "Orya"},
                 { Script.Osage, "Osge"},
@@ -136,6 +141,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Shavian, "Shaw"},
                 { Script.Sharada, "Shrd"},
                 { Script.Siddham, "Sidd"},
+                { Script.Sidetic, "Sidt"},
                 { Script.Khudawadi, "Sind"},
                 { Script.Sinhala, "Sinh"},
                 { Script.Sogdian, "Sogd"},
@@ -143,6 +149,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.SoraSompeng, "Sora"},
                 { Script.Soyombo, "Soyo"},
                 { Script.Sundanese, "Sund"},
+                { Script.Sunuwar, "Sunu"},
                 { Script.SylotiNagri, "Sylo"},
                 { Script.Syriac, "Syrc"},
                 { Script.Tagbanwa, "Tagb"},
@@ -152,6 +159,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Tamil, "Taml"},
                 { Script.Tangut, "Tang"},
                 { Script.TaiViet, "Tavt"},
+                { Script.TaiYo, "Tayo"},
                 { Script.Telugu, "Telu"},
                 { Script.Tifinagh, "Tfng"},
                 { Script.Tagalog, "Tglg"},
@@ -160,7 +168,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Tibetan, "Tibt"},
                 { Script.Tirhuta, "Tirh"},
                 { Script.Tangsa, "Tnsa"},
+                { Script.Todhri, "Todr"},
+                { Script.TolongSiki, "Tols"},
                 { Script.Toto, "Toto"},
+                { Script.TuluTigalari, "Tutg"},
                 { Script.Ugaritic, "Ugar"},
                 { Script.Vai, "Vaii"},
                 { Script.Vithkuqi, "Vith"},
@@ -199,6 +210,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Bass", Script.BassaVah},
                 { "Batk", Script.Batak},
                 { "Beng", Script.Bengali},
+                { "Berf", Script.BeriaErfe},
                 { "Bhks", Script.Bhaiksuki},
                 { "Bopo", Script.Bopomofo},
                 { "Brah", Script.Brahmi},
@@ -224,6 +236,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Elba", Script.Elbasan},
                 { "Elym", Script.Elymaic},
                 { "Ethi", Script.Ethiopic},
+                { "Gara", Script.Garay},
                 { "Geor", Script.Georgian},
                 { "Glag", Script.Glagolitic},
                 { "Gong", Script.GunjalaGondi},
@@ -232,6 +245,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Gran", Script.Grantha},
                 { "Grek", Script.Greek},
                 { "Gujr", Script.Gujarati},
+                { "Gukh", Script.GurungKhema},
                 { "Guru", Script.Gurmukhi},
                 { "Hang", Script.Hangul},
                 { "Hani", Script.Han},
@@ -254,6 +268,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Khoj", Script.Khojki},
                 { "Kits", Script.KhitanSmallScript},
                 { "Knda", Script.Kannada},
+                { "Krai", Script.KiratRai},
                 { "Kthi", Script.Kaithi},
                 { "Lana", Script.TaiTham},
                 { "Laoo", Script.Lao},
@@ -290,6 +305,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Nshu", Script.Nushu},
                 { "Ogam", Script.Ogham},
                 { "Olck", Script.OlChiki},
+                { "Onao", Script.OlOnal},
                 { "Orkh", Script.OldTurkic},
                 { "Orya", Script.Oriya},
                 { "Osge", Script.Osage},
@@ -314,6 +330,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Shaw", Script.Shavian},
                 { "Shrd", Script.Sharada},
                 { "Sidd", Script.Siddham},
+                { "Sidt", Script.Sidetic},
                 { "Sind", Script.Khudawadi},
                 { "Sinh", Script.Sinhala},
                 { "Sogd", Script.Sogdian},
@@ -321,6 +338,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Sora", Script.SoraSompeng},
                 { "Soyo", Script.Soyombo},
                 { "Sund", Script.Sundanese},
+                { "Sunu", Script.Sunuwar},
                 { "Sylo", Script.SylotiNagri},
                 { "Syrc", Script.Syriac},
                 { "Tagb", Script.Tagbanwa},
@@ -330,6 +348,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Taml", Script.Tamil},
                 { "Tang", Script.Tangut},
                 { "Tavt", Script.TaiViet},
+                { "Tayo", Script.TaiYo},
                 { "Telu", Script.Telugu},
                 { "Tfng", Script.Tifinagh},
                 { "Tglg", Script.Tagalog},
@@ -338,7 +357,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Tibt", Script.Tibetan},
                 { "Tirh", Script.Tirhuta},
                 { "Tnsa", Script.Tangsa},
+                { "Todr", Script.Todhri},
+                { "Tols", Script.TolongSiki},
                 { "Toto", Script.Toto},
+                { "Tutg", Script.TuluTigalari},
                 { "Ugar", Script.Ugaritic},
                 { "Vaii", Script.Vai},
                 { "Vith", Script.Vithkuqi},
@@ -448,14 +470,20 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "CB", LineBreakClass.ContingentBreak},
                 { "XX", LineBreakClass.Unknown},
                 { "AI", LineBreakClass.Ambiguous},
+                { "AK", LineBreakClass.Aksara},
+                { "AP", LineBreakClass.AksaraPrebase},
+                { "AS", LineBreakClass.AksaraStart},
                 { "BK", LineBreakClass.MandatoryBreak},
                 { "CJ", LineBreakClass.ConditionalJapaneseStarter},
                 { "CR", LineBreakClass.CarriageReturn},
+                { "HH", LineBreakClass.UnambiguousHyphen},
                 { "LF", LineBreakClass.LineFeed},
                 { "NL", LineBreakClass.NextLine},
                 { "SA", LineBreakClass.ComplexContext},
                 { "SG", LineBreakClass.Surrogate},
                 { "SP", LineBreakClass.Space},
+                { "VF", LineBreakClass.ViramaFinal},
+                { "VI", LineBreakClass.Virama},
         };
 
         public static LineBreakClass GetLineBreakClass(string tag)
@@ -463,6 +491,38 @@ namespace Avalonia.Media.TextFormatting.Unicode
             if (!s_tagToLineBreakClass.TryGetValue(tag, out var value))
             {
                 return LineBreakClass.Unknown;
+            }
+            return value;
+        }
+
+        private static readonly Dictionary<string, WordBreakClass> s_tagToWordBreakClass = 
+            new Dictionary<string,WordBreakClass>{
+                { "XX", WordBreakClass.Other},
+                { "CR", WordBreakClass.CarriageReturn},
+                { "LF", WordBreakClass.LineFeed},
+                { "NL", WordBreakClass.Newline},
+                { "Extend", WordBreakClass.Extend},
+                { "ZWJ", WordBreakClass.ZWJ},
+                { "RI", WordBreakClass.RegionalIndicator},
+                { "FO", WordBreakClass.Format},
+                { "KA", WordBreakClass.Katakana},
+                { "HL", WordBreakClass.HebrewLetter},
+                { "LE", WordBreakClass.ALetter},
+                { "SQ", WordBreakClass.SingleQuote},
+                { "DQ", WordBreakClass.DoubleQuote},
+                { "MB", WordBreakClass.MidNumLet},
+                { "ML", WordBreakClass.MidLetter},
+                { "MN", WordBreakClass.MidNum},
+                { "NU", WordBreakClass.Numeric},
+                { "EX", WordBreakClass.ExtendNumLet},
+                { "WSegSpace", WordBreakClass.WSegSpace},
+        };
+
+        public static WordBreakClass GetWordBreakClass(string tag)
+        {
+            if (!s_tagToWordBreakClass.TryGetValue(tag, out var value))
+            {
+                return WordBreakClass.Other;
             }
             return value;
         }

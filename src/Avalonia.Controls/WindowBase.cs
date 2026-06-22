@@ -4,7 +4,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -133,7 +132,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the scaling factor for Window positioning and sizing.
         /// </summary>
-        public double DesktopScaling => PlatformImpl?.DesktopScaling ?? 1;
+        public double DesktopScaling => DesktopScalingOverride ?? PlatformImpl?.DesktopScaling ?? 1;
+
+        private protected double? DesktopScalingOverride { get; set; }
         
         /// <summary>
         /// Activates the window.
@@ -199,6 +200,7 @@ namespace Avalonia.Controls
 
             if (change.Property == IsVisibleProperty)
             {
+                VisualRoot?.IsVisible = change.GetNewValue<bool>();
                 IsVisibleChanged(change);
             }
         }
@@ -284,6 +286,8 @@ namespace Avalonia.Controls
 
             var constraint = LayoutHelper.ApplyLayoutConstraints(this, availableSize);
 
+            Avalonia.Styling.Container.GetQueryProvider(this)?.SetSize(constraint.Width, constraint.Height, Avalonia.Styling.Container.GetSizing(this));
+
             return MeasureOverride(constraint);
         }
 
@@ -300,7 +304,7 @@ namespace Avalonia.Controls
         {
             var constraint = ArrangeSetBounds(finalRect.Size);
             var arrangeSize = ArrangeOverride(constraint);
-            Bounds = new Rect(arrangeSize);
+            Bounds = new Rect(finalRect.Position, arrangeSize);
         }
 
         /// <summary>
@@ -308,7 +312,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="size">The requested size of the window.</param>
         /// <returns>The actual size of the window.</returns>
-        protected virtual Size ArrangeSetBounds(Size size) => size;
+        private protected virtual Size ArrangeSetBounds(Size size) => size;
 
         /// <summary>
         /// Handles a window position change notification from 

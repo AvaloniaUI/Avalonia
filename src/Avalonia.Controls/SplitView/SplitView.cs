@@ -18,7 +18,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_PaneRoot", typeof(Panel))]
     [PseudoClasses(pcOpen, pcClosed)]
     [PseudoClasses(pcCompactOverlay, pcCompactInline, pcOverlay, pcInline)]
-    [PseudoClasses(pcLeft, pcRight)]
+    [PseudoClasses(pcLeft, pcRight, pcTop, pcBottom)]
     [PseudoClasses(pcLightDismiss)]
     public class SplitView : ContentControl
     {
@@ -30,6 +30,8 @@ namespace Avalonia.Controls
         private const string pcInline = ":inline";
         private const string pcLeft = ":left";
         private const string pcRight = ":right";
+        private const string pcTop = ":top";
+        private const string pcBottom = ":bottom";
         private const string pcLightDismiss = ":lightDismiss";
 
         /// <summary>
@@ -297,6 +299,7 @@ namespace Avalonia.Controls
             _pane = e.NameScope.Find<Panel>("PART_PaneRoot");
 
             UpdateVisualStateForDisplayMode(DisplayMode);
+            UpdatePaneStatePseudoClass(IsPaneOpen);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -313,6 +316,7 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
             _pointerDisposable?.Dispose();
+            _pointerDisposable = null;
         }
 
         /// <inheritdoc/>
@@ -331,19 +335,13 @@ namespace Avalonia.Controls
             else if (change.Property == IsPaneOpenProperty)
             {
                 bool isPaneOpen = change.GetNewValue<bool>();
-
+                UpdatePaneStatePseudoClass(isPaneOpen);
                 if (isPaneOpen)
                 {
-                    PseudoClasses.Add(pcOpen);
-                    PseudoClasses.Remove(pcClosed);
-
                     OnPaneOpened(new RoutedEventArgs(PaneOpenedEvent, this));
                 }
                 else
                 {
-                    PseudoClasses.Add(pcClosed);
-                    PseudoClasses.Remove(pcOpen);
-
                     OnPaneClosed(new RoutedEventArgs(PaneClosedEvent, this));
                 }
             }
@@ -428,7 +426,7 @@ namespace Avalonia.Controls
 
         protected virtual void OnPaneOpened(RoutedEventArgs args)
         {
-            EnableLightDismiss();
+            InvalidateLightDismissSubscription();
             RaiseEvent(args);
         }
 
@@ -468,6 +466,8 @@ namespace Avalonia.Controls
             {
                 SplitViewPanePlacement.Left => pcLeft,
                 SplitViewPanePlacement.Right => pcRight,
+                SplitViewPanePlacement.Top => pcTop,
+                SplitViewPanePlacement.Bottom => pcBottom,
                 _ => throw new ArgumentOutOfRangeException(nameof(placement), placement, null)
             };
         }
@@ -505,11 +505,14 @@ namespace Avalonia.Controls
             if (displayMode == SplitViewDisplayMode.CompactInline)
             {
                 TemplateSettings.ClosedPaneWidth = newLen;
+                TemplateSettings.ClosedPaneHeight = newLen;
             }
             else if (displayMode == SplitViewDisplayMode.CompactOverlay)
             {
                 TemplateSettings.ClosedPaneWidth = newLen;
                 TemplateSettings.PaneColumnGridLength = new GridLength(newLen, GridUnitType.Pixel);
+                TemplateSettings.ClosedPaneHeight = newLen;
+                TemplateSettings.PaneRowGridLength = new GridLength(newLen, GridUnitType.Pixel);
             }
         }
 
@@ -525,14 +528,27 @@ namespace Avalonia.Controls
 
             var (closedPaneWidth, paneColumnGridLength) = newValue switch
             {
-                SplitViewDisplayMode.Overlay => (0, new GridLength(0, GridUnitType.Pixel)),
+                SplitViewDisplayMode.Overlay => (0d, new GridLength(0, GridUnitType.Pixel)),
                 SplitViewDisplayMode.CompactOverlay => (CompactPaneLength, new GridLength(CompactPaneLength, GridUnitType.Pixel)),
-                SplitViewDisplayMode.Inline => (0, new GridLength(0, GridUnitType.Auto)),
+                SplitViewDisplayMode.Inline => (0d, new GridLength(0, GridUnitType.Auto)),
                 SplitViewDisplayMode.CompactInline => (CompactPaneLength, new GridLength(0, GridUnitType.Auto)),
                 _ => throw new NotImplementedException(),
             };
             TemplateSettings.ClosedPaneWidth = closedPaneWidth;
             TemplateSettings.PaneColumnGridLength = paneColumnGridLength;
+
+            var (closedPaneHeight, paneRowGridLength) = newValue switch
+            {
+                SplitViewDisplayMode.Overlay => (0d, new GridLength(0, GridUnitType.Pixel)),
+                SplitViewDisplayMode.CompactOverlay => (CompactPaneLength, new GridLength(CompactPaneLength, GridUnitType.Pixel)),
+                SplitViewDisplayMode.Inline => (0d, new GridLength(0, GridUnitType.Auto)),
+                SplitViewDisplayMode.CompactInline => (CompactPaneLength, new GridLength(0, GridUnitType.Auto)),
+                _ => throw new NotImplementedException(),
+            };
+            TemplateSettings.ClosedPaneHeight = closedPaneHeight;
+            TemplateSettings.PaneRowGridLength = paneRowGridLength;
+            
+            InvalidateLightDismissSubscription();
         }
 
         private void UpdateVisualStateForPanePlacementProperty(SplitViewPanePlacement newValue)
@@ -546,7 +562,7 @@ namespace Avalonia.Controls
             PseudoClasses.Add(_lastPlacementPseudoclass);
         }
 
-        private void EnableLightDismiss()
+        private void InvalidateLightDismissSubscription()
         {
             if (_pane == null)
                 return;
@@ -554,19 +570,26 @@ namespace Avalonia.Controls
             // If this returns false, we're not in Overlay or CompactOverlay DisplayMode
             // and don't need the light dismiss behavior
             if (!IsInOverlayMode())
-                return;
-
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel != null)
             {
-                _pointerDisposable = Disposable.Create(() =>
-                {
-                    topLevel.PointerReleased -= PointerReleasedOutside;
-                    topLevel.BackRequested -= TopLevelBackRequested;
-                });
+                _pointerDisposable?.Dispose();
+                _pointerDisposable = null;
+                return;
+            }
 
-                topLevel.PointerReleased += PointerReleasedOutside;
-                topLevel.BackRequested += TopLevelBackRequested;
+            if (_pointerDisposable == null)
+            {
+                var topLevel = TopLevel.GetTopLevel(this);
+                if (topLevel != null)
+                {
+                    _pointerDisposable = Disposable.Create(() =>
+                    {
+                        topLevel.PointerReleased -= PointerReleasedOutside;
+                        topLevel.BackRequested -= TopLevelBackRequested;
+                    });
+
+                    topLevel.PointerReleased += PointerReleasedOutside;
+                    topLevel.BackRequested += TopLevelBackRequested;
+                }
             }
         }
 
@@ -577,6 +600,20 @@ namespace Avalonia.Controls
 
             SetCurrentValue(IsPaneOpenProperty, false);
             e.Handled = true;
+        }
+
+        private void UpdatePaneStatePseudoClass(bool isPaneOpen)
+        {
+            if (isPaneOpen)
+            {
+                PseudoClasses.Add(pcOpen);
+                PseudoClasses.Remove(pcClosed);
+            }
+            else
+            {
+                PseudoClasses.Add(pcClosed);
+                PseudoClasses.Remove(pcOpen);
+            }
         }
 
         /// <summary>

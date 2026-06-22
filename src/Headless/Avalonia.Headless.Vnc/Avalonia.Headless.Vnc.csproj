@@ -1,13 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-      <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+      <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Avalonia.Headless\Avalonia.Headless.csproj" />
-      <PackageReference Include="Quamotion.RemoteViewing" Version="1.1.179" />
+      <ProjectReference Include="../Avalonia.Headless/Avalonia.Headless.csproj" />
+    </ItemGroup>
+  
+    <ItemGroup>
+      <PackageReference Include="Quamotion.RemoteViewing" />
+      <PackageReference Include="SharpCompress" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Include="../../Avalonia.Base/Reactive/Disposable.cs" />
     </ItemGroup>
 
     <Import Project="..\..\..\build\DevAnalyzers.props" />

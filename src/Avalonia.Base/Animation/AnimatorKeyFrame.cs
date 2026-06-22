@@ -46,7 +46,7 @@ namespace Avalonia.Animation
             Property = setter.Property;
             var value = setter.Value;
 
-            if (value is IBinding binding)
+            if (value is BindingBase binding)
             {
                 return Bind(ValueProperty, binding, targetControl);
             }

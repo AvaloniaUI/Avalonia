@@ -35,7 +35,7 @@
 
 @implementation AvnMenuItem
 {
-    AvnAppMenuItem* _item;
+    ComObjectWeakPtr<AvnAppMenuItem> _item;
 }
 
 - (id) initWithAvnAppMenuItem: (AvnAppMenuItem*)menuItem
@@ -61,13 +61,19 @@
     {
         return YES;
     }
+    auto item = _item.tryGet();
+    if(item == nullptr)
+        return NO;
     
-    return _item->EvaluateItemEnabled();
+    return item->EvaluateItemEnabled();
 }
 
 - (void)didSelectItem:(nullable id)sender
 {
-    _item->RaiseOnClicked();
+    auto item = _item.tryGet();
+    if(item == nullptr)
+        return;
+    item->RaiseOnClicked();
 }
 @end
 
@@ -262,10 +268,10 @@ HRESULT AvnAppMenuItem::SetIcon(void *data, size_t length)
             NSSize originalSize = [image size];
              
             NSSize size;
-            size.height = [[NSFont menuFontOfSize:0] pointSize] * 1.333333;
+            size.height = floor([[NSFont menuFontOfSize:0] pointSize] * 1.333333);
             
             auto scaleFactor = size.height / originalSize.height;
-            size.width = originalSize.width * scaleFactor;
+            size.width = floor(originalSize.width * scaleFactor);
             
             [image setSize: size];
             [_native setImage:image];
@@ -478,17 +484,15 @@ extern IAvnMenuItem* CreateAppMenuItemSeparator()
     }
 }
 
-static IAvnMenu* s_appMenu = nullptr;
+static ComStaticPtr<AvnAppMenu> s_appMenu;
 static NSMenuItem* s_appMenuItem = nullptr;
 
 extern void SetAppMenu(IAvnMenu *menu)
 {
-    s_appMenu = menu;
+    s_appMenu.set(dynamic_cast<AvnAppMenu*>(menu));
     
     if(s_appMenu != nullptr)
     {
-        auto nativeMenu = dynamic_cast<AvnAppMenu*>(s_appMenu);
-        
         auto currentMenu = [s_appMenuItem menu];
         
         if (currentMenu != nullptr)
@@ -496,7 +500,7 @@ extern void SetAppMenu(IAvnMenu *menu)
             [currentMenu removeItem:s_appMenuItem];
         }
         
-        s_appMenuItem = [nativeMenu->GetNative() itemAtIndex:0];
+        s_appMenuItem = [s_appMenu->GetNative() itemAtIndex:0];
         
         if (currentMenu == nullptr)
         {
@@ -524,9 +528,9 @@ extern void SetServicesMenu (IAvnMenu* menu)
     [NSApplication sharedApplication].servicesMenu = nativeMenu->GetNative();
 }
 
-extern IAvnMenu* GetAppMenu ()
+extern AvnAppMenu* GetAppMenu ()
 {
-    return s_appMenu;
+    return s_appMenu.getRaw();
 }
 
 extern NSMenuItem* GetAppMenuItem ()

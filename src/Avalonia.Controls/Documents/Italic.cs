@@ -13,5 +13,10 @@ namespace Avalonia.Controls.Documents
         {
             FontStyleProperty.OverrideDefaultValue<Italic>(FontStyle.Italic);
         }
+
+        public Italic()
+        {
+            SetCurrentValue(FontStyleProperty, FontStyle.Italic);
+        }
     }
 }

@@ -26,7 +26,8 @@ namespace Avalonia.Input.Raw
         TouchCancel,
         Magnify,
         Rotate,
-        Swipe
+        Swipe,
+        CancelCapture
     }
 
     /// <summary>
@@ -123,6 +124,13 @@ namespace Avalonia.Input.Raw
         /// </summary>
         public Lazy<IReadOnlyList<RawPointerPoint>?>? IntermediatePoints { get; set; }
 
+        /// <summary>
+        /// An opaque platform-specific cookie associated with this event.
+        /// Used by backends to pass platform data (e.g. Wayland serial + seat) through
+        /// the input pipeline to platform-consuming code like BeginMoveDrag.
+        /// </summary>
+        public object? PlatformInputEventCookie { get; set; }
+
         internal (IInputElement? element, IInputElement? firstEnabledAncestor) InputHitTestResult { get; set; }
     }
 
@@ -143,6 +151,14 @@ namespace Avalonia.Input.Raw
         /// <inheritdoc cref="PointerPointProperties.YTilt" />
         public float YTilt { get; set; }
 
+        /// <inheritdoc cref="PointerPointProperties.ContactRect" />
+        public Rect ContactRect
+        {
+            get => _contactRect ?? new Rect(Position, new Size());
+            set => _contactRect = value;
+        }
+
+        private Rect? _contactRect;
 
         public RawPointerPoint()
         {

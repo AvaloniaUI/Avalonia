@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -44,9 +47,9 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
-    /// Determines system decorations (title bar, border, etc) for a <see cref="Window"/>
+    /// Determines window decorations (title bar, border, etc) for a <see cref="Window"/>
     /// </summary>
-    public enum SystemDecorations
+    public enum WindowDecorations
     {
         /// <summary>
         /// No decorations
@@ -86,7 +89,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IFocusScope, ILayoutRoot
+    public class Window : WindowBase, IFocusScope
     {
         private static readonly Lazy<WindowIcon?> s_defaultIcon = new(LoadDefaultIcon);
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
@@ -94,6 +97,8 @@ namespace Avalonia.Controls
         private Thickness _windowDecorationMargin;
         private Thickness _offScreenMargin;
         private bool _canHandleResized = false;
+        private Size _arrangeBounds;
+        private bool _isForcedDecorationMode;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -106,9 +111,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> ExtendClientAreaToDecorationsHintProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(ExtendClientAreaToDecorationsHint), false);
-
-        public static readonly StyledProperty<ExtendClientAreaChromeHints> ExtendClientAreaChromeHintsProperty =
-            AvaloniaProperty.Register<Window, ExtendClientAreaChromeHints>(nameof(ExtendClientAreaChromeHints), ExtendClientAreaChromeHints.Default);
 
         public static readonly StyledProperty<double> ExtendClientAreaTitleBarHeightHintProperty =
             AvaloniaProperty.Register<Window, double>(nameof(ExtendClientAreaTitleBarHeightHint), -1);
@@ -133,10 +135,16 @@ namespace Avalonia.Controls
                 o => o.OffScreenMargin);
 
         /// <summary>
-        /// Defines the <see cref="SystemDecorations"/> property.
+        /// Defines the <see cref="WindowDecorations"/> property.
         /// </summary>
-        public static readonly StyledProperty<SystemDecorations> SystemDecorationsProperty =
-            AvaloniaProperty.Register<Window, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
+        public static readonly StyledProperty<WindowDecorations> WindowDecorationsProperty =
+            AvaloniaProperty.Register<Window, WindowDecorations>(nameof(WindowDecorations), WindowDecorations.Full);
+
+        /// <summary>
+        /// Defines the <see cref="WindowDecorationsTheme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> WindowDecorationsThemeProperty =
+            AvaloniaProperty.Register<Window, ControlTheme?>(nameof(WindowDecorationsTheme));
 
         /// <summary>
         /// Defines the <see cref="ShowActivated"/> property.
@@ -157,10 +165,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, WindowClosingBehavior>(nameof(ClosingBehavior));
 
         /// <summary>
-        /// Represents the current window state (normal, minimized, maximized)
+        /// Represents the currently effective window state (normal, minimized, maximized)
         /// </summary>
-        public static readonly StyledProperty<WindowState> WindowStateProperty =
-            AvaloniaProperty.Register<Window, WindowState>(nameof(WindowState));
+        public static readonly DirectProperty<Window, WindowState> WindowStateProperty =
+            AvaloniaProperty.RegisterDirect<Window, WindowState>(
+                nameof(WindowState), o => o.WindowState,
+                (o, v) => o.WindowState = v);
 
         /// <summary>
         /// Defines the <see cref="Title"/> property.
@@ -180,8 +190,23 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<WindowStartupLocation> WindowStartupLocationProperty =
             AvaloniaProperty.Register<Window, WindowStartupLocation>(nameof(WindowStartupLocation));
 
+        /// <summary>
+        /// Defines the <see cref="CanResize"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
+
+        /// <summary>
+        /// Defines the <see cref="CanMinimize"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanMinimizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(CanMinimize), true);
+
+        /// <summary>
+        /// Defines the <see cref="CanMaximize"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanMaximizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(CanMaximize), true, coerce: CoerceCanMaximize);
 
         /// <summary>
         /// Routed event that can be used for global tracking of window destruction
@@ -198,7 +223,10 @@ namespace Avalonia.Controls
         private readonly Size _maxPlatformClientSize;
         private bool _shown;
         private bool _showingAsDialog;
+        private bool _positionWasSet;
         private bool _wasShownBefore;
+        private IDisposable? _modalSubscription;
+        private PlatformAllowedWindowActions _allowedWindowActions = PlatformAllowedWindowActions.All;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -206,6 +234,7 @@ namespace Avalonia.Controls
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
+            ExtendClientAreaTitleBarHeightHintProperty.Changed.AddClassHandler<Window>((w, _) => w.OnTitleBarHeightHintChanged());
         }
 
         /// <summary>
@@ -226,18 +255,25 @@ namespace Avalonia.Controls
             impl.Closing = HandleClosing;
             impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
+            impl.DrawnDecorationsRequestChanged = UpdateDrawnDecorations;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
+            impl.AllowedWindowActionsChanged = OnAllowedWindowActionsChanged;
+            _allowedWindowActions = impl.AllowedWindowActions;
+            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x =>
+            {
+                ResizePlatformImpl(x, WindowResizeReason.Application);
+            });
+            ScalingChanged += OnScalingChangedUpdateDecorations;
 
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
-            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
+            CreatePlatformImplBinding(IconProperty, SetEffectiveIcon);
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
+            CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
+            CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
-
-            CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
+            
             CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
-            CreatePlatformImplBinding(ExtendClientAreaChromeHintsProperty, hint => PlatformImpl!.SetExtendClientAreaChromeHints(hint));
             CreatePlatformImplBinding(ExtendClientAreaTitleBarHeightHintProperty, height => PlatformImpl!.SetExtendClientAreaTitleBarHeightHint(height));
 
             CreatePlatformImplBinding(MinWidthProperty, UpdateMinMaxSize);
@@ -298,16 +334,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or Sets the <see cref="Avalonia.Platform.ExtendClientAreaChromeHints"/> that control
-        /// how the chrome looks when the client area is extended.
-        /// </summary>
-        public ExtendClientAreaChromeHints ExtendClientAreaChromeHints
-        {
-            get => GetValue(ExtendClientAreaChromeHintsProperty);
-            set => SetValue(ExtendClientAreaChromeHintsProperty, value);
-        }
-
-        /// <summary>
         /// Gets or Sets the TitlebarHeightHint for when the client area is extended.
         /// A value of -1 will cause the titlebar to be auto sized to the OS default.
         /// Any other positive value will cause the titlebar to assume that height.
@@ -349,12 +375,28 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Sets the system decorations (title bar, border, etc)
+        /// Gets or sets the window decorations (title bar, border, etc).
         /// </summary>
-        public SystemDecorations SystemDecorations
+        public WindowDecorations WindowDecorations
         {
-            get => GetValue(SystemDecorationsProperty);
-            set => SetValue(SystemDecorationsProperty, value);
+            get => GetValue(WindowDecorationsProperty);
+            set => SetValue(WindowDecorationsProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the theme used to render the window decorations when they are not drawn by the system.
+        /// </summary>
+        public ControlTheme? WindowDecorationsTheme
+        {
+            get => GetValue(WindowDecorationsThemeProperty);
+            set => SetValue(WindowDecorationsThemeProperty, value);
+        }
+
+        [Obsolete("Use WindowDecorations instead.")]
+        public WindowDecorations SystemDecorations
+        {
+            get => WindowDecorations;
+            set => WindowDecorations = value;
         }
 
         /// <summary>
@@ -386,13 +428,45 @@ namespace Avalonia.Controls
             set => SetValue(ClosingBehaviorProperty, value);
         }
 
+        private WindowState _lastWindowState;
         /// <summary>
-        /// Gets or sets the minimized/maximized state of the window.
+        /// Represents the currently effective window state (normal, minimized, maximized)
         /// </summary>
         public WindowState WindowState
         {
-            get => GetValue(WindowStateProperty);
-            set => SetValue(WindowStateProperty, value);
+            get => PlatformImpl?.WindowStateGetterIsUsable == true ?
+                PlatformImpl.WindowState :
+                _lastWindowState;
+            set
+            {
+                if (PlatformImpl != null)
+                {
+                    if (PlatformImpl.WindowStateGetterIsUsable)
+                    {
+                        // Attempt to set the window state to desired value, if it succeeds the platform will
+                        // trigger WindowStateChanged callback which will trigger SetAndRaise for the WindowState property
+                        PlatformImpl.WindowState = value;
+                        
+                        // If the request was refused - trigger a synthetic property change notification
+                        // for data bindings and user state to fix itself.
+                        if (PlatformImpl.WindowState != value)
+                        {
+                            // Since it's a force notify, we aren't checking for the old value and sometimes
+                            // trigger notification with oldValue = newValue.
+                            var oldValue = _lastWindowState;
+                            _lastWindowState = PlatformImpl.WindowState;
+                            RaisePropertyChanged(WindowStateProperty, oldValue, _lastWindowState);
+                        }
+                    }
+                    else 
+                    {
+                        // Legacy behavior - update the property and hope for the best that the platform
+                        // will update it back to match the actual window state
+                        SetAndRaise(WindowStateProperty, ref _lastWindowState, value);
+                        PlatformImpl.WindowState = _lastWindowState;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -403,6 +477,37 @@ namespace Avalonia.Controls
             get => GetValue(CanResizeProperty);
             set => SetValue(CanResizeProperty, value);
         }
+
+        /// <summary>
+        /// Enables or disables minimizing the window.
+        /// </summary>
+        /// <remarks>
+        /// This property might be ignored by some window managers on Linux.
+        /// </remarks>
+        public bool CanMinimize
+        {
+            get => GetValue(CanMinimizeProperty);
+            set => SetValue(CanMinimizeProperty, value);
+        }
+
+        /// <summary>
+        /// Enables or disables maximizing the window.
+        /// </summary>
+        /// <remarks>
+        /// <para>When <see cref="CanResize"/> is false, this property is always false.</para>
+        /// <para>On macOS, setting this property to false also disables the full screen mode.</para>
+        /// <para>This property might be ignored by some window managers on Linux.</para>
+        /// </remarks>
+        public bool CanMaximize
+        {
+            get => GetValue(CanMaximizeProperty);
+            set => SetValue(CanMaximizeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the window actions currently allowed by the underlying platform.
+        /// </summary>
+        internal PlatformAllowedWindowActions AllowedWindowActions => _allowedWindowActions;
 
         /// <summary>
         /// Gets or sets the icon of the window.
@@ -428,8 +533,17 @@ namespace Avalonia.Controls
         public PixelPoint Position
         {
             get => PlatformImpl?.Position ?? PixelPoint.Origin;
-            set => PlatformImpl?.Move(value);
+            set
+            {
+                PlatformImpl?.Move(value);
+                _positionWasSet = true;
+            }
         }
+
+        /// <summary>
+        /// Gets whether this window was opened as a dialog
+        /// </summary>
+        public bool IsDialog => _showingAsDialog;
 
         /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
@@ -455,7 +569,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void Close()
         {
-            CloseCore(WindowCloseReason.WindowClosing, true);
+            CloseCore(WindowCloseReason.WindowClosing, true, false);
         }
 
         /// <summary>
@@ -471,10 +585,10 @@ namespace Avalonia.Controls
         public void Close(object? dialogResult)
         {
             _dialogResult = dialogResult;
-            CloseCore(WindowCloseReason.WindowClosing, true);
+            CloseCore(WindowCloseReason.WindowClosing, true, false);
         }
 
-        internal void CloseCore(WindowCloseReason reason, bool isProgrammatic)
+        internal void CloseCore(WindowCloseReason reason, bool isProgrammatic, bool ignoreCancel)
         {
             bool close = true;
 
@@ -487,7 +601,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                if (close)
+                if (close || ignoreCancel)
                 {
                     CloseInternal();
                 }
@@ -565,7 +679,10 @@ namespace Avalonia.Controls
 
         private void HandleWindowStateChanged(WindowState state)
         {
-            WindowState = state;
+            // Check if platform impl doesn't lie about get_WindowState being usable
+            Debug.Assert(PlatformImpl is not { WindowStateGetterIsUsable: true } || PlatformImpl.WindowState == state);
+            
+            SetAndRaise(WindowStateProperty, ref _lastWindowState, state);
 
             if (state == WindowState.Minimized)
             {
@@ -575,13 +692,173 @@ namespace Avalonia.Controls
             {
                 StartRendering();
             }
+
+            // Update decoration parts and fullscreen popover state for the new window state
+            UpdateDrawnDecorationParts();
         }
 
-        protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
+        internal event Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged;
+
+        private void OnAllowedWindowActionsChanged(PlatformAllowedWindowActions actions)
+        {
+            _allowedWindowActions = actions;
+            AllowedWindowActionsChanged?.Invoke(actions);
+        }
+
+        private void ExtendClientAreaToDecorationsChanged(bool isExtended)
         {
             IsExtendedIntoWindowDecorations = isExtended;
-            WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
             OffScreenMargin = PlatformImpl?.OffScreenMargin ?? default;
+
+            UpdateDrawnDecorations();
+        }
+        
+        private void UpdateDrawnDecorations()
+        {
+            var parts = ComputeDecorationParts();
+            
+            // Detect forced mode: platform needs managed decorations but app hasn't opted in
+            _isForcedDecorationMode = parts != null && !IsExtendedIntoWindowDecorations;
+
+            TopLevelHost.UpdateDrawnDecorations(parts, WindowState, WindowDecorationsTheme);
+
+            if (parts != null)
+            {
+                // Forward ExtendClientAreaTitleBarHeightHint to decoration TitleBarHeight
+                var decorations = TopLevelHost.Decorations;
+                if (decorations != null)
+                {
+                    decorations.RenderScaling = RenderScaling;
+
+                    var hint = ExtendClientAreaTitleBarHeightHint;
+                    if (hint >= 0)
+                        decorations.TitleBarHeightOverride = hint;
+                }
+            }
+            
+            UpdateDrawnDecorationMargins();
+        }
+
+        private void OnScalingChangedUpdateDecorations(object? sender, EventArgs e)
+        {
+            var decorations = TopLevelHost.Decorations;
+            if (decorations != null)
+                decorations.RenderScaling = RenderScaling;
+        }
+
+        /// <summary>
+        /// Updates decoration parts based on current window state without
+        /// re-creating the decorations instance.
+        /// </summary>
+        private void UpdateDrawnDecorationParts()
+        {
+            if (TopLevelHost.Decorations == null)
+                return;
+
+            TopLevelHost.UpdateDrawnDecorations(ComputeDecorationParts(), WindowState, WindowDecorationsTheme);
+        }
+
+        private Chrome.DrawnWindowDecorationParts? ComputeDecorationParts()
+        {
+            if (!(PlatformImpl?.NeedsManagedDecorations ?? false))
+                return null;
+
+            var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequestedDrawnDecoration.None;
+            var parts = Chrome.DrawnWindowDecorationParts.None;
+            if (WindowDecorations != WindowDecorations.None)
+            {
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.TitleBar) &&
+                    WindowDecorations == WindowDecorations.Full)
+                    parts |= Chrome.DrawnWindowDecorationParts.TitleBar;
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Shadow))
+                    parts |= Chrome.DrawnWindowDecorationParts.Shadow;
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Border))
+                    parts |= Chrome.DrawnWindowDecorationParts.Border;
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.ResizeGrips) && CanResize)
+                    parts |= Chrome.DrawnWindowDecorationParts.ResizeGrips;
+
+
+                // In fullscreen: no shadow, border, resize grips, or titlebar (popover takes over)
+                if (WindowState == WindowState.FullScreen)
+                {
+                    parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
+                               | Chrome.DrawnWindowDecorationParts.Border
+                               | Chrome.DrawnWindowDecorationParts.ResizeGrips
+                               | Chrome.DrawnWindowDecorationParts.TitleBar);
+                }
+                // In maximized: no shadow, border, or resize grips (titlebar stays)
+                else if (WindowState == WindowState.Maximized)
+                {
+                    parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
+                               | Chrome.DrawnWindowDecorationParts.Border
+                               | Chrome.DrawnWindowDecorationParts.ResizeGrips);
+                }
+            }
+
+            return parts;
+        }
+
+        private void UpdateDrawnDecorationMargins()
+        {
+            var decorations = TopLevelHost.Decorations;
+            if (decorations == null)
+            {
+                // Only use platform margins if drawn decorations are not active
+                WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
+                TopLevelHost.DecorationInset = default;
+                PlatformImpl?.SetShadowExtents(default);
+                return;
+            }
+
+            var parts = decorations.EnabledParts;
+            var titleBarHeight = parts.HasFlag(Chrome.DrawnWindowDecorationParts.TitleBar)
+                ? decorations.TitleBarHeight : 0;
+            var frame = parts.HasFlag(Chrome.DrawnWindowDecorationParts.Border)
+                ? decorations.FrameThickness : default;
+            var shadow = parts.HasFlag(Chrome.DrawnWindowDecorationParts.Shadow)
+                ? decorations.ShadowThickness : default;
+            
+            PlatformImpl?.SetShadowExtents(shadow);
+            
+            var margin = new Thickness(
+                frame.Left + shadow.Left,
+                titleBarHeight + frame.Top + shadow.Top,
+                frame.Right + shadow.Right,
+                frame.Bottom + shadow.Bottom);
+
+            if (_isForcedDecorationMode)
+            {
+                // In forced mode, app is unaware of decorations.
+                // TopLevelHost insets the Window child; WindowDecorationMargin stays zero.
+                WindowDecorationMargin = default;
+                TopLevelHost.DecorationInset = margin;
+            }
+            else
+            {
+                // In extended mode, app handles the margin itself.
+                WindowDecorationMargin = margin;
+                TopLevelHost.DecorationInset = default;
+            }
+        }
+
+        private void OnTitleBarHeightHintChanged()
+        {
+            var decorations = TopLevelHost.Decorations;
+            if (decorations == null)
+                return;
+
+            decorations.TitleBarHeightOverride = ExtendClientAreaTitleBarHeightHint;
+
+            UpdateDrawnDecorationMargins();
+        }
+
+        /// <summary>
+        /// Called by TopLevelHost when decoration effective geometry changes
+        /// (e.g. theme changes Default* values, or EnabledParts changes).
+        /// </summary>
+        internal void OnDrawnDecorationsGeometryChanged()
+        {
+            UpdateDrawnDecorationMargins();
         }
 
         /// <summary>
@@ -606,11 +883,12 @@ namespace Avalonia.Controls
                     }
                 }
 
+                Owner = null;
                 PlatformImpl?.Hide();
                 IsVisible = false;
-                _shown = false;
 
-                Owner = null;
+                _modalSubscription?.Dispose();
+                _shown = false;
             }
         }
 
@@ -622,7 +900,13 @@ namespace Avalonia.Controls
         /// </exception>
         public override void Show()
         {
-            ShowCore(null);
+            ShowCore<object>(null, false);
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+            EnableVisualLayerManagerLayers();
         }
 
         protected override void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
@@ -639,14 +923,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        if (_showingAsDialog)
-                        {
-                            Close(false);
-                        }
-                        else
-                        {
-                            Hide();
-                        }
+                        Hide();
                     }
                 }
             }
@@ -666,7 +943,7 @@ namespace Avalonia.Controls
                 throw new ArgumentNullException(nameof(owner), "Showing a child window requires valid parent.");
             }
 
-            ShowCore(owner);
+            ShowCore<object>(owner, false);
         }
 
         private void EnsureStateBeforeShow()
@@ -695,12 +972,16 @@ namespace Avalonia.Controls
             }
         }
 
-        private void ShowCore(Window? owner)
+        private Task<TResult>? ShowCore<TResult>(Window? owner, bool modal)
         {
             using (FreezeVisibilityChangeHandling())
             {
                 EnsureStateBeforeShow();
 
+                if (modal && owner == null)
+                {
+                    throw new ArgumentNullException(nameof(owner));
+                }
                 if (owner != null)
                 {
                     EnsureParentStateBeforeShow(owner);
@@ -708,44 +989,155 @@ namespace Avalonia.Controls
 
                 if (_shown)
                 {
-                    return;
+                    if (modal)
+                        throw new InvalidOperationException("The window is already being shown.");
+                    return null;
                 }
 
+                _showingAsDialog = modal;
                 RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
                 EnsureInitialized();
                 ApplyStyling();
+                
+                // Enable drawn decorations before layout so margins are computed
+                UpdateDrawnDecorations();
+                
+                // In forced mode, adjust ClientSize to reflect usable content area
+                if (_isForcedDecorationMode)
+                {
+                    var inset = TopLevelHost.DecorationInset;
+                    ClientSize = new Size(
+                        Math.Max(0, ClientSize.Width - inset.Left - inset.Right),
+                        Math.Max(0, ClientSize.Height - inset.Top - inset.Bottom));
+                }
+                
                 _shown = true;
                 IsVisible = true;
 
-                // We need to set position first because it is required for getting correct display scale. If position is not manual then it can be
-                // determined only by calling this method. But here it will calculate not precise location because scaling may not yet be applied (see i.e. X11Window),
-                // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
-                SetWindowStartupLocation(owner);
+                SetEffectiveIcon(Icon);
 
-                _canHandleResized = true; 
-                
+                // If window position was not set before then platform may provide incorrect scaling at this time,
+                // but we need it for proper calculation of position and in some cases size (size to content)
+                SetExpectedScaling(owner);
+
                 var initialSize = new Size(
-                    double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
-                    double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
+                    double.IsNaN(Width) ? ClientSize.Width : Width,
+                    double.IsNaN(Height) ? ClientSize.Height : Height);
 
-                if (initialSize != ClientSize)
+                var minMax = new MinMax(this);
+
+                initialSize = new Size(
+                    MathUtilities.Clamp(initialSize.Width, minMax.MinWidth, minMax.MaxWidth),
+                    MathUtilities.Clamp(initialSize.Height, minMax.MinHeight, minMax.MaxHeight));
+
+                var clientSizeChanged = initialSize != ClientSize;
+                ClientSize = initialSize; // ClientSize is required for Measure and Arrange
+
+                // this will call ArrangeSetBounds
+                LayoutManager.ExecuteInitialLayoutPass();
+
+                if (SizeToContent.HasFlag(SizeToContent.Width))
                 {
-                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
+                    initialSize = initialSize.WithWidth(MathUtilities.Clamp(_arrangeBounds.Width, minMax.MinWidth, minMax.MaxWidth));
+                    clientSizeChanged |= initialSize != ClientSize;
+                    ClientSize = initialSize;
                 }
 
-                LayoutManager.ExecuteInitialLayoutPass();
+                if (SizeToContent.HasFlag(SizeToContent.Height))
+                {
+                    initialSize = initialSize.WithHeight(MathUtilities.Clamp(_arrangeBounds.Height, minMax.MinHeight, minMax.MaxHeight));
+                    clientSizeChanged |= initialSize != ClientSize;
+                    ClientSize = initialSize;
+                }
 
                 Owner = owner;
 
-                // Second call will calculate correct position because both current and owner windows have correct scaling.
                 SetWindowStartupLocation(owner);
 
+                DesktopScalingOverride = null;
+
+                // In forced mode, compare against adjusted platform size
+                var platformClientSize = PlatformImpl?.ClientSize ?? default;
+                var comparableClientSize = _isForcedDecorationMode
+                    ? new Size(
+                        Math.Max(0, platformClientSize.Width - TopLevelHost.DecorationInset.Left - TopLevelHost.DecorationInset.Right),
+                        Math.Max(0, platformClientSize.Height - TopLevelHost.DecorationInset.Top - TopLevelHost.DecorationInset.Bottom))
+                    : platformClientSize;
+
+                if (clientSizeChanged || ClientSize != comparableClientSize)
+                {
+                    // Previously it was called before ExecuteInitialLayoutPass
+                    ResizePlatformImpl(ClientSize, WindowResizeReason.Layout);
+
+                    // we do not want PlatformImpl?.Resize to trigger HandleResized yet because it will set Width and Height.
+                    // So perform some important actions from HandleResized
+
+                    Renderer.Resized(ClientSize);
+                    OnResized(new WindowResizedEventArgs(ClientSize, WindowResizeReason.Layout));
+
+                    if (!double.IsNaN(Width))
+                        Width = ClientSize.Width;
+                    if (!double.IsNaN(Height))
+                        Height = ClientSize.Height;
+                }
+
+                FrameSize = PlatformImpl?.FrameSize;
+
+                _canHandleResized = true;
+
                 StartRendering();
-                PlatformImpl?.Show(ShowActivated, false);
+                PlatformImpl?.Show(ShowActivated, modal);
+
+                Task<TResult>? result = null;
+                if (modal)
+                {
+                    var tcs = new TaskCompletionSource<TResult>();
+
+                    var disposables = new CompositeDisposable(
+                    [
+                        Observable.FromEventPattern(
+                            x => Closed += x,
+                            x => Closed -= x)
+                        .Take(1)
+                        .Subscribe(_ =>
+                        {
+                            _modalSubscription?.Dispose();
+                        }),
+                        Disposable.Create(() =>
+                        {
+                            _modalSubscription = null;
+                            owner!.Activate();
+                            tcs.SetResult((TResult)(_dialogResult ?? default(TResult)!));
+                        })
+                    ]);
+
+                    _modalSubscription = disposables;
+                    result = tcs.Task;
+                }
+
                 OnOpened(EventArgs.Empty);
-                _wasShownBefore = true;
+                if (!modal)
+                    _wasShownBefore = true;
+
+                return result;
             }
+        }
+
+        private void ResizePlatformImpl(Size size, WindowResizeReason reason)
+        {
+            // In forced mode, add decoration inset so platform gets full frame size
+            if (_isForcedDecorationMode)
+            {
+                var inset = TopLevelHost.DecorationInset;
+                size = new Size(
+                    size.Width + inset.Left + inset.Right,
+                    size.Height + inset.Top + inset.Bottom);
+                if (PlatformImpl?.ClientSize != size)
+                    PlatformImpl?.Resize(size, reason);
+            }
+            else
+                PlatformImpl?.Resize(size, reason);
         }
 
         /// <summary>
@@ -773,96 +1165,30 @@ namespace Avalonia.Controls
         /// <returns>.
         /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
-        public Task<TResult> ShowDialog<TResult>(Window owner)
-        {
-            using (FreezeVisibilityChangeHandling())
-            {
-                EnsureStateBeforeShow();
-
-                if (owner == null)
-                {
-                    throw new ArgumentNullException(nameof(owner));
-                }
-
-                EnsureParentStateBeforeShow(owner);
-
-                if (_shown)
-                {
-                    throw new InvalidOperationException("The window is already being shown.");
-                }
-
-                RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
-
-                EnsureInitialized();
-                ApplyStyling();
-                _shown = true;
-                _showingAsDialog = true;
-                IsVisible = true;
-
-                // We need to set position first because it is required for getting correct display scale. If position is not manual then it can be
-                // determined only by calling this method. But here it will calculate not precise location because scaling may not yet be applied (see i.e. X11Window),
-                // thus we ought to call it again later to center window correctly if needed, when scaling will be already applied
-                SetWindowStartupLocation(owner);
-                
-                _canHandleResized = true; 
-
-                var initialSize = new Size(
-                    double.IsNaN(Width) ? ClientSize.Width : Width,
-                    double.IsNaN(Height) ? ClientSize.Height : Height);
-
-                if (initialSize != ClientSize)
-                {
-                    PlatformImpl?.Resize(initialSize, WindowResizeReason.Layout);
-                }
-
-                LayoutManager.ExecuteInitialLayoutPass();
-
-                var result = new TaskCompletionSource<TResult>();
-
-                Owner = owner;
-
-                // Second call will calculate correct position because both current and owner windows have correct scaling.
-                SetWindowStartupLocation(owner);
-
-                StartRendering();
-                PlatformImpl?.Show(ShowActivated, true);
-
-                Observable.FromEventPattern(
-                        x => Closed += x,
-                        x => Closed -= x)
-                    .Take(1)
-                    .Subscribe(_ =>
-                    {
-                        owner.Activate();
-                        result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
-                    });
-
-                OnOpened(EventArgs.Empty);
-                return result.Task;
-            }
-        }
+        public Task<TResult> ShowDialog<TResult>(Window owner) => ShowCore<TResult>(owner, true)!;
 
         /// <summary>
         /// Sorts the windows ascending by their Z order - the topmost window will be the last in the list.
         /// </summary>
-        /// <param name="windows"></param>
-        public static void SortWindowsByZOrder(Window[] windows)
+        /// <param name="windows">The windows to sort.</param>
+        public static void SortWindowsByZOrder(Span<Window> windows)
         {
-            if (windows.Length == 0)
+            if (windows.Length <= 1)
                 return;
 
-            if (windows[0].PlatformImpl is not { } platformImpl)
-                throw new InvalidOperationException("Window.PlatformImpl is null");
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
 
-#if NET5_0_OR_GREATER
-            Span<long> zOrder = stackalloc long[windows.Length];
-            platformImpl.GetWindowsZOrder(windows, zOrder);
-            zOrder.Sort(windows.AsSpan());
-#else
-            long[] zOrder = new long[windows.Length];
-            platformImpl.GetWindowsZOrder(windows, zOrder);
-            Array.Sort(zOrder, windows);
-#endif
+            var windowImpls = new IWindowImpl[windows.Length];
+            for (var i = 0; i < windows.Length; ++i)
+            {
+                windowImpls[i] = windows[i].PlatformImpl ??
+                                 throw new ArgumentException($"Invalid window at index {i}", nameof(windows));
+            }
+
+            const int stackAllocThreshold = 128;
+            var zOrder = windows.Length > stackAllocThreshold ? new long[windows.Length] : stackalloc long[windows.Length];
+            platform.GetWindowsZOrder(windowImpls, zOrder);
+            zOrder.Sort(windows);
         }
 
         private void UpdateEnabled()
@@ -925,31 +1251,67 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetWindowStartupLocation(Window? owner = null)
+        private void SetExpectedScaling(WindowBase? owner)
         {
-            if (_wasShownBefore == true)
+            if (_wasShownBefore)
             {
                 return;
             }
 
+            var location = GetEffectiveWindowStartupLocation(owner);
+
+            switch (location)
+            {
+                case WindowStartupLocation.CenterOwner:
+                    DesktopScalingOverride = owner?.DesktopScaling;
+                    break;
+                case WindowStartupLocation.CenterScreen:
+                    DesktopScalingOverride = owner?.DesktopScaling ?? Screens.ScreenFromPoint(Position)?.Scaling ?? Screens.Primary?.Scaling;
+                    break;
+                case WindowStartupLocation.Manual:
+                    DesktopScalingOverride = Screens.ScreenFromPoint(Position)?.Scaling;
+                    break;
+            }
+        }
+
+        private WindowStartupLocation GetEffectiveWindowStartupLocation(WindowBase? owner)
+        {
             var startupLocation = WindowStartupLocation;
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
                 (owner is null ||
-                 (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
-                )
+                 (owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
+               )
             {
                 // If startup location is CenterOwner, but owner is null or minimized then fall back
                 // to CenterScreen. This behavior is consistent with WPF.
                 startupLocation = WindowStartupLocation.CenterScreen;
             }
 
-            var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
+            return startupLocation;
+        }
 
+        private void SetWindowStartupLocation(Window? owner = null)
+        {
+            if (_wasShownBefore)
+            {
+                return;
+            }
+
+            var startupLocation = GetEffectiveWindowStartupLocation(owner);
+
+            PixelRect rect;
             // Use frame size, falling back to client size if the platform can't give it to us.
-            var rect = FrameSize.HasValue ?
-                new PixelRect(PixelSize.FromSize(FrameSize.Value, scaling)) :
-                new PixelRect(PixelSize.FromSize(ClientSize, scaling));
+            if (PlatformImpl?.FrameSize.HasValue == true)
+            {
+                // Platform may calculate FrameSize with incorrect scaling, so do not trust the value.
+                var diff = PlatformImpl.FrameSize.Value - PlatformImpl.ClientSize;
+                rect = new PixelRect(PixelSize.FromSize(ClientSize + diff, DesktopScaling));
+            }
+            else
+            {
+                rect = new PixelRect(PixelSize.FromSize(ClientSize, DesktopScaling));
+            }
 
             if (startupLocation == WindowStartupLocation.CenterScreen)
             {
@@ -962,10 +1324,16 @@ namespace Avalonia.Controls
                 }
 
                 screen ??= Screens.ScreenFromPoint(Position);
+                screen ??= Screens.Primary;
 
                 if (screen is not null)
                 {
-                    Position = screen.WorkingArea.CenterRect(rect).Position;
+                    var childRect = screen.WorkingArea.CenterRect(rect);
+
+                    if (Screens.ScreenFromPoint(childRect.Position) == null)
+                        childRect = ApplyScreenConstraint(screen, childRect);
+
+                    Position = childRect.Position;
                 }
             }
             else if (startupLocation == WindowStartupLocation.CenterOwner)
@@ -973,10 +1341,22 @@ namespace Avalonia.Controls
                 var ownerSize = owner!.FrameSize ?? owner.ClientSize;
                 var ownerRect = new PixelRect(
                     owner.Position,
-                    PixelSize.FromSize(ownerSize, scaling));
+                    PixelSize.FromSize(ownerSize, owner.DesktopScaling));
                 var childRect = ownerRect.CenterRect(rect);
 
-                if (Screens.ScreenFromWindow(owner)?.WorkingArea is { } constraint)
+                var screen = Screens.ScreenFromWindow(owner);
+
+                childRect = ApplyScreenConstraint(screen, childRect);
+
+                Position = childRect.Position;
+            }
+
+            if (!_positionWasSet && DesktopScaling != PlatformImpl?.DesktopScaling) // Platform returns incorrect scaling, forcing setting position may fix it
+                PlatformImpl?.Move(Position);
+
+            PixelRect ApplyScreenConstraint(Screen? screen, PixelRect childRect)
+            {
+                if (screen?.WorkingArea is { } constraint)
                 {
                     var maxX = constraint.Right - rect.Width;
                     var maxY = constraint.Bottom - rect.Height;
@@ -987,7 +1367,7 @@ namespace Avalonia.Controls
                         childRect = childRect.WithY(MathUtilities.Clamp(childRect.Y, constraint.Y, maxY));
                 }
 
-                Position = childRect.Position;
+                return childRect;
             }
         }
 
@@ -995,8 +1375,21 @@ namespace Avalonia.Controls
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
-            var constraint = clientSize;
+            if (_isForcedDecorationMode)
+            {
+                clientSize = PlatformImpl?.ClientSize ?? clientSize;
+                var inset = TopLevelHost.DecorationInset;
+                clientSize = new Size(
+                    Math.Max(0, clientSize.Width - inset.Left - inset.Right),
+                    Math.Max(0, clientSize.Height - inset.Top - inset.Bottom));
+            }
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
+            var useAutoWidth = sizeToContent.HasAllFlags(SizeToContent.Width);
+            var useAutoHeight = sizeToContent.HasAllFlags(SizeToContent.Height);
+
+            var constraint = new Size(
+                useAutoWidth || double.IsInfinity(availableSize.Width) ? clientSize.Width : availableSize.Width,
+                useAutoHeight || double.IsInfinity(availableSize.Height) ? clientSize.Height : availableSize.Height);
 
             if (MaxWidth > 0 && MaxWidth < maxAutoSize.Width)
             {
@@ -1007,19 +1400,19 @@ namespace Avalonia.Controls
                 maxAutoSize = maxAutoSize.WithHeight(MaxHeight);
             }
 
-            if (sizeToContent.HasAllFlags(SizeToContent.Width))
+            if (useAutoWidth)
             {
                 constraint = constraint.WithWidth(maxAutoSize.Width);
             }
 
-            if (sizeToContent.HasAllFlags(SizeToContent.Height))
+            if (useAutoHeight)
             {
                 constraint = constraint.WithHeight(maxAutoSize.Height);
             }
 
             var result = base.MeasureOverride(constraint);
 
-            if (!sizeToContent.HasAllFlags(SizeToContent.Width))
+            if (!useAutoWidth)
             {
                 if (!double.IsInfinity(availableSize.Width))
                 {
@@ -1031,7 +1424,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (!sizeToContent.HasAllFlags(SizeToContent.Height))
+            if (!useAutoHeight)
             {
                 if (!double.IsInfinity(availableSize.Height))
                 {
@@ -1046,17 +1439,23 @@ namespace Avalonia.Controls
             return result;
         }
 
-        protected sealed override Size ArrangeSetBounds(Size size)
+        private protected sealed override Size ArrangeSetBounds(Size size)
         {
-            PlatformImpl?.Resize(size, WindowResizeReason.Layout);
+            _arrangeBounds = size;
+            if (_canHandleResized)
+            {
+                ResizePlatformImpl(size, WindowResizeReason.Layout);
+            }
             return ClientSize;
         }
 
         private protected sealed override void HandleClosed()
         {
-            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
+            _shown = false;
 
             base.HandleClosed();
+
+            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
             Owner = null;
         }
@@ -1064,6 +1463,16 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
+            // In forced decoration mode, the platform's clientSize includes decoration area.
+            // Subtract the decoration inset so Window.ClientSize reflects the usable content area.
+            if (_isForcedDecorationMode)
+            {
+                var inset = TopLevelHost.DecorationInset;
+                clientSize = new Size(
+                    Math.Max(0, clientSize.Width - inset.Left - inset.Right),
+                    Math.Max(0, clientSize.Height - inset.Top - inset.Bottom));
+            }
+
             if (_canHandleResized && (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height)))
             {
                 var sizeToContent = SizeToContent;
@@ -1104,14 +1513,21 @@ namespace Avalonia.Controls
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
-            if (change.Property == SystemDecorationsProperty)
-            {
-                var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 
-                PlatformImpl?.SetSystemDecorations(typedNewValue);
+            if (change.Property == WindowDecorationsProperty)
+            {
+                var (_, typedNewValue) = change.GetOldAndNewValue<WindowDecorations>();
+
+                PlatformImpl?.SetWindowDecorations(typedNewValue);
+                UpdateDrawnDecorations();
             }
 
-            if (change.Property == OwnerProperty)
+            else if (change.Property == WindowDecorationsThemeProperty)
+            {
+                UpdateDrawnDecorations();
+            }
+
+            else if (change.Property == OwnerProperty)
             {
                 var oldParent = change.OldValue as Window;
                 var newParent = change.NewValue as Window;
@@ -1124,6 +1540,11 @@ namespace Avalonia.Controls
                     impl.SetParent(_showingAsDialog ? newParent?.PlatformImpl! : (newParent?.PlatformImpl ?? null));
                 }
             }
+
+            else if (change.Property == CanResizeProperty)
+            {
+                CoerceValue(CanMaximizeProperty);
+            }
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
@@ -1133,7 +1554,7 @@ namespace Avalonia.Controls
 
         private static WindowIcon? LoadDefaultIcon()
         {
-            // Use AvaloniaLocator instead of static AssetLoader, so it won't fail on Unit Tests without any asset loader. 
+            // Use AvaloniaLocator instead of static AssetLoader, so it won't fail on Unit Tests without any asset loader.
             if (AvaloniaLocator.Current.GetService<IAssetLoader>() is { } assetLoader
                 && Assembly.GetEntryAssembly()?.GetName()?.Name is { } assemblyName
                 && Uri.TryCreate($"avares://{assemblyName}/!__AvaloniaDefaultWindowIcon", UriKind.Absolute, out var path)
@@ -1144,5 +1565,14 @@ namespace Avalonia.Controls
             }
             return null;
         }
+
+        private void SetEffectiveIcon(WindowIcon? icon)
+        {
+            icon ??= _shown ? s_defaultIcon.Value : null;
+            PlatformImpl?.SetIcon(icon?.PlatformImpl);
+        }
+
+        private static bool CoerceCanMaximize(AvaloniaObject target, bool value)
+            => value && target is not Window { CanResize: false };
     }
 }

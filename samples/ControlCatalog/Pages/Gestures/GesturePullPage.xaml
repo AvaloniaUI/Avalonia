@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.GesturePullPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="How It Works" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Attach a PullGestureRecognizer to any control. Press and drag in the specified pull direction to fire PullGesture events with a delta vector." />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="When the pointer is released, PullGestureEnded fires so the control can spring back." />
+
+        <Separator />
+
+        <TextBlock Text="API" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="PullDirection" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="TopToBottom, BottomToTop, LeftToRight, or RightToLeft." />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12">
+      <DockPanel HorizontalAlignment="Stretch"
+                 ClipToBounds="True"
+                 Height="200">
+        <Border DockPanel.Dock="Top"
+                Margin="2"
+                Name="TopPullZone"
+                Background="Transparent"
+                BorderBrush="Red"
+                HorizontalAlignment="Stretch"
+                Height="50"
+                BorderThickness="1">
+          <Border.GestureRecognizers>
+            <PullGestureRecognizer PullDirection="TopToBottom"/>
+          </Border.GestureRecognizers>
+          <Border Width="10"
+                  Height="10"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  CornerRadius="5"
+                  Name="TopBall"
+                  Background="Green"/>
+        </Border>
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="Green"
+                Margin="2"
+                Background="Transparent"
+                Name="BottomPullZone"
+                HorizontalAlignment="Stretch"
+                Height="50"
+                BorderThickness="1">
+          <Border.GestureRecognizers>
+            <PullGestureRecognizer PullDirection="BottomToTop"/>
+          </Border.GestureRecognizers>
+          <Border Width="10"
+                  Name="BottomBall"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Height="10"
+                  CornerRadius="5"
+                  Background="Green"/>
+        </Border>
+        <Border DockPanel.Dock="Right"
+                Margin="2"
+                Background="Transparent"
+                Name="RightPullZone"
+                BorderBrush="Blue"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Stretch"
+                Width="50"
+                BorderThickness="1">
+          <Border.GestureRecognizers>
+            <PullGestureRecognizer PullDirection="RightToLeft"/>
+          </Border.GestureRecognizers>
+          <Border Width="10"
+                  Height="10"
+                  Name="RightBall"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  CornerRadius="5"
+                  Background="Green"/>
+        </Border>
+        <Border DockPanel.Dock="Left"
+                Margin="2"
+                Background="Transparent"
+                Name="LeftPullZone"
+                BorderBrush="Orange"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Stretch"
+                Width="50"
+                BorderThickness="1">
+          <Border.GestureRecognizers>
+            <PullGestureRecognizer PullDirection="LeftToRight"/>
+          </Border.GestureRecognizers>
+          <Border Width="10"
+                  Height="10"
+                  Name="LeftBall"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  CornerRadius="5"
+                  Background="Green"/>
+        </Border>
+      </DockPanel>
+    </Border>
+  </DockPanel>
+</UserControl>

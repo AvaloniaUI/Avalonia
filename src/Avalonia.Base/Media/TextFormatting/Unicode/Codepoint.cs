@@ -54,9 +54,63 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public LineBreakClass LineBreakClass => UnicodeData.GetLineBreakClass(_value);
 
         /// <summary>
+        /// Gets the <see cref="Unicode.WordBreakClass"/>.
+        /// </summary>
+        public WordBreakClass WordBreakClass => UnicodeData.GetWordBreakClass(_value);
+
+        /// <summary>
         /// Gets the <see cref="GraphemeBreakClass"/>.
         /// </summary>
         public GraphemeBreakClass GraphemeBreakClass => UnicodeData.GetGraphemeClusterBreak(_value);
+
+        /// <summary>
+        /// Gets the <see cref="EastAsianWidthClass"/>.
+        /// </summary>
+        public EastAsianWidthClass EastAsianWidthClass => UnicodeData.GetEastAsianWidthClass(_value);
+
+        /// <summary>
+        /// Determines whether the codepoint's Unicode Script_Extensions property contains
+        /// <paramref name="script"/>.
+        /// </summary>
+        /// <param name="script">The script to test.</param>
+        /// <returns>
+        /// <c>true</c> when the codepoint participates in <paramref name="script"/> per UAX #24
+        /// (Script_Extensions); <c>false</c> otherwise.
+        /// </returns>
+        /// <remarks>
+        /// Backed by the UCD <c>ScriptExtensions.txt</c> data baked into <see cref="UnicodeData"/>.
+        /// Codepoints without an explicit Script_Extensions entry fall back to the singleton set
+        /// of their primary <see cref="Script"/> property.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool HasScriptExtension(Script script)
+            => UnicodeData.HasScriptExtension(_value, script);
+
+        /// <summary>
+        /// Determines whether this <see cref="Codepoint"/> is an east asian char.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if [is an east asian character]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsEastAsian
+        {
+            get
+            {
+                var eastAsianWidth = EastAsianWidthClass;
+
+                switch (eastAsianWidth)
+                {
+                    case EastAsianWidthClass.Fullwidth:
+                    case EastAsianWidthClass.Halfwidth:
+                    case EastAsianWidthClass.Wide:
+                        {
+                            return true;
+                        }
+                }
+
+                return false;
+            }
+        }
 
         /// <summary>
         /// Determines whether this <see cref="Codepoint"/> is a break char.
@@ -97,10 +151,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
             {
                 const ulong whiteSpaceMask =
                     (1UL << (int)GeneralCategory.Control) |
-                    (1UL << (int)GeneralCategory.NonspacingMark) |
                     (1UL << (int)GeneralCategory.Format) |
-                    (1UL << (int)GeneralCategory.SpaceSeparator) |
-                    (1UL << (int)GeneralCategory.SpacingMark);
+                    (1UL << (int)GeneralCategory.SpaceSeparator);
 
                 return ((1UL << (int)GeneralCategory) & whiteSpaceMask) != 0UL;
             }

@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Logging;
 using Avalonia.MicroCom;
 using Avalonia.OpenGL.Egl;
@@ -15,8 +17,29 @@ namespace Avalonia.Win32.WinRT.Composition;
 internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFactory
 {
     private readonly WinUiCompositionShared _shared;
-    public event Action<TimeSpan>? Tick;
+    private readonly AutoResetEvent _wakeEvent = new(false);
+    private volatile bool _stopped = true;
+    private volatile Action<TimeSpan>? _tick;
     public bool RunsInBackground => true;
+
+    public Action<TimeSpan>? Tick
+    {
+        get => _tick;
+        set
+        {
+            if (value != null)
+            {
+                _tick = value;
+                _stopped = false;
+                _wakeEvent.Set();
+            }
+            else
+            {
+                _stopped = true;
+                _tick = null;
+            }
+        }
+    }
     
     public WinUiCompositorConnection()
     {
@@ -56,7 +79,7 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
                 });
                 connect = new WinUiCompositorConnection();
                 AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connect);
-                AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
+                AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(connect));
                 tcs.SetResult(true);
 
             }
@@ -100,8 +123,16 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
         {
             _currentCommit?.Dispose();
             _currentCommit = null;
-            _parent.Tick?.Invoke(_st.Elapsed);
+            _parent._tick?.Invoke(_st.Elapsed);
+            // Always schedule a commit so the current frame's work reaches DWM.
             ScheduleNextCommit();
+            if (_parent._stopped)
+            {
+                _parent._wakeEvent.WaitOne();
+                // Reset the expected commit callback time since we've paused
+                // the render loop due to app being idle
+                _commitDueAt = _st.Elapsed + TimeSpan.FromSeconds(1);
+            }
         }
 
         private void ScheduleNextCommit()
@@ -161,11 +192,19 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
             return UnmanagedMethods.DefWindowProc(hwnd, msg, w, l);
         });
         UnmanagedMethods.SetTimer(dw.Handle, IntPtr.Zero, 1000, null);
-        while (!cts.IsCancellationRequested)
+
+        var result = 0;
+        while (!cts.IsCancellationRequested
+               && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
         {
-            UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
             lock (_shared.SyncRoot)
                 UnmanagedMethods.DispatchMessage(ref msg);
+        }
+
+        if (result < 0)
+        {
+            Logger.TryGet(LogEventLevel.Error, "WinUIComposition")
+                ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(RunLoop), Marshal.GetLastWin32Error());
         }
     }
 
@@ -202,5 +241,5 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
     }
 
     public bool RequiresNoRedirectionBitmap => true;
-    public object CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new WinUiCompositedWindowSurface(_shared, info);
+    public IPlatformRenderSurface CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new WinUiCompositedWindowSurface(_shared, info);
 }

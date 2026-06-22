@@ -9,6 +9,17 @@ namespace Avalonia.Base.UnitTests.Utilities;
 public class InlineDictionaryTests
 {
     [Fact]
+    public void Set_Twice_With_Single_Item_Works()
+    {
+        var dic = new InlineDictionary<string, int>();
+        dic["foo"] = 1;
+        Assert.Equal(1, dic["foo"]);
+
+        dic["foo"] = 2;
+        Assert.Equal(2, dic["foo"]);
+    }
+
+    [Fact]
     public void Enumeration_After_Add_With_Internal_Array_Works()
     {
         var dic = new InlineDictionary<string, int>();

@@ -7,10 +7,11 @@ using Xunit;
 using System.Reactive.Disposables;
 using Avalonia.Markup.Data;
 using Avalonia.Controls.Primitives;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_Self
+    public class BindingTests_Self : ScopedTestBase
     {
         [Fact]
         public void Binding_To_Property_On_Self_Should_Work()
@@ -33,8 +34,9 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new TextBlock
             {
                 Tag = "Hello World!",
-                [!TextBlock.TextProperty] = new Binding("Tag", BindingMode.TwoWay)
+                [!TextBlock.TextProperty] = new Binding("Tag")
                 {
+                    Mode = BindingMode.TwoWay,
                     RelativeSource = new RelativeSource(RelativeSourceMode.Self)
                 },
             };

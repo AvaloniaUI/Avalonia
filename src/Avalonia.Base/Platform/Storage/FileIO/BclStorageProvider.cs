@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.Compatibility;
 using Avalonia.Logging;
 
 namespace Avalonia.Platform.Storage.FileIO;
@@ -15,6 +14,7 @@ internal abstract class BclStorageProvider : IStorageProvider
 
     public abstract bool CanSave { get; }
     public abstract Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options);
+    public abstract Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options);
 
     public abstract bool CanPickFolder { get; }
     public abstract Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options);
@@ -106,13 +106,13 @@ internal abstract class BclStorageProvider : IStorageProvider
     // Normally we want to avoid platform specific code in the Avalonia.Base assembly.
     protected static string? GetDownloadsWellKnownFolder()
     {
-        if (OperatingSystemEx.IsWindows())
+        if (OperatingSystem.IsWindows())
         {
             return Environment.OSVersion.Version.Major < 6 ? null :
                 TryGetWindowsKnownFolder(s_folderDownloads);
         }
 
-        if (OperatingSystemEx.IsLinux())
+        if (OperatingSystem.IsLinux())
         {
             var envDir = Environment.GetEnvironmentVariable("XDG_DOWNLOAD_DIR");
             if (envDir != null && Directory.Exists(envDir))
@@ -121,7 +121,7 @@ internal abstract class BclStorageProvider : IStorageProvider
             }
         }
 
-        if (OperatingSystemEx.IsLinux() || OperatingSystemEx.IsMacOS())
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
             return "~/Downloads";
         }
@@ -150,29 +150,24 @@ internal abstract class BclStorageProvider : IStorageProvider
 
     private static unsafe string? TryGetWindowsKnownFolder(Guid guid)
     {
-        nint path = IntPtr.Zero;
+        char* path = null;
         string? result = null;
 
-        try
+        var hr = SHGetKnownFolderPath(&guid, 0, null, &path);
+        if (hr == 0)
         {
-            var hr = SHGetKnownFolderPath(guid, 0, 0, &path);
-            if (hr == 0)
-            {
-                result = Marshal.PtrToStringUni(path);
-            }
+            result = Marshal.PtrToStringUni((IntPtr)path);
         }
-        finally
+
+        if (path != null)
         {
-            if (path != IntPtr.Zero)
-            {
-                Marshal.FreeCoTaskMem(path);
-            }
+            Marshal.FreeCoTaskMem((IntPtr)path);
         }
 
         return result;
     }
 
     private static readonly Guid s_folderDownloads = new Guid("374DE290-123F-4565-9164-39C4925E467B");
-    [DllImport("shell32.dll")]
-    private static unsafe extern int SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid id, int flags, nint token, nint* ppszPath);
+    [DllImport("shell32.dll", ExactSpelling = true)]
+    private static unsafe extern int SHGetKnownFolderPath(Guid* rfid, uint dwFlags, void* hToken, char** ppszPath);
 }

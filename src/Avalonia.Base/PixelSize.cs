@@ -92,7 +92,7 @@ namespace Avalonia
             {
                 return false;
             }
-            using (var tokenizer = new StringTokenizer(source, exceptionMessage: "Invalid PixelSize."))
+            using (var tokenizer = new SpanStringTokenizer(source, exceptionMessage: "Invalid PixelSize."))
             {
                 if (tokenizer.TryReadInt32(out var w) && tokenizer.TryReadInt32(out var h))
                 {
@@ -202,6 +202,27 @@ namespace Avalonia
         internal static PixelSize FromSizeRounded(Size size, double scale) => new PixelSize(
             (int)Math.Round(size.Width * scale),
             (int)Math.Round(size.Height * scale));
+
+        private const double FromSizeCeilingEpsilon = 1e-6;
+
+        /// <summary>
+        /// Converts logical size back to PixelSize and rounds it up with a small epsilon to avoid having
+        /// extra pixels when doing platform pixel size -> logical size -> pixel size conversions
+        /// </summary>
+        /// <param name="size">The logical size.</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The pixel size that contains the logical size at the given scale.</returns>
+        internal static PixelSize FromSizeCeiling(Size size, double scale) => new PixelSize(
+            CeilWithEpsilon(size.Width * scale),
+            CeilWithEpsilon(size.Height * scale));
+
+        private static int CeilWithEpsilon(double value)
+        {
+            var rounded = Math.Round(value);
+            if (Math.Abs(value - rounded) < FromSizeCeilingEpsilon)
+                return (int)rounded;
+            return (int)Math.Ceiling(value);
+        }
 
 
         /// <summary>

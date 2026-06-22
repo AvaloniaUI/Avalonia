@@ -91,9 +91,7 @@ namespace Avalonia.Skia
             base.Clear();
 
             // Clear out the cache of SKPoint arrays.
-            while (_radiiCache.TryTake(out var item))
-            {
-            }
+            _radiiCache.Clear();
         }
     }
 }

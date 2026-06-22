@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -8,7 +7,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Embedding;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.LinuxFramebuffer;
@@ -20,8 +18,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
-
-#nullable enable
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -66,9 +62,9 @@ namespace Avalonia.LinuxFramebuffer
                 ? new UiThreadRenderTimer(opts.Fps)
                 : new DefaultRenderTimer(opts.Fps);
             
+            Dispatcher.InitializeUIThreadDispatcher(new EpollDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)))
-                .Bind<IRenderTimer>().ToConstant(timer)
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(timer))
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()
@@ -146,7 +142,10 @@ namespace Avalonia.LinuxFramebuffer
         {
             get
             {
-                EnsureTopLevel();
+                if (_topLevel == null)
+                {
+                    EnsureTopLevel();
+                }
                 return _topLevel;
             }
         }

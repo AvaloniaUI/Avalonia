@@ -238,6 +238,12 @@ namespace Avalonia
         /// <typeparam name="TValue">The type of the property's value.</typeparam>
         /// <param name="name">The name of the property.</param>
         /// <param name="defaultValue">The default value of the property.</param>
+        /// <remarks>
+        /// <b>⚠️ Be cautious:</b> if <c>defaultValue</c> is a reference type (like a list), this same instance
+        /// will be shared across all controls using this property.<br/>
+        /// Use value types (like <c>int</c>, <c>bool</c>) or immutable objects only.<br/>
+        /// For collections or mutable types, use a factory pattern instead.
+        /// </remarks>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A value validation callback.</param>
@@ -280,6 +286,12 @@ namespace Avalonia
         /// <typeparam name="TValue">The type of the property's value.</typeparam>
         /// <param name="name">The name of the property.</param>
         /// <param name="defaultValue">The default value of the property.</param>
+        /// <remarks>
+        /// <b>⚠️ Be cautious:</b> if <c>defaultValue</c> is a reference type (like a list), this same instance
+        /// will be shared across all controls using this property.<br/>
+        /// Use value types (like <c>int</c>, <c>bool</c>) or immutable objects only.<br/>
+        /// For collections or mutable types, use a factory pattern instead.
+        /// </remarks>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A value validation callback.</param>
@@ -329,6 +341,12 @@ namespace Avalonia
         /// <typeparam name="TValue">The type of the property's value.</typeparam>
         /// <param name="name">The name of the property.</param>
         /// <param name="defaultValue">The default value of the property.</param>
+        /// <remarks>
+        /// <b>⚠️ Be cautious:</b> if <c>defaultValue</c> is a reference type (like a list), this same instance
+        /// will be shared across all controls using this property.<br/>
+        /// Use value types (like <c>int</c>, <c>bool</c>) or immutable objects only.<br/>
+        /// For collections or mutable types, use a factory pattern instead.
+        /// </remarks>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A value validation callback.</param>
@@ -365,6 +383,12 @@ namespace Avalonia
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that is registering the property.</param>
         /// <param name="defaultValue">The default value of the property.</param>
+        /// <remarks>
+        /// <b>⚠️ Be cautious:</b> if <c>defaultValue</c> is a reference type (like a list), this same instance
+        /// will be shared across all controls using this property.<br/>
+        /// Use value types (like <c>int</c>, <c>bool</c>) or immutable objects only.<br/>
+        /// For collections or mutable types, use a factory pattern instead.
+        /// </remarks>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A value validation callback.</param>
@@ -402,7 +426,11 @@ namespace Avalonia
         /// <param name="name">The name of the property.</param>
         /// <param name="getter">Gets the current value of the property.</param>
         /// <param name="setter">Sets the value of the property.</param>
-        /// <param name="unsetValue">The value to use when the property is cleared.</param>
+        /// <param name="unsetValue">
+        /// The value to use when the property is cleared.
+        /// ⚠️ Be careful with reference types: if you pass a mutable object (like a list),
+        /// it will be shared across all instances using this property. Use value types or immutable objects.
+        /// </param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="enableDataValidation">
         /// Whether the property is interested in data validation.

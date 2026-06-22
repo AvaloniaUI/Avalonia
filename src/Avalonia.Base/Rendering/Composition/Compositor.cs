@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -36,28 +37,11 @@ namespace Avalonia.Rendering.Composition
         private readonly object _pendingBatchLock = new();
         private readonly List<Action> _pendingServerCompositorJobs = new();
         private readonly List<Action> _pendingServerCompositorPostTargetJobs = new();
-        private DiagnosticTextRenderer? _diagnosticTextRenderer;
         private readonly Action _triggerCommitRequested;
 
         internal IEasing DefaultEasing { get; }
 
         internal Dispatcher Dispatcher { get; }
-
-        private DiagnosticTextRenderer? DiagnosticTextRenderer
-        {
-            get
-            {
-                if (_diagnosticTextRenderer == null)
-                {
-                    // We are running in some unit test context
-                    if (AvaloniaLocator.Current.GetService<IFontManagerImpl>() == null)
-                        return null;
-                    _diagnosticTextRenderer = new(Typeface.Default.GlyphTypeface, 12.0);
-                }
-
-                return _diagnosticTextRenderer;
-            }
-        }
 
         internal event Action? AfterCommit;
 
@@ -67,7 +51,7 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         [PrivateApi]
         public Compositor(IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
-            : this(RenderLoop.LocatorAutoInstance, gpu, useUiThreadForSynchronousCommits)
+            : this(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gpu, useUiThreadForSynchronousCommits)
         {
         }
 
@@ -114,7 +98,7 @@ namespace Avalonia.Rendering.Composition
                 if (pending != null)
                     pending.Processed.ContinueWith(
                         _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send),
-                        TaskContinuationOptions.ExecuteSynchronously);
+                        CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 else
                     _triggerCommitRequested();
             }
@@ -202,14 +186,36 @@ namespace Avalonia.Rendering.Composition
                 {
                     lock (_pendingBatchLock)
                     {
-                        if (_pendingBatch.Processed == t)
+                        if (_pendingBatch?.Processed == t)
                             _pendingBatch = null;
                     }
-                }, TaskContinuationOptions.ExecuteSynchronously);
+                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 _nextCommit = null;
                 
                 return commit;
             }
+        }
+        
+        /// <summary>
+        /// This method submits a composition with a single dispose command outside the normal
+        /// commit cycle. This is currently used for disposing CompositionTargets since we need to do that ASAP
+        /// and without affecting the not yet completed composition batch
+        /// </summary>
+        internal CompositionBatch OobDispose(CompositionObject obj)
+        {
+            using var _ = NonPumpingLockHelper.Use();
+            obj.Dispose();
+            var batch = new CompositionBatch();
+            using (var writer = new BatchStreamWriter(batch.Changes, _batchMemoryPool, _batchObjectPool))
+            {
+                writer.WriteObject(ServerCompositor.RenderThreadDisposeStartMarker);
+                writer.Write(1);
+                writer.WriteObject(obj.Server);
+            }
+
+            batch.CommittedAt = Server.Clock.Elapsed;
+            _server.EnqueueBatch(batch);
+            return batch;
         }
 
         internal void RegisterForSerialization(ICompositorSerializable compositionObject)
@@ -294,7 +300,7 @@ namespace Avalonia.Rendering.Composition
                 throw new InvalidOperationException();
             if (visual.Root == null)
                 throw new InvalidOperationException();
-            var impl = await InvokeServerJobAsync(() => _server.CreateCompositionVisualSnapshot(visual.Server, scaling), true);
+            var impl = await InvokeServerJobAsync(() => _server.CreateCompositionVisualSnapshot(visual.Server, scaling, true), true);
             return new Bitmap(RefCountable.Create(impl));
         }
         

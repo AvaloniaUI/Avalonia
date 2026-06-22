@@ -266,7 +266,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             foreach (var v in selected)
             {
-                listBox.SelectedItems.Add(v);
+                listBox.SelectedItems!.Add(v);
             }
 
             listBox.BeginInit();
@@ -289,7 +289,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             foreach (var v in new[] { "bar", "baz" })
             {
-                listBox.SelectedItems.Add(v);
+                listBox.SelectedItems!.Add(v);
             }
 
             listBox.BeginInit();
@@ -441,7 +441,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedIndex_Out_Of_Bounds_Should_Clear_Selection()
+        public void Setting_SelectedIndex_Out_Of_Bounds_With_ItemsSource_Should_Clear_Selection()
         {
             var items = new[]
             {
@@ -462,11 +462,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedItem_To_Non_Existent_Item_Should_Clear_Selection()
+        public void Setting_SelectedIndex_Out_Of_Bounds_Without_ItemsSource_Should_Keep_Selection_Until_ItemsSource_Is_Set()
         {
             var target = new SelectingItemsControl
             {
-                Template = Template(),
+                Template = Template()
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 2;
+
+            Assert.Equal(2, target.SelectedIndex);
+
+            target.ItemsSource = Array.Empty<Item>();
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Without_ItemsSource_Should_Keep_Selection_If_Index_Exists_When_ItemsSource_IsSet()
+        {
+            var target = new SelectingItemsControl
+            {
+                Template = Template()
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 2;
+
+            Assert.Equal(2, target.SelectedIndex);
+
+            var items = new Item[] { new(), new(), new(), new() };
+            target.ItemsSource = items;
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Same(items[2], target.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_To_Non_Existent_Item_With_ItemsSource_Should_Clear_Selection()
+        {
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = Array.Empty<Item>(),
+                Template = Template()
             };
 
             target.ApplyTemplate();
@@ -474,6 +513,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(-1, target.SelectedIndex);
             Assert.Null(target.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_To_Non_Existent_Item_Without_ItemsSource_Should_Keep_Selection_Until_ItemsSource_Is_Set()
+        {
+            var item = new Item();
+
+            var target = new SelectingItemsControl
+            {
+                Template = Template()
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = item;
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Same(item, target.SelectedItem);
+
+            target.ItemsSource = Array.Empty<Item>();
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_Without_ItemsSource_Should_Keep_Selection_If_Item_Exists_When_ItemsSource_IsSet()
+        {
+            var item = new Item();
+
+            var target = new SelectingItemsControl
+            {
+                Template = Template()
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = item;
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Same(item, target.SelectedItem);
+
+            target.ItemsSource = new[] { new(), new(), item, new() };
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Same(item, target.SelectedItem);
         }
 
         [Fact]
@@ -546,7 +629,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(items[1], target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
 
-            SelectionChangedEventArgs receivedArgs = null;
+            SelectionChangedEventArgs? receivedArgs = null;
 
             target.SelectionChanged += (_, args) => receivedArgs = args;
 
@@ -586,7 +669,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(items[1], target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
 
-            SelectionChangedEventArgs receivedArgs = null;
+            SelectionChangedEventArgs? receivedArgs = null;
 
             target.SelectionChanged += (_, args) => receivedArgs = args;
 
@@ -621,7 +704,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(items[0], target.SelectedItem);
             Assert.Equal(0, target.SelectedIndex);
 
-            SelectionChangedEventArgs receivedArgs = null;
+            SelectionChangedEventArgs? receivedArgs = null;
 
             target.SelectionChanged += (_, args) => receivedArgs = args;
 
@@ -658,7 +741,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(items[1], target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
 
-            SelectionChangedEventArgs receivedArgs = null;
+            SelectionChangedEventArgs? receivedArgs = null;
 
             target.SelectionChanged += (_, args) => receivedArgs = args;
 
@@ -690,7 +773,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(items[1], target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
 
-            SelectionChangedEventArgs receivedArgs = null;
+            SelectionChangedEventArgs? receivedArgs = null;
 
             target.SelectionChanged += (_, args) => receivedArgs = args;
 
@@ -771,6 +854,101 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Resetting_Items_Collection_Should_Raise_SelectionChanged()
+        {
+            var items = new ObservableCollection<Item>
+            {
+                new Item(),
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = items,
+                Template = Template(),
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 1;
+
+            var selectedItem = items[1];
+
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
+
+            items.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Single(receivedArgs);
+            Assert.Empty(receivedArgs[0].AddedItems);
+            Assert.Equal(new[] { selectedItem }, receivedArgs[0].RemovedItems);
+        }
+
+        [Fact]
+        public void Resetting_Items_To_Empty_With_Multiple_Selection_Should_Raise_SelectionChanged()
+        {
+            var items = new ObservableCollection<Item>
+            {
+                new Item(),
+                new Item(),
+                new Item(),
+            };
+
+            var target = new TestSelector
+            {
+                ItemsSource = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 0;
+            target.Selection.Select(2);
+
+            var selected0 = items[0];
+            var selected2 = items[2];
+
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
+
+            items.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Single(receivedArgs);
+            Assert.Empty(receivedArgs[0].AddedItems);
+            Assert.Equal(2, receivedArgs[0].RemovedItems.Count);
+            Assert.Contains(selected0, receivedArgs[0].RemovedItems.Cast<object>());
+            Assert.Contains(selected2, receivedArgs[0].RemovedItems.Cast<object>());
+        }
+
+        [Fact]
+        public void Resetting_Items_With_Preserved_Selection_Should_Not_Report_Deselection()
+        {
+            var items = new ResettingCollection(3);
+
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
+
+            items.Reset(new[] { "Item2", "Item0", "Item1" });
+
+            Assert.Equal("Item1", target.SelectedItem);
+            Assert.Single(receivedArgs);
+            Assert.Empty(receivedArgs[0].RemovedItems);
         }
 
         [Fact]
@@ -1212,9 +1390,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             root.ApplyTemplate();
-            root.Presenter.ApplyTemplate();
+            root.Presenter!.ApplyTemplate();
             nested.ApplyTemplate();
-            nested.Presenter.ApplyTemplate();
+            nested.Presenter!.ApplyTemplate();
 
             Assert.Equal(0, root.SelectedIndex);
             Assert.Equal(1, nested.SelectedIndex);
@@ -1259,7 +1437,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var container = target.ContainerFromIndex(1)!;
                 _helper.Down(container);
 
-                var panel = target.Presenter.Panel;
+                var panel = target.Presenter!.Panel;
 
                 Assert.Same(container, KeyboardNavigation.GetTabOnceActiveElement(target));
             }
@@ -1280,11 +1458,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
 
-                _helper.Down(target.Presenter.Panel.Children[1]);
+                var panel = target.Presenter!.Panel!;
+                _helper.Down(panel.Children[1]);
 
                 items.RemoveAt(1);
-
-                var panel = target.Presenter.Panel;
 
                 Assert.Null(KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel));
             }
@@ -1376,7 +1553,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
-                _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
+                _helper.Down((Interactive)target.Presenter!.Panel!.Children[3]);
 
                 Assert.Equal(3, target.SelectedIndex);
             }
@@ -1394,7 +1571,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 };
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
-                _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
+                _helper.Down((Interactive)target.Presenter!.Panel!.Children[3]);
 
                 Assert.Equal(new[] { ":pressed", ":selected" }, target.Presenter.Panel.Children[3].Classes);
             }
@@ -1509,7 +1686,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Prepare(target);
             other.ApplyTemplate();
-            other.Presenter.ApplyTemplate();
+            other.Presenter!.ApplyTemplate();
 
             items.Add("Foo");
 
@@ -1567,7 +1744,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Prepare(target);
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.True(raised);
         }
 
@@ -1594,7 +1771,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
             Prepare(target);
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.True(raised);
         }
 
@@ -1623,8 +1800,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 root.Measure(new Size(100, 100));
                 root.Arrange(new Rect(0, 0, 100, 100));
 
-                Assert.True(target.Presenter.Panel.Children.Count > 0);
-                Assert.True(target.Presenter.Panel.Children.Count < 100);
+                var panel = target.Presenter!.Panel!;
+                Assert.True(panel.Children.Count > 0);
+                Assert.True(panel.Children.Count < 100);
 
                 target.SelectedItem = "Item99";
 
@@ -1633,7 +1811,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Layout(target);
 
                 Assert.Equal(0, target.SelectedIndex);
-                Assert.Equal(1, target.Presenter.Panel.Children.Where(x => x.IsVisible).Count());
+                Assert.Equal(1, panel.Children.Count(x => x.IsVisible));
             }
         }
 
@@ -1660,14 +1838,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Prepare(target);
 
-            var root = (TestRoot)target.Parent;
+            var root = (TestRoot)target.Parent!;
 
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
 
             root.Child = null;
             target.SelectedIndex = 1;
             root.Child = target;
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.True(raised);
         }
 
@@ -1694,7 +1872,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Prepare(target);
 
-            var root = (TestRoot)target.Parent;
+            var root = (TestRoot)target.Parent!;
 
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
 
@@ -1728,11 +1906,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var raised = false;
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.False(raised);
 
             target.AutoScrollToSelectedItem = true;
-            Threading.Dispatcher.UIThread.RunJobs();
+            Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.True(raised);
         }
 
@@ -1761,27 +1939,29 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact(Timeout = 2000)]
-        public async Task MoveSelection_Wrap_Does_Not_Hang_With_No_Focusable_Controls()
-        {
-            // Issue #3094.
-            var target = new TestSelector
-            {
-                Template = Template(),
-                Items =
-                {
-                    new ListBoxItem { Focusable = false },
-                    new ListBoxItem { Focusable = false },
-                },
-                SelectedIndex = 0,
-            };
-
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
-
+        public Task MoveSelection_Wrap_Does_Not_Hang_With_No_Focusable_Controls() =>
             // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
             // https://github.com/xunit/xunit/issues/2222
-            await Task.Run(() => target.MoveSelection(NavigationDirection.Next, true));
-        }
+            ThreadRunHelper.RunOnDedicatedThread(() =>
+            {
+                using var _ = UnitTestApplication.Start();
+                // Issue #3094.
+                var target = new TestSelector
+                {
+                    Template = Template(),
+                    Items =
+                    {
+                        new ListBoxItem { Focusable = false },
+                        new ListBoxItem { Focusable = false },
+                    },
+                    SelectedIndex = 0,
+                };
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+                
+                target.MoveSelection(NavigationDirection.Next, true);
+            });
 
         [Fact]
         public void MoveSelection_Skips_Non_Focusable_Controls_When_Moving_To_Last_Item()
@@ -1824,50 +2004,54 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact(Timeout = 2000)]
-        public async Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_First_Item()
-        {
-            var target = new TestSelector
-            {
-                Template = Template(),
-                Items =
-                {
-                    new ListBoxItem { Focusable = false },
-                    new ListBoxItem { Focusable = false },
-                }
-            };
-
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
-
+        public Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_First_Item() =>
             // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
             // https://github.com/xunit/xunit/issues/2222
-            await Task.Run(() => target.MoveSelection(NavigationDirection.First, true));
+            ThreadRunHelper.RunOnDedicatedThread(
+                () =>
+                {
+                    using var _ = UnitTestApplication.Start();
+                    var target = new TestSelector
+                    {
+                        Template = Template(),
+                        Items =
+                        {
+                            new ListBoxItem { Focusable = false },
+                            new ListBoxItem { Focusable = false },
+                        }
+                    };
 
-            Assert.Equal(-1, target.SelectedIndex);
-        }
+                    target.Measure(new Size(100, 100));
+                    target.Arrange(new Rect(0, 0, 100, 100));
+                    
+                    target.MoveSelection(NavigationDirection.First, true);
+
+                    Assert.Equal(-1, target.SelectedIndex);
+                });
 
         [Fact(Timeout = 2000)]
-        public async Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_Last_Item()
-        {
-            var target = new TestSelector
-            {
-                Template = Template(),
-                Items =
-                {
-                    new ListBoxItem { Focusable = false },
-                    new ListBoxItem { Focusable = false },
-                }
-            };
-
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
-
+        public Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_Last_Item()
             // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
             // https://github.com/xunit/xunit/issues/2222
-            await Task.Run(() => target.MoveSelection(NavigationDirection.Last, true));
+            => ThreadRunHelper.RunOnDedicatedThread(() =>
+            {
+                var target = new TestSelector
+                {
+                    Template = Template(),
+                    Items =
+                    {
+                        new ListBoxItem { Focusable = false },
+                        new ListBoxItem { Focusable = false },
+                    }
+                };
 
-            Assert.Equal(-1, target.SelectedIndex);
-        }
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+                
+                target.MoveSelection(NavigationDirection.Last, true);
+
+                Assert.Equal(-1, target.SelectedIndex);
+            });
 
         [Fact]
         public void MoveSelection_Does_Select_Disabled_Controls()
@@ -2164,9 +2348,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_IsTextSearchEnabled_Enables_Or_Disables_Text_Search()
         {
-            var pti = Mock.Of<IDispatcherImpl>(x => x.CurrentThreadIsLoopThread == true);
-            
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(dispatcherImpl: pti)))
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With()))
             {
                 var items = new[]
                 {
@@ -2468,7 +2650,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private static void Layout(Control c)
         {
-            ((ILayoutRoot)c.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
+            c.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private static FuncControlTemplate Template()
@@ -2486,7 +2668,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class Item : Control, ISelectable
         {
-            public string Value { get; set; }
+            public string? Value { get; set; }
 
             public bool IsSelected 
             {
@@ -2497,9 +2679,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class MasterViewModel : NotifyingBase
         {
-            private ChildViewModel _child;
+            private ChildViewModel? _child;
 
-            public ChildViewModel Child
+            public ChildViewModel? Child
             {
                 get { return _child; }
                 set
@@ -2512,15 +2694,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class ChildViewModel : NotifyingBase
         {
-            public IList<Item> Items { get; set; }
-            public Item SelectedItem { get; set; }
+            public IList<Item> Items { get; set; } = [];
+            public Item? SelectedItem { get; set; }
             public int SelectedIndex { get; set; }
         }
 
         private class SelectionViewModel : NotifyingBase
         {
             private int _selectedIndex = -1;
-            private object _selectedItem;
+            private object? _selectedItem;
 
             public SelectionViewModel()
             {
@@ -2538,7 +2720,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 }
             }
 
-            public object SelectedItem
+            public object? SelectedItem
             {
                 get => _selectedItem;
                 set
@@ -2560,7 +2742,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TestSelector : SelectingItemsControl
         {
-            public new static readonly DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
+            public new static readonly DirectProperty<SelectingItemsControl, IList?> SelectedItemsProperty =
                 SelectingItemsControl.SelectedItemsProperty;
 
             public TestSelector()
@@ -2579,7 +2761,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 set => base.Selection = value;
             }
 
-            public new IList SelectedItems
+            public new IList? SelectedItems
             {
                 get => base.SelectedItems;
                 set => base.SelectedItems = value;
@@ -2613,10 +2795,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
 
-            public event NotifyCollectionChangedEventHandler CollectionChanged;
+            public event NotifyCollectionChangedEventHandler? CollectionChanged;
         }
-
-#nullable enable
 
         private sealed class FullSelectionViewModel : NotifyingBase
         {

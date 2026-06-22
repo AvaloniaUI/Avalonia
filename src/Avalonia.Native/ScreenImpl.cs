@@ -4,8 +4,6 @@ using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using MicroCom.Runtime;
 
-#nullable enable
-
 namespace Avalonia.Native
 {
     internal sealed class AvnScreen(uint displayId)

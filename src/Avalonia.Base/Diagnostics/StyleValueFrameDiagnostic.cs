@@ -39,7 +39,4 @@ internal class StyleValueFrameDiagnostic : IValueFrameDiagnostic
             }
         }
     }
-
-    [Unstable("Compatibility with 11.x")]
-    public AppliedStyle AsAppliedStyle() => new AppliedStyle(_styleInstance);
 }

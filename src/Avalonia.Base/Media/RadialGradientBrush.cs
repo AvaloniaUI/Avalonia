@@ -27,15 +27,6 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<RadialGradientBrush, RelativePoint>(
                 nameof(GradientOrigin), 
                 RelativePoint.Center);
-
-        /// <summary>
-        /// Defines the <see cref="Radius"/> property.
-        /// </summary>
-        [Obsolete("Use RadiusX/RadiusY, note that those properties use _relative_ values, so Radius=0.55 would become RadiusX=55% RadiusY=55%. Radius property is always relative even if the rest of the brush uses absolute values.")]
-        public static readonly StyledProperty<double> RadiusProperty =
-            AvaloniaProperty.Register<RadialGradientBrush, double>(
-                nameof(Radius),
-                0.5);
         
         /// <summary>
         /// Defines the <see cref="RadiusX"/> property.
@@ -74,9 +65,6 @@ namespace Avalonia.Media
         /// Gets or sets the horizontal radius of the outermost circle of the radial
         /// gradient.
         /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
-        [DependsOn(nameof(Radius))]
-#pragma warning restore CS0618 // Type or member is obsolete
         public RelativeScalar RadiusX
         {
             get { return GetValue(RadiusXProperty); }
@@ -87,24 +75,10 @@ namespace Avalonia.Media
         /// Gets or sets the vertical radius of the outermost circle of the radial
         /// gradient.
         /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
-        [DependsOn(nameof(Radius))]
-#pragma warning restore CS0618 // Type or member is obsolete
         public RelativeScalar RadiusY
         {
             get { return GetValue(RadiusYProperty); }
             set { SetValue(RadiusYProperty, value); }
-        }
-        
-        /// <summary>
-        /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial
-        /// gradient.
-        /// </summary>
-        [Obsolete("Use RadiusX/RadiusY, note that those properties use _relative_ values, so Radius=0.55 would become RadiusX=55% RadiusY=55%. Radius property is always relative even if the rest of the brush uses absolute values.")]
-        public double Radius
-        {
-            get { return GetValue(RadiusProperty); }
-            set { SetValue(RadiusProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -120,20 +94,6 @@ namespace Avalonia.Media
         {
             base.SerializeChanges(c, writer);
             ServerCompositionSimpleRadialGradientBrush.SerializeAllChanges(writer, Center, GradientOrigin, RadiusX, RadiusY);
-        }
-
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete: compatibility code for Radius
-            if (change.IsEffectiveValueChange && change.Property == RadiusProperty)
-            {
-                var compatibilityValue = new RelativeScalar(Radius, RelativeUnit.Relative);
-                SetCurrentValue(RadiusXProperty, compatibilityValue);
-                SetCurrentValue(RadiusYProperty, compatibilityValue);
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            base.OnPropertyChanged(change);
         }
     }
 }

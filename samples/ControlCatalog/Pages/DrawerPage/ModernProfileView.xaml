@@ -1,0 +1,160 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ModernProfileView">
+
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel>
+
+      <!-- Profile section (white) -->
+      <Border Background="White" Padding="20,24,20,20">
+        <StackPanel HorizontalAlignment="Center" Spacing="8">
+
+          <!-- Avatar with badge -->
+          <Grid Width="96" Height="96" HorizontalAlignment="Center">
+            <!-- Inner clipped image -->
+            <Border Width="91" Height="91" CornerRadius="999" ClipToBounds="True"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/avatar.jpg"
+                     Stretch="UniformToFill"/>
+            </Border>
+            <!-- Cyan ring overlay -->
+            <Border Width="96" Height="96" CornerRadius="999"
+                    BorderBrush="#0dccf2" BorderThickness="2.5"
+                    Background="Transparent"/>
+            <!-- Camera badge -->
+            <Border Width="28" Height="28" CornerRadius="999"
+                    Background="#0dccf2"
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom">
+              <PathIcon Width="14" Height="14" Foreground="White"
+                        Data="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zm7-12H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm5-12.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+            </Border>
+          </Grid>
+
+          <TextBlock Text="Alex Johnson" FontSize="22" FontWeight="Bold"
+                     Foreground="#0d1f22"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="Traveler &amp; Photographer" FontSize="14"
+                     Foreground="#0dccf2" FontWeight="SemiBold"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="Exploring the world one lens at a time.&#xA;Based in Vancouver, wandering everywhere."
+                     FontSize="12" TextAlignment="Center"
+                     Foreground="#8a9ba3" TextWrapping="Wrap" MaxWidth="280"/>
+        </StackPanel>
+      </Border>
+
+      <!-- Stats section -->
+      <Border Background="#f5f8f8" Padding="16,12,16,0">
+        <StackPanel Spacing="10">
+          <!-- 2-column stats row -->
+          <Grid ColumnDefinitions="*, 10, *">
+            <!-- DESTINATIONS card -->
+            <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="16,14">
+              <StackPanel HorizontalAlignment="Center" Spacing="4">
+                <TextBlock Text="42" FontSize="22" FontWeight="Bold"
+                           Foreground="#0d1f22"
+                           HorizontalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Spacing="4"
+                            HorizontalAlignment="Center">
+                  <PathIcon Width="14" Height="14" Foreground="#0dccf2"
+                            Data="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  <TextBlock Text="DESTINATIONS" FontSize="11" FontWeight="SemiBold"
+                             Foreground="#8a9ba3" VerticalAlignment="Center"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+            <!-- PHOTOS card -->
+            <Border Grid.Column="2" Background="White" CornerRadius="12" Padding="16,14">
+              <StackPanel HorizontalAlignment="Center" Spacing="4">
+                <TextBlock Text="1.2k" FontSize="22" FontWeight="Bold"
+                           Foreground="#0d1f22"
+                           HorizontalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Spacing="4"
+                            HorizontalAlignment="Center">
+                  <PathIcon Width="14" Height="14" Foreground="#0dccf2"
+                            Data="M22 16V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zM11 12l2.03 2.71L16 11l4 5H8l3-4zM2 6v14a2 2 0 0 0 2 2h14v-2H4V6H2z"/>
+                  <TextBlock Text="PHOTOS" FontSize="11" FontWeight="SemiBold"
+                             Foreground="#8a9ba3" VerticalAlignment="Center"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </Grid>
+          <!-- Full-width REVIEWS card -->
+          <Border Background="White" CornerRadius="12" Padding="16,14">
+            <StackPanel HorizontalAlignment="Center" Spacing="4">
+              <TextBlock Text="85" FontSize="22" FontWeight="Bold"
+                         Foreground="#0d1f22"
+                         HorizontalAlignment="Center"/>
+              <StackPanel Orientation="Horizontal" Spacing="4"
+                          HorizontalAlignment="Center">
+                <PathIcon Width="14" Height="14" Foreground="#ffb300"
+                          Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                <TextBlock Text="REVIEWS" FontSize="11" FontWeight="SemiBold"
+                           Foreground="#8a9ba3" VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <!-- Gallery section -->
+      <Border Background="#f5f8f8" Padding="16,16,16,0">
+        <StackPanel Spacing="10">
+          <!-- Gallery header -->
+          <DockPanel>
+            <TextBlock Text="View All" FontSize="13" Foreground="#0dccf2"
+                       FontWeight="SemiBold" VerticalAlignment="Center"
+                       DockPanel.Dock="Right"/>
+            <TextBlock Text="Travel Gallery" FontSize="15" FontWeight="Bold"
+                       Foreground="#0d1f22" VerticalAlignment="Center"/>
+          </DockPanel>
+          <!-- 2-column 3-row gallery grid -->
+          <Grid ColumnDefinitions="*, 8, *"
+                RowDefinitions="120, 8, 120, 8, 120">
+            <Border Grid.Column="0" Grid.Row="0" CornerRadius="10" ClipToBounds="True" Background="#8a9ba3">
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/gallery_city.jpg"
+                     Stretch="UniformToFill"/>
+            </Border>
+            <Border Grid.Column="2" Grid.Row="0" CornerRadius="10" ClipToBounds="True" Background="#8a9ba3">
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/gallery_alpine.jpg"
+                     Stretch="UniformToFill"/>
+            </Border>
+            <Border Grid.Column="0" Grid.Row="2" CornerRadius="10" ClipToBounds="True" Background="#8a9ba3">
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/gallery_tropical.jpg"
+                     Stretch="UniformToFill"/>
+            </Border>
+            <Border Grid.Column="2" Grid.Row="2" CornerRadius="10" ClipToBounds="True" Background="#8a9ba3">
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/gallery_bay.jpg"
+                     Stretch="UniformToFill"/>
+            </Border>
+            <Border Grid.Column="0" Grid.Row="4" CornerRadius="10" ClipToBounds="True" Background="#8a9ba3">
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/gallery_paris.jpg"
+                     Stretch="UniformToFill"/>
+            </Border>
+            <Border Grid.Column="2" Grid.Row="4" CornerRadius="10" ClipToBounds="True" Background="#8a9ba3">
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/gallery_venice.jpg"
+                     Stretch="UniformToFill"/>
+            </Border>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <!-- Add New Experience button -->
+      <Border Background="#f5f8f8" Padding="16,12,16,24">
+        <Button Background="#0dccf2" CornerRadius="10"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Padding="0,14">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <PathIcon Width="18" Height="18" Foreground="White"
+                      Data="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+            <TextBlock Text="Add New Experience" Foreground="White"
+                       FontSize="15" FontWeight="SemiBold"
+                       VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

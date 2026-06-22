@@ -1,0 +1,36 @@
+<Project>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource
+      Include="$(MSBuildThisFileDirectory)/BuildTests/Assets/**"
+      Link="Assets/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml
+      Include="$(MSBuildThisFileDirectory)/BuildTests/*.axaml"
+      Link="%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <Compile
+      Include="$(MSBuildThisFileDirectory)/BuildTests/*.cs"
+      Link="%(Filename)%(Extension)"
+      DependentUpon="%(Filename)" />
+  </ItemGroup>
+
+  <Target
+    Name="ErrorOnUnsetAvaloniaVersion"
+    BeforeTargets="Restore"
+    Condition="'$(AvaloniaVersion)' == '' Or '$(AvaloniaVersion)' == '9999.9999.9999'">
+
+    <Error Text="Please set the AvaloniaVersion property on build (using -p:AvaloniaVersion=x.y.z)" />
+
+  </Target>
+
+</Project>

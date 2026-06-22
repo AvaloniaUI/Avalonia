@@ -23,6 +23,7 @@ class X11ShmLockedFramebuffer : ILockedFramebuffer
     public int RowBytes => X11ShmImage.Size.Width * X11ShmImage.ByteSizeOfPixel;
     public Vector Dpi => new Vector(96, 96);
     public PixelFormat Format => PixelFormat.Bgra8888;
+    public AlphaFormat AlphaFormat => AlphaFormat.Premul;
     public X11ShmImage X11ShmImage { get; }
 
     private unsafe void SendRender()

@@ -5,7 +5,6 @@ using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -18,7 +17,6 @@ namespace Avalonia.Controls
     [PseudoClasses(":error")]
     public class DataValidationErrors : ContentControl
     {
-        private static bool s_overridingErrors;
         
         /// <summary>
         /// Defines the DataValidationErrors.Errors attached property.
@@ -49,6 +47,12 @@ namespace Avalonia.Controls
         /// </summary>
         private static readonly AttachedProperty<IEnumerable<object>?> OriginalErrorsProperty =
             AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, IEnumerable<object>?>("OriginalErrors");
+        
+        /// <summary>
+        /// Prevents executing ErrorsChanged after they are updated internally from OnErrorsOrConverterChanged
+        /// </summary>
+        private static readonly AttachedProperty<bool> OverridingErrorsInternallyProperty =
+            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, bool>("OverridingErrorsInternally", defaultValue: false);
 
         private Control? _owner;
 
@@ -96,9 +100,10 @@ namespace Avalonia.Controls
 
         private static void ErrorsChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (s_overridingErrors) return;
-
             var control = (Control)e.Sender;
+            
+            if (control.GetValue(OverridingErrorsInternallyProperty)) return;
+            
             var errors = (IEnumerable<object>?)e.NewValue;
 
             // Update original errors
@@ -140,14 +145,14 @@ namespace Avalonia.Controls
                     .Where(e => e is not null))?
                 .ToArray();
 
-            s_overridingErrors = true;
+            control.SetCurrentValue(OverridingErrorsInternallyProperty, true);
             try
             {
                 control.SetCurrentValue(ErrorsProperty, newErrors!);
             }
             finally
             {
-                s_overridingErrors = false;
+                control.SetCurrentValue(OverridingErrorsInternallyProperty, false);
             }
 
             control.SetValue(HasErrorsProperty, newErrors?.Any() == true);

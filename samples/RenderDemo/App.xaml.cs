@@ -40,6 +40,9 @@ namespace RenderDemo
                    }
                })
                 .UsePlatformDetect()
+#if DEBUG
+               .WithDeveloperTools()
+#endif
                 .LogToTrace();
     }
 }

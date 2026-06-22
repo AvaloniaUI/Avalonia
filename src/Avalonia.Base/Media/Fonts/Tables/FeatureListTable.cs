@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
+using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Avalonia.Media.Fonts.Tables
 {
@@ -17,8 +17,8 @@ namespace Avalonia.Media.Fonts.Tables
     /// </summary>
     internal class FeatureListTable
     {
-        private static OpenTypeTag GSubTag = OpenTypeTag.Parse("GSUB");
-        private static OpenTypeTag GPosTag = OpenTypeTag.Parse("GPOS");
+        private static OpenTypeTag GSubTag { get; } = OpenTypeTag.Parse("GSUB");
+        private static OpenTypeTag GPosTag { get; } = OpenTypeTag.Parse("GPOS");
 
         private FeatureListTable(IReadOnlyList<OpenTypeTag> features)
         {
@@ -27,34 +27,31 @@ namespace Avalonia.Media.Fonts.Tables
 
         public IReadOnlyList<OpenTypeTag> Features { get; }
 
-        public static FeatureListTable? LoadGSub(IGlyphTypeface glyphTypeface)
+        public static FeatureListTable? LoadGSub(GlyphTypeface glyphTypeface)
         {
-            if (!glyphTypeface.TryGetTable(GSubTag, out var gPosTable))
+            if (!glyphTypeface.PlatformTypeface.TryGetTable(GSubTag, out var gPosTable))
             {
                 return null;
             }
 
-            using var stream = new MemoryStream(gPosTable);
-            using var reader = new BigEndianBinaryReader(stream, false);
+            var reader = new BigEndianBinaryReader(gPosTable.Span);
 
-            return Load(reader);
-
+            return Load(ref reader);
         }
-        public static FeatureListTable? LoadGPos(IGlyphTypeface glyphTypeface)
+
+        public static FeatureListTable? LoadGPos(GlyphTypeface glyphTypeface)
         {
-            if (!glyphTypeface.TryGetTable(GPosTag, out var gSubTable))
+            if (!glyphTypeface.PlatformTypeface.TryGetTable(GPosTag, out var gSubTable))
             {
                 return null;
             }
 
-            using var stream = new MemoryStream(gSubTable);
-            using var reader = new BigEndianBinaryReader(stream, false);
+            var reader = new BigEndianBinaryReader(gSubTable.Span);
 
-            return Load(reader);
-
+            return Load(ref reader);
         }
 
-        private static FeatureListTable Load(BigEndianBinaryReader reader)
+        private static FeatureListTable Load(ref BigEndianBinaryReader reader)
         {
             // GPOS/GSUB Header, Version 1.0
             // +----------+-------------------+-----------------------------------------------------------+
@@ -73,14 +70,14 @@ namespace Avalonia.Media.Fonts.Tables
 
             reader.ReadUInt16();
             reader.ReadUInt16();
-
             reader.ReadOffset16();
+
             var featureListOffset = reader.ReadOffset16();
 
-            return Load(reader, featureListOffset);
+            return Load(ref reader, featureListOffset);
         }
 
-        private static FeatureListTable Load(BigEndianBinaryReader reader, long offset)
+        private static FeatureListTable Load(ref BigEndianBinaryReader reader, int offset)
         {
             // FeatureList
             // +---------------+------------------------------+-----------------------------------------------------------------------------------------------------------------+
@@ -90,11 +87,21 @@ namespace Avalonia.Media.Fonts.Tables
             // +---------------+------------------------------+-----------------------------------------------------------------------------------------------------------------+
             // | FeatureRecord | featureRecords[featureCount] | Array of FeatureRecords — zero-based (first feature has FeatureIndex = 0), listed alphabetically by feature tag |
             // +---------------+------------------------------+-----------------------------------------------------------------------------------------------------------------+
-            reader.Seek(offset, SeekOrigin.Begin);
+            reader.Seek(offset);
 
             var featureCount = reader.ReadUInt16();
 
-            var features = new List<OpenTypeTag>(featureCount);
+            if (featureCount == 0)
+            {
+                return new FeatureListTable(Array.Empty<OpenTypeTag>());
+            }
+
+            // Use stackalloc for small counts, array for larger
+            Span<OpenTypeTag> tempFeatures = featureCount <= 64 
+                ? stackalloc OpenTypeTag[featureCount] 
+                : new OpenTypeTag[featureCount];
+
+            int uniqueCount = 0;
 
             for (var i = 0; i < featureCount; i++)
             {
@@ -107,19 +114,24 @@ namespace Avalonia.Media.Fonts.Tables
                 // | Offset16 | featureOffset | Offset to Feature table, from beginning of FeatureList |
                 // +----------+---------------+--------------------------------------------------------+
                 var featureTag = reader.ReadUInt32();
-
                 reader.ReadOffset16();
 
                 var tag = new OpenTypeTag(featureTag);
 
-                if (!features.Contains(tag))
+                // Check for duplicates in already added features
+                bool isDuplicate = tempFeatures.Contains(tag);
+
+                if (!isDuplicate)
                 {
-                    features.Add(tag);
+                    tempFeatures[uniqueCount++] = tag;
                 }
             }
 
-            return new FeatureListTable(features /*featureTables*/);
-        }
+            // Create array with only unique features
+            var features = new OpenTypeTag[uniqueCount];
+            tempFeatures.Slice(0, uniqueCount).CopyTo(features);
 
+            return new FeatureListTable(features);
+        }
     }
 }

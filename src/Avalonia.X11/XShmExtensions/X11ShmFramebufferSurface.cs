@@ -1,5 +1,5 @@
 ﻿using System;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 
 using ShmSeg = System.UInt64;
 

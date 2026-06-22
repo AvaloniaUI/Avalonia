@@ -84,14 +84,8 @@ namespace CrossUI
     }
 }
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests.CrossUI
 {
-#else
-namespace Avalonia.Direct2D1.RenderTests.CrossUI
-{
-#endif
-
     class AvaloniaCrossControl : Control
     {
         private readonly CrossControl _src;
@@ -105,6 +99,7 @@ namespace Avalonia.Direct2D1.RenderTests.CrossUI
             Height = src.Bounds.Height;
             RenderTransform = new MatrixTransform(src.RenderTransform);
             RenderTransformOrigin = new RelativePoint(default, RelativeUnit.Relative);
+            RenderOptions = RenderOptions with { BitmapInterpolationMode = src.BitmapInterpolationMode };
             foreach (var ch in src.Children)
             {
                 var c = _children[ch];

@@ -1,12 +1,20 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\tools\DevAnalyzers\DevAnalyzers.csproj"
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/tools/DevAnalyzers/DevAnalyzers.csproj"
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false"
                       OutputItemType="Analyzer" />
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\tools\Avalonia.Analyzers\Avalonia.Analyzers.csproj"
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/tools/Avalonia.Analyzers.CSharp/Avalonia.Analyzers.CSharp.csproj"
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/tools/Avalonia.Analyzers.CodeFixes.CSharp/Avalonia.Analyzers.CodeFixes.CSharp.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../src/tools/Avalonia.Analyzers.VisualBasic/Avalonia.Analyzers.VisualBasic.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all"
                       OutputItemType="Analyzer" />
   </ItemGroup>
 </Project>

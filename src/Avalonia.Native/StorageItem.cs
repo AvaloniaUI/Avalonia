@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -148,5 +146,19 @@ internal class StorageFolder(
         using var scope = OpenScope();
         var folder = BclStorageItem.CreateFolderCore(directoryInfo, name);
         return Task.FromResult((IStorageFolder?)WrapFileSystemInfo(folder, ScopeOwnerUri));
+    }
+
+    public Task<IStorageFolder?> GetFolderAsync(string name)
+    {
+        using var scope = OpenScope();
+        var item = BclStorageItem.GetFolderCore(directoryInfo, name);
+        return Task.FromResult((IStorageFolder?)WrapFileSystemInfo(item, ScopeOwnerUri));
+    }
+
+    public Task<IStorageFile?> GetFileAsync(string name)
+    {
+        using var scope = OpenScope();
+        var item = BclStorageItem.GetFileCore(directoryInfo, name);
+        return Task.FromResult((IStorageFile?)WrapFileSystemInfo(item, ScopeOwnerUri));
     }
 }

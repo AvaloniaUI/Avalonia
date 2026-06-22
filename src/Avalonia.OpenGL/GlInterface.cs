@@ -2,12 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using Avalonia.Metadata;
 using Avalonia.Platform.Interop;
 using Avalonia.SourceGenerator;
 using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.OpenGL
 {
+    /// <summary>
+    /// GlInterface only includes essential members and members necessary for Avalonia itself.
+    /// It is not a general-purpose interface for OpenGL API.
+    /// </summary>
+    /// <remarks>
+    /// Use <see cref="GlInterface.GetProcAddress"/> to get GL procedures you need, or integrate it with third-party GL wrappers.
+    /// </remarks>
     public unsafe partial class GlInterface : GlBasicInfoInterface
     {
         private readonly Func<string, IntPtr> _getProcAddress;
@@ -50,6 +58,11 @@ namespace Avalonia.OpenGL
         {
         }
 
+        /// <summary>
+        /// Returns an OpenGL function by name.
+        /// </summary>
+        /// <param name="proc">Function name.</param>
+        /// <returns>Handle of function, which can be casted to unmanaged function pointer.</returns>
         public IntPtr GetProcAddress(string proc) => _getProcAddress(proc);
 
         [GetProcAddress("glClearStencil")]
@@ -330,6 +343,8 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glUniform1f")]
         public partial void Uniform1f(int location, float falue);
 
+        [GetProcAddress("glUniform1i")]
+        public partial void Uniform1i(int location, int value);
 
         [GetProcAddress("glUniformMatrix4fv")]
         public partial void UniformMatrix4fv(int location, int count, bool transpose, void* value);
@@ -373,12 +388,26 @@ namespace Avalonia.OpenGL
         [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
         public partial void GenVertexArrays(int n, int* rv);
 
+        [GetProcAddress("glReadBuffer", true)]
+        public partial void ReadBuffer(int buffer);
+        
+        [GetProcAddress("glDrawBuffer", true)]
+        public partial void DrawBuffer(int buffer);
+        
+        [GetProcAddress("glWriteBuffer", true)]
+        public partial void WriteBuffer(int buffer);
+
         public int GenVertexArray()
         {
             int rv = 0;
             GenVertexArrays(1, &rv);
             return rv;
         }
+
+        // GL_OES_EGL_image
+        [GetProcAddress(true)]
+        [GlExtensionEntryPoint("glEGLImageTargetTexture2DOES", "GL_OES_EGL_image")]
+        public partial void EGLImageTargetTexture2DOES(int target, IntPtr image);
 
         public static GlInterface FromNativeUtf8GetProcAddress(GlVersion version, Func<IntPtr, IntPtr> getProcAddress)
         {

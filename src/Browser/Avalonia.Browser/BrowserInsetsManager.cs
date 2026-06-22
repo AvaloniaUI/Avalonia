@@ -18,7 +18,7 @@ namespace Avalonia.Browser
             }
         }
 
-        public override bool DisplayEdgeToEdge { get; set; }
+        public override bool DisplayEdgeToEdgePreference { get; set; }
 
         public override Thickness SafeAreaPadding
         {

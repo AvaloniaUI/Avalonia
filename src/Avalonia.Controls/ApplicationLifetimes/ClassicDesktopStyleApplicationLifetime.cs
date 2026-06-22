@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Avalonia.Collections;
@@ -100,16 +99,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
-            var options = AvaloniaLocator.Current.GetService<ClassicDesktopStyleApplicationLifetimeOptions>();
-            
-            if(options != null && options.ProcessUrlActivationCommandLine && args.Length > 0)
-            {
-                if (Application.Current is IApplicationPlatformEvents events)
-                {
-                    events.RaiseUrlsOpened(args);
-                }
-            }
-
             var lifetimeEvents = AvaloniaLocator.Current.GetService<IPlatformLifetimeEventsImpl>(); 
 
             if (lifetimeEvents != null)
@@ -184,11 +173,15 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 // When an OS shutdown request is received, try to close all non-owned windows. Windows can cancel
                 // shutdown by setting e.Cancel = true in the Closing event. Owned windows will be shutdown by their
                 // owners.
-                foreach (var w in Windows.ToArray())
+                foreach (var w in new List<Window>(_windows))
                 {
                     if (w.Owner is null)
                     {
-                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic);
+                        var ignoreCancel = force || (ShutdownMode == ShutdownMode.OnMainWindowClose && w != MainWindow);
+                        var reason = e.IsOSShutdown ?
+                            WindowCloseReason.OSShutdown :
+                            WindowCloseReason.ApplicationShutdown;
+                        w.CloseCore(reason, isProgrammatic, ignoreCancel);
                     }
                 }
 
@@ -219,11 +212,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
         }
         
         private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e) => DoShutdown(e, false);
-    }
-    
-    public class ClassicDesktopStyleApplicationLifetimeOptions
-    {
-        public bool ProcessUrlActivationCommandLine { get; set; }
     }
 }
 

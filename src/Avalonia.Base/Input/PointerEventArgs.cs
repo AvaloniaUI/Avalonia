@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
+using Avalonia.Rendering;
 
 namespace Avalonia.Input
 {
-    public class PointerEventArgs : RoutedEventArgs
+    public class PointerEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
-        private readonly Visual? _rootVisual;
-        private readonly Point _rootVisualPosition;
+        private readonly IPresentationSource? _eventPresentationSource; // the original observer of the event
+        private readonly Point _presentationSourcePosition;
         private readonly PointerPointProperties _properties;
         private readonly Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
 
-        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
-        public PointerEventArgs(RoutedEvent routedEvent,
+        public PointerEventArgs(RoutedEvent? routedEvent,
             object? source,
             IPointer pointer,
             Visual? rootVisual, Point rootVisualPosition,
@@ -25,27 +24,28 @@ namespace Avalonia.Input
            : base(routedEvent)
         {
             Source = source;
-            _rootVisual = rootVisual;
-            _rootVisualPosition = rootVisualPosition;
+            _eventPresentationSource = rootVisual?.PresentationSource;
+            _presentationSourcePosition = rootVisualPosition;
             _properties = properties;
             Pointer = pointer;
             Timestamp = timestamp;
             KeyModifiers = modifiers;
         }
-        
-        internal PointerEventArgs(RoutedEvent routedEvent,
+
+        [PrivateApi]
+        public PointerEventArgs(RoutedEvent? routedEvent,
             object? source,
             IPointer pointer,
             Visual? rootVisual, Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers,
-            Lazy<IReadOnlyList<RawPointerPoint>?>? previousPoints)
-#pragma warning disable CS0618
+            Lazy<IReadOnlyList<RawPointerPoint>?>? previousPoints,
+            object? platformInputEventCookie = null)
             : this(routedEvent, source, pointer, rootVisual, rootVisualPosition, timestamp, properties, modifiers)
-#pragma warning restore CS0618
         {
             _previousPoints = previousPoints;
+            PlatformInputEventCookie = platformInputEventCookie;
         }
 
         /// <summary>
@@ -57,6 +57,13 @@ namespace Avalonia.Input
         /// Gets the time when the input occurred.
         /// </summary>
         public ulong Timestamp { get; }
+
+        /// <summary>
+        /// An opaque platform-specific cookie associated with this event.
+        /// Used by backends to pass platform data through the input pipeline.
+        /// </summary>
+        [PrivateApi]
+        public object? PlatformInputEventCookie { get; }
 
         internal bool IsGestureRecognitionSkipped
         {
@@ -78,23 +85,25 @@ namespace Avalonia.Input
 
         private Point GetPosition(Point pt, Visual? relativeTo)
         {
-            if (_rootVisual == null)
-                return default;
             if (relativeTo == null)
                 return pt;
+            if (_eventPresentationSource == null || relativeTo?.PresentationSource?.RootVisual == null)
+                return default;
 
-            // If the visual the user passed in, is not connected to the same visual root
-            // (i.e. they called it for a control inside a popup.
-            if (!ReferenceEquals(_rootVisual, relativeTo.VisualRoot) && relativeTo.VisualRoot is { })
+            if (relativeTo.PresentationSource != _eventPresentationSource)
             {
-                // Convert to absolute screen coordinates.
-                var screenPt = _rootVisual.PointToScreen(pt);
-
-                // Convert to client co-ordinates of the visual inside the other visual root.
-                return relativeTo.PointToClient(screenPt);
+                if (_eventPresentationSource.PointToScreen(pt) is { } screenPt &&
+                    relativeTo.PresentationSource.PointToClient(screenPt) is { } targetClientPt)
+                {
+                    pt = targetClientPt;
+                }
+                else
+                {
+                    return default;
+                }
             }
 
-            return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
+            return relativeTo.PresentationSource.RootVisual.TranslatePoint(pt, relativeTo) ?? default;
         }
 
         /// <summary>
@@ -102,7 +111,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="relativeTo">The visual whose coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns>The pointer position in the control's coordinates.</returns>
-        public Point GetPosition(Visual? relativeTo) => GetPosition(_rootVisualPosition, relativeTo);
+        public Point GetPosition(Visual? relativeTo) => GetPosition(_presentationSourcePosition, relativeTo);
 
         /// <summary>
         /// Returns the PointerPoint associated with the current event
@@ -119,7 +128,7 @@ namespace Avalonia.Input
         /// <returns></returns>
         public IReadOnlyList<PointerPoint> GetIntermediatePoints(Visual? relativeTo)
         {
-            var previousPoints = _previousPoints?.Value;            
+            var previousPoints = _previousPoints?.Value;
             if (previousPoints == null || previousPoints.Count == 0)
                 return new[] { GetCurrentPoint(relativeTo) };
             var points = new PointerPoint[previousPoints.Count + 1];
@@ -143,11 +152,11 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Returns the current pointer point properties
+        /// Gets the state the pointer device had when this event occurred.
         /// </summary>
-        protected PointerPointProperties Properties => _properties;
+        public PointerPointProperties Properties => _properties;
     }
-    
+
     public enum MouseButton
     {
         None,
@@ -160,9 +169,8 @@ namespace Avalonia.Input
 
     public class PointerPressedEventArgs : PointerEventArgs
     {
-        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
         public PointerPressedEventArgs(
-            object source,
+            object? source,
             IPointer pointer,
             Visual rootVisual, Point rootVisualPosition,
             ulong timestamp,
@@ -175,14 +183,29 @@ namespace Avalonia.Input
             ClickCount = clickCount;
         }
 
+        [PrivateApi]
+        public PointerPressedEventArgs(
+            object? source,
+            IPointer pointer,
+            Visual rootVisual, Point rootVisualPosition,
+            ulong timestamp,
+            PointerPointProperties properties,
+            KeyModifiers modifiers,
+            int clickCount,
+            object? platformInputEventCookie)
+            : base(InputElement.PointerPressedEvent, source, pointer, rootVisual, rootVisualPosition,
+                timestamp, properties, modifiers, null, platformInputEventCookie)
+        {
+            ClickCount = clickCount;
+        }
+
         public int ClickCount { get; }
     }
 
     public class PointerReleasedEventArgs : PointerEventArgs
     {
-        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
         public PointerReleasedEventArgs(
-            object source, IPointer pointer,
+            object? source, IPointer pointer,
             Visual rootVisual, Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers,
             MouseButton initialPressMouseButton)
@@ -202,11 +225,25 @@ namespace Avalonia.Input
     {
         public IPointer Pointer { get; }
 
-        [Unstable("This constructor might be removed in 12.0. If you need to remove capture, use stable methods on the IPointer instance.,")]
-        public PointerCaptureLostEventArgs(object source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
+        public PointerCaptureLostEventArgs(object? source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
         {
             Pointer = pointer;
             Source = source;
+        }
+    }
+
+    internal class PointerCaptureChangingEventArgs : RoutedEventArgs
+    {
+        public IPointer Pointer { get; }
+        public CaptureSource CaptureSource { get; }
+        public IInputElement? NewValue { get; }
+
+        internal PointerCaptureChangingEventArgs(object? source, IPointer pointer, IInputElement? newValue, CaptureSource captureSource) : base(InputElement.PointerCaptureChangingEvent)
+        {
+            Pointer = pointer;
+            Source = source;
+            NewValue = newValue;
+            CaptureSource = captureSource;
         }
     }
 }

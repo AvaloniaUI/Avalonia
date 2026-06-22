@@ -1,9 +1,8 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Vulkan;
 
 namespace Avalonia.X11.Vulkan;
@@ -43,10 +42,10 @@ internal class VulkanSupport
             _display = display;
         }
         
-        public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, object surface) =>
+        public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface surface) =>
             surface is INativePlatformHandleSurface handle && handle.HandleDescriptor == "XID";
 
-        public IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, object handle) => 
+        public IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface handle) => 
             new XidSurface(_display, (INativePlatformHandleSurface)handle);
     }
 

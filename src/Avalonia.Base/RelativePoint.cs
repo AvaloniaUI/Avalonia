@@ -169,7 +169,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativePoint"/>.</returns>
         public static RelativePoint Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid RelativePoint."))
+            using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid RelativePoint."))
             {
                 var x = tokenizer.ReadString();
                 var y = tokenizer.ReadString();

@@ -1,0 +1,63 @@
+using System;
+using System.Linq;
+
+namespace Avalonia.X11;
+
+using static XLib;
+partial class X11Window
+{
+    public class DefaultTopLevelWindowMode : X11WindowMode
+    {
+        public override void Activate()
+        {
+            if (Platform.Globals.NetSupported?.Contains(X11.Atoms._NET_ACTIVE_WINDOW) == true)
+            {
+                Window.SendNetWMMessage(X11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, X11.LastActivityTimestamp,
+                    IntPtr.Zero);
+            }
+            else
+            {
+                XRaiseWindow(X11.Display, Handle);
+                OnManualXRaiseWindow();
+            }
+
+            base.Activate();
+        }
+
+        protected virtual void OnManualXRaiseWindow()
+        {
+            
+        }
+
+        public override void Show(bool activate, bool isDialog)
+        {
+            base.Show(activate, isDialog);
+
+            Window._wasMappedAtLeastOnce = true;
+
+            if (!activate)
+            {
+                var time = IntPtr.Zero;
+                XChangeProperty(X11.Display, Handle, X11.Atoms._NET_WM_USER_TIME, X11.Atoms.CARDINAL, 32,
+                    PropertyMode.Replace, ref time, 1);
+            }
+
+            XMapWindow(X11.Display, Handle);
+            XFlush(X11.Display);
+        }
+
+        public override void Hide()
+        {
+            XUnmapWindow(X11.Display, Handle);
+            base.Hide();
+        }
+
+        public override Point PointToClient(PixelPoint point) => new Point(
+            (point.X - (Window._position ?? default).X) / Window.RenderScaling,
+            (point.Y - (Window._position ?? default).Y) / Window.RenderScaling);
+
+        public override PixelPoint PointToScreen(Point point) => new PixelPoint(
+            (int)(point.X * Window.RenderScaling + (Window._position ?? default).X),
+            (int)(point.Y * Window.RenderScaling + (Window._position ?? default).Y));
+    }
+}

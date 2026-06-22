@@ -89,8 +89,8 @@ namespace Avalonia.Controls.PullToRefresh
 
             if (_refreshInfoProvider != null && _interactionSource != null)
             {
-                _interactionSource.RemoveHandler(Gestures.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
-                _interactionSource.RemoveHandler(Gestures.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
+                _interactionSource.RemoveHandler(InputElement.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
+                _interactionSource.RemoveHandler(InputElement.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
             }
 
             _refreshInfoProvider = null;
@@ -129,8 +129,8 @@ namespace Avalonia.Controls.PullToRefresh
             if (_interactionSource != null)
             {
                 _interactionSource.GestureRecognizers.Add(_pullGestureRecognizer);
-                _interactionSource.AddHandler(Gestures.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
-                _interactionSource.AddHandler(Gestures.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
+                _interactionSource.AddHandler(InputElement.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
+                _interactionSource.AddHandler(InputElement.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
                 _isVisualizerInteractionSourceAttached = true;
             }
 
@@ -169,11 +169,11 @@ namespace Avalonia.Controls.PullToRefresh
                 visualizerComposition.ImplicitAnimations = animation;
             }
 
-            if(_scrollViewer != null)
+            if (_scrollViewer != null)
             {
                 var scollContentComposition = ElementComposition.GetElementVisual(_scrollViewer);
 
-                if(scollContentComposition != null)
+                if (scollContentComposition != null)
                 {
                     var compositor = scollContentComposition.Compositor;
 
@@ -217,8 +217,8 @@ namespace Avalonia.Controls.PullToRefresh
             if (_pullGestureRecognizer != null && _refreshInfoProvider != null)
             {
                 element?.GestureRecognizers.Add(_pullGestureRecognizer);
-                _interactionSource?.AddHandler(Gestures.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
-                _interactionSource?.AddHandler(Gestures.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
+                _interactionSource?.AddHandler(InputElement.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
+                _interactionSource?.AddHandler(InputElement.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
                 _isVisualizerInteractionSourceAttached = true;
             }
         }

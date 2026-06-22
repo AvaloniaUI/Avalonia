@@ -17,6 +17,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         BassaVah, //Bass
         Batak, //Batk
         Bengali, //Beng
+        BeriaErfe, //Berf
         Bhaiksuki, //Bhks
         Bopomofo, //Bopo
         Brahmi, //Brah
@@ -42,6 +43,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Elbasan, //Elba
         Elymaic, //Elym
         Ethiopic, //Ethi
+        Garay, //Gara
         Georgian, //Geor
         Glagolitic, //Glag
         GunjalaGondi, //Gong
@@ -50,6 +52,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Grantha, //Gran
         Greek, //Grek
         Gujarati, //Gujr
+        GurungKhema, //Gukh
         Gurmukhi, //Guru
         Hangul, //Hang
         Han, //Hani
@@ -72,6 +75,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Khojki, //Khoj
         KhitanSmallScript, //Kits
         Kannada, //Knda
+        KiratRai, //Krai
         Kaithi, //Kthi
         TaiTham, //Lana
         Lao, //Laoo
@@ -108,6 +112,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Nushu, //Nshu
         Ogham, //Ogam
         OlChiki, //Olck
+        OlOnal, //Onao
         OldTurkic, //Orkh
         Oriya, //Orya
         Osage, //Osge
@@ -132,6 +137,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Shavian, //Shaw
         Sharada, //Shrd
         Siddham, //Sidd
+        Sidetic, //Sidt
         Khudawadi, //Sind
         Sinhala, //Sinh
         Sogdian, //Sogd
@@ -139,6 +145,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         SoraSompeng, //Sora
         Soyombo, //Soyo
         Sundanese, //Sund
+        Sunuwar, //Sunu
         SylotiNagri, //Sylo
         Syriac, //Syrc
         Tagbanwa, //Tagb
@@ -148,6 +155,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Tamil, //Taml
         Tangut, //Tang
         TaiViet, //Tavt
+        TaiYo, //Tayo
         Telugu, //Telu
         Tifinagh, //Tfng
         Tagalog, //Tglg
@@ -156,7 +164,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Tibetan, //Tibt
         Tirhuta, //Tirh
         Tangsa, //Tnsa
+        Todhri, //Todr
+        TolongSiki, //Tols
         Toto, //Toto
+        TuluTigalari, //Tutg
         Ugaritic, //Ugar
         Vai, //Vaii
         Vithkuqi, //Vith

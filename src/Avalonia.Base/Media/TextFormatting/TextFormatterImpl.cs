@@ -1,4 +1,4 @@
-﻿// ReSharper disable ForCanBeConvertedToForeach
+// ReSharper disable ForCanBeConvertedToForeach
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -17,9 +17,18 @@ namespace Avalonia.Media.TextFormatting
         [ThreadStatic] private static BidiData? t_bidiData;
         [ThreadStatic] private static BidiAlgorithm? t_bidiAlgorithm;
 
-        /// <inheritdoc cref="TextFormatter.FormatLine"/>
+        /// <inheritdoc/>
         public override TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null)
+        {
+            return FormatLine(textSource, firstTextSourceIndex, paragraphWidth,
+                paragraphProperties, previousLineBreak, null);
+        }
+
+        /// <inheritdoc/>
+        public override TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
+            TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak,
+            TextRunCache? textRunCache)
         {
             TextLineBreak? nextLineBreak = null;
             var objectPool = FormattingObjectPool.Instance;
@@ -32,6 +41,14 @@ namespace Avalonia.Media.TextFormatting
             {
                 return PerformTextWrapping(remainingRuns, true, firstTextSourceIndex, paragraphWidth,
                     paragraphProperties, previousLineBreak.FlowDirection, previousLineBreak, objectPool);
+            }
+
+            // Try to use cached shaped runs to avoid redundant shaping/bidi processing.
+            if (textRunCache != null
+                && textRunCache.TryGetShapedRuns(firstTextSourceIndex, out var cached))
+            {
+                return FormatLineFromCache(cached, firstTextSourceIndex, paragraphWidth,
+                    paragraphProperties, objectPool);
             }
 
             RentedList<TextRun>? fetchedRuns = null;
@@ -54,11 +71,22 @@ namespace Avalonia.Media.TextFormatting
                     nextLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
                 }
 
+                // Store shaped runs in cache for reuse. The cache takes its own references;
+                // the formatter keeps the fresh-from-shape references for the current line.
+                if (textRunCache != null)
+                {
+                    textRunCache.Add(firstTextSourceIndex,
+                        new CachedShapingResult(shapedTextRuns.ToArray(), resolvedFlowDirection,
+                            textEndOfLine, textSourceLength));
+                }
+
                 switch (paragraphProperties.TextWrapping)
                 {
                     case TextWrapping.NoWrap:
                         {
-                            var textLine = new TextLineImpl(shapedTextRuns.ToArray(), firstTextSourceIndex,
+                            var lineRuns = shapedTextRuns.ToArray();
+
+                            var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
                                 textSourceLength,
                                 paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
 
@@ -84,6 +112,72 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Formats a line from cached shaped runs, skipping shaping and bidi processing.
+        /// </summary>
+        private static TextLine FormatLineFromCache(CachedShapingResult cached, int firstTextSourceIndex,
+            double paragraphWidth, TextParagraphProperties paragraphProperties, FormattingObjectPool objectPool)
+        {
+            var resolvedFlowDirection = cached.ResolvedFlowDirection;
+
+            TextLineBreak? nextLineBreak = null;
+
+            if (cached.TextEndOfLine != null)
+            {
+                nextLineBreak = new TextLineBreak(cached.TextEndOfLine, resolvedFlowDirection);
+            }
+
+            switch (paragraphProperties.TextWrapping)
+            {
+                case TextWrapping.NoWrap:
+                    {
+                        var lineRuns = AddRefShapedRuns(cached.ShapedRuns);
+
+                        var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
+                            cached.TextSourceLength,
+                            paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+
+                        textLine.FinalizeLine();
+
+                        return textLine;
+                    }
+                case TextWrapping.WrapWithOverflow:
+                case TextWrapping.Wrap:
+                    {
+                        var runs = new List<TextRun>(cached.ShapedRuns.Length);
+
+                        for (var i = 0; i < cached.ShapedRuns.Length; i++)
+                        {
+                            runs.Add(cached.ShapedRuns[i] is ShapedTextRun shaped
+                                ? shaped.AddRef()
+                                : cached.ShapedRuns[i]);
+                        }
+
+                        return PerformTextWrapping(runs, false, firstTextSourceIndex,
+                            paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                            nextLineBreak, objectPool);
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(paragraphProperties.TextWrapping));
+            }
+        }
+
+        /// <summary>
+        /// Produces an array of text runs for a line, adding an extra reference to each
+        /// <see cref="ShapedTextRun"/> so that the caller owns a disposable reference.
+        /// </summary>
+        private static TextRun[] AddRefShapedRuns(IReadOnlyList<TextRun> runs)
+        {
+            var result = new TextRun[runs.Count];
+
+            for (var i = 0; i < runs.Count; i++)
+            {
+                result[i] = runs[i] is ShapedTextRun shaped ? shaped.AddRef() : runs[i];
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Split a sequence of runs into two segments at specified length.
         /// </summary>
         /// <param name="textRuns">The text run's.</param>
@@ -92,7 +186,31 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The split text runs.</returns>
         internal static SplitResult<RentedList<TextRun>> SplitTextRuns(IReadOnlyList<TextRun> textRuns, int length,
             FormattingObjectPool objectPool)
+            => SplitTextRuns(textRuns, length, objectPool, out _);
+
+        /// <summary>
+        /// Split a sequence of runs into two segments at specified length. The actual
+        /// length of the first segment (which may differ from <paramref name="length"/>
+        /// when the split lands on a cluster boundary) is returned via
+        /// <paramref name="firstLength"/>. This lets the wrap caller avoid a separate
+        /// second pass to sum run lengths.
+        /// </summary>
+        internal static SplitResult<RentedList<TextRun>> SplitTextRuns(IReadOnlyList<TextRun> textRuns, int length,
+            FormattingObjectPool objectPool, out int firstLength)
         {
+            if(length == 0)
+            {
+                var second = objectPool.TextRunLists.Rent();
+
+                for (var i = 0; i < textRuns.Count; i++)
+                {
+                    second.Add(textRuns[i]);
+                }
+
+                firstLength = 0;
+                return new SplitResult<RentedList<TextRun>>(null, second);
+            }
+
             var first = objectPool.TextRunLists.Rent();
             var currentLength = 0;
 
@@ -136,6 +254,7 @@ namespace Avalonia.Media.TextFormatting
 
                     first.Add(currentRun);
 
+                    firstLength = currentLength + currentRunLength;
                     return new SplitResult<RentedList<TextRun>>(first, second);
                 }
                 else
@@ -143,21 +262,59 @@ namespace Avalonia.Media.TextFormatting
                     secondCount++;
 
                     var second = objectPool.TextRunLists.Rent();
+                    var addedFirstLength = 0;
+                    int trailingLoopStart;
 
                     if (currentRun is ShapedTextRun shapedTextCharacters)
                     {
                         var split = shapedTextCharacters.Split(length - currentLength);
 
-                        first.Add(split.First);
+                        if(split.First is not null)
+                        {
+                            first.Add(split.First);
+                            addedFirstLength = split.First.Length;
+                        }
 
-                        second.Add(split.Second!);
+                        if (split.Second != null)
+                        {
+                            second.Add(split.Second);
+                        }
+
+                        // The split produced fresh ShapedTextRuns for each half, so the
+                        // caller's reference to the original is no longer needed — release it.
+                        shapedTextCharacters.Dispose();
+
+                        // currentRun is consumed by the split; the trailing loop adds the
+                        // runs *after* it.
+                        trailingLoopStart = 1;
+                    }
+                    else if (currentLength == 0)
+                    {
+                        // Non-splittable run at the very start of the list, asked to split
+                        // strictly inside it. Snapping before would leave first empty and
+                        // the wrap caller would loop forever — same situation as the wrap
+                        // algorithm's "include at least one cluster" overflow rule. Place
+                        // currentRun in first and let the line overflow.
+                        first.Add(currentRun);
+                        addedFirstLength = currentRunLength;
+                        trailingLoopStart = 1;
+                    }
+                    else
+                    {
+                        // Non-splittable run at the split point. Snap the boundary BEFORE
+                        // it: currentRun goes into second along with the remaining runs,
+                        // first ends at currentLength (shorter than requested but
+                        // content-preserving). Without this branch the run would be
+                        // dropped from both halves.
+                        trailingLoopStart = 0;
                     }
 
-                    for (var j = 1; j < secondCount; j++)
+                    for (var j = trailingLoopStart; j < secondCount; j++)
                     {
                         second.Add(textRuns[i + j]);
                     }
 
+                    firstLength = currentLength + addedFirstLength;
                     return new SplitResult<RentedList<TextRun>>(first, second);
                 }
             }
@@ -167,6 +324,7 @@ namespace Avalonia.Media.TextFormatting
                 first.Add(textRuns[i]);
             }
 
+            firstLength = currentLength;
             return new SplitResult<RentedList<TextRun>>(first, null);
         }
 
@@ -272,9 +430,13 @@ namespace Avalonia.Media.TextFormatting
                                 }
 
                                 var shaperOptions = new TextShaperOptions(
-                                    properties.CachedGlyphTypeface, properties.FontFeatures,
-                                    properties.FontRenderingEmSize, shapeableRun.BidiLevel, properties.CultureInfo,
-                                    paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
+                                    properties.CachedGlyphTypeface,
+                                    properties.FontRenderingEmSize,
+                                    shapeableRun.BidiLevel,
+                                    properties.CultureInfo,
+                                    paragraphProperties.DefaultIncrementalTab,
+                                    paragraphProperties.LetterSpacing,
+                                    properties.FontFeatures);
 
                                 ShapeTogether(groupedRuns, text, shaperOptions, textShaper, shapedRuns);
 
@@ -371,15 +533,31 @@ namespace Avalonia.Media.TextFormatting
         {
             var shapedBuffer = textShaper.ShapeText(text, options);
 
+            var previousLength = 0;
+
             for (var i = 0; i < textRuns.Count; i++)
             {
                 var currentRun = textRuns[i];
 
-                var splitResult = shapedBuffer.Split(currentRun.Length);
+                var splitResult = shapedBuffer.Split(previousLength + currentRun.Length);
 
-                results.Add(new ShapedTextRun(splitResult.First, currentRun.Properties));
+                if (splitResult.First is null || splitResult.First.Length == 0)
+                {
+                    previousLength += currentRun.Length;
+                }
+                else
+                {
+                    previousLength = 0;
 
-                shapedBuffer = splitResult.Second!;
+                    results.Add(new ShapedTextRun(splitResult.First, currentRun.Properties));
+                }
+              
+                if(splitResult.Second is null)
+                {
+                    return;
+                }
+
+                shapedBuffer = splitResult.Second;
             }
         }
 
@@ -574,78 +752,65 @@ namespace Avalonia.Media.TextFormatting
         {
             var measuredLength = 0;
             var currentWidth = 0.0;
+            var runIndex = 0;
 
-            for (var i = 0; i < textRuns.Count; ++i)
+            for (; runIndex < textRuns.Count; ++runIndex)
             {
-                var currentRun = textRuns[i];
+                var currentRun = textRuns[runIndex];
 
                 switch (currentRun)
                 {
                     case ShapedTextRun shapedTextCharacters:
                         {
-                            if (shapedTextCharacters.ShapedBuffer.Length > 0)
+                            // cluster-width prefix sum lets us answer "how much fits"
+                            // in O(log clusters) instead of walking every glyph. The total
+                            // advance and the per-cluster start char are cached on the
+                            // ShapedBuffer (which lives in the run cache), so the first
+                            // layout pays the O(glyphs) cost and every subsequent layout
+                            // is constant-time.
+                            var buffer = shapedTextCharacters.ShapedBuffer;
+
+                            if (buffer.Length == 0)
                             {
-                                var runLength = 0;
-
-                                for (var j = 0; j < shapedTextCharacters.ShapedBuffer.Length; j++)
-                                {
-                                    var currentInfo = shapedTextCharacters.ShapedBuffer[j];
-
-                                    var clusterWidth = currentInfo.GlyphAdvance;
-
-                                    GlyphInfo nextInfo = default;
-
-                                    while (j + 1 < shapedTextCharacters.ShapedBuffer.Length)
-                                    {
-                                        nextInfo = shapedTextCharacters.ShapedBuffer[j + 1];
-
-                                        if (currentInfo.GlyphCluster == nextInfo.GlyphCluster)
-                                        {
-                                            clusterWidth += nextInfo.GlyphAdvance;
-
-                                            j++;
-
-                                            continue;
-                                        }
-
-                                        break;
-                                    }
-
-                                    var clusterLength = Math.Max(0, nextInfo.GlyphCluster - currentInfo.GlyphCluster);
-
-                                    if (clusterLength == 0)
-                                    {
-                                        clusterLength = currentRun.Length - runLength;
-                                    }
-
-                                    if (clusterLength == 0)
-                                    {
-                                        clusterLength = shapedTextCharacters.GlyphRun.Metrics.FirstCluster + currentRun.Length - currentInfo.GlyphCluster;
-                                    }
-
-                                    if (currentWidth + clusterWidth > paragraphWidth)
-                                    {
-                                        if (runLength == 0 && measuredLength == 0)
-                                        {
-                                            runLength = clusterLength;
-                                        }
-
-                                        return measuredLength + runLength;
-                                    }
-
-                                    currentWidth += clusterWidth;
-                                    runLength += clusterLength;
-                                }
-
-                                measuredLength += runLength;
+                                break;
                             }
 
-                            break;
+                            var remaining = paragraphWidth - currentWidth;
+                            var bufferWidth = buffer.TotalGlyphAdvance;
+
+                            if (!MathUtilities.GreaterThan(bufferWidth, remaining))
+                            {
+                                // Whole buffer fits consume it and continue to the next run.
+                                currentWidth += bufferWidth;
+                                measuredLength += currentRun.Length;
+                                break;
+                            }
+
+                            // Some part of the buffer overflows: find the cluster boundary.
+                            var runLength = buffer.FindLeadingCharCountWithinWidth(remaining);
+
+                            // "Include at least one cluster" rule preserves the existing
+                            // contract that the caller always advances by at least one
+                            // grapheme even when the first cluster overflows the line.
+                            if (runLength == 0 && measuredLength == 0)
+                            {
+                                runLength = buffer.FirstClusterCharLength;
+                            }
+
+                            measuredLength += runLength;
+
+                            if (runIndex < textRuns.Count - 1 && runLength == currentRun.Length &&
+                                textRuns[runIndex + 1] is TextEndOfLine endOfLine)
+                            {
+                                measuredLength += endOfLine.Length;
+                            }
+
+                            return measuredLength;
                         }
 
                     case DrawableTextRun drawableTextRun:
                         {
-                            if (currentWidth + drawableTextRun.Size.Width >= paragraphWidth)
+                            if (MathUtilities.GreaterThan(currentWidth + drawableTextRun.Size.Width, paragraphWidth))
                             {
                                 return measuredLength;
                             }
@@ -677,7 +842,7 @@ namespace Avalonia.Media.TextFormatting
             var flowDirection = paragraphProperties.FlowDirection;
             var properties = paragraphProperties.DefaultTextRunProperties;
             var glyphTypeface = properties.CachedGlyphTypeface;
-            var glyph = glyphTypeface.GetGlyph(s_empty[0]);
+            var glyph = glyphTypeface.CharacterToGlyphMap[s_empty[0]];
             var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex, 0.0) };
 
             var shapedBuffer = new ShapedBuffer(s_empty.AsMemory(), glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
@@ -754,11 +919,15 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = 0;
 
-            for (var index = 0; index < textRuns.Count; index++)
+            var wrappingMode = paragraphProperties.TextWrapping;
+            var runCount = textRuns.Count;
+
+            for (var index = 0; index < runCount; index++)
             {
                 var breakFound = false;
 
                 var currentRun = textRuns[index];
+                var currentRunLength = currentRun.Length;
 
                 switch (currentRun)
                 {
@@ -781,7 +950,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 if (currentLength + lineBreak.PositionMeasure > measuredLength)
                                 {
-                                    if (paragraphProperties.TextWrapping == TextWrapping.WrapWithOverflow)
+                                    if (wrappingMode == TextWrapping.WrapWithOverflow)
                                     {
                                         if (lastWrapPosition > 0)
                                         {
@@ -793,9 +962,9 @@ namespace Avalonia.Media.TextFormatting
                                         }
 
                                         //Find next possible wrap position (overflow)
-                                        if (index < textRuns.Count - 1)
+                                        if (index < runCount - 1)
                                         {
-                                            if (lineBreak.PositionWrap != currentRun.Length)
+                                            if (lineBreak.PositionWrap != currentRunLength)
                                             {
                                                 //We already found the next possible wrap position.
                                                 breakFound = true;
@@ -809,19 +978,20 @@ namespace Avalonia.Media.TextFormatting
                                             {
                                                 currentPosition += lineBreak.PositionWrap;
 
-                                                if (lineBreak.PositionWrap != currentRun.Length)
+                                                if (lineBreak.PositionWrap != currentRunLength)
                                                 {
                                                     break;
                                                 }
 
                                                 index++;
 
-                                                if (index >= textRuns.Count)
+                                                if (index >= runCount)
                                                 {
                                                     break;
                                                 }
 
                                                 currentRun = textRuns[index];
+                                                currentRunLength = currentRun.Length;
 
                                                 lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
                                             }
@@ -849,7 +1019,7 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap || lineBreak.PositionWrap != currentRun.Length)
+                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap || lineBreak.PositionWrap != currentRunLength)
                                 {
                                     lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
@@ -861,7 +1031,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (!breakFound)
                 {
-                    currentLength += currentRun.Length;
+                    currentLength += currentRunLength;
 
                     continue;
                 }
@@ -871,7 +1041,7 @@ namespace Avalonia.Media.TextFormatting
                 break;
             }
 
-            var (preSplitRuns, postSplitRuns) = SplitTextRuns(textRuns, measuredLength, objectPool);
+            var (preSplitRuns, postSplitRuns) = SplitTextRuns(textRuns, measuredLength, objectPool, out var splitLength);
 
             try
             {
@@ -879,6 +1049,7 @@ namespace Avalonia.Media.TextFormatting
                 if (postSplitRuns?.Count > 0)
                 {
                     List<TextRun> remainingRuns;
+                    var postSplitCount = postSplitRuns.Count;
 
                     // reuse the list as much as possible:
                     // if canReuseTextRunList == true it's coming from previous remaining runs
@@ -886,13 +1057,19 @@ namespace Avalonia.Media.TextFormatting
                     {
                         remainingRuns = textRuns;
                         remainingRuns.Clear();
+                        // ensure capacity up front so List<T>.Add does not resize
+                        // mid-loop (each resize is an Array.Copy of the backing array).
+                        if (remainingRuns.Capacity < postSplitCount)
+                        {
+                            remainingRuns.Capacity = postSplitCount;
+                        }
                     }
                     else
                     {
-                        remainingRuns = new List<TextRun>();
+                        remainingRuns = new List<TextRun>(postSplitCount);
                     }
 
-                    for (var i = 0; i < postSplitRuns.Count; ++i)
+                    for (var i = 0; i < postSplitCount; ++i)
                     {
                         remainingRuns.Add(postSplitRuns[i]);
                     }
@@ -908,7 +1085,29 @@ namespace Avalonia.Media.TextFormatting
                     textLineBreak = null;
                 }
 
-                var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
+                if(preSplitRuns is null)
+                {
+                    return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
+                }
+
+                if (postSplitRuns?.Count > 0)
+                {
+                    ResetTrailingWhitespaceBidiLevels(preSplitRuns, paragraphProperties.FlowDirection, objectPool);
+                }
+
+                // SplitTextRuns has already computed the actual length of the first
+                // segment (the cluster boundary may land slightly off the requested
+                // length), so we just need to materialise the run array for TextLineImpl
+                // no second-pass length sum required.
+                var preSplitCount = preSplitRuns.Count;
+                var remainingTextRuns = new TextRun[preSplitCount];
+
+                for (var i = 0; i < preSplitCount; i++)
+                {
+                    remainingTextRuns[i] = preSplitRuns[i];
+                }
+
+                var textLine = new TextLineImpl(remainingTextRuns, firstTextSourceIndex, splitLength,
                     paragraphWidth, paragraphProperties, resolvedFlowDirection,
                     textLineBreak);
 
@@ -920,6 +1119,75 @@ namespace Avalonia.Media.TextFormatting
             {
                 objectPool.TextRunLists.Return(ref preSplitRuns);
                 objectPool.TextRunLists.Return(ref postSplitRuns);
+            }
+        }
+
+        private static void ResetTrailingWhitespaceBidiLevels(RentedList<TextRun> lineTextRuns, FlowDirection paragraphFlowDirection, FormattingObjectPool objectPool)
+        {
+            if (lineTextRuns.Count == 0)
+            {
+                return;
+            }
+
+            var lastTextRunIndex = lineTextRuns.Count - 1;
+
+            var lastTextRun = lineTextRuns[lastTextRunIndex];
+
+            if (lastTextRun is not ShapedTextRun shapedText)
+            {
+                return;
+            }
+
+            var paragraphEmbeddingLevel = (sbyte)paragraphFlowDirection;
+
+            if (shapedText.BidiLevel == paragraphEmbeddingLevel)
+            {
+                return;
+            }
+
+            var trailingWhitespaceLength = shapedText.GlyphRun.Metrics.TrailingWhitespaceLength;
+
+            if (trailingWhitespaceLength == 0)
+            {
+                return;
+            }
+
+            var splitIndex = shapedText.Length - trailingWhitespaceLength;
+
+            var (textRuns, trailingWhitespaceRuns) = SplitTextRuns([shapedText], splitIndex, objectPool);
+
+            try
+            {
+                if (trailingWhitespaceRuns != null)
+                {
+                    for (var i = 0; i < trailingWhitespaceRuns.Count; i++)
+                    {
+                        if (trailingWhitespaceRuns[i] is ShapedTextRun shapedTextRun)
+                        {
+                            var newBuffer = shapedTextRun.ShapedBuffer.WithBidiLevel(paragraphEmbeddingLevel);
+
+                            if (!ReferenceEquals(newBuffer, shapedTextRun.ShapedBuffer))
+                            {
+                                trailingWhitespaceRuns[i] = new ShapedTextRun(newBuffer, shapedTextRun.Properties);
+                                shapedTextRun.Dispose();
+                            }
+                        }
+                    }
+
+                    lineTextRuns.RemoveAt(lastTextRunIndex);
+
+                    if(textRuns is not null)
+                    {
+                        lineTextRuns.AddRange(textRuns);
+                    }
+
+                    lineTextRuns.AddRange(trailingWhitespaceRuns);
+                }
+            }
+            finally
+            {
+                objectPool.TextRunLists.Return(ref textRuns);
+                objectPool.TextRunLists.Return(ref trailingWhitespaceRuns);
             }
         }
 

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class DecoratorTests
+    public class DecoratorTests : ScopedTestBase
     {
         [Fact]
         public void Setting_Content_Should_Set_Child_Controls_Parent()
@@ -118,7 +118,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(16, 16), target.DesiredSize);
         }
 
-        public class UseLayoutRounding
+        public class UseLayoutRounding : ScopedTestBase
         {
             [Fact]
             public void Measure_Rounds_Padding()

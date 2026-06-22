@@ -398,6 +398,23 @@ internal class DispatcherPriorityQueue
         // Step 3: cleanup
         item.SequentialPrev = item.SequentialNext = null;
     }
+
+    public List<DispatcherOperation> PeekAll()
+    {
+        var operations = new List<DispatcherOperation>();
+
+        for (var item = _head; item is not null; item = item.SequentialNext)
+            operations.Add(item);
+
+        return operations;
+    }
+
+    public void Clear()
+    {
+        _priorityChains.Clear();
+        _cacheReusableChains.Clear();
+        _head = _tail = null;
+    }
 }
 
 

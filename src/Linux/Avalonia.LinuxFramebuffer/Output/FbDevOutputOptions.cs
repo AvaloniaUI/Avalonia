@@ -1,5 +1,3 @@
-#nullable enable
-
 using Avalonia.Platform;
 
 namespace Avalonia.LinuxFramebuffer.Output;
@@ -29,4 +27,10 @@ public class FbDevOutputOptions
     /// The initial scale factor to use
     /// </summary>
     public double Scaling { get; set; } = 1;
+
+    /// <summary>
+    /// If set to true, FBIO_WAITFORVSYNC ioctl and following memcpy call will run on a dedicated thread
+    /// saving current one from doing nothing in a blocking call
+    /// </summary>
+    public bool? UseAsyncFrontBufferBlit { get; set; }
 }

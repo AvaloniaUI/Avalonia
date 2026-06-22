@@ -21,6 +21,11 @@ namespace Avalonia.Logging
         public const string Animations = nameof(Animations);
 
         /// <summary>
+        /// The log event comes from the fonts system.
+        /// </summary>
+        public const string Fonts = nameof(Fonts);
+
+        /// <summary>
         /// The log event comes from the visual system.
         /// </summary>
         public const string Visual = nameof(Visual);
@@ -44,6 +49,11 @@ namespace Avalonia.Logging
         /// The log event comes from Win32 Platform.
         /// </summary>
         public const string Win32Platform = nameof(Win32Platform);
+
+        /// <summary>
+        /// The log event comes from the WinUI Platform.
+        /// </summary>
+        public const string WinUIPlatform = nameof(WinUIPlatform);
         
         /// <summary>
         /// The log event comes from X11 Platform.

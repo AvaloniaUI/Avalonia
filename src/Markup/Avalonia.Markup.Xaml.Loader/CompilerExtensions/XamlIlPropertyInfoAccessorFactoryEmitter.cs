@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
@@ -37,10 +38,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return EmitCreateAccessorFactoryDelegate(context, codeGen);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         private void EmitLoadPropertyAccessorFactory(XamlIlEmitContext context, IXamlILEmitter codeGen, IXamlType type, string accessorFactoryName, bool isStatic = true)
         {
             var types = context.GetAvaloniaTypes();
-            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference`1").MakeGenericType(context.Configuration.WellKnownTypes.Object);
+            var weakReferenceType = types.WeakReferenceOfT.MakeGenericType(context.Configuration.WellKnownTypes.Object);
             FindMethodMethodSignature accessorFactorySignature = new FindMethodMethodSignature(accessorFactoryName, types.IPropertyAccessor, weakReferenceType, types.IPropertyInfo)
             {
                 IsStatic = isStatic
@@ -48,9 +50,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             codeGen.Ldftn(type.GetMethod(accessorFactorySignature));
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         public IXamlType EmitLoadIndexerAccessorFactory(XamlIlEmitContext context, IXamlILEmitter codeGen, IXamlAstValueNode value)
         {
-            var intType = context.Configuration.TypeSystem.GetType("System.Int32");
+            var intType = context.Configuration.TypeSystem.WellKnownTypes.Int32;
             if (_indexerClosureType is null)
             {
                 _indexerClosureType = InitializeClosureType(context);
@@ -62,11 +65,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return EmitCreateAccessorFactoryDelegate(context, codeGen);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         private IXamlType InitializeClosureType(XamlIlEmitContext context)
         {
             var types = context.GetAvaloniaTypes();
-            var intType = context.Configuration.TypeSystem.GetType("System.Int32");
-            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference`1").MakeGenericType(context.Configuration.WellKnownTypes.Object);
+            var intType = context.Configuration.WellKnownTypes.Int32;
+            var weakReferenceType = types.WeakReferenceOfT.MakeGenericType(context.Configuration.WellKnownTypes.Object);
             var indexAccessorFactoryMethod = context.GetAvaloniaTypes().PropertyInfoAccessorFactory.GetMethod(
                     new FindMethodMethodSignature(
                         "CreateIndexerPropertyAccessor",
@@ -101,11 +105,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return _indexerClosureTypeBuilder.CreateType();
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         private IXamlType EmitCreateAccessorFactoryDelegate(XamlIlEmitContext context, IXamlILEmitter codeGen)
         {
             var types = context.GetAvaloniaTypes();
-            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference`1").MakeGenericType(context.Configuration.WellKnownTypes.Object);
-            var funcType = context.Configuration.TypeSystem.GetType("System.Func`3").MakeGenericType(
+            var weakReferenceType = types.WeakReferenceOfT.MakeGenericType(context.Configuration.WellKnownTypes.Object);
+            var funcType = context.Configuration.WellKnownTypes.GetFuncOfT(3).MakeGenericType(
                             weakReferenceType,
                             types.IPropertyInfo,
                             types.IPropertyAccessor);

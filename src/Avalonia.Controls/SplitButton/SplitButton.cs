@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 using Avalonia.Controls.Metadata;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -73,6 +74,8 @@ namespace Avalonia.Controls
         private bool _isKeyboardPressed       = false;
 
         private IDisposable? _flyoutPropertyChangedDisposable;
+
+        internal event EventHandler? FlyoutStateChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SplitButton"/> class.
@@ -256,6 +259,8 @@ namespace Avalonia.Controls
             UpdatePseudoClasses();
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new SplitButtonAutomationPeer(this);
+
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
@@ -331,10 +336,13 @@ namespace Avalonia.Controls
                     oldFlyout.Hide();
                 }
 
+                (oldFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(null);
+
                 // Must unregister events here while a reference to the old flyout still exists
                 UnregisterFlyoutEvents(oldFlyout);
 
                 RegisterFlyoutEvents(newFlyout);
+                (newFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(this);
                 UpdatePseudoClasses();
             }
 
@@ -346,7 +354,7 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if (key == Key.Space || key == Key.Enter)
+            if ((IsFocused && key == Key.Space) || key == Key.Enter)
             {
                 _isKeyboardPressed = true;
                 UpdatePseudoClasses();
@@ -360,7 +368,7 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if (key == Key.Space || key == Key.Enter)
+            if ((IsFocused && key == Key.Space) || key == Key.Enter)
             {
                 _isKeyboardPressed = false;
                 UpdatePseudoClasses();
@@ -413,6 +421,23 @@ namespace Avalonia.Controls
                     eventArgs.Handled = true;
                 }
             }
+        }
+
+        internal void InvokePrimary()
+        {
+            OnClickPrimary(null);
+        }
+
+        internal bool IsFlyoutOpen => _isFlyoutOpen;
+
+        internal void OpenFlyoutForAutomation()
+        {
+            OpenFlyout();
+        }
+
+        internal void CloseFlyoutForAutomation()
+        {
+            CloseFlyout();
         }
 
         /// <summary>
@@ -513,6 +538,7 @@ namespace Avalonia.Controls
             {
                 _isFlyoutOpen = true;
                 UpdatePseudoClasses();
+                FlyoutStateChanged?.Invoke(this, EventArgs.Empty);
 
                 OnFlyoutOpened();
             }
@@ -530,6 +556,7 @@ namespace Avalonia.Controls
             {
                 _isFlyoutOpen = false;
                 UpdatePseudoClasses();
+                FlyoutStateChanged?.Invoke(this, EventArgs.Empty);
 
                 OnFlyoutClosed();
             }

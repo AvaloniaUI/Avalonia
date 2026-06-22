@@ -1,4 +1,3 @@
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 
 namespace Avalonia.LinuxFramebuffer.Output

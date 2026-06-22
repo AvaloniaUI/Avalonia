@@ -8,8 +8,8 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Threading;
 using Avalonia.Win32.Automation;
+using Avalonia.Win32.Automation.Interop;
 using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -56,13 +56,77 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
 
-                case WindowsMessage.WM_NCCALCSIZE:
+                case WindowsMessage.WM_NCCALCSIZE when ToInt32(wParam) == 1:
                     {
-                        if (ToInt32(wParam) == 1 && (_windowProperties.Decorations == SystemDecorations.None || _isClientAreaExtended))
+                        if (_windowProperties.Decorations == WindowDecorations.None)
+                            return IntPtr.Zero;
+
+                        // When the client area is extended into the frame, we are still requesting the standard styles matching
+                        // the wanted decorations (such as WS_CAPTION or WS_BORDER) along with window bounds larger than the client size.
+                        // This allows the window to have the standard resize borders *outside* of the client area.
+                        // The logic for this lies in the Resize() method.
+                        //
+                        // After this happens, WM_NCCALCSIZE provides us with a new window area matching those requested bounds.
+                        // We need to adjust that area back to our preferred client area, keeping the resize borders around it.
+                        //
+                        // The same logic applies when the window gets maximized, the only difference being that Windows chose
+                        // the final bounds instead of us.
+                        if (_isClientAreaExtended)
                         {
+                            GetWindowPlacement(hWnd, out var placement);
+                            if (placement.ShowCmd == ShowWindowCommand.ShowMinimized)
+                                break;
+
+                            var paramsObj = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
+                            ref var rect = ref paramsObj.rgrc[0];
+
+                            var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+                            var adjuster = CreateWindowRectAdjuster();
+                            var borderThickness = new RECT();
+
+                            // We told Windows we have a caption, but since we're actually extending into it, it should not be taken into account.
+                            if (style.HasAllFlags(WindowStyles.WS_CAPTION))
+                            {
+                                if (placement.ShowCmd == ShowWindowCommand.ShowMaximized)
+                                {
+                                    adjuster.Adjust(ref borderThickness, style & ~WindowStyles.WS_CAPTION | WindowStyles.WS_BORDER | WindowStyles.WS_THICKFRAME, 0);
+                                }
+                                else
+                                {
+                                    // There's no extra border on top with WS_CAPTION: it's part of the caption.
+                                    adjuster.Adjust(ref borderThickness, style, 0);
+                                    borderThickness.top = 0;
+                                }
+                            }
+                            else if (style.HasAllFlags(WindowStyles.WS_BORDER))
+                            {
+                                if (placement.ShowCmd == ShowWindowCommand.ShowMaximized)
+                                {
+                                    adjuster.Adjust(ref borderThickness, style, 0);
+                                }
+                                else
+                                {
+                                    adjuster.Adjust(ref borderThickness, style, 0);
+
+                                    var thinBorderThickness = new RECT();
+                                    adjuster.Adjust(ref thinBorderThickness, style & ~WindowStyles.WS_THICKFRAME, 0);
+                                    borderThickness.top = thinBorderThickness.top;
+                                }
+                            }
+                            else
+                            {
+                                adjuster.Adjust(ref borderThickness, style, 0);
+                            }
+
+                            rect.left -= borderThickness.left;
+                            rect.top -= borderThickness.top;
+                            rect.right -= borderThickness.right;
+                            rect.bottom -= borderThickness.bottom;
+
+                            Marshal.StructureToPtr(paramsObj, lParam, false);
+
                             return IntPtr.Zero;
                         }
-
                         break;
                     }
 
@@ -87,10 +151,7 @@ namespace Avalonia.Win32
                         // The first and foremost thing to do - notify the TopLevel
                         Closed?.Invoke();
 
-                        if (UiaCoreTypesApi.IsNetComInteropAvailable)
-                        {
-                            UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
-                        }
+                        UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
 
                         // We need to release IMM context and state to avoid leaks.
                         if (Imm32InputMethod.Current.Hwnd == _hwnd)
@@ -114,9 +175,9 @@ namespace Avalonia.Win32
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
                         //Remove root reference to this class, so unmanaged delegate can be collected
-                        s_instances.Remove(this);
+                        lock (s_instances)
+                            s_instances.Remove(this);
 
-                        _mouseDevice.Dispose();
                         _touchDevice.Dispose();
                         //Free other resources
                         Dispose();
@@ -127,7 +188,6 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_DPICHANGED:
-                    if (!_ignoreDpiChanges)
                     {
                         _dpi = (uint)wParam >> 16;
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
@@ -149,7 +209,6 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
-                    break;
 
                 case WindowsMessage.WM_GETICON:
                     if (_iconImpl == null)
@@ -158,21 +217,22 @@ namespace Avalonia.Win32
                     }
 
                     var requestIcon = (Icons)wParam;
-                    var requestDpi = (uint) lParam;
+                    var requestDpi = (uint)lParam;
 
                     if (requestDpi == 0)
                     {
                         requestDpi = _dpi;
                     }
-                                        
+
                     return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
+                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, true);
+                    break;
+
                 case WindowsMessage.WM_SYSKEYDOWN:
-                    {
-                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam);
-                        break;
-                    }
+                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, false);
+                    break;
 
                 case WindowsMessage.WM_SYSCOMMAND:
                     // Disable system handling of Alt/F10 menu keys.
@@ -187,11 +247,15 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_KEYUP:
+                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam, true);
+                    _ignoreWmChar = false;
+                    break;
+
                 case WindowsMessage.WM_SYSKEYUP:
-                    {
-                        e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam);
-                        break;
-                    }
+                    e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam, false);
+                    _ignoreWmChar = false;
+                    break;
+
                 case WindowsMessage.WM_CHAR:
                     {
                         if (Imm32InputMethod.Current.IsComposing)
@@ -206,7 +270,6 @@ namespace Avalonia.Win32
 
                             e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner, text);
                         }
-
                         break;
                     }
 
@@ -278,14 +341,6 @@ namespace Avalonia.Win32
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
                         break;
                     }
-                // Mouse capture is lost
-                case WindowsMessage.WM_CANCELMODE:
-                    if (!IsMouseInPointerEnabled)
-                    {
-                        _mouseDevice.Capture(null);
-                    }
-
-                    break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
@@ -392,6 +447,27 @@ namespace Avalonia.Win32
                         break;
                     }
 
+                // covers WM_CANCELMODE which sends WM_CAPTURECHANGED in DefWindowProc
+                case WindowsMessage.WM_CAPTURECHANGED:
+                    {
+                        if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
+                        if (!IsOurWindow(lParam))
+                        {
+                            _trackingMouse = false;
+                            e = new RawPointerEventArgs(
+                                _mouseDevice,
+                                timestamp,
+                                Owner,
+                                RawPointerEventType.CancelCapture,
+                                new Point(-1, -1),
+                                WindowsKeyboardDevice.Instance.Modifiers);
+                        }
+                        break;
+                    }
+
                 case WindowsMessage.WM_NCLBUTTONDOWN:
                 case WindowsMessage.WM_NCRBUTTONDOWN:
                 case WindowsMessage.WM_NCMBUTTONDOWN:
@@ -436,6 +512,38 @@ namespace Avalonia.Win32
                         {
                             foreach (var touchInput in touchInputs)
                             {
+                                var position = PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100));
+                                var rawPointerPoint = new RawPointerPoint()
+                                {
+                                    Position = position,
+                                };
+
+                                // Try to get the touch width and height.
+                                // See https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-touchinput
+                                // > The width of the touch contact area in hundredths of a pixel in physical screen coordinates. This value is only valid if the dwMask member has the TOUCHEVENTFMASK_CONTACTAREA flag set.
+                                const int TOUCHEVENTFMASK_CONTACTAREA = 0x0004; // Known as TOUCHINPUTMASKF_CONTACTAREA in the docs.
+                                if ((touchInput.Mask & TOUCHEVENTFMASK_CONTACTAREA) != 0)
+                                {
+                                    var centerX = touchInput.X / 100.0;
+                                    var centerY = touchInput.Y / 100.0;
+
+                                    var rightX = centerX + touchInput.CxContact / 100.0 /
+                                        2 /*The center X add the half width is the right X*/;
+                                    var bottomY = centerY + touchInput.CyContact / 100.0 /
+                                        2 /*The center Y add the half height is the bottom Y*/;
+
+                                    var bottomRightPixelPoint =
+                                        new PixelPoint((int)rightX, (int)bottomY);
+                                    var bottomRightPosition = PointToClient(bottomRightPixelPoint);
+
+                                    var centerPosition = position;
+                                    var halfWidth = bottomRightPosition.X - centerPosition.X;
+                                    var halfHeight = bottomRightPosition.Y - centerPosition.Y;
+                                    var leftTopPosition = new Point(centerPosition.X - halfWidth, centerPosition.Y - halfHeight);
+
+                                    rawPointerPoint.ContactRect = new Rect(leftTopPosition, bottomRightPosition);
+                                }
+
                                 input.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
                                     Owner,
                                     touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_UP) ?
@@ -443,7 +551,7 @@ namespace Avalonia.Win32
                                         touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_DOWN) ?
                                             RawPointerEventType.TouchBegin :
                                             RawPointerEventType.TouchUpdate,
-                                    PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100)),
+                                    rawPointerPoint,
                                     WindowsKeyboardDevice.Instance.Modifiers,
                                     touchInput.Id));
                             }
@@ -651,11 +759,6 @@ namespace Avalonia.Win32
 
                             UpdateWindowProperties(newWindowProperties);
 
-                            if (windowState == WindowState.Maximized)
-                            {
-                                MaximizeWithoutCoveringTaskbar();
-                            }
-
                             WindowStateChanged?.Invoke(windowState);
 
                             if (_isClientAreaExtended)
@@ -691,6 +794,21 @@ namespace Avalonia.Win32
 
                         _maxTrackSize = mmi.ptMaxTrackSize;
 
+                        // A window without a caption (i.e. None and BorderOnly decorations) maximizes to the whole screen
+                        // by default. Adjust that to the screen's working area instead.
+                        var style = GetStyle();
+                        if (!style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME) &&
+                            Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST) is { } screen)
+                        {
+                            var maximizedRect = GetCaptionlessMaximizedRect(style, screen.WorkingArea);
+                            // We aren't changing ptMaxPosition because its coordinates must always target the primary screen.
+                            // We can't do that, since the work area might not be the same for all screens.
+                            // Instead, only set the desired max size here.
+                            // WM_WINDOWPOSCHANGING moves the window to the correct position.
+                            mmi.ptMaxSize.X = maximizedRect.Width;
+                            mmi.ptMaxSize.Y = maximizedRect.Height;
+                        }
+
                         if (_minSize.Width > 0)
                         {
                             mmi.ptMinTrackSize.X =
@@ -719,6 +837,39 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
 
+                case WindowsMessage.WM_WINDOWPOSCHANGING:
+                    {
+                        var pos = (WINDOWPOS*)lParam;
+                        var style = GetStyle();
+                        var flags = (SetWindowPosFlags)pos->flags;
+
+                        // A window without a caption (i.e. None and BorderOnly decorations) maximizes to the whole screen
+                        // by default. Adjust that to the screen's working area instead.
+                        if (!style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME) &&
+                            style.HasAllFlags(WindowStyles.WS_MAXIMIZE) &&
+                            !_isFullScreenActive &&
+                            !flags.HasAllFlags(SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE))
+                        {
+                            GetWindowPlacement(Hwnd, out var placement);
+
+                            // Prefer ScreenFromRect with the window's restored bounds.
+                            // If the window was minimized, ScreenFromHwnd won't return the correct monitor at this point.
+                            var screen = Screen.ScreenFromRect(placement.NormalPosition.ToPixelRect())
+                                ?? Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+
+                            if (screen is not null)
+                            {
+                                var maximizedRect = GetCaptionlessMaximizedRect(style, screen.WorkingArea);
+                                pos->x = maximizedRect.X;
+                                pos->y = maximizedRect.Y;
+                                pos->cx = maximizedRect.Width;
+                                pos->cy = maximizedRect.Height;
+                                return IntPtr.Zero;
+                            }
+                        }
+                        break;
+                    }
+
                 case WindowsMessage.WM_DISPLAYCHANGE:
                     {
                         Screen?.OnChanged();
@@ -734,7 +885,7 @@ namespace Avalonia.Win32
                     {
                         LostFocus?.Invoke();
                     }
-                   
+
                     break;
 
                 case WindowsMessage.WM_INPUTLANGCHANGE:
@@ -789,7 +940,7 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
                 case WindowsMessage.WM_GETOBJECT:
-                    if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner is Control control)
+                    if ((long)lParam == uiaRootObjectId && _owner?.FocusRoot is Control control)
                     {
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);
@@ -798,7 +949,7 @@ namespace Avalonia.Win32
                     break;
                 case WindowsMessage.WM_WINDOWPOSCHANGED:
                     var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
-                    if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
+                    if ((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
                     {
                         OnShowHideMessage(true);
                     }
@@ -825,7 +976,7 @@ namespace Avalonia.Win32
 
                 if (message == WindowsMessage.WM_KEYDOWN)
                 {
-                    if(e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
+                    if (e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
                     {
                         _ignoreWmChar = true;
                     }
@@ -837,7 +988,7 @@ namespace Avalonia.Win32
                         // is handled.
                         _ignoreWmChar = e.Handled;
                     }
-                 }
+                }
 
                 if (s_intermediatePointsPooledList.Count > 0)
                 {
@@ -851,6 +1002,62 @@ namespace Avalonia.Win32
             }
 
             return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+
+        /// <summary>
+        /// Gets the expected maximized rect for a window without a caption.
+        /// </summary>
+        private PixelRect GetCaptionlessMaximizedRect(WindowStyles style, PixelRect workingArea)
+        {
+            var x = workingArea.X;
+            var y = workingArea.Y;
+            var cx = workingArea.Width;
+            var cy = workingArea.Height;
+
+            var adjuster = CreateWindowRectAdjuster();
+            var borderThickness = new RECT();
+
+            var adjustedStyle = style & ~WindowStyles.WS_CAPTION;
+
+            if (style.HasAllFlags(WindowStyles.WS_BORDER))
+                adjustedStyle |= WindowStyles.WS_BORDER;
+
+            if (style.HasAllFlags(WindowStyles.WS_CAPTION))
+                adjustedStyle |= WindowStyles.WS_THICKFRAME;
+
+            adjuster.Adjust(ref borderThickness, adjustedStyle, 0);
+
+            x += borderThickness.left;
+            y += borderThickness.top;
+            cx += -borderThickness.left + borderThickness.right;
+            cy += -borderThickness.top + borderThickness.bottom;
+
+            return new PixelRect(x, y, cx, cy);
+        }
+
+        internal bool IsOurWindow(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero)
+                return false;
+
+            if (hwnd == _hwnd)
+                return true;
+
+            return IsOurWindowGlobal(hwnd);
+        }
+
+        internal static bool IsOurWindowGlobal(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero)
+                return false;
+
+            lock (s_instances)
+                for (int i = 0; i < s_instances.Count; i++)
+                    if (s_instances[i]._hwnd == hwnd)
+                        return true;
+
+            return false;
         }
 
         private void OnShowHideMessage(bool shown)
@@ -920,7 +1127,8 @@ namespace Avalonia.Win32
             return null;
         }
 
-        private unsafe IReadOnlyList<RawPointerPoint> CreateIntermediatePoints(MOUSEMOVEPOINT movePoint, MOUSEMOVEPOINT prevMovePoint)
+        private unsafe IReadOnlyList<RawPointerPoint> CreateIntermediatePoints(MOUSEMOVEPOINT movePoint,
+            MOUSEMOVEPOINT prevMovePoint)
         {
             // To understand some of this code, please check MS docs:
             // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmousemovepointsex#remarks
@@ -931,6 +1139,7 @@ namespace Avalonia.Win32
             {
                 var movePointCopy = movePoint;
                 movePointCopy.time = 0; // empty "time" as otherwise WinAPI will always fail
+
                 int pointsCount = GetMouseMovePointsEx(
                     (uint)(Marshal.SizeOf(movePointCopy)),
                     &movePointCopy, movePoints, s_mouseHistoryInfos.Length,
@@ -938,47 +1147,46 @@ namespace Avalonia.Win32
 
                 // GetMouseMovePointsEx can return -1 if point wasn't found or there is so beeg delay that original points were erased from the buffer.
                 if (pointsCount <= 1)
-                {
                     return Array.Empty<RawPointerPoint>();
-                }
 
                 s_intermediatePointsPooledList.Clear();
-                s_intermediatePointsPooledList.Capacity = pointsCount;
-                for (int i = pointsCount - 1; i >= 1; i--)
+                s_sortedPoints.Clear();
+
+                s_sortedPoints.Capacity = pointsCount;
+
+                for (int i = 0; i < pointsCount; i++)
                 {
-                    var historyInfo = s_mouseHistoryInfos[i];
-                    // Skip points newer than current point.
-                    if (historyInfo.time > movePoint.time ||
-                        (historyInfo.time == movePoint.time &&
-                         historyInfo.x == movePoint.x &&
-                         historyInfo.y == movePoint.y))
-                    {
+                    var mp = movePoints[i];
+
+                    var x = mp.x > 32767 ? mp.x - 65536 : mp.x;
+                    var y = mp.y > 32767 ? mp.y - 65536 : mp.y;
+
+                    if (mp.time <= prevMovePoint.time || mp.time >= movePoint.time)
                         continue;
-                    }
-                    // Skip points older from previous WM_MOUSEMOVE point.
-                    if (historyInfo.time < prevMovePoint.time ||
-                        (historyInfo.time == prevMovePoint.time &&
-                            historyInfo.x == prevMovePoint.x &&
-                            historyInfo.y == prevMovePoint.y))
+
+                    s_sortedPoints.Add(new InternalPoint
                     {
-                        continue;
-                    }
-
-                    // To support multiple screens.
-                    if (historyInfo.x > 32767)
-                        historyInfo.x -= 65536;
-
-                    if (historyInfo.y > 32767)
-                        historyInfo.y -= 65536;
-
-                    var point = PointToClient(new PixelPoint(historyInfo.x, historyInfo.y));
-                    s_intermediatePointsPooledList.Add(new RawPointerPoint
-                    {
-                        Position = point
+                        Time = mp.time,
+                        Pt = new PixelPoint(x, y)
                     });
                 }
+
+                // sorting is required to ensure points are in order from oldest to newest
+                s_sortedPoints.Sort(static (a, b) => a.Time.CompareTo(b.Time));
+
+                foreach (var p in s_sortedPoints)
+                {
+                    var client = PointToClient(p.Pt);
+
+                    s_intermediatePointsPooledList.Add(new RawPointerPoint
+                    {
+                        Position = client
+                    });
+                }
+
                 return s_intermediatePointsPooledList;
             }
+
         }
 
         private RawPointerEventArgs CreatePointerArgs(IInputDevice device, ulong timestamp, RawPointerEventType eventType, RawPointerPoint point, RawInputModifiers modifiers, uint rawPointerId)
@@ -1051,20 +1259,42 @@ namespace Avalonia.Win32
         }
         private RawPointerPoint CreateRawPointerPoint(POINTER_TOUCH_INFO info)
         {
-            var pointerInfo = info.pointerInfo;
-            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
-            return new RawPointerPoint
+            var himetricLocation = GetHimetricLocation(info.pointerInfo);
+            var point = PointToClient(himetricLocation);
+
+            var pointerPoint = new RawPointerPoint
             {
                 Position = point,
                 // POINTER_PEN_INFO.pressure is normalized to a range between 0 and 1024, with 512 as a default.
                 // But in our API we use range from 0.0 to 1.0.
-                Pressure = info.pressure / 1024f
+                Pressure = info.pressure / 1024f,
             };
+
+            // See https://learn.microsoft.com/en-us/windows/win32/inputmsg/touch-mask-constants
+            // > TOUCH_MASK_CONTACTAREA: rcContact of the POINTER_TOUCH_INFO structure is valid.
+            if ((info.touchMask & TouchMask.TOUCH_MASK_CONTACTAREA) != 0)
+            {
+                // See https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-pointer_touch_info
+                // > The predicted screen coordinates of the contact area, in pixels. By default, if the device does not report a contact area, this field defaults to a 0-by-0 rectangle centered around the pointer location.
+                var leftTopPixelPoint =
+                    new PixelPoint(info.rcContactLeft, info.rcContactTop);
+                var leftTopPosition = PointToClient(leftTopPixelPoint);
+
+                var bottomRightPixelPoint =
+                    new PixelPoint(info.rcContactRight, info.rcContactBottom);
+                var bottomRightPosition = PointToClient(bottomRightPixelPoint);
+
+                // Why not use ptPixelLocationX and ptPixelLocationY to as leftTopPosition?
+                // Because ptPixelLocationX and ptPixelLocationY will be the center of the contact area.
+                pointerPoint.ContactRect = new Rect(leftTopPosition, bottomRightPosition);
+            }
+
+            return pointerPoint;
         }
         private RawPointerPoint CreateRawPointerPoint(POINTER_PEN_INFO info)
         {
-            var pointerInfo = info.pointerInfo;
-            var point = PointToClient(new PixelPoint(pointerInfo.ptPixelLocationX, pointerInfo.ptPixelLocationY));
+            var himetricLocation = GetHimetricLocation(info.pointerInfo);
+            var point = PointToClient(himetricLocation);
             return new RawPointerPoint
             {
                 Position = point,
@@ -1130,6 +1360,40 @@ namespace Avalonia.Win32
             _langid = langid;
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
+        }
+        
+        // GetPointerDeviceRects is part of the WM_POINTER API (Windows 8+) but is not implemented
+        // by Wine/Proton. Probe once and fall back to the integer pixel location when missing,
+        // otherwise the P/Invoke throws EntryPointNotFoundException for every pointer message.
+        // See https://github.com/AvaloniaUI/Avalonia/issues/21081.
+        private static readonly bool s_isGetPointerDeviceRectsAvailable = ProbeGetPointerDeviceRects();
+
+        private static bool ProbeGetPointerDeviceRects()
+        {
+            var user32 = LoadLibrary("user32.dll");
+            return user32 != IntPtr.Zero
+                && GetProcAddress(user32, nameof(GetPointerDeviceRects)) != IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Get the location of the pointer in screen coordinates with HIMETRIC sub-pixel precision
+        /// when supported, falling back to the integer pixel location on platforms that do not
+        /// implement <c>GetPointerDeviceRects</c> (e.g. Wine/Proton).
+        /// </summary>
+        /// <param name="info">The pointer info.</param>
+        /// <returns>The pointer location in screen pixels.</returns>
+        private Point GetHimetricLocation(POINTER_INFO info)
+        {
+            if (!s_isGetPointerDeviceRectsAvailable)
+            {
+                return new Point(info.ptPixelLocationX, info.ptPixelLocationY);
+            }
+
+            GetPointerDeviceRects(info.sourceDevice, out var pointerDeviceRect, out var displayRect);
+            var himetricLocation = new Point(
+                info.ptHimetricLocationRawX * displayRect.Width / (double)pointerDeviceRect.Width + displayRect.left,
+                info.ptHimetricLocationRawY * displayRect.Height / (double)pointerDeviceRect.Height + displayRect.top);
+            return himetricLocation;
         }
 
         private static int ToInt32(IntPtr ptr)
@@ -1234,13 +1498,19 @@ namespace Avalonia.Win32
             return modifiers;
         }
 
-        private RawKeyEventArgs? TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam)
+        private RawKeyEventArgs? TryCreateRawKeyEventArgs(RawKeyEventType eventType, ulong timestamp, IntPtr wParam, IntPtr lParam, bool useKeySymbol)
         {
             var virtualKey = ToInt32(wParam);
             var keyData = ToInt32(lParam);
             var key = KeyInterop.KeyFromVirtualKey(virtualKey, keyData);
             var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
-            var keySymbol = KeyInterop.GetKeySymbol(virtualKey, keyData);
+
+            // Avoid calling GetKeySymbol() for WM_SYSKEYDOWN/UP:
+            // it ultimately calls ToUnicodeEx, which corrupts keyboard state for system key events.
+            // Use MapVirtualKey-based fallback instead — it's layout-aware without touching keyboard state.
+            var keySymbol = useKeySymbol
+                ? KeyInterop.GetKeySymbol(virtualKey, keyData)
+                : KeyInterop.GetKeySymbolFromVirtualKey(virtualKey);
 
             if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
                 return null;

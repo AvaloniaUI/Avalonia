@@ -1,8 +1,8 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11;
 
 internal class XResources
@@ -51,9 +51,9 @@ internal class XResources
     
     string? ReadResourcesString()
     {
-        XGetWindowProperty(_x11.Display, _x11.RootWindow, _x11.Atoms.XA_RESOURCE_MANAGER,
+        XGetWindowProperty(_x11.Display, _x11.RootWindow, _x11.Atoms.RESOURCE_MANAGER,
             IntPtr.Zero, new IntPtr(0x7fffffff),
-            false, _x11.Atoms.XA_STRING, out _, out var actualFormat,
+            false, _x11.Atoms.STRING, out _, out var actualFormat,
             out var nitems, out _, out var prop);
         try
         {
@@ -69,7 +69,7 @@ internal class XResources
     
     private void OnRootPropertyChanged(IntPtr atom)
     {
-        if (atom == _x11.Atoms.XA_RESOURCE_MANAGER)
+        if (atom == _x11.Atoms.RESOURCE_MANAGER)
             UpdateResources();
     }
 }

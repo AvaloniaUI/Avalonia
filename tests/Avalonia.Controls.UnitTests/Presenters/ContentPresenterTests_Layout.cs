@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
-    public class ContentPresenterTests_Layout
+    public class ContentPresenterTests_Layout : ScopedTestBase
     {
         [Theory]
         [InlineData(HorizontalAlignment.Stretch, VerticalAlignment.Stretch, 0, 0, 100, 100)]
@@ -234,7 +234,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(new Rect(32, 32, 0, 0), content.Bounds);
         }
 
-        public class UseLayoutRounding
+        public class UseLayoutRounding : ScopedTestBase
         {
             [Fact]
             public void Measure_Rounds_Padding()

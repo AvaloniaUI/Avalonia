@@ -94,7 +94,7 @@ namespace Avalonia
         {
             const string exceptionMessage = "Invalid CornerRadius.";
 
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage))
+            using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage))
             {
                 if (tokenizer.TryReadDouble(out var a))
                 {

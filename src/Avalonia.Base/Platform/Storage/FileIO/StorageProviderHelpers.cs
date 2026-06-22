@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace Avalonia.Platform.Storage.FileIO;
 
 internal static class StorageProviderHelpers
 {
-    public static BclStorageItem? TryCreateBclStorageItem(string path)
+    public static BclStorageItem? TryCreateBclStorageItem(string? path)
     {
         if (!string.IsNullOrWhiteSpace(path))
         {
@@ -36,11 +37,19 @@ internal static class StorageProviderHelpers
 
     public static Uri UriFromFilePath(string path, bool isDirectory)
     {
-        var uriPath = new StringBuilder(path)
-            .Replace("%", $"%{(int)'%':X2}")
-            .Replace("[", $"%{(int)'[':X2}")
-            .Replace("]", $"%{(int)']':X2}");
-
+        var uriPath = new StringBuilder();
+        bool isLongPath = path.StartsWith(@"\\?\", StringComparison.Ordinal);//Windows long path prefix
+        if (isLongPath)
+        {
+            uriPath.Append(path, 4, path.Length - 4);
+        }
+        else
+        {
+            uriPath.Append(path);
+        }
+        uriPath = uriPath.Replace("%", $"%{(int)'%':X2}")
+                                    .Replace("[", $"%{(int)'[':X2}")
+                                    .Replace("]", $"%{(int)']':X2}");
         if (!path.EndsWith('/') && isDirectory)
         {
             uriPath.Append('/');
@@ -60,7 +69,7 @@ internal static class StorageProviderHelpers
             return null;
         }
     }
-    
+
     [return: NotNullIfNotNull(nameof(path))]
     public static string? NameWithExtension(string? path, string? defaultExtension, FilePickerFileType? filter)
     {

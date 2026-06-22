@@ -5,6 +5,7 @@ using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Skia;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Browser.Rendering;
@@ -29,11 +30,11 @@ internal class RenderTargetBrowserSurface : BrowserSurface
         
     }
 
-    public override object[] GetRenderSurfaces()
+    public override IPlatformRenderSurface[] GetRenderSurfaces()
     {
-        if (_graphics.Target == null)
+        if (_graphics.Target is not IPlatformRenderSurface target)
             return [];
-        return [_graphics.Target];
+        return [target];
     }
 
     public override void OnSizeChanged(double pixelWidth, double pixelHeight, double dpr)
