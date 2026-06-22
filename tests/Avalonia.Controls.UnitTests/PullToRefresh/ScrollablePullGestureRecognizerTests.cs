@@ -18,7 +18,7 @@ namespace Avalonia.Controls.UnitTests.PullToRefresh
         // for the next PullGestureEvent - the same id that was just used in the
         // PullGestureEndedEvent for the previous gesture.
         [Fact]
-        public void PointerCaptureLost_resets_recognizer_state_like_PointerReleased()
+        public void PointerCaptureLost_Resets_Recognizer_State_Like_PointerReleased()
         {
             var recognizer = new ScrollablePullGestureRecognizer(PullDirection.TopToBottom, isMouseEnabled: true);
 

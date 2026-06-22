@@ -20,7 +20,7 @@ namespace Avalonia.Controls.UnitTests.PullToRefresh
         // events and raise duplicate PullGesture/PullGestureEnded pairs, which (combined with
         // the _entered desync fix in RefreshInfoProvider) corrupts the visualizer state.
         [Fact]
-        public void Adapt_called_twice_does_not_leak_pull_gesture_recognizer()
+        public void Adapt_Called_Twice_Does_Not_Leak_Pull_Gesture_Recognizer()
         {
             var sv = new ScrollViewer
             {

@@ -23,7 +23,7 @@ namespace Avalonia.Controls.UnitTests.PullToRefresh
         //      so IsInteractingForRefresh is NOT reasserted.
         //   5. RefreshVisualizer never re-enters the Interacting state -> spinner does not appear.
         [Fact]
-        public void IsInteractingForRefresh_is_reasserted_after_being_cleared_externally()
+        public void IsInteractingForRefresh_Is_Reasserted_After_Being_Cleared_Externally()
         {
             var provider = new RefreshInfoProvider(
                 PullDirection.TopToBottom,
@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests.PullToRefresh
         // With Width==0, value.X / Width produces +Infinity / NaN, which then breaks every
         // downstream consumer of InteractionRatio (Math.Min(1, NaN) returns NaN).
         [Fact]
-        public void Horizontal_pull_with_zero_width_produces_safe_InteractionRatio()
+        public void Horizontal_Pull_With_Zero_Width_Produces_Safe_InteractionRatio()
         {
             var provider = new RefreshInfoProvider(
                 PullDirection.LeftToRight,
@@ -71,7 +71,7 @@ namespace Avalonia.Controls.UnitTests.PullToRefresh
         // Sanity check for the existing happy-path: a complete gesture lifecycle
         // (Entered -> Exited -> Entered) must toggle IsInteractingForRefresh correctly.
         [Fact]
-        public void Normal_gesture_lifecycle_toggles_IsInteractingForRefresh_correctly()
+        public void Normal_Gesture_Lifecycle_Toggles_IsInteractingForRefresh_Correctly()
         {
             var provider = new RefreshInfoProvider(
                 PullDirection.TopToBottom,
