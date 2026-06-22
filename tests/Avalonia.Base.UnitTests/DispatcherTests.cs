@@ -615,102 +615,9 @@ public partial class DispatcherTests
         }
     }
 
-    [Fact]
-    public async Task ExecutionContextIsPreservedInDispatcherInvokeAsync()
-    {
-        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
-        var tokenSource = new CancellationTokenSource();
-        string? test1 = null;
-        string? test2 = null;
-        string? test3 = null;
-
-        // All test code must run inside Task.Run to avoid interfering with the test:
-        //  1. Prevent the execution context from being captured by MainLoop.
-        //  2. Prevent the execution context from remaining effective when set on the same thread.
-        var task = Task.Run(() =>
-        {
-            var testObject = new AsyncLocalTestClass();
-
-            // Test 1: Verify Task.Run preserves the execution context.
-            // First, test Task.Run to ensure that the preceding validation always passes, serving as a baseline for the subsequent Invoke/InvokeAsync tests.
-            // This way, if a later test fails, we have the .NET framework's baseline behavior for reference.
-            testObject.AsyncLocalField.Value = "Initial Value";
-            var task1 = Task.Run(() =>
-            {
-                test1 = testObject.AsyncLocalField.Value;
-            });
-
-            // Test 2: Verify Invoke preserves the execution context.
-            testObject.AsyncLocalField.Value = "Initial Value";
-            Dispatcher.UIThread.Invoke(() =>
-            {
-                test2 = testObject.AsyncLocalField.Value;
-            });
-
-            // Test 3: Verify InvokeAsync preserves the execution context.
-            testObject.AsyncLocalField.Value = "Initial Value";
-            _ = Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                test3 = testObject.AsyncLocalField.Value;
-            });
-
-            _ = Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                await Task.WhenAll(task1);
-                tokenSource.Cancel();
-            });
-
-        }, TestContext.Current.CancellationToken);
-
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
-        await Task.WhenAll(task);
-
-        // Assertions
-        // Task.Run: Always passes (guaranteed by the .NET runtime).
-        Assert.Equal("Initial Value", test1);
-        // Invoke: Always passes because the context is not changed.
-        Assert.Equal("Initial Value", test2);
-        // InvokeAsync: See https://github.com/AvaloniaUI/Avalonia/pull/19163
-        Assert.Equal("Initial Value", test3);
-    }
-
-    [Fact]
-    public async Task ExecutionContextIsNotPreservedAmongDispatcherInvokeAsync()
-    {
-        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
-        var tokenSource = new CancellationTokenSource();
-        string? test = null;
-
-        // All test code must run inside Task.Run to avoid interfering with the test:
-        //  1. Prevent the execution context from being captured by MainLoop.
-        //  2. Prevent the execution context from remaining effective when set on the same thread.
-        var task = Task.Run(() =>
-        {
-            var testObject = new AsyncLocalTestClass();
-
-            // Test: Verify that InvokeAsync calls do not share execution context between each other.
-            _ = Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                testObject.AsyncLocalField.Value = "Initial Value";
-            });
-            _ = Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                test = testObject.AsyncLocalField.Value;
-            });
-
-            _ = Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                tokenSource.Cancel();
-            });
-        }, TestContext.Current.CancellationToken);
-
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
-        await Task.WhenAll(task);
-
-        // Assertions
-        // The value should NOT flow between different InvokeAsync execution contexts.
-        Assert.Null(test);
-    }
+    // NOTE: ExecutionContext / culture behaviour tests live in the shared DispatcherExecutionContextTests.cs,
+    // which is compiled into both this project and Avalonia.UnitTests.WpfCompare to verify the behaviour
+    // matches WPF.
 
     [Fact]
     public void MediaContextRenderSchedulingDoesNotCaptureAmbientExecutionContext()
@@ -782,64 +689,61 @@ public partial class DispatcherTests
         Assert.Null(test);
     }
 
+    // Avalonia deliberately opts OUT of the runtime's "culture flows with ExecutionContext" behaviour for
+    // dispatcher operations (see CulturePreservingExecutionContext and issue #21451): a dispatcher operation
+    // runs under the UI thread's live culture, NOT under whatever culture was current on the thread that
+    // happened to queue it. This is specific to culture - other ExecutionContext/AsyncLocal state still flows
+    // normally, see ExecutionContextIsPreservedInDispatcherInvokeAsync.
     [Fact]
-    public async Task ExecutionContextCultureInfoIsPreservedInDispatcherInvokeAsync()
+    [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Tests the dispatcher itself")]
+    public void DispatcherOperationsUseLiveUiThreadCultureInsteadOfCapturedCulture()
     {
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
         var tokenSource = new CancellationTokenSource();
-        string? test1 = null;
-        string? test2 = null;
-        string? test3 = null;
+
+        // "sux-Shaw-UM" (Sumerian) is extremely unlikely to be a machine default, so the test is not affected
+        // by the user's environment.
+        var uiThreadCulture = CultureInfo.GetCultureInfo("sux-Shaw-UM");
+        var callSiteCulture = CultureInfo.GetCultureInfo("kk-KZ");
+
         var oldCulture = Thread.CurrentThread.CurrentCulture;
 
-        // All test code must run inside Task.Run to avoid interfering with the test:
-        //  1. Prevent the execution context from being captured by MainLoop.
-        //  2. Prevent the execution context from remaining effective when set on the same thread.
-        var task = Task.Run(() =>
-        {
-            // This culture tag is Sumerian and is extremely unlikely to be set as the default on any device,
-            // ensuring that this test will not be affected by the user's environment.
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("sux-Shaw-UM");
+        // This thread runs the MainLoop below, i.e. it is the UI thread. Give it a known culture.
+        Thread.CurrentThread.CurrentCulture = uiThreadCulture;
 
-            // Test 1: Verify Task.Run preserves the culture in the execution context.
-            // First, test Task.Run to ensure that the preceding validation always passes, serving as a baseline for the subsequent Invoke/InvokeAsync tests.
-            // This way, if a later test fails, we have the .NET framework's baseline behavior for reference.
-            var task1 = Task.Run(() =>
-            {
-                test1 = Thread.CurrentThread.CurrentCulture.Name;
-            });
-
-            // Test 2: Verify Invoke preserves the execution context.
-            Dispatcher.UIThread.Invoke(() =>
-            {
-                test2 = Thread.CurrentThread.CurrentCulture.Name;
-            });
-
-            // Test 3: Verify InvokeAsync preserves the culture in the execution context.
-            _ = Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                test3 = Thread.CurrentThread.CurrentCulture.Name;
-            });
-
-            _ = Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                await Task.WhenAll(task1);
-                tokenSource.Cancel();
-            });
-        }, TestContext.Current.CancellationToken);
+        string? taskRunSaw = null;     // baseline: a plain Task.Run continuation DOES flow the call-site culture
+        string? invokeSaw = null;
+        string? invokeAsyncSaw = null;
 
         try
         {
-            Dispatcher.UIThread.MainLoop(tokenSource.Token);
-            await Task.WhenAll(task);
+            var task = Task.Run(() =>
+            {
+                // Set a DIFFERENT culture on this (non-UI) thread, then queue work onto the dispatcher.
+                Thread.CurrentThread.CurrentCulture = callSiteCulture;
 
-            // Assertions
-            // Task.Run: Always passes (guaranteed by the .NET runtime).
-            Assert.Equal("sux-Shaw-UM", test1);
-            // Invoke: Always passes because the context is not changed.
-            Assert.Equal("sux-Shaw-UM", test2);
-            // InvokeAsync: See https://github.com/AvaloniaUI/Avalonia/pull/19163
-            Assert.Equal("sux-Shaw-UM", test3);
+                // Baseline: confirms the runtime still flows culture through the ExecutionContext in general.
+                var baseline = Task.Run(() => taskRunSaw = Thread.CurrentThread.CurrentCulture.Name);
+
+                Dispatcher.UIThread.Invoke(() => invokeSaw = Thread.CurrentThread.CurrentCulture.Name);
+
+                _ = Dispatcher.UIThread.InvokeAsync(() => invokeAsyncSaw = Thread.CurrentThread.CurrentCulture.Name);
+
+                _ = Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await Task.WhenAll(baseline);
+                    tokenSource.Cancel();
+                });
+            }, TestContext.Current.CancellationToken);
+
+            Dispatcher.UIThread.MainLoop(tokenSource.Token);
+            task.GetAwaiter().GetResult();
+
+            // Baseline: Task.Run flows the call-site culture (guaranteed by the runtime).
+            Assert.Equal("kk-KZ", taskRunSaw);
+            // Dispatcher operations run under the UI thread's live culture, not the captured call-site culture.
+            Assert.Equal("sux-Shaw-UM", invokeSaw);
+            Assert.Equal("sux-Shaw-UM", invokeAsyncSaw);
         }
         finally
         {

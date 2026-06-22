@@ -227,6 +227,10 @@ partial class Build : NukeBuild
             {
                 tfm = "net8.0";
             }
+            if (tfm == "$(AvsCurrentWindowsTargetFramework)")
+            {
+                tfm = "net10.0-windows";
+            }
             
             if (tfm.StartsWith("net4")
                 && (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -279,6 +283,9 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Headless.NUnit.PerTest.UnitTests");
             RunCoreTest("Avalonia.Headless.XUnit.PerAssembly.UnitTests");
             RunCoreTest("Avalonia.Headless.XUnit.PerTest.UnitTests");
+
+            if (Parameters.IsRunningOnWindows)
+                RunCoreTest("Avalonia.UnitTests.WpfCompare");
         });
 
     Target RunRenderTests => _ => _
