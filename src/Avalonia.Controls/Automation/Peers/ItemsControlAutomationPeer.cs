@@ -42,25 +42,6 @@ namespace Avalonia.Automation.Peers
             return AutomationControlType.List;
         }
 
-        protected override IReadOnlyList<AutomationPeer>? GetChildrenCore()
-        {
-            var owner = Owner;
-            if (owner.ItemCount == 0)
-                return null;
-
-            List<AutomationPeer>? result = null;
-            for (var i = 0; i < owner.ItemCount; i++)
-            {
-                if (owner.ContainerFromIndex(i) is Control container && container.IsVisible)
-                {
-                    result ??= new List<AutomationPeer>();
-                    result.Add(GetOrCreate(container));
-                }
-            }
-
-            return result;
-        }
-
         public void Scroll(ScrollAmount horizontalAmount, ScrollAmount verticalAmount)
         {
             _scroller?.Scroll(horizontalAmount, verticalAmount);
