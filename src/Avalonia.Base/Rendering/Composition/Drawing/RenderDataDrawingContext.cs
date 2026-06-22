@@ -226,9 +226,8 @@ internal class RenderDataDrawingContext : DrawingContext
     protected override void PushEffectCore(IEffect effect, Rect bounds)
     {
         var before = Stream.OpcodeLength;
-        // Record raw bounds without inflation; inflation is handled by the backend implementation
-        // during playback to avoid double-inflation between immediate and recorded paths.
-        Stream.PushEffect(effect.ToImmutable(), bounds);
+        // Record inflated bounds so replay/backends can use them directly.
+        Stream.PushEffect(effect.ToImmutable(), bounds.Inflate(effect.GetEffectOutputPadding()));
         PushedScope(before);
     }
 

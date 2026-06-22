@@ -13,20 +13,15 @@ partial class DrawingContextImpl
         using var filter = CreateEffect(effect);
         var paint = SKPaintCache.Shared.Get();
         paint.ImageFilter = filter;
-
         if (effectClipRect.HasValue)
         {
-            // Inflate once at the backend level to ensure consistent behavior
-            // across immediate and recorded paths.
-            var inflated = effectClipRect.Value.Inflate(effect.GetEffectOutputPadding());
-            var skRect = inflated.ToSKRect();
+            var skRect = effectClipRect.Value.ToSKRect();
             Canvas.SaveLayer(skRect, paint);
         }
         else
         {
             Canvas.SaveLayer(paint);
         }
-        
         SKPaintCache.Shared.ReturnReset(paint);
     }
 

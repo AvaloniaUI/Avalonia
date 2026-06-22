@@ -138,6 +138,57 @@ namespace Avalonia.Media
             return rect;
         }
 
+        /// <inheritdoc/>
+        public override Rect GetOuterBounds()
+        {
+            Rect rect;
+
+            // If this group has an explicit effect bounds (set when pushing the effect),
+            // use it as the base content bounds instead of the union of children.
+            if (Effect != null && EffectBounds.HasValue)
+            {
+                rect = EffectBounds.Value;
+            }
+            else
+            {
+                rect = new Rect();
+                foreach (var drawing in Children)
+                    rect = rect.Union(drawing.GetOuterBounds());
+            }
+
+            // Include this group's own effect padding, if any
+            if (Effect != null)
+                rect = rect.Inflate(Effect.GetEffectOutputPadding());
+
+            // Apply transform last
+            if (Transform != null)
+                rect = rect.TransformToAABB(Transform.Value);
+
+            return rect;
+        }
+
+        /// <inheritdoc/>
+        public override Rect GetEffectContentBounds()
+        {
+            Rect rect;
+
+            if (EffectBounds.HasValue)
+            {
+                rect = EffectBounds.Value;
+            }
+            else
+            {
+                rect = new Rect();
+                foreach (var drawing in Children)
+                    rect = rect.Union(drawing.GetEffectContentBounds());
+            }
+
+            if (Transform != null)
+                rect = rect.TransformToAABB(Transform.Value);
+
+            return rect;
+        }
+
         private sealed class DrawingGroupDrawingContext : DrawingContext
         {
             private readonly DrawingGroup _drawingGroup;
