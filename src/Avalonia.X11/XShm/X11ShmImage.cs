@@ -13,7 +13,7 @@ internal unsafe class X11ShmImage : IDisposable
     private readonly IntPtr _deferredDisplay;
     private XImage* _shmImage;
     private XShmSegmentInfo* _shmSegmentInfo;
-    private bool _disposed;
+    private int _disposed;
     
     public X11ShmImage(PixelSize size, IntPtr deferredDisplay, IntPtr visual, int depth)
     {
@@ -79,7 +79,7 @@ internal unsafe class X11ShmImage : IDisposable
 
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref _disposed, true))
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
             return;
         
         // Teardown order per the MIT-SHM spec: detach the server, destroy the image, then drop the segment.
