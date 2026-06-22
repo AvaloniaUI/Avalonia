@@ -153,24 +153,14 @@ internal class X11ShmFramebufferRenderTarget : IFramebufferRenderTarget
 
         public void Dispose() => SendRender();
 
-        private unsafe void SendRender()
+        private void SendRender()
         {
-            var display = _owner._deferredDisplay;
-            var xid = _owner._windowXId;
-
-            var gc = XLib.XCreateGC(display, xid, 0, IntPtr.Zero);
-
-            var status = XLib.XShmPutImage(display, xid, gc, _image.ShmImage, 0, 0, 0, 0, (uint)Size.Width,
-                (uint)Size.Height, send_event: true);
-            XLib.XFlush(display);
-            XLib.XFreeGC(display, gc);
-
-            if (status != 0)
+            var image = _image;
+            if (image.Put(_owner._windowXId))
             {
                 // The request was accepted, so the server will emit a matching XShmCompletionEvent. Register a
                 // completion callback and count the frame as in flight only now, so a failed put can never leave
                 // the backpressure counter stuck (a frame that never completes would otherwise block Lock forever).
-                var image = _image;
                 _owner._dispatcher.RegisterForShmCompletion(image.ShmSeg, () => _owner.OnXShmCompletion(image));
                 _owner.OnImageSubmitted();
                 Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmLockedFramebuffer] SendRender XShmPutImage");
@@ -179,7 +169,7 @@ internal class X11ShmFramebufferRenderTarget : IFramebufferRenderTarget
             {
                 // No completion will arrive for a failed put; drop the image so it never counts toward backpressure.
                 Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)?.Log(this, "[X11ShmLockedFramebuffer] XShmPutImage failed, dropping image");
-                _image.Dispose();
+                image.Dispose();
             }
         }
     }

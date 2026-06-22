@@ -54,8 +54,8 @@ internal unsafe class X11ShmImage : IDisposable
 
     private readonly IntPtr _deferredDisplay;
 
-    public XImage* ShmImage { get; set; }
-    public XShmSegmentInfo* PShmSegmentInfo { get; }
+    private XImage* ShmImage { get; }
+    private XShmSegmentInfo* PShmSegmentInfo { get; }
     public IntPtr ShmAddr => PShmSegmentInfo->shmaddr;
 
     public const int ByteSizeOfPixel = 4;
@@ -63,6 +63,22 @@ internal unsafe class X11ShmImage : IDisposable
     public PixelSize Size { get; }
 
     public UIntPtr ShmSeg => PShmSegmentInfo->shmseg;
+
+    /// <summary>
+    /// Submits this image to the given window via XShmPutImage and requests a completion event. Returns
+    /// false if the server rejected the request, in which case no completion event will be delivered.
+    /// </summary>
+    public bool Put(IntPtr windowXId)
+    {
+        // The DeferredDisplay connection is owned by the rendering thread, so no XLockDisplay is needed -
+        // XInitThreads already serializes individual Xlib calls.
+        var gc = XCreateGC(_deferredDisplay, windowXId, 0, IntPtr.Zero);
+        var status = XShmPutImage(_deferredDisplay, windowXId, gc, ShmImage, 0, 0, 0, 0, (uint)Size.Width,
+            (uint)Size.Height, send_event: true);
+        XFlush(_deferredDisplay);
+        XFreeGC(_deferredDisplay, gc);
+        return status != 0;
+    }
 
     public void Dispose()
     {
