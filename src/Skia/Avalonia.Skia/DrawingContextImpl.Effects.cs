@@ -16,7 +16,10 @@ partial class DrawingContextImpl
 
         if (effectClipRect.HasValue)
         {
-            var skRect = effectClipRect.Value.ToSKRect();
+            // Inflate once at the backend level to ensure consistent behavior
+            // across immediate and recorded paths.
+            var inflated = effectClipRect.Value.Inflate(effect.GetEffectOutputPadding());
+            var skRect = inflated.ToSKRect();
             Canvas.SaveLayer(skRect, paint);
         }
         else

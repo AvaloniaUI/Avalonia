@@ -86,7 +86,18 @@ namespace Avalonia.Media
                 -sourceRect.X + destRect.X - bounds.X,
                 -sourceRect.Y + destRect.Y - bounds.Y);
 
-            using (context.PushClip(destRect))
+            // If the drawing has an effect with known output padding (e.g., DropShadow),
+            // expand the clip so that effect output isn't unnecessarily clipped.
+            // This helps cases where the Image's computed destRect is tight to the content
+            // (e.g., Stretch=None) and would otherwise trim the visual effect.
+            var clipRect = destRect;
+            if (drawing is DrawingGroup dg && dg.Effect is { } fx)
+            {
+                var pad = fx.GetEffectOutputPadding();
+                clipRect = clipRect.Inflate(pad);
+            }
+
+            using (context.PushClip(clipRect))
             using (context.PushTransform(translate * scale))
             {
                 drawing.Draw(context);

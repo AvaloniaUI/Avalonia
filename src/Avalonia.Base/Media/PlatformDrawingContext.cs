@@ -93,7 +93,9 @@ internal sealed class PlatformDrawingContext : DrawingContext
     {
         if (_impl is IDrawingContextImplWithEffects effectImpl)
         {
-            effectImpl.PushEffect(bounds.Inflate(effect.GetEffectOutputPadding()), effect);
+            // Do not inflate here. Inflation should be handled by the backend implementation
+            // to ensure it happens exactly once across both immediate and recorded paths.
+            effectImpl.PushEffect(bounds, effect);
         }
     }
 
