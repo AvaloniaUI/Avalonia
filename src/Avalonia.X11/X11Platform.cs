@@ -102,7 +102,7 @@ namespace Avalonia.X11
             
             Screens = X11Screens = new X11Screens(this);
 
-            if (options.AllowHighRefreshRate && AvaloniaLocator.Current.GetService<IRenderTimer>() is SleepLoopRenderTimer loopTimer)
+            if (options.AllowHighRefreshRate && timer is SleepLoopRenderTimer loopTimer)
             {
                 X11Screens.Changed += () => { loopTimer.DesiredFps = X11Screens.MaxRefreshRate; };
                 loopTimer.DesiredFps = X11Screens.MaxRefreshRate;
