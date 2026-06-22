@@ -13,17 +13,16 @@ namespace Avalonia.X11.XShmExtensions;
 
 internal unsafe class X11ShmImage : IDisposable
 {
-    public X11ShmImage(PixelSize size, X11ShmImageManager x11ShmImageManager)
+    public X11ShmImage(PixelSize size, X11ShmImageSwapchain owner)
     {
-        ShmImageManager = x11ShmImageManager;
+        Owner = owner;
         // The XShmSegmentInfo struct will store in XImage, and it must pin the address.
         IntPtr pXShmSegmentInfo = Marshal.AllocHGlobal(Marshal.SizeOf<XShmSegmentInfo>());
         var pShmSegmentInfo = (XShmSegmentInfo*)pXShmSegmentInfo;
         PShmSegmentInfo = pShmSegmentInfo;
 
-        var context = x11ShmImageManager.Context;
-        var display = context.Display;
-        var visual = context.Visual;
+        var display = owner.DeferredDisplay;
+        var visual = owner.Visual;
 
         const int ZPixmap = 2;
 
@@ -32,7 +31,7 @@ internal unsafe class X11ShmImage : IDisposable
 
         Size = size;
 
-        var depth = context.Depth;
+        var depth = owner.Depth;
         Debug.Assert(depth is 32, "The PixelFormat must be Bgra8888, so that the depth should be 32.");
 
         IntPtr data = IntPtr.Zero;
@@ -61,7 +60,7 @@ internal unsafe class X11ShmImage : IDisposable
         Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmImage] CreateX11ShmImage Size={Size} shmid={Shmid:X} shmaddr={ShmAddr}", Size, shmid, shmaddr);
     }
 
-    public X11ShmImageManager ShmImageManager { get; }
+    public X11ShmImageSwapchain Owner { get; }
 
     public XImage* ShmImage { get; set; }
     public XShmSegmentInfo* PShmSegmentInfo { get; }
@@ -75,8 +74,7 @@ internal unsafe class X11ShmImage : IDisposable
 
     public void Dispose()
     {
-        var context = ShmImageManager.Context;
-        XShmDetach(context.Display, PShmSegmentInfo);
+        XShmDetach(Owner.DeferredDisplay, PShmSegmentInfo);
 
         shmdt(ShmAddr);
         shmctl(PShmSegmentInfo->shmid, IPC_RMID, IntPtr.Zero);

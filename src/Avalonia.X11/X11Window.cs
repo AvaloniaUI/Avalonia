@@ -258,12 +258,12 @@ namespace Avalonia.X11
                         return;
                     }
 
-                    // The reason for using `_x11.Display` instead of `_x11.DeferredDisplay` is that XSHM requires pushing to a Display that can receive Events, in order to obtain the XShmCompletionEvent when rendering is complete.
-                    // Do not use `_renderHandle`, because the `_renderHandle` was introduced to fix gl, and the XShm should receive the events from the `_handle`. In other words, the XShm should only be use when disable the gl, which means the `_renderHandle` is equal to `_handle`.
-                    var x11ShmFramebufferSurface =
-                        new X11ShmFramebufferSurface(this, _x11.Display, _handle, visual, depth, platform.Options.ShouldRenderOnUIThread);
-                    _x11ShmFramebufferSurface = x11ShmFramebufferSurface;
-                    surfaces.Insert(0, x11ShmFramebufferSurface);
+                    // Render and receive XShmCompletionEvents on the DeferredDisplay connection, which the
+                    // rendering thread owns and drains itself. Do not use `_renderHandle`, because it was
+                    // introduced to fix gl, and XShm is only used when gl is disabled (so `_renderHandle` == `_handle`).
+                    surfaces.Insert(0,
+                        new X11ShmFramebufferSurface(_x11.DeferredDisplay, _handle, visual, depth,
+                            platform.ShmDeferredDisplayDispatcher));
                 }
             }
             
@@ -756,10 +756,6 @@ namespace Avalonia.X11
                     return;
                 HandleKeyEvent(ref ev);
             }
-            else if ((int) ev.type == _x11ShmFramebufferSurface?.XShmCompletionType)
-            {
-                _x11ShmFramebufferSurface.OnXShmCompletionEvent(ev);
-            }
         }
 
         private void HandleActivation(bool active)
@@ -978,7 +974,6 @@ namespace Avalonia.X11
             new PixelSize(MaxWindowDimension, MaxWindowDimension));
         
         private double _scaling = 1;
-        private X11ShmFramebufferSurface? _x11ShmFramebufferSurface;
 
         private void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
         {

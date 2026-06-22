@@ -1,42 +1,31 @@
-﻿using System;
+using System;
 using Avalonia.Logging;
 using Avalonia.Platform.Surfaces;
-
-using ShmSeg = System.UInt64;
 
 namespace Avalonia.X11.XShmExtensions;
 
 internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
 {
-    public X11ShmFramebufferSurface(X11Window x11Window, IntPtr display, IntPtr windowHandle, IntPtr visual, int depth,
-        bool shouldRenderOnUiThread)
+    public X11ShmFramebufferSurface(IntPtr deferredDisplay, IntPtr windowHandle, IntPtr visual, int depth,
+        X11DeferredDisplayDispatcher dispatcher)
     {
-        // From https://www.x.org/releases/X11R7.5/doc/Xext/mit-shm.html
-        // > The event type value that will be used can be determined at run time with a line of the form:
-        // > int CompletionType = XShmGetEventBase (display) + ShmCompletion;
-        const int ShmCompletion = 0;
-        XShmCompletionType = XShm.XShmGetEventBase(display) + ShmCompletion;
-
-        _context = new X11ShmFramebufferContext(x11Window, display, windowHandle, visual, depth, shouldRenderOnUiThread);
+        _deferredDisplay = deferredDisplay;
+        _windowHandle = windowHandle;
+        _visual = visual;
+        _depth = depth;
+        _dispatcher = dispatcher;
     }
 
-    public int XShmCompletionType { get; }
-
-    private readonly X11ShmFramebufferContext _context;
+    private readonly IntPtr _deferredDisplay;
+    private readonly IntPtr _windowHandle;
+    private readonly IntPtr _visual;
+    private readonly int _depth;
+    private readonly X11DeferredDisplayDispatcher _dispatcher;
 
     public IFramebufferRenderTarget CreateFramebufferRenderTarget()
     {
         Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmFramebufferSurface] CreateFramebufferRenderTarget");
 
-        return new X11ShmImageSwapchain(_context);
-    }
-
-    public unsafe void OnXShmCompletionEvent(XEvent @event)
-    {
-        var p = &@event;
-        var xShmCompletionEvent = (XShmCompletionEvent*)p;
-        ShmSeg shmseg = xShmCompletionEvent->shmseg;
-        Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmFramebufferSurface][OnXShmCompletionEvent] shmseg={ShmSeg}", shmseg);
-        _context.OnXShmCompletion(shmseg);
+        return new X11ShmImageSwapchain(_deferredDisplay, _windowHandle, _visual, _depth, _dispatcher);
     }
 }
