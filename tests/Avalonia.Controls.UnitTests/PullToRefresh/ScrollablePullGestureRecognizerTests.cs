@@ -1,61 +1,65 @@
-using System.Reflection;
+using System.Collections.Generic;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.PullToRefresh;
 using Avalonia.Input;
 using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Controls.UnitTests.PullToRefresh
+namespace Avalonia.Controls.UnitTests.PullToRefresh;
+
+public class ScrollablePullGestureRecognizerTests : ScopedTestBase
 {
-    public class ScrollablePullGestureRecognizerTests : ScopedTestBase
+    // Repro for the "PointerCaptureLost doesn't clean up state" bug.
+    //
+    // PointerReleased clears _pullInProgress, _tracking, _initialPosition.
+    // PointerCaptureLost only raises EndPull (so the PullGestureEnded event fires)
+    // but leaves _pullInProgress == true and _tracking pointing at the lost pointer.
+    // The next gesture re-enters PointerMoved with (_pullInProgress=true, pulling=true)
+    // and goes straight to HandlePull, skipping BeginPull. This reuses the OLD _gestureId
+    // for the next PullGestureEvent - the same id that was just used in the
+    // PullGestureEndedEvent for the previous gesture.
+    [Fact]
+    public void Gesture_After_PointerCaptureLost_Uses_A_New_Id()
     {
-        // Repro for the "PointerCaptureLost doesn't clean up state" bug.
-        //
-        // PointerReleased clears _pullInProgress, _tracking, _initialPosition.
-        // PointerCaptureLost only raises EndPull (so the PullGestureEnded event fires)
-        // but leaves _pullInProgress == true and _tracking pointing at the lost pointer.
-        // The next gesture re-enters PointerMoved with (_pullInProgress=true, pulling=true)
-        // and goes straight to HandlePull, skipping BeginPull. This reuses the OLD _gestureId
-        // for the next PullGestureEvent - the same id that was just used in the
-        // PullGestureEndedEvent for the previous gesture.
-        [Fact]
-        public void PointerCaptureLost_Resets_Recognizer_State_Like_PointerReleased()
-        {
-            var recognizer = new ScrollablePullGestureRecognizer(PullDirection.TopToBottom, isMouseEnabled: true);
+        var scrollable = new TestScrollable();
+        var recognizer = new ScrollablePullGestureRecognizer(PullDirection.TopToBottom, isMouseEnabled: true);
+        scrollable.GestureRecognizers.Add(recognizer);
 
-            var pullInProgressField = GetField("_pullInProgress");
-            var trackingField = GetField("_tracking");
-            var initialPositionField = GetField("_initialPosition");
+        var root = new TestRoot(scrollable);
 
-            // Simulate the recognizer being mid-pull with a tracked pointer
-            var pointer = new Avalonia.Input.Pointer(Avalonia.Input.Pointer.GetNextFreeId(), PointerType.Touch, isPrimary: true);
-            pullInProgressField.SetValue(recognizer, true);
-            trackingField.SetValue(recognizer, pointer);
-            initialPositionField.SetValue(recognizer, new Point(10, 20));
+        var pullIds = new List<int>();
+        var endedIds = new List<int>();
+        root.AddHandler(InputElement.PullGestureEvent, (_, e) => pullIds.Add(e.Id));
+        root.AddHandler(InputElement.PullGestureEndedEvent, (_, e) => endedIds.Add(e.Id));
 
-            // Capture is lost (e.g. another control steals it, or the visual is detached mid-gesture)
-            InvokePointerCaptureLost(recognizer, pointer);
+        var touch = new TouchTestHelper();
 
-            // The recognizer must be in a fully-clean state, like after PointerReleased.
-            Assert.False((bool)pullInProgressField.GetValue(recognizer)!,
-                "_pullInProgress must be cleared after PointerCaptureLost");
-            Assert.Null(trackingField.GetValue(recognizer));
-            Assert.Equal(default(Point), (Point)initialPositionField.GetValue(recognizer)!);
-        }
+        // First gesture: start pulling downwards so the recognizer begins a pull and captures the pointer.
+        touch.Down(scrollable, new Point(10, 20));
+        touch.Move(scrollable, new Point(10, 70));
 
-        private static FieldInfo GetField(string name)
-        {
-            var f = typeof(ScrollablePullGestureRecognizer)
-                .GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.NotNull(f);
-            return f!;
-        }
+        Assert.Single(pullIds);
+        var firstGestureId = pullIds[0];
 
-        private static void InvokePointerCaptureLost(ScrollablePullGestureRecognizer recognizer, IPointer pointer)
-        {
-            var method = typeof(ScrollablePullGestureRecognizer)
-                .GetMethod("PointerCaptureLost", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.NotNull(method);
-            method!.Invoke(recognizer, new object[] { pointer });
-        }
+        // Capture is lost (e.g. another control steals it, or the visual is detached mid-gesture)
+        touch.Cancel();
+
+        Assert.Equal([firstGestureId], endedIds);
+
+        // Second gesture must begin cleanly (BeginPull, not HandlePull) and therefore get a fresh id.
+        touch.Down(scrollable, new Point(10, 20));
+        touch.Move(scrollable, new Point(10, 70));
+
+        Assert.Equal(2, pullIds.Count);
+        Assert.NotEqual(firstGestureId, pullIds[1]);
+    }
+
+    private sealed class TestScrollable : Decorator, IScrollable
+    {
+        public Size Extent => new(100, 1000);
+        public Vector Offset { get; set; }
+        public Size Viewport => new(100, 100);
+        public bool CanHorizontallyScroll { get => false; }
+        public bool CanVerticallyScroll { get => true; }
     }
 }

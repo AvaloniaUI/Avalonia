@@ -19,6 +19,9 @@ namespace Avalonia.Controls.PullToRefresh
         private InputElement? _interactionSource;
         private bool _isVisualizerInteractionSourceAttached;
 
+        internal InputElement? InteractionSource
+            => _interactionSource;
+
         public ScrollViewerIRefreshInfoProviderAdapter(PullDirection pullDirection, bool isMouseEnabled)
         {
             _refreshPullDirection = pullDirection;
