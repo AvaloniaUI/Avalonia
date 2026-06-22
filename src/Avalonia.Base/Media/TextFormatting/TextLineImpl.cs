@@ -1171,9 +1171,9 @@ namespace Avalonia.Media.TextFormatting
 
         public override void Dispose()
         {
-            for (int i = 0; i < _textRuns.Length; i++)
+            foreach (var textRun in _textRuns)
             {
-                if (_textRuns[i] is ShapedTextRun shapedTextRun)
+                if (textRun is ShapedTextRun shapedTextRun)
                 {
                     shapedTextRun.Dispose();
                 }
@@ -1298,9 +1298,9 @@ namespace Avalonia.Media.TextFormatting
             var lineHeight = _paragraphProperties.LineHeight;
             var lineSpacing = _paragraphProperties.LineSpacing;
 
-            for (var index = 0; index < _textRuns.Length; index++)
+            foreach (var run in _textRuns)
             {
-                switch (_textRuns[index])
+                switch (run)
                 {
                     case ShapedTextRun textRun:
                         {
@@ -1345,9 +1345,9 @@ namespace Avalonia.Media.TextFormatting
 
             var inkBounds = new Rect();
 
-            for (var index = 0; index < _textRuns.Length; index++)
+            foreach (var run in _textRuns)
             {
-                switch (_textRuns[index])
+                switch (run)
                 {
                     case ShapedTextRun textRun:
                         {
