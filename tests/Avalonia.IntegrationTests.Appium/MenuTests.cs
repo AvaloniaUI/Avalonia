@@ -19,11 +19,13 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("None", clickedMenuItem.Text);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             // Click the reset button so that any menu still open gets closed
             var reset = Session.FindElementByAccessibilityId("MenuClickedMenuItemReset");
             reset?.Click();
+
+            base.Dispose();
         }
 
         [Fact]
