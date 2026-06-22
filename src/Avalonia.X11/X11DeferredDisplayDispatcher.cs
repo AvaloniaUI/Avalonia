@@ -1,20 +1,19 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Logging;
-using ShmSeg = System.UInt64;
 
-namespace Avalonia.X11.XShmExtensions;
+namespace Avalonia.X11;
 
 /// <summary>
-/// Drains events from the <c>DeferredDisplay</c> connection used for XShm rendering and dispatches
-/// the MIT-SHM completion events. A single instance is shared by every window on the platform, so it
-/// also owns the unified <c>shmseg -&gt; image</c> registry used to route completions back to the
-/// swapchain that submitted them.
+/// Drains events from the <c>DeferredDisplay</c> connection, which the rendering thread owns and pumps
+/// itself (the main UI event loop never reads it). A single instance is shared by every window on the
+/// platform. Currently it only routes MIT-SHM completion events, but the draining concept is not
+/// SHM-specific.
 /// </summary>
 /// <remarks>
-/// All members are expected to be called from the thread that renders (submits XShmPutImage), which is
-/// the same thread that drains the completion events. The connection is never touched from the UI event
-/// loop, so completions can be awaited by blocking on this connection regardless of which thread renders.
+/// All members are expected to be called from the rendering thread, which both submits work and drains the
+/// resulting events off this connection, so completions can be awaited by blocking here regardless of which
+/// thread renders.
 /// </remarks>
 internal unsafe class X11DeferredDisplayDispatcher
 {
@@ -25,18 +24,18 @@ internal unsafe class X11DeferredDisplayDispatcher
         // From https://www.x.org/releases/X11R7.5/doc/Xext/mit-shm.html
         // > int CompletionType = XShmGetEventBase (display) + ShmCompletion;
         const int ShmCompletion = 0;
-        _xShmCompletionType = XShm.XShmGetEventBase(deferredDisplay) + ShmCompletion;
+        _xShmCompletionType = XLib.XShmGetEventBase(deferredDisplay) + ShmCompletion;
     }
 
     private readonly IntPtr _deferredDisplay;
     private readonly int _xShmCompletionType;
-    private readonly Dictionary<ShmSeg, X11ShmImage> _inFlightImages = new();
+    private readonly Dictionary<UIntPtr, Action> _shmCompletionCallbacks = new();
 
     /// <summary>
-    /// Registers an image that has just been submitted to the server, so the matching completion event
-    /// can later be routed back to its owning swapchain.
+    /// Registers a one-shot callback to be invoked when the server signals completion for the given shm
+    /// segment. The callback is removed once fired.
     /// </summary>
-    public void RegisterInFlight(X11ShmImage image) => _inFlightImages[image.ShmSeg] = image;
+    public void RegisterForShmCompletion(UIntPtr shmSeg, Action callback) => _shmCompletionCallbacks[shmSeg] = callback;
 
     /// <summary>
     /// Dispatches every event currently pending on the connection without blocking.
@@ -76,24 +75,24 @@ internal unsafe class X11DeferredDisplayDispatcher
             return;
         }
 
-        ShmSeg shmseg;
+        UIntPtr shmSeg;
         fixed (XEvent* p = &ev)
         {
-            shmseg = ((XShmCompletionEvent*)p)->shmseg;
+            shmSeg = ((XShmCompletionEvent*)p)->shmseg;
         }
 
         Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this,
-            "[X11DeferredDisplayDispatcher] XShmCompletion shmseg={ShmSeg}", shmseg);
+            "[X11DeferredDisplayDispatcher] XShmCompletion shmseg={ShmSeg}", shmSeg);
 
-        if (_inFlightImages.Remove(shmseg, out var image))
+        if (_shmCompletionCallbacks.Remove(shmSeg, out var callback))
         {
-            image.Owner.OnXShmCompletion(image);
+            callback();
         }
         else
         {
-            // Unexpected case, all the X11ShmImage should be registered before submission.
+            // Unexpected case, all submitted shm segments should be registered before submission.
             Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)?.Log(this,
-                "[X11DeferredDisplayDispatcher] Can not find shmseg={ShmSeg} in registry", shmseg);
+                "[X11DeferredDisplayDispatcher] No completion callback registered for shmseg={ShmSeg}", shmSeg);
         }
     }
 }

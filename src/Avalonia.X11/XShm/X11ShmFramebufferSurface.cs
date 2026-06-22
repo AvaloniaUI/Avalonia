@@ -2,7 +2,7 @@ using System;
 using Avalonia.Logging;
 using Avalonia.Platform.Surfaces;
 
-namespace Avalonia.X11.XShmExtensions;
+namespace Avalonia.X11.XShm;
 
 internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
 {
@@ -26,6 +26,6 @@ internal class X11ShmFramebufferSurface : IFramebufferPlatformSurface
     {
         Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmFramebufferSurface] CreateFramebufferRenderTarget");
 
-        return new X11ShmImageSwapchain(_deferredDisplay, _windowHandle, _visual, _depth, _dispatcher);
+        return new X11ShmFramebufferRenderTarget(_deferredDisplay, _windowHandle, _visual, _depth, _dispatcher);
     }
 }

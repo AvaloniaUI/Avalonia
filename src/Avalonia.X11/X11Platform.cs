@@ -125,14 +125,14 @@ namespace Avalonia.X11
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
 
-        private XShmExtensions.X11DeferredDisplayDispatcher? _shmDeferredDisplayDispatcher;
+        private X11DeferredDisplayDispatcher? _deferredDisplayDispatcher;
 
         /// <summary>
-        /// Shared, lazily-created dispatcher that drains XShm completion events off the DeferredDisplay
-        /// connection for every window using MIT-SHM rendering.
+        /// Shared, lazily-created dispatcher that drains events (currently XShm completions) off the
+        /// DeferredDisplay connection for every window.
         /// </summary>
-        internal XShmExtensions.X11DeferredDisplayDispatcher ShmDeferredDisplayDispatcher =>
-            _shmDeferredDisplayDispatcher ??= new XShmExtensions.X11DeferredDisplayDispatcher(DeferredDisplay);
+        internal X11DeferredDisplayDispatcher DeferredDisplayDispatcher =>
+            _deferredDisplayDispatcher ??= new X11DeferredDisplayDispatcher(DeferredDisplay);
 
         private static uint[] X11IconConverter(IWindowIconImpl? icon)
         {

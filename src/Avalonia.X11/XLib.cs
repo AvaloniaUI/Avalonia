@@ -24,6 +24,29 @@ namespace Avalonia.X11
 
         public const IntPtr AnyPropertyType = 0;
 
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmQueryExtension(IntPtr display);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmQueryVersion(IntPtr display, out int major, out int minor, out bool pixmaps);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmGetEventBase(IntPtr display);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmPutImage(IntPtr display, IntPtr drawable, IntPtr gc, XImage* image, int src_x, int src_y,
+            int dst_x, int dst_y, uint src_width, uint src_height, bool send_event);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmAttach(IntPtr display, XShmSegmentInfo* shminfo);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmDetach(IntPtr display, XShmSegmentInfo* shminfo);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern IntPtr XShmCreateImage(IntPtr display, IntPtr visual, uint depth, int format, IntPtr data,
+            XShmSegmentInfo* shminfo, uint width, uint height);
+
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
 

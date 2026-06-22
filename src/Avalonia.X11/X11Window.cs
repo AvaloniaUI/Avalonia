@@ -23,12 +23,11 @@ using Avalonia.Threading;
 using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
-using static Avalonia.X11.XShmExtensions.XShm;
 using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
 using Avalonia.Dialogs;
 using Avalonia.Platform.Storage.FileIO;
-using Avalonia.X11.XShmExtensions;
+using Avalonia.X11.XShm;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -231,40 +230,16 @@ namespace Avalonia.X11
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
 
-            if (_platform.Options.UseXShmFramebuffer is true)
+            // XShm needs a 32-bit visual (other depths would require a slow XShmPutImage conversion) and the
+            // MIT-SHM extension, probed once by X11Info on the deferred display.
+            if (_platform.Options.UseXShmFramebuffer is true && depth == 32 && _x11.HasXShm)
             {
-                TryInsertX11ShmFramebufferSurface();
-
-                void TryInsertX11ShmFramebufferSurface()
-                {
-                    if (depth != 32)
-                    {
-                        // If the depth is not 32, we should do some conversion to make the XShmPutImage work. But the conversion is slowly, so we should not use XShmPutImage when the depth is not 32.
-                        return;
-                    }
-
-                    var status = XShmQueryExtension(_x11.DeferredDisplay);
-                    if (status == 0)
-                    {
-                        // XShmQueryExtension failed
-                        return;
-                    }
-
-                    status = XShmQueryVersion(_x11.DeferredDisplay, out var major, out var minor, out var pixmaps);
-                    
-                    if (status == 0)
-                    {
-                        // XShmQueryExtension failed
-                        return;
-                    }
-
-                    // Render and receive XShmCompletionEvents on the DeferredDisplay connection, which the
-                    // rendering thread owns and drains itself. Do not use `_renderHandle`, because it was
-                    // introduced to fix gl, and XShm is only used when gl is disabled (so `_renderHandle` == `_handle`).
-                    surfaces.Insert(0,
-                        new X11ShmFramebufferSurface(_x11.DeferredDisplay, _handle, visual, depth,
-                            platform.ShmDeferredDisplayDispatcher));
-                }
+                // Render and receive XShmCompletionEvents on the DeferredDisplay connection, which the
+                // rendering thread owns and drains itself. Do not use `_renderHandle`, because it was
+                // introduced to fix gl, and XShm is only used when gl is disabled (so `_renderHandle` == `_handle`).
+                surfaces.Insert(0,
+                    new X11ShmFramebufferSurface(_x11.DeferredDisplay, _handle, visual, depth,
+                        platform.DeferredDisplayDispatcher));
             }
             
             if (egl != null)

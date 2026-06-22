@@ -1,28 +1,21 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Avalonia.Logging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ShmSeg = System.UInt64;
-using static Avalonia.X11.LibC;
-using static Avalonia.X11.XShmExtensions.XShm;
 using System.Runtime.InteropServices;
+using static Avalonia.X11.LibC;
+using static Avalonia.X11.XLib;
 
-namespace Avalonia.X11.XShmExtensions;
+namespace Avalonia.X11.XShm;
 
 internal unsafe class X11ShmImage : IDisposable
 {
-    public X11ShmImage(PixelSize size, X11ShmImageSwapchain owner)
+    public X11ShmImage(PixelSize size, IntPtr deferredDisplay, IntPtr visual, int depth)
     {
-        Owner = owner;
+        _deferredDisplay = deferredDisplay;
         // The XShmSegmentInfo struct will store in XImage, and it must pin the address.
         IntPtr pXShmSegmentInfo = Marshal.AllocHGlobal(Marshal.SizeOf<XShmSegmentInfo>());
         var pShmSegmentInfo = (XShmSegmentInfo*)pXShmSegmentInfo;
         PShmSegmentInfo = pShmSegmentInfo;
-
-        var display = owner.DeferredDisplay;
-        var visual = owner.Visual;
 
         const int ZPixmap = 2;
 
@@ -31,12 +24,11 @@ internal unsafe class X11ShmImage : IDisposable
 
         Size = size;
 
-        var depth = owner.Depth;
         Debug.Assert(depth is 32, "The PixelFormat must be Bgra8888, so that the depth should be 32.");
 
         IntPtr data = IntPtr.Zero;
 
-        var shmImage = (XImage*)XShmCreateImage(display, visual, (uint)depth, ZPixmap, data, pShmSegmentInfo,
+        var shmImage = (XImage*)XShmCreateImage(deferredDisplay, visual, (uint)depth, ZPixmap, data, pShmSegmentInfo,
             (uint)width, (uint)height);
         ShmImage = shmImage;
 
@@ -52,29 +44,29 @@ internal unsafe class X11ShmImage : IDisposable
             throw new InvalidOperationException("Failed to shmat");
         }
 
-        pShmSegmentInfo->shmaddr = (char*)shmaddr.ToPointer();
+        pShmSegmentInfo->shmaddr = shmaddr;
         shmImage->data = data = shmaddr;
 
-        XShmAttach(display, pShmSegmentInfo);
+        XShmAttach(deferredDisplay, pShmSegmentInfo);
 
         Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmImage] CreateX11ShmImage Size={Size} shmid={Shmid:X} shmaddr={ShmAddr}", Size, shmid, shmaddr);
     }
 
-    public X11ShmImageSwapchain Owner { get; }
+    private readonly IntPtr _deferredDisplay;
 
     public XImage* ShmImage { get; set; }
     public XShmSegmentInfo* PShmSegmentInfo { get; }
-    public IntPtr ShmAddr => new IntPtr(PShmSegmentInfo->shmaddr);
+    public IntPtr ShmAddr => PShmSegmentInfo->shmaddr;
 
     public const int ByteSizeOfPixel = 4;
 
     public PixelSize Size { get; }
 
-    public ShmSeg ShmSeg => PShmSegmentInfo->shmseg;
+    public UIntPtr ShmSeg => PShmSegmentInfo->shmseg;
 
     public void Dispose()
     {
-        XShmDetach(Owner.DeferredDisplay, PShmSegmentInfo);
+        XShmDetach(_deferredDisplay, PShmSegmentInfo);
 
         shmdt(ShmAddr);
         shmctl(PShmSegmentInfo->shmid, IPC_RMID, IntPtr.Zero);
