@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
 using Avalonia.Logging;
 using System.Runtime.InteropServices;
 using static Avalonia.X11.LibC;
@@ -15,7 +16,7 @@ internal unsafe class X11ShmImage : IDisposable
         // The XShmSegmentInfo struct will store in XImage, and it must pin the address.
         IntPtr pXShmSegmentInfo = Marshal.AllocHGlobal(Marshal.SizeOf<XShmSegmentInfo>());
         var pShmSegmentInfo = (XShmSegmentInfo*)pXShmSegmentInfo;
-        PShmSegmentInfo = pShmSegmentInfo;
+        _shmSegmentInfo = pXShmSegmentInfo;
 
         const int ZPixmap = 2;
 
@@ -30,7 +31,7 @@ internal unsafe class X11ShmImage : IDisposable
 
         var shmImage = (XImage*)XShmCreateImage(deferredDisplay, visual, (uint)depth, ZPixmap, data, pShmSegmentInfo,
             (uint)width, (uint)height);
-        ShmImage = shmImage;
+        _shmImage = (IntPtr)shmImage;
 
         var mapLength = new IntPtr(width * ByteSizeOfPixel * height);
         var shmid = shmget(IPC_PRIVATE, mapLength, IPC_CREAT | 0777);
@@ -53,16 +54,16 @@ internal unsafe class X11ShmImage : IDisposable
     }
 
     private readonly IntPtr _deferredDisplay;
+    private IntPtr _shmImage; // XImage*
+    private IntPtr _shmSegmentInfo; // XShmSegmentInfo*
 
-    private XImage* ShmImage { get; }
-    private XShmSegmentInfo* PShmSegmentInfo { get; }
-    public IntPtr ShmAddr => PShmSegmentInfo->shmaddr;
+    public IntPtr ShmAddr => ((XShmSegmentInfo*)_shmSegmentInfo)->shmaddr;
 
     public const int ByteSizeOfPixel = 4;
 
     public PixelSize Size { get; }
 
-    public UIntPtr ShmSeg => PShmSegmentInfo->shmseg;
+    public UIntPtr ShmSeg => ((XShmSegmentInfo*)_shmSegmentInfo)->shmseg;
 
     /// <summary>
     /// Submits this image to the given window via XShmPutImage and requests a completion event. Returns
@@ -73,7 +74,7 @@ internal unsafe class X11ShmImage : IDisposable
         // The DeferredDisplay connection is owned by the rendering thread, so no XLockDisplay is needed -
         // XInitThreads already serializes individual Xlib calls.
         var gc = XCreateGC(_deferredDisplay, windowXId, 0, IntPtr.Zero);
-        var status = XShmPutImage(_deferredDisplay, windowXId, gc, ShmImage, 0, 0, 0, 0, (uint)Size.Width,
+        var status = XShmPutImage(_deferredDisplay, windowXId, gc, (XImage*)_shmImage, 0, 0, 0, 0, (uint)Size.Width,
             (uint)Size.Height, send_event: true);
         XFlush(_deferredDisplay);
         XFreeGC(_deferredDisplay, gc);
@@ -82,12 +83,20 @@ internal unsafe class X11ShmImage : IDisposable
 
     public void Dispose()
     {
-        XShmDetach(_deferredDisplay, PShmSegmentInfo);
+        // Atomically claim the image pointer; whoever swaps out a non-zero value owns the teardown, so a
+        // double dispose is a no-op and never double-frees.
+        if (Interlocked.Exchange(ref _shmImage, IntPtr.Zero) == IntPtr.Zero)
+            return;
 
-        shmdt(ShmAddr);
-        shmctl(PShmSegmentInfo->shmid, IPC_RMID, IntPtr.Zero);
+        var pShmSegmentInfo = (XShmSegmentInfo*)_shmSegmentInfo;
+        _shmSegmentInfo = IntPtr.Zero;
 
-        Marshal.FreeHGlobal(new IntPtr(PShmSegmentInfo));
+        XShmDetach(_deferredDisplay, pShmSegmentInfo);
+
+        shmdt(pShmSegmentInfo->shmaddr);
+        shmctl(pShmSegmentInfo->shmid, IPC_RMID, IntPtr.Zero);
+
+        Marshal.FreeHGlobal((IntPtr)pShmSegmentInfo);
 
         Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?.Log(this, "[X11ShmImage] Dispose");
     }
