@@ -1,5 +1,6 @@
-﻿using System.Linq;
+using System.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Input.TextInput;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -98,6 +99,99 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 presenter.Arrange(new Rect(default, presenter.DesiredSize));
 
                 Assert.Equal(new Rect(default, expectedSize), presenter.Bounds);
+            }
+        }
+
+        [Fact]
+        public void TextPresenter_Should_Use_Preedit_Segment_Decorations()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new TextPresenter
+                {
+                    PreeditText = "abcdef",
+                    PreeditTextSegments =
+                    [
+                        new TextInputMethodPreeditSegment(0, 2, TextInputMethodPreeditSegmentKind.InactiveClause),
+                        new TextInputMethodPreeditSegment(2, 2, TextInputMethodPreeditSegmentKind.ActiveClause),
+                        new TextInputMethodPreeditSegment(4, 2, TextInputMethodPreeditSegmentKind.InactiveClause)
+                    ]
+                };
+
+                presenter.Measure(Size.Infinity);
+
+                var runs = presenter.TextLayout.TextLines
+                    .SelectMany(x => x.TextRuns)
+                    .Where(x => x.Length > 0)
+                    .ToArray();
+
+                Assert.Equal(3, runs.Length);
+                AssertPreeditDecoration(runs[0].Properties!.TextDecorations, 1, true);
+                AssertPreeditDecoration(runs[1].Properties!.TextDecorations, 2, false);
+                AssertPreeditDecoration(runs[2].Properties!.TextDecorations, 1, true);
+            }
+        }
+
+        [Fact]
+        public void TextPresenter_Should_Fall_Back_To_Default_Preedit_Underline_When_Segments_Are_Missing()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new TextPresenter
+                {
+                    PreeditText = "abcdef"
+                };
+
+                presenter.Measure(Size.Infinity);
+
+                var run = presenter.TextLayout.TextLines
+                    .SelectMany(x => x.TextRuns)
+                    .Single(x => x.Length > 0);
+
+                var decoration = Assert.Single(run.Properties!.TextDecorations!);
+                Assert.Equal(1, decoration.StrokeThickness);
+                Assert.Null(decoration.StrokeDashArray);
+            }
+        }
+
+        [Fact]
+        public void TextPresenter_Should_Move_Caret_Within_Preedit_Text()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new TextPresenter
+                {
+                    Text = "zz",
+                    CaretIndex = 1,
+                    PreeditText = "abcdef",
+                    PreeditTextCursorPosition = 1
+                };
+
+                presenter.Measure(Size.Infinity);
+
+                var firstCursorX = presenter.GetCursorRectangle().X;
+
+                presenter.PreeditTextCursorPosition = 4;
+
+                var secondCursorX = presenter.GetCursorRectangle().X;
+
+                Assert.True(secondCursorX > firstCursorX);
+            }
+        }
+
+        private static void AssertPreeditDecoration(TextDecorationCollection? decorations, double strokeThickness, bool dotted)
+        {
+            var decoration = Assert.Single(decorations!);
+
+            Assert.Equal(strokeThickness, decoration.StrokeThickness);
+
+            if (dotted)
+            {
+                Assert.Equal(new[] { 1d, 2d }, decoration.StrokeDashArray!);
+            }
+            else
+            {
+                Assert.Null(decoration.StrokeDashArray);
             }
         }
     }

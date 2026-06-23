@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Input.TextInput
 {
@@ -81,6 +82,17 @@ namespace Avalonia.Input.TextInput
         public virtual void SetPreeditText(string? preeditText, int? cursorPos)
         {
             SetPreeditText(preeditText);
+        }
+
+        /// <summary>
+        /// Sets the non-committed input string, cursor offset, and optional segment styles.
+        /// </summary>
+        public virtual void SetPreeditText(
+            string? preeditText,
+            int? cursorPos,
+            IReadOnlyList<TextInputMethodPreeditSegment>? segments)
+        {
+            SetPreeditText(preeditText, cursorPos);
         }
         
         protected virtual void RaiseTextViewVisualChanged()
