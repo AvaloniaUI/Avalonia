@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Interactivity;
+using Avalonia.Logging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -224,9 +224,9 @@ namespace Avalonia.Controls
                 {
                     // Silently ignore.
                 }
-                catch(UnauthorizedAccessException)
+                catch (UnauthorizedAccessException uex)
                 {
-                    // Silently ignore.
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
                 }
 
                 if (text == null)
