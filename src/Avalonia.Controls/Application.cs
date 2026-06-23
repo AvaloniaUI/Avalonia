@@ -64,11 +64,6 @@ namespace Avalonia
         /// <inheritdoc/>
         public event EventHandler? ActualThemeVariantChanged;
 
-        static Application()
-        {
-            RequestedThemeVariantProperty.OverrideDefaultValue<Application>(ThemeVariant.Default);
-        }
-
         /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
         /// </summary>
