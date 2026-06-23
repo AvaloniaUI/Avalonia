@@ -172,7 +172,7 @@ namespace Avalonia.Media
         {
             Rect rect;
 
-            if (EffectBounds.HasValue)
+            if (Effect != null && EffectBounds.HasValue)
             {
                 rect = EffectBounds.Value;
             }

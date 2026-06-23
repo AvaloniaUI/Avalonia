@@ -104,9 +104,8 @@ namespace Avalonia.Media
             var clipRect = destRect;
             if (!Viewbox.HasValue)
             {
-                var outer = Drawing?.GetOuterBounds() ?? default;
-                var inner = Drawing?.GetEffectContentBounds() ?? default;
-                
+                var outer = drawing.GetOuterBounds();
+                var inner = drawing.GetEffectContentBounds();
                 if (!outer.IsEmpty() && !inner.IsEmpty() && inner is { Width: > 0, Height: > 0 })
                 {
                     var sx = destRect.Width / localSource.Width;
