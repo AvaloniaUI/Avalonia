@@ -12,6 +12,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -1300,8 +1301,15 @@ namespace Avalonia.Controls
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
-                if (clipboard != null)
-                    await clipboard.SetTextAsync(text);
+                try
+                {
+                    if (clipboard != null)
+                        await clipboard.SetTextAsync(text);
+                }
+                catch (UnauthorizedAccessException uex)
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to write text to clipboard: {Error}", uex);
+                }
             }
         }
 
@@ -1330,6 +1338,10 @@ namespace Avalonia.Controls
                 catch (TimeoutException)
                 {
                     // Silently ignore.
+                }
+                catch (UnauthorizedAccessException uex)
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
                 }
             }
 
