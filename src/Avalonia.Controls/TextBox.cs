@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -1336,9 +1337,9 @@ namespace Avalonia.Controls
                 {
                     // Silently ignore.
                 }
-                catch(UnauthorizedAccessException)
+                catch(UnauthorizedAccessException uex)
                 {
-                    // Silently ignore.
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, $"Failed to read text from clipboard:{uex}");
                 }
             }
 
