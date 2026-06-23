@@ -331,7 +331,7 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == SelectionStartProperty || 
+            if (change.Property == SelectionStartProperty ||
                 change.Property == SelectionEndProperty)
             {
                 RaisePropertyChanged(SelectedTextProperty, "", "");
@@ -339,7 +339,7 @@ namespace Avalonia.Controls
                 InvalidateTextLayout();
             }
 
-            if(change.Property == SelectionForegroundBrushProperty)
+            if (change.Property == SelectionForegroundBrushProperty)
             {
                 InvalidateTextLayout();
             }
@@ -432,7 +432,9 @@ namespace Avalonia.Controls
             if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var text = HasComplexContent ? Inlines?.Text : Text;
-                var point = GetClampedTextLayoutPoint(e);
+
+                var padding = Padding;
+                var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
 
                 var hit = TextLayout.HitTestPoint(point);
                 var textPosition = hit.TextPosition;
@@ -504,23 +506,6 @@ namespace Avalonia.Controls
             var text = GetSelection();
 
             CanCopy = !string.IsNullOrEmpty(text);
-        }
-
-        private Point GetClampedTextLayoutPoint(PointerEventArgs e)
-        {
-            var padding = Padding;
-
-            var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
-            var maxWidth = TextLayout.WidthIncludingTrailingWhitespace;
-
-            if (!double.IsNaN(_constraint.Width) && !double.IsInfinity(_constraint.Width))
-            {
-                maxWidth = Math.Max(maxWidth, _constraint.Width);
-            }
-
-            return new Point(
-                MathUtilities.Clamp(point.X, 0, Math.Max(maxWidth, 0)),
-                MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Height, 0)));
         }
 
         private string GetSelection()
