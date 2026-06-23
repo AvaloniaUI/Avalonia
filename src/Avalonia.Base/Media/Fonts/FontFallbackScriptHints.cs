@@ -5,7 +5,7 @@ using Avalonia.Media.TextFormatting.Unicode;
 namespace Avalonia.Media.Fonts
 {
     /// <summary>
-    /// Script-aware hints used by <see cref="FontCollectionBase"/>.TryMatchCharacter to
+    /// Script-aware hints used by <see cref="FontCollectionBase.TryMatchCharacter(int, FontStyle, FontWeight, FontStretch, string?, CultureInfo?, out Typeface)"/> to
     /// disambiguate locale-sensitive scripts (e.g. CJK), to provide deterministic probe
     /// codepoints for scoring candidate fonts, and to decide whether a candidate font is
     /// compatible with the caller's culture.

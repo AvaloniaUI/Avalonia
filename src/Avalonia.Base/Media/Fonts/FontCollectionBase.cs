@@ -297,7 +297,7 @@ namespace Avalonia.Media.Fonts
         /// <summary>
         /// Hook for platform-backed collections (e.g. <see cref="SystemFontCollection"/>) to consult
         /// the underlying font manager for a fallback typeface. Invoked at most once per
-        /// (script-bucket, culture) pair from <see cref="FontCollectionBase"/>.TryMatchCharacter.
+        /// (script-bucket, culture) pair from <see cref="FontCollectionBase.TryMatchCharacter(int, FontStyle, FontWeight, FontStretch, string?, CultureInfo?, out Typeface)"/>.
         /// </summary>
         protected virtual bool TryMatchCharacterFromPlatform(
             int codepoint,
