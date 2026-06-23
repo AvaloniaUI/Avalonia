@@ -1649,7 +1649,13 @@ namespace Avalonia.X11
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
 
-        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant) { }
+        public async void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
+        {
+            if (themeVariant == null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is DBusPlatformSettings platformSettings)
+            {
+                platformSettings.OnRequestDefaultThemeVariant();
+            }
+        }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
