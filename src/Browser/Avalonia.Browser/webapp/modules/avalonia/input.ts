@@ -112,14 +112,6 @@ export class InputHelper {
         return { items: [] };
     }
 
-    public static getClipboardResultError(result: ClipboardResult): string {
-        return result.error;
-    }
-
-    public static getClipboardResultItems(result: ClipboardResult): ReadableDataItem[] {
-        return result.result;
-    }
-
     public static createWriteableClipboardItem(source: WriteableClipboardSource): WriteableClipboardItem {
         const item = { data: {} };
         source.items.push(item);
