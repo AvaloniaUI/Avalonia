@@ -24,7 +24,6 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(
                 inputManager: new InputManager(),
-                focusManager: new FocusManager(),
                 renderInterface: new HeadlessPlatformRenderInterface()));
 
             var renderer = new Mock<IHitTester>();
@@ -247,12 +246,12 @@ namespace Avalonia.Base.UnitTests.Input
 
             // Enter decorator
             SetHit(renderer, decorator);
-            SetMove(deviceMock, root, decorator);
+            SetMove(deviceMock, root.InputRoot, decorator);
             impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root));
 
             // Leave decorator
             SetHit(renderer, canvas);
-            SetMove(deviceMock, root, canvas);
+            SetMove(deviceMock, root.InputRoot, canvas);
             impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root));
 
             Assert.Equal(
@@ -492,7 +491,7 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.True(canvas.IsPointerOver);
 
             // Send LeaveWindow.
-            impl.Object.Input!(new RawPointerEventArgs(deviceMock.Object, 0, root, RawPointerEventType.LeaveWindow, new Point(), default));
+            impl.Object.Input!(new RawPointerEventArgs(deviceMock.Object, 0, root.InputRoot, RawPointerEventType.LeaveWindow, new Point(), default));
             Assert.False(canvas.IsPointerOver);
 
             Assert.Equal(

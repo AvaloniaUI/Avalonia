@@ -1,18 +1,16 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering.Composition;
@@ -52,7 +50,7 @@ internal class MacOSTopLevelHandle : IPlatformHandle, IMacOSTopLevelPlatformHand
     {
         return Native.ObtainNSViewHandleRetained();
     }
-    
+
     public IntPtr NSWindow => (Native as IAvnWindowBase)?.ObtainNSWindowHandle() ?? IntPtr.Zero;
 
     public IntPtr GetNSWindowRetained()
@@ -67,8 +65,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     private NativeControlHostImpl? _nativeControlHost;
     private PlatformBehaviorInhibition? _platformBehaviorInhibition;
 
-    private readonly MouseDevice? _mouse;
-    private readonly PenDevice? _pen;
+    private readonly MouseDevice _mouse;
+    private readonly PenDevice _pen;
 
     private readonly IKeyboardDevice? _keyboard;
     private readonly ICursorFactory? _cursorFactory;
@@ -82,14 +80,14 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     protected MacOSTopLevelHandle? _handle;
 
     private object _syncRoot = new object();
-    private IEnumerable<object>? _surfaces;
+    private IPlatformRenderSurface[]? _surfaces;
 
     public TopLevelImpl(IAvaloniaNativeFactory factory)
     {
         Factory = factory;
 
         _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-        _mouse = new MouseDevice();
+        _mouse = Avalonia.Input.MouseDevice.Primary;
         _pen = new PenDevice();
         _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
     }
@@ -98,11 +96,21 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     {
         _handle = handle;
         _savedLogicalSize = ClientSize;
-        _savedScaling = Native?.Scaling ?? 1;;
+        _savedScaling = Native?.Scaling ?? 1;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
-        _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
+        _surfaces = [new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this];
         InputMethod = new AvaloniaNativeTextInputMethod(Native);
+    }
+
+    internal void BeginDraggingSession(
+        AvnDragDropEffects effects,
+        AvnPoint point,
+        IAvnClipboardDataSource source,
+        IAvnDndResultCallback callback,
+        IntPtr sourceHandle)
+    {
+        Native?.BeginDragAndDropOperation(effects, point, source, callback, sourceHandle);
     }
 
     public double DesktopScaling => 1;
@@ -118,7 +126,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             {
                 return default;
             }
-            
+
             var s = Native.ClientSize;
             return new Size(s.Width, s.Height);
 
@@ -126,7 +134,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     }
 
     public double RenderScaling => _savedScaling;
-    public IEnumerable<object> Surfaces => _surfaces ?? Array.Empty<object>();
+    public IPlatformRenderSurface[] Surfaces => _surfaces ?? [];
     public Action<RawInputEventArgs>? Input { get; set; }
     public Action<Rect>? Paint { get; set; }
     public Action<Size, WindowResizeReason>? Resized { get; set; }
@@ -135,7 +143,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     public Compositor Compositor => AvaloniaNativePlatform.Compositor;
     public Action? Closed { get; set; }
     public Action? LostFocus { get; set; }
-    
+
     public WindowTransparencyLevel TransparencyLevel
     {
         get => _transparencyLevel;
@@ -161,7 +169,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
     public AutomationPeer? GetAutomationPeer()
     {
-        return _inputRoot is Control c ? ControlAutomationPeer.CreatePeerForElement(c) : null;
+        return _inputRoot?.FocusRoot is Control c ? ControlAutomationPeer.CreatePeerForElement(c) : null;
     }
 
     public bool RawTextInputEvent(ulong timeStamp, string text)
@@ -301,7 +309,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         Native.SetCursor(newCursor?.Cursor);
     }
 
-    public virtual IPopupImpl CreatePopup()
+    public virtual IPopupImpl? CreatePopup()
     {
         return new PopupImpl(Factory, this);
     }
@@ -377,8 +385,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         _nativeControlHost?.Dispose();
         _nativeControlHost = null;
-
-        _mouse?.Dispose();
     }
 
     protected virtual bool ChromeHitTest(RawPointerEventArgs e)
@@ -397,7 +403,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         {
             throw new RenderTargetNotReadyException();
         }
-        
+
         return new FramebufferRenderTarget(this, nativeRenderTarget);
     }
 
@@ -439,7 +445,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             {
                 return;
             }
-            
+
             var s = new Size(size->Width, size->Height);
             _parent._savedLogicalSize = s;
             _parent.Resized?.Invoke(s, (WindowResizeReason)reason);
@@ -474,12 +480,24 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         void IAvnTopLevelEvents.LostFocus()
         {
             _parent.LostFocus?.Invoke();
+
+            // macOS doesn't have the concept of mouse capture. If we're losing the focus during an implicit capture
+            // (standard mouse down), we should release it to avoid mouse events going to an old window.
+            var mouse = _parent._mouse;
+            var captured = mouse.Pointer.Captured;
+
+            if (captured is not null &&
+                mouse.Pointer.CaptureSource == CaptureSource.Implicit &&
+                TopLevel.GetTopLevel(captured as Visual)?.PlatformImpl == _parent)
+            {
+                mouse.PlatformCaptureLost();
+            }
         }
 
         AvnDragDropEffects IAvnTopLevelEvents.DragEvent(AvnDragEventType type, AvnPoint position,
             AvnInputModifiers modifiers,
             AvnDragDropEffects effects,
-            IAvnClipboard clipboard, IntPtr dataObjectHandle)
+            IAvnClipboard clipboard, IntPtr dataTransferHandle)
         {
             var device = AvaloniaLocator.Current.GetService<IDragDropDevice>();
 
@@ -492,22 +510,25 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             {
                 return AvnDragDropEffects.None;
             }
-            
-            IDataObject? dataObject = null;
-            if (dataObjectHandle != IntPtr.Zero)
-                dataObject = GCHandle.FromIntPtr(dataObjectHandle).Target as IDataObject;
 
-            using (var clipboardDataObject = new ClipboardDataObject(clipboard))
-            {
-                if (dataObject == null)
-                    dataObject = clipboardDataObject;
+            IDataTransfer? dataTransfer = null;
+            if (dataTransferHandle != IntPtr.Zero)
+                dataTransfer = GCHandle.FromIntPtr(dataTransferHandle).Target as IDataTransfer;
 
-                var args = new RawDragEvent(device, (RawDragEventType)type,
-                    _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
-                    (RawInputModifiers)modifiers);
-                _parent.Input?.Invoke(args);
-                return (AvnDragDropEffects)args.Effects;
-            }
+            using var clipboardDataTransfer = new ClipboardDataTransfer(
+                new ClipboardReadSession(clipboard, clipboard.ChangeCount, ownsNative: true));
+            dataTransfer ??= clipboardDataTransfer;
+
+            var args = new RawDragEvent(
+                device,
+                (RawDragEventType)type,
+                _parent._inputRoot,
+                position.ToAvaloniaPoint(),
+                dataTransfer,
+                (DragDropEffects)effects,
+                (RawInputModifiers)modifiers);
+            _parent.Input?.Invoke(args);
+            return (AvnDragDropEffects)args.Effects;
         }
 
         IAvnAutomationPeer? IAvnTopLevelEvents.AutomationPeer
@@ -541,10 +562,13 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             }
         }
 
-        public ILockedFramebuffer Lock()
+        
+        public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo sceneInfo, out FramebufferLockProperties properties)
         {
-            var w = _parent._savedLogicalSize.Width * _parent._savedScaling;
-            var h = _parent._savedLogicalSize.Height * _parent._savedScaling;
+            ObjectDisposedException.ThrowIf(_target is null, this);
+            properties = default;
+            var w = Math.Max(_parent._savedLogicalSize.Width * _parent._savedScaling, 1);
+            var h = Math.Max(_parent._savedLogicalSize.Height * _parent._savedScaling, 1);
             var dpi = _parent._savedScaling * 96;
             return new DeferredFramebuffer(_target, cb =>
             {
@@ -557,5 +581,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
                 }
             }, (int)w, (int)h, new Vector(dpi, dpi));
         }
+
+        public bool RetainsFrameContents => false;
     }
 }

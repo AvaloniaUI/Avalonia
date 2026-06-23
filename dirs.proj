@@ -9,26 +9,23 @@
     <ProjectReference Remove="**/*.shproj" />
     <!-- Exclude iOS, Android and Browser samples from build -->
     <ProjectReference Remove="samples/*.iOS/*.csproj" />
+    <ProjectReference Remove="samples/*.tvOS/*.csproj" />
+    <ProjectReference Remove="samples/*.MacCatalyst/*.csproj" />
     <ProjectReference Remove="samples/*.Android/*.csproj" />
     <ProjectReference Remove="samples/*.Browser/*.csproj" />
-    <ProjectReference Remove="samples/*.Blazor/*.csproj" />
-    <ProjectReference Remove="samples/*.Tizen/*.csproj" />
     <ProjectReference Remove="samples/SingleProjectSandbox/*.csproj" />
-    <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
+    <!-- Exclude WinUI samples when Platform is not specified or is AnyCPU -->
+    <ProjectReference Remove="samples/*.WinUI/*.csproj" Condition="'$(Platform)' == '' Or '$(Platform)' == 'AnyCPU'" />
+    <ProjectReference Remove="samples/WinUIEmbedSample/*.csproj" Condition="'$(Platform)' == '' Or '$(Platform)' == 'AnyCPU'" />
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
     <!-- Build mobile backends only on Windows, where we have installed android workload -->
     <ProjectReference Remove="src/Android/**/*.*proj" />
     <ProjectReference Remove="src/iOS/**/*.*proj" />
-    <ProjectReference Remove="src/Tizen/**/*.*proj" />
+    <ProjectReference Remove="src/Windows/Avalonia.WinUI/**/*.*proj" />
+    <ProjectReference Remove="samples/*.WinUI/*.csproj" />
+    <ProjectReference Remove="samples/WinUIEmbedSample/*.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(SkipObscurePlatforms)' == 'True'">
-    <ProjectReference Remove="**/*Tizen/**/*.*proj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="8.5.17" PrivateAssets="all" />
-  </ItemGroup>
 </Project>

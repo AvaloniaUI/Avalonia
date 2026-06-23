@@ -28,7 +28,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
@@ -60,14 +60,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 button.Tag = new GridLength(5, GridUnitType.Star);
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                Assert.Equal(button.Tag, button.GetTemplateChildren().OfType<Grid>().First().ColumnDefinitions[0].Width);
+                Assert.Equal(button.Tag, button.GetTemplateDescendants().OfType<Grid>().First().ColumnDefinitions[0].Width);
             }
         }
     }

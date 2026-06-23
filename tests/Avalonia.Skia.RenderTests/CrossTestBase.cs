@@ -10,20 +10,26 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests;
-#else
-namespace Avalonia.Direct2D1.RenderTests;
-#endif
 
 class CrossFactAttribute : FactAttribute
 {
-    
+    public CrossFactAttribute(
+        [CallerFilePath] string? sourceFilePath = null,
+        [CallerLineNumber] int sourceLineNumber = -1
+    ) : base(sourceFilePath, sourceLineNumber)
+    {
+    }
 }
 
 class CrossTheoryAttribute : TheoryAttribute
 {
-    
+    public CrossTheoryAttribute(
+        [CallerFilePath] string? sourceFilePath = null,
+        [CallerLineNumber] int sourceLineNumber = -1
+    ) : base(sourceFilePath, sourceLineNumber)
+    {
+    }
 }
 
 public class CrossTestBase : IDisposable

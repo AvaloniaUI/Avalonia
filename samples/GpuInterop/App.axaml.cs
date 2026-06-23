@@ -6,6 +6,8 @@ namespace GpuInterop
 {
     public class App : Application
     {
+        public DemoType DemoType { get; set; }
+
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -15,7 +17,7 @@ namespace GpuInterop
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
-                desktopLifetime.MainWindow = new MainWindow();
+                desktopLifetime.MainWindow = new MainWindow(DemoType);
             }
         }
     }

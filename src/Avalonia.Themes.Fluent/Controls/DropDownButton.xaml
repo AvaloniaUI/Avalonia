@@ -44,7 +44,6 @@
                                   Content="{TemplateBinding Content}" 
                                   ContentTemplate="{TemplateBinding ContentTemplate}"
                                   Padding="{TemplateBinding Padding}" 
-                                  RecognizesAccessKey="True" 
                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
                 
@@ -65,6 +64,10 @@
         </Setter.Value>
       </Setter>
       
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
       <!--  PointerOver State  -->
       <Style Selector="^:pointerover /template/ Border#RootBorder">
         <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />

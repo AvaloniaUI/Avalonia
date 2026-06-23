@@ -47,7 +47,7 @@ namespace Avalonia.Styling
             // right-to-left, so MatchUntilCombinator reverses this order because the type selector
             // will be on the left.
             var match = MatchUntilCombinator(control, this, parent, subscribe, out var combinator);
-            
+
             // If the pre-combinator selector matches, we can now match the combinator, if any.
             if (match.IsMatch && combinator is object)
             {
@@ -77,6 +77,14 @@ namespace Avalonia.Styling
         public abstract string ToString(Style? owner);
 
         /// <summary>
+        /// Gets a string representing the selector, with the nesting separator (`^`) replaced with
+        /// the parent selector.
+        /// </summary>
+        /// <param name="owner">The owner style.</param>
+        /// <param name="hasNext">Whether there is a selector that comes after this one.</param>
+        internal virtual string ToString(Style? owner, bool hasNext) => ToString(owner);
+
+        /// <summary>
         /// Evaluates the selector for a match.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -100,30 +108,31 @@ namespace Avalonia.Styling
         /// </summary>
         private protected abstract Selector? MovePreviousOrParent();
 
-        internal virtual void ValidateNestingSelector(bool inControlTheme)
+        internal virtual void ValidateNestingSelector(bool inControlTheme, int templateCount = 0)
         {
             var s = this;
-            var templateCount = 0;
 
-            do
+            if (inControlTheme)
             {
-                if (inControlTheme)
-                {
-                    if (!s.InTemplate && s.IsCombinator)
-                        throw new InvalidOperationException(
-                            "ControlTheme style may not directly contain a child or descendent selector.");
-                    if (s is TemplateSelector && templateCount++ > 0)
-                        throw new InvalidOperationException(
-                            "ControlTemplate styles cannot contain multiple template selectors.");
-                }
+                if (!s.InTemplate && s.IsCombinator)
+                    throw new InvalidOperationException(
+                        "ControlTheme style may not directly contain a child or descendent selector.");
+                if (s is TemplateSelector && templateCount++ > 0)
+                    throw new InvalidOperationException(
+                        "ControlTemplate styles cannot contain multiple template selectors.");
+            }
 
-                var previous = s.MovePreviousOrParent();
+            var previous = s.MovePreviousOrParent();
 
-                if (previous is null && s is not NestingSelector)
+            if (previous is null)
+            {
+                if (s is not NestingSelector)
                     throw new InvalidOperationException("Child styles must have a nesting selector.");
-
-                s = previous;
-            } while (s is not null);
+            }
+            else
+            {
+                previous.ValidateNestingSelector(inControlTheme, templateCount);
+            }
         }
 
         private static SelectorMatch MatchUntilCombinator(

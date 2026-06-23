@@ -10,8 +10,6 @@ public abstract class BindingExpressionBase : IDisposable, ISetterInstance
     {
     }
 
-    internal BindingMode Mode { get; private protected set; }
-
     public virtual void Dispose()
     {
         GC.SuppressFinalize(this);

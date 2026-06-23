@@ -4,11 +4,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Media
-#endif
 {
     public class ImageDrawingTests : TestBase
     {
@@ -36,6 +32,31 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 {
                     Source = new DrawingImage
                     {
+                        Drawing = new ImageDrawing
+                        {
+                            ImageSource = new Bitmap(BitmapPath),
+                            Rect = new Rect(0, 0, 200, 200),
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task ImageDrawing_Viewbox()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Image
+                {
+                    Source = new DrawingImage
+                    {
+                        Viewbox = new Rect(48, 37, 100, 125),
                         Drawing = new ImageDrawing
                         {
                             ImageSource = new Bitmap(BitmapPath),
@@ -89,7 +110,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
             var target = new Border
             {
-                Width = 400, 
+                Width = 400,
                 Height = 400,
                 Child = new DrawingBrushTransformTest()
             };

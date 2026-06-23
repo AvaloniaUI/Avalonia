@@ -85,6 +85,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isExpanded;
         private CompositeDisposable? _ownerSubscriptions;
         private ScrollViewer? _owner;
+        private bool _isDragging;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -92,6 +93,7 @@ namespace Avalonia.Controls.Primitives
         static ScrollBar()
         {
             Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
+            Thumb.DragStartedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragStart(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
 
             FocusableProperty.OverrideMetadata<ScrollBar>(new(false));
@@ -325,7 +327,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerExited(e);
 
-            if (AllowAutoHide)
+            if (AllowAutoHide && !_isDragging)
             {
                 CollapseAfterDelay();
             }
@@ -491,8 +493,21 @@ namespace Avalonia.Controls.Primitives
         {
             OnScroll(ScrollEventType.ThumbTrack);
         }
+
+        private void OnThumbDragStart(VectorEventArgs e)
+        {
+            _isDragging = true;
+        }
+
         private void OnThumbDragComplete(VectorEventArgs e)
         {
+            _isDragging = false;
+
+            if (AllowAutoHide && !IsPointerOver)
+            {
+                CollapseAfterDelay();
+            }
+
             OnScroll(ScrollEventType.EndScroll);
         }
 

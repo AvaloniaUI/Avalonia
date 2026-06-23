@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Utils;
 internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
 {
     private BindingExpressionBase? _expression;
-    private IBinding? _lastBinding;
+    private BindingBase? _lastBinding;
 
     [SuppressMessage(
         "AvaloniaProperty",
@@ -18,6 +18,15 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
         Justification = "This property is not supposed to be used from XAML.")]
     public static readonly StyledProperty<T> ValueProperty =
         AvaloniaProperty.Register<BindingEvaluator<T>, T>("Value");
+
+    /// <summary>
+    /// Gets or sets the data item value.
+    /// </summary>
+    public T Value
+    {
+        get => GetValue(ValueProperty);
+        set => SetValue(ValueProperty, value);
+    }
 
     public T Evaluate(object? dataContext)
     {
@@ -28,7 +37,7 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
         return GetValue(ValueProperty);
     }
 
-    public void UpdateBinding(IBinding binding)
+    public void UpdateBinding(BindingBase binding)
     {
         if (binding == _lastBinding)
             return;
@@ -49,7 +58,8 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
         DataContext = null;
     }
 
-    public static BindingEvaluator<T>? TryCreate(IBinding? binding)
+    [return: NotNullIfNotNull(nameof(binding))]
+    public static BindingEvaluator<T>? TryCreate(BindingBase? binding)
     {
         if (binding is null)
             return null;

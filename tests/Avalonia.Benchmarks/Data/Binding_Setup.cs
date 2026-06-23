@@ -31,7 +31,7 @@ public class Binding_Setup
     public void Setup_DataContext_Property_Binding_TwoWay()
     {
         var target = _target;
-        var binding = new Binding(nameof(_data.IntValue), mode: BindingMode.TwoWay);
+        var binding = new Binding(nameof(_data.IntValue)) { Mode = BindingMode.TwoWay };
 
         for (var i = 0; i < 100; ++i)
         {

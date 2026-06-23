@@ -1,0 +1,26 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Uncomment to use local MicroCOM build -->
+    <!--<UseLocalMicroComBuild>true</UseLocalMicroComBuild>-->
+  
+    <LocalMicroComPath Condition="'$(LocalMicroComPath)' == ''">$(MSBuildThisFileDirectory)/../../MicroCom</LocalMicroComPath>
+  </PropertyGroup>
+
+  <!-- Local build: delegate to MicroCom's own targets -->
+  <Import Condition="'$(UseLocalMicroComBuild)' == 'true'"
+          Project="$(LocalMicroComPath)/UseLocalBuild.targets" />
+
+  <!-- NuGet packages: include based on property flags -->
+  <ItemGroup Condition="'$(UseLocalMicroComBuild)' != 'true'">
+    <PackageReference Condition="'$(UseMicroCom)' == 'true'"
+                      Include="MicroCom.Runtime" />
+    <PackageReference Condition="'$(UseMicroComGenerator)' == 'true'"
+                      Include="MicroCom.CodeGenerator" />
+    <PackageReference Condition="'$(UseMicroComGeneratorMSBuild)' == 'true'"
+                      Include="MicroCom.CodeGenerator.MSBuild"
+                      PrivateAssets="all" />
+    <PackageReference Condition="'$(UseMicroComGeneratorRoslyn)' == 'true'"
+                      Include="MicroCom.CodeGenerator.Roslyn"
+                      PrivateAssets="all" />
+  </ItemGroup>
+</Project>

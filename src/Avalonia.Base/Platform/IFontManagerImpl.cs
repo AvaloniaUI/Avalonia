@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -29,13 +28,14 @@ namespace Avalonia.Platform
         /// <param name="fontStyle">The font style.</param>
         /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontStretch">The font stretch.</param>
+        /// <param name="familyName">The family name. This is optional and can be used as an initial hint for matching.</param>
         /// <param name="culture">The culture.</param>
-        /// <param name="typeface">The matching typeface.</param>
+        /// <param name="platformTypeface">The matching platform typeface.</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface typeface);
+            FontWeight fontWeight, FontStretch fontStretch, string? familyName, CultureInfo? culture, [NotNullWhen(returnValue: true)] out IPlatformTypeface? platformTypeface);
 
         /// <summary>
         ///     Tries to get a glyph typeface for specified parameters.
@@ -44,27 +44,24 @@ namespace Avalonia.Platform
         /// <param name="style">The font style.</param>
         /// <param name="weight">The font weiht.</param>
         /// <param name="stretch">The font stretch.</param>
-        /// <param name="glyphTypeface">The created glyphTypeface</param>
+        /// <param name="platformTypeface">The created platform typeface</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could create the glyph typeface, <c>False</c> otherwise.
         /// </returns>
         bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(returnValue: true)] out IGlyphTypeface? glyphTypeface);
+            FontStretch stretch, [NotNullWhen(returnValue: true)] out IPlatformTypeface? platformTypeface);
 
         /// <summary>
         ///     Tries to create a glyph typeface from specified stream.
         /// </summary>
         /// <param name="stream">A stream that holds the font's data.</param>
         /// <param name="fontSimulations">Specifies algorithmic style simulations.</param>
-        /// <param name="glyphTypeface">The created glyphTypeface</param>
+        /// <param name=" platformTypeface">The created platform typeface</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could create the glyph typeface, <c>False</c> otherwise.
         /// </returns>
-        bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(returnValue: true)] out IGlyphTypeface? glyphTypeface);
-    }
+        bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(returnValue: true)] out IPlatformTypeface? platformTypeface);
 
-    internal interface IFontManagerImpl2 : IFontManagerImpl
-    {
         /// <summary>
         /// Tries to get a list of typefaces for the specified family name.
         /// </summary>

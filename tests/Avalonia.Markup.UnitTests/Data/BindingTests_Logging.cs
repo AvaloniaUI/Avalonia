@@ -2,14 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Controls;
-using Avalonia.Controls.Converters;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Input;
 using Avalonia.Logging;
-using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Reactive;
@@ -485,6 +482,6 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        private record LogMessage(LogEventLevel level, string area, object source, string messageTemplate, params object[] propertyValues);
+        private record LogMessage(LogEventLevel level, string area, object? source, string messageTemplate, params object?[] propertyValues);
     }
 }

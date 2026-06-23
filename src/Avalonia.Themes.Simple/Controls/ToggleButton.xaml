@@ -22,10 +22,14 @@
                           Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           CornerRadius="{TemplateBinding CornerRadius}"
-                          RecognizesAccessKey="True"
                           TextElement.Foreground="{TemplateBinding Foreground}" />
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
     <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />

@@ -69,10 +69,6 @@ public:
 
     virtual HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant variant) override;
 
-    virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
-            IAvnClipboard *clipboard, IAvnDndResultCallback *cb,
-            void *sourceHandle) override;
-
     virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
                            
     virtual bool IsModal();
@@ -105,7 +101,7 @@ protected:
     AutoFitContentView *StandardContainer;
     AvnPoint lastPositionSet;
     bool _shown;
-    std::list<WindowBaseImpl*> _children;
+    std::list<ComObjectWeakPtr<WindowBaseImpl>> _children;
 
 public:
     ComObjectWeakPtr<WindowBaseImpl> Parent = nullptr;

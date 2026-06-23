@@ -45,6 +45,10 @@ BEGIN_INTERFACE_MAP()
     void DoZoom();
 
     virtual HRESULT SetCanResize(bool value) override;
+    
+    virtual HRESULT SetCanMinimize(bool value) override;
+    
+    virtual HRESULT SetCanMaximize(bool value) override;
 
     virtual HRESULT SetDecorations(SystemDecorations value) override;
 
@@ -57,8 +61,6 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT TakeFocusFromChildren () override;
 
     virtual HRESULT SetExtendClientArea (bool enable) override;
-
-    virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints) override;
 
     virtual HRESULT GetExtendTitleBarHeight (double*ret) override;
 
@@ -82,8 +84,10 @@ BEGIN_INTERFACE_MAP()
     
     bool CanBecomeKeyWindow ();
 
-    bool CanZoom() override { return _isEnabled && _canResize; }
-    
+    bool CanZoom() override { return _isEnabled && _canMaximize; }
+
+    bool IsTransitioningWindowState() { return _transitioningWindowState; }
+
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() override;
     virtual void UpdateAppearance() override;
@@ -94,6 +98,8 @@ private:
     NSString *_lastTitle;
     bool _isEnabled;
     bool _canResize;
+    bool _canMinimize;
+    bool _canMaximize;
     bool _fullScreenActive;
     SystemDecorations _decorations;
     AvnWindowState _lastWindowState;
@@ -102,7 +108,6 @@ private:
     NSRect _preZoomSize;
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
-    AvnExtendClientAreaChromeHints _extendClientHints;
     bool _isModal;
 };
 

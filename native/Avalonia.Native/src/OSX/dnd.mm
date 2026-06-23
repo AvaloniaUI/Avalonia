@@ -14,9 +14,17 @@ extern AvnDragDropEffects ConvertDragDropEffects(NSDragOperation nsop)
 
 extern NSString* GetAvnCustomDataType()
 {
-    char buffer[256];
-    sprintf(buffer, "net.avaloniaui.inproc.uti.n%in", getpid());
-    return [NSString stringWithUTF8String:buffer];
+    static NSString* result = nil;
+    
+    if (result == nil)
+    {
+        const size_t bufferSize = 256;
+        char buffer[bufferSize];
+        snprintf(buffer, bufferSize, "net.avaloniaui.inproc.uti.n%in", getpid());
+        result = [NSString stringWithUTF8String:buffer];
+    }
+    
+    return result;
 }
 
 @interface AvnDndSource : NSObject<NSDraggingSource>

@@ -4,7 +4,6 @@
     <TargetFramework>$(AvsCurrentIOSTargetFramework)</TargetFramework>
     <SupportedOSPlatformVersion>$(AvsMinSupportedIOSVersion)</SupportedOSPlatformVersion>
     <ProvisioningType>manual</ProvisioningType>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

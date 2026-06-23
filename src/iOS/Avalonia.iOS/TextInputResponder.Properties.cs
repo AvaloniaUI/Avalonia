@@ -24,8 +24,9 @@ partial class AvaloniaView
                 _view._options.ContentType switch
                 {
                     TextInputContentType.Alpha => UIKeyboardType.AsciiCapable,
-                    TextInputContentType.Digits or TextInputContentType.Number => UIKeyboardType.NumberPad,
+                    TextInputContentType.Digits => UIKeyboardType.PhonePad,
                     TextInputContentType.Pin => UIKeyboardType.NumberPad,
+                    TextInputContentType.Number => UIKeyboardType.DecimalPad,
                     TextInputContentType.Email => UIKeyboardType.EmailAddress,
                     TextInputContentType.Url => UIKeyboardType.Url,
                     TextInputContentType.Name => UIKeyboardType.NamePhonePad,
@@ -81,7 +82,7 @@ partial class AvaloniaView
         [Export("smartInsertDeleteType")]
         public UITextSmartInsertDeleteType SmartInsertDeleteType { get; set; } = UITextSmartInsertDeleteType.Default;
 
-        [Export("passwordRules")] public UITextInputPasswordRules PasswordRules { get; set; } = null!;
+        [Export("passwordRules")] public UITextInputPasswordRules? PasswordRules { get; set; } = null!;
 
         public NSObject? WeakInputDelegate
         {

@@ -93,7 +93,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Same(target.Items[0], target.SelectedItem);
-            Assert.Same("first", ((TabItem)target.SelectedItem).Name);
+            Assert.Same("first", ((TabItem)target.SelectedItem!).Name);
         }
 
         private Control CreateTabStripTemplate(TabStrip parent, INameScope scope)

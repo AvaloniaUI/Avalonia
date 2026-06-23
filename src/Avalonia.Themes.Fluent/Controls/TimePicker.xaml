@@ -78,6 +78,8 @@
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="MinWidth" Value="{DynamicResource TimePickerThemeMinWidth}" />
+    <Setter Property="MaxWidth" Value="{DynamicResource TimePickerThemeMaxWidth}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
@@ -90,8 +92,8 @@
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     IsEnabled="{TemplateBinding IsEnabled}"
-                    MinWidth="{DynamicResource TimePickerThemeMinWidth}"
-                    MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
+                    MinWidth="{TemplateBinding MinWidth}"
+                    MaxWidth="{TemplateBinding MaxWidth}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch">
 
@@ -201,6 +203,11 @@
                 MaxHeight="398">
           <Grid Name="ContentPanel" RowDefinitions="*,Auto">
             <Grid Name="PART_PickerContainer">
+              <Grid.Styles>
+                <Style Selector="DateTimePickerPanel > ListBoxItem">
+                  <Setter Property="Theme" Value="{StaticResource FluentDateTimePickerItem}" />
+                </Style>
+              </Grid.Styles>
               <!--Ignore col defs here, set in code-->
               <Panel Name="PART_HourHost" Grid.Column="0">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"

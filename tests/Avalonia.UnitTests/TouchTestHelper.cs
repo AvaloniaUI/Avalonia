@@ -1,6 +1,5 @@
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.VisualTree;
 
 namespace Avalonia.UnitTests
 {
@@ -8,8 +7,9 @@ namespace Avalonia.UnitTests
     {
         private readonly Pointer _pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
         private ulong _nextStamp = 1;
+        private int _clickCount = 0;
         private ulong Timestamp() => _nextStamp++;
-        public IInputElement Captured => _pointer.Captured;
+        public IInputElement? Captured => _pointer.Captured;
 
         public void Down(Interactive target, Point position = default, KeyModifiers modifiers = default)
         {
@@ -21,7 +21,7 @@ namespace Avalonia.UnitTests
             _pointer.Capture((IInputElement)target);
             source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (Visual)source, position, Timestamp(),
                 new(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
-                modifiers));
+                modifiers, ++_clickCount));
         }
 
         public void Move(Interactive target, in Point position, KeyModifiers modifiers = default) => Move(target, target, position, modifiers);

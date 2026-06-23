@@ -79,16 +79,14 @@ public:
 class AvnStringArrayImpl : public virtual ComSingleObject<IAvnStringArray, &IID_IAvnStringArray>
 {
 private:
-    std::vector<ComPtr<IAvnString>> _list;
+    std::vector<ComPtr<AvnStringImpl>> _list;
 public:
     FORWARD_IUNKNOWN()
     AvnStringArrayImpl(NSArray<NSString*>* array)
     {
         for(int c = 0; c < [array count]; c++)
         {
-            ComPtr<IAvnString> s;
-            *s.getPPV() = new AvnStringImpl([array objectAtIndex:c]);
-            _list.push_back(s);
+            _list.push_back(comnew<AvnStringImpl>([array objectAtIndex:c]));
         }
     }
     
@@ -96,17 +94,14 @@ public:
     {
         for(int c = 0; c < [array count]; c++)
         {
-            ComPtr<IAvnString> s;
-            *s.getPPV() = new AvnStringImpl([array objectAtIndex:c].absoluteString);
+            auto s = comnew<AvnStringImpl>([array objectAtIndex:c].absoluteString);
             _list.push_back(s);
         }
     }
     
     AvnStringArrayImpl(NSString* string)
     {
-        ComPtr<IAvnString> s;
-        *s.getPPV() = new AvnStringImpl(string);
-        _list.push_back(s);
+        _list.push_back(comnew<AvnStringImpl>(string));
     }
     
     virtual unsigned int GetCount() override

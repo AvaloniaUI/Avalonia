@@ -25,7 +25,7 @@ static class VulkanBufferHelper
             Usage = bufferUsageFlags,
             SharingMode = SharingMode.Exclusive
         };
-        api.CreateBuffer(device, bufferInfo, null, out buffer).ThrowOnError();
+        api.CreateBuffer(device, in bufferInfo, null, out buffer).ThrowOnError();
 
         api.GetBufferMemoryRequirements(device, buffer, out var memoryRequirements);
 
@@ -42,7 +42,7 @@ static class VulkanBufferHelper
                 MemoryPropertyFlags.HostVisibleBit)
         };
 
-        api.AllocateMemory(device, memoryAllocateInfo, null, out memory).ThrowOnError();
+        api.AllocateMemory(device, in memoryAllocateInfo, null, out memory).ThrowOnError();
         api.BindBufferMemory(device, buffer, memory, 0);
         UpdateBufferMemory(vk, memory, initialData);
     }

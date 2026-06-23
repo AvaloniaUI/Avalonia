@@ -14,12 +14,12 @@ namespace Avalonia.Base.UnitTests
 
         private class ThrowListener : TextWriterTraceListener
         {
-            public override void Fail(string message)
+            public override void Fail(string? message)
             {
                 throw new Exception("Assertion Failed. " + message);
             }
 
-            public override void Fail(string message, string detailMessage)
+            public override void Fail(string? message, string? detailMessage)
             {
                 throw new Exception("Assertion Failed. " + message + detailMessage);
             }

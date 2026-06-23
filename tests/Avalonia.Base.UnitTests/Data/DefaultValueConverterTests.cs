@@ -190,9 +190,9 @@ namespace Avalonia.Base.UnitTests.Data
                 null,
                 CultureInfo.InvariantCulture);
 
-            Assert.IsAssignableFrom<ICommand>(result);
+            var command = Assert.IsAssignableFrom<ICommand>(result);
 
-            (result as ICommand).Execute(5);
+            command.Execute(5);
 
             Assert.Equal(5, commandResult);
         }
@@ -208,9 +208,9 @@ namespace Avalonia.Base.UnitTests.Data
                 null,
                 CultureInfo.InvariantCulture);
 
-            Assert.IsAssignableFrom<ICommand>(result);
+            var command = Assert.IsAssignableFrom<ICommand>(result);
 
-            (result as ICommand).Execute(null);
+            command.Execute(null);
 
             Assert.Equal(1, commandResult);
         }
@@ -246,7 +246,7 @@ namespace Avalonia.Base.UnitTests.Data
                 Value = value;
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is CustomType other && this.Value == other.Value;
             }
@@ -259,22 +259,22 @@ namespace Avalonia.Base.UnitTests.Data
 
         private class CustomTypeConverter : TypeConverter
         {
-            public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+            public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
             {
                 return destinationType == typeof(int);
             }
 
-            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
             {
                 return sourceType == typeof(int);
             }
 
-            public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+            public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
             {
-                return ((CustomType)value).Value;
+                return ((CustomType)value!).Value;
             }
 
-            public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+            public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
             {
                 return new CustomType((int)value);
             }

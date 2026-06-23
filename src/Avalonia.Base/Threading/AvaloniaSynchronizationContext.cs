@@ -1,12 +1,12 @@
 using System;
-using System.Runtime.ConstrainedExecution;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Utilities;
 
 namespace Avalonia.Threading
 {
     /// <summary>
-    /// SynchronizationContext to be used on main thread
+    /// A <see cref="SynchronizationContext"/> that uses a <see cref="Dispatcher"/> to post messages.
     /// </summary>
     public class AvaloniaSynchronizationContext : SynchronizationContext
     {
@@ -15,8 +15,11 @@ namespace Avalonia.Threading
             AvaloniaLocator.Current.GetService<NonPumpingLockHelper.IHelperImpl>();
         private readonly Dispatcher _dispatcher;
 
+        private readonly object _taskSchedulerLock = new();
+        private TaskScheduler? _taskScheduler;
+
         // This constructor is here to enforce STA behavior for unit tests
-        internal AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority, bool isStaThread = false)
+        internal AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority, bool isStaThread)
         {
             _dispatcher = dispatcher;
             Priority = priority;
@@ -26,17 +29,17 @@ namespace Avalonia.Threading
         }
 
         public AvaloniaSynchronizationContext()
-            : this(Dispatcher.UIThread, DispatcherPriority.Default, Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
+            : this(Dispatcher.CurrentDispatcher, DispatcherPriority.Default)
         {
         }
 
         public AvaloniaSynchronizationContext(DispatcherPriority priority)
-            : this(Dispatcher.UIThread, priority, false)
+            : this(Dispatcher.CurrentDispatcher, priority)
         {
         }
 
         public AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority)
-            : this(dispatcher, priority, false)
+            : this(dispatcher, priority, dispatcher.IsSta)
         {
         }
 
@@ -55,7 +58,7 @@ namespace Avalonia.Threading
                 return;
             }
 
-            SetSynchronizationContext(Dispatcher.UIThread.GetContextWithPriority(DispatcherPriority.Normal));
+            SetSynchronizationContext(Dispatcher.CurrentDispatcher.GetContextWithPriority(DispatcherPriority.Normal));
         }
 
         /// <inheritdoc/>
@@ -74,9 +77,6 @@ namespace Avalonia.Threading
                 _dispatcher.Send(d, state, Priority);
         }
 
-#if !NET6_0_OR_GREATER
-        [PrePrepareMethod]
-#endif
         public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
         {
             if (
@@ -85,6 +85,31 @@ namespace Avalonia.Threading
                 && _dispatcher.DisabledProcessingCount > 0)
                 return _nonPumpingHelper.Wait(waitHandles, waitAll, millisecondsTimeout);
             return base.Wait(waitHandles, waitAll, millisecondsTimeout);
+        }
+
+        /// <summary>
+        /// Gets a <see cref="TaskScheduler"/> associated with this <see cref="AvaloniaSynchronizationContext"/>.
+        /// </summary>
+        public TaskScheduler ToTaskScheduler()
+        {
+            lock (_taskSchedulerLock)
+            {
+                if (_taskScheduler == null)
+                {
+                    var prevContext = Current;
+                    SetSynchronizationContext(this);
+                    try
+                    {
+                        _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                    }
+                    finally
+                    {
+                        SetSynchronizationContext(prevContext);
+                    }
+                }
+
+                return _taskScheduler;
+            }
         }
 
         public record struct RestoreContext : IDisposable
@@ -108,7 +133,7 @@ namespace Avalonia.Threading
             }
         }
 
-        public static RestoreContext Ensure(DispatcherPriority priority) => Ensure(Dispatcher.UIThread, priority);
+        public static RestoreContext Ensure(DispatcherPriority priority) => Ensure(Dispatcher.CurrentDispatcher, priority);
         public static RestoreContext Ensure(Dispatcher dispatcher, DispatcherPriority priority)
         {
             if (Current is AvaloniaSynchronizationContext avaloniaContext 

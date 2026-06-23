@@ -20,8 +20,12 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
 {
     public IXamlAstNode Transform(AstGroupTransformationContext context, IXamlAstNode node)
     {
-        if (node is not XamlValueWithManipulationNode valueNode
-            || valueNode.Value is not XamlAstNewClrObjectNode objectNode
+        // Filter object initialization nodes like:
+        // > XamlValueWithManipulationNode
+        // > > XamlAstNewClrObjectNode // StyleInclude or ResourceInclude, can be nested in another XamlValueWithManipulationNode
+        // > > XamlObjectInitializationNode
+        if (node is not XamlValueWithManipulationNode { Manipulation: XamlObjectInitializationNode initializationNode } valueNode
+            || valueNode.UnwrapValue<XamlAstNewClrObjectNode>() is not { } objectNode
             || (objectNode.Type.GetClrType() != context.GetAvaloniaTypes().StyleInclude
                 && objectNode.Type.GetClrType() != context.GetAvaloniaTypes().ResourceInclude))
         {
@@ -34,11 +38,6 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         if (expectedLoadedType is null)
         {
             throw new InvalidOperationException($"\"{nodeTypeName}\".Loaded property is expected to be defined");
-        }
-
-        if (valueNode.Manipulation is not XamlObjectInitializationNode initializationNode)
-        {
-            throw new InvalidOperationException($"Invalid \"{nodeTypeName}\" node initialization.");
         }
 
         var additionalProperties = new List<IXamlAstManipulationNode>();
@@ -176,9 +175,25 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
                 strictSourceValueType ? XamlDiagnosticSeverity.Error : XamlDiagnosticSeverity.Warning,
                 $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri. This {nodeTypeName} will be resolved in runtime instead.",
                 node);
-        
+
         // We expect that AvaloniaXamlIlLanguageParseIntrinsics has already parsed the Uri and created node like: `new Uri(assetPath, uriKind)`.
-        if (sourceProperty.Values.OfType<XamlAstNewClrObjectNode>().FirstOrDefault() is not { } sourceUriNode
+        if (sourceProperty.Values.Count != 1)
+        {
+            OnInvalidSource(sourceProperty);
+            return (null, null);
+        }
+
+        // `new Uri` can be wrapped in manipulation node if source info or another manipulation was applied.
+        var sourceUriNodeWrapped = sourceProperty.Values.Single();
+        var sourceUriNode = sourceUriNodeWrapped switch
+        {
+            XamlAstNewClrObjectNode newObj => newObj,
+            XamlValueWithManipulationNode manipulation => manipulation.UnwrapValue<XamlAstNewClrObjectNode>(),
+            _ => null
+        };
+
+        // Validate Uri type and constant arguments.
+        if (sourceUriNode is null
             || sourceUriNode.Type.GetClrType() != context.GetAvaloniaTypes().Uri
             || sourceUriNode.Arguments.FirstOrDefault() is not XamlConstantNode { Constant: string originalAssetPath }
             || sourceUriNode.Arguments.Skip(1).FirstOrDefault() is not XamlConstantNode { Constant: int uriKind })

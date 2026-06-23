@@ -1,45 +1,119 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="Carousel"
              x:Class="ControlCatalog.Pages.CarouselPage">
-  <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h2">An items control that displays its items as pages that fill the control.</TextBlock>
+  <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Stretch">
+    <TextBlock Classes="h2">A swipeable items control that can reveal adjacent pages with ViewportFraction.</TextBlock>
 
-    <Grid ColumnDefinitions="Auto,*,Auto"
-          MaxWidth="660"
+    <Grid Name="layoutGrid" ColumnDefinitions="Auto,*,Auto" RowDefinitions="*,Auto,*"
+          MaxWidth="760"
           HorizontalAlignment="Stretch" Margin="0 16 0 0">
-      <Button Name="left" Grid.Column="0" VerticalAlignment="Center" Padding="10,20" Margin="4">
-        <Path Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="Black"/>
+      <Button Name="left" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="10,20" Margin="4">
+        <Path Name="leftArrow" Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="Black"/>
       </Button>
-      <Carousel Name="carousel" Grid.Column="1">
+      <Carousel Name="carousel" Grid.Column="1" Grid.Row="1" Background="Transparent" Height="400" Focusable="True" ViewportFraction="1.0">
         <Carousel.PageTransition>
           <PageSlide Duration="0.25" Orientation="Horizontal" />
         </Carousel.PageTransition>
-        <Image Source="/Assets/delicate-arch-896885_640.jpg"/>
-        <Image Source="/Assets/hirsch-899118_640.jpg"/>
-        <Image Source="/Assets/maple-leaf-888807_640.jpg"/>
+        
+        <Border Margin="14,12" CornerRadius="18" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/delicate-arch-896885_640.jpg" Stretch="UniformToFill"/>
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 1: Delicate Arch" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+            </Border>
+          </Grid>
+        </Border>
+
+        <Border Margin="14,12" CornerRadius="18" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/hirsch-899118_640.jpg" Stretch="UniformToFill"/>
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 2: Hirsch" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+            </Border>
+          </Grid>
+        </Border>
+
+        <Border Margin="14,12" CornerRadius="18" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/maple-leaf-888807_640.jpg" Stretch="UniformToFill"/>
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 3: Maple Leaf" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+            </Border>
+          </Grid>
+        </Border>
       </Carousel>
-      <Button Name="right" Grid.Column="2" VerticalAlignment="Center" Padding="10,20" Margin="4">
-        <Path Data="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" Fill="Black"/>
+      <Button Name="right" Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="10,20" Margin="4">
+        <Path Name="rightArrow" Data="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" Fill="Black"/>
       </Button>
     </Grid>
 
-    <StackPanel Orientation="Horizontal" Spacing="4">
-      <TextBlock VerticalAlignment="Center">Transition</TextBlock>
-      <ComboBox Name="transition" SelectedIndex="1" VerticalAlignment="Center">
-        <ComboBoxItem>None</ComboBoxItem>
-        <ComboBoxItem>Slide</ComboBoxItem>
-        <ComboBoxItem>Crossfade</ComboBoxItem>
-        <ComboBoxItem>3D Rotation</ComboBoxItem>
-      </ComboBox>
-    </StackPanel>
+    <Separator Margin="0 4"/>
 
-    <StackPanel Orientation="Horizontal" Spacing="4">
-      <TextBlock VerticalAlignment="Center">Orientation</TextBlock>
-      <ComboBox Name="orientation" SelectedIndex="0" VerticalAlignment="Center">
+    <Grid ColumnDefinitions="160,420" RowDefinitions="Auto, Auto, Auto" RowSpacing="8"
+          Margin="0 4" MaxWidth="580" HorizontalAlignment="Left">
+      <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Transition</TextBlock>
+      <ComboBox SelectedIndex="1" Name="transition" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch">
+        <ComboBoxItem>None</ComboBoxItem>
+        <ComboBoxItem>Page Slide</ComboBoxItem>
+        <ComboBoxItem>Cross Fade</ComboBoxItem>
+        <ComboBoxItem>Rotate 3D</ComboBoxItem>
+        <ComboBoxItem>Card Stack</ComboBoxItem>
+        <ComboBoxItem>Wave Reveal</ComboBoxItem>
+        <ComboBoxItem>Composite (Slide + Fade)</ComboBoxItem>
+      </ComboBox>
+
+      <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Orientation</TextBlock>
+      <ComboBox Name="orientation" Grid.Row="1" Grid.Column="1" SelectedIndex="0" HorizontalAlignment="Stretch">
         <ComboBoxItem>Horizontal</ComboBoxItem>
         <ComboBoxItem>Vertical</ComboBoxItem>
       </ComboBox>
+
+      <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Viewport Fraction</TextBlock>
+      <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4" HorizontalAlignment="Stretch">
+        <Grid ColumnDefinitions="*,56" ColumnSpacing="12">
+          <Slider Name="viewportFraction"
+                  Minimum="0.33"
+                  Maximum="1"
+                  Value="1.0"
+                  TickFrequency="0.01"
+                  HorizontalAlignment="Stretch" />
+          <TextBlock Name="viewportFractionIndicator"
+                     Grid.Column="1"
+                     HorizontalAlignment="Stretch"
+                     TextAlignment="Right"
+                     VerticalAlignment="Center"
+                     FontWeight="SemiBold">1.00</TextBlock>
+        </Grid>
+        <TextBlock Name="viewportFractionHint"
+                   HorizontalAlignment="Stretch"
+                   Opacity="0.75"
+                   TextWrapping="Wrap"
+                   Text="Values below 1 reveal adjacent pages." />
+      </StackPanel>
+    </Grid>
+
+    <Separator Margin="0 8"/>
+
+    <StackPanel Orientation="Horizontal" Spacing="24" Margin="0 4" MaxWidth="580" HorizontalAlignment="Left">
+      <CheckBox Name="wrapSelection">Wrap Selection</CheckBox>
+      <CheckBox Name="swipeEnabled">Swipe Enabled</CheckBox>
+    </StackPanel>
+
+    <Separator Margin="0 8"/>
+
+    <StackPanel Spacing="12" MaxWidth="580" HorizontalAlignment="Left">
+      <StackPanel Orientation="Horizontal" Spacing="24">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock>Total Items:</TextBlock>
+          <TextBlock Name="itemsCountIndicator" FontWeight="Bold">0</TextBlock>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock>Selected Index:</TextBlock>
+          <TextBlock Name="selectedIndexIndicator" FontWeight="Bold">0</TextBlock>
+        </StackPanel>
+      </StackPanel>
     </StackPanel>
     
   </StackPanel>
-</UserControl>
+</ContentPage>

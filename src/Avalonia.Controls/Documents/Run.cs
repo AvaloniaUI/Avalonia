@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Documents
             set => SetValue(TextProperty, value);
         }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns)
+        internal override void BuildTextRun(IList<TextRun> textRuns, Size blockSize)
         {
             var text = Text ?? "";
 
@@ -59,7 +59,7 @@ namespace Avalonia.Controls.Documents
                 return;
             }
 
-            var textRunProperties = CreateTextRunProperties();           
+            var textRunProperties = CreateTextRunProperties();
 
             var textCharacters = new TextCharacters(text, textRunProperties);
 

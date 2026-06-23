@@ -16,8 +16,10 @@ This document describes the process for creating a new Avalonia release
 
 - Create a branch named e.g. `release/11.0.9` for the specific minor version
 - Update the version number in the file [SharedVersion.props](../build/SharedVersion.props), e.g. `<Version>11.0.9</Version>`
-- Add a tag for this version, e.g. `git tag 11.0.9`
-- Push the release branch and the tag.
+- Commit the file.
+- Add a tag for this version, e.g. `git tag 11.0.9`.
+- Update the `release/latest` branch to point to the same commit.
+- Push the release branches and the tag.
 - Wait for azure pipelines to finish the build. Nightly build with 11.0.9 version should be released soon after.
 - Using the nightly build run a due diligence test to make sure you're happy with the package.
 - On azure pipelines, on the release for your release branch `release/11.0.9` click on the badge for "Nuget Release"

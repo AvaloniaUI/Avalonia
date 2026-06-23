@@ -1,18 +1,12 @@
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages
 {
-    public class ViewboxPage : UserControl
+    public partial class ViewboxPage : ContentPage
     {
         public ViewboxPage()
         {
             InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

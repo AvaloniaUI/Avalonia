@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -172,7 +172,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -207,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             clickBorder.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(5, 5), 0,
+                null!, wnd, new Point(5, 5), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -302,6 +302,46 @@ namespace Avalonia.Controls.UnitTests
             wnd.Show();
 
             Assert.Contains(splitView.Classes, ":closed".Equals);
+        }
+        
+        [Fact]
+        public void SplitView_Shouldnt_Close_Panel_When_IsPaneOpen_True_Then_Display_Mode_Changed()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow
+                .With(globalClock: new MockGlobalClock()));
+            var wnd = new Window
+            {
+                Width = 1280,
+                Height = 720
+            };
+            var splitView = new SplitView();
+            splitView.DisplayMode = SplitViewDisplayMode.CompactOverlay;
+            wnd.Content = splitView;
+            wnd.Show();
+
+            splitView.IsPaneOpen = true;
+
+            splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
+                null!, wnd, new Point(1270, 30), 0,
+                new PointerPointProperties(),
+                KeyModifiers.None,
+                MouseButton.Left));
+
+            Assert.False(splitView.IsPaneOpen);
+
+            // Inline shouldn't close the pane
+            splitView.IsPaneOpen = true;
+            
+            // Change the display mode once the pane is already open.
+            splitView.DisplayMode = SplitViewDisplayMode.Inline;
+
+            splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
+                null!, wnd, new Point(1270, 30), 0,
+                new PointerPointProperties(),
+                KeyModifiers.None,
+                MouseButton.Left));
+
+            Assert.True(splitView.IsPaneOpen);
         }
     }
 }

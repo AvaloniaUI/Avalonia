@@ -1,5 +1,5 @@
 using System;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
@@ -49,7 +49,7 @@ namespace Avalonia.X11
             }
         }
         
-        public ILockedFramebuffer Lock(out FramebufferLockProperties properties)
+        public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo _, out FramebufferLockProperties properties)
         {
             XLockDisplay(_display);
             XGetGeometry(_display, _xid, out var root, out var x, out var y, out var width, out var height,
@@ -61,18 +61,13 @@ namespace Avalonia.X11
             {
                 _fb?.Dispose();
                 _fb = null;
-                _fb = new RetainedFramebuffer(new PixelSize(width, height), PixelFormat.Bgra8888);
+                _fb = new RetainedFramebuffer(new PixelSize(width, height), PixelFormat.Bgra8888, AlphaFormat.Premul);
             }
 
             properties = new FramebufferLockProperties(framebufferValid);
             return _fb!.Lock(new Vector(96, 96), Blit);
         }
 
-        public IFramebufferRenderTarget CreateFramebufferRenderTarget()
-        {
-            return _retain
-                ? new FuncRetainedFramebufferRenderTarget(Lock)
-                : new FuncFramebufferRenderTarget(() => Lock(out _));
-        }
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock, _retain);
     }
 }

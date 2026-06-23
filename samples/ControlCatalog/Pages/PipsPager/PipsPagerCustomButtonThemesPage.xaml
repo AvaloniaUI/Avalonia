@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PipsPagerCustomButtonThemesPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Custom Button Themes" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Replace the default chevron navigation buttons with custom button themes using PreviousButtonTheme and NextButtonTheme." />
+        <Separator />
+        <TextBlock Text="Properties" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="PreviousButtonTheme" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="NextButtonTheme" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="IsPreviousButtonVisible" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="IsNextButtonVisible" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <StackPanel Spacing="24" Margin="24">
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="Text Buttons" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="5" MaxVisiblePips="5"
+                   IsPreviousButtonVisible="True" IsNextButtonVisible="True">
+          <PipsPager.Resources>
+            <ControlTheme x:Key="CustomPreviousButtonTheme" TargetType="Button">
+              <Setter Property="Content" Value="Prev" />
+              <Setter Property="Background" Value="LightGray" />
+              <Setter Property="Foreground" Value="Black" />
+              <Setter Property="Padding" Value="8,2" />
+              <Setter Property="Margin" Value="0,0,8,0" />
+              <Setter Property="Template">
+                <ControlTemplate>
+                  <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                    <ContentPresenter Content="{TemplateBinding Content}" Margin="{TemplateBinding Padding}" />
+                  </Border>
+                </ControlTemplate>
+              </Setter>
+            </ControlTheme>
+            <ControlTheme x:Key="CustomNextButtonTheme" TargetType="Button">
+              <Setter Property="Content" Value="Next" />
+              <Setter Property="Background" Value="LightGray" />
+              <Setter Property="Foreground" Value="Black" />
+              <Setter Property="Padding" Value="8,2" />
+              <Setter Property="Margin" Value="8,0,0,0" />
+              <Setter Property="Template">
+                <ControlTemplate>
+                  <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                    <ContentPresenter Content="{TemplateBinding Content}" Margin="{TemplateBinding Padding}" />
+                  </Border>
+                </ControlTemplate>
+              </Setter>
+            </ControlTheme>
+          </PipsPager.Resources>
+          <PipsPager.PreviousButtonTheme>
+            <StaticResource ResourceKey="CustomPreviousButtonTheme" />
+          </PipsPager.PreviousButtonTheme>
+          <PipsPager.NextButtonTheme>
+            <StaticResource ResourceKey="CustomNextButtonTheme" />
+          </PipsPager.NextButtonTheme>
+        </PipsPager>
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="Hidden Buttons" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="7"
+                   MaxVisiblePips="7"
+                   IsPreviousButtonVisible="False"
+                   IsNextButtonVisible="False" />
+      </StackPanel>
+
+    </StackPanel>
+  </DockPanel>
+</UserControl>

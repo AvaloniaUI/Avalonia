@@ -12,12 +12,12 @@ namespace PlatformSanityChecks
 {
     public class Program
     {
-        static Thread UiThread;
+        static Thread UiThread = null!;
         
         static void Main(string[] args)
         {
             UiThread = Thread.CurrentThread;
-            AppBuilder.Configure<App>().RuntimePlatformServicesInitializer();
+            AppBuilder.Configure<App>().RuntimePlatformServicesInitializer!();
             var app = new App();
             
             AvaloniaX11PlatformExtensions.InitializeX11Platform();
@@ -41,13 +41,13 @@ namespace PlatformSanityChecks
             throw new Exception(error);
         }
 
-        static IDisposable Enter([CallerMemberName] string caller = null)
+        static IDisposable Enter([CallerMemberName] string? caller = null)
         {
             Console.WriteLine("Entering " + caller);
             return Disposable.Create(() => { Console.WriteLine("Leaving " + caller); });
         }
 
-        static void EnterLoop(Action<CancellationTokenSource> cb, [CallerMemberName] string caller = null)
+        static void EnterLoop(Action<CancellationTokenSource> cb, [CallerMemberName] string? caller = null)
         {
             using (Enter(caller))
             {

@@ -62,11 +62,13 @@ namespace Avalonia.IntegrationTests.Appium
 
         public static WindowChrome GetClientChromeButtons(this AppiumWebElement window)
         {
-            var titlebar = window.FindElementsByAccessibilityId("AvaloniaTitleBar")?.FirstOrDefault();
-            var closeButton = titlebar?.FindElementByName("Close");
-            var minimizeButton = titlebar?.FindElementByName("Minimize");
-            var maximizeButton = titlebar?.FindElementByName("Maximize");
-            return new(closeButton, minimizeButton, maximizeButton, null, titlebar);
+            var chrome = window.FindElementsByAccessibilityId("AvaloniaWindowChrome")?.FirstOrDefault();
+            var titlebar = chrome?.FindElementsByAccessibilityId("AvaloniaTitleBar")?.FirstOrDefault();
+            var closeButton = chrome?.FindElementsByAccessibilityId("Close")?.FirstOrDefault();
+            var minimizeButton = chrome?.FindElementsByAccessibilityId("Minimize")?.FirstOrDefault();
+            var maximizeButton = chrome?.FindElementsByAccessibilityId("Maximize")?.FirstOrDefault();
+            var fullscreenButton = chrome?.FindElementsByAccessibilityId("Fullscreen")?.FirstOrDefault();
+            return new(closeButton, minimizeButton, maximizeButton, fullscreenButton, titlebar);
         }
 
         public static string GetComboBoxValue(this AppiumWebElement element)
@@ -238,6 +240,11 @@ namespace Avalonia.IntegrationTests.Appium
             // such as list items don't support this action, so instead simulate a physical click as VoiceOver
             // does. On Windows, Click() seems to fail with the WindowState checkbox for some reason.
             new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
+        }
+        
+        public static void SendDoubleClick(this AppiumWebElement element)
+        {
+            new Actions(element.WrappedDriver).MoveToElement(element).DoubleClick().Perform();
         }
 
         public static void MovePointerOver(this AppiumWebElement element)

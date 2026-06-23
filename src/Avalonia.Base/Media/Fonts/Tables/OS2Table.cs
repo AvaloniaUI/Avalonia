@@ -3,338 +3,199 @@
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
 using System;
-using System.IO;
 
 namespace Avalonia.Media.Fonts.Tables
 {
-    internal sealed class OS2Table
+    internal readonly struct OS2Table
     {
         internal const string TableName = "OS/2";
-        internal static OpenTypeTag Tag = OpenTypeTag.Parse(TableName);
-  
-        private readonly byte[] panose;
-        private readonly short capHeight;
-        private readonly short familyClass;
-        private readonly short heightX;
-        private readonly string tag;
-        private readonly ushort codePageRange1;
-        private readonly ushort codePageRange2;
-        private readonly uint unicodeRange1;
-        private readonly uint unicodeRange2;
-        private readonly uint unicodeRange3;
-        private readonly uint unicodeRange4;
-        private readonly ushort breakChar;
-        private readonly ushort defaultChar;
-        private readonly ushort firstCharIndex;
-        private readonly ushort lastCharIndex;
-        private readonly ushort lowerOpticalPointSize;
-        private readonly ushort maxContext;
-        private readonly ushort upperOpticalPointSize;
-        private readonly short averageCharWidth;
+        internal static OpenTypeTag Tag { get; } = OpenTypeTag.Parse(TableName);
 
-        public OS2Table(
-            short averageCharWidth,
+        [Flags]
+        internal enum FontSelectionFlags : ushort
+        {
+            ITALIC = 1,
+            UNDERSCORE = 1 << 1,
+            NEGATIVE = 1 << 2,
+            OUTLINED = 1 << 3,
+            STRIKEOUT = 1 << 4,
+            BOLD = 1 << 5,
+            REGULAR = 1 << 6,
+            USE_TYPO_METRICS = 1 << 7,
+            WWS = 1 << 8,
+            OBLIQUE = 1 << 9,
+        }
+
+        public ushort Version { get; }
+        public short XAvgCharWidth { get; }
+        public ushort WeightClass { get; }
+        public ushort WidthClass { get; }
+        public ushort FsType { get; }
+        public short YSubscriptXSize { get; }
+        public short YSubscriptYSize { get; }
+        public short YSubscriptXOffset { get; }
+        public short YSubscriptYOffset { get; }
+        public short YSuperscriptXSize { get; }
+        public short YSuperscriptYSize { get; }
+        public short YSuperscriptXOffset { get; }
+        public short YSuperscriptYOffset { get; }
+        public short StrikeoutSize { get; }
+        public short StrikeoutPosition { get; }
+        public short FamilyClass { get; }
+        public Panose Panose { get; }
+        public uint UnicodeRange1 { get; }
+        public uint UnicodeRange2 { get; }
+        public uint UnicodeRange3 { get; }
+        public uint UnicodeRange4 { get; }
+        public uint VendorId { get; }
+        public FontSelectionFlags Selection { get; }
+        public ushort FirstCharIndex { get; }
+        public ushort LastCharIndex { get; }
+        public short TypoAscender { get; }
+        public short TypoDescender { get; }
+        public short TypoLineGap { get; }
+        public ushort WinAscent { get; }
+        public ushort WinDescent { get; }
+        
+        public uint CodePageRange1 { get; }
+        public uint CodePageRange2 { get; }
+        
+        public short XHeight { get; }
+        public short CapHeight { get; }
+        public ushort DefaultChar { get; }
+        public ushort BreakChar { get; }
+        public ushort MaxContext { get; }
+        
+        public ushort LowerOpticalPointSize { get; }
+        public ushort UpperOpticalPointSize { get; }
+
+        private OS2Table(
+            ushort version,
+            short xAvgCharWidth,
             ushort weightClass,
             ushort widthClass,
-            ushort styleType,
-            short subscriptXSize,
-            short subscriptYSize,
-            short subscriptXOffset,
-            short subscriptYOffset,
-            short superscriptXSize,
-            short superscriptYSize,
-            short superscriptXOffset,
-            short superscriptYOffset,
+            ushort fsType,
+            short ySubscriptXSize,
+            short ySubscriptYSize,
+            short ySubscriptXOffset,
+            short ySubscriptYOffset,
+            short ySuperscriptXSize,
+            short ySuperscriptYSize,
+            short ySuperscriptXOffset,
+            short ySuperscriptYOffset,
             short strikeoutSize,
             short strikeoutPosition,
             short familyClass,
-            byte[] panose,
+            Panose panose,
             uint unicodeRange1,
             uint unicodeRange2,
             uint unicodeRange3,
             uint unicodeRange4,
-            string tag,
-            FontStyleSelection fontStyle,
+            uint vendorId,
+            FontSelectionFlags selection,
             ushort firstCharIndex,
             ushort lastCharIndex,
             short typoAscender,
             short typoDescender,
             short typoLineGap,
             ushort winAscent,
-            ushort winDescent)
+            ushort winDescent,
+            uint codePageRange1,
+            uint codePageRange2,
+            short xHeight,
+            short capHeight,
+            ushort defaultChar,
+            ushort breakChar,
+            ushort maxContext,
+            ushort lowerOpticalPointSize,
+            ushort upperOpticalPointSize)
         {
-            this.averageCharWidth = averageCharWidth;
+            Version = version;
+            XAvgCharWidth = xAvgCharWidth;
             WeightClass = weightClass;
             WidthClass = widthClass;
-            StyleType = styleType;
-            SubscriptXSize = subscriptXSize;
-            SubscriptYSize = subscriptYSize;
-            SubscriptXOffset = subscriptXOffset;
-            SubscriptYOffset = subscriptYOffset;
-            SuperscriptXSize = superscriptXSize;
-            SuperscriptYSize = superscriptYSize;
-            SuperscriptXOffset = superscriptXOffset;
-            SuperscriptYOffset = superscriptYOffset;
+            FsType = fsType;
+            YSubscriptXSize = ySubscriptXSize;
+            YSubscriptYSize = ySubscriptYSize;
+            YSubscriptXOffset = ySubscriptXOffset;
+            YSubscriptYOffset = ySubscriptYOffset;
+            YSuperscriptXSize = ySuperscriptXSize;
+            YSuperscriptYSize = ySuperscriptYSize;
+            YSuperscriptXOffset = ySuperscriptXOffset;
+            YSuperscriptYOffset = ySuperscriptYOffset;
             StrikeoutSize = strikeoutSize;
             StrikeoutPosition = strikeoutPosition;
-            this.familyClass = familyClass;
-            this.panose = panose;
-            this.unicodeRange1 = unicodeRange1;
-            this.unicodeRange2 = unicodeRange2;
-            this.unicodeRange3 = unicodeRange3;
-            this.unicodeRange4 = unicodeRange4;
-            this.tag = tag;
-            FontStyle = fontStyle;
-            this.firstCharIndex = firstCharIndex;
-            this.lastCharIndex = lastCharIndex;
+            FamilyClass = familyClass;
+            Panose = panose;
+            UnicodeRange1 = unicodeRange1;
+            UnicodeRange2 = unicodeRange2;
+            UnicodeRange3 = unicodeRange3;
+            UnicodeRange4 = unicodeRange4;
+            VendorId = vendorId;
+            Selection = selection;
+            FirstCharIndex = firstCharIndex;
+            LastCharIndex = lastCharIndex;
             TypoAscender = typoAscender;
             TypoDescender = typoDescender;
             TypoLineGap = typoLineGap;
             WinAscent = winAscent;
             WinDescent = winDescent;
+            CodePageRange1 = codePageRange1;
+            CodePageRange2 = codePageRange2;
+            XHeight = xHeight;
+            CapHeight = capHeight;
+            DefaultChar = defaultChar;
+            BreakChar = breakChar;
+            MaxContext = maxContext;
+            LowerOpticalPointSize = lowerOpticalPointSize;
+            UpperOpticalPointSize = upperOpticalPointSize;
         }
 
-        public OS2Table(
-            OS2Table version0Table,
-            ushort codePageRange1,
-            ushort codePageRange2,
-            short heightX,
-            short capHeight,
-            ushort defaultChar,
-            ushort breakChar,
-            ushort maxContext)
-            : this(
-                version0Table.averageCharWidth,
-                version0Table.WeightClass,
-                version0Table.WidthClass,
-                version0Table.StyleType,
-                version0Table.SubscriptXSize,
-                version0Table.SubscriptYSize,
-                version0Table.SubscriptXOffset,
-                version0Table.SubscriptYOffset,
-                version0Table.SuperscriptXSize,
-                version0Table.SuperscriptYSize,
-                version0Table.SuperscriptXOffset,
-                version0Table.SuperscriptYOffset,
-                version0Table.StrikeoutSize,
-                version0Table.StrikeoutPosition,
-                version0Table.familyClass,
-                version0Table.panose,
-                version0Table.unicodeRange1,
-                version0Table.unicodeRange2,
-                version0Table.unicodeRange3,
-                version0Table.unicodeRange4,
-                version0Table.tag,
-                version0Table.FontStyle,
-                version0Table.firstCharIndex,
-                version0Table.lastCharIndex,
-                version0Table.TypoAscender,
-                version0Table.TypoDescender,
-                version0Table.TypoLineGap,
-                version0Table.WinAscent,
-                version0Table.WinDescent)
+        public static bool TryLoad(GlyphTypeface fontFace, out OS2Table os2Table)
         {
-            this.codePageRange1 = codePageRange1;
-            this.codePageRange2 = codePageRange2;
-            this.heightX = heightX;
-            this.capHeight = capHeight;
-            this.defaultChar = defaultChar;
-            this.breakChar = breakChar;
-            this.maxContext = maxContext;
-        }
-
-        public OS2Table(OS2Table versionLessThan5Table, ushort lowerOpticalPointSize, ushort upperOpticalPointSize)
-            : this(
-                versionLessThan5Table,
-                versionLessThan5Table.codePageRange1,
-                versionLessThan5Table.codePageRange2,
-                versionLessThan5Table.heightX,
-                versionLessThan5Table.capHeight,
-                versionLessThan5Table.defaultChar,
-                versionLessThan5Table.breakChar,
-                versionLessThan5Table.maxContext)
-        {
-            this.lowerOpticalPointSize = lowerOpticalPointSize;
-            this.upperOpticalPointSize = upperOpticalPointSize;
-        }
-
-        [Flags]
-        internal enum FontStyleSelection : ushort
-        {
-            /// <summary>
-            /// Font contains italic or oblique characters, otherwise they are upright.
-            /// </summary>
-            ITALIC = 1,
-
-            /// <summary>
-            /// Characters are underscored.
-            /// </summary>
-            UNDERSCORE = 1 << 1,
-
-            /// <summary>
-            /// Characters have their foreground and background reversed.
-            /// </summary>
-            NEGATIVE = 1 << 2,
-
-            /// <summary>
-            /// characters, otherwise they are solid.
-            /// </summary>
-            OUTLINED = 1 << 3,
-
-            /// <summary>
-            /// Characters are overstruck.
-            /// </summary>
-            STRIKEOUT = 1 << 4,
-
-            /// <summary>
-            /// Characters are emboldened.
-            /// </summary>
-            BOLD = 1 << 5,
-
-            /// <summary>
-            /// Characters are in the standard weight/style for the font.
-            /// </summary>
-            REGULAR = 1 << 6,
-
-            /// <summary>
-            /// If set, it is strongly recommended to use OS/2.typoAscender - OS/2.typoDescender+ OS/2.typoLineGap as a value for default line spacing for this font.
-            /// </summary>
-            USE_TYPO_METRICS = 1 << 7,
-
-            /// <summary>
-            /// The font has ‘name’ table strings consistent with a weight/width/slope family without requiring use of ‘name’ IDs 21 and 22. (Please see more detailed description below.)
-            /// </summary>
-            WWS = 1 << 8,
-
-            /// <summary>
-            /// Font contains oblique characters.
-            /// </summary>
-            OBLIQUE = 1 << 9,
-
-            // 10–15        <reserved>  Reserved; set to 0.
-        }
-
-        public FontStyleSelection FontStyle { get; }
-
-        public short TypoAscender { get; }
-
-        public short TypoDescender { get; }
-
-        public short TypoLineGap { get; }
-
-        public ushort WinAscent { get; }
-
-        public ushort WinDescent { get; }
-
-        public short StrikeoutPosition { get; }
-
-        public short StrikeoutSize { get; }
-
-        public short SubscriptXOffset { get; }
-
-        public short SubscriptXSize { get; }
-
-        public short SubscriptYOffset { get; }
-
-        public short SubscriptYSize { get; }
-
-        public short SuperscriptXOffset { get; }
-
-        public short SuperscriptXSize { get; }
-
-        public short SuperscriptYOffset { get; }
-
-        public short SuperscriptYSize { get; }
-
-        public ushort StyleType { get; }
-
-        public ushort WeightClass { get; }
-
-        public ushort WidthClass { get; }
-
-        public static OS2Table? Load(IGlyphTypeface glyphTypeface)
-        {
-            if (!glyphTypeface.TryGetTable(Tag, out var table))
+            os2Table = default;
+            
+            if (!fontFace.PlatformTypeface.TryGetTable(Tag, out var table))
             {
-                return null;
+                return false;
             }
 
-            using var stream = new MemoryStream(table);
-            using var binaryReader = new BigEndianBinaryReader(stream, false);
+            var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            // Move to start of table.
-            return Load(binaryReader);
+            os2Table = Load(ref binaryReader);
+
+            return true;
         }
 
-        public static OS2Table Load(BigEndianBinaryReader reader)
+        private static OS2Table Load(ref BigEndianBinaryReader reader)
         {
-            // Version 1.0
-            // Type   | Name                   | Comments
-            // -------|------------------------|-----------------------
-            // uint16 |version                 | 0x0005
-            // int16  |xAvgCharWidth           |
-            // uint16 |usWeightClass           |
-            // uint16 |usWidthClass            |
-            // uint16 |fsType                  |
-            // int16  |ySubscriptXSize         |
-            // int16  |ySubscriptYSize         |
-            // int16  |ySubscriptXOffset       |
-            // int16  |ySubscriptYOffset       |
-            // int16  |ySuperscriptXSize       |
-            // int16  |ySuperscriptYSize       |
-            // int16  |ySuperscriptXOffset     |
-            // int16  |ySuperscriptYOffset     |
-            // int16  |yStrikeoutSize          |
-            // int16  |yStrikeoutPosition      |
-            // int16  |sFamilyClass            |
-            // uint8  |panose[10]              |
-            // uint32 |ulUnicodeRange1         | Bits 0–31
-            // uint32 |ulUnicodeRange2         | Bits 32–63
-            // uint32 |ulUnicodeRange3         | Bits 64–95
-            // uint32 |ulUnicodeRange4         | Bits 96–127
-            // Tag    |achVendID               |
-            // uint16 |fsSelection             |
-            // uint16 |usFirstCharIndex        |
-            // uint16 |usLastCharIndex         |
-            // int16  |sTypoAscender           |
-            // int16  |sTypoDescender          |
-            // int16  |sTypoLineGap            |
-            // uint16 |usWinAscent             |
-            // uint16 |usWinDescent            |
-            // uint32 |ulCodePageRange1        | Bits 0–31
-            // uint32 |ulCodePageRange2        | Bits 32–63
-            // int16  |sxHeight                |
-            // int16  |sCapHeight              |
-            // uint16 |usDefaultChar           |
-            // uint16 |usBreakChar             |
-            // uint16 |usMaxContext            |
-            // uint16 |usLowerOpticalPointSize |
-            // uint16 |usUpperOpticalPointSize |
-            ushort version = reader.ReadUInt16(); // assert 0x0005
-            short averageCharWidth = reader.ReadInt16();
+            ushort version = reader.ReadUInt16();
+            short xAvgCharWidth = reader.ReadInt16();
             ushort weightClass = reader.ReadUInt16();
             ushort widthClass = reader.ReadUInt16();
-            ushort styleType = reader.ReadUInt16();
-            short subscriptXSize = reader.ReadInt16();
-            short subscriptYSize = reader.ReadInt16();
-            short subscriptXOffset = reader.ReadInt16();
-            short subscriptYOffset = reader.ReadInt16();
-
-            short superscriptXSize = reader.ReadInt16();
-            short superscriptYSize = reader.ReadInt16();
-            short superscriptXOffset = reader.ReadInt16();
-            short superscriptYOffset = reader.ReadInt16();
-
+            ushort fsType = reader.ReadUInt16();
+            short ySubscriptXSize = reader.ReadInt16();
+            short ySubscriptYSize = reader.ReadInt16();
+            short ySubscriptXOffset = reader.ReadInt16();
+            short ySubscriptYOffset = reader.ReadInt16();
+            short ySuperscriptXSize = reader.ReadInt16();
+            short ySuperscriptYSize = reader.ReadInt16();
+            short ySuperscriptXOffset = reader.ReadInt16();
+            short ySuperscriptYOffset = reader.ReadInt16();
             short strikeoutSize = reader.ReadInt16();
             short strikeoutPosition = reader.ReadInt16();
             short familyClass = reader.ReadInt16();
-            byte[] panose = reader.ReadUInt8Array(10);
-            uint unicodeRange1 = reader.ReadUInt32(); // Bits 0–31
-            uint unicodeRange2 = reader.ReadUInt32(); // Bits 32–63
-            uint unicodeRange3 = reader.ReadUInt32(); // Bits 64–95
-            uint unicodeRange4 = reader.ReadUInt32(); // Bits 96–127
-            string tag = reader.ReadTag();
-            FontStyleSelection fontStyle = reader.ReadUInt16<FontStyleSelection>();
+
+            Panose panose = Panose.Load(ref reader);
+
+            uint unicodeRange1 = reader.ReadUInt32();
+            uint unicodeRange2 = reader.ReadUInt32();
+            uint unicodeRange3 = reader.ReadUInt32();
+            uint unicodeRange4 = reader.ReadUInt32();
+            
+            uint vendorId = reader.ReadUInt32();
+            
+            FontSelectionFlags selection = reader.ReadUInt16<FontSelectionFlags>();
             ushort firstCharIndex = reader.ReadUInt16();
             ushort lastCharIndex = reader.ReadUInt16();
             short typoAscender = reader.ReadInt16();
@@ -343,82 +204,75 @@ namespace Avalonia.Media.Fonts.Tables
             ushort winAscent = reader.ReadUInt16();
             ushort winDescent = reader.ReadUInt16();
 
-            var version0Table = new OS2Table(
-                    averageCharWidth,
-                    weightClass,
-                    widthClass,
-                    styleType,
-                    subscriptXSize,
-                    subscriptYSize,
-                    subscriptXOffset,
-                    subscriptYOffset,
-                    superscriptXSize,
-                    superscriptYSize,
-                    superscriptXOffset,
-                    superscriptYOffset,
-                    strikeoutSize,
-                    strikeoutPosition,
-                    familyClass,
-                    panose,
-                    unicodeRange1,
-                    unicodeRange2,
-                    unicodeRange3,
-                    unicodeRange4,
-                    tag,
-                    fontStyle,
-                    firstCharIndex,
-                    lastCharIndex,
-                    typoAscender,
-                    typoDescender,
-                    typoLineGap,
-                    winAscent,
-                    winDescent);
-
-            if (version == 0)
-            {
-                return version0Table;
-            }
-
-            short heightX = 0;
+            uint codePageRange1 = 0;
+            uint codePageRange2 = 0;
+            short xHeight = 0;
             short capHeight = 0;
-
             ushort defaultChar = 0;
             ushort breakChar = 0;
             ushort maxContext = 0;
+            ushort lowerOpticalPointSize = 0;
+            ushort upperOpticalPointSize = 0xFFFF;
 
-            ushort codePageRange1 = reader.ReadUInt16(); // Bits 0–31
-            ushort codePageRange2 = reader.ReadUInt16(); // Bits 32–63
-
-            // fields exist only in > v1 https://docs.microsoft.com/en-us/typography/opentype/spec/os2
-            if (version > 1)
+            if (version >= 1)
             {
-                heightX = reader.ReadInt16();
+                codePageRange1 = reader.ReadUInt32();
+                codePageRange2 = reader.ReadUInt32();
+            }
+
+            if (version >= 2)
+            {
+                xHeight = reader.ReadInt16();
                 capHeight = reader.ReadInt16();
                 defaultChar = reader.ReadUInt16();
                 breakChar = reader.ReadUInt16();
                 maxContext = reader.ReadUInt16();
             }
 
-            var versionLessThan5Table = new OS2Table(
-                    version0Table,
-                    codePageRange1,
-                    codePageRange2,
-                    heightX,
-                    capHeight,
-                    defaultChar,
-                    breakChar,
-                    maxContext);
-
-            if (version < 5)
+            if (version >= 5)
             {
-                return versionLessThan5Table;
+                lowerOpticalPointSize = reader.ReadUInt16();
+                upperOpticalPointSize = reader.ReadUInt16();
             }
 
-            ushort lowerOpticalPointSize = reader.ReadUInt16();
-            ushort upperOpticalPointSize = reader.ReadUInt16();
-
             return new OS2Table(
-                versionLessThan5Table,
+                version,
+                xAvgCharWidth,
+                weightClass,
+                widthClass,
+                fsType,
+                ySubscriptXSize,
+                ySubscriptYSize,
+                ySubscriptXOffset,
+                ySubscriptYOffset,
+                ySuperscriptXSize,
+                ySuperscriptYSize,
+                ySuperscriptXOffset,
+                ySuperscriptYOffset,
+                strikeoutSize,
+                strikeoutPosition,
+                familyClass,
+                panose,
+                unicodeRange1,
+                unicodeRange2,
+                unicodeRange3,
+                unicodeRange4,
+                vendorId,
+                selection,
+                firstCharIndex,
+                lastCharIndex,
+                typoAscender,
+                typoDescender,
+                typoLineGap,
+                winAscent,
+                winDescent,
+                codePageRange1,
+                codePageRange2,
+                xHeight,
+                capHeight,
+                defaultChar,
+                breakChar,
+                maxContext,
                 lowerOpticalPointSize,
                 upperOpticalPointSize);
         }

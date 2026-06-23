@@ -72,7 +72,6 @@ namespace Avalonia.Base.UnitTests
         public void OverrideMetadata_Should_Merge_Values()
         {
             var metadata = new TestMetadata(BindingMode.TwoWay);
-            var notify = (Action<AvaloniaObject, bool>)((a, b) => { });
             var overridden = new TestMetadata();
             var target = new TestProperty<string>("test", typeof(Class1), metadata);
 
@@ -107,7 +106,7 @@ namespace Avalonia.Base.UnitTests
         public void Changed_Observable_Fired()
         {
             var target = new Class1();
-            string value = null;
+            string? value = null;
 
             Class1.FooProperty.Changed.Subscribe(x => value = x.NewValue.GetValueOrDefault());
             target.SetValue(Class1.FooProperty, "newvalue");
@@ -119,7 +118,7 @@ namespace Avalonia.Base.UnitTests
         public void Changed_Observable_Fired_Only_On_Effective_Value_Change()
         {
             var target = new Class1();
-            var result = new List<string>();
+            var result = new List<string?>();
 
             Class1.FooProperty.Changed.Subscribe(x => result.Add(x.NewValue.GetValueOrDefault()));
             target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
@@ -149,7 +148,7 @@ namespace Avalonia.Base.UnitTests
             Assert.False(p1 == null);
             Assert.False(null == p1);
             Assert.False(p1.Equals(null));
-            Assert.True((AvaloniaProperty)null == (AvaloniaProperty)null);
+            Assert.True((AvaloniaProperty?)null == (AvaloniaProperty?)null);
         }
 
         [Fact]
@@ -162,11 +161,11 @@ namespace Avalonia.Base.UnitTests
 
         private class TestMetadata : AvaloniaPropertyMetadata
         {
-            public Action<AvaloniaObject> OwnerSpecificAction { get; }
+            public Action<AvaloniaObject>? OwnerSpecificAction { get; }
 
             public TestMetadata(BindingMode defaultBindingMode = BindingMode.Default, 
                 bool? enableDataValidation = null,
-                Action<AvaloniaObject> ownerSpecificAction = null) 
+                Action<AvaloniaObject>? ownerSpecificAction = null)
                 : base(defaultBindingMode, enableDataValidation)
             {
                 OwnerSpecificAction = ownerSpecificAction;
@@ -178,7 +177,7 @@ namespace Avalonia.Base.UnitTests
 
         private class TestProperty<TValue> : AvaloniaProperty<TValue>
         {
-            public TestProperty(string name, Type ownerType, TestMetadata metadata = null)
+            public TestProperty(string name, Type ownerType, TestMetadata? metadata = null)
                 : base(name, ownerType, ownerType, metadata ?? new TestMetadata())
             {
             }
@@ -190,7 +189,7 @@ namespace Avalonia.Base.UnitTests
 
             internal override IDisposable RouteBind(
                 AvaloniaObject o,
-                IObservable<object> source,
+                IObservable<object?> source,
                 BindingPriority priority)
             {
                 throw new NotImplementedException();
@@ -218,13 +217,13 @@ namespace Avalonia.Base.UnitTests
 
             internal override IDisposable RouteSetValue(
                 AvaloniaObject o,
-                object value,
+                object? value,
                 BindingPriority priority)
             {
                 throw new NotImplementedException();
             }
 
-            internal override void RouteSetCurrentValue(AvaloniaObject o, object value)
+            internal override void RouteSetCurrentValue(AvaloniaObject o, object? value)
             {
                 throw new NotImplementedException();
             }

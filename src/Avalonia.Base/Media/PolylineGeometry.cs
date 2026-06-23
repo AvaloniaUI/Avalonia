@@ -27,6 +27,7 @@ namespace Avalonia.Media
 
         private IList<Point> _points;
         private IDisposable? _pointsObserver;
+        private readonly FillRule _fillRule;
 
         static PolylineGeometry()
         {
@@ -40,6 +41,7 @@ namespace Avalonia.Media
         public PolylineGeometry()
         {
             _points = new Points();
+            _fillRule = FillRule.EvenOdd;
         }
 
         /// <summary>
@@ -49,6 +51,17 @@ namespace Avalonia.Media
         {
             _points = new Points(points);
             IsFilled = isFilled;
+            _fillRule = FillRule.EvenOdd;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PolylineGeometry"/> class.
+        /// </summary>
+        public PolylineGeometry(IEnumerable<Point> points, bool isFilled, FillRule fillRule)
+        {
+            _points = new Points(points);
+            IsFilled = isFilled;
+            _fillRule = fillRule;
         }
 
         /// <summary>
@@ -70,10 +83,18 @@ namespace Avalonia.Media
             set => SetValue(IsFilledProperty, value);
         }
 
+        /// <summary>
+        /// Gets how the intersecting areas of the polyline are combined.
+        /// </summary>
+        public FillRule FillRule => _fillRule;
+
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new PolylineGeometry(Points, IsFilled);
+            return new PolylineGeometry(Points, IsFilled, _fillRule)
+            {
+                Transform = Transform
+            };
         }
 
         private protected sealed override IGeometryImpl? CreateDefiningGeometry()
@@ -83,6 +104,7 @@ namespace Avalonia.Media
 
             using (var context = geometry.Open())
             {
+                context.SetFillRule(_fillRule);
                 var points = Points;
                 var isFilled = IsFilled;
                 if (points.Count > 0)

@@ -84,7 +84,7 @@ namespace Avalonia.Markup.Parsers
             if (identifier.SequenceEqual(MinWidthKeyword.AsSpan()) || identifier.SequenceEqual(MaxWidthKeyword.AsSpan()) || identifier.SequenceEqual(WidthKeyword.AsSpan()))
             {
                 if (!r.TakeIf(':'))
-                    throw new ExpressionParseException(r.Position, "Expected ':' after 'orientation'.");
+                    throw new ExpressionParseException(r.Position, $"Expected ':' after '{identifier}'.");
                 double val = ParseDecimal(ref r);
 
                 var syntax = new WidthSyntax()
@@ -101,7 +101,7 @@ namespace Avalonia.Markup.Parsers
             if (identifier.SequenceEqual(MinHeightKeyword.AsSpan()) || identifier.SequenceEqual(MaxHeightKeyword.AsSpan()) || identifier.SequenceEqual(HeightKeyword.AsSpan()))
             {
                 if (!r.TakeIf(':'))
-                    throw new ExpressionParseException(r.Position, "Expected ':' after 'orientation'.");
+                    throw new ExpressionParseException(r.Position, $"Expected ':' after '{identifier}'.");
                 double val = ParseDecimal(ref r);
 
                 var syntax = new HeightSyntax()

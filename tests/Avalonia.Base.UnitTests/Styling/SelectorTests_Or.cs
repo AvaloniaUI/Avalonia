@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Xunit;
@@ -88,6 +89,24 @@ namespace Avalonia.Base.UnitTests.Styling
                 default(Selector).Class("bar"));
 
             Assert.Equal(null, target.TargetType);
+        }
+        
+        [Fact]
+        public void ValidateNestingSelector_Checks_Children_When_Parent_Is_An_OrSelector()
+        {
+            var target = Selectors.Or(
+                default(Selector).Class("foo"),
+                default(Selector).Class("bar")
+            ).Name("baz");
+
+            Assert.Throws<InvalidOperationException>(() => target.ValidateNestingSelector(false));
+            
+            target = Selectors.Or(
+                default(Selector).Nesting().Class("foo"),
+                default(Selector).Nesting().Class("bar")
+            ).Name("baz");
+            
+            target.ValidateNestingSelector(false);
         }
 
         public class Control1 : Control

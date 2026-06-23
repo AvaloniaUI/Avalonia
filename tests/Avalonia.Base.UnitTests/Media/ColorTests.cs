@@ -183,7 +183,7 @@ namespace Avalonia.Base.UnitTests.Media
         [Fact]
         public void Parse_Throws_ArgumentNullException_For_Null_Input()
         {
-            Assert.Throws<ArgumentNullException>(() => Color.Parse((string)null));
+            Assert.Throws<ArgumentNullException>(() => Color.Parse(null!));
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace Avalonia.Base.UnitTests.Media
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void TryParse_Returns_False_For_Invalid_Input(string input)
+        public void TryParse_Returns_False_For_Invalid_Input(string? input)
         {
             Assert.False(Color.TryParse(input, out _));
         }

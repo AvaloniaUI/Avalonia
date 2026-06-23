@@ -6,6 +6,7 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
@@ -79,6 +80,7 @@ namespace Avalonia.Controls
             AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<TreeViewItem>(IsOffscreenBehavior.FromClip);
             RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((x, e) => x.OnRequestBringIntoView(e));
             IsExpandedProperty.Changed.AddClassHandler<TreeViewItem, bool>((x, e) => x.OnIsExpandedChanged(e));
+            PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue<TreeViewItem>(FeedbackType.Auto);
         }
 
         private void OnIsExpandedChanged(AvaloniaPropertyChangedEventArgs<bool> args)
@@ -229,6 +231,10 @@ namespace Avalonia.Controls
                 {
                     e.Handled = handler(this);
                 }
+                else
+                {
+                    TreeViewOwner?.UpdateSelectionFromEvent(this, e);
+                }
 
                 // NOTE: these local functions do not use the TreeView.Expand/CollapseSubtree
                 // function because we want to know if any items were in fact expanded to set the
@@ -302,6 +308,18 @@ namespace Avalonia.Controls
             }
 
             // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
+        }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            TreeViewOwner?.UpdateSelectionFromEvent(this, e);
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+            TreeViewOwner?.UpdateSelectionFromEvent(this, e);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

@@ -56,7 +56,7 @@ namespace Avalonia.Media
                 initialize.EnsureInitialized();
             
             using var recorder = new RenderDataDrawingContext(null);
-            ImmediateRenderer.Render(recorder, Visual, Visual.Bounds);
+            ImmediateRenderer.Render(recorder, Visual);
             return recorder.GetImmediateSceneBrushContent(this, new(Visual.Bounds.Size), true);
         }
         
@@ -130,7 +130,7 @@ namespace Avalonia.Media
                 initialize.EnsureInitialized();
 
             using var recorder = new RenderDataDrawingContext(c);
-            ImmediateRenderer.Render(recorder, Visual, Visual.Bounds);
+            ImmediateRenderer.Render(recorder, Visual);
             var renderData = recorder.GetRenderResults();
             if (renderData == null)
                 return null;

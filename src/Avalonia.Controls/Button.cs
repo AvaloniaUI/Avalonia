@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -104,6 +105,7 @@ namespace Avalonia.Controls
         static Button()
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
+            PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue(typeof(Button), FeedbackType.Auto);
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>(OnAccessKeyPressed);
         }
 
@@ -207,14 +209,14 @@ namespace Avalonia.Controls
 
             if (IsDefault)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     ListenForDefault(inputElement);
                 }
             }
             if (IsCancel)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     ListenForCancel(inputElement);
                 }
@@ -228,14 +230,14 @@ namespace Avalonia.Controls
 
             if (IsDefault)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     StopListeningForDefault(inputElement);
                 }
             }
             if (IsCancel)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     StopListeningForCancel(inputElement);
                 }
@@ -354,6 +356,8 @@ namespace Avalonia.Controls
                     OpenFlyout();
                 }
 
+                this.PerformFeedback(FeedbackAction.Click);
+
                 var e = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(e);
 
@@ -452,7 +456,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             base.OnLostFocus(e);
 
@@ -542,11 +546,21 @@ namespace Avalonia.Controls
                     oldFlyout.Hide();
                 }
 
+                (oldFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(null);
+
                 // Must unregister events here while a reference to the old flyout still exists
                 UnregisterFlyoutEvents(oldFlyout);
 
                 RegisterFlyoutEvents(newFlyout);
+                (newFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(this);
                 UpdatePseudoClasses();
+            }
+            else if (change.Property == IsEffectivelyEnabledProperty)
+            {
+                if (!change.GetNewValue<bool>())
+                {
+                    IsPressed = false;
+                }
             }
         }
 
@@ -571,7 +585,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         internal void PerformClick() => OnClick();
 
         private static void OnAccessKeyPressed(Button sender, AccessKeyPressedEventArgs e)

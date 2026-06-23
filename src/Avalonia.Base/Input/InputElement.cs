@@ -16,7 +16,7 @@ namespace Avalonia.Input
     /// Implements input-related functionality for a control.
     /// </summary>
     [PseudoClasses(":disabled", ":focus", ":focus-visible", ":focus-within", ":pointerover")]
-    public class InputElement : Interactive, IInputElement
+    public partial class InputElement : Interactive, IInputElement
     {
         /// <summary>
         /// Defines the <see cref="Focusable"/> property.
@@ -51,7 +51,7 @@ namespace Avalonia.Input
             AvaloniaProperty.RegisterDirect<InputElement, bool>(
                 nameof(IsKeyboardFocusWithin),
                 o => o.IsKeyboardFocusWithin);
-        
+
         /// <summary>
         /// Defines the <see cref="IsFocused"/> property.
         /// </summary>
@@ -79,8 +79,8 @@ namespace Avalonia.Input
         /// <summary>
         /// Defines the <see cref="GotFocus"/> event.
         /// </summary>
-        public static readonly RoutedEvent<GotFocusEventArgs> GotFocusEvent =
-            RoutedEvent.Register<InputElement, GotFocusEventArgs>(nameof(GotFocus), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<FocusChangedEventArgs> GotFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangedEventArgs>(nameof(GotFocus), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="GettingFocus"/> event.
@@ -91,8 +91,8 @@ namespace Avalonia.Input
         /// <summary>
         /// Defines the <see cref="LostFocus"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
-            RoutedEvent.Register<InputElement, RoutedEventArgs>(nameof(LostFocus), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<FocusChangedEventArgs> LostFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangedEventArgs>(nameof(LostFocus), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="LosingFocus"/> event.
@@ -129,7 +129,7 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, TextInputEventArgs>(
                 nameof(TextInput),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        
+
         /// <summary>
         /// Defines the <see cref="TextInputMethodClientRequested"/> event.
         /// </summary>
@@ -177,13 +177,21 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, PointerReleasedEventArgs>(
                 nameof(PointerReleased),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        
+
+        /// <summary>
+        /// Defines the <see cref="PointerCaptureChanging"/> routed event.
+        /// </summary>
+        internal static readonly RoutedEvent<PointerCaptureChangingEventArgs> PointerCaptureChangingEvent =
+            RoutedEvent.Register<InputElement, PointerCaptureChangingEventArgs>(
+                nameof(PointerCaptureChanging),
+                RoutingStrategies.Direct);
+
         /// <summary>
         /// Defines the <see cref="PointerCaptureLost"/> routed event.
         /// </summary>
         public static readonly RoutedEvent<PointerCaptureLostEventArgs> PointerCaptureLostEvent =
             RoutedEvent.Register<InputElement, PointerCaptureLostEventArgs>(
-                nameof(PointerCaptureLost), 
+                nameof(PointerCaptureLost),
                 RoutingStrategies.Direct);
 
         /// <summary>
@@ -195,24 +203,20 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="Tapped"/> event.
+        /// Provides event data for the <see cref="ContextRequested"/> event.
         /// </summary>
-        public static readonly RoutedEvent<TappedEventArgs> TappedEvent = Gestures.TappedEvent;
+        public static readonly RoutedEvent<ContextRequestedEventArgs> ContextRequestedEvent =
+            RoutedEvent.Register<InputElement, ContextRequestedEventArgs>(
+                nameof(ContextRequested),
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="RightTapped"/> event.
+        /// Provides event data for the <see cref="ContextCanceled"/> event.
         /// </summary>
-        public static readonly RoutedEvent<TappedEventArgs> RightTappedEvent = Gestures.RightTappedEvent;
-
-        /// <summary>
-        /// Defines the <see cref="Holding"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<HoldingRoutedEventArgs> HoldingEvent = Gestures.HoldingEvent;
-
-        /// <summary>
-        /// Defines the <see cref="DoubleTapped"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
+        public static readonly RoutedEvent<RoutedEventArgs> ContextCanceledEvent =
+            RoutedEvent.Register<InputElement, RoutedEventArgs>(
+                nameof(ContextCanceled),
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
@@ -240,6 +244,7 @@ namespace Avalonia.Input
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMoved(e));
             PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerPressed(e));
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
+            PointerCaptureChangingEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureChanging(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
 
@@ -248,13 +253,19 @@ namespace Avalonia.Input
             DoubleTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnDoubleTapped(e));
             HoldingEvent.AddClassHandler<InputElement>((x, e) => x.OnHolding(e));
 
+            Gestures.Tapped += (s, e) => (s as InputElement)?.RaiseEvent(e);
+            Gestures.RightTapped += (s, e) => (s as InputElement)?.RaiseEvent(e);
+            Gestures.DoubleTapped += (s, e) => (s as InputElement)?.RaiseEvent(e);
+
+            Gestures.Holding += OnPreviewHolding;
+
             // Gesture only handlers
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerMoved(e), handledEventsToo: true);
             PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerPressed(e), handledEventsToo: true);
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerReleased(e), handledEventsToo: true);
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerCaptureLost(e), handledEventsToo: true);
-            
-            
+
+
             // Access Key Handling
             AccessKeyHandler.AccessKeyEvent.AddClassHandler<InputElement>((x, e) => x.OnAccessKey(e));
         }
@@ -267,7 +278,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        public event EventHandler<GotFocusEventArgs>? GotFocus
+        public event EventHandler<FocusChangedEventArgs>? GotFocus
         {
             add { AddHandler(GotFocusEvent, value); }
             remove { RemoveHandler(GotFocusEvent, value); }
@@ -285,7 +296,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control loses focus.
         /// </summary>
-        public event EventHandler<RoutedEventArgs>? LostFocus
+        public event EventHandler<FocusChangedEventArgs>? LostFocus
         {
             add { AddHandler(LostFocusEvent, value); }
             remove { RemoveHandler(LostFocusEvent, value); }
@@ -382,8 +393,18 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs when the control or its child control is about to lose capture,
+        /// event will not be triggered for a parent control if capture was transferred to another child of that parent control.
+        /// </summary>
+        internal event EventHandler<PointerCaptureChangingEventArgs>? PointerCaptureChanging
+        {
+            add => AddHandler(PointerCaptureChangingEvent, value);
+            remove => RemoveHandler(PointerCaptureChangingEvent, value);
+        }
+
+        /// <summary>
         /// Occurs when the control or its child control loses the pointer capture for any reason,
-        /// event will not be triggered for a parent control if capture was transferred to another child of that parent control
+        /// event will not be triggered for a parent control if capture was transferred to another child of that parent control.
         /// </summary>
         public event EventHandler<PointerCaptureLostEventArgs>? PointerCaptureLost
         {
@@ -398,42 +419,6 @@ namespace Avalonia.Input
         {
             add { AddHandler(PointerWheelChangedEvent, value); }
             remove { RemoveHandler(PointerWheelChangedEvent, value); }
-        }
-
-        /// <summary>
-        /// Occurs when a tap gesture occurs on the control.
-        /// </summary>
-        public event EventHandler<TappedEventArgs>? Tapped
-        {
-            add { AddHandler(TappedEvent, value); }
-            remove { RemoveHandler(TappedEvent, value); }
-        }
-
-        /// <summary>
-        /// Occurs when a right tap gesture occurs on the control.
-        /// </summary>
-        public event EventHandler<TappedEventArgs>? RightTapped
-        {
-            add { AddHandler(RightTappedEvent, value); }
-            remove { RemoveHandler(RightTappedEvent, value); }
-        }
-
-        /// <summary>
-        /// Occurs when a hold gesture occurs on the control.
-        /// </summary>
-        public event EventHandler<HoldingRoutedEventArgs>? Holding
-        {
-            add { AddHandler(HoldingEvent, value); }
-            remove { RemoveHandler(HoldingEvent, value); }
-        }
-
-        /// <summary>
-        /// Occurs when a double-tap gesture occurs on the control.
-        /// </summary>
-        public event EventHandler<TappedEventArgs>? DoubleTapped
-        {
-            add { AddHandler(DoubleTappedEvent, value); }
-            remove { RemoveHandler(DoubleTappedEvent, value); }
         }
 
         /// <summary>
@@ -469,7 +454,7 @@ namespace Avalonia.Input
         public bool IsKeyboardFocusWithin
         {
             get => _isKeyboardFocusWithin;
-            internal set => SetAndRaise(IsKeyboardFocusWithinProperty, ref _isKeyboardFocusWithin, value); 
+            internal set => SetAndRaise(IsKeyboardFocusWithinProperty, ref _isKeyboardFocusWithin, value);
         }
 
         /// <summary>
@@ -500,6 +485,24 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs when the user has completed a context input gesture, such as a right-click.
+        /// </summary>
+        public event EventHandler<ContextRequestedEventArgs>? ContextRequested
+        {
+            add => AddHandler(ContextRequestedEvent, value);
+            remove => RemoveHandler(ContextRequestedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs when the context input gesture continues into another gesture, to notify the element that the context flyout should not be opened.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? ContextCanceled
+        {
+            add => AddHandler(ContextCanceledEvent, value);
+            remove => RemoveHandler(ContextCanceledEvent, value);
+        }
+
+        /// <summary>
         /// Gets or sets a value that indicates whether the control is included in tab navigation.
         /// </summary>
         public bool IsTabStop
@@ -517,10 +520,10 @@ namespace Avalonia.Input
                 SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
                 PseudoClasses.Set(":disabled", !value);
 
-                if (!IsEffectivelyEnabled && FocusManager.GetFocusManager(this) is {} focusManager
+                if (!IsEffectivelyEnabled && FocusManager.GetFocusManager(this) is { } focusManager
                     && Equals(focusManager.GetFocusedElement(), this))
                 {
-                    focusManager.ClearFocus();
+                    focusManager.Focus(null);
                 }
             }
         }
@@ -554,7 +557,7 @@ namespace Avalonia.Input
         /// <inheritdoc />
         public bool Focus(NavigationMethod method = NavigationMethod.Unspecified, KeyModifiers keyModifiers = KeyModifiers.None)
         {
-            return FocusManager.GetFocusManager(this)?.Focus(this, method, keyModifiers) ?? false; 
+            return FocusManager.GetFocusManager(this)?.Focus(this, method, keyModifiers) ?? false;
         }
 
         /// <inheritdoc/>
@@ -564,7 +567,9 @@ namespace Avalonia.Input
 
             if (IsFocused)
             {
-                FocusManager.GetFocusManager(this)?.ClearFocusOnElementRemoved(this, e.Parent);
+                var root = e.AttachmentPoint ?? e.RootVisual;
+                ((FocusManager?)e.PresentationSource.InputRoot.FocusManager)
+                    ?.ClearFocusOnElementRemoved(this, root);
             }
 
             IsKeyboardFocusWithin = false;
@@ -588,7 +593,7 @@ namespace Avalonia.Input
             UpdateIsEffectivelyEnabled();
         }
 
-        private void OnGotFocusCore(GotFocusEventArgs e)
+        private void OnGotFocusCore(FocusChangedEventArgs e)
         {
             var isFocused = e.Source == this;
             _isFocusVisible = isFocused && (e.NavigationMethod == NavigationMethod.Directional || e.NavigationMethod == NavigationMethod.Tab);
@@ -612,11 +617,11 @@ namespace Avalonia.Input
         /// for this event.
         /// </summary>
         /// <param name="e">Data about the event.</param>
-        protected virtual void OnGotFocus(GotFocusEventArgs e)
+        protected virtual void OnGotFocus(FocusChangedEventArgs e)
         {
         }
 
-        private void OnLostFocusCore(RoutedEventArgs e)
+        private void OnLostFocusCore(FocusChangedEventArgs e)
         {
             _isFocusVisible = false;
             IsFocused = false;
@@ -629,8 +634,8 @@ namespace Avalonia.Input
         /// for this event.
         /// </summary>
         /// <param name="e">Data about the event.</param>
-        protected virtual void OnLostFocus(RoutedEventArgs e)
-        {            
+        protected virtual void OnLostFocus(FocusChangedEventArgs e)
+        {
         }
 
         /// <summary>
@@ -747,6 +752,41 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Called when FocusManager get the next TabStop to interact with the focused control.
+        /// </summary>
+        /// <returns>Next tab stop.</returns>
+        protected internal virtual InputElement? GetNextTabStopOverride() => null;
+
+        /// <summary>
+        /// Called when FocusManager get the previous TabStop to interact with the focused control.
+        /// </summary>
+        /// <returns>Previous tab stop.</returns>
+        protected internal virtual InputElement? GetPreviousTabStopOverride() => null;
+
+        /// <summary>
+        /// Called when FocusManager is looking for the first focusable element from the specified search scope.
+        /// </summary>
+        /// <returns>First focusable element if available.</returns>
+        protected internal virtual InputElement? GetFirstFocusableElementOverride() => null;
+
+        /// <summary>
+        /// Called when FocusManager is looking for the last focusable element from the specified search scope.
+        /// </summary>
+        /// <returns>Last focusable element if available/>.</returns>
+        protected internal virtual InputElement? GetLastFocusableElementOverride() => null;
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="PointerCaptureChangingEvent"/> reaches an element in its 
+        /// route that is derived from this class. Implement this method to add class handling 
+        /// for this event.
+        /// </summary>
+        /// <param name="e">Data about the event.</param>
+        internal virtual void OnPointerCaptureChanging(PointerCaptureChangingEventArgs e)
+        {
+
+        }
+
+        /// <summary>
         /// Invoked when an unhandled <see cref="PointerCaptureLostEvent"/> reaches an element in its 
         /// route that is derived from this class. Implement this method to add class handling 
         /// for this event.
@@ -757,6 +797,127 @@ namespace Avalonia.Input
 
         }
 
+        internal static bool ProcessTabStop(IInputElement? contentRoot,
+            IInputElement? focusedElement,
+            IInputElement? candidateTabStopElement,
+            bool isReverse,
+            bool didCycleFocusAtRootVisual,
+            out IInputElement? newTabStop)
+        {
+            newTabStop = null;
+            bool isTabStopOverridden = false;
+            bool isCandidateTabStopOverridden = false;
+            IInputElement? currentFocusedTarget = focusedElement;
+            InputElement? focusedTargetAsIE = focusedElement as InputElement;
+            InputElement? candidateTargetAsIE = candidateTabStopElement as InputElement;
+            InputElement? newCandidateTargetAsIE = null;
+            IInputElement? newCandidateTabStop = null;
+            IInputElement? spNewTabStop = null;
+
+            if (focusedTargetAsIE != null)
+            {
+                isTabStopOverridden = focusedTargetAsIE.ProcessTabStopInternal(candidateTabStopElement, isReverse, didCycleFocusAtRootVisual, out spNewTabStop);
+            }
+
+            if (!isTabStopOverridden && candidateTargetAsIE != null)
+            {
+                isTabStopOverridden = candidateTargetAsIE.ProcessCandidateTabStopInternal(focusedElement, null, isReverse, out spNewTabStop);
+            }
+            else if (isTabStopOverridden && newTabStop != null)
+            {
+                newCandidateTargetAsIE = spNewTabStop as InputElement;
+                if (newCandidateTargetAsIE != null)
+                {
+                    isCandidateTabStopOverridden = newCandidateTargetAsIE.ProcessCandidateTabStopInternal(focusedElement, spNewTabStop, isReverse, out newCandidateTabStop);
+                }
+            }
+
+            if (isCandidateTabStopOverridden)
+            {
+                if (newCandidateTabStop != null)
+                {
+                    newTabStop = newCandidateTabStop;
+                }
+
+                isTabStopOverridden = true;
+            }
+            else if (isTabStopOverridden)
+            {
+                if (newTabStop != null)
+                {
+                    newTabStop = spNewTabStop;
+                }
+
+                isTabStopOverridden = true;
+            }
+
+            return isTabStopOverridden;
+        }
+
+        private bool ProcessTabStopInternal(IInputElement? candidateTabStopElement,
+            bool isReverse,
+            bool didCycleFocusAtRootVisual,
+            out IInputElement? newTabStop)
+        {
+            InputElement? current = this;
+
+            newTabStop = null;
+            var candidateTabStopOverridden = false;
+
+            while (current != null && !candidateTabStopOverridden)
+            {
+                candidateTabStopOverridden = current.ProcessTabStopOverride(this,
+                    candidateTabStopElement,
+                    isReverse,
+                    didCycleFocusAtRootVisual,
+                    ref newTabStop);
+
+                current = (current as Visual)?.Parent as InputElement;
+            }
+            return candidateTabStopOverridden;
+        }
+
+        private bool ProcessCandidateTabStopInternal(IInputElement? currentTabStop,
+            IInputElement? overridenCandidateTabStopElement,
+            bool isReverse,
+            out IInputElement? newTabStop)
+        {
+            InputElement? current = this;
+
+            newTabStop = null;
+            var candidateTabStopOverridden = false;
+
+            while (current != null && !candidateTabStopOverridden)
+            {
+                candidateTabStopOverridden = current.ProcessCandidateTabStopOverride(currentTabStop,
+                    this,
+                    overridenCandidateTabStopElement,
+                    isReverse,
+                    ref newTabStop);
+
+                current = (current as Visual)?.Parent as InputElement;
+            }
+            return candidateTabStopOverridden;
+        }
+
+        protected internal virtual bool ProcessTabStopOverride(IInputElement? focusedElement,
+            IInputElement? candidateTabStopElement,
+            bool isReverse,
+            bool didCycleFocusAtRootVisual,
+            ref IInputElement? newTabStop)
+        {
+            return false;
+        }
+
+        protected internal virtual bool ProcessCandidateTabStopOverride(IInputElement? focusedElement,
+            IInputElement? candidateTabStopElement,
+            IInputElement? overridenCandidateTabStopElement,
+            bool isReverse,
+            ref IInputElement? newTabStop)
+        {
+            return false;
+        }
+
         /// <summary>
         /// Invoked when an unhandled <see cref="PointerWheelChangedEvent"/> reaches an element in its 
         /// route that is derived from this class. Implement this method to add class handling 
@@ -765,6 +926,7 @@ namespace Avalonia.Input
         /// <param name="e">Data about the event.</param>
         protected virtual void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
+
         }
 
         /// <summary>
@@ -833,7 +995,7 @@ namespace Avalonia.Input
                     }
                     else
                     {
-                        focusManager.ClearFocus();
+                        focusManager.Focus(null);
                     }
                 }
             }
@@ -884,7 +1046,7 @@ namespace Avalonia.Input
 
             // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
             // will cause extra allocations and overhead.
-            
+
             var children = VisualChildren;
 
             // ReSharper disable once ForCanBeConvertedToForeach
@@ -903,7 +1065,7 @@ namespace Avalonia.Input
                 PseudoClasses.Set(":focus", isFocused.Value);
                 PseudoClasses.Set(":focus-visible", _isFocusVisible);
             }
-            
+
             if (isPointerOver.HasValue)
             {
                 PseudoClasses.Set(":pointerover", isPointerOver.Value);

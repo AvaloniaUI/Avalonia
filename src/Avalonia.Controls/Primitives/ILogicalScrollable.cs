@@ -19,12 +19,12 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
         /// </summary>
-        bool CanHorizontallyScroll { get; set; }
+        new bool CanHorizontallyScroll { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
         /// </summary>
-        bool CanVerticallyScroll { get; set; }
+        new bool CanVerticallyScroll { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether logical scrolling is enabled on the control.

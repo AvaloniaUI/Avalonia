@@ -55,15 +55,20 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        await EnsureUriReadPermission(androidUri);
+        // About the READ_EXTERNAL_STORAGE permission:
+        // https://developer.android.com/reference/android/Manifest.permission#READ_EXTERNAL_STORAGE
+        //  - "Starting in API level 33, this permission has no effect."
+        //  - "Also starting in API level 19, this permission is not required
+        //     to read or write files in your application-specific directories [...]"
+        // Consequently, we don't try to check for that permission here anymore.
 
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsFile)
         {
-            return null;
+            return new AndroidStorageFile(_activity, androidUri);
         }
 
-        return new AndroidStorageFile(_activity, androidUri);
+        return null;
     }
 
     public async Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
@@ -84,15 +89,13 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        await EnsureUriReadPermission(androidUri);
-
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsDirectory)
         {
-            return null;
+            return new AndroidStorageFolder(_activity, androidUri, false);
         }
 
-        return new AndroidStorageFolder(_activity, androidUri, false);
+        return null;
     }
 
     public Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
@@ -199,6 +202,12 @@ internal class AndroidStorageProvider : IStorageProvider
         return uris.Select(u => new AndroidStorageFile(_activity, u)).FirstOrDefault();
     }
 
+    public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
+        return new SaveFilePickerResult { File = file };
+    }
+
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {
         var intent = new Intent(Intent.ActionOpenDocumentTree)
@@ -277,31 +286,5 @@ internal class AndroidStorageProvider : IStorageProvider
         }
 
         return intent;
-    }
-
-    private async Task EnsureUriReadPermission(AndroidUri androidUri)
-    {
-        bool hasPerms = false;
-        Exception? innerEx = null;
-        try
-        {
-            hasPerms = _activity.CheckUriPermission(androidUri,
-                global::Android.OS.Process.MyPid(),
-                global::Android.OS.Process.MyUid(),
-                ActivityFlags.GrantReadUriPermission)
-                == global::Android.Content.PM.Permission.Granted;
-
-            // TODO: call RequestPermission or add proper permissions API, something like in Browser File API.
-            hasPerms = hasPerms || await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
-        }
-        catch (Exception ex)
-        {
-            innerEx = ex;
-        }
-
-        if (!hasPerms)
-        {
-            throw new InvalidOperationException("Application doesn't have READ_EXTERNAL_STORAGE permission. Make sure android manifest has this permission defined and user allowed it.", innerEx);
-        }
     }
 }

@@ -4,6 +4,7 @@
   <ControlTheme x:Key="{x:Type NumericUpDown}"
                 TargetType="NumericUpDown">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="Padding" Value="4" />
@@ -37,7 +38,8 @@
                      Text="{TemplateBinding Text}"
                      TextAlignment="{TemplateBinding TextAlignment}"
                      TextWrapping="NoWrap"
-                     Watermark="{TemplateBinding Watermark}"
+                     PlaceholderText="{TemplateBinding PlaceholderText}"
+                     PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                      InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
                      InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"/>
           </ButtonSpinner>

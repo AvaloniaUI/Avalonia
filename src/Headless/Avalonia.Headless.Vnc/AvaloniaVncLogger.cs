@@ -1,13 +1,13 @@
 using System;
 using Avalonia.Logging;
+using Avalonia.Reactive;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions.Internal;
 
 namespace Avalonia.Headless.Vnc;
 
 internal class AvaloniaVncLogger : ILogger
 {
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         Logger.TryGet(ToLogEventLevel(logLevel), LogArea.VncPlatform)
             ?.Log(state, formatter(state,exception));
@@ -20,7 +20,7 @@ internal class AvaloniaVncLogger : ILogger
 
     public IDisposable BeginScope<TState>(TState state)
     {
-        return NullScope.Instance;
+        return Disposable.Empty;
     }
 
     private static LogEventLevel ToLogEventLevel(LogLevel logLevel)

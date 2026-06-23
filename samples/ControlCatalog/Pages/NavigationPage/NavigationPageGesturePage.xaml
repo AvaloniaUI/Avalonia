@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageGesturePage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="How It Works" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Press and drag from within 20px of the left edge. The current page slides right while the destination page slides in with a 0.25x parallax effect." />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Release past 40% of the width to commit the pop, or release earlier to cancel and spring back." />
+
+        <Separator />
+
+        <CheckBox x:Name="GestureCheck"
+                  Content="IsGestureEnabled"
+                  IsChecked="True"
+                  IsCheckedChanged="OnGestureEnabledChanged" />
+
+        <Separator />
+
+        <Button Content="Push Pages"
+                HorizontalAlignment="Stretch"
+                Click="OnPushPages" />
+        <Button Content="Pop"
+                HorizontalAlignment="Stretch"
+                Click="OnPop" />
+
+        <TextBlock x:Name="StatusText"
+                   Text="Depth: 1"
+                   Opacity="0.7" />
+
+        <Separator />
+
+        <TextBlock Text="API" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="IsGestureEnabled" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="Enable or disable the back-swipe gesture globally on the NavigationPage." />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav"
+                      IsGestureEnabled="True" />
+    </Border>
+  </DockPanel>
+</UserControl>

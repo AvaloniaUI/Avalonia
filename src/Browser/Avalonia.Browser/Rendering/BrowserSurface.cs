@@ -8,13 +8,14 @@ using Avalonia.Browser.Interop;
 using Avalonia.Browser.Rendering;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
 namespace Avalonia.Browser.Skia;
 
-internal abstract class BrowserSurface : IDisposable
+internal abstract class BrowserSurface : IDisposable, IPlatformRenderSurface
 {
     protected BrowserSurface(JSObject jsSurface, Compositor compositor)
     {
@@ -68,5 +69,5 @@ internal abstract class BrowserSurface : IDisposable
             ScalingChanged?.Invoke();
     }
 
-    public virtual object[] GetRenderSurfaces() => [this];
+    public virtual IPlatformRenderSurface[] GetRenderSurfaces() => [this];
 }

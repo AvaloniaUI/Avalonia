@@ -145,6 +145,19 @@ namespace Avalonia.Controls
             // Return result to allocate enough space for the transformation
             return transformedDesiredSize;
         }
+        
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            SubscribeLayoutTransform(LayoutTransform as Transform);
+            ApplyLayoutTransform();
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            UnsubscribeLayoutTransform(LayoutTransform as Transform);
+        }
 
         private IDisposable? _renderTransformChangedEvent;
 
@@ -224,7 +237,6 @@ namespace Avalonia.Controls
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
         private Matrix _transformation = Matrix.Identity;
-        private IDisposable? _transformChangedEvent;
 
         /// <summary>
         /// Returns true if Size a is smaller than Size b in either dimension.
@@ -424,19 +436,34 @@ namespace Avalonia.Controls
 
         private void OnLayoutTransformChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var newTransform = e.NewValue as Transform;
-
-            _transformChangedEvent?.Dispose();
-            _transformChangedEvent = null;
-
-            if (newTransform != null)
+            if (this.IsAttachedToVisualTree)
             {
-                _transformChangedEvent = Observable.FromEventPattern(
-                                        v => newTransform.Changed += v, v => newTransform.Changed -= v)
-                                        .Subscribe(_ => ApplyLayoutTransform());
+                UnsubscribeLayoutTransform(e.OldValue as Transform);
+                SubscribeLayoutTransform(e.NewValue as Transform);
             }
-
+            
             ApplyLayoutTransform();
+        }
+
+        private void OnTransformChanged(object? sender, EventArgs e)
+        {
+            ApplyLayoutTransform();
+        }
+        
+        private void SubscribeLayoutTransform(Transform? transform)
+        {
+            if (transform != null)
+            {
+                transform.Changed += OnTransformChanged;
+            }
+        }
+        
+        private void UnsubscribeLayoutTransform(Transform? transform)
+        {
+            if (transform != null)
+            {
+                transform.Changed -= OnTransformChanged;
+            }
         }
     }
 }

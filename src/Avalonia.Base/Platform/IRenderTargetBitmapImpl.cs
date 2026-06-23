@@ -7,7 +7,8 @@ namespace Avalonia.Platform
     /// <see cref="Avalonia.Media.Imaging.RenderTargetBitmap"/>.
     /// </summary>
     [Unstable]
-    public interface IRenderTargetBitmapImpl : IBitmapImpl, IRenderTarget
+    public interface IRenderTargetBitmapImpl : IReadableBitmapImpl
     {
+        IDrawingContextImpl CreateDrawingContext();
     }
 }

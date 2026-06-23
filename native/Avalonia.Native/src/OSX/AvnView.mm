@@ -42,7 +42,8 @@
 - (void) updateRenderTarget
 {
     if(_currentRenderTarget) {
-        [_currentRenderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
+        AvnPixelSize size { MAX(_lastPixelSize.Width, 1), MAX(_lastPixelSize.Height, 1) };
+        [_currentRenderTarget resize:size withScale:static_cast<float>([[self window] backingScaleFactor])];
         [self setNeedsDisplayInRect:[self frame]];
     }
 }
@@ -456,13 +457,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     switch(event.buttonNumber)
     {
         case 2:
-        case 3:
             [self mouseEvent:event withType:MiddleButtonDown];
             break;
-        case 4:
+        case 3:
             [self mouseEvent:event withType:XButton1Down];
             break;
-        case 5:
+        case 4:
             [self mouseEvent:event withType:XButton2Down];
             break;
 
@@ -487,13 +487,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     switch(event.buttonNumber)
     {
         case 2:
-        case 3:
             [self mouseEvent:event withType:MiddleButtonUp];
             break;
-        case 4:
+        case 3:
             [self mouseEvent:event withType:XButton1Up];
             break;
-        case 5:
+        case 4:
             [self mouseEvent:event withType:XButton2Up];
             break;
 
@@ -776,10 +775,21 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         markedText = (NSString*) string;
     }
     
-    _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
     auto parent = _parent.tryGet();
 
-    if(parent->InputMethod->IsActive()){
+    // Delete any replaced range
+    if (replacementRange.location != NSNotFound && parent != nullptr && parent->InputMethod->IsActive())
+    {
+        parent->InputMethod->Client->SelectInSurroundingText((int)replacementRange.location, (int)(replacementRange.location + replacementRange.length));
+        uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
+        parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
+        parent->TopLevelEvents->RawKeyEvent(KeyUp, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
+    }
+    
+    _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
+
+    if (parent != nullptr && parent->InputMethod->IsActive())
+    {
         parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
     }
 }
@@ -808,9 +818,16 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     if(actualRange){
         range = *actualRange;
     }
+
+    // From the docs: an implementation of this method should be prepared for aRange to be out of bounds.
+    // In this case, you should return the intersection of the document's range and aRange.
+    // If the location of aRange is completely outside of the document's range, return nil.
+    auto finalRange = NSIntersectionRange(range, NSMakeRange(0, _text.length));
     
-    NSAttributedString* subString = [_text attributedSubstringFromRange:range];
+    if (finalRange.length == 0)
+        return nil;
     
+    NSAttributedString* subString = [_text attributedSubstringFromRange:finalRange];
     return subString;
 }
 
@@ -820,9 +837,9 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     if(parent == nullptr){
         return;
     }
-    
+
     NSString* text;
-        
+
     if([string isKindOfClass:[NSAttributedString class]])
     {
         text = [string string];
@@ -830,6 +847,13 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     else
     {
         text = (NSString*) string;
+    }
+    
+    if (replacementRange.location != NSNotFound &&
+        ![self hasMarkedText] &&
+        parent->InputMethod->IsActive())
+    {
+        parent->InputMethod->Client->SelectInSurroundingText((int)replacementRange.location, (int)(replacementRange.location + replacementRange.length));
     }
     
     [self unmarkText];
@@ -856,9 +880,10 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
 {
-    auto localPoint = [self convertPoint:[info draggingLocation] toView:self];
-    auto avnPoint = ToAvnPoint(localPoint);
-    auto point = [self translateLocalPoint:avnPoint];
+    NSPoint eventLocation = [info draggingLocation];
+    auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
+    auto localPoint = NSMakePoint(eventLocation.x - viewLocation.x, viewLocation.y - eventLocation.y);
+    auto point = ToAvnPoint(localPoint);
     auto modifiers = [self getModifiers:[[NSApp currentEvent] modifierFlags]];
     NSDragOperation nsop = [info draggingSourceOperationMask];
 
@@ -868,7 +893,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
       return NSDragOperationNone;
     int reffects = (int)parent->TopLevelEvents
             ->DragEvent(type, point, modifiers, effects,
-                    CreateClipboard([info draggingPasteboard], nil),
+                    CreateClipboard([info draggingPasteboard]),
                     GetAvnDataObjectHandleFromDraggingInfo(info));
 
     NSDragOperation ret = static_cast<NSDragOperation>(0);
@@ -943,7 +968,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     auto window = (AvnWindow*)[self window];
     auto peer = [window automationPeer];
 
-    if (!peer->IsRootProvider())
+    if (peer == nullptr || !peer->IsRootProvider())
         return nil;
 
     auto clientPoint = [window convertPointFromScreen:point];
@@ -980,6 +1005,10 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     // of the AvnView.
     auto window = (AvnWindow*)[self window];
     auto peer = [window automationPeer];
+    if (peer == nullptr)
+    {
+        return;
+    }
     auto childPeers = peer->GetChildren();
     auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
 

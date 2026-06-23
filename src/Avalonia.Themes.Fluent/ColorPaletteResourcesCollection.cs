@@ -130,9 +130,7 @@ internal sealed class ColorPaletteResourcesCollection : ResourceProvider, IDicti
     }
 
     bool IDictionary<ThemeVariant, ColorPaletteResources>.TryGetValue(ThemeVariant key,
-#if NET6_0_OR_GREATER
         [MaybeNullWhen(false)]
-#endif
         out ColorPaletteResources value)
     {
         return _inner.TryGetValue(key, out value);

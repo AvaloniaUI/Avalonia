@@ -141,6 +141,8 @@ public partial class Dispatcher
                 else
                 {
                     operation = null;
+                    _impl.UpdateTimer(null);
+                    _hasShutdownFinished = true;
                 }
             }
 
@@ -150,8 +152,6 @@ public partial class Dispatcher
             }
         } while (operation != null);
 
-        _impl.UpdateTimer(null);
-        _hasShutdownFinished = true;
         ShutdownFinished?.Invoke(this, EventArgs.Empty);
     }
 

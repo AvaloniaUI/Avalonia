@@ -109,9 +109,9 @@ namespace Avalonia.Styling
         public override string ToString(Style? owner)
         {
             var expectedCapacity = NthLastChildSelectorName.Length + 8;
-            var stringBuilder =  StringBuilderCache.Acquire(expectedCapacity);
-            stringBuilder.Append(_previous?.ToString(owner));
-            
+            var stringBuilder = StringBuilderCache.Acquire(expectedCapacity);
+            stringBuilder.Append(_previous?.ToString(owner, true));
+
             stringBuilder.Append(':');
             stringBuilder.Append(_reversed ? NthLastChildSelectorName : NthChildSelectorName);
             stringBuilder.Append('(');
