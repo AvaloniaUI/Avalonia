@@ -12,7 +12,7 @@ using Xunit;
 namespace Avalonia.Skia.UnitTests.Media
 {
     /// <summary>
-    /// Verifies that <see cref="FontCollectionBase.TryMatchCharacter"/> resolves the same family
+    /// Verifies that <see cref="FontCollectionBase"/>.TryMatchCharacter resolves the same family
     /// regardless of the order in which fonts were added to the collection, and is stable
     /// across repeated invocations.
     /// </summary>

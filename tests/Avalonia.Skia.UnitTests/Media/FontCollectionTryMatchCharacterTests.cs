@@ -14,7 +14,7 @@ using Xunit;
 namespace Avalonia.Skia.UnitTests.Media
 {
     /// <summary>
-    /// Exercises the tiered <see cref="FontCollectionBase.TryMatchCharacter"/> algorithm
+    /// Exercises the tiered <see cref="FontCollectionBase"/>.TryMatchCharacter algorithm
     /// (Tier A → Tier E) using a small set of embedded test fonts and a stub subclass
     /// that intercepts the platform-fallback hook.
     /// </summary>

@@ -45,6 +45,16 @@ namespace Avalonia.Media.Fonts
 
         public virtual bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
             string? familyName, CultureInfo? culture, out Typeface match)
+            => TryMatchCharacter(codepoint, style, weight, stretch, familyName, culture, Script.Unknown, out match);
+
+        /// <summary>
+        /// Character-to-typeface match with an optional shaping-capability constraint. When
+        /// <paramref name="shapingScript"/> is a complex script, only candidates that can shape it
+        /// (<see cref="GlyphTypeface.CanShapeScript"/>) are considered; <see cref="Script.Unknown"/>
+        /// imposes no constraint and is identical to the public overload.
+        /// </summary>
+        internal bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
+            string? familyName, CultureInfo? culture, Script shapingScript, out Typeface match)
         {
             match = default;
 
@@ -57,7 +67,7 @@ namespace Avalonia.Media.Fonts
             // --- Tier A: requested family, coverage-checked, culture-compatible ---
             if (familyName != null &&
                 _glyphTypefaceCache.TryGetValue(familyName, out var requestedFamily) &&
-                TryGetCoveringMatch(requestedFamily, key, codepoint, isLastResort: false, out var requestedGlyphTypeface) &&
+                TryGetCoveringMatch(requestedFamily, key, codepoint, isLastResort: false, shapingScript, out var requestedGlyphTypeface) &&
                 IsCultureCompatible(requestedGlyphTypeface, culture, script))
             {
                 match = BuildTypefaceWithSynthesis(requestedGlyphTypeface, key);
@@ -71,7 +81,7 @@ namespace Avalonia.Media.Fonts
                     cachedFamily != null &&
                     !string.Equals(cachedFamily, familyName, StringComparison.OrdinalIgnoreCase) &&
                     _glyphTypefaceCache.TryGetValue(cachedFamily, out var cachedTypefaces) &&
-                    TryGetCoveringMatch(cachedTypefaces, key, codepoint, isLastResort: false, out var cachedGlyphTypeface))
+                    TryGetCoveringMatch(cachedTypefaces, key, codepoint, isLastResort: false, shapingScript, out var cachedGlyphTypeface))
                 {
                     match = BuildTypefaceWithSynthesis(cachedGlyphTypeface, key);
                     return true;
@@ -79,7 +89,7 @@ namespace Avalonia.Media.Fonts
             }
 
             // --- Tier C: deterministic cache sweep (non last-resort), culture-scored ---
-            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, isLastResort: false, out var bestGt, out var bestFamilyName))
+            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, shapingScript, isLastResort: false, out var bestGt, out var bestFamilyName))
             {               
                 if (FontFallbackScriptHints.IsLocaleSensitive(refinedScript) || culture != null)
                 {
@@ -91,24 +101,30 @@ namespace Avalonia.Media.Fonts
             }
 
             // --- Tier D: platform fallback (at most once per (script, culture)) ---
-            var platformAlreadyAttempted = _scriptFallbackCache.ContainsKey(scriptKey);
-
-            if (!platformAlreadyAttempted &&
-                TryMatchCharacterFromPlatform(codepoint, key, familyName, culture, out var platformGt))
+            // Skipped for shaping-constrained queries: the platform match is not capability-checked,
+            // and the caller's unconstrained pass already covers the platform path (so the negative
+            // cache stays consistent with unconstrained lookups).
+            if (shapingScript == Script.Unknown)
             {
-                _scriptFallbackCache.TryAdd(scriptKey, platformGt.FamilyName);
-                match = BuildTypefaceWithSynthesis(platformGt, key);
-                return true;
-            }
+                var platformAlreadyAttempted = _scriptFallbackCache.ContainsKey(scriptKey);
 
-            if (!platformAlreadyAttempted)
-            {
-                // Remember the negative answer so we don't ask the platform again.
-                _scriptFallbackCache.TryAdd(scriptKey, null);
+                if (!platformAlreadyAttempted &&
+                    TryMatchCharacterFromPlatform(codepoint, key, familyName, culture, out var platformGt))
+                {
+                    _scriptFallbackCache.TryAdd(scriptKey, platformGt.FamilyName);
+                    match = BuildTypefaceWithSynthesis(platformGt, key);
+                    return true;
+                }
+
+                if (!platformAlreadyAttempted)
+                {
+                    // Remember the negative answer so we don't ask the platform again.
+                    _scriptFallbackCache.TryAdd(scriptKey, null);
+                }
             }
 
             // --- Tier E: last-resort cache sweep ---
-            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, isLastResort: true, out var lrGt, out _))
+            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, shapingScript, isLastResort: true, out var lrGt, out _))
             {
                 match = BuildTypefaceWithSynthesis(lrGt, key);
                 return true;
@@ -124,6 +140,7 @@ namespace Avalonia.Media.Fonts
             CultureInfo? culture,
             Script script,
             Script refinedScript,
+            Script shapingScript,
             bool isLastResort,
             [NotNullWhen(true)] out GlyphTypeface? bestGlyphTypeface,
             [NotNullWhen(true)] out string? bestFamilyName)
@@ -149,7 +166,7 @@ namespace Avalonia.Media.Fonts
                     continue;
                 }
 
-                if (!TryGetCoveringMatch(glyphTypefaces, key, codepoint, isLastResort, out var candidate))
+                if (!TryGetCoveringMatch(glyphTypefaces, key, codepoint, isLastResort, shapingScript, out var candidate))
                 {
                     continue;
                 }
@@ -280,7 +297,7 @@ namespace Avalonia.Media.Fonts
         /// <summary>
         /// Hook for platform-backed collections (e.g. <see cref="SystemFontCollection"/>) to consult
         /// the underlying font manager for a fallback typeface. Invoked at most once per
-        /// (script-bucket, culture) pair from <see cref="TryMatchCharacter"/>.
+        /// (script-bucket, culture) pair from <see cref="FontCollectionBase"/>.TryMatchCharacter.
         /// </summary>
         protected virtual bool TryMatchCharacterFromPlatform(
             int codepoint,
@@ -298,18 +315,25 @@ namespace Avalonia.Media.Fonts
         /// the requested codepoint. Falls back through the existing weight/stretch search but
         /// filters every candidate through the font's character-to-glyph map.
         /// </summary>
+        // A candidate satisfies a shaping-capability constraint when it can shape the requested
+        // script; Script.Unknown means no constraint (the historical, unconstrained behaviour).
+        private static bool CanShape(GlyphTypeface glyphTypeface, Script shapingScript)
+            => shapingScript == Script.Unknown || glyphTypeface.CanShapeScript(shapingScript);
+
         private static bool TryGetCoveringMatch(
             ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
             int codepoint,
             bool isLastResort,
+            Script shapingScript,
             [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             // Exact key first.
             if (glyphTypefaces.TryGetValue(key, out glyphTypeface) &&
                 glyphTypeface != null &&
                 glyphTypeface.IsLastResort == isLastResort &&
-                glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
+                glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _) &&
+                CanShape(glyphTypeface, shapingScript))
             {
                 return true;
             }
@@ -330,7 +354,8 @@ namespace Avalonia.Media.Fonts
                     continue;
                 }
 
-                if (!candidate.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
+                if (!candidate.CharacterToGlyphMap.TryGetGlyph(codepoint, out _) ||
+                    !CanShape(candidate, shapingScript))
                 {
                     continue;
                 }
