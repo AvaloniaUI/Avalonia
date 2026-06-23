@@ -30,7 +30,9 @@ partial class X11Window
         }
 
         public override void Show(bool activate, bool isDialog)
-        {            
+        {
+            base.Show(activate, isDialog);
+
             Window._wasMappedAtLeastOnce = true;
 
             if (!activate)
@@ -42,7 +44,6 @@ partial class X11Window
 
             XMapWindow(X11.Display, Handle);
             XFlush(X11.Display);
-            base.Show(activate, isDialog);
         }
 
         public override void Hide()

@@ -27,6 +27,7 @@ namespace Avalonia.Win32.Automation
     {
         private static Dictionary<AutomationProperty, UiaPropertyId> s_propertyMap = new()
         {
+            { AutomationElementIdentifiers.AutomationIdProperty, UiaPropertyId.AutomationId },
             { AutomationElementIdentifiers.BoundingRectangleProperty, UiaPropertyId.BoundingRectangle },
             { AutomationElementIdentifiers.ClassNameProperty, UiaPropertyId.ClassName },
             { AutomationElementIdentifiers.NameProperty, UiaPropertyId.Name },
@@ -372,6 +373,7 @@ namespace Avalonia.Win32.Automation
                 AutomationControlType.TitleBar => UiaControlTypeId.TitleBar,
                 AutomationControlType.Separator => UiaControlTypeId.Separator,
                 AutomationControlType.Expander => UiaControlTypeId.Group,
+                AutomationControlType.ScrollViewer => UiaControlTypeId.Pane,
                 _ => UiaControlTypeId.Custom,
             };
         }

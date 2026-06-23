@@ -118,7 +118,8 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
 
     protected async Task<bool> EnsureExternalFilesPermission(bool write)
     {
-        if (!_needsExternalFilesPermission)
+        // Starting in API level 33, this permission has no effect.
+        if (!_needsExternalFilesPermission || OperatingSystem.IsAndroidVersionAtLeast(33))
         {
             return true;
         }

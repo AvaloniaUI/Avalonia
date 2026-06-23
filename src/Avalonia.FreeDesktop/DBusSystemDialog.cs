@@ -1,6 +1,6 @@
-#pragma warning disable CS0618 // TODO: Temporary workaround until Tmds is replaced.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,47 +10,59 @@ using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Threading;
 using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
+using Avalonia.FreeDesktop.DBus;
 
 namespace Avalonia.FreeDesktop
 {
     internal class DBusSystemDialog : BclStorageProvider
     {
-        internal static async Task<IStorageProvider?> TryCreateAsync(IPlatformHandle handle)
+        /// <summary>
+        /// Creates a portal-backed storage provider if xdg-desktop-portal FileChooser is available.
+        /// </summary>
+        /// <param name="parentLeaseProvider">
+        /// Callback invoked once per picker call to obtain the parent-window handle to pass to the
+        /// portal. The returned <see cref="IPortalParentLease"/> is held until the picker call
+        /// completes and then disposed. May return <c>null</c> to call the portal with an empty
+        /// parent_window string (per portal spec: "no parent").
+        /// </param>
+        internal static async Task<IStorageProvider?> TryCreateAsync(Func<Task<IPortalParentLease?>>? parentLeaseProvider)
         {
             if (DBusHelper.DefaultConnection is not { } conn)
                 return null;
 
             using var restoreContext = AvaloniaSynchronizationContext.Ensure(DispatcherPriority.Input);
 
-            var dbusFileChooser = new OrgFreedesktopPortalFileChooserProxy(conn, "org.freedesktop.portal.Desktop",
+            var dbusFileChooser = new FileChooser(conn, "org.freedesktop.portal.Desktop",
                 "/org/freedesktop/portal/desktop");
             uint version;
             try
             {
-                version = await dbusFileChooser.GetVersionPropertyAsync();
+                version = await dbusFileChooser.GetVersionAsync();
             }
             catch
             {
                 return null;
             }
 
-            return new DBusSystemDialog(conn, handle, dbusFileChooser, version);
+            return new DBusSystemDialog(conn, parentLeaseProvider, dbusFileChooser, version);
         }
 
-        private readonly Connection _connection;
-        private readonly OrgFreedesktopPortalFileChooserProxy _fileChooser;
-        private readonly IPlatformHandle _handle;
+        private readonly DBusConnection _connection;
+        private readonly FileChooser _fileChooser;
+        private readonly Func<Task<IPortalParentLease?>>? _parentLeaseProvider;
         private readonly uint _version;
 
-        private DBusSystemDialog(Connection connection, IPlatformHandle handle,
-            OrgFreedesktopPortalFileChooserProxy fileChooser, uint version)
+        private DBusSystemDialog(DBusConnection connection, Func<Task<IPortalParentLease?>>? parentLeaseProvider,
+            FileChooser fileChooser, uint version)
         {
             _connection = connection;
             _fileChooser = fileChooser;
-            _handle = handle;
+            _parentLeaseProvider = parentLeaseProvider;
             _version = version;
         }
+
+        private async Task<IPortalParentLease?> AcquireParentLeaseAsync()
+            => _parentLeaseProvider is null ? null : await _parentLeaseProvider().ConfigureAwait(false);
 
         public override bool CanOpen => true;
 
@@ -60,8 +72,9 @@ namespace Avalonia.FreeDesktop
 
         public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
-            var parentWindow = $"x11:{_handle.Handle:X}";
-            ObjectPath objectPath;
+            await using var parentLease = await AcquireParentLeaseAsync().ConfigureAwait(false);
+            var parentWindow = parentLease?.Handle ?? string.Empty;
+            var (expectedPath, token) = CreateRequestToken();
             var chooserOptions = new Dictionary<string, VariantValue>();
 
             if (TryParseFilters(options.FileTypeFilter, options.SuggestedFileType, out var filters,
@@ -76,19 +89,20 @@ namespace Avalonia.FreeDesktop
                 chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
 
             chooserOptions.Add("multiple", VariantValue.Bool(options.AllowMultiple));
+            chooserOptions.Add("handle_token", token);
 
-            objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
-
-            var request =
-                new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
+            var request = new Request(_connection, "org.freedesktop.portal.Desktop", expectedPath);
             var tsc = new TaskCompletionSource<string[]?>();
-            using var disposable = await request.WatchResponseAsync((e, x) =>
+            using var disposable = await request.WatchResponseAsync(notification =>
             {
-                if (e is not null)
-                    tsc.TrySetException(e);
+                if (notification.IsCompletion)
+                    tsc.TrySetException(notification.Exception);
                 else
-                    tsc.TrySetResult(x.Results["uris"].GetArray<string>());
-            });
+                    tsc.TrySetResult(notification.Value.Results["uris"].GetArray<string>());
+            }, ObserverFlags.EmitAll);
+
+            var actualPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
+            VerifyRequestPath(tsc, expectedPath, actualPath);
 
             var uris = await tsc.Task ?? [];
             return uris.Select(static path => new BclStorageFile(new FileInfo(new Uri(path).LocalPath))).ToList();
@@ -109,8 +123,9 @@ namespace Avalonia.FreeDesktop
         private async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFilePickerCoreAsync(
             FilePickerSaveOptions options)
         {
-            var parentWindow = $"x11:{_handle.Handle:X}";
-            ObjectPath objectPath;
+            await using var parentLease = await AcquireParentLeaseAsync().ConfigureAwait(false);
+            var parentWindow = parentLease?.Handle ?? string.Empty;
+            var (expectedPath, token) = CreateRequestToken();
             var chooserOptions = new Dictionary<string, VariantValue>();
             if (TryParseFilters(options.FileTypeChoices, options.SuggestedFileType, out var filters,
                     out var currentFilter))
@@ -124,21 +139,20 @@ namespace Avalonia.FreeDesktop
                 chooserOptions.Add("current_name", VariantValue.String(currentName));
             if (options.SuggestedStartLocation?.TryGetLocalPath() is { } folderPath)
                 chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
+            chooserOptions.Add("handle_token", token);
 
-            objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions)
-                .ConfigureAwait(false);
-            var request =
-                new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
+            var request = new Request(_connection, "org.freedesktop.portal.Desktop", expectedPath);
             var tsc = new TaskCompletionSource<string[]?>();
             FilePickerFileType? selectedType = null;
-            using var disposable = await request.WatchResponseAsync((e, x) =>
+            using var disposable = await request.WatchResponseAsync(notification =>
             {
-                if (e is not null)
+                if (notification.IsCompletion)
                 {
-                    tsc.TrySetException(e);
+                    tsc.TrySetException(notification.Exception);
                 }
                 else
                 {
+                    var x = notification.Value;
                     if (x.Results.TryGetValue("current_filter", out var currentFilter))
                     {
                         var name = currentFilter.GetItem(0).GetString();
@@ -152,19 +166,23 @@ namespace Avalonia.FreeDesktop
                             else
                                 patterns.Add(t.GetItem(1).GetString());
                         }
-                        
+
                         // Reuse the file type objects from options
                         // so the consuming code can match exactly the
                         // file type selected instead of spawning one.
                         selectedType = options.FileTypeChoices?.FirstOrDefault(type => type.Name == name && (
                             (type.MimeTypes?.All(y => mimeTypes.Contains(y)) ?? false) ||
-                            (type.Patterns?.All(y => patterns.Contains(y)) ?? false))) 
+                            (type.Patterns?.All(y => patterns.Contains(y)) ?? false)))
                             ?? new FilePickerFileType(name) { MimeTypes = mimeTypes, Patterns = patterns };
                     }
 
                     tsc.TrySetResult(x.Results["uris"].GetArray<string>());
                 }
-            }).ConfigureAwait(false);
+            }, ObserverFlags.EmitAll).ConfigureAwait(false);
+
+            var actualPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions)
+                .ConfigureAwait(false);
+            VerifyRequestPath(tsc, expectedPath, actualPath);
 
             var uris = await tsc.Task.ConfigureAwait(false);
             var path = uris?.FirstOrDefault() is { } filePath ? new Uri(filePath).LocalPath : null;
@@ -182,7 +200,9 @@ namespace Avalonia.FreeDesktop
             if (_version < 3)
                 return [];
 
-            var parentWindow = $"x11:{_handle.Handle:X}";
+            await using var parentLease = await AcquireParentLeaseAsync().ConfigureAwait(false);
+            var parentWindow = parentLease?.Handle ?? string.Empty;
+            var (expectedPath, token) = CreateRequestToken();
             var chooserOptions = new Dictionary<string, VariantValue>
             {
                 { "directory", VariantValue.Bool(true) }, { "multiple", VariantValue.Bool(options.AllowMultiple) }
@@ -192,19 +212,20 @@ namespace Avalonia.FreeDesktop
                 chooserOptions.Add("current_name", VariantValue.String(currentName));
             if (options.SuggestedStartLocation?.TryGetLocalPath() is { } folderPath)
                 chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
+            chooserOptions.Add("handle_token", token);
 
-            var objectPath =
-                await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
-            var request =
-                new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
+            var request = new Request(_connection, "org.freedesktop.portal.Desktop", expectedPath);
             var tsc = new TaskCompletionSource<string[]?>();
-            using var disposable = await request.WatchResponseAsync((e, x) =>
+            using var disposable = await request.WatchResponseAsync(notification =>
             {
-                if (e is not null)
-                    tsc.TrySetException(e);
+                if (notification.IsCompletion)
+                    tsc.TrySetException(notification.Exception);
                 else
-                    tsc.TrySetResult(x.Results["uris"].GetArray<string>());
-            });
+                    tsc.TrySetResult(notification.Value.Results["uris"].GetArray<string>());
+            }, ObserverFlags.EmitAll);
+
+            var actualPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
+            VerifyRequestPath(tsc, expectedPath, actualPath);
 
             var uris = await tsc.Task ?? Array.Empty<string>();
             return uris
@@ -257,6 +278,22 @@ namespace Avalonia.FreeDesktop
 
             result = filters.AsVariantValue();
             return true;
+        }
+
+        // https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Request.html
+        // Subscribe to the Response signal before making the portal call to avoid a race condition.
+        private (ObjectPath ExpectedPath, string Token) CreateRequestToken()
+        {
+            string sender = (_connection.UniqueName ?? "").TrimStart(':').Replace(".", "_");
+            string token = "Avalonia_" + Stopwatch.GetTimestamp().ToString();
+            ObjectPath expectedPath = $"/org/freedesktop/portal/desktop/request/{sender}/{token}";
+            return (expectedPath, token);
+        }
+
+        private static void VerifyRequestPath<T>(TaskCompletionSource<T> tsc, ObjectPath expectedPath, ObjectPath actualPath)
+        {
+            if (actualPath != expectedPath)
+                tsc.TrySetException(new InvalidOperationException($"Portal returned unexpected request path '{actualPath}', expected '{expectedPath}'."));
         }
     }
 }
