@@ -61,4 +61,9 @@ internal class PlatformSettings : DefaultPlatformSettings
             OnColorValuesChanged(colorValues);
         }
     }
+
+    internal void OnColorValuesChanged()
+    {
+        OnColorValuesChanged(GetColorValues());
+    }
 }
