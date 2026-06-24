@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Runtime.ConstrainedExecution;
 using System.Threading;
+using Avalonia.Metadata;
 
 namespace Avalonia.Utilities
 {
     /// <summary>
     /// A ref-counted wrapper for a disposable object.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    internal interface IRef<out T> : IDisposable where T : class
+    /// <typeparam name="T">
+    /// The type of the item being ref-counted. 
+    /// Must be a reference type to avoid issues with copying value types and must be disposable
+    /// to ensure the item is cleaned up when the refcount reaches 0.
+    /// </typeparam>
+    [PrivateApi]
+    public interface IRef<out T> : IDisposable where T : class
     {
         /// <summary>
         /// The item that is being ref-counted.
