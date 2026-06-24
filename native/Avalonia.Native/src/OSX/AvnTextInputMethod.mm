@@ -32,11 +32,15 @@ void AvnTextInputMethod::Reset() {
     [_inputMethodDelegate resetInputMethod];
 }
 
-void AvnTextInputMethod::SetSurroundingText(char* text, int anchorOffset, int cursorOffset) {
+void AvnTextInputMethod::SetSurroundingText(char* text, int start, int end) {
     [_inputMethodDelegate setText:[NSString stringWithUTF8String:text]];
-    [_inputMethodDelegate setSelection: anchorOffset : cursorOffset];
+    [_inputMethodDelegate setSelection: start:end];
 }
 
 void AvnTextInputMethod::SetCursorRect(AvnRect rect) {
     [_inputMethodDelegate setCursorRect: rect];
+}
+
+void AvnTextInputMethod::SetSelectionInSurroundingText(int start, int end) {
+    [_inputMethodDelegate setSelection: start:end];
 }
