@@ -37,9 +37,9 @@ namespace Avalonia.FreeDesktop
                 Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
         }
 
-        internal async void OnRequestDefaultThemeVariant()
+        internal void OnRequestDefaultThemeVariant()
         {
-            await TryGetInitialValuesAsync();
+            _ = TryGetInitialValuesAsync();
         }
 
         private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
