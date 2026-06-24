@@ -162,7 +162,9 @@ namespace ControlCatalog.Desktop
                 })
                 .UseSkia()
                 .WithInterFont()
+#if DEBUG
                 .WithDeveloperTools()
+#endif
                 .AfterSetup(builder =>
                 {
                     EmbedSample.Implementation = OperatingSystem.IsWindows() ? new EmbedSampleWin()
