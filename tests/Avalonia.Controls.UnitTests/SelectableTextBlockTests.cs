@@ -10,6 +10,30 @@ namespace Avalonia.Controls.UnitTests
     public class SelectableTextBlockTests : ScopedTestBase
     {
         [Fact]
+        public void Selection_Spanning_InlineUIContainer_Returns_Correct_Text()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock();
+
+                target.Inlines!.Add(new Run("foo"));
+                target.Inlines!.Add(new InlineUIContainer(new Border()));
+                target.Inlines!.Add(new Run("bar"));
+
+                target.Measure(Size.Infinity);
+
+                // In TextLayout, EmbeddedControlRun (from InlineUIContainer) occupies 1 character
+                // position. After "foo" (3 chars) + InlineUIContainer (1 char), "bar" starts at
+                // position 4. SelectionStart/End come from TextLayout.HitTestPoint so they must
+                // align with the text returned by Inlines.Text.
+                target.SelectionStart = 4;
+                target.SelectionEnd = 7;
+
+                Assert.Equal("bar", target.SelectedText);
+            }
+        }
+
+        [Fact]
         public void SelectionForeground_Should_Not_Reset_Run_Typeface_And_Style()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
