@@ -2350,6 +2350,38 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void AutomationTextRange_Over_TextNavigation_Expands_Moves_And_Reads()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // The document range reads the whole text.
+            var doc = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentEnd);
+            Assert.Equal("foo bar", doc.GetText(-1));
+
+            // A degenerate range inside "foo" expands to the enclosing word.
+            var inFoo = nav.GetPosition(nav.DocumentStart, 1);
+            var word = new Avalonia.Automation.AutomationTextRange(nav, inFoo, inFoo);
+            word.ExpandToEnclosingUnit(TextUnit.Word);
+            Assert.Equal("foo", word.GetText(-1));
+
+            // Clone is independent; moving the clone's end back one character does not affect the original.
+            var clone = (Avalonia.Automation.AutomationTextRange)word.Clone();
+            clone.MoveEndpointByUnit(Avalonia.Automation.Provider.TextRangeEndpoint.End, TextUnit.Character, -1);
+            Assert.Equal("fo", clone.GetText(-1));
+            Assert.Equal("foo", word.GetText(-1));
+
+            // The original word's end follows the clone's shortened end.
+            Assert.True(word.CompareEndpoints(
+                Avalonia.Automation.Provider.TextRangeEndpoint.End,
+                clone,
+                Avalonia.Automation.Provider.TextRangeEndpoint.End) > 0);
+        }
+
+        [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {
             using var _ = UnitTestApplication.Start(Services);
