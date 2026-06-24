@@ -11,7 +11,7 @@ namespace Avalonia.Input.TextInput
     /// Implementations are UI-thread-only.
     /// </remarks>
     [Unstable]
-    public interface ITextPointer : IComparable<ITextPointer>
+    public interface ITextPointer : IComparable<ITextPointer>, IEquatable<ITextPointer>
     {
         /// <summary>
         /// Gets the zero-based UTF-16 offset from the start of the document.

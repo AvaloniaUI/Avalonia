@@ -2193,6 +2193,124 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(LogicalDirection.Backward, backwardPointer.LogicalDirection);
         }
 
+        private static ITextNavigation GetNavigation(TextBox textBox)
+        {
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+            return Assert.IsAssignableFrom<ITextNavigation>(eventArgs.Client);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Resolves_Offsets_And_Reads_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello world", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            Assert.Equal(0, nav.DocumentStart.Offset);
+            Assert.Equal(11, nav.DocumentEnd.Offset);
+
+            // Resolve a platform offset relative to the produced DocumentStart anchor.
+            var range = nav.GetRange(nav.GetPosition(nav.DocumentStart, 6), nav.DocumentEnd);
+            var text = nav.GetText(range);
+
+            Assert.Equal("world", text);
+            Assert.Equal(range.End.Offset - range.Start.Offset, text.Length); // gapless invariant
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_GetPosition_Clamps_And_GetRange_Normalizes()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abc", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            Assert.Equal(3, nav.GetPosition(nav.DocumentStart, 100).Offset);
+            Assert.Equal(0, nav.GetPosition(nav.DocumentEnd, -100).Offset);
+
+            var a = nav.GetPosition(nav.DocumentStart, 2);
+            var b = nav.GetPosition(nav.DocumentStart, 1);
+            var range = nav.GetRange(a, b); // arguments out of order are normalized
+
+            Assert.Equal(1, range.Start.Offset);
+            Assert.Equal(2, range.End.Offset);
+            Assert.Equal(-1, nav.GetOffset(a, b));
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Enclosing_And_Move_By_Word()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            var inWord = nav.GetPosition(nav.DocumentStart, 1); // inside "foo"
+            var word = nav.GetRangeEnclosing(inWord, TextUnit.Word);
+            Assert.Equal(0, word.Start.Offset);
+            Assert.Equal(3, word.End.Offset);
+
+            // A single word forward from the start lands on the word-end boundary.
+            Assert.Equal(3, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
+
+            var whole = nav.GetRangeEnclosing(inWord, TextUnit.Document);
+            Assert.Equal(0, whole.Start.Offset);
+            Assert.Equal(7, whole.End.Offset);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_TextChanged_Reports_Delta_And_Bumps_Version()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello", CaretIndex = 5 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            TextChange? captured = null;
+            nav.TextChanged += (_, c) => captured = c;
+            var startVersion = nav.DocumentVersion;
+
+            var structured = (IStructuredTextInput)nav;
+            structured.ReplaceText(structured.CreateRange(structured.DocumentEnd, structured.DocumentEnd), "!");
+
+            Assert.NotNull(captured);
+            Assert.Equal(5, captured!.Value.Position.Offset);
+            Assert.Equal(0, captured.Value.OldLength);
+            Assert.Equal(1, captured.Value.NewLength);
+            Assert.True(nav.DocumentVersion > startVersion);
+
+            // The inserted text is read on demand from the change position.
+            var inserted = nav.GetRange(
+                captured.Value.Position,
+                nav.GetPosition(captured.Value.Position, captured.Value.NewLength));
+            Assert.Equal("!", nav.GetText(inserted));
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Rejects_Foreign_Pointer()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var a = new TextBox { Template = CreateTemplate(), Text = "aaa" };
+            a.ApplyTemplate();
+            var b = new TextBox { Template = CreateTemplate(), Text = "bbb" };
+            b.ApplyTemplate();
+
+            var navA = GetNavigation(a);
+            var navB = GetNavigation(b);
+
+            Assert.Throws<ArgumentException>(() => navA.GetOffset(navA.DocumentStart, navB.DocumentStart));
+        }
+
         [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {

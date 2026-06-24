@@ -8,7 +8,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
-    internal class TextBoxTextInputMethodClient : TextInputMethodClient, IStructuredTextInput
+    internal class TextBoxTextInputMethodClient : TextInputMethodClient, IStructuredTextInput, ITextNavigation
     {
         private TextBox? _parent;
         private TextPresenter? _presenter;
@@ -17,6 +17,8 @@ namespace Avalonia.Controls
         private bool _isInChange;
         private EventHandler? _caretBoundsChangedHandler;
         private ITextRange? _compositionRange;
+        private long _documentVersion;
+        private EventHandler<TextChange>? _navTextChanged;
 
         public event EventHandler? TextChanged;
         public event EventHandler? CaretPositionChanged;
@@ -474,6 +476,235 @@ namespace Avalonia.Controls
                 : CreateLocalPointer(enclosing.Start.Offset, LogicalDirection.Backward);
         }
 
+        // ── ITextNavigation ────────────────────────────────────────────────
+
+        ITextPointer ITextNavigation.DocumentStart => CreateLocalPointer(0, LogicalDirection.Forward);
+
+        ITextPointer ITextNavigation.DocumentEnd =>
+            CreateLocalPointer(GetDocumentLength(), LogicalDirection.Backward);
+
+        ITextRange ITextNavigation.DocumentRange => CreateLocalRange(0, GetDocumentLength());
+
+        long ITextNavigation.DocumentVersion => _documentVersion;
+
+        ITextPointer ITextNavigation.GetPosition(ITextPointer origin, int distance)
+        {
+            var text = GetDocumentText();
+            var target = Math.Clamp(RequireOwnOffset(origin) + distance, 0, text.Length);
+            target = SnapToValid(target, text, forward: distance >= 0);
+
+            return CreateLocalPointer(
+                target,
+                distance >= 0 ? LogicalDirection.Forward : LogicalDirection.Backward);
+        }
+
+        ITextPointer ITextNavigation.GetPosition(ITextPointer origin, TextUnit unit, int count)
+        {
+            var offset = RequireOwnOffset(origin);
+
+            if (count == 0)
+            {
+                return CreateLocalPointer(offset, origin.LogicalDirection);
+            }
+
+            var text = GetDocumentText();
+            var forward = count > 0;
+            var steps = Math.Abs(count);
+            var current = offset;
+
+            for (var i = 0; i < steps; i++)
+            {
+                var next = MoveByUnitOnce(current, unit, forward, text);
+                if (next == current)
+                {
+                    break;
+                }
+
+                current = next;
+            }
+
+            return CreateLocalPointer(current, forward ? LogicalDirection.Forward : LogicalDirection.Backward);
+        }
+
+        ITextRange ITextNavigation.GetRangeEnclosing(ITextPointer position, TextUnit unit)
+        {
+            var offset = RequireOwnOffset(position);
+            var text = GetDocumentText();
+
+            switch (unit)
+            {
+                case TextUnit.Document:
+                case TextUnit.Page:
+                case TextUnit.Format:
+                    return CreateLocalRange(0, text.Length);
+
+                case TextUnit.Character:
+                    if (text.Length == 0)
+                    {
+                        return CreateLocalRange(0, 0);
+                    }
+
+                    var characterStart = Math.Clamp(offset, 0, text.Length - 1);
+                    return CreateLocalRange(characterStart, NextCharacter(characterStart, text));
+
+                case TextUnit.Word:
+                    return GetWordRange(offset, text);
+
+                case TextUnit.Sentence:
+                    return GetSentenceRange(offset, text);
+
+                case TextUnit.Line:
+                case TextUnit.Paragraph:
+                    return GetLineRange(offset, text);
+
+                default:
+                    return CreateLocalRange(offset, offset);
+            }
+        }
+
+        ITextRange ITextNavigation.GetRange(ITextPointer a, ITextPointer b)
+        {
+            var oa = RequireOwnOffset(a);
+            var ob = RequireOwnOffset(b);
+
+            return oa <= ob ? CreateLocalRange(oa, ob) : CreateLocalRange(ob, oa);
+        }
+
+        int ITextNavigation.GetOffset(ITextPointer from, ITextPointer to)
+            => RequireOwnOffset(to) - RequireOwnOffset(from);
+
+        string ITextNavigation.GetText(ITextRange range)
+        {
+            var text = GetDocumentText();
+            var start = RequireOwnOffset(range.Start);
+            var end = RequireOwnOffset(range.End);
+            if (start > end)
+            {
+                (start, end) = (end, start);
+            }
+
+            return text.Substring(start, end - start);
+        }
+
+        event EventHandler<TextChange>? ITextNavigation.TextChanged
+        {
+            add => _navTextChanged += value;
+            remove => _navTextChanged -= value;
+        }
+
+        private int RequireOwnOffset(ITextPointer pointer)
+        {
+            if (pointer is not SimpleTextPointer simple || simple.Owner != this)
+            {
+                throw new ArgumentException("The text pointer was not produced by this navigator.", nameof(pointer));
+            }
+
+            return Math.Clamp(simple.Offset, 0, GetDocumentLength());
+        }
+
+        private int MoveByUnitOnce(int offset, TextUnit unit, bool forward, string text)
+        {
+            switch (unit)
+            {
+                case TextUnit.Document:
+                case TextUnit.Page:
+                case TextUnit.Format:
+                    return forward ? text.Length : 0;
+
+                case TextUnit.Character:
+                    return forward ? NextCharacter(offset, text) : PrevCharacter(offset, text);
+
+                default:
+                    var (start, end) = unit switch
+                    {
+                        TextUnit.Word => RangeBounds(GetWordRange(offset, text)),
+                        TextUnit.Sentence => RangeBounds(GetSentenceRange(offset, text)),
+                        _ => RangeBounds(GetLineRange(offset, text)),
+                    };
+
+                    if (forward)
+                    {
+                        return end > offset ? end : NextCharacter(offset, text);
+                    }
+
+                    return start < offset ? start : PrevCharacter(offset, text);
+            }
+        }
+
+        private static (int Start, int End) RangeBounds(ITextRange range) => (range.Start.Offset, range.End.Offset);
+
+        private static int NextCharacter(int offset, string text)
+        {
+            if (offset >= text.Length)
+            {
+                return text.Length;
+            }
+
+            return char.IsHighSurrogate(text[offset]) && offset + 1 < text.Length && char.IsLowSurrogate(text[offset + 1])
+                ? offset + 2
+                : offset + 1;
+        }
+
+        private static int PrevCharacter(int offset, string text)
+        {
+            if (offset <= 0)
+            {
+                return 0;
+            }
+
+            return offset >= 2 && char.IsLowSurrogate(text[offset - 1]) && char.IsHighSurrogate(text[offset - 2])
+                ? offset - 2
+                : offset - 1;
+        }
+
+        private static int SnapToValid(int offset, string text, bool forward)
+        {
+            if (offset > 0 && offset < text.Length &&
+                char.IsLowSurrogate(text[offset]) && char.IsHighSurrogate(text[offset - 1]))
+            {
+                return forward ? offset + 1 : offset - 1;
+            }
+
+            return offset;
+        }
+
+        private void RaiseDocumentTextChanged(string oldText, string newText)
+        {
+            var min = Math.Min(oldText.Length, newText.Length);
+
+            var prefix = 0;
+            while (prefix < min && oldText[prefix] == newText[prefix])
+            {
+                prefix++;
+            }
+
+            var suffix = 0;
+            while (suffix < min - prefix &&
+                   oldText[oldText.Length - 1 - suffix] == newText[newText.Length - 1 - suffix])
+            {
+                suffix++;
+            }
+
+            var oldLength = oldText.Length - prefix - suffix;
+            var newLength = newText.Length - prefix - suffix;
+
+            if (oldLength == 0 && newLength == 0)
+            {
+                return;
+            }
+
+            _documentVersion++;
+
+            var handler = _navTextChanged;
+            if (handler is null)
+            {
+                return;
+            }
+
+            var position = CreateLocalPointer(prefix, LogicalDirection.Forward);
+            handler(this, new TextChange(position, oldLength, newLength));
+        }
+
         private static string GetTextLineText(TextLine textLine)
         {
             if (textLine.Length == 0)
@@ -523,6 +754,8 @@ namespace Avalonia.Controls
         {
             if (e.Property == TextBox.TextProperty)
             {
+                RaiseDocumentTextChanged(e.OldValue as string ?? string.Empty, e.NewValue as string ?? string.Empty);
+
                 RaiseSurroundingTextChanged();
 
                 if (_isInChange)
@@ -815,6 +1048,15 @@ namespace Avalonia.Controls
 
                 return Offset.CompareTo(other.Offset);
             }
+
+            // Equality is by document position; a flat-text store determines position entirely by
+            // Offset, so gravity is intentionally ignored. Comparing pointers from different
+            // navigators is undefined.
+            public bool Equals(ITextPointer? other) => other is not null && Offset == other.Offset;
+
+            public override bool Equals(object? obj) => obj is ITextPointer other && Equals(other);
+
+            public override int GetHashCode() => Offset;
         }
 
         private sealed class SimpleTextRange : ITextRange
