@@ -773,6 +773,42 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Get_First_Focusable_Element_Skips_Unfocusable_Elements()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var skip1 = new Button { Focusable = false, Content = "s1" };
+                var skip2 = new TextBlock() { Text = "s2" };
+                var skip3 = new StackPanel();
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var target5 = new Button { Focusable = true, Content = "5" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        skip1,
+                        skip2,
+                        skip3,
+                        target4,
+                        target5
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var firstFocusable = FocusManager.FindFirstFocusableElement(container);
+
+                Assert.Equal(target4, firstFocusable);
+
+                firstFocusable = (root.FocusManager as FocusManager)?.FindFirstFocusableElement();
+
+                Assert.Equal(target4, firstFocusable);
+            }
+        }
+
+        [Fact]
         public void Can_Get_Last_Focusable_Element()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
@@ -803,6 +839,42 @@ namespace Avalonia.Base.UnitTests.Input
                 lastFocusable = (root.FocusManager as FocusManager)?.FindLastFocusableElement();
 
                 Assert.Equal(target4, lastFocusable);
+            }
+        }
+
+        [Fact]
+        public void Get_Last_Focusable_Element_Skips_Unfocusable_Elements()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip3 = new Button { Focusable = false, Content = "s3" };
+                var skip4 = new TextBlock() { Text = "s4" };
+                var skip5 = new StackPanel();
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        skip3,
+                        skip4,
+                        skip5
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var lastFocusable = FocusManager.FindLastFocusableElement(container);
+
+                Assert.Equal(target2, lastFocusable);
+
+                lastFocusable = (root.FocusManager as FocusManager)?.FindLastFocusableElement();
+
+                Assert.Equal(target2, lastFocusable);
             }
         }
 
