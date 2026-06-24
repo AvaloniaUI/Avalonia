@@ -7,7 +7,7 @@ using Avalonia.Input.TextInput;
 
 namespace Avalonia.Controls;
 
-internal static class SpellCheckChecker
+internal static class SpellChecker
 {
     private const int MaxSuggestionCount = 8;
 

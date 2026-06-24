@@ -146,7 +146,7 @@ internal sealed class TextBoxSpellCheckManager
 
         if (!_resultCache.AreRangesChecked(text, ranges))
         {
-            var results = await SpellCheckChecker.CheckRangesAsync(
+            var results = await SpellChecker.CheckRangesAsync(
                 text,
                 ranges,
                 provider,
@@ -168,7 +168,7 @@ internal sealed class TextBoxSpellCheckManager
         var suggestions = await provider.SuggestAsync(result.Word, culture, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
 
-        suggestions = SpellCheckChecker.NormalizeSuggestions(result.Word, suggestions);
+        suggestions = SpellChecker.NormalizeSuggestions(result.Word, suggestions);
 
         if (suggestions.Count == 0)
         {
@@ -222,7 +222,7 @@ internal sealed class TextBoxSpellCheckManager
                 return;
             }
 
-            var results = await SpellCheckChecker.CheckRangesAsync(
+            var results = await SpellChecker.CheckRangesAsync(
                 text,
                 ranges,
                 provider,
