@@ -526,6 +526,146 @@ namespace Avalonia.Win32.Input
             }
         }
 
+        /// <summary>
+        /// Handles a WM_IME_REQUEST message. Returns <c>true</c> when the request was handled and
+        /// <paramref name="result"/> holds the value to return to the IME; otherwise the caller should
+        /// fall back to the default window procedure.
+        /// </summary>
+        public bool HandleImeRequest(IntPtr wParam, IntPtr lParam, out IntPtr result)
+        {
+            result = IntPtr.Zero;
+
+            if (!IsActive || !Client.SupportsSurroundingText)
+            {
+                return false;
+            }
+
+            switch (ToInt32(wParam))
+            {
+                case IMR_RECONVERTSTRING:
+                    result = WriteReconvertString(lParam);
+                    return true;
+                case IMR_DOCUMENTFEED:
+                    // TSF based IMEs (modern Microsoft IME, Google Japanese Input) reconvert through
+                    // the CUAS bridge, which asks for the document via IMR_DOCUMENTFEED first and only
+                    // follows up with IMR_RECONVERTSTRING once it gets an answer. Feed it the caret line
+                    // and selection while there is no active composition; during composition the default
+                    // handling is left alone, exactly as for ordinary typing.
+                    if (IsComposing)
+                    {
+                        return false;
+                    }
+                    result = WriteReconvertString(lParam);
+                    return true;
+                case IMR_CONFIRMRECONVERTSTRING:
+                    result = HandleConfirmReconvertString(lParam);
+                    return true;
+                default:
+                    // Composition window/font, candidate window and char-position requests are left
+                    // to the default window procedure.
+                    return false;
+            }
+        }
+
+        // Writes the document the IME reconverts: the caret line as the string and the current
+        // selection as the composition/target range. Serves IMR_RECONVERTSTRING and IMR_DOCUMENTFEED.
+        private IntPtr WriteReconvertString(IntPtr lParam)
+        {
+            var text = Client!.SurroundingText;
+            var selection = Client.Selection;
+
+            var start = Math.Min(selection.Start, selection.End);
+            var length = Math.Abs(selection.End - selection.Start);
+
+            return (IntPtr)Imm32ReconversionHelper.Write(lParam, text.AsSpan(), start, length);
+        }
+
+        // The IME echoes back the range it settled on (it may snap to word boundaries). Move the
+        // selection to match so the following composition replaces exactly that text.
+        private IntPtr HandleConfirmReconvertString(IntPtr lParam)
+        {
+            if (!Imm32ReconversionHelper.ReadCompRange(lParam, out var start, out var length))
+            {
+                return IntPtr.Zero;
+            }
+
+            Client!.Selection = new TextSelection(start, start + length);
+
+            return new IntPtr(1);
+        }
+
+        /// <summary>
+        /// Starts reconversion of the current selection without waiting for the IME to ask. Used for
+        /// gestures the IME does not own (e.g. Ctrl+Backspace): we push the selected text into the IME
+        /// with <c>SCS_SETRECONVERTSTRING</c>. Returns <c>true</c> when reconversion was started.
+        /// </summary>
+        public bool TryReconvert()
+        {
+            if (!IsActive || !Client.SupportsSurroundingText)
+            {
+                return false;
+            }
+
+            var selection = Client.Selection;
+            var start = Math.Min(selection.Start, selection.End);
+            var length = Math.Abs(selection.End - selection.Start);
+
+            // Only take over the key when the user actually selected text to reconvert; otherwise leave
+            // the gesture to its normal handling (e.g. delete word).
+            if (length == 0)
+            {
+                return false;
+            }
+
+            var himc = ImmGetContext(Hwnd);
+
+            if (himc == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Bail unless the active IME accepts an application-supplied reconvert string.
+                var caps = ImmGetProperty(GetKeyboardLayout(0), IGP_SETCOMPSTR);
+
+                if ((caps & SCS_CAP_SETRECONVERTSTRING) == 0)
+                {
+                    return false;
+                }
+
+                var text = Client.SurroundingText;
+                var size = Imm32ReconversionHelper.GetRequiredSize(text.Length);
+                var buffer = Marshal.AllocHGlobal(size);
+
+                try
+                {
+                    // Set dwSize so the helper fills the buffer we own.
+                    Marshal.WriteInt32(buffer, 0, size);
+                    Imm32ReconversionHelper.Write(buffer, text.AsSpan(), start, length);
+
+                    // Let the IME snap the range to its dictionary boundaries, then sync the selection so
+                    // the composition that follows replaces exactly that text.
+                    ImmSetCompositionString(himc, SCS_QUERYRECONVERTSTRING, buffer, (uint)size, IntPtr.Zero, 0);
+
+                    if (Imm32ReconversionHelper.ReadCompRange(buffer, out var compStart, out var compLength))
+                    {
+                        Client.Selection = new TextSelection(compStart, compStart + compLength);
+                    }
+
+                    return ImmSetCompositionString(himc, SCS_SETRECONVERTSTRING, buffer, (uint)size, IntPtr.Zero, 0);
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+            finally
+            {
+                ImmReleaseContext(Hwnd, himc);
+            }
+        }
+
         private static int ToInt32(IntPtr ptr)
         {
             if (IntPtr.Size == 4)

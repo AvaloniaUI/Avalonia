@@ -2077,6 +2077,10 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("imm32.dll")]
         public static extern bool ImmNotifyIME(IntPtr hIMC, int dwAction, int dwIndex, int dwValue);
+        [DllImport("imm32.dll", CharSet = CharSet.Unicode, EntryPoint = "ImmSetCompositionStringW", ExactSpelling = true)]
+        public static extern bool ImmSetCompositionString(IntPtr hIMC, uint dwIndex, IntPtr lpComp, uint dwCompLen, IntPtr lpRead, uint dwReadLen);
+        [DllImport("imm32.dll")]
+        public static extern uint ImmGetProperty(IntPtr hKL, uint fdwIndex);
         [DllImport("user32.dll")]
         public static extern bool CreateCaret(IntPtr hwnd, IntPtr hBitmap, int nWidth, int nHeight);
         [DllImport("user32.dll")]
@@ -2130,6 +2134,37 @@ namespace Avalonia.Win32.Interop
         public const int CPS_CONVERT = 2;
         public const int CPS_REVERT = 3;
         public const int CPS_CANCEL = 4;
+
+        // wParam values for WM_IME_REQUEST.
+        public const int IMR_COMPOSITIONWINDOW = 0x0001;
+        public const int IMR_CANDIDATEWINDOW = 0x0002;
+        public const int IMR_COMPOSITIONFONT = 0x0003;
+        public const int IMR_RECONVERTSTRING = 0x0004;
+        public const int IMR_CONFIRMRECONVERTSTRING = 0x0005;
+        public const int IMR_QUERYCHARPOSITION = 0x0006;
+        public const int IMR_DOCUMENTFEED = 0x0007;
+
+        // dwIndex values for application-initiated reconversion via ImmSetCompositionString.
+        public const uint SCS_SETRECONVERTSTRING = 0x00010000;
+        public const uint SCS_QUERYRECONVERTSTRING = 0x00020000;
+
+        // ImmGetProperty(hkl, IGP_SETCOMPSTR) returns capability bits; SCS_CAP_SETRECONVERTSTRING
+        // means the IME accepts an application-supplied reconvert string.
+        public const uint IGP_SETCOMPSTR = 0x00000014;
+        public const uint SCS_CAP_SETRECONVERTSTRING = 0x00000004;
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct RECONVERTSTRING
+        {
+            public uint dwSize;
+            public uint dwVersion;
+            public uint dwStrLen;
+            public uint dwStrOffset;
+            public uint dwCompStrLen;
+            public uint dwCompStrOffset;
+            public uint dwTargetStrLen;
+            public uint dwTargetStrOffset;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct CANDIDATEFORM

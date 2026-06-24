@@ -227,6 +227,14 @@ namespace Avalonia.Win32
                     return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
+                    // Ctrl+Backspace is not an IME key, so the IME never offers reconversion for it.
+                    // Drive it ourselves when there is a selection the active IME can reconvert.
+                    if (ToInt32(wParam) == (int)VirtualKeyStates.VK_BACK
+                        && WindowsKeyboardDevice.Instance.Modifiers.HasAllFlags(RawInputModifiers.Control)
+                        && Imm32InputMethod.Current.TryReconvert())
+                    {
+                        return IntPtr.Zero;
+                    }
                     e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, true);
                     break;
 
@@ -919,6 +927,12 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_KEYDOWN:
                 case WindowsMessage.WM_IME_KEYUP:
                 case WindowsMessage.WM_IME_NOTIFY:
+                    break;
+                case WindowsMessage.WM_IME_REQUEST:
+                    if (Imm32InputMethod.Current.HandleImeRequest(wParam, lParam, out var imeResult))
+                    {
+                        return imeResult;
+                    }
                     break;
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
                     {
