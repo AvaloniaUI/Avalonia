@@ -1,18 +1,15 @@
 using System;
-using System.Linq;
-using System.Windows.Input;
-using Avalonia.Automation;
-using Avalonia.Automation.Peers;
+using Avalonia.Data;
+using Avalonia.Interactivity;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Threading;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Media;
-using Avalonia.Reactive;
-using Avalonia.Threading;
+using Avalonia.Automation.Peers;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
+using System.Linq;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -37,7 +34,6 @@ namespace Avalonia.Controls.Primitives
     [PseudoClasses(":vertical", ":horizontal")]
     public class ScrollBar : RangeBase
     {
-
         /// <summary>
         /// Defines the <see cref="ViewportSize"/> property.
         /// </summary>
@@ -91,7 +87,7 @@ namespace Avalonia.Controls.Primitives
         private CompositeDisposable? _ownerSubscriptions;
         private ScrollViewer? _owner;
         private bool _isDragging;
-		private Point _lastRightClickPosition;
+        private Point _lastRightClickPosition;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -532,7 +528,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            
+
             if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
                 _lastRightClickPosition = e.GetPosition(this);
@@ -545,194 +541,90 @@ namespace Avalonia.Controls.Primitives
             {
                 _lastRightClickPosition = position;
             }
-            
-            if (Orientation == Orientation.Vertical)
+        }
+
+        /// <summary>
+        /// Scrolls to the location at which the context menu was most recently requested.
+        /// </summary>
+        public void ScrollHere()
+        {
+            if (Track is not { } track)
             {
-                SetCurrentValue(ContextMenuProperty, CreateVerticalContextMenu());
+                return;
             }
-            else
-            {
-                var visualRoot = this.GetVisualRoot() as Visual;
-                var flowDirection = visualRoot?.FlowDirection ?? FlowDirection.LeftToRight;
-                SetCurrentValue(ContextMenuProperty, flowDirection == FlowDirection.LeftToRight 
-                    ? CreateHorizontalContextMenuLTR() 
-                    : CreateHorizontalContextMenuRTL());
-            }
-        }
 
-        private ContextMenu CreateVerticalContextMenu()
-        {
-            var contextMenu = new ContextMenu();
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollHere", "ScrollHere", () => ScrollHereAction(this)));
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarTop", "Top", () => ScrollToTopAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarBottom", "Bottom", () => ScrollToBottomAction(this)));
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageUp", "PageUp", () => PageUpAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageDown", "PageDown", () => PageDownAction(this)));
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollUp", "ScrollUp", () => LineUpAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollDown", "ScrollDown", () => LineDownAction(this)));
-            return contextMenu;
-        }
+            var trackLength = Orientation == Orientation.Vertical ? track.Bounds.Height : track.Bounds.Width;
+            var thumbLength = Orientation == Orientation.Vertical ? track.Thumb?.Bounds.Height ?? 0 : track.Thumb?.Bounds.Width ?? 0;
+            var clickPosition = Orientation == Orientation.Vertical ? _lastRightClickPosition.Y : _lastRightClickPosition.X;
 
-        private ContextMenu CreateHorizontalContextMenuLTR()
-        {
-            var contextMenu = new ContextMenu();
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollHere", "ScrollHere", () => ScrollHereAction(this)));
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarLeftEdge", "LeftEdge", () => ScrollToLeftEndAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarRightEdge", "RightEdge", () => ScrollToRightEndAction(this)));
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageLeft", "PageLeft", () => PageLeftAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageRight", "PageRight", () => PageRightAction(this)));
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollLeft", "ScrollLeft", () => LineLeftAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollRight", "ScrollRight", () => LineRightAction(this)));
-            return contextMenu;
-        }
-
-        private ContextMenu CreateHorizontalContextMenuRTL()
-        {
-            var contextMenu = new ContextMenu();
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollHere", "ScrollHere", () => ScrollHereAction(this)));
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarRightEdge", "RightEdge", () => ScrollToRightEndAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarLeftEdge", "LeftEdge", () => ScrollToLeftEndAction(this)));
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageRight", "PageRight", () => PageRightAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarPageLeft", "PageLeft", () => PageLeftAction(this)));
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollRight", "ScrollRight", () => LineRightAction(this)));
-            contextMenu.Items.Add(CreateMenuItem("StringScrollBarScrollLeft", "ScrollLeft", () => LineLeftAction(this)));
-            return contextMenu;
-        }
-
-        private MenuItem CreateMenuItem(string resourceKey, string automationId, Action action)
-        {
-            var menuItem = new MenuItem
+            if (trackLength > thumbLength)
             {
-                Command = new SimpleCommand(action)
-            };
-            
-            if (this.TryFindResource(resourceKey, out var resource) && resource is string header)
-            {
-                menuItem.Header = header;
-            }
-            else
-            {
-                // If we can't get one, fall back to the resource key itself
-                // So at least something is there.
-                menuItem.Header = resourceKey.Replace("StringScrollBar", "").Replace("ScrollBar", "");
-            }
-            
-            AutomationProperties.SetAutomationId(menuItem, automationId);
-            return menuItem;
-        }
-
-        private static void ScrollHereAction(ScrollBar scrollBar)
-        {
-            if (scrollBar.Track != null)
-            {
-                var track = scrollBar.Track;
-                var trackLength = scrollBar.Orientation == Orientation.Vertical ? track.Bounds.Height : track.Bounds.Width;
-                var thumbLength = scrollBar.Orientation == Orientation.Vertical ? track.Thumb?.Bounds.Height ?? 0 : track.Thumb?.Bounds.Width ?? 0;
-                var clickPosition = scrollBar.Orientation == Orientation.Vertical ? scrollBar._lastRightClickPosition.Y : scrollBar._lastRightClickPosition.X;
-                
-                if (trackLength > thumbLength)
-                {
-                    var ratio = clickPosition / trackLength;
-                    var range = scrollBar.Maximum - scrollBar.Minimum;
-                    var value = scrollBar.Minimum + (ratio * range);
-                    scrollBar.SetCurrentValue(ValueProperty, Math.Max(scrollBar.Minimum, Math.Min(scrollBar.Maximum, value)));
-                    scrollBar.OnScroll(ScrollEventType.ThumbTrack);
-                }
+                var ratio = clickPosition / trackLength;
+                var range = Maximum - Minimum;
+                var value = Minimum + (ratio * range);
+                SetCurrentValue(ValueProperty, Math.Max(Minimum, Math.Min(Maximum, value)));
+                OnScroll(ScrollEventType.ThumbTrack);
             }
         }
 
-        private static void ScrollToTopAction(ScrollBar scrollBar)
+        /// <summary>
+        /// Scrolls to the top (or left edge) of the scrollbar by setting <see cref="RangeBase.Value"/> to <see cref="RangeBase.Minimum"/>.
+        /// </summary>
+        public void ScrollToHome()
         {
-            scrollBar.SetCurrentValue(ValueProperty, scrollBar.Minimum);
-            scrollBar.OnScroll(ScrollEventType.SmallDecrement);
+            SetCurrentValue(ValueProperty, Minimum);
+            OnScroll(ScrollEventType.SmallDecrement);
         }
 
-        private static void ScrollToBottomAction(ScrollBar scrollBar)
+        /// <summary>
+        /// Scrolls to the bottom (or right edge) of the scrollbar by setting <see cref="RangeBase.Value"/> to <see cref="RangeBase.Maximum"/>.
+        /// </summary>
+        public void ScrollToEnd()
         {
-            scrollBar.SetCurrentValue(ValueProperty, scrollBar.Maximum);
-            scrollBar.OnScroll(ScrollEventType.SmallIncrement);
+            SetCurrentValue(ValueProperty, Maximum);
+            OnScroll(ScrollEventType.SmallIncrement);
         }
 
-        private static void ScrollToLeftEndAction(ScrollBar scrollBar)
-        {
-            scrollBar.SetCurrentValue(ValueProperty, scrollBar.Minimum);
-            scrollBar.OnScroll(ScrollEventType.SmallDecrement);
-        }
+        /// <summary>
+        /// Scrolls up by one <see cref="RangeBase.LargeChange"/> (a page) on a vertical scrollbar.
+        /// </summary>
+        public void PageUp() => LargeDecrement();
 
-        private static void ScrollToRightEndAction(ScrollBar scrollBar)
-        {
-            scrollBar.SetCurrentValue(ValueProperty, scrollBar.Maximum);
-            scrollBar.OnScroll(ScrollEventType.SmallIncrement);
-        }
+        /// <summary>
+        /// Scrolls down by one <see cref="RangeBase.LargeChange"/> (a page) on a vertical scrollbar.
+        /// </summary>
+        public void PageDown() => LargeIncrement();
 
-        private static void PageUpAction(ScrollBar scrollBar)
-        {
-            scrollBar.LargeDecrement();
-        }
+        /// <summary>
+        /// Scrolls left by one <see cref="RangeBase.LargeChange"/> (a page) on a horizontal scrollbar.
+        /// </summary>
+        public void PageLeft() => LargeDecrement();
 
-        private static void PageDownAction(ScrollBar scrollBar)
-        {
-            scrollBar.LargeIncrement();
-        }
+        /// <summary>
+        /// Scrolls right by one <see cref="RangeBase.LargeChange"/> (a page) on a horizontal scrollbar.
+        /// </summary>
+        public void PageRight() => LargeIncrement();
 
-        private static void PageLeftAction(ScrollBar scrollBar)
-        {
-            scrollBar.LargeDecrement();
-        }
+        /// <summary>
+        /// Scrolls up by one <see cref="RangeBase.SmallChange"/> on a vertical scrollbar.
+        /// </summary>
+        public void LineUp() => SmallDecrement();
 
-        private static void PageRightAction(ScrollBar scrollBar)
-        {
-            scrollBar.LargeIncrement();
-        }
+        /// <summary>
+        /// Scrolls down by one <see cref="RangeBase.SmallChange"/> on a vertical scrollbar.
+        /// </summary>
+        public void LineDown() => SmallIncrement();
 
-        private static void LineUpAction(ScrollBar scrollBar)
-        {
-            scrollBar.SmallDecrement();
-        }
+        /// <summary>
+        /// Scrolls left by one <see cref="RangeBase.SmallChange"/> on a horizontal scrollbar.
+        /// </summary>
+        public void LineLeft() => SmallDecrement();
 
-        private static void LineDownAction(ScrollBar scrollBar)
-        {
-            scrollBar.SmallIncrement();
-        }
+        /// <summary>
+        /// Scrolls right by one <see cref="RangeBase.SmallChange"/> on a horizontal scrollbar.
+        /// </summary>
+        public void LineRight() => SmallIncrement();
 
-        private static void LineLeftAction(ScrollBar scrollBar)
-        {
-            scrollBar.SmallDecrement();
-        }
-
-        private static void LineRightAction(ScrollBar scrollBar)
-        {
-            scrollBar.SmallIncrement();
-        }
-
-        private Track? Track => this.GetTemplateChildren().OfType<Track>().FirstOrDefault();
-
-        private class SimpleCommand : ICommand
-        {
-            private readonly Action _action;
-
-            public SimpleCommand(Action action)
-            {
-                _action = action;
-            }
-
-            public event EventHandler? CanExecuteChanged;
-
-            public bool CanExecute(object? parameter) => true;
-
-            public void Execute(object? parameter)
-            {
-                _action();
-            }
-        }
+        private Track? Track => this.GetTemplateDescendants().OfType<Track>().FirstOrDefault();
     }
 }

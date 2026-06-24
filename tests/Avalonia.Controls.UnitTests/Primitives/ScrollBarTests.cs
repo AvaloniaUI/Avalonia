@@ -197,325 +197,185 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
         }
 
-        [Fact]
-        public void ContextRequested_Should_Create_VerticalContextMenu_For_Vertical_ScrollBar()
+        [Theory]
+        [InlineData(Orientation.Vertical)]
+        [InlineData(Orientation.Horizontal)]
+        public void Orientation_Should_Set_Matching_PseudoClass(Orientation orientation)
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Vertical,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-            };
-            
-            target.ApplyTemplate();
+            var target = new ScrollBar { Orientation = orientation };
 
-            // Simulate context request
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
-
-            var menuItems = target.ContextMenu.Items.OfType<MenuItem>().ToList();
-            Assert.Equal(7, menuItems.Count);
-            
-            Assert.Contains(menuItems, m => m.Header?.ToString()?.Contains("Scroll") == true || m.Header?.ToString() == "ScrollHere");
-            Assert.Contains(menuItems, m => m.Header?.ToString()?.Contains("Top") == true || m.Header?.ToString() == "Top");
-            Assert.Contains(menuItems, m => m.Header?.ToString()?.Contains("Bottom") == true || m.Header?.ToString() == "Bottom");
+            Assert.Equal(orientation == Orientation.Vertical, target.Classes.Contains(":vertical"));
+            Assert.Equal(orientation == Orientation.Horizontal, target.Classes.Contains(":horizontal"));
         }
 
         [Fact]
-        public void ContextRequested_Should_Create_HorizontalContextMenu_For_Horizontal_ScrollBar_LTR()
+        public void ScrollToHome_Should_Set_Value_To_Minimum()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Horizontal,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(minimum: 10, maximum: 100, value: 50);
 
-            // Simulate context request
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
+            target.ScrollToHome();
 
-            Assert.NotNull(target.ContextMenu);
-            var menuItems = target.ContextMenu.Items.OfType<MenuItem>().ToList();
-            Assert.Equal(7, menuItems.Count);
-            
-            // Check that we have horizontal-specific menu items
-            Assert.Contains(menuItems, m => m.Header?.ToString()?.Contains("Left") == true || m.Header?.ToString() == "LeftEdge");
-            Assert.Contains(menuItems, m => m.Header?.ToString()?.Contains("Right") == true || m.Header?.ToString() == "RightEdge");
+            Assert.Equal(10, target.Value);
         }
 
         [Fact]
-        public void ContextRequested_Should_Create_HorizontalContextMenu_For_Horizontal_ScrollBar_RTL()
+        public void ScrollToEnd_Should_Set_Value_To_Maximum()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Horizontal,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(minimum: 0, maximum: 90, value: 50);
 
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
+            target.ScrollToEnd();
 
-            Assert.NotNull(target.ContextMenu);
-            var menuItems = target.ContextMenu.Items.OfType<MenuItem>().ToList();
-            Assert.Equal(7, menuItems.Count);
+            Assert.Equal(90, target.Value);
         }
 
         [Fact]
-        public void ScrollHere_MenuItem_Should_Update_ScrollBar_Value()
+        public void PageUp_Should_Decrease_Value_By_LargeChange()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Vertical,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-                Minimum = 0,
-                Maximum = 100,
-                Value = 0
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(value: 50, largeChange: 10);
 
-            // Set a click position for ScrollHere to use
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            contextRequestedArgs.TryGetPosition(target, out var position);
-            target.RaiseEvent(contextRequestedArgs);
+            target.PageUp();
 
-            Assert.NotNull(target.ContextMenu);
-            var scrollHereItem = target.ContextMenu.Items.OfType<MenuItem>()
-                .FirstOrDefault(m => AutomationProperties.GetAutomationId(m) == "ScrollHere");
-            
-            Assert.NotNull(scrollHereItem);
-            Assert.NotNull(scrollHereItem.Command);
-            Assert.True(scrollHereItem.Command.CanExecute(null));
-            
-            // Execute the command
-            scrollHereItem.Command.Execute(null);
-            
-            // Value should remain within bounds (exact value depends on click position and track layout)
-            Assert.InRange(target.Value, target.Minimum, target.Maximum);
+            Assert.Equal(40, target.Value);
         }
 
         [Fact]
-        public void ScrollToTop_MenuItem_Should_Set_Value_To_Minimum()
+        public void PageDown_Should_Increase_Value_By_LargeChange()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Vertical,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-                Minimum = 10,
-                Maximum = 100,
-                Value = 50
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(value: 50, largeChange: 10);
 
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
+            target.PageDown();
 
-            var topItem = target.ContextMenu.Items.OfType<MenuItem>()
-                .FirstOrDefault(m => AutomationProperties.GetAutomationId(m) == "Top");
-            
-            Assert.NotNull(topItem);
-            topItem.Command.Execute(null);
-            
-            Assert.Equal(10, target.Value); // Should be set to Minimum
+            Assert.Equal(60, target.Value);
         }
 
         [Fact]
-        public void ScrollToBottom_MenuItem_Should_Set_Value_To_Maximum()
+        public void PageLeft_Should_Decrease_Value_By_LargeChange()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Vertical,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-                Minimum = 0,
-                Maximum = 90,
-                Value = 50
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(orientation: Orientation.Horizontal, value: 50, largeChange: 10);
 
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
+            target.PageLeft();
 
-            var bottomItem = target.ContextMenu.Items.OfType<MenuItem>()
-                .FirstOrDefault(m => AutomationProperties.GetAutomationId(m) == "Bottom");
-            
-            Assert.NotNull(bottomItem);
-            bottomItem.Command.Execute(null);
-            
-            Assert.Equal(90, target.Value); // Should be set to Maximum
+            Assert.Equal(40, target.Value);
         }
 
         [Fact]
-        public void PageUp_MenuItem_Should_Decrease_Value_By_LargeChange()
+        public void PageRight_Should_Increase_Value_By_LargeChange()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Vertical,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-                Minimum = 0,
-                Maximum = 100,
-                Value = 50,
-                LargeChange = 10
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(orientation: Orientation.Horizontal, value: 50, largeChange: 10);
 
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
+            target.PageRight();
 
-            var pageUpItem = target.ContextMenu.Items.OfType<MenuItem>()
-                .FirstOrDefault(m => AutomationProperties.GetAutomationId(m) == "PageUp");
-            
-            Assert.NotNull(pageUpItem);
-            pageUpItem.Command.Execute(null);
-            
-            Assert.Equal(40, target.Value); // Should decrease by LargeChange (10)
+            Assert.Equal(60, target.Value);
         }
 
         [Fact]
-        public void PageDown_MenuItem_Should_Increase_Value_By_LargeChange()
+        public void LineUp_Should_Decrease_Value_By_SmallChange()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Vertical,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-                Minimum = 0,
-                Maximum = 100,
-                Value = 50,
-                LargeChange = 10
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(value: 50, smallChange: 5);
 
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
+            target.LineUp();
 
-            var pageDownItem = target.ContextMenu.Items.OfType<MenuItem>()
-                .FirstOrDefault(m => AutomationProperties.GetAutomationId(m) == "PageDown");
-            
-            Assert.NotNull(pageDownItem);
-            pageDownItem.Command.Execute(null);
-            
-            Assert.Equal(60, target.Value); // Should increase by LargeChange (10)
+            Assert.Equal(45, target.Value);
         }
 
         [Fact]
-        public void ScrollUp_MenuItem_Should_Decrease_Value_By_SmallChange()
+        public void LineDown_Should_Increase_Value_By_SmallChange()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Vertical,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-                Minimum = 0,
-                Maximum = 100,
-                Value = 50,
-                SmallChange = 5
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(value: 50, smallChange: 5);
 
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
+            target.LineDown();
 
-            var scrollUpItem = target.ContextMenu.Items.OfType<MenuItem>()
-                .FirstOrDefault(m => AutomationProperties.GetAutomationId(m) == "ScrollUp");
-            
-            Assert.NotNull(scrollUpItem);
-            scrollUpItem.Command.Execute(null);
-            
-            Assert.Equal(45, target.Value); // Should decrease by SmallChange (5)
+            Assert.Equal(55, target.Value);
         }
 
         [Fact]
-        public void ScrollDown_MenuItem_Should_Increase_Value_By_SmallChange()
+        public void LineLeft_Should_Decrease_Value_By_SmallChange()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Vertical,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-                Minimum = 0,
-                Maximum = 100,
-                Value = 50,
-                SmallChange = 5
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(orientation: Orientation.Horizontal, value: 50, smallChange: 5);
 
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
+            target.LineLeft();
 
-            var scrollDownItem = target.ContextMenu.Items.OfType<MenuItem>()
-                .FirstOrDefault(m => AutomationProperties.GetAutomationId(m) == "ScrollDown");
-            
-            Assert.NotNull(scrollDownItem);
-            scrollDownItem.Command.Execute(null);
-            
-            Assert.Equal(55, target.Value); // Should increase by SmallChange (5)
+            Assert.Equal(45, target.Value);
         }
 
         [Fact]
-        public void MenuItems_Should_Respect_ScrollBar_Value_Bounds()
+        public void LineRight_Should_Increase_Value_By_SmallChange()
         {
-            var target = new ScrollBar
-            {
-                Orientation = Orientation.Vertical,
-                Template = new FuncControlTemplate<ScrollBar>(Template),
-                Minimum = 20,
-                Maximum = 80,
-                Value = 25,
-                SmallChange = 10
-            };
-            
-            target.ApplyTemplate();
+            var target = CreateScrollBar(orientation: Orientation.Horizontal, value: 50, smallChange: 5);
 
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
+            target.LineRight();
 
-            // Test ScrollUp near minimum
-            var scrollUpItem = target.ContextMenu.Items.OfType<MenuItem>()
-                .FirstOrDefault(m => AutomationProperties.GetAutomationId(m) == "ScrollUp");
-            scrollUpItem.Command.Execute(null);
-            
+            Assert.Equal(55, target.Value);
+        }
+
+        [Fact]
+        public void Scroll_Methods_Should_Respect_Value_Bounds()
+        {
+            var target = CreateScrollBar(minimum: 20, maximum: 80, value: 25, smallChange: 10);
+
+            target.LineUp();
             Assert.Equal(20, target.Value); // Should not go below Minimum
-            
-            // Test ScrollDown near maximum
+
             target.Value = 75;
-            var scrollDownItem = target.ContextMenu.Items.OfType<MenuItem>()
-                .FirstOrDefault(m => AutomationProperties.GetAutomationId(m) == "ScrollDown");
-            scrollDownItem.Command.Execute(null);
-            
+            target.LineDown();
             Assert.Equal(80, target.Value); // Should not go above Maximum
         }
 
         [Fact]
-        public void ContextMenu_Should_Have_Proper_Automation_Ids()
+        public void Scroll_Methods_Should_Raise_Scroll_Event()
+        {
+            var target = CreateScrollBar(value: 50, smallChange: 5, largeChange: 10);
+            var events = new System.Collections.Generic.List<ScrollEventType>();
+            target.Scroll += (_, e) => events.Add(e.ScrollEventType);
+
+            target.LineDown();
+            target.PageDown();
+            target.ScrollToHome();
+            target.ScrollToEnd();
+
+            Assert.Equal(
+                new[]
+                {
+                    ScrollEventType.SmallIncrement,
+                    ScrollEventType.LargeIncrement,
+                    ScrollEventType.SmallDecrement,
+                    ScrollEventType.SmallIncrement,
+                },
+                events);
+        }
+
+        [Fact]
+        public void ScrollHere_Should_Set_Value_Within_Bounds()
+        {
+            var target = CreateScrollBar(minimum: 0, maximum: 100, value: 0);
+
+            // No exception even though no pointer position was recorded yet.
+            target.ScrollHere();
+
+            Assert.InRange(target.Value, target.Minimum, target.Maximum);
+        }
+
+        private static ScrollBar CreateScrollBar(
+            Orientation orientation = Orientation.Vertical,
+            double minimum = 0,
+            double maximum = 100,
+            double value = 0,
+            double smallChange = 1,
+            double largeChange = 10)
         {
             var target = new ScrollBar
             {
-                Orientation = Orientation.Vertical,
+                Orientation = orientation,
                 Template = new FuncControlTemplate<ScrollBar>(Template),
+                Minimum = minimum,
+                Maximum = maximum,
+                Value = value,
+                SmallChange = smallChange,
+                LargeChange = largeChange,
             };
-            
+
             target.ApplyTemplate();
-
-            var contextRequestedArgs = new ContextRequestedEventArgs();
-            target.RaiseEvent(contextRequestedArgs);
-
-            var menuItems = target.ContextMenu.Items.OfType<MenuItem>().ToList();
-            
-            var expectedAutomationIds = new[] { "ScrollHere", "Top", "Bottom", "PageUp", "PageDown", "ScrollUp", "ScrollDown" };
-            var actualAutomationIds = menuItems.Select(m => AutomationProperties.GetAutomationId(m)).ToList();
-            
-            Assert.Equal(7, actualAutomationIds.Count);
-            foreach (var expectedId in expectedAutomationIds.Take(7))
-            {
-                Assert.Contains(expectedId, actualAutomationIds);
-            }
+            return target;
         }
-
     }
 }
