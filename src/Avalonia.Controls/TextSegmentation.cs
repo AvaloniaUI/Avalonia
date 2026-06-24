@@ -8,29 +8,30 @@ namespace Avalonia.Controls
     /// Pure UTF-16 text segmentation shared by the TextBox IME navigation and the automation text
     /// navigation: grapheme-cluster (UAX-29) character stepping, UAX-29 word boundaries, heuristic
     /// sentence and logical-line bounds, move-by-unit, and contiguous-change diffing. Everything
-    /// operates on a string and code-unit offsets so both navigators use one implementation.
+    /// operates on a <see cref="ReadOnlySpan{T}"/> and code-unit offsets so both navigators use one
+    /// implementation; a <see cref="string"/> caller converts implicitly.
     /// </summary>
     internal static class TextSegmentation
     {
-        public static int NextGrapheme(int offset, string text)
+        public static int NextGrapheme(int offset, ReadOnlySpan<char> text)
         {
             if (offset >= text.Length)
             {
                 return text.Length;
             }
 
-            var enumerator = new GraphemeEnumerator(text.AsSpan(offset));
+            var enumerator = new GraphemeEnumerator(text.Slice(offset));
             return enumerator.MoveNext(out var grapheme) ? offset + grapheme.Length : text.Length;
         }
 
-        public static int PreviousGrapheme(int offset, string text)
+        public static int PreviousGrapheme(int offset, ReadOnlySpan<char> text)
         {
             if (offset <= 0)
             {
                 return 0;
             }
 
-            var enumerator = new GraphemeEnumerator(text.AsSpan(0, offset));
+            var enumerator = new GraphemeEnumerator(text.Slice(0, offset));
             var start = 0;
             while (enumerator.MoveNext(out var grapheme))
             {
@@ -40,7 +41,7 @@ namespace Avalonia.Controls
             return start;
         }
 
-        public static int SnapToValid(int offset, string text, bool forward)
+        public static int SnapToValid(int offset, ReadOnlySpan<char> text, bool forward)
         {
             if (offset > 0 && offset < text.Length &&
                 char.IsLowSurrogate(text[offset]) && char.IsHighSurrogate(text[offset - 1]))
@@ -52,7 +53,7 @@ namespace Avalonia.Controls
         }
 
         // UAX-29 word segmentation; enumerates from the document start, so O(offset).
-        public static (int Start, int End) WordBounds(int offset, string text)
+        public static (int Start, int End) WordBounds(int offset, ReadOnlySpan<char> text)
         {
             if (text.Length == 0)
             {
@@ -60,7 +61,7 @@ namespace Avalonia.Controls
             }
 
             var clamped = Math.Clamp(offset, 0, text.Length);
-            var enumerator = new WordBreakEnumerator(text.AsSpan());
+            var enumerator = new WordBreakEnumerator(text);
             while (enumerator.MoveNext(out var segment))
             {
                 var end = segment.Offset + segment.Length;
@@ -73,7 +74,7 @@ namespace Avalonia.Controls
             return (text.Length, text.Length);
         }
 
-        public static int WordBoundary(int offset, bool forward, string text)
+        public static int WordBoundary(int offset, bool forward, ReadOnlySpan<char> text)
         {
             if (forward)
             {
@@ -82,7 +83,7 @@ namespace Avalonia.Controls
                     return text.Length;
                 }
 
-                var enumerator = new WordBreakEnumerator(text.AsSpan());
+                var enumerator = new WordBreakEnumerator(text);
                 while (enumerator.MoveNext(out var segment))
                 {
                     var end = segment.Offset + segment.Length;
@@ -101,7 +102,7 @@ namespace Avalonia.Controls
             }
 
             var previous = 0;
-            var backward = new WordBreakEnumerator(text.AsSpan());
+            var backward = new WordBreakEnumerator(text);
             while (backward.MoveNext(out var segment))
             {
                 var end = segment.Offset + segment.Length;
@@ -117,7 +118,7 @@ namespace Avalonia.Controls
         }
 
         // Logical line (scans to hard breaks), not the visual wrapped line.
-        public static (int Start, int End) LineBounds(int offset, string text)
+        public static (int Start, int End) LineBounds(int offset, ReadOnlySpan<char> text)
         {
             var length = text.Length;
             if (length == 0)
@@ -143,7 +144,7 @@ namespace Avalonia.Controls
         }
 
         // Heuristic sentence bounds; there is no UAX-29 sentence segmenter in the tree.
-        public static (int Start, int End) SentenceBounds(int offset, string text)
+        public static (int Start, int End) SentenceBounds(int offset, ReadOnlySpan<char> text)
         {
             var length = text.Length;
             if (length == 0)
@@ -173,7 +174,7 @@ namespace Avalonia.Controls
             return (start, end);
         }
 
-        public static int MoveByUnit(int offset, TextUnit unit, bool forward, string text)
+        public static int MoveByUnit(int offset, TextUnit unit, bool forward, ReadOnlySpan<char> text)
         {
             switch (unit)
             {
@@ -203,7 +204,7 @@ namespace Avalonia.Controls
         }
 
         // The single contiguous change between two strings (common prefix/suffix).
-        public static (int Offset, int OldLength, int NewLength) ComputeChange(string oldText, string newText)
+        public static (int Offset, int OldLength, int NewLength) ComputeChange(ReadOnlySpan<char> oldText, ReadOnlySpan<char> newText)
         {
             var min = Math.Min(oldText.Length, newText.Length);
 
