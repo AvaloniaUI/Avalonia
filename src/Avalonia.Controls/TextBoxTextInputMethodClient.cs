@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
@@ -633,6 +634,9 @@ namespace Avalonia.Controls
 
         private static (int Start, int End) RangeBounds(ITextRange range) => (range.Start.Offset, range.End.Offset);
 
+        // The Character unit is a grapheme cluster (UAX-29), so combining marks and ZWJ emoji
+        // sequences move as one. Reading the first grapheme of the slice at the offset is O(grapheme);
+        // the backward step enumerates the preceding text, which is bounded by the caret position.
         private static int NextCharacter(int offset, string text)
         {
             if (offset >= text.Length)
@@ -640,9 +644,8 @@ namespace Avalonia.Controls
                 return text.Length;
             }
 
-            return char.IsHighSurrogate(text[offset]) && offset + 1 < text.Length && char.IsLowSurrogate(text[offset + 1])
-                ? offset + 2
-                : offset + 1;
+            var enumerator = new GraphemeEnumerator(text.AsSpan(offset));
+            return enumerator.MoveNext(out var grapheme) ? offset + grapheme.Length : text.Length;
         }
 
         private static int PrevCharacter(int offset, string text)
@@ -652,9 +655,14 @@ namespace Avalonia.Controls
                 return 0;
             }
 
-            return offset >= 2 && char.IsLowSurrogate(text[offset - 1]) && char.IsHighSurrogate(text[offset - 2])
-                ? offset - 2
-                : offset - 1;
+            var enumerator = new GraphemeEnumerator(text.AsSpan(0, offset));
+            var start = 0;
+            while (enumerator.MoveNext(out var grapheme))
+            {
+                start = grapheme.Offset;
+            }
+
+            return start;
         }
 
         private static int SnapToValid(int offset, string text, bool forward)

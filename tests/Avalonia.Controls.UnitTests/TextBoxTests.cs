@@ -2312,6 +2312,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void InputMethodClient_TextNavigation_Character_Unit_Is_Grapheme_Aware()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "áb", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // "a" + combining acute (U+0301) is a single grapheme spanning two code units.
+            var grapheme = nav.GetRangeEnclosing(nav.DocumentStart, TextUnit.Character);
+            Assert.Equal(0, grapheme.Start.Offset);
+            Assert.Equal(2, grapheme.End.Offset);
+
+            var afterTwo = nav.GetPosition(nav.DocumentStart, TextUnit.Character, 2);
+            Assert.Equal(3, afterTwo.Offset);
+            Assert.Equal(2, nav.GetPosition(afterTwo, TextUnit.Character, -1).Offset);
+        }
+
+        [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {
             using var _ = UnitTestApplication.Start(Services);
