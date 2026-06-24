@@ -2382,6 +2382,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBoxAutomationPeer_Exposes_Text_Via_ITextProvider()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(peer);
+
+            Assert.Equal("foo bar", textProvider.DocumentRange.GetText(-1));
+            Assert.Equal(Avalonia.Automation.Provider.SupportedTextSelection.Single, textProvider.SupportedTextSelection);
+
+            textBox.SelectionStart = 0;
+            textBox.SelectionEnd = 3;
+
+            var selection = textProvider.GetSelection();
+            Assert.Single(selection);
+            Assert.Equal("foo", selection[0].GetText(-1));
+        }
+
+        [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {
             using var _ = UnitTestApplication.Start(Services);
