@@ -25,8 +25,7 @@ namespace Avalonia.Rendering
             get => _desiredFps;
             set
             {
-                if (value < 1)
-                    throw new ArgumentOutOfRangeException();
+                ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
                 _desiredFps = value;
             }
         }
