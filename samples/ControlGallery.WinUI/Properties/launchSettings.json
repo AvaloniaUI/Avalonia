@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ControlGallery.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ControlGallery.WinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

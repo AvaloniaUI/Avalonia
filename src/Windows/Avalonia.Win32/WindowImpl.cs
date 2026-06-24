@@ -108,6 +108,7 @@ namespace Avalonia.Win32
         internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
+        private WindowCornerPreference _cornerPreference;
 
         private const int MaxPointerHistorySize = 512;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
@@ -373,6 +374,13 @@ namespace Avalonia.Win32
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
+            if (transparencyLevels.Count == 1 && transparencyLevels[0] == WindowTransparencyLevel.None)
+            {
+                // Explicitly disable transparency. Ignore the UseRedirectionBitmap property.
+                TransparencyLevel = WindowTransparencyLevel.None;
+                return;
+            }
+
             foreach (var level in transparencyLevels)
             {
                 if (!IsSupported(level))
@@ -596,12 +604,18 @@ namespace Avalonia.Win32
 
             if (_isClientAreaExtended)
             {
-                // We told Windows we have a caption, but since we're actually extending into it,
+                // We told Windows we have a border, but since we're actually extending into it,
                 // it should be excluded from the final window bounds.
-                if (_windowProperties.Decorations != WindowDecorations.None)
+                var style = GetStyle();
+                if ((style & WindowStyles.WS_BORDER) != 0)
                 {
                     var borderOnlyRect = ClientRectToWindowRect(requestedClientRect, WindowStyles.WS_BORDER);
+
                     requestedWindowRect.top = borderOnlyRect.top;
+
+                    // If we're supposed to have a caption, the top border is actually collapsed into it.
+                    if ((style & WindowStyles.WS_CAPTION) == WindowStyles.WS_CAPTION)
+                        requestedWindowRect.top += 1;
                 }
             }
 
@@ -1184,6 +1198,18 @@ namespace Avalonia.Win32
             return margins;
         }
 
+        private void UpdateWindowCornerPreference()
+        {
+            if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+                return;
+
+            unsafe
+            {
+                var preference = (int)_cornerPreference;
+                DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(int));
+            }
+        }
+
         private void ExtendClientArea()
         {
             if (!_shown)
@@ -1206,10 +1232,6 @@ namespace Avalonia.Win32
 
                 // Make sure that Windows still paints the non-client area so we get native borders and shadows.
                 SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_ENABLED);
-
-                // On Windows 11 21H2 and later, corners are configurable.
-                if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
-                    SetWindowCornerPreference(DwmWindowCornerPreference.DWMWCP_ROUND);
             }
             else
             {
@@ -1218,16 +1240,7 @@ namespace Avalonia.Win32
 
                 _extendedMargins = new Thickness();
 
-                if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
-                    SetWindowCornerPreference(DwmWindowCornerPreference.DWMWCP_DEFAULT);
-
                 SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_USEWINDOWSTYLE);
-
-                unsafe
-                {
-                    int cornerPreference = (int)DwmWindowCornerPreference.DWMWCP_DEFAULT;
-                    DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(int));
-                }
             }
 
             if (!_isClientAreaExtended)
@@ -1248,9 +1261,6 @@ namespace Avalonia.Win32
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
-
-        private unsafe void SetWindowCornerPreference(DwmWindowCornerPreference value)
-            => DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_WINDOW_CORNER_PREFERENCE, &value, sizeof(int));
 
         private unsafe void SetNCRenderingPolicy(DwmNCRenderingPolicy value)
             => DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_NCRENDERING_POLICY, &value, sizeof(int));
@@ -1400,10 +1410,6 @@ namespace Avalonia.Win32
 
         private void UpdateWindowProperties(WindowProperties newProperties, bool forceChanges = false)
         {
-            // Implementation note: this method tries to keep the same styles for extended and non-extended modes.
-            // However, we had to make an exception for WS_CAPTION since it causes issues in Windows 10.
-            // See https://github.com/AvaloniaUI/Avalonia/issues/21328
-
             var oldProperties = _windowProperties;
 
             // Calling SetWindowPos will cause events to be sent and we need to respond
@@ -1471,15 +1477,7 @@ namespace Avalonia.Win32
                 switch (newProperties.Decorations)
                 {
                     case WindowDecorations.Full:
-                        style |= WindowStyles.WS_BORDER | WindowStyles.WS_SYSMENU;
-
-                        // When WS_CAPTION is specified, Windows 10 always draws the caption even if we extend into it.
-                        // We can workaround that by setting DWMWA_NCRENDERING_POLICY to DISABLE, but that also removes
-                        // shadows and borders. Remove the style completely.
-                        // Windows 11 correctly handles this scenario.
-                        if (!_isClientAreaExtended)
-                            style |= WindowStyles.WS_CAPTION;
-
+                        style |= WindowStyles.WS_BORDER | WindowStyles.WS_SYSMENU | WindowStyles.WS_CAPTION;
                         break;
 
                     case WindowDecorations.BorderOnly:
@@ -1603,9 +1601,6 @@ namespace Avalonia.Win32
         {
             _isClientAreaExtended = hint;
 
-            // We may need to toggle WS_CAPTION when extending, ensure the styles are up-to-date.
-            UpdateWindowProperties(_windowProperties);
-
             ExtendClientArea();
         }
 
@@ -1615,6 +1610,12 @@ namespace Avalonia.Win32
             _extendTitleBarHint = titleBarHeight;
 
             ExtendClientArea();
+        }
+
+        public void SetWindowCornerPreference(WindowCornerPreference preference)
+        {
+            _cornerPreference = preference;
+            UpdateWindowCornerPreference();
         }
 
         /// <inheritdoc/>

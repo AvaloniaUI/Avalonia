@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -138,6 +139,7 @@ internal static class UnicodeDataGenerator
 
         var scriptEntries = UnicodeEnumsGenerator.CreateScriptEnum(outputDir);
         var scriptMappings = CreateNameToIndexMappings(scriptEntries);
+        var scriptTagMappings = CreateTagToIndexMappings(scriptEntries);
 
         var lineBreakClassEntries = UnicodeEnumsGenerator.CreateLineBreakClassEnum(outputDir);
         var lineBreakClassMappings = CreateNameAndTagToIndexMappings(lineBreakClassEntries);
@@ -151,6 +153,8 @@ internal static class UnicodeDataGenerator
             lineBreakClassMappings,
             wordBreakClassMappings);
 
+        var scriptExtensionsSets = AssignScriptExtensions(unicodeData, scriptTagMappings);
+
         // Unassigned code points are not listed in every UCD file, so the trie
         // default must match the explicit fallback classes rather than enum zero.
         var initialValue = lineBreakClassMappings["XX"] << UnicodeData.LINEBREAK_SHIFT;
@@ -158,12 +162,13 @@ internal static class UnicodeDataGenerator
 
         foreach (var properties in unicodeData.Values)
         {
-            //[word break]|[line break]|[biDi]|[script]|[category]
-            var value = (properties.WordBreakClass << UnicodeData.WORDBREAK_SHIFT) |
-                        (properties.LineBreakClass << UnicodeData.LINEBREAK_SHIFT) |
-                        (properties.Script << UnicodeData.SCRIPT_SHIFT) | properties.GeneralCategory;
+            //[script extensions]|[word break]|[line break]|[script]|[category]
+            var value = ((uint)properties.ScriptExtensionsIndex << UnicodeData.SCRIPTEXTENSIONS_SHIFT) |
+                        ((uint)properties.WordBreakClass << UnicodeData.WORDBREAK_SHIFT) |
+                        ((uint)properties.LineBreakClass << UnicodeData.LINEBREAK_SHIFT) |
+                        ((uint)properties.Script << UnicodeData.SCRIPT_SHIFT) | (uint)properties.GeneralCategory;
 
-            unicodeDataTrieBuilder.Set(properties.Codepoint, (uint)value);
+            unicodeDataTrieBuilder.Set(properties.Codepoint, value);
         }
 
         dataEntries = new UnicodeDataEntries
@@ -177,8 +182,224 @@ internal static class UnicodeDataGenerator
         var trie = unicodeDataTrieBuilder.Freeze();
 
         GenerateTrieClass(outputDir, "UnicodeData", trie);
+        GenerateScriptExtensionsDataFile(outputDir, scriptExtensionsSets, scriptEntries);
 
         return trie;
+    }
+
+    /// <summary>
+    /// Reads <c>ScriptExtensions.txt</c>, deduplicates the sets, and writes the assigned set
+    /// index back into each <see cref="UnicodeDataItem"/>. The first slot (index 0) is reserved
+    /// for codepoints with no Script_Extensions override — at runtime those fall back to the
+    /// primary Script property.
+    /// </summary>
+    private static IReadOnlyList<byte[]> AssignScriptExtensions(
+        Dictionary<int, UnicodeDataItem> unicodeData,
+        IReadOnlyDictionary<string, int> scriptTagMappings)
+    {
+        var sets = new List<byte[]> { Array.Empty<byte>() };
+        var setIndexByKey = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var (range, tags) in ReadScriptExtensionsData())
+        {
+            var scriptIds = new SortedSet<byte>();
+
+            foreach (var tag in tags)
+            {
+                if (!scriptTagMappings.TryGetValue(tag, out var index))
+                {
+                    throw new InvalidOperationException(
+                        $"ScriptExtensions.txt references unknown script tag '{tag}' for range U+{range.Start:X4}..U+{range.End:X4}.");
+                }
+
+                if (index > byte.MaxValue)
+                {
+                    throw new InvalidOperationException(
+                        $"Script index {index} for tag '{tag}' exceeds the byte range packed into s_scriptExtensionSets.");
+                }
+
+                scriptIds.Add((byte)index);
+            }
+
+            var set = new byte[scriptIds.Count];
+            scriptIds.CopyTo(set);
+
+            var key = string.Join(',', set);
+
+            if (!setIndexByKey.TryGetValue(key, out var setIndex))
+            {
+                if (sets.Count > UnicodeData.SCRIPTEXTENSIONS_MASK)
+                {
+                    throw new InvalidOperationException(
+                        $"ScriptExtensions.txt produced more than {UnicodeData.SCRIPTEXTENSIONS_MASK} distinct sets; widen SCRIPTEXTENSIONS_BITS.");
+                }
+
+                setIndex = sets.Count;
+                sets.Add(set);
+                setIndexByKey[key] = setIndex;
+            }
+
+            for (var cp = range.Start; cp <= range.End; cp++)
+            {
+                if (!unicodeData.TryGetValue(cp, out var item))
+                {
+                    item = new UnicodeDataItem { Codepoint = cp };
+                    unicodeData.Add(cp, item);
+                }
+
+                item.ScriptExtensionsIndex = setIndex;
+            }
+        }
+
+        return sets;
+    }
+
+    private static void GenerateScriptExtensionsDataFile(
+        string outputDir,
+        IReadOnlyList<byte[]> sets,
+        IReadOnlyList<DataEntry> scriptEntries)
+    {
+        var offsets = new ushort[sets.Count + 1];
+        var flattened = new List<byte>();
+
+        for (var i = 0; i < sets.Count; i++)
+        {
+            var set = sets[i];
+
+            if (flattened.Count > ushort.MaxValue - set.Length)
+            {
+                throw new InvalidOperationException(
+                    $"ScriptExtensions data size exceeds {ushort.MaxValue} bytes; widen s_scriptExtensionSetOffsets to uint.");
+            }
+
+            offsets[i] = (ushort)flattened.Count;
+            flattened.AddRange(set);
+        }
+
+        offsets[sets.Count] = (ushort)flattened.Count;
+
+        using var fileStream = File.Create(Path.Combine(outputDir, "ScriptExtensions.data.cs"));
+        using var writer = new StreamWriter(fileStream);
+
+        writer.Write(
+            ("""
+             //---------------------------------------------------------------------------------------------------
+             // <auto-generated>
+             //     This code was generated by UnicodeDataGenerator.
+             //     Changes to this file may cause incorrect behavior and will be lost if the code is regenerated.
+             // </auto-generated>
+             //---------------------------------------------------------------------------------------------------
+
+             using System;
+
+             namespace Avalonia.Media.TextFormatting.Unicode;
+
+             internal static partial class UnicodeData
+             {
+                 // Indexed by the SCRIPTEXTENSIONS field of UnicodeDataTrie. Each logical set i lives in
+                 // s_scriptExtensionSets[s_scriptExtensionSetOffsets[i]..s_scriptExtensionSetOffsets[i + 1]].
+                 // Index 0 is the implicit empty set: the codepoint has no overriding Script_Extensions
+                 // value and falls back to its primary Script property.
+
+             #if DEBUG
+                 // In Debug builds we materialize arrays as fields to avoid RuntimeFieldInfoStub allocations.
+                 private static readonly ushort[] s_scriptExtensionSetOffsetsData =
+             #else
+                 private static ReadOnlySpan<ushort> s_scriptExtensionSetOffsets =>
+             #endif
+                 [
+             """).ReplaceLineEndings());
+
+        writer.WriteLine();
+
+        for (var i = 0; i < offsets.Length; i++)
+        {
+            writer.Write("        ");
+            writer.Write(offsets[i]);
+
+            if (i < offsets.Length - 1)
+            {
+                writer.Write(',');
+            }
+
+            if (i < sets.Count)
+            {
+                var set = sets[i];
+                writer.Write(" // ");
+                writer.Write(i);
+                writer.Write(": {");
+
+                for (var j = 0; j < set.Length; j++)
+                {
+                    if (j > 0)
+                    {
+                        writer.Write(", ");
+                    }
+
+                    var scriptId = set[j];
+                    writer.Write(scriptId < scriptEntries.Count ? scriptEntries[scriptId].Tag : scriptId.ToString());
+                }
+
+                writer.Write('}');
+            }
+            else
+            {
+                writer.Write(" // end");
+            }
+
+            writer.WriteLine();
+        }
+
+        writer.Write(
+            ("""
+                 ];
+
+             #if DEBUG
+                 private static ReadOnlySpan<ushort> s_scriptExtensionSetOffsets => s_scriptExtensionSetOffsetsData;
+
+                 private static readonly byte[] s_scriptExtensionSetsData =
+             #else
+                 private static ReadOnlySpan<byte> s_scriptExtensionSets =>
+             #endif
+                 [
+             """).ReplaceLineEndings());
+
+        writer.WriteLine();
+
+        for (var i = 0; i < flattened.Count; i++)
+        {
+            if (i % 16 == 0)
+            {
+                writer.Write("        ");
+            }
+
+            writer.Write(flattened[i]);
+
+            if (i < flattened.Count - 1)
+            {
+                writer.Write(", ");
+
+                if ((i + 1) % 16 == 0)
+                {
+                    writer.WriteLine();
+                }
+            }
+        }
+
+        if (flattened.Count > 0 && flattened.Count % 16 != 0)
+        {
+            writer.WriteLine();
+        }
+
+        writer.Write(
+            ("""
+                 ];
+
+             #if DEBUG
+                 private static ReadOnlySpan<byte> s_scriptExtensionSets => s_scriptExtensionSetsData;
+             #endif
+             }
+             """).ReplaceLineEndings());
     }
 
     private static Dictionary<int, UnicodeDataItem> GetUnicodeData(
@@ -363,6 +584,51 @@ internal static class UnicodeDataGenerator
     public static List<(CodepointRange, string)> ReadScriptData()
         => ReadUnicodeData("Scripts.txt");
 
+    public static List<(CodepointRange, string[])> ReadScriptExtensionsData()
+    {
+        var data = new List<(CodepointRange, string[])>();
+        var regex = new Regex(@"^([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s+;\s+([^#]+?)\s*(?:#.*)?$", RegexOptions.Compiled);
+
+        using var stream = UcdDownloader.OpenRead("ScriptExtensions.txt");
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            var line = reader.ReadLine();
+
+            if (string.IsNullOrEmpty(line) || line.StartsWith('#'))
+            {
+                continue;
+            }
+
+            var match = regex.Match(line);
+
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var start = System.Convert.ToInt32(match.Groups[1].Value, 16);
+            var end = start;
+
+            if (!string.IsNullOrEmpty(match.Groups[2].Value))
+            {
+                end = System.Convert.ToInt32(match.Groups[2].Value, 16);
+            }
+
+            var tags = match.Groups[3].Value.Split(' ', System.StringSplitOptions.RemoveEmptyEntries | System.StringSplitOptions.TrimEntries);
+
+            if (tags.Length == 0)
+            {
+                continue;
+            }
+
+            data.Add((new CodepointRange(start, end), tags));
+        }
+
+        return data;
+    }
+
     public static List<(CodepointRange, string)> ReadBiDiData()
         => ReadUnicodeData("extracted/DerivedBidiClass.txt");
 
@@ -502,6 +768,7 @@ internal static class UnicodeDataGenerator
         public int BiDiClass { get; set; }
         public int LineBreakClass { get; set; } = -1;
         public int WordBreakClass { get; set; } = -1;
+        public int ScriptExtensionsIndex { get; set; }
     }
 
     internal class BiDiDataItem

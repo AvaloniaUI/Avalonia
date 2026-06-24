@@ -45,7 +45,7 @@ namespace Avalonia.OpenGL.Egl
             if(_display == IntPtr.Zero)
                 throw new ArgumentException();
 
-            _config = EglDisplayUtils.InitializeAndGetConfig(_egl, display, options.GlVersions);
+            _config = EglDisplayUtils.InitializeAndGetConfig(_egl, display, options.GlVersions, options.ProbeConfig);
         }
         
         public EglInterface EglInterface => _egl;
@@ -84,7 +84,18 @@ namespace Avalonia.OpenGL.Egl
                     }
                 }
 
-                var ctx = _egl.CreateContext(_display, Config, share?.Context ?? IntPtr.Zero, _config.Attributes);
+                var previousApi = _egl.QueryApi();
+                _egl.BindApi(_config.Api);
+                IntPtr ctx;
+                try
+                {
+                    ctx = _egl.CreateContext(_display, Config, share?.Context ?? IntPtr.Zero, _config.Attributes);
+                }
+                finally
+                {
+                    if (previousApi != EGL_NONE)
+                        _egl.BindApi(previousApi);
+                }
                 if (ctx == IntPtr.Zero)
                 {
                     var ex = OpenGlException.GetFormattedException("eglCreateContext", _egl);
@@ -174,7 +185,7 @@ namespace Avalonia.OpenGL.Egl
         {
             lock (_lock)
             {
-                foreach(var ctx in _contexts)
+                foreach(var ctx in _contexts.ToList())
                     ctx.Dispose();
                 _contexts.Clear();
                 if (_display != IntPtr.Zero)
