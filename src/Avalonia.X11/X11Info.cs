@@ -31,6 +31,7 @@ namespace Avalonia.X11
         public XVisualInfo? TransparentVisualInfo { get; }
         public bool HasXim { get; }
         public bool HasXSync { get; }
+        public bool HasXShm { get; }
 
         public IntPtr DefaultFontSet { get; }
 
@@ -124,6 +125,17 @@ namespace Avalonia.X11
             catch
             {
                 //Ignore, XSync is not supported
+            }
+
+            try
+            {
+                // XShm rendering happens on the deferred display, so probe the extension there.
+                HasXShm = XShmQueryExtension(deferredDisplay) != 0
+                    && XShmQueryVersion(deferredDisplay, out _, out _, out _) != 0;
+            }
+            catch
+            {
+                //Ignore, MIT-SHM is not supported
             }
 
             try

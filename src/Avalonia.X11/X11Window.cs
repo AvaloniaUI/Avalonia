@@ -27,6 +27,7 @@ using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
 using Avalonia.Dialogs;
 using Avalonia.Platform.Storage.FileIO;
+using Avalonia.X11.XShm;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -228,6 +229,15 @@ namespace Avalonia.X11
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
+
+            // XShm needs a 32-bit visual (other depths would require a slow XShmPutImage conversion) and the
+            // MIT-SHM extension, probed once by X11Info on the deferred display.
+            if (_platform.Options.UseXShmFramebuffer is true && depth == 32 && _x11.HasXShm)
+            {
+                surfaces.Insert(0,
+                    new X11ShmFramebufferSurface(_x11.DeferredDisplay, _renderHandle, visual, depth,
+                        platform.DeferredDisplayDispatcher));
+            }
             
             if (egl != null)
                 surfaces.Insert(0,

@@ -737,7 +737,8 @@ namespace Avalonia.X11 {
 		InputOnly	= 2
 	}
 
-	internal enum XEventName {
+	internal enum XEventName 
+    {
 		KeyPress                = 2,
 		KeyRelease              = 3,
 		ButtonPress             = 4,
@@ -772,7 +773,7 @@ namespace Avalonia.X11 {
 		ClientMessage		= 33,
 		MappingNotify		= 34,
         GenericEvent = 35,
-		LASTEvent
+        LASTEvent
 	}
 
 	[Flags]
@@ -1907,5 +1908,35 @@ namespace Avalonia.X11 {
         public int MWidth;
         public int MHeight;
         public IntPtr* Outputs;
-    } 
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XShmSegmentInfo
+    {
+        public UIntPtr shmseg; /* resource id (XID == unsigned long) */
+        public int shmid; /* kernel id */
+        public IntPtr shmaddr; /* address in client */
+        public bool readOnly; /* how the server should attach it */
+
+        public override string ToString()
+        {
+            return
+                $"XShmSegmentInfo {{ shmseg = {shmseg}, shmid = {shmid}, shmaddr = {shmaddr:X}, readOnly = {readOnly} }}";
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XShmCompletionEvent
+    {
+        public XEventName type; /* of event */
+        public UIntPtr serial; /* # of last request processed by server */
+        public bool send_event; /* true if this came from a SendEvent request */
+        public IntPtr display; /* Display the event was read from */
+        public IntPtr drawable; /* drawable of request */
+
+        public int major_code; /* Know as ShmReqCode, the expected value is MIT-SHM 130 */
+        public int minor_code; /* Know as X_ShmPutImage, the expected value is X_ShmPutImage 3*/
+        public UIntPtr shmseg; /* the ShmSeg used in the request */
+        public UIntPtr offset; /* the offset into ShmSeg used in the request */
+    }
 }

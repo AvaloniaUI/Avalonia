@@ -125,6 +125,15 @@ namespace Avalonia.X11
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
 
+        private X11DeferredDisplayDispatcher? _deferredDisplayDispatcher;
+
+        /// <summary>
+        /// Shared, lazily-created dispatcher that drains events (currently XShm completions) off the
+        /// DeferredDisplay connection for every window.
+        /// </summary>
+        internal X11DeferredDisplayDispatcher DeferredDisplayDispatcher =>
+            _deferredDisplayDispatcher ??= new X11DeferredDisplayDispatcher(DeferredDisplay);
+
         private static uint[] X11IconConverter(IWindowIconImpl? icon)
         {
             if (!(icon is X11IconData x11icon))
@@ -492,6 +501,8 @@ namespace Avalonia
         /// if you have many windows 
         /// </summary>
         public bool? UseRetainedFramebuffer { get; set; }
+
+        public bool? UseXShmFramebuffer { get; set; }
 
         /// <summary>
         /// If this option is set to true, GMainLoop and GSource based dispatcher implementation will be used instead
