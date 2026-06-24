@@ -29,6 +29,8 @@ namespace Avalonia.X11
 {
     internal class AvaloniaX11Platform : IWindowingPlatform
     {
+        public const int DefaultFps = 60;
+
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         private X11AtSpiAccessibility? _accessibility;
         internal AtSpiServer? AtSpiServer => _accessibility?.Server;
@@ -75,8 +77,8 @@ namespace Avalonia.X11
             Resources = new XResources(this);
 
             IRenderTimer timer = options.ShouldRenderOnUIThread
-               ? new UiThreadRenderTimer(60)
-               : new SleepLoopRenderTimer(60);
+               ? new UiThreadRenderTimer(DefaultFps)
+               : new SleepLoopRenderTimer(DefaultFps);
 
             var clipboardImpl = new X11ClipboardImpl(this);
             var clipboard = new Input.Platform.Clipboard(clipboardImpl);

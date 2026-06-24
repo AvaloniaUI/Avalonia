@@ -192,7 +192,7 @@ internal partial class X11Screens
                     minRate = minRate.HasValue ? Math.Min(minRate.Value, rate.Value) : rate;
             }
 
-            return minRate ?? 60;
+            return minRate ?? AvaloniaX11Platform.DefaultFps;
         }
 
         private unsafe int? GetRefreshRateForOutput(XRRScreenResources* resources, IntPtr output)
@@ -313,7 +313,7 @@ internal partial class X11Screens
             get
             {
                 var monitors = MonitorInfos;
-                return monitors.Length == 0 ? 60 : monitors.Max(x => x.SharedRefreshRate);
+                return monitors.Length == 0 ? AvaloniaX11Platform.DefaultFps : monitors.Max(x => x.SharedRefreshRate);
             }
         }
 
