@@ -872,7 +872,7 @@ interface IAvnWindowEvents : IAvnWindowBaseEvents
 interface IAvnTextInputMethodClient : IUnknown
 {
     void SetPreeditText(char* preeditText);
-    void SelectInSurroundingText(int start, int length);
+    void SelectInSurroundingText(int start, int end);
 }
 
 [uuid(1382a29f-e260-4c7a-b83f-c99fc72e27c2)]
@@ -881,7 +881,8 @@ interface IAvnTextInputMethod : IUnknown
     HRESULT SetClient(IAvnTextInputMethodClient* client);
     void Reset();
     void SetCursorRect(AvnRect rect);
-    void SetSurroundingText(char* text, int anchorOffset, int cursorOffset);
+    void SetSurroundingText(char* text, int start, int end);
+    void SetSelectionInSurroundingText(int start, int end);
 }
 
 [uuid(e34ae0f8-18b4-48a3-b09d-2e6b19a3cf5e)]
