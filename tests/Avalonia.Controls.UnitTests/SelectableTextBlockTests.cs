@@ -9,8 +9,25 @@ namespace Avalonia.Controls.UnitTests
 {
     public class SelectableTextBlockTests : ScopedTestBase
     {
-        [Fact]
-        public void Selection_Spanning_InlineUIContainer_Returns_Correct_Text()
+        // Content: Run("foo") + InlineUIContainer + Run("bar")
+        // Inlines.Text after fix: "foo\uFFFCbar" (indices 0-6)
+        //   0='f', 1='o', 2='o', 3='\uFFFC' (embedded control), 4='b', 5='a', 6='r'
+        [Theory]
+        // Entirely before InlineUIContainer
+        [InlineData(0, 3, "foo")]
+        // Exactly the InlineUIContainer character
+        [InlineData(3, 4, "\uFFFC")]
+        // Up to and including InlineUIContainer (fencepost: last char before "bar")
+        [InlineData(0, 4, "foo\uFFFC")]
+        // Starting exactly after InlineUIContainer (fencepost: first char of "bar")
+        [InlineData(4, 7, "bar")]
+        // InlineUIContainer through end
+        [InlineData(3, 7, "\uFFFCbar")]
+        // Spanning InlineUIContainer (one char either side)
+        [InlineData(2, 5, "o\uFFFCb")]
+        // Entire content
+        [InlineData(0, 7, "foo\uFFFCbar")]
+        public void Selection_With_InlineUIContainer_Returns_Correct_Text(int start, int end, string expected)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
@@ -22,14 +39,13 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Measure(Size.Infinity);
 
-                // In TextLayout, EmbeddedControlRun (from InlineUIContainer) occupies 1 character
-                // position. After "foo" (3 chars) + InlineUIContainer (1 char), "bar" starts at
-                // position 4. SelectionStart/End come from TextLayout.HitTestPoint so they must
-                // align with the text returned by Inlines.Text.
-                target.SelectionStart = 4;
-                target.SelectionEnd = 7;
+                // SelectionStart/End values correspond to TextLayout character positions.
+                // EmbeddedControlRun occupies 1 position (TextRun.DefaultTextSourceLength),
+                // and Inlines.Text now has a matching U+FFFC placeholder, so they stay in sync.
+                target.SelectionStart = start;
+                target.SelectionEnd = end;
 
-                Assert.Equal("bar", target.SelectedText);
+                Assert.Equal(expected, target.SelectedText);
             }
         }
 
