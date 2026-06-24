@@ -17,11 +17,7 @@
     <TextBlock DockPanel.Dock="Top"
                Margin="2" Classes="h2" TextWrapping="Wrap">XAML only notification manager.</TextBlock>
     <Button DockPanel.Dock="Top"
-            Content="Show XAML only Notification" Command="{Binding #ControlNotifications.Show}">
-      <Button.CommandParameter>
-        <Notification Title="Title" Message="Message" OnClick="NotificationOnClick" />
-      </Button.CommandParameter>
-    </Button>
+            Content="Show XAML only Notification" Click="ShowNotification" />
     <Border Padding="10" BorderBrush="{DynamicResource SystemAccentColor}">
       <WindowNotificationManager x:Name="ControlNotifications" />
     </Border>

@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -1040,6 +1041,10 @@ namespace Avalonia.Controls
                 UpdatePseudoclasses();
                 UpdateCommandStates();
             }
+            else if (change.Property == IsReadOnlyProperty || change.Property == PasswordCharProperty)
+            {
+                UpdateCommandStates();
+            }
             else if (change.Property == CaretIndexProperty)
             {
                 OnCaretIndexChanged(change);
@@ -1298,8 +1303,15 @@ namespace Avalonia.Controls
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
-                if (clipboard != null)
-                    await clipboard.SetTextAsync(text);
+                try
+                {
+                    if (clipboard != null)
+                        await clipboard.SetTextAsync(text);
+                }
+                catch (UnauthorizedAccessException uex)
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to write text to clipboard: {Error}", uex);
+                }
             }
         }
 
@@ -1328,6 +1340,10 @@ namespace Avalonia.Controls
                 catch (TimeoutException)
                 {
                     // Silently ignore.
+                }
+                catch (UnauthorizedAccessException uex)
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
                 }
             }
 
@@ -1373,7 +1389,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.Copy))
             {
-                if (!IsPasswordBox)
+                if (CanCopy)
                 {
                     Copy();
                 }
@@ -1382,7 +1398,7 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.Cut))
             {
-                if (!IsPasswordBox)
+                if (CanCut)
                 {
                     Cut();
                 }
@@ -1391,18 +1407,28 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.Paste))
             {
-                Paste();
+                if (CanPaste)
+                {
+                    Paste();
+                }
+
                 handled = true;
             }
             else if (Match(keymap.Undo) && IsUndoEnabled)
             {
-                Undo();
+                if (!IsReadOnly)
+                {
+                    Undo();
+                }
 
                 handled = true;
             }
             else if (Match(keymap.Redo) && IsUndoEnabled)
             {
-                Redo();
+                if (!IsReadOnly)
+                {
+                    Redo();
+                }
 
                 handled = true;
             }
@@ -1546,6 +1572,7 @@ namespace Avalonia.Controls
                         break;
 
                     case Key.Back:
+                        if (!IsReadOnly)
                         {
                             SnapshotUndoRedo();
 
@@ -1591,38 +1618,42 @@ namespace Avalonia.Controls
                             }
 
                             SnapshotUndoRedo();
-
-                            handled = true;
-                            break;
                         }
+
+                        handled = true;
+                        break;
+
                     case Key.Delete:
-                        SnapshotUndoRedo();
-
-                        if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
+                        if (!IsReadOnly)
                         {
-                            SetSelectionForControlDelete();
-                        }
+                            SnapshotUndoRedo();
 
-                        if (!DeleteSelection())
-                        {
-                            var characterHit = _presenter.GetNextCharacterHit();
-
-                            var nextPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
-
-                            if (nextPosition != caretIndex)
+                            if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                             {
-                                var start = Math.Min(nextPosition, caretIndex);
-                                var end = Math.Max(nextPosition, caretIndex);
-
-                                var sb = StringBuilderCache.Acquire(text.Length);
-                                sb.Append(text);
-                                sb.Remove(start, end - start);
-
-                                SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
+                                SetSelectionForControlDelete();
                             }
-                        }
 
-                        SnapshotUndoRedo();
+                            if (!DeleteSelection())
+                            {
+                                var characterHit = _presenter.GetNextCharacterHit();
+
+                                var nextPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+
+                                if (nextPosition != caretIndex)
+                                {
+                                    var start = Math.Min(nextPosition, caretIndex);
+                                    var end = Math.Max(nextPosition, caretIndex);
+
+                                    var sb = StringBuilderCache.Acquire(text.Length);
+                                    sb.Append(text);
+                                    sb.Remove(start, end - start);
+
+                                    SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
+                                }
+                            }
+
+                            SnapshotUndoRedo();
+                        }
 
                         handled = true;
                         break;
@@ -1630,8 +1661,12 @@ namespace Avalonia.Controls
                     case Key.Enter:
                         if (AcceptsReturn)
                         {
-                            SnapshotUndoRedo();
-                            HandleTextInput(NewLine);
+                            if (!IsReadOnly)
+                            {
+                                SnapshotUndoRedo();
+                                HandleTextInput(NewLine);
+                            }
+
                             handled = true;
                         }
 
@@ -1640,8 +1675,12 @@ namespace Avalonia.Controls
                     case Key.Tab:
                         if (AcceptsTab)
                         {
-                            SnapshotUndoRedo();
-                            HandleTextInput("\t");
+                            if (!IsReadOnly)
+                            {
+                                SnapshotUndoRedo();
+                                HandleTextInput("\t");
+                            }
+
                             handled = true;
                         }
                         else
@@ -1652,7 +1691,10 @@ namespace Avalonia.Controls
                         break;
 
                     case Key.Space:
-                        SnapshotUndoRedo(); // always snapshot in between words
+                        if (!IsReadOnly)
+                        {
+                            SnapshotUndoRedo(); // always snapshot in between words
+                        }
                         break;
 
                     default:
