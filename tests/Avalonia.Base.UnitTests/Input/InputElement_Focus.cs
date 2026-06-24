@@ -1051,6 +1051,190 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Focus_Should_Skip_Elements_With_Focusable_Equal_False()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var skip1 = new Button { Focusable = false, Content = "s1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip2 = new Button { Focusable = false, Content = "s2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        skip1,
+                        target2,
+                        skip2,
+                        target3,
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target1.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target2.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target3.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Skip_Elements_With_IsTabStop_Equal_False()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var skip1 = new Button { IsTabStop = false, Focusable = true, Content = "s1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip2 = new Button { IsTabStop = false, Focusable = true, Content = "s2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        skip1,
+                        target2,
+                        skip2,
+                        target3,
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target1.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target2.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target3.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Skip_TextBlock_Elements()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var skip1 = new TextBlock { Focusable = false, Text = "s1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip2 = new TextBlock { Focusable = false, Text = "s2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        skip1,
+                        target2,
+                        skip2,
+                        target3,
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target1.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target2.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target3.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Skip_Empty_Containers()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var skip1 = new StackPanel();
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip2 = new StackPanel();
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        skip1,
+                        target2,
+                        skip2,
+                        target3,
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target1.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target2.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target3.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
+        [Fact]
         public void Focus_Should_Move_According_To_XY_Direction()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
