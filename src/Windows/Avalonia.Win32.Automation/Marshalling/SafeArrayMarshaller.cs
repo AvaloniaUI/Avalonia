@@ -1,5 +1,4 @@
-﻿#if NET7_0_OR_GREATER
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.Marshalling;
@@ -18,4 +17,3 @@ internal static class SafeArrayMarshaller<T> where T : notnull
 
     public static void Free(SafeArrayRef unmanaged) => unmanaged.Destroy();
 }
-#endif

@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CarouselCustomizationPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Navigation" FontWeight="SemiBold" FontSize="13" />
+
+        <Button x:Name="PreviousButton"
+                Content="Previous"
+                HorizontalAlignment="Stretch" />
+        <Button x:Name="NextButton"
+                Content="Next"
+                HorizontalAlignment="Stretch" />
+
+        <Separator />
+
+        <TextBlock Text="Orientation" FontWeight="SemiBold" FontSize="13" />
+        <ComboBox x:Name="OrientationCombo"
+                  HorizontalAlignment="Stretch"
+                  SelectedIndex="0">
+          <ComboBoxItem>Horizontal</ComboBoxItem>
+          <ComboBoxItem>Vertical</ComboBoxItem>
+        </ComboBox>
+
+        <TextBlock Text="Viewport Fraction" FontWeight="SemiBold" FontSize="13" />
+        <Grid ColumnDefinitions="*,48" ColumnSpacing="8">
+          <Slider x:Name="ViewportSlider"
+                  Minimum="0.33"
+                  Maximum="1.0"
+                  Value="1.0"
+                  TickFrequency="0.01"
+                  HorizontalAlignment="Stretch" />
+          <TextBlock x:Name="ViewportLabel"
+                     Grid.Column="1"
+                     Text="1.00"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     FontWeight="SemiBold" />
+        </Grid>
+        <TextBlock x:Name="ViewportHint"
+                   Text="1.00 shows a single full page."
+                   FontSize="11"
+                   Opacity="0.6"
+                   TextWrapping="Wrap" />
+
+        <Separator />
+
+        <TextBlock Text="Options" FontWeight="SemiBold" FontSize="14" />
+
+        <CheckBox x:Name="WrapSelectionCheck"
+                  Content="Wrap Selection"
+                  IsChecked="False"
+                  IsCheckedChanged="OnWrapSelectionChanged" />
+
+        <CheckBox x:Name="SwipeEnabledCheck"
+                  Content="Swipe Enabled"
+                  IsChecked="False"
+                  IsCheckedChanged="OnSwipeEnabledChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock x:Name="StatusText"
+                   Text="Orientation: Horizontal"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <Carousel x:Name="DemoCarousel" Height="300">
+        <Carousel.PageTransition>
+          <PageSlide Duration="0.25" Orientation="Horizontal" />
+        </Carousel.PageTransition>
+
+        <Border Margin="14,12" CornerRadius="12" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/delicate-arch-896885_640.jpg" Stretch="UniformToFill" />
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 1: Delicate Arch" Foreground="White"
+                         HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Border>
+          </Grid>
+        </Border>
+
+        <Border Margin="14,12" CornerRadius="12" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/hirsch-899118_640.jpg" Stretch="UniformToFill" />
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 2: Hirsch" Foreground="White"
+                         HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Border>
+          </Grid>
+        </Border>
+
+        <Border Margin="14,12" CornerRadius="12" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/maple-leaf-888807_640.jpg" Stretch="UniformToFill" />
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 3: Maple Leaf" Foreground="White"
+                         HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Border>
+          </Grid>
+        </Border>
+      </Carousel>
+    </Border>
+  </DockPanel>
+</UserControl>

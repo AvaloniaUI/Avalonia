@@ -45,35 +45,35 @@ namespace Avalonia.Controls.Presenters
         /// Gets the owner <see cref="ItemsControl"/>.
         /// </summary>
         internal ItemsControl? ItemsControl { get; private set; }
+
+        private bool CanHorizontallyScroll
+            => _logicalScrollable?.CanHorizontallyScroll ?? false;
         
-        bool ILogicalScrollable.CanHorizontallyScroll 
+        bool ILogicalScrollable.CanHorizontallyScroll
         {
-            get => _logicalScrollable?.CanHorizontallyScroll ?? false;
-            set
-            {
-                if (_logicalScrollable is not null)
-                    _logicalScrollable.CanHorizontallyScroll = value;
-            }
+            get => CanHorizontallyScroll;
+            set => _logicalScrollable?.CanHorizontallyScroll = value;
         }
 
-        bool ILogicalScrollable.CanVerticallyScroll 
+        bool IScrollable.CanHorizontallyScroll
+            => CanHorizontallyScroll;
+
+        private bool CanVerticallyScroll
+            => _logicalScrollable?.CanVerticallyScroll ?? false;
+
+        bool ILogicalScrollable.CanVerticallyScroll
         {
-            get => _logicalScrollable?.CanVerticallyScroll ?? false;
-            set
-            {
-                if (_logicalScrollable is not null)
-                    _logicalScrollable.CanVerticallyScroll = value;
-            }
+            get => CanVerticallyScroll;
+            set => _logicalScrollable?.CanVerticallyScroll = value;
         }
+
+        bool IScrollable.CanVerticallyScroll
+            => CanVerticallyScroll;
 
         Vector IScrollable.Offset 
         {
             get => _logicalScrollable?.Offset ?? default;
-            set
-            {
-                if (_logicalScrollable is not null)
-                    _logicalScrollable.Offset = value;
-            }
+            set => _logicalScrollable?.Offset = value;
         }
 
         bool ILogicalScrollable.IsLogicalScrollEnabled => _logicalScrollable?.IsLogicalScrollEnabled ?? false;

@@ -260,11 +260,32 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
         });
     }
 
+    public void PushTextOptions(TextOptions textOptions)
+    {
+        AddCommand(new()
+        {
+            Type = PendingCommandType.PushTextOptions,
+            DataUnion =
+            {
+                TextOptions = textOptions
+            }
+        });
+    }
+
     public void PopRenderOptions()
     {
         if (!TryDiscardOrFlush(PendingCommandType.PushRenderOptions))
         {
             _impl.PopRenderOptions();
+            RestoreTransform();
+        }
+    }
+
+    public void PopTextOptions()
+    {
+        if (!TryDiscardOrFlush(PendingCommandType.PushTextOptions))
+        {
+            _impl.PopTextOptions();
             RestoreTransform();
         }
     }
@@ -285,14 +306,18 @@ internal partial class CompositorDrawingContextProxy : IDrawingContextImpl,
             _impl.DrawRectangle(new ImmutableSolidColorBrush(material.FallbackColor), null, rect);
     }
 
-    public void PushEffect(IEffect effect)
+    public void PushEffect(Rect? clipRect, IEffect effect)
     {
         AddCommand(new()
         {
             Type = PendingCommandType.PushEffect,
             ObjectUnion =
             {
-                Effect = effect
+                Effect = effect,
+            },
+            DataUnion =
+            {
+                EffectClipRect = clipRect
             }
         });
     }

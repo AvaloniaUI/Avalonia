@@ -36,21 +36,30 @@ namespace Avalonia.Media
                 throw new ArgumentNullException(nameof(name));
             }
 
+            if (baseUri != null && !baseUri.IsAbsoluteUri)
+            {
+                throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
+            }
+
             var fontSources = GetFontSourceIdentifier(name);
 
             FamilyNames = new FamilyNameCollection(fontSources);
 
             if (fontSources.Count == 1)
             {
-                if(fontSources[0].Source is Uri source)
-                {
-                    if (baseUri != null && !baseUri.IsAbsoluteUri)
-                    {
-                        throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
-                    }
+                var singleSource = fontSources[0];
 
-                    Key = new FontFamilyKey(source, baseUri);
-                }
+                if (singleSource.Source is Uri source)
+                {
+                    if (source.IsAbsoluteUri)
+                    {
+                        Key = new FontFamilyKey(source);
+                    }
+                    else
+                    {
+                        Key = new FontFamilyKey(source, baseUri);
+                    }
+                }               
             }
             else
             {
@@ -122,43 +131,55 @@ namespace Avalonia.Media
         {
             var result = new FrugalStructList<FontSourceIdentifier>(1);
 
-            var segments = name.Split(',');
-
-            for (int i = 0; i < segments.Length; i++)
+            int commaIndex = -1;
+            do
             {
-                var segment = segments[i];
-                var innerSegments = segment.Split('#');
+                // Look for a comma separator to carve out a single segment.
+                int segmentStart = commaIndex + 1;
+                commaIndex = name.IndexOf(',', segmentStart);
+                int segmentEnd = commaIndex == -1
+                    ? name.Length
+                    : commaIndex;
 
-                FontSourceIdentifier identifier;
+                var segment = name.AsSpan(segmentStart..segmentEnd).Trim();
 
-                switch (innerSegments.Length)
+                FontSourceIdentifier? identifier = null;
+
+                // Check if there is exactly one '#' (i.e., segment is in the format "path#innerName").
+                int separatorIndex = segment.IndexOf('#');
+                if (separatorIndex != -1 && segment[(separatorIndex + 1)..].IndexOf('#') == -1)
                 {
-                    case 1:
+                    var pathSpan = segment[..separatorIndex].Trim();
+                    var innerName = segment[(separatorIndex + 1)..].Trim();
+
+                    if (pathSpan.IsEmpty)
+                    {
+                        identifier = new FontSourceIdentifier(innerName.ToString(), null);
+                    }
+                    else
+                    {
+                        string path = pathSpan.ToString();
+                        if (pathSpan.Contains('/') && Uri.TryCreate(path, UriKind.Relative, out var source))
                         {
-                            identifier = new FontSourceIdentifier(innerSegments[0].Trim(), null);
-                            break;
+                            identifier = new FontSourceIdentifier(innerName.ToString(), source);
                         }
-
-                    case 2:
+                        else
                         {
-                            var source = innerSegments[0].StartsWith("/", StringComparison.Ordinal)
-                                ? new Uri(innerSegments[0], UriKind.Relative)
-                                : new Uri(innerSegments[0], UriKind.RelativeOrAbsolute);
-
-                            identifier = new FontSourceIdentifier(innerSegments[1].Trim(), source);
-
-                            break;
+                            if (Uri.TryCreate(path, UriKind.Absolute, out source))
+                            {
+                                identifier = new FontSourceIdentifier(innerName.ToString(), source);
+                            }
                         }
-
-                    default:
-                        {
-                            identifier = new FontSourceIdentifier(name, null);
-                            break;
-                        }
+                    }
                 }
 
-                result.Add(identifier);
-            }
+                // If we didn't manage to match it to any known format, treat the entire segment as the font name.
+                identifier ??= new FontSourceIdentifier(
+                    segment.Length == name.Length ? name : segment.ToString(),
+                    null);
+
+                result.Add(identifier.Value);
+            } while (commaIndex != -1);
 
             return result;
         }

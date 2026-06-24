@@ -1,0 +1,332 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.AvaloniaFlixDetailView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Hero Image with gradient overlay -->
+      <Border Height="300" ClipToBounds="True">
+        <Panel>
+          <Border x:Name="HeroBg" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+          <Border>
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#00000000" Offset="0.3"/>
+                <GradientStop Color="#FF0A0A0A" Offset="1.0"/>
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <StackPanel VerticalAlignment="Bottom" Margin="24,0,24,16" Spacing="6">
+            <TextBlock x:Name="HeroTitleLabel" FontSize="40" FontWeight="Bold" Foreground="White"/>
+          </StackPanel>
+        </Panel>
+      </Border>
+
+      <!-- Meta row: year, rating, duration -->
+      <StackPanel Orientation="Horizontal" Spacing="10" Margin="24,16,24,0">
+        <TextBlock x:Name="YearLabel" FontSize="14" Foreground="#CCCCCC"/>
+        <Border Width="4" Height="4" CornerRadius="2" Background="#E50914"
+                VerticalAlignment="Center"/>
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <PathIcon Width="13" Height="13" Foreground="#E50914"
+                    Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
+          <TextBlock x:Name="RatingLabel" FontSize="14" Foreground="White" FontWeight="SemiBold"/>
+        </StackPanel>
+        <Border Width="4" Height="4" CornerRadius="2" Background="#E50914"
+                VerticalAlignment="Center"/>
+        <TextBlock x:Name="DurationLabel" FontSize="14" Foreground="#CCCCCC"/>
+      </StackPanel>
+
+      <!-- Genre Tags -->
+      <StackPanel Orientation="Horizontal" Spacing="8" Margin="24,12,24,0">
+        <Border CornerRadius="4" Padding="12,5"
+                BorderBrush="#666666" BorderThickness="1">
+          <TextBlock Text="SCI-FI" FontSize="11" FontWeight="SemiBold" Foreground="White"/>
+        </Border>
+        <Border CornerRadius="4" Padding="12,5"
+                BorderBrush="#666666" BorderThickness="1">
+          <TextBlock Text="ACTION" FontSize="11" FontWeight="SemiBold" Foreground="White"/>
+        </Border>
+        <Border CornerRadius="4" Padding="12,5"
+                BorderBrush="#666666" BorderThickness="1">
+          <TextBlock Text="EPIC" FontSize="11" FontWeight="SemiBold" Foreground="White"/>
+        </Border>
+      </StackPanel>
+
+      <!-- Action Buttons -->
+      <Grid ColumnDefinitions="*,Auto,Auto" Margin="24,16,24,0">
+        <!-- Play Button -->
+        <Button Classes="flixPlayRed"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Padding="0,13" CornerRadius="4">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <PathIcon Width="18" Height="18" Foreground="White"
+                      Data="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+            <TextBlock Text="Play" FontSize="15" FontWeight="SemiBold"
+                       Foreground="White" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+        <!-- Download Button -->
+        <Button Grid.Column="1" Classes="flixIconBtn"
+                CornerRadius="4" Padding="13"
+                Margin="10,0,0,0">
+          <PathIcon Width="20" Height="20" Foreground="#E50914"
+                    Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+        </Button>
+        <!-- Like Button -->
+        <Button Grid.Column="2" Classes="flixIconBtn"
+                CornerRadius="4" Padding="13"
+                Margin="8,0,0,0">
+          <PathIcon Width="20" Height="20" Foreground="#E50914"
+                    Data="M1,21H5V9H1V21M23,10C23,8.9 22.1,8 21,8H14.68L15.64,3.43L15.67,3.11C15.67,2.7 15.5,2.32 15.23,2.05L14.17,1L7.59,7.59C7.22,7.95 7,8.45 7,9V19A2,2 0 0,0 9,21H18C18.83,21 19.54,20.5 19.84,19.78L22.86,12.73C22.95,12.5 23,12.26 23,12V10Z"/>
+        </Button>
+      </Grid>
+
+      <!-- Synopsis -->
+      <TextBlock Text="Synopsis" FontSize="18" FontWeight="SemiBold"
+                 Foreground="White" Margin="24,24,24,10"/>
+      <TextBlock Text="In a future where water is the only currency, a lone wanderer named Aris Thorne discovers a forgotten data-bank hidden beneath the shifting crimson sands of the Forbidden Sector. As rival corporate factions close in, Aris must lead a desperate band of outcasts to protect the secrets of the Cyber Dune."
+                 TextWrapping="Wrap" FontSize="13" LineHeight="20"
+                 Foreground="#999999" Margin="24,0"/>
+
+      <!-- Top Cast -->
+      <TextBlock Text="Top Cast" FontSize="18" FontWeight="SemiBold"
+                 Foreground="White" Margin="24,24,24,12"/>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled">
+        <StackPanel Orientation="Horizontal" Spacing="16" Margin="24,0">
+          <!-- Cast 1: Aris Thorne -->
+          <StackPanel Spacing="5" Width="80" HorizontalAlignment="Center">
+            <Border Width="72" Height="72" CornerRadius="36" ClipToBounds="True"
+                    BorderBrush="#444444" BorderThickness="2"
+                    HorizontalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Movies/cast1.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <TextBlock Text="Aris Thorne" FontSize="11" FontWeight="SemiBold"
+                       Foreground="White" HorizontalAlignment="Center"
+                       TextAlignment="Center" TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="Kaelen Voss" FontSize="10" Foreground="#999999"
+                       HorizontalAlignment="Center" TextAlignment="Center"/>
+          </StackPanel>
+          <!-- Cast 2: Lyra Vance -->
+          <StackPanel Spacing="5" Width="80" HorizontalAlignment="Center">
+            <Border Width="72" Height="72" CornerRadius="36" ClipToBounds="True"
+                    BorderBrush="#444444" BorderThickness="2"
+                    HorizontalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Movies/cast2.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <TextBlock Text="Lyra Vance" FontSize="11" FontWeight="SemiBold"
+                       Foreground="White" HorizontalAlignment="Center"
+                       TextAlignment="Center" TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="Sera Finn" FontSize="10" Foreground="#999999"
+                       HorizontalAlignment="Center" TextAlignment="Center"/>
+          </StackPanel>
+          <!-- Cast 3: Jax Markus -->
+          <StackPanel Spacing="5" Width="80" HorizontalAlignment="Center">
+            <Border Width="72" Height="72" CornerRadius="36" ClipToBounds="True"
+                    BorderBrush="#444444" BorderThickness="2"
+                    HorizontalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending1.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <TextBlock Text="Jax Markus" FontSize="11" FontWeight="SemiBold"
+                       Foreground="White" HorizontalAlignment="Center"
+                       TextAlignment="Center" TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="Reed" FontSize="10" Foreground="#999999"
+                       HorizontalAlignment="Center" TextAlignment="Center"/>
+          </StackPanel>
+          <!-- Cast 4: Nova Elena -->
+          <StackPanel Spacing="5" Width="80" HorizontalAlignment="Center">
+            <Border Width="72" Height="72" CornerRadius="36" ClipToBounds="True"
+                    BorderBrush="#444444" BorderThickness="2"
+                    HorizontalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending2.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <TextBlock Text="Nova Elena" FontSize="11" FontWeight="SemiBold"
+                       Foreground="White" HorizontalAlignment="Center"
+                       TextAlignment="Center" TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="Joy" FontSize="10" Foreground="#999999"
+                       HorizontalAlignment="Center" TextAlignment="Center"/>
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- More Like This -->
+      <Grid Margin="24,24,24,12">
+        <TextBlock Text="More Like This" FontSize="18" FontWeight="SemiBold"
+                   Foreground="White"/>
+        <TextBlock Text="View All" FontSize="13" FontWeight="SemiBold"
+                   Foreground="#E50914"
+                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
+      </Grid>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled" Margin="0,0,0,24">
+        <StackPanel Orientation="Horizontal" Spacing="10" Margin="24,0">
+          <!-- More Like 1 -->
+          <Button Background="Transparent" Padding="0" Tag="Astral Divide"
+                  Cursor="Hand">
+            <Border Width="130" Height="195" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/morelike1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Astral Divide" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- More Like 2 -->
+          <Button Background="Transparent" Padding="0" Tag="Binary Dawn"
+                  Cursor="Hand">
+            <Border Width="130" Height="195" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Binary Dawn" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- More Like 3 -->
+          <Button Background="Transparent" Padding="0" Tag="Pulse Override"
+                  Cursor="Hand">
+            <Border Width="130" Height="195" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending2.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Pulse Override" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- More Like 4 -->
+          <Button Background="Transparent" Padding="0" Tag="Glacier Eye"
+                  Cursor="Hand">
+            <Border Width="130" Height="195" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Glacier Eye" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- More Like 5 -->
+          <Button Background="Transparent" Padding="0" Tag="Neon Horizon"
+                  Cursor="Hand">
+            <Border Width="130" Height="195" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated2.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Neon Horizon" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- More Like 6 -->
+          <Button Background="Transparent" Padding="0" Tag="Shadow Protocol"
+                  Cursor="Hand">
+            <Border Width="130" Height="195" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated3.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Shadow Protocol" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+        </StackPanel>
+      </ScrollViewer>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 
@@ -162,9 +162,7 @@ namespace Avalonia.LinuxFramebuffer
             }
         }
 
-        public ILockedFramebuffer Lock() => Lock(out _);
-
-        private ILockedFramebuffer Lock(out FramebufferLockProperties properties)
+        public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo _, out FramebufferLockProperties properties)
         {
             if (_fd <= 0)
                 throw new ObjectDisposedException("LinuxFramebuffer");
@@ -187,7 +185,7 @@ namespace Avalonia.LinuxFramebuffer
                 .Lock(new Vector(96, 96) * Scaling);
         }
         
-        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncRetainedFramebufferRenderTarget(Lock);
+        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock, true);
 
 
         private void ReleaseUnmanagedResources()

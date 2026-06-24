@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11.Clipboard;
 
 class ClipboardReadSession : IDisposable
@@ -126,6 +127,7 @@ class ClipboardReadSession : IDisposable
             Append(part);
         }
 
+        ms.Position = 0L;
         return new(null, ms, actualTypeAtom);
     }
     

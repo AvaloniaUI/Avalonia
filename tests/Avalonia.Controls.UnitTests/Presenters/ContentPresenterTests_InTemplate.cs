@@ -85,6 +85,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = "Foo";
 
             var child = target.Child;
+            Assert.NotNull(child);
             Assert.Equal(parent, child.GetLogicalParent());
             Assert.Equal(new[] { child }, parent.GetLogicalChildren());
         }
@@ -97,6 +98,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = "Foo";
 
             var child = target.Child;
+            Assert.NotNull(child);
             Assert.Equal(target, child.GetVisualParent());
             Assert.Equal(new[] { child }, target.GetVisualChildren());
         }
@@ -289,9 +291,9 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var canvas = new Canvas();
             var (target, host) = CreateTarget();
             var viewModel = new TestViewModel { Content = "foo" };
-            var dataContexts = new List<object>();
+            var dataContexts = new List<object?>();
 
-            target.Bind(ContentPresenter.ContentProperty, (IBinding)new TemplateBinding(ContentControl.ContentProperty));
+            target.Bind(ContentPresenter.ContentProperty, (BindingBase)new TemplateBinding(ContentControl.ContentProperty));
             canvas.GetObservable(ContentPresenter.DataContextProperty).Subscribe(x => dataContexts.Add(x));
 
             host.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => canvas));
@@ -302,7 +304,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             viewModel.Content = 42;
 
-            Assert.Equal(new object[]
+            Assert.Equal(new object?[]
             {
                 null,
                 "foo",
@@ -391,19 +393,19 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             templatedParent.ApplyTemplate();
 
-            return (templatedParent.Presenter, templatedParent);
+            return (templatedParent.Presenter!, templatedParent);
         }
 
         private class TestContentControl : ContentControl, IContentPresenterHost
         {
-            public Control Child { get; set; }
+            public Control? Child { get; set; }
         }
 
         private class TestViewModel : INotifyPropertyChanged
         {
-            private object _content;
+            private object? _content;
 
-            public object Content
+            public object? Content
             {
                 get => _content;
                 set
@@ -416,7 +418,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 }
             }
 
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
         }
     }
 }

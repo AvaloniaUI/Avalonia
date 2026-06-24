@@ -2,12 +2,18 @@
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Platform;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media
 {
     public class FontFamilyTests
     {
+        public FontFamilyTests()
+        {
+            AssetLoader.RegisterResUriParsers();
+        }
+
         [Fact]
         public void Should_Implicitly_Convert_String_To_FontFamily()
         {
@@ -121,18 +127,92 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Theory]
-        [InlineData("resm:Avalonia.Visuals.UnitTests.Assets.Fonts", "#MyFont")]
-        [InlineData("avares://Avalonia.Visuals.UnitTests/Assets/Fonts", "#MyFont")]
+        [InlineData(null, "resm:Avalonia.Visuals.UnitTests.Assets.Fonts#MyFont")]
+        [InlineData("avares://Avalonia.Visuals.UnitTests/Assets/Fonts", "/#MyFont")]
         [InlineData("avares://Avalonia.Visuals.UnitTests", "/Assets/Fonts#MyFont")]
-        public void Should_Create_FontFamily_From_Uri_With_Base_Uri(string @base, string name)
+        public void Should_Create_FontFamily_From_Uri_With_Base_Uri(string? @base, string name)
         {
-            var baseUri = new Uri(@base);
+            var baseUri = @base != null ? new Uri(@base) : null;
 
             var fontFamily = new FontFamily(baseUri, name);
 
             Assert.Equal("MyFont", fontFamily.Name);
 
             Assert.NotNull(fontFamily.Key);
+        }
+
+        [InlineData(null, "Arial", "Arial", null)]
+        [InlineData(null, "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Manrope", "Manrope", "resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests")]
+        [InlineData(null, "avares://Avalonia.Fonts.Inter/Assets#Inter", "Inter", null)]
+        [InlineData("avares://Avalonia.Fonts.Inter", "/Assets#Inter", "Inter", "avares://Avalonia.Fonts.Inter/Assets")]
+        [InlineData("avares://ControlCatalog/MainWindow.xaml", "avares://Avalonia.Fonts.Inter/Assets#Inter", "Inter", "avares://Avalonia.Fonts.Inter/Assets")]
+        [Theory]
+        public void Should_Parse_FontFamily_With_BaseUri(string? baseUri, string s, string expectedName, string? expectedUri)
+        {
+            var b = baseUri is not null ? new Uri(baseUri) : null;
+
+            expectedUri = expectedUri is not null ? new Uri(expectedUri).AbsoluteUri : null;
+
+            var fontFamily = FontFamily.Parse(s, b);
+
+            Assert.Equal(expectedName, fontFamily.Name);
+
+            var key = fontFamily.Key;
+
+            if (expectedUri is not null)
+            {
+                Assert.NotNull(key);
+
+                if (key.BaseUri is not null)
+                {
+                    Assert.True(key.BaseUri.IsAbsoluteUri);
+                }
+
+                if (key.BaseUri is null)
+                {
+                    Assert.NotNull(key.Source);
+                    Assert.True(key.Source.IsAbsoluteUri);
+                }
+
+                var fontUri = key.BaseUri;
+
+                if (key.Source is Uri sourceUri)
+                {
+                    if (sourceUri.IsAbsoluteUri)
+                    {
+                        fontUri = sourceUri;
+                    }
+                    else
+                    {
+                        Assert.NotNull(fontUri);
+                        fontUri = new Uri(fontUri, sourceUri);
+                    }
+                }
+
+                Assert.NotNull(fontUri);
+                Assert.Equal(expectedUri, fontUri.AbsoluteUri);
+            }
+        }
+
+        [InlineData("avares://MyAssembly/", "Some/Path/#FontName", "avares://MyAssembly/Some/Path/"), ]
+        [InlineData("avares://MyAssembly/", "./Some/Path/#FontName", "avares://MyAssembly/Some/Path/")]
+        [InlineData("avares://MyAssembly/sub/", "../Some/Path/#FontName", "avares://MyAssembly/Some/Path/")]
+        [Theory]
+        public void Should_Parse_Relative_Path(string baseUriString, string path, string expected)
+        {
+            var baseUri = new Uri(baseUriString, UriKind.Absolute);
+
+            var fontFamily = FontFamily.Parse(path, baseUri);
+
+            Assert.NotNull(fontFamily.Key);
+
+            Assert.NotNull(fontFamily.Key.BaseUri);
+
+            Assert.NotNull(fontFamily.Key.Source);
+
+            var actual = new Uri(fontFamily.Key.BaseUri, fontFamily.Key.Source);
+
+            Assert.Equal(expected, actual.AbsoluteUri);
         }
     }
 }

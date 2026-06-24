@@ -1,12 +1,9 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Data.Core;
-using Avalonia.Markup.Parsers;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
@@ -34,22 +31,11 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "If ItemsSource is a CompiledBinding, then path members will be preserved")]
-        public InstancedBinding? ItemsSelector(object item)
+        public IDisposable BindChildren(AvaloniaObject target, AvaloniaProperty targetProperty, object item)
         {
-            if (ItemsSource != null)
-            {
-                var expression = ItemsSource switch
-                {
-                    Binding reflection => reflection.CreateObservableForTreeDataTemplate(item),
-                    CompiledBindingExtension compiled => compiled.CreateObservableForTreeDataTemplate(item),
-                    _ => throw new InvalidOperationException("TreeDataTemplate currently only supports Binding and CompiledBindingExtension!")
-                };
-
-                return new InstancedBinding(null, expression, BindingMode.OneWay, BindingPriority.Style);
-            }
-
-            return null;
+            return ItemsSource is not null ?
+                target.Bind(targetProperty, ItemsSource) :
+                Disposable.Empty;
         }
 
         public Control? Build(object? data)

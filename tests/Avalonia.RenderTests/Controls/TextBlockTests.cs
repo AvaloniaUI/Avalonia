@@ -8,11 +8,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Controls
-#endif
 {
     public class TextBlockTests : TestBase
     {
@@ -299,7 +295,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
             target.Children.Add(CreateText("aaaa"));
             target.Children.Add(CreateText("a a "));
-            target.Children.Add(CreateText("    ")); // This one does not render correctly on Direct2D1
+            target.Children.Add(CreateText("    "));
             target.Children.Add(CreateText("LLLL"));
 
             var testName = $"Should_Keep_TrailingWhiteSpace";
@@ -343,11 +339,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             await RenderToFile(target, testName);
             CompareImages(testName);
 
-#if AVALONIA_SKIA
             const string symbolsFont = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Source Serif 4 36pt";
-#else
-            const string symbolsFont = "resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests#Source Serif 4 36pt";
-#endif
             static TextBlock CreateText(string text) => new TextBlock
             {
                 ClipToBounds = false,
@@ -380,11 +372,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             await RenderToFile(target, testName);
             CompareImages(testName);
 
-#if AVALONIA_SKIA
             const string symbolsFont = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Source Serif 4 36pt";
-#else
-            const string symbolsFont = "resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests#Source Serif 4 36pt";
-#endif
             static TextBlock CreateText(string text) => new TextBlock
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -396,6 +384,44 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Text = text,
                 FontFamily = new FontFamily(symbolsFont)
             };
+        }
+        
+        [InlineData(TextRenderingMode.Antialias, TextHintingMode.None)]
+        [InlineData(TextRenderingMode.Alias, TextHintingMode.None)]
+        [InlineData(TextRenderingMode.Antialias, TextHintingMode.Light)]
+        [InlineData(TextRenderingMode.Alias, TextHintingMode.Light)]
+        [Win32Theory("Depends on the backend")]
+        public async Task Should_Render_TextBlock_With_TextOptions(
+            TextRenderingMode textRenderingMode, 
+            TextHintingMode textHintingMode)
+        {
+            var textBlock = new TextBlock
+            {
+                FontFamily = TestFontFamily,
+                FontSize = 24,
+                Foreground = Brushes.Black,
+                Text = "TextOptions",
+                Background = Brushes.LightGray,
+                Padding = new Thickness(10)
+            };
+            
+            TextOptions.SetTextOptions(textBlock, new TextOptions
+            {
+                TextRenderingMode = textRenderingMode,
+                TextHintingMode = textHintingMode
+            });
+
+            var target = new Border
+            {
+                Width = 300,
+                Height = 100,
+                Background = Brushes.White,
+                Child = textBlock
+            };
+
+            var testName = $"Should_Render_TextBlock_With_TextOptions_{textRenderingMode}_{textHintingMode}";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
         }
 
     }

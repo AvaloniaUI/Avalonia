@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
 namespace Avalonia.Base.UnitTests;
@@ -24,11 +27,11 @@ public partial class DispatcherTests
                 AskedForSignal = true;
         }
 
-        public event Action Signaled;
-        public event Action Timer;
+        public event Action? Signaled;
+        public event Action? Timer;
         public long? NextTimer { get; private set; }
         public bool AskedForSignal { get; private set; }
-        
+
         public void UpdateTimer(long? dueTimeInTicks)
         {
             NextTimer = dueTimeInTicks;
@@ -63,7 +66,7 @@ public partial class DispatcherTests
     class SimpleDispatcherWithBackgroundProcessingImpl : SimpleDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing
     {
         public bool AskedForBackgroundProcessing { get; private set; }
-        public event Action ReadyForBackgroundProcessing;
+        public event Action? ReadyForBackgroundProcessing;
         public void RequestBackgroundProcessing()
         {
             if (!CurrentThreadIsLoopThread)
@@ -79,16 +82,16 @@ public partial class DispatcherTests
             ReadyForBackgroundProcessing?.Invoke();
         }
     }
-    
+
     class SimpleControlledDispatcherImpl : SimpleDispatcherWithBackgroundProcessingImpl, IControlledDispatcherImpl
     {
         private readonly bool _useTestTimeout = true;
         private readonly CancellationToken? _cancel;
         public int RunLoopCount { get; private set; }
-        
+
         public SimpleControlledDispatcherImpl()
         {
-            
+
         }
 
         public SimpleControlledDispatcherImpl(CancellationToken cancel, bool useTestTimeout = false)
@@ -96,7 +99,7 @@ public partial class DispatcherTests
             _useTestTimeout = useTestTimeout;
             _cancel = cancel;
         }
-        
+
         public void RunLoop(CancellationToken token)
         {
             RunLoopCount++;
@@ -114,38 +117,37 @@ public partial class DispatcherTests
 
 
     }
-    
-    
+
+
     [Fact]
     public void DispatcherExecutesJobsAccordingToPriority()
     {
         var impl = new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
         var actions = new List<string>();
-        disp.Post(()=>actions.Add("Background"), DispatcherPriority.Background);
-        disp.Post(()=>actions.Add("Render"), DispatcherPriority.Render);
-        disp.Post(()=>actions.Add("Input"), DispatcherPriority.Input);
+        _uiThread.Post(()=>actions.Add("Background"), DispatcherPriority.Background);
+        _uiThread.Post(()=>actions.Add("Render"), DispatcherPriority.Render);
+        _uiThread.Post(()=>actions.Add("Input"), DispatcherPriority.Input);
         Assert.True(impl.AskedForSignal);
         impl.ExecuteSignal();
         Assert.Equal(new[] { "Render", "Input", "Background" }, actions);
     }
-    
+
     [Fact]
     public void DispatcherPreservesOrderWhenChangingPriority()
     {
         var impl = new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
         var actions = new List<string>();
-        var toPromote = disp.InvokeAsync(()=>actions.Add("PromotedRender"), DispatcherPriority.Background);
-        var toPromote2 = disp.InvokeAsync(()=>actions.Add("PromotedRender2"), DispatcherPriority.Input);
-        disp.Post(() => actions.Add("Render"), DispatcherPriority.Render);
-        
+        var toPromote = _uiThread.InvokeAsync(()=>actions.Add("PromotedRender"), DispatcherPriority.Background, TestContext.Current.CancellationToken);
+        var toPromote2 = _uiThread.InvokeAsync(()=>actions.Add("PromotedRender2"), DispatcherPriority.Input, TestContext.Current.CancellationToken);
+        _uiThread.Post(() => actions.Add("Render"), DispatcherPriority.Render);
         toPromote.Priority = DispatcherPriority.Render;
         toPromote2.Priority = DispatcherPriority.Render;
-        
+
         Assert.True(impl.AskedForSignal);
         impl.ExecuteSignal();
-        
+
         Assert.Equal(new[] { "PromotedRender", "PromotedRender2", "Render" }, actions);
     }
 
@@ -153,12 +155,13 @@ public partial class DispatcherTests
     public void DispatcherStopsItemProcessingWhenInteractivityDeadlineIsReached()
     {
         var impl = new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl);
+        Dispatcher.ResetForUnitTests();
+        _uiThread = new Dispatcher(impl);
         var actions = new List<int>();
         for (var c = 0; c < 10; c++)
         {
             var itemId = c;
-            disp.Post(() =>
+            _uiThread.Post(() =>
             {
                 actions.Add(itemId);
                 impl.Now += 20;
@@ -178,7 +181,7 @@ public partial class DispatcherTests
             var expectedCount = (c + 1) * 3;
             if (c == 3)
                 expectedCount = 10;
-            
+
             Assert.Equal(Enumerable.Range(0, expectedCount), actions);
             Assert.False(impl.AskedForSignal);
             if (c < 3)
@@ -189,19 +192,22 @@ public partial class DispatcherTests
                 Assert.Null(impl.NextTimer);
         }
     }
-    
-    
+
+
     [Fact]
     public void DispatcherStopsItemProcessingWhenInputIsPending()
     {
+        Dispatcher.ResetForUnitTests();
+
         var impl = new SimpleDispatcherImpl();
         impl.TestInputPending = true;
-        var disp = new Dispatcher(impl);
+        _uiThread = new Dispatcher(impl);
+
         var actions = new List<int>();
         for (var c = 0; c < 10; c++)
         {
             var itemId = c;
-            disp.Post(() =>
+            _uiThread.Post(() =>
             {
                 actions.Add(itemId);
                 if (itemId == 0 || itemId == 3 || itemId == 7)
@@ -225,7 +231,7 @@ public partial class DispatcherTests
                 3 => 10,
                 _ => throw new InvalidOperationException($"Unexpected value {c}")
             };
-            
+
             Assert.Equal(Enumerable.Range(0, expectedCount), actions);
             Assert.False(impl.AskedForSignal);
             if (c < 3)
@@ -248,14 +254,14 @@ public partial class DispatcherTests
     public void CanWaitForDispatcherOperationFromTheSameThread(bool controlled, bool foreground)
     {
         var impl = controlled ? new SimpleControlledDispatcherImpl() : new SimpleDispatcherImpl();
-        var disp = new Dispatcher(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
         bool finished = false;
 
-        disp.InvokeAsync(() => finished = true,
+        _uiThread.InvokeAsync(() => finished = true,
             foreground ? DispatcherPriority.Default : DispatcherPriority.Background).Wait();
 
         Assert.True(finished);
-        if (controlled) 
+        if (controlled)
             Assert.Equal(foreground ? 0 : 1, ((SimpleControlledDispatcherImpl)impl).RunLoopCount);
     }
 
@@ -267,11 +273,10 @@ public partial class DispatcherTests
         public DispatcherServices(IDispatcherImpl impl)
         {
             _scope = AvaloniaLocator.EnterScope();
-            AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToConstant(impl);
             Dispatcher.ResetForUnitTests();
             SynchronizationContext.SetSynchronizationContext(null);
         }
-        
+
         public void Dispose()
         {
             Dispatcher.ResetForUnitTests();
@@ -279,7 +284,7 @@ public partial class DispatcherTests
             SynchronizationContext.SetSynchronizationContext(null);
         }
     }
-    
+
     [Fact]
     public void ExitAllFramesShouldExitAllFramesAndBeAbleToContinue()
     {
@@ -301,10 +306,10 @@ public partial class DispatcherTests
 
 
             disp.MainLoop(CancellationToken.None);
-            
+
             Assert.Equal(new[] { "Nested frame", "ExitAllFrames", "Nested frame exited" }, actions);
             actions.Clear();
-            
+
             var secondLoop = new CancellationTokenSource();
             disp.Post(() =>
             {
@@ -315,8 +320,8 @@ public partial class DispatcherTests
             Assert.Equal(new[] { "Callback after exit" }, actions);
         }
     }
-    
-        
+
+
     [Fact]
     public void ShutdownShouldExitAllFramesAndNotAllowNewFrames()
     {
@@ -335,7 +340,7 @@ public partial class DispatcherTests
                 actions.Add("Shutdown");
                 disp.BeginInvokeShutdown(DispatcherPriority.Normal);
             });
-            
+
             disp.Post(() =>
             {
                 actions.Add("Nested frame after shutdown");
@@ -343,12 +348,12 @@ public partial class DispatcherTests
                 Dispatcher.UIThread.MainLoop(CancellationToken.None);
                 actions.Add("Nested frame after shutdown exited");
             });
-            
+
             var criticalFrameAfterShutdown = new DispatcherFrame(false);
             disp.Post(() =>
             {
                 actions.Add("Critical frame after shutdown");
-                
+
                 Dispatcher.UIThread.PushFrame(criticalFrameAfterShutdown);
                 actions.Add("Critical frame after shutdown exited");
             });
@@ -362,7 +367,7 @@ public partial class DispatcherTests
 
             Assert.Equal(new[]
             {
-                "Nested frame", 
+                "Nested frame",
                 "Shutdown",
                 // Normal nested frames are supposed to exit immediately
                 "Nested frame after shutdown", "Nested frame after shutdown exited",
@@ -372,7 +377,7 @@ public partial class DispatcherTests
                 "Nested frame exited"
             }, actions);
             actions.Clear();
-            
+
             disp.Post(()=>actions.Add("Frame after shutdown finished"));
             Assert.Throws<InvalidOperationException>(() => disp.MainLoop(CancellationToken.None));
             Assert.Empty(actions);
@@ -388,7 +393,7 @@ public partial class DispatcherTests
             return base.Wait(waitHandles, waitAll, millisecondsTimeout);
         }
     }
-    
+
     [Fact]
     public void DisableProcessingShouldStopProcessing()
     {
@@ -407,7 +412,7 @@ public partial class DispatcherTests
             SynchronizationContext.SetSynchronizationContext(avaloniaContext);
 
             var waitHandle = new ManualResetEvent(true);
-            
+
             helper.WaitCount = 0;
             waitHandle.WaitOne(100);
             Assert.Equal(0, helper.WaitCount);
@@ -431,8 +436,8 @@ public partial class DispatcherTests
 
             void DumpCurrentPriority() =>
                 priorities.Add(((AvaloniaSynchronizationContext)SynchronizationContext.Current!).Priority);
-                
-                
+
+
             disp.Post(DumpCurrentPriority, DispatcherPriority.Normal);
             disp.Post(DumpCurrentPriority, DispatcherPriority.Loaded);
             disp.Post(DumpCurrentPriority, DispatcherPriority.Input);
@@ -443,7 +448,8 @@ public partial class DispatcherTests
             }, DispatcherPriority.Background);
             disp.MainLoop(CancellationToken.None);
 
-            disp.Invoke(DumpCurrentPriority, DispatcherPriority.Send);
+            disp.Send(_ => DumpCurrentPriority(), DispatcherPriority.Send);
+            disp.Invoke(DumpCurrentPriority, DispatcherPriority.Send, TestContext.Current.CancellationToken);
             disp.Invoke(() =>
             {
                 DumpCurrentPriority();
@@ -453,7 +459,7 @@ public partial class DispatcherTests
             Assert.Equal(
                 new[]
                 {
-                    DispatcherPriority.Normal, DispatcherPriority.Loaded, DispatcherPriority.Input, DispatcherPriority.Background,
+                    DispatcherPriority.Normal, DispatcherPriority.Loaded, DispatcherPriority.Input, DispatcherPriority.Background, DispatcherPriority.Send,
                     DispatcherPriority.Send, DispatcherPriority.Send,
                 },
                 priorities);
@@ -467,117 +473,100 @@ public partial class DispatcherTests
     public void DispatcherInvokeAsyncUnwrapsTasks()
     {
         int asyncMethodStage = 0;
-        
+
         async Task AsyncMethod()
         {
             asyncMethodStage = 1;
             await Task.Delay(200);
             asyncMethodStage = 2;
         }
-        
+
         async Task<int> AsyncMethodWithResult()
         {
             await Task.Delay(100);
             return 1;
         }
-        
+
         async Task Test()
         {
             await Dispatcher.UIThread.InvokeAsync(AsyncMethod);
             Assert.Equal(2, asyncMethodStage);
             Assert.Equal(1, await Dispatcher.UIThread.InvokeAsync(AsyncMethodWithResult));
             asyncMethodStage = 0;
-            
+
             await Dispatcher.UIThread.InvokeAsync(AsyncMethod, DispatcherPriority.Default);
             Assert.Equal(2, asyncMethodStage);
             Assert.Equal(1, await Dispatcher.UIThread.InvokeAsync(AsyncMethodWithResult, DispatcherPriority.Default));
-            
+
             Dispatcher.UIThread.ExitAllFrames();
         }
-        
+
         using (new DispatcherServices(new ManagedDispatcherImpl(null)))
         {
             var t = Test();
             var cts = new CancellationTokenSource();
-            Task.Delay(3000).ContinueWith(_ => cts.Cancel());
+            Task.Delay(3000, TestContext.Current.CancellationToken).ContinueWith(_ => cts.Cancel(), TestContext.Current.CancellationToken);
             Dispatcher.UIThread.MainLoop(cts.Token);
             Assert.True(t.IsCompletedSuccessfully);
             t.GetAwaiter().GetResult();
         }
     }
-    
-    
+
+
     [Fact]
-    public async Task DispatcherResumeContinuesOnUIThread()
+    public async Task DispatcherResumeContinuesOnCurrentThread()
     {
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
 
         var tokenSource = new CancellationTokenSource();
-        var workload = Dispatcher.UIThread.InvokeAsync(
+        var dispatcher = Dispatcher.CurrentDispatcher;
+
+        var workload = dispatcher.InvokeAsync(
             async () =>
             {
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Assert.True(dispatcher.CheckAccess());
 
                 await Task.Delay(1).ConfigureAwait(false);
-                Assert.False(Dispatcher.UIThread.CheckAccess());
+                Assert.False(dispatcher.CheckAccess());
 
-                await Dispatcher.UIThread.Resume();
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                await dispatcher.Resume();
+                Assert.True(dispatcher.CheckAccess());
 
                 tokenSource.Cancel();
             });
 
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        dispatcher.MainLoop(tokenSource.Token);
     }
 
     [Fact]
-    public async Task DispatcherYieldContinuesOnUIThread()
+    public async Task DispatcherYieldContinuesOnCurrentThread()
     {
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
 
         var tokenSource = new CancellationTokenSource();
-        var workload = Dispatcher.UIThread.InvokeAsync(
+        var dispatcher = Dispatcher.CurrentDispatcher;
+
+        var workload = dispatcher.InvokeAsync(
             async () =>
             {
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Assert.True(dispatcher.CheckAccess());
 
                 await Dispatcher.Yield();
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Assert.True(dispatcher.CheckAccess());
 
                 tokenSource.Cancel();
             });
 
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        dispatcher.MainLoop(tokenSource.Token);
     }
 
     [Fact]
-    public async Task DispatcherYieldThrowsOnNonUIThread()
+    public async Task AwaitWithPriorityRunsOnCurrentThread()
     {
-        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
-
-        var tokenSource = new CancellationTokenSource();
-        var workload = Dispatcher.UIThread.InvokeAsync(
-            async () =>
-            {
-                Assert.True(Dispatcher.UIThread.CheckAccess());
-
-                await Task.Delay(1).ConfigureAwait(false);
-                Assert.False(Dispatcher.UIThread.CheckAccess());
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await Dispatcher.Yield());
-
-                tokenSource.Cancel();
-            });
-
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
-    }
-
-    [Fact]
-    public async Task AwaitWithPriorityRunsOnUIThread()
-    {
-        static async Task<int> Workload()
+        static async Task<int> Workload(Dispatcher dispatcher)
         {
             await Task.Delay(1).ConfigureAwait(false);
-            Assert.False(Dispatcher.UIThread.CheckAccess());
+            Assert.False(dispatcher.CheckAccess());
 
             return Thread.CurrentThread.ManagedThreadId;
         }
@@ -585,24 +574,126 @@ public partial class DispatcherTests
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
 
         var tokenSource = new CancellationTokenSource();
-        var workload = Dispatcher.UIThread.InvokeAsync(
+        var dispatcher = Dispatcher.CurrentDispatcher;
+
+        var workload = dispatcher.InvokeAsync(
             async () =>
             {
-                Assert.True(Dispatcher.UIThread.CheckAccess());
-                Task taskWithoutResult = Workload();
+                Assert.True(dispatcher.CheckAccess());
+                Task taskWithoutResult = Workload(dispatcher);
 
-                await Dispatcher.UIThread.AwaitWithPriority(taskWithoutResult, DispatcherPriority.Default);
+                await dispatcher.AwaitWithPriority(taskWithoutResult, DispatcherPriority.Default);
 
-                Assert.True(Dispatcher.UIThread.CheckAccess());
-                Task<int> taskWithResult = Workload();
+                Assert.True(dispatcher.CheckAccess());
+                Task<int> taskWithResult = Workload(dispatcher);
 
-                await Dispatcher.UIThread.AwaitWithPriority(taskWithResult, DispatcherPriority.Default);
+                await dispatcher.AwaitWithPriority(taskWithResult, DispatcherPriority.Default);
 
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Assert.True(dispatcher.CheckAccess());
 
                 tokenSource.Cancel();
             });
 
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        dispatcher.MainLoop(tokenSource.Token);
+    }
+
+    private class AsyncLocalTestClass
+    {
+        public AsyncLocal<string?> AsyncLocalField { get; set; } = new AsyncLocal<string?>();
+    }
+
+    private sealed class AsyncLocalMeasureControl(Func<string?> getValue, Action<string?> setValue) : Control
+    {
+        public bool RecordMeasure { get; set; }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            if (RecordMeasure)
+                setValue(getValue());
+
+            return new Size(1, 1);
+        }
+    }
+
+    [Fact]
+    public void MediaContextRenderSchedulingDoesNotCaptureAmbientExecutionContext()
+    {
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl();
+        using var services = new DispatcherServices(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        var testObject = new AsyncLocalTestClass();
+        string? test = "Not measured";
+        var control = new AsyncLocalMeasureControl(() => testObject.AsyncLocalField.Value, value => test = value);
+        var root = new TestRoot { Child = control };
+
+        root.ExecuteInitialLayoutPass();
+        control.RecordMeasure = true;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            testObject.AsyncLocalField.Value = "Initial Value";
+            control.InvalidateMeasure();
+            testObject.AsyncLocalField.Value = null;
+        });
+
+        Assert.True(impl.AskedForSignal);
+        impl.ExecuteSignal();
+
+        Assert.Null(test);
+    }
+
+    [Fact]
+    public void MediaContextRenderSchedulingAllowsAlreadySuppressedExecutionContextFlow()
+    {
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl();
+        using var services = new DispatcherServices(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        var testObject = new AsyncLocalTestClass();
+        string? test = "Not measured";
+        Exception? schedulingException = null;
+        var control = new AsyncLocalMeasureControl(() => testObject.AsyncLocalField.Value, value => test = value);
+        var root = new TestRoot { Child = control };
+
+        root.ExecuteInitialLayoutPass();
+        control.RecordMeasure = true;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            testObject.AsyncLocalField.Value = "Initial Value";
+
+            try
+            {
+                using (ExecutionContext.SuppressFlow())
+                {
+                    control.InvalidateMeasure();
+                }
+            }
+            catch (Exception e)
+            {
+                schedulingException = e;
+            }
+
+            testObject.AsyncLocalField.Value = null;
+        });
+
+        Assert.True(impl.AskedForSignal);
+        impl.ExecuteSignal();
+
+        Assert.Null(schedulingException);
+        Assert.Null(test);
+    }
+
+    [Fact]
+    public async Task Dispatcher_Can_Act_As_TaskScheduler()
+    {
+        var impl = new SimpleDispatcherImpl();
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+        Thread? continuationThread = null;
+        _ = Task.CompletedTask.ContinueWith(t => continuationThread = Thread.CurrentThread, Dispatcher.UIThread.ToTaskScheduler());
+        Assert.True(impl.AskedForSignal);
+        impl.ExecuteSignal();
+        Assert.Equal(Dispatcher.UIThread.Thread, continuationThread);
     }
 }

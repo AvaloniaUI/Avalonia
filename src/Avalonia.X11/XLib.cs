@@ -22,6 +22,8 @@ namespace Avalonia.X11
         private const string libXInput = "libXi.so.6";
         private const string libXCursor = "libXcursor.so.1";
 
+        public const IntPtr AnyPropertyType = 0;
+
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
 
@@ -457,7 +459,27 @@ namespace Avalonia.X11
         
         [DllImport(libX11)]
         public static extern IntPtr XCreateColormap(IntPtr display, IntPtr window, IntPtr visual, int create);
-        
+
+        [DllImport(libX11)]
+        public static extern int XFreeColormap(IntPtr display, IntPtr colormap);
+
+        public const long VisualIDMask = 0x1;
+
+        [DllImport(libX11)]
+        public static extern IntPtr XGetVisualInfo(IntPtr display, IntPtr vinfo_mask, ref XVisualInfo vinfo_template,
+            out int nitems);
+
+        public static unsafe XVisualInfo? XGetVisualInfoById(IntPtr display, IntPtr visualId)
+        {
+            var template = new XVisualInfo { visualid = visualId };
+            var ptr = XGetVisualInfo(display, new IntPtr(VisualIDMask), ref template, out var count);
+            if (ptr == IntPtr.Zero)
+                return null;
+            XVisualInfo? rv = count > 0 ? *(XVisualInfo*)ptr : null;
+            XFree(ptr);
+            return rv;
+        }
+
         public enum XLookupStatus : uint
         {
             XBufferOverflow = 0xffffffffu,

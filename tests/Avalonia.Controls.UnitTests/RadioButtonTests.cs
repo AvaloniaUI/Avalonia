@@ -106,8 +106,28 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(radioButton2.IsChecked);
             Assert.True(radioButton3.IsChecked);
             Assert.False(radioButton4.IsChecked);
+        }
 
+        [Fact]
+        public void RadioButton_LetterSpacing_Default_Value_Is_Zero()
+        {
+            var radioButton = new RadioButton();
+            Assert.Equal(0, radioButton.LetterSpacing);
+        }
 
+        [Fact]
+        public void RadioButton_LetterSpacing_Can_Be_Set_And_Retrieved()
+        {
+            var radioButton = new RadioButton { LetterSpacing = 2.5 };
+            Assert.Equal(2.5, radioButton.LetterSpacing);
+        }
+
+        [Fact]
+        public void RadioButton_LetterSpacing_Inherits_From_TemplatedControl()
+        {
+            var radioButton = new RadioButton { LetterSpacing = 3.0 };
+            // LetterSpacing is inherited from TemplatedControl
+            Assert.Equal(3.0, radioButton.LetterSpacing);
         }
     }
 }

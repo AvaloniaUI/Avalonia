@@ -115,21 +115,13 @@ namespace Avalonia.Media.TextFormatting
 
             var codepoint = Codepoint.ReplacementCodepoint;
 
-            var codepointEnumerator = new CodepointEnumerator(text.Slice(count).Span);
+            var graphemeEnumerator = new GraphemeEnumerator(text.Slice(count).Span);
 
-            while (codepointEnumerator.MoveNext(out var cp))
+            if (graphemeEnumerator.MoveNext(out var grapheme))
             {
-                if (cp.IsWhiteSpace)
-                {
-                    continue;
-                }
-
-                codepoint = cp;
-
-                break;
+                codepoint = grapheme.FirstCodepoint;
             }
 
-            //ToDo: Fix FontFamily fallback
             var matchFound =
                 fontManager.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
                     defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
@@ -151,9 +143,10 @@ namespace Avalonia.Media.TextFormatting
             // no fallback found
             var enumerator = new GraphemeEnumerator(textSpan);
 
-            while (enumerator.MoveNext(out var grapheme))
+            //Move forward until we reach the next base character
+            while (enumerator.MoveNext(out grapheme))
             {
-                if (!grapheme.FirstCodepoint.IsWhiteSpace && defaultGlyphTypeface.TryGetGlyph(grapheme.FirstCodepoint, out _))
+                if (!grapheme.FirstCodepoint.IsWhiteSpace && defaultGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(grapheme.FirstCodepoint, out _))
                 {
                     break;
                 }
@@ -174,8 +167,8 @@ namespace Avalonia.Media.TextFormatting
         /// <returns></returns>
         internal static bool TryGetShapeableLength(
             ReadOnlySpan<char> text,
-            IGlyphTypeface glyphTypeface,
-            IGlyphTypeface? defaultGlyphTypeface,
+            GlyphTypeface glyphTypeface,
+            GlyphTypeface? defaultGlyphTypeface,
             out int length)
         {
             length = 0;
@@ -201,15 +194,15 @@ namespace Avalonia.Media.TextFormatting
 
                 if (!currentCodepoint.IsWhiteSpace
                     && defaultGlyphTypeface != null
-                    && defaultGlyphTypeface.TryGetGlyph(currentCodepoint, out _))
+                    && defaultGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(currentCodepoint, out _))
                 {
                     break;
                 }
 
                 //Stop at the first missing glyph
-                if (!currentCodepoint.IsBreakChar && 
-                    currentCodepoint.GeneralCategory != GeneralCategory.Control && 
-                    !glyphTypeface.TryGetGlyph(currentCodepoint, out _))
+                if (!currentCodepoint.IsBreakChar &&
+                    currentCodepoint.GeneralCategory != GeneralCategory.Control &&
+                    !glyphTypeface.CharacterToGlyphMap.TryGetGlyph(currentCodepoint, out _))
                 {
                     break;
                 }

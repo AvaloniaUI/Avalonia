@@ -104,14 +104,9 @@ internal sealed class FrameTimeGraph
 
         var brush = value <= _defaultMaxY ? Brushes.Black : Brushes.Red;
 
-#if NET6_0_OR_GREATER
         Span<char> buffer = stackalloc char[24];
         buffer.TryWrite(CultureInfo.InvariantCulture, $"{label}: {value,5:F2}ms", out var charsWritten);
         _textRenderer.DrawAsciiText(context, buffer.Slice(0, charsWritten), brush);
-#else
-        var text = FormattableString.Invariant($"{label}: {value,5:F2}ms");
-        _textRenderer.DrawAsciiText(context, text.AsSpan(), brush);
-#endif
     }
 
     private IStreamGeometryImpl BuildGraphGeometry(double maxY)

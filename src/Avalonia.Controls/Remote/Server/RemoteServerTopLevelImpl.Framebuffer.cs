@@ -76,6 +76,7 @@ namespace Avalonia.Controls.Remote.Server
                         Stride,
                         new Vector(_dpi, _dpi),
                         new PlatformPixelFormat((PixelFormatEnum)Format),
+                        Format == ProtocolPixelFormat.Rgb565 ? AlphaFormat.Opaque : AlphaFormat.Premul,
                         () =>
                         {
                             handle.Free();

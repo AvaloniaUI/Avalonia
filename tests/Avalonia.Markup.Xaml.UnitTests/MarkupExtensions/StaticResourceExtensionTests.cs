@@ -27,9 +27,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var border = userControl.FindControl<Border>("border");
+            var border = userControl.GetControl<Border>("border");
 
-            var brush = (ISolidColorBrush)border.Background;
+            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var border = userControl.FindControl<Border>("border");
+            var border = userControl.GetControl<Border>("border");
 
             Assert.Equal(5, Grid.GetColumn(border));
         }
@@ -70,9 +70,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var border = userControl.FindControl<Border>("border");
+            var border = userControl.GetControl<Border>("border");
 
-            var brush = (ISolidColorBrush)border.Background;
+            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
@@ -81,7 +81,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         {
             using (StyledWindow())
             {
-                Application.Current.Resources.Add("brush", new SolidColorBrush(0xff506070));
+                Application.Current!.Resources.Add("brush", new SolidColorBrush(0xff506070));
 
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -90,9 +90,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var border = window.FindControl<Border>("border");
+                var border = window.GetControl<Border>("border");
 
-                var brush = (SolidColorBrush)border.Background;
+                var brush = Assert.IsAssignableFrom<SolidColorBrush>(border.Background);
                 Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
@@ -117,9 +117,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var border = userControl.FindControl<Border>("border");
+            var border = userControl.GetControl<Border>("border");
 
-            var brush = (ISolidColorBrush)border.Background;
+            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
@@ -147,9 +147,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var border = userControl.FindControl<Border>("border");
+            var border = userControl.GetControl<Border>("border");
 
-            var brush = (ISolidColorBrush)border.Background;
+            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
@@ -158,7 +158,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                Application.Current.Resources.Add("brush", new SolidColorBrush(0xff506070));
+                Application.Current!.Resources.Add("brush", new SolidColorBrush(0xff506070));
 
                 var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
@@ -167,14 +167,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
                 var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var border = userControl.FindControl<Border>("border");
+                var border = userControl.GetControl<Border>("border");
 
                 // We don't actually know where the global styles are until we attach the control
                 // to a window, as Window has StylingParent set to Application.
                 var window = new Window { Content = userControl };
                 window.Show();
 
-                var brush = (SolidColorBrush)border.Background;
+                var brush = Assert.IsAssignableFrom<SolidColorBrush>(border.Background);
                 Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
         }
@@ -199,8 +199,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
-                var brush = (ISolidColorBrush)button.Background;
+                var button = window.GetControl<Button>("button");
+                var brush = Assert.IsAssignableFrom<ISolidColorBrush>(button.Background);
 
                 Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
@@ -228,8 +228,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
-                var brush = (ISolidColorBrush)button.Background;
+                var button = window.GetControl<Button>("button");
+                var brush = Assert.IsAssignableFrom<ISolidColorBrush>(button.Background);
 
                 Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
@@ -265,8 +265,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             {
                 var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
                 var window = Assert.IsType<Window>(compiled[1]);
-                var border = window.FindControl<Border>("border");
-                var brush = (ISolidColorBrush)border.Background;
+                var border = window.GetControl<Border>("border");
+                var brush = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
 
                 Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
@@ -287,9 +287,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var border = userControl.FindControl<Border>("border");
+            var border = userControl.GetControl<Border>("border");
 
-            var brush = (SolidColorBrush)border.Background;
+            var brush = Assert.IsAssignableFrom<SolidColorBrush>(border.Background);
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
@@ -306,7 +306,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Styles>";
 
             var styles = (Styles)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var brush = (SolidColorBrush)styles.Resources["brush"];
+            var brush = Assert.IsAssignableFrom<SolidColorBrush>(styles.Resources["brush"]);
 
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
@@ -345,12 +345,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             {
                 var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
                 var window = Assert.IsType<Window>(compiled[1]);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.Show();
 
                 var border = (Border)button.GetVisualChildren().Single();
-                var brush = (ISolidColorBrush)border.Background;
+                var brush = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
 
                 Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
@@ -372,7 +372,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var listBox = userControl.FindControl<ListBox>("listBox");
+            var listBox = userControl.GetControl<ListBox>("listBox");
 
             Assert.NotNull(listBox.ItemTemplate);
         }
@@ -394,7 +394,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.DataContext = "foo";
                 window.ApplyTemplate();
@@ -425,7 +425,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
 
                 window.DataContext = "foo";
-                var presenter = window.FindControl<ContentPresenter>("presenter");
+                var presenter = window.GetControl<ContentPresenter>("presenter");
 
                 window.Show();
 
@@ -522,14 +522,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var border = userControl.FindControl<Border>("border");
+            var border = userControl.GetControl<Border>("border");
 
-            var brush = (ISolidColorBrush)border.Background;
+            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
 
             userControl.Content = null;
 
-            brush = (ISolidColorBrush)border.Background;
+            brush = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
@@ -547,9 +547,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var border = userControl.FindControl<Border>("border");
+            var border = userControl.GetControl<Border>("border");
 
-            var brush = (ISolidColorBrush)border.Background;
+            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(border.Background);
             Assert.Equal(0xff506070, brush.Color.ToUInt32());
         }
 
@@ -573,8 +573,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </Window>";
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
-                var brush = (ISolidColorBrush)button.Background;
+                var button = window.GetControl<Button>("button");
+                var brush = Assert.IsAssignableFrom<ISolidColorBrush>(button.Background);
 
                 Assert.Equal(0xff506070, brush.Color.ToUInt32());
             }
@@ -583,7 +583,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         private static IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
-                assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
                     WindowStyle(),

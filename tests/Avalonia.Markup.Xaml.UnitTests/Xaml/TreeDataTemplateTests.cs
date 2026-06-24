@@ -18,7 +18,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var templates = (DataTemplates)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var template = (TreeDataTemplate)(templates.First());
 
-                Assert.IsType<Binding>(template.ItemsSource);
+                Assert.IsType<ReflectionBinding>(template.ItemsSource);
             }                
         }
         

@@ -38,7 +38,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 ElementName = "source",
                 Path = "Text",
-                NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))
+                NameScope = new WeakReference<INameScope?>(NameScope.GetNameScope(root))
             };
 
             target.Bind(TextBox.TextProperty, binding);
@@ -75,7 +75,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var binding = new Binding
             {
                 ElementName = "source",
-                NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))
+                NameScope = new WeakReference<INameScope?>(NameScope.GetNameScope(root))
             };
 
             target.Bind(ContentControl.ContentProperty, binding);
@@ -108,7 +108,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 ElementName = "source",
                 Path = "Text",
-                NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))
+                NameScope = new WeakReference<INameScope?>(NameScope.GetNameScope(root))
             };
 
             target.Bind(TextBox.TextProperty, binding);
@@ -146,7 +146,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var binding = new Binding
             {
                 ElementName = "source",
-                NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))
+                NameScope = new WeakReference<INameScope?>(NameScope.GetNameScope(root))
             };
 
             target.Bind(ContentControl.ContentProperty, binding);

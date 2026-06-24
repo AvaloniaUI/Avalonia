@@ -6,8 +6,8 @@ import {getMouseButton} from "./MouseEventHelpers";
 export class PointerReleasedEventMessage extends PointerEventMessageBase {
     public readonly button: MouseButton
 
-    constructor(e: React.MouseEvent) {
-        super(e);
+    constructor(e: React.MouseEvent, scale: number) {
+        super(e, scale);
         this.button = getMouseButton(e);
     }
 

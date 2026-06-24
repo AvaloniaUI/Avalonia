@@ -10,11 +10,25 @@ namespace ControlCatalog.ViewModels
     public class ComboBoxPageViewModel : ViewModelBase
     {
         private bool _wrapSelection;
+        private string _textValue = string.Empty;
+        private IdAndName? _selectedItem = null;
 
         public bool WrapSelection
         {
             get => _wrapSelection;
             set => this.RaiseAndSetIfChanged(ref _wrapSelection, value);
+        }
+
+        public string TextValue
+        {
+            get => _textValue;
+            set => this.RaiseAndSetIfChanged(ref _textValue, value);
+        }
+
+        public IdAndName? SelectedItem
+        {
+            get => _selectedItem;
+            set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
         }
 
         public ObservableCollection<IdAndName> Values { get; set; } = new ObservableCollection<IdAndName>

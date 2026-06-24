@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.GesturePinchRotationPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="How It Works" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="A PinchGestureRecognizer raises Pinch events that include an Angle property. The angle is applied to a RotateTransform on the inner panel." />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Use the slider below to manually adjust the rotation angle, or use a multi-touch pinch/twist gesture." />
+
+        <Separator />
+
+        <TextBlock Text="API" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="PinchEventArgs.Angle" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="The rotation angle in degrees from the pinch gesture." />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <DockPanel Margin="12">
+      <Slider Minimum="0"
+              Maximum="360"
+              DockPanel.Dock="Bottom"
+              x:Name="AngleSlider" />
+      <Panel x:Name="RotationGesture">
+        <Panel.GestureRecognizers>
+          <PinchGestureRecognizer/>
+        </Panel.GestureRecognizers>
+        <Border BorderThickness="1.5" BorderBrush="LawnGreen"/>
+        <Panel HorizontalAlignment="Center"
+               Width="100"
+               Height="100">
+          <Panel.RenderTransform>
+            <RotateTransform Angle="{Binding #AngleSlider.Value}"/>
+          </Panel.RenderTransform>
+          <Rectangle Fill="SkyBlue"/>
+          <Rectangle HorizontalAlignment="Center"
+                     VerticalAlignment="Top"
+                     Fill="Yellow"
+                     Width="5"
+                     Height="35"/>
+        </Panel>
+        <TextBlock Text="{Binding #AngleSlider.Value, StringFormat={}{0:F0}\°}"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="DemiBold"
+                   FontSize="20" />
+      </Panel>
+    </DockPanel>
+  </DockPanel>
+</UserControl>

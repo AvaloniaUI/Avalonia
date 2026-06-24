@@ -29,7 +29,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
             using (var client = new HttpClient())
             {
-                var url = Path.Combine(UnicodeDataGenerator.Ucd, "BidiTest.txt");
+                var url = Path.Combine(UnicodeDataSource.Ucd, "BidiTest.txt");
 
                 using (var result = client.GetAsync(url).GetAwaiter().GetResult())
                 {
@@ -42,7 +42,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                         var lineNumber = 0;
 
                         // Process each line
-                        int[] levels = null;
+                        int[]? levels = null;
 
                         while (!reader.EndOfStream)
                         {
@@ -121,7 +121,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                                     lineNumber,
                                     directions,
                                     paragraphEmbeddingLevel,
-                                    levels
+                                    levels!
                                 ]);
 
                                 break;

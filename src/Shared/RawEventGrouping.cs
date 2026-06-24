@@ -52,35 +52,42 @@ internal class AutomaticRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQ
 {
     private readonly Queue<(RawInputEventArgs args, Action<RawInputEventArgs> handler)> _inputQueue = new();
     private readonly Action _dispatchFromQueue;
+    private readonly Dispatcher _dispatcher;
 
-    public AutomaticRawEventGrouperDispatchQueue()
+    public AutomaticRawEventGrouperDispatchQueue(Dispatcher? dispatcher = null)
     {
+        _dispatcher = dispatcher ?? Dispatcher.CurrentDispatcher;
         _dispatchFromQueue = DispatchFromQueue;
     }
     
     public void Add(RawInputEventArgs args, Action<RawInputEventArgs> handler)
     {
-        _inputQueue.Enqueue((args, handler));
-        
-        if (_inputQueue.Count == 1)
-            Dispatcher.UIThread.Post(_dispatchFromQueue, DispatcherPriority.Input);
-        
+        lock (_inputQueue)
+        {
+            _inputQueue.Enqueue((args, handler));
+
+            if (_inputQueue.Count == 1)
+                _dispatcher.Post(_dispatchFromQueue, DispatcherPriority.Input);
+        }
     }
     
     private void DispatchFromQueue()
     {
+        RawInputEventArgs args;
+        Action<RawInputEventArgs> handler;
         while (true)
         {
-            if(_inputQueue.Count == 0)
-                return;
+            lock (_inputQueue)
+                if (_inputQueue.Count == 0)
+                    return;
 
-            var ev = _inputQueue.Dequeue();
-
-            ev.handler(ev.args);
+            (args, handler) = _inputQueue.Dequeue();
             
-            if (Dispatcher.UIThread.HasJobsWithPriority(DispatcherPriority.Input + 1))
+            handler(args);
+
+            if (_dispatcher.HasJobsWithPriority(DispatcherPriority.Input + 1))
             {
-                Dispatcher.UIThread.Post(_dispatchFromQueue, DispatcherPriority.Input);
+                _dispatcher.Post(_dispatchFromQueue, DispatcherPriority.Input);
                 return;
             }
         }
@@ -180,7 +187,7 @@ internal class RawEventGrouper : IDisposable
     {
         
         last.IntermediatePoints ??= new Lazy<IReadOnlyList<RawPointerPoint>?>(s_getPooledListDelegate);
-        ((PooledList<RawPointerPoint>)last.IntermediatePoints.Value!).Add(new RawPointerPoint { Position = last.Position });
+        ((PooledList<RawPointerPoint>)last.IntermediatePoints.Value!).Add(new RawPointerPoint { Position = last.Position, Pressure = last.Point.Pressure, ContactRect = last.Point.ContactRect, Twist = last.Point.Twist, XTilt = last.Point.XTilt, YTilt = last.Point.YTilt });
         last.Position = current.Position;
         last.Timestamp = current.Timestamp;
         last.InputModifiers = current.InputModifiers;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Native.Interop;
 
@@ -8,7 +9,7 @@ namespace Avalonia.Native
 {
     class AvaloniaNativeCursor : ICursorImpl, IDisposable
     {
-        public IAvnCursor Cursor { get; private set; }
+        public IAvnCursor? Cursor { get; private set; }
         public IntPtr Handle => IntPtr.Zero;
 
         public string HandleDescriptor => "<none>";
@@ -20,7 +21,7 @@ namespace Avalonia.Native
 
         public void Dispose()
         {
-            Cursor.Dispose();
+            Cursor?.Dispose();
             Cursor = null;
         }
     }
@@ -40,7 +41,7 @@ namespace Avalonia.Native
             return new AvaloniaNativeCursor( cursor );
         }
 
-        public unsafe ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public unsafe ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
         {
             using(var ms = new MemoryStream())
             {

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -77,14 +78,14 @@ namespace Avalonia.Controls
             private set => SetAndRaise(ScrollProperty, ref _scroll, value);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="SelectingItemsControl.SelectedItems"/>
         public new IList? SelectedItems
         {
             get => base.SelectedItems;
             set => base.SelectedItems = value;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="SelectingItemsControl.Selection"/>
         public new ISelectionModel Selection
         {
             get => base.Selection;
@@ -126,9 +127,14 @@ namespace Avalonia.Controls
             return NeedsContainer<ListBoxItem>(item, out recycleKey);
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ListBoxAutomationPeer(this);
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
+            var hotkeys = this.GetPlatformSettings()?.HotkeyConfiguration;
             var ctrl = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
             if (!ctrl &&
@@ -146,14 +152,6 @@ namespace Avalonia.Controls
                 Selection.SelectAll();
                 e.Handled = true;
             }
-            else if (e.Key == Key.Space || e.Key == Key.Enter)
-            {
-                UpdateSelectionFromEventSource(
-                    e.Source,
-                    true,
-                    e.KeyModifiers.HasFlag(KeyModifiers.Shift),
-                    ctrl);
-            }
 
             base.OnKeyDown(e);
         }
@@ -162,20 +160,6 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
-        }
-
-        internal bool UpdateSelectionFromPointerEvent(Control source, PointerEventArgs e)
-        {
-            // TODO: use TopLevel.PlatformSettings here, but first need to update our tests to use TopLevels. 
-            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
-            var toggle = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
-
-            return UpdateSelectionFromEventSource(
-                source,
-                true,
-                e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                toggle,
-                e.GetCurrentPoint(source).Properties.IsRightButtonPressed);
         }
     }
 }

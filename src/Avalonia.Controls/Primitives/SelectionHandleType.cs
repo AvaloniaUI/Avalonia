@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents which part of the selection the TextSelectionHandle controls.
     /// </summary>
-    public enum SelectionHandleType
+    internal enum SelectionHandleType
     {
         /// <summary>
         /// The Handle controls the caret position.

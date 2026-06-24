@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Avalonia.Platform;
@@ -177,14 +176,10 @@ namespace Avalonia.Media.Imaging
 
         public virtual PixelFormat? Format => (PlatformImpl.Item as IReadableBitmapImpl)?.Format;
 
-        public virtual AlphaFormat? AlphaFormat => (PlatformImpl.Item as IReadableBitmapWithAlphaImpl)?.AlphaFormat;
+        public virtual AlphaFormat? AlphaFormat => (PlatformImpl.Item as IReadableBitmapImpl)?.AlphaFormat;
 
-        private protected unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
-            ILockedFramebuffer fb)
+        private PixelRect ValidateSourceRect(PixelRect sourceRect)
         {
-            if (Format == null)
-                throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
-
             if ((sourceRect.Width <= 0 || sourceRect.Height <= 0) && (sourceRect.X != 0 || sourceRect.Y != 0))
                 throw new ArgumentOutOfRangeException(nameof(sourceRect));
 
@@ -198,6 +193,16 @@ namespace Avalonia.Media.Imaging
 
             if (sourceRect.Right > PixelSize.Width || sourceRect.Bottom > PixelSize.Height)
                 throw new ArgumentOutOfRangeException(nameof(sourceRect));
+            return sourceRect;
+        }
+        
+        private protected unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
+            ILockedFramebuffer fb)
+        {
+            if (Format == null)
+                throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
+
+            sourceRect = ValidateSourceRect(sourceRect);
 
             int minStride = checked(((sourceRect.Width * fb.Format.BitsPerPixel) + 7) / 8);
             if (stride < minStride)
@@ -224,8 +229,10 @@ namespace Avalonia.Media.Imaging
                 || PlatformImpl.Item is not IReadableBitmapImpl readable
                 || Format != readable.Format
             )
+            {
                 throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
-            
+            }
+
             if (_isTranscoded)
                 throw new NotSupportedException("CopyPixels is not supported for transcoded bitmaps");
             
@@ -237,16 +244,21 @@ namespace Avalonia.Media.Imaging
         /// Copies pixels to the target buffer and transcodes the pixel and alpha format if needed.
         /// </summary>
         /// <param name="buffer">The target buffer.</param>
-        /// <param name="alphaFormat">The alpha format.</param>
         /// <exception cref="NotSupportedException"></exception>
-        public void CopyPixels(ILockedFramebuffer buffer, AlphaFormat alphaFormat)
+        public void CopyPixels(ILockedFramebuffer buffer)
         {
-            if (PlatformImpl.Item is not IReadableBitmapWithAlphaImpl readable || readable.Format == null || readable.AlphaFormat == null)
+            if (PlatformImpl.Item is not IReadableBitmapImpl readable || readable.Format == null || readable.AlphaFormat == null)
             {
-                throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
+                // Since we can't read pixels from the bitmap, we need to render it to a compatible bitmap and read pixels from it.
+                using var rtb = new RenderTargetBitmap(PixelSize);
+                using (var ctx = rtb.CreateDrawingContext())
+                    ctx.DrawImage(this, new Rect(rtb.Size));
+                rtb.CopyPixels(buffer);
+
+                return;
             }
 
-            if (buffer.Format != readable.Format || alphaFormat != readable.AlphaFormat)
+            if (buffer.Format != readable.Format || buffer.AlphaFormat != readable.AlphaFormat)
             {
                 using (var fb = readable.Lock())
                 {
@@ -255,11 +267,11 @@ namespace Avalonia.Media.Imaging
                         fb.Size,
                         fb.RowBytes,
                         fb.Format,
-                        readable.AlphaFormat.Value, 
+                        fb.AlphaFormat,
                         buffer.Address, 
                         buffer.RowBytes,
                         buffer.Format,
-                        alphaFormat);
+                        buffer.AlphaFormat);
                 }
             }
             else
@@ -293,9 +305,7 @@ namespace Avalonia.Media.Imaging
         {
             get
             {
-                // TODO12: We should probably make PlatformImpl to be nullable or make it possible to check
-                // and fix IRef<T> in general (right now Item is not nullable while it internally is)
-                if (PlatformImpl.Item == null!)
+                if (!PlatformImpl.IsAlive)
                     return null;
                 return PlatformImpl;
             }

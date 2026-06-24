@@ -13,5 +13,10 @@ namespace Avalonia.Controls.Documents
         {
             FontWeightProperty.OverrideDefaultValue<Bold>(FontWeight.Bold);
         }
+
+        public Bold()
+        {
+            SetCurrentValue(FontWeightProperty, FontWeight.Bold);
+        }
     }
 }

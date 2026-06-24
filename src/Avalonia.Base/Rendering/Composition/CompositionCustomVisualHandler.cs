@@ -12,6 +12,7 @@ public abstract class CompositionCustomVisualHandler
     private ServerCompositionCustomVisual? _host;
     private bool _inRender;
     private Rect _currentTransformedClip;
+    private Matrix _currentTransform;
 
     public virtual void OnMessage(object message)
     {
@@ -27,6 +28,7 @@ public abstract class CompositionCustomVisualHandler
     {
         _inRender = true;
         _currentTransformedClip = currentTransformedClip;
+        _currentTransform = drawingContext.CurrentTransform;
         try
         {
             OnRender(drawingContext);
@@ -97,14 +99,14 @@ public abstract class CompositionCustomVisualHandler
     protected bool RenderClipContains(Point pt)
     {
         VerifyInRender();
-        pt *= _host!.GlobalTransformMatrix;
-        return _currentTransformedClip.Contains(pt) && _host.Root!.DirtyRects.Contains(pt);
+        pt = pt.Transform(_currentTransform);
+        return _currentTransformedClip.Contains(pt);
     }
 
     protected bool RenderClipIntersectes(Rect rc)
     {
         VerifyInRender();
-        rc = rc.TransformToAABB(_host!.GlobalTransformMatrix);
-        return _currentTransformedClip.Intersects(rc) && _host.Root!.DirtyRects.Intersects(new (rc));
+        rc = rc.TransformToAABB(_currentTransform);
+        return _currentTransformedClip.Intersects(rc);
     }
 }

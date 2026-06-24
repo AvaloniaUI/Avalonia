@@ -1,7 +1,7 @@
 ﻿namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
-    /// Generic implementation of TextParagraphProperties
+    /// Generic implementation of <see cref="TextParagraphProperties"/>.
     /// </summary>
     public sealed class GenericTextParagraphProperties : TextParagraphProperties
     {
@@ -11,45 +11,45 @@
         private double _lineHeight;
 
         /// <summary>
-        /// Constructing TextParagraphProperties
+        /// Initializes a new instance of the <see cref="GenericTextParagraphProperties"/>.
         /// </summary>
-        /// <param name="defaultTextRunProperties">default paragraph's default run properties</param>
-        /// <param name="textAlignment">logical horizontal alignment</param>
-        /// <param name="textWrap">text wrap option</param>
-        /// <param name="lineHeight">Paragraph line height</param>
-        /// <param name="letterSpacing">letter spacing</param>
+        /// <param name="defaultTextRunProperties">Default text run properties, such as typeface or foreground brush.</param>
+        /// <param name="textAlignment">The alignment of inline content in a block.</param>
+        /// <param name="textWrapping">A value that controls whether text wraps when it reaches the flow edge of its containing block box.</param>
+        /// <param name="lineHeight">Paragraph's line spacing.</param>
+        /// <param name="letterSpacing">The amount of letter spacing.</param>
         public GenericTextParagraphProperties(TextRunProperties defaultTextRunProperties,
             TextAlignment textAlignment = TextAlignment.Left,
-            TextWrapping textWrap = TextWrapping.NoWrap,
+            TextWrapping textWrapping = TextWrapping.NoWrap,
             double lineHeight = 0,
             double letterSpacing = 0)
         {
             DefaultTextRunProperties = defaultTextRunProperties;
             _textAlignment = textAlignment;
-            _textWrap = textWrap;
+            _textWrap = textWrapping;
             _lineHeight = lineHeight;
             LetterSpacing = letterSpacing;
         }
 
         /// <summary>
-        /// Constructing TextParagraphProperties
+        /// Initializes a new instance of the <see cref="GenericTextParagraphProperties"/>.
         /// </summary>
-        /// <param name="flowDirection">text flow direction</param>
-        /// <param name="textAlignment">logical horizontal alignment</param>
-        /// <param name="firstLineInParagraph">true if the paragraph is the first line in the paragraph</param>
-        /// <param name="alwaysCollapsible">true if the line is always collapsible</param>
-        /// <param name="defaultTextRunProperties">default paragraph's default run properties</param>
-        /// <param name="textWrap">text wrap option</param>
-        /// <param name="lineHeight">Paragraph line height</param>
-        /// <param name="indent">line indentation</param>
-        /// <param name="letterSpacing">letter spacing</param>
+        /// <param name="flowDirection">The primary text advance direction.</param>
+        /// <param name="textAlignment">The alignment of inline content in a block.</param>
+        /// <param name="firstLineInParagraph"><see langword="true"/> if the paragraph is the first line in the paragraph</param>
+        /// <param name="alwaysCollapsible"><see langword="true"/> if the formatted line may always be collapsed. If <see langword="false"/> (the default), only lines that overflow the paragraph width are collapsed.</param>
+        /// <param name="defaultTextRunProperties">Default text run properties, such as typeface or foreground brush.</param>
+        /// <param name="textWrapping">A value that controls whether text wraps when it reaches the flow edge of its containing block box.</param>
+        /// <param name="lineHeight">Paragraph's line spacing.</param>
+        /// <param name="indent">The amount of line indentation.</param>
+        /// <param name="letterSpacing">The amount of letter spacing.</param>
         public GenericTextParagraphProperties(
             FlowDirection flowDirection,
             TextAlignment textAlignment,
             bool firstLineInParagraph,
             bool alwaysCollapsible,
             TextRunProperties defaultTextRunProperties,
-            TextWrapping textWrap,
+            TextWrapping textWrapping,
             double lineHeight,
             double indent,
             double letterSpacing)
@@ -59,16 +59,16 @@
             FirstLineInParagraph = firstLineInParagraph;
             AlwaysCollapsible = alwaysCollapsible;
             DefaultTextRunProperties = defaultTextRunProperties;
-            _textWrap = textWrap;
+            _textWrap = textWrapping;
             _lineHeight = lineHeight;
             LetterSpacing = letterSpacing;
             Indent = indent;
         }
 
         /// <summary>
-        /// Constructing TextParagraphProperties from another one
+        /// Initializes a new instance of the <see cref="GenericTextParagraphProperties"/> with values copied from the specified <see cref="TextParagraphProperties"/>.
         /// </summary>
-        /// <param name="textParagraphProperties">source line props</param>
+        /// <param name="textParagraphProperties">The <see cref="TextParagraphProperties"/> to copy values from.</param>
         public GenericTextParagraphProperties(TextParagraphProperties textParagraphProperties)
             : this(textParagraphProperties.FlowDirection, 
                 textParagraphProperties.TextAlignment,
@@ -82,64 +82,43 @@
         {
         }
 
-        /// <summary>
-        /// This property specifies whether the primary text advance
-        /// direction shall be left-to-right, right-to-left, or top-to-bottom.
-        /// </summary>
+        /// <inheritdoc/>
         public override FlowDirection FlowDirection
         {
             get { return _flowDirection; }
         }
 
-        /// <summary>
-        /// This property describes how inline content of a block is aligned.
-        /// </summary>
+        /// <inheritdoc/>
         public override TextAlignment TextAlignment
         {
             get { return _textAlignment; }
         }
 
-        /// <summary>
-        /// Paragraph's line height
-        /// </summary>
+        /// <inheritdoc/>
         public override double LineHeight
         {
             get { return _lineHeight; }
         }
 
-        /// <summary>
-        /// Indicates the first line of the paragraph.
-        /// </summary>
+        /// <inheritdoc/>
         public override bool FirstLineInParagraph { get; }
 
-        /// <summary>
-        /// If true, the formatted line may always be collapsed. If false (the default),
-        /// only lines that overflow the paragraph width are collapsed.
-        /// </summary>
+        /// <inheritdoc/>
         public override bool AlwaysCollapsible { get; }
 
-        /// <summary>
-        /// Paragraph's default run properties
-        /// </summary>
+        /// <inheritdoc/>
         public override TextRunProperties DefaultTextRunProperties { get; }
 
-        /// <summary>
-        /// This property controls whether or not text wraps when it reaches the flow edge
-        /// of its containing block box
-        /// </summary>
+        /// <inheritdoc/>
         public override TextWrapping TextWrapping
         {
             get { return _textWrap; }
         }
 
-        /// <summary>
-        /// Line indentation
-        /// </summary>
+        /// <inheritdoc/>
         public override double Indent { get; }
 
-        /// <summary>
-        /// The letter spacing
-        /// </summary>
+        /// <inheritdoc/>
         public override double LetterSpacing { get; }
 
         /// <summary>

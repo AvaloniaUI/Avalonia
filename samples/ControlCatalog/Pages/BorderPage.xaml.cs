@@ -1,18 +1,12 @@
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages
 {
-    public class BorderPage : UserControl
+    public partial class BorderPage : ContentPage
     {
         public BorderPage()
         {
-            this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
+            InitializeComponent();
         }
     }
 }

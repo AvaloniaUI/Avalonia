@@ -2,7 +2,7 @@
 
 namespace ControlCatalog.Pages
 {
-    public partial class RelativePanelPage : UserControl
+    public partial class RelativePanelPage : ContentPage
     {
         public RelativePanelPage()
         {

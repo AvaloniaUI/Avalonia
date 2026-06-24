@@ -6,28 +6,27 @@ using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using Avalonia.Media.TextFormatting.Unicode;
 using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
+using Avalonia.FreeDesktop.DBusIme.IBus.DBus;
 
 
 namespace Avalonia.FreeDesktop.DBusIme.IBus
 {
     internal class IBusX11TextInputMethod : DBusTextInputMethodBase
     {
-        private OrgFreedesktopIBusServiceProxy? _service;
-        private OrgFreedesktopIBusInputContextProxy? _context;
-        private string? _preeditText;
+        private Service? _service;
+        private InputContext? _context;
+        private string _preeditText = "";
         private int _preeditCursor;
-        private bool _preeditShown = true;
         private int _insideReset;
 
-        public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
+        public IBusX11TextInputMethod(DBusConnection connection) : base(connection, "org.freedesktop.portal.IBus") { }
 
         protected override async Task<bool> Connect(string name)
         {
-            var portal = new OrgFreedesktopIBusPortalProxy(Connection, name, "/org/freedesktop/IBus");
+            var portal = new Portal(Connection, name, "/org/freedesktop/IBus");
             var path = await portal.CreateInputContextAsync(GetAppName());
-            _service = new OrgFreedesktopIBusServiceProxy(Connection, name, path);
-            _context = new OrgFreedesktopIBusInputContextProxy(Connection, name, path);
+            _service = new Service(Connection, name, path);
+            _context = new InputContext(Connection, name, path);
             AddDisposable(await _context.WatchCommitTextAsync(OnCommitText));
             AddDisposable(await _context.WatchForwardKeyEventAsync(OnForwardKey));
             AddDisposable(await _context.WatchUpdatePreeditTextAsync(OnUpdatePreedit));
@@ -37,52 +36,52 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             return true;
         }
 
-        private void OnHidePreedit(Exception? obj)
+        private void OnHidePreedit()
         {
-            _preeditShown = false;
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(null, null);
-        }
-
-        private void OnShowPreedit(Exception? obj)
-        {
-            _preeditShown = true;
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(_preeditText, _preeditText == null ? null : _preeditCursor);
-        }
-
-        private void OnUpdatePreedit(Exception? arg1, (VariantValue Text, uint CursorPos, bool Visible) preeditComponents)
-        {
-            if (preeditComponents.Text is { Type: VariantValueType.Struct, Count: >= 3 } structItem && structItem.GetItem(2) is { Type: VariantValueType.String} stringItem)
+            if (Client?.SupportsPreedit != true || string.IsNullOrEmpty(_preeditText))
             {
-                _preeditText = stringItem.GetString();
-                _preeditCursor = _preeditText != null
-                    ? Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
-                        (int)Math.Min(preeditComponents.CursorPos, int.MaxValue), false)
-                    : 0;
-
-                _preeditShown = true;
-            }
-            else
-            {
-                _preeditText = null;
-                _preeditShown = false;
-                _preeditCursor = 0;
-            }
-
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(
-                    _preeditShown ? _preeditText : null, _preeditCursor);
-        }
-
-        private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
-        {
-            if (e is not null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnForwardKey failed: {e}");
                 return;
             }
 
+            _preeditText = "";
+
+            Client?.SetPreeditText(_preeditText, 0);
+        }
+
+        private void OnShowPreedit()
+        {
+        }
+
+        private void OnUpdatePreedit((VariantValue Text, uint CursorPos, bool Visible) preeditComponents)
+        {
+            string? preeditText;
+            
+            if (preeditComponents.Text is { Type: VariantValueType.Struct, Count: >= 3 } structItem && structItem.GetItem(2) is { Type: VariantValueType.String} stringItem)
+            {
+                preeditText = stringItem.GetString();
+            }
+            else
+            {
+                preeditText = "";
+            }
+
+            if (Client?.SupportsPreedit != true || preeditText == _preeditText)
+            {
+                return;
+            }
+            
+            _preeditText = preeditText;
+
+            _preeditCursor = !string.IsNullOrEmpty(_preeditText) ?
+                Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
+                    (int)Math.Min(preeditComponents.CursorPos, int.MaxValue), false) :
+                0;
+            
+            Client.SetPreeditText(_preeditText, _preeditCursor);
+        }
+
+        private void OnForwardKey((uint keyval, uint keycode, uint state) k)
+        {
             var state = (IBusModifierMask)k.state;
             KeyModifiers mods = default;
             if (state.HasAllFlags(IBusModifierMask.ControlMask))
@@ -101,7 +100,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             });
         }
 
-        private void OnCommitText(Exception? e, VariantValue variantItem)
+        private void OnCommitText(VariantValue variantItem)
         {
             if (_insideReset > 0)
             {
@@ -109,11 +108,6 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                 // Thankfully the signal is sent _during_ Reset call processing,
                 // so it arrives on-the-wire before Reset call result, so we can
                 // check if we have any pending Reset calls and ignore the signal here
-                return;
-            }
-            if (e is not null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitText failed: {e}");
                 return;
             }
 
@@ -140,7 +134,6 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         protected override async Task ResetContextCore()
         {
-            _preeditShown = true;
             if (_context == null)
                 return;
             if (_context == null)

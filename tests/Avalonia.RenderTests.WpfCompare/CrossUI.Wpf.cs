@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using AlignmentX = System.Windows.Media.AlignmentX;
 using AlignmentY = System.Windows.Media.AlignmentY;
 using Brush = System.Windows.Media.Brush;
@@ -117,6 +118,16 @@ namespace Avalonia.RenderTests.WpfCompare
         public static WRect ToWpf(this Rect rect) => new(rect.Left, rect.Top, rect.Width, rect.Height);
         public static WColor ToWpf(this Color color) => WColor.FromArgb(color.A, color.R, color.G, color.B);
         public static WMatrix ToWpf(this Matrix m) => new WMatrix(m.M11, m.M12, m.M21, m.M22, m.M31, m.M32);
+
+        public static BitmapScalingMode ToWpf(this BitmapInterpolationMode mode) => mode switch
+        {
+            BitmapInterpolationMode.Unspecified => BitmapScalingMode.Unspecified,
+            BitmapInterpolationMode.None => BitmapScalingMode.NearestNeighbor,
+            BitmapInterpolationMode.LowQuality => BitmapScalingMode.LowQuality,
+            BitmapInterpolationMode.MediumQuality => BitmapScalingMode.Linear,
+            BitmapInterpolationMode.HighQuality => BitmapScalingMode.HighQuality,
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+        };
     }
 
     internal class WpfCrossControl : Panel
@@ -131,6 +142,7 @@ namespace Avalonia.RenderTests.WpfCompare
             Width = src.Bounds.Width;
             Height = src.Bounds.Height;
             RenderTransform = new MatrixTransform(src.RenderTransform.ToWpf());
+            RenderOptions.SetBitmapScalingMode(this, src.BitmapInterpolationMode.ToWpf());
             foreach (var ch in src.Children)
             {
                 var c = _children[ch];

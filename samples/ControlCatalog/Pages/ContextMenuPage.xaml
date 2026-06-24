@@ -1,7 +1,8 @@
-<UserControl x:Class="ControlCatalog.Pages.ContextMenuPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.ContextMenuPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
+             Header="ContextMenu"
              x:DataType="viewModels:ContextPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">A right click menu that can be applied to any control.</TextBlock>
@@ -13,6 +14,7 @@
           <Setter Property="Margin" Value="8" />
           <Setter Property="Focusable" Value="True" />
           <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+          <Setter Property="PlatformFeedback.FeedbackType" Value="Auto"/>
         </Style>
         <Style Selector="UniformGrid > Border > :is(Control)">
           <Setter Property="VerticalAlignment" Value="Center" />
@@ -42,6 +44,15 @@
                           IsHitTestVisible="False" />
               </MenuItem.Icon>
             </MenuItem>
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton1"
+                      IsChecked="True"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton2"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
             <MenuItem Header="Menu Item that won't close on click" StaysOpenOnClick="True" />
           </ContextMenu>
         </Border.ContextMenu>
@@ -61,7 +72,7 @@
         </Border.ContextMenu>
         <TextBlock Text="Dynamically Generated"/>
       </Border>
-      <Border x:Name="CustomContextRequestedBorder">
+      <Border x:Name="CustomContextRequestedBorder" ContextRequested="CustomContextRequested">
         <Border.ContextMenu>
           <ContextMenu>
             <MenuItem Header="Should never be visible" />
@@ -71,7 +82,7 @@
       </Border>
       <Border x:Name="CancellableContextBorder">
         <Border.ContextMenu>
-          <ContextMenu>
+          <ContextMenu Opening="ContextFlyoutPage_Opening" Closing="ContextFlyoutPage_Closing">
             <MenuItem>
               <MenuItem.Header>
                 <CheckBox x:Name="CancelCloseCheckBox" Content="Cancel close" />
@@ -86,4 +97,4 @@
       </Border>
     </UniformGrid>
   </StackPanel>
-</UserControl>
+</ContentPage>

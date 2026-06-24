@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 
 namespace Avalonia.Metal;
 
@@ -13,13 +14,13 @@ public interface IMetalDevice : IPlatformGraphicsContext
 }
 
 [PrivateApi]
-public interface IMetalPlatformSurface
+public interface IMetalPlatformSurface : IPlatformRenderSurface
 {
     IMetalPlatformSurfaceRenderTarget CreateMetalRenderTarget(IMetalDevice device);
 }
 
 [PrivateApi]
-public interface IMetalPlatformSurfaceRenderTarget : IDisposable
+public interface IMetalPlatformSurfaceRenderTarget : IDisposable, IPlatformRenderSurfaceRenderTarget
 {
     IMetalPlatformSurfaceRenderingSession BeginRendering();
 }

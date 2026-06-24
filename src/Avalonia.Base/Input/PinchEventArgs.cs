@@ -4,13 +4,13 @@ namespace Avalonia.Input
 {
     public class PinchEventArgs : RoutedEventArgs
     {
-        public PinchEventArgs(double scale, Point scaleOrigin) : base(Gestures.PinchEvent)
+        public PinchEventArgs(double scale, Point scaleOrigin) : base(InputElement.PinchEvent)
         {
             Scale = scale;
             ScaleOrigin = scaleOrigin;
         }
 
-        public PinchEventArgs(double scale, Point scaleOrigin, double angle, double angleDelta) : base(Gestures.PinchEvent)
+        public PinchEventArgs(double scale, Point scaleOrigin, double angle, double angleDelta) : base(InputElement.PinchEvent)
         {
             Scale = scale;
             ScaleOrigin = scaleOrigin;
@@ -41,7 +41,7 @@ namespace Avalonia.Input
 
     public class PinchEndedEventArgs : RoutedEventArgs
     {
-        public PinchEndedEventArgs() : base(Gestures.PinchEndedEvent)
+        public PinchEndedEventArgs() : base(InputElement.PinchEndedEvent)
         {
         }
     }

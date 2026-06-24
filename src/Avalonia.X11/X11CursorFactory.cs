@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Internal;
 
@@ -71,7 +71,7 @@ namespace Avalonia.X11
             return new CursorImpl(handle);
         }
 
-        public unsafe ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public unsafe ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
         {
             return new XImageCursor(_display, cursor, hotSpot);
         }
@@ -84,13 +84,13 @@ namespace Avalonia.X11
             return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);
         }
 
-        private unsafe class XImageCursor : CursorImpl, IFramebufferPlatformSurface, IPlatformHandle
+        private unsafe class XImageCursor : CursorImpl, IPlatformHandle
         {
             private readonly IntPtr _display;
             private readonly PixelSize _pixelSize;
             private readonly UnmanagedBlob _blob;
 
-            public XImageCursor(IntPtr display, IBitmapImpl bitmap, PixelPoint hotSpot)
+            public XImageCursor(IntPtr display, Bitmap bitmap, PixelPoint hotSpot)
             {
                 var size = Marshal.SizeOf<XcursorImage>() +
                     (bitmap.PixelSize.Width * bitmap.PixelSize.Height * 4);
@@ -108,15 +108,12 @@ namespace Avalonia.X11
                 image->xhot = hotSpot.X;
                 image->yhot = hotSpot.Y;
                 image->pixels = (IntPtr)(image + 1);
-               
-                using (var cpuContext = platformRenderInterface.CreateBackendContext(null))
-                using (var renderTarget = cpuContext.CreateRenderTarget(new[] { this }))
-                using (var ctx = renderTarget.CreateDrawingContext(true))
-                {
-                    var r = new Rect(_pixelSize.ToSize(1)); 
-                    ctx.DrawBitmap(bitmap, 1, r, r);
-                }
 
+                bitmap.CopyPixels(new LockedFramebuffer(
+                    _blob.Address + Marshal.SizeOf<XcursorImage>(),
+                    _pixelSize, _pixelSize.Width * 4,
+                    new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul, null));
+                
                 Handle = XLib.XcursorImageLoadCursor(display, _blob.Address);
             }
 
@@ -127,16 +124,6 @@ namespace Avalonia.X11
                 XLib.XFreeCursor(_display, Handle);
                 _blob.Dispose();
             }
-
-            public ILockedFramebuffer Lock()
-            {
-                return new LockedFramebuffer(
-                    _blob.Address + Marshal.SizeOf<XcursorImage>(),
-                    _pixelSize, _pixelSize.Width * 4,
-                    new Vector(96, 96), PixelFormat.Bgra8888, null);
-            }
-            
-            public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
         }
         
         private nint GetCursorHandleCached(StandardCursorType type)

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Moq;
 
 namespace Avalonia.UnitTests
 {
@@ -18,27 +19,27 @@ namespace Avalonia.UnitTests
             _assets = assets.ToDictionary(x => new Uri(x.Item1, UriKind.RelativeOrAbsolute), x => x.Item2);
         }
 
-        public bool Exists(Uri uri, Uri baseUri = null)
+        public bool Exists(Uri uri, Uri? baseUri = null)
         {
             return _assets.ContainsKey(uri);
         }
 
-        public Stream Open(Uri uri, Uri baseUri = null)
+        public Stream Open(Uri uri, Uri? baseUri = null)
         {
             return new MemoryStream(Encoding.UTF8.GetBytes(_assets[uri]));
         }
 
-        public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
+        public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri? baseUri = null)
         {
-            return (Open(uri, baseUri), (Assembly)null);
+            return (Open(uri, baseUri), Mock.Of<Assembly>());
         }
 
-        public Assembly GetAssembly(Uri uri, Uri baseUri = null)
+        public Assembly? GetAssembly(Uri uri, Uri? baseUri = null)
         {
             return null;
         }
 
-        public IEnumerable<Uri> GetAssets(Uri uri, Uri baseUri)
+        public IEnumerable<Uri> GetAssets(Uri uri, Uri? baseUri)
         {
             var absPath = uri.GetUnescapeAbsolutePath();
             return _assets.Keys.Where(

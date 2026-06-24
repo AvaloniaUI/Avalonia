@@ -1,3 +1,5 @@
+using System.Threading;
+
 namespace Avalonia.Rendering.Composition.Server
 {
     /// <summary>
@@ -7,40 +9,29 @@ namespace Avalonia.Rendering.Composition.Server
     /// </summary>
     internal class ReadbackIndices
     {
-        private readonly object _lock = new object();
-        public int ReadIndex { get; private set; } = 0;
-        public int WriteIndex { get; private set; } = 1;
-        public int WrittenIndex { get; private set; } = 0;
+        public readonly object _lock = new object();
+
         public ulong ReadRevision { get; private set; }
-        public ulong LastWrittenRevision { get; private set; }
-        
+        private ulong _nextWriteRevision = 1;
+        public ulong WriteRevision { get; private set; }
+        public ulong LastCompletedWrite { get; private set; }
+
         public void NextRead()
         {
             lock (_lock)
-            {
-                if (ReadRevision < LastWrittenRevision)
-                {
-                    ReadIndex = WrittenIndex;
-                    ReadRevision = LastWrittenRevision;
-                }
-            }
+                ReadRevision = LastCompletedWrite;
+        }
+        
+        public void BeginWrite()
+        {
+            Monitor.Enter(_lock);
+            WriteRevision = _nextWriteRevision++;
         }
 
-        public void CompleteWrite(ulong writtenRevision)
+        public void EndWrite()
         {
-            lock (_lock)
-            {
-                for (var c = 0; c < 3; c++)
-                {
-                    if (c != WriteIndex && c != ReadIndex)
-                    {
-                        WrittenIndex = WriteIndex;
-                        LastWrittenRevision = writtenRevision;
-                        WriteIndex = c;
-                        return;
-                    }
-                }
-            }
+            LastCompletedWrite = WriteRevision;
+            Monitor.Exit(_lock);
         }
     }
 }

@@ -1,15 +1,16 @@
-<UserControl x:Class="ControlCatalog.Pages.DragAndDropPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.DragAndDropPage"
              xmlns="https://github.com/avaloniaui"
+             Header="Drag And Drop"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <UserControl.Styles>
+  <ContentPage.Styles>
     <Style Selector="Border.draggable">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
       <Setter Property="BorderThickness" Value="2" />
       <Setter Property="Padding" Value="16" />
     </Style>
-  </UserControl.Styles>
+  </ContentPage.Styles>
 
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Example of Drag+Drop capabilities</TextBlock>
@@ -24,6 +25,10 @@
         <Border Name="DragMeFiles"
                 Classes="draggable">
           <TextBlock Name="DragStateFiles" TextWrapping="Wrap">Drag Me (files)</TextBlock>
+        </Border>
+        <Border Name="DragMeBitmap"
+                Classes="draggable">
+          <TextBlock Name="DragStateBitmap" TextWrapping="Wrap">Drag Me (bitmap)</TextBlock>
         </Border>
         <Border Name="DragMeCustom"
                 Classes="draggable">
@@ -51,6 +56,6 @@
       </StackPanel>
     </WrapPanel>
 
-    <TextBlock x:Name="DropState" TextWrapping="Wrap" />
+    <ContentControl x:Name="DropState" TextBlock.TextWrapping="Wrap" />
   </StackPanel>
-</UserControl>
+</ContentPage>

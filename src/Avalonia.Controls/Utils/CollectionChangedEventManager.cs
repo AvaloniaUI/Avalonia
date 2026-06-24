@@ -132,16 +132,20 @@ namespace Avalonia.Controls.Utils
                     }
                 }
 
-                var l = Listeners.ToArray();
-
                 if (Dispatcher.UIThread.CheckAccess())
                 {
+                    var l = Listeners.ToArray();
                     Notify(_collection, e, l);
                 }
                 else
                 {
                     var eCapture = e;
-                    Dispatcher.UIThread.Post(() => Notify(_collection, eCapture, l), DispatcherPriority.Send);
+                    Dispatcher.UIThread.Post(() =>
+                        {
+                            var l = Listeners.ToArray();
+                            Notify(_collection, eCapture, l);
+                        },
+                        DispatcherPriority.Send);
                 }
             }
         }

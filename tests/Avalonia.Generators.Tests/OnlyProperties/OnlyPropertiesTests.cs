@@ -1,5 +1,8 @@
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Generators.Common;
+using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
 using Avalonia.Generators.NameGenerator;
 using Avalonia.Generators.Tests.OnlyProperties.GeneratedCode;
@@ -25,34 +28,34 @@ public class OnlyPropertiesTests
     [InlineData(OnlyPropertiesCode.ControlWithoutWindow, View.ControlWithoutWindow)]
     public async Task Should_Generate_FindControl_Refs_From_Avalonia_Markup_File(string expectation, string markup)
     {
+        // Step 1: parse XAML as xml nodes, without any type information.
+        var classResolver = new XamlXViewResolver(MiniCompiler.CreateNoop());
+
+        var xaml = await View.Load(markup);
+        var classInfo = classResolver.ResolveView(xaml, CancellationToken.None);
+        Assert.NotNull(classInfo);
+        var nameResolver = new XamlXNameResolver();
+        var names = nameResolver.ResolveXmlNames(classInfo.Xaml, CancellationToken.None);
+
+        // Step 2: use compilation context to resolve types
         var compilation =
             View.CreateAvaloniaCompilation()
                 .WithCustomTextBox();
+        var resolvedNames = names.ResolveNames(compilation, nameResolver).ToArray();
 
-        var classResolver = new XamlXViewResolver(
-            new RoslynTypeSystem(compilation),
-            MiniCompiler.CreateDefault(
-                new RoslynTypeSystem(compilation),
-                MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
-
-        var xaml = await View.Load(markup);
-        var classInfo = classResolver.ResolveView(xaml);
-        Assert.NotNull(classInfo);
-        var nameResolver = new XamlXNameResolver();
-        var names = nameResolver.ResolveNames(classInfo.Xaml);
-
+        // Step 3: run generator
         var generator = new OnlyPropertiesCodeGenerator();
         var generatorVersion = typeof(OnlyPropertiesCodeGenerator).Assembly.GetName().Version?.ToString();
 
         var code = generator
-            .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
+            .GenerateCode("SampleView", "Sample.App", resolvedNames)
             .Replace("\r", string.Empty);
 
         var expected = (await OnlyPropertiesCode.Load(expectation))
             .Replace("\r", string.Empty)
             .Replace("$GeneratorVersion", generatorVersion);
 
-        CSharpSyntaxTree.ParseText(code);
+        CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(expected, code);
     }
 }

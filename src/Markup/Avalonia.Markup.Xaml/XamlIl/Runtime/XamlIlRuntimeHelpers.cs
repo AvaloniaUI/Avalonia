@@ -129,22 +129,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     return false;
                 }
 
-#if NET6_0_OR_GREATER
                 if (!CollectionsMarshal.AsSpan(resourceNodes).SequenceEqual(lastResourceNodes))
                 {
                     cachedResourceNodes = null;
                     return false;
                 }
-#else
-                for (var i = 0; i < lastResourceNodes.Length; ++i)
-                {
-                    if (lastResourceNodes[i] != resourceNodes[i])
-                    {
-                        cachedResourceNodes = null;
-                        return false;
-                    }
-                }
-#endif
 
                 cachedResourceNodes = lastResourceNodes;
                 return true;
@@ -241,7 +230,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 => RootObject;
 
             public IEnumerable<object> Parents
-                => _parentResourceNodes.Reverse();
+                => _parentResourceNodes.AsEnumerable().Reverse();
 
             public IReadOnlyList<object> DirectParentsStack
                 => _parentResourceNodes;
@@ -283,7 +272,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static void ApplyNonMatchingMarkupExtensionV1(object target, object property, IServiceProvider prov,
             object value)
         {
-            if (value is IBinding b)
+            if (value is BindingBase b)
             {
                 if (property is AvaloniaProperty p)
                     ((AvaloniaObject)target).Bind(p, b);
@@ -351,7 +340,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 throw new ArgumentException(
                     $"Unable to resolve type {qualifiedTypeName} from any of the following locations: " +
                     string.Join(",", resolvable.Select(e => $"`clr-namespace:{e.ClrNamespace};assembly={e.ClrAssemblyName}`")))
-                    { HelpLink = "https://docs.avaloniaui.net/guides/basics/introduction-to-xaml#valid-xaml-namespaces" };
+                    { HelpLink = "https://docs.avaloniaui.net/docs/basics/user-interface/introduction-to-xaml#xml-namespaces" };
             }
         }
 

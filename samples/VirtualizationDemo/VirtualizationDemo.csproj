@@ -6,8 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
@@ -18,6 +16,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\SourceGenerators.props" />
   <Import Project="..\..\build\NullableEnable.props" />

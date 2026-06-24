@@ -1,27 +1,22 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
-using Avalonia.Markup.Xaml;
+using Avalonia.Interactivity;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public class NotificationsPage : UserControl
+    public partial class NotificationsPage : ContentPage
     {
         private NotificationViewModel _viewModel;
 
         public NotificationsPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             _viewModel = new NotificationViewModel();
 
             DataContext = _viewModel;
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -31,9 +26,14 @@ namespace ControlCatalog.Pages
             _viewModel.NotificationManager = new WindowNotificationManager(TopLevel.GetTopLevel(this)!);
         }
 
-        public void NotificationOnClick()
+        private void ShowNotification(object? sender, RoutedEventArgs e)
         {
-            this.Get<WindowNotificationManager>("ControlNotifications").Show("Notification clicked");
+            ControlNotifications.Show(new Notification
+            {
+                OnClick = () => ControlNotifications.Show("Notification clicked"),
+                Title = "Title",
+                Message = "Message"
+            });
         }
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.Compatibility;
 using Avalonia.Logging;
 
 namespace Avalonia.Platform.Storage.FileIO;
@@ -15,6 +14,7 @@ internal abstract class BclStorageProvider : IStorageProvider
 
     public abstract bool CanSave { get; }
     public abstract Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options);
+    public abstract Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options);
 
     public abstract bool CanPickFolder { get; }
     public abstract Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options);
@@ -106,13 +106,13 @@ internal abstract class BclStorageProvider : IStorageProvider
     // Normally we want to avoid platform specific code in the Avalonia.Base assembly.
     protected static string? GetDownloadsWellKnownFolder()
     {
-        if (OperatingSystemEx.IsWindows())
+        if (OperatingSystem.IsWindows())
         {
             return Environment.OSVersion.Version.Major < 6 ? null :
                 TryGetWindowsKnownFolder(s_folderDownloads);
         }
 
-        if (OperatingSystemEx.IsLinux())
+        if (OperatingSystem.IsLinux())
         {
             var envDir = Environment.GetEnvironmentVariable("XDG_DOWNLOAD_DIR");
             if (envDir != null && Directory.Exists(envDir))
@@ -121,7 +121,7 @@ internal abstract class BclStorageProvider : IStorageProvider
             }
         }
 
-        if (OperatingSystemEx.IsLinux() || OperatingSystemEx.IsMacOS())
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
             return "~/Downloads";
         }

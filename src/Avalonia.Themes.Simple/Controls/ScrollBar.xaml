@@ -18,7 +18,8 @@
                             MinWidth="{DynamicResource ScrollBarThickness}"
                             VerticalAlignment="Center"
                             Classes="repeat"
-                            Focusable="False">
+                            Focusable="False"
+                            AutomationProperties.Name="Column left">
                 <Path Data="M 4 0 L 4 8 L 0 4 Z" />
               </RepeatButton>
               <Track Grid.Row="1"
@@ -33,14 +34,17 @@
                 <Track.DecreaseButton>
                   <RepeatButton Name="PART_PageUpButton"
                                 Classes="repeattrack"
-                                Focusable="False" />
+                                Focusable="False"
+                                AutomationProperties.Name="Page left"/>
                 </Track.DecreaseButton>
                 <Track.IncreaseButton>
                   <RepeatButton Name="PART_PageDownButton"
                                 Classes="repeattrack"
-                                Focusable="False" />
+                                Focusable="False"
+                                AutomationProperties.Name="Page right"/>
                 </Track.IncreaseButton>
-                <Thumb Name="thumb" />
+                <Thumb Name="thumb"
+                       AutomationProperties.Name="Position"/>
               </Track>
               <RepeatButton Name="PART_LineDownButton"
                             Grid.Row="2"
@@ -48,7 +52,8 @@
                             MinWidth="{DynamicResource ScrollBarThickness}"
                             VerticalAlignment="Center"
                             Classes="repeat"
-                            Focusable="False">
+                            Focusable="False"
+                            AutomationProperties.Name="Column right">
                 <Path Data="M 0 0 L 4 4 L 0 8 Z" />
               </RepeatButton>
             </Grid>
@@ -68,7 +73,8 @@
                             MinHeight="{DynamicResource ScrollBarThickness}"
                             HorizontalAlignment="Center"
                             Classes="repeat"
-                            Focusable="False">
+                            Focusable="False"
+                            AutomationProperties.Name="Line up">
                 <Path Data="M 0 4 L 8 4 L 4 0 Z" />
               </RepeatButton>
               <Track Grid.Row="1"
@@ -84,14 +90,17 @@
                 <Track.DecreaseButton>
                   <RepeatButton Name="PART_PageUpButton"
                                 Classes="repeattrack"
-                                Focusable="False" />
+                                Focusable="False"
+                                AutomationProperties.Name="Page up"/>
                 </Track.DecreaseButton>
                 <Track.IncreaseButton>
                   <RepeatButton Name="PART_PageDownButton"
                                 Classes="repeattrack"
-                                Focusable="False" />
+                                Focusable="False"
+                                AutomationProperties.Name="Page down"/>
                 </Track.IncreaseButton>
-                <Thumb Name="thumb" />
+                <Thumb Name="thumb"
+                       AutomationProperties.Name="Position"/>
               </Track>
               <RepeatButton Name="PART_LineDownButton"
                             Grid.Row="2"
@@ -99,7 +108,8 @@
                             MinHeight="{DynamicResource ScrollBarThickness}"
                             HorizontalAlignment="Center"
                             Classes="repeat"
-                            Focusable="False">
+                            Focusable="False"
+                            AutomationProperties.Name="Line down">
                 <Path Data="M 0 0 L 4 4 L 8 0 Z" />
               </RepeatButton>
             </Grid>

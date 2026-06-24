@@ -10,17 +10,17 @@ namespace Avalonia.Animation.Animators;
 internal class EffectAnimator : Animator<IEffect?>
 {
     public override IDisposable? Apply(Animation animation, Animatable control, IClock? clock,
-        IObservable<bool> match, Action? onComplete)
+        IObservable<bool> match, Action? onComplete, bool shouldPauseOnInvisible)
     {
         if (TryCreateAnimator<BlurEffectAnimator, IBlurEffect>(out var animator)
             || TryCreateAnimator<DropShadowEffectAnimator, IDropShadowEffect>(out animator))
-            return animator.Apply(animation, control, clock, match, onComplete);
+            return animator.Apply(animation, control, clock, match, onComplete, shouldPauseOnInvisible);
 
         Logger.TryGet(LogEventLevel.Error, LogArea.Animations)?.Log(
             this,
             "The animation's keyframe value types set is not supported.");
 
-        return base.Apply(animation, control, clock, match, onComplete);
+        return base.Apply(animation, control, clock, match, onComplete, shouldPauseOnInvisible);
     }
 
     private bool TryCreateAnimator<TAnimator, TInterface>([NotNullWhen(true)] out IAnimator? animator)

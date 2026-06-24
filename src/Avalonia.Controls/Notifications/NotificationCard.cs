@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -171,24 +170,10 @@ namespace Avalonia.Controls.Notifications
 
         private void UpdateNotificationType()
         {
-            switch (NotificationType)
-            {
-                case NotificationType.Error:
-                    PseudoClasses.Add(":error");
-                    break;
-
-                case NotificationType.Information:
-                    PseudoClasses.Add(":information");
-                    break;
-
-                case NotificationType.Success:
-                    PseudoClasses.Add(":success");
-                    break;
-
-                case NotificationType.Warning:
-                    PseudoClasses.Add(":warning");
-                    break;
-            }
+            PseudoClasses.Set(":error", NotificationType == NotificationType.Error);
+            PseudoClasses.Set(":information", NotificationType == NotificationType.Information);
+            PseudoClasses.Set(":success", NotificationType == NotificationType.Success);
+            PseudoClasses.Set(":warning", NotificationType == NotificationType.Warning);
         }
     }
 }

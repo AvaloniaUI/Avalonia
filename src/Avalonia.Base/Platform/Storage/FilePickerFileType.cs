@@ -7,17 +7,12 @@ namespace Avalonia.Platform.Storage;
 /// <summary>
 /// Represents a name mapped to the associated file types (extensions).
 /// </summary>
-public sealed class FilePickerFileType
+public sealed class FilePickerFileType(string? name)
 {
-    public FilePickerFileType(string? name)
-    {
-        Name = name ?? string.Empty;
-    }
-
     /// <summary>
     /// File type name.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; } = name ?? string.Empty;
 
     /// <summary>
     /// List of extensions in GLOB format. I.e. "*.png" or "*.*".
@@ -54,4 +49,7 @@ public sealed class FilePickerFileType
             .Select(e => e!.TrimStart('.'))
             .ToArray()!;
     }
+
+    /// <inheritdoc />
+    public override string ToString() => Name;
 }

@@ -147,7 +147,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             var target = CreateTarget(nullSource: true);
 
             target.SelectRange(1, 2);
-            Assert.Equal(new object[] { null, null }, target.WritableSelectedItems);
+            Assert.Equal(new object?[] { null, null }, target.WritableSelectedItems);
         }
 
         [Fact]
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             var target = CreateTarget(nullSource: true);
 
             target.SelectRange(1, 2);
-            Assert.Equal(new object[] { null, null }, target.WritableSelectedItems);
+            Assert.Equal(new object?[] { null, null }, target.WritableSelectedItems);
 
             target.Source = new[] { "foo", "bar", "baz" };
             Assert.Equal(new[] { "bar", "baz" }, target.WritableSelectedItems);
@@ -171,7 +171,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             Assert.Equal(new[] { "bar", "baz" }, target.WritableSelectedItems);
 
             target.Source = null;
-            Assert.Equal(new object[] { null, null }, target.WritableSelectedItems);
+            Assert.Equal(new object?[] { null, null }, target.WritableSelectedItems);
         }
 
         [Fact]
@@ -218,7 +218,7 @@ namespace Avalonia.Controls.UnitTests.Selection
 
             target.SelectedIndex = 1;
 
-            var changed = new List<string>();
+            var changed = new List<string?>();
 
             target.PropertyChanged += (s, e) => changed.Add(e.PropertyName);
 
@@ -248,7 +248,7 @@ namespace Avalonia.Controls.UnitTests.Selection
 
             Assert.Equal(0, target.SelectedIndex);
 
-            items.Reset(new string[] { "baz", "foo", "bar" });
+            items.Reset(["baz", "foo", "bar"]);
 
             Assert.Equal("foo", target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
@@ -269,7 +269,7 @@ namespace Avalonia.Controls.UnitTests.Selection
 
         private static InternalSelectionModel CreateTarget(
             bool singleSelect = false,
-            IList source = null,
+            IList? source = null,
             bool nullSource = false)
         {
             source ??= !nullSource ? new[] { "foo", "bar", "baz" } : null;
@@ -299,7 +299,7 @@ namespace Avalonia.Controls.UnitTests.Selection
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
 
-            public event NotifyCollectionChangedEventHandler CollectionChanged;
+            public event NotifyCollectionChangedEventHandler? CollectionChanged;
         }
     }
 }

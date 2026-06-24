@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Automation.Peers;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Automation.Provider
@@ -13,6 +14,7 @@ namespace Avalonia.Automation.Provider
     /// be implemented on true root elements, such as Windows. To embed an automation tree, use
     /// <see cref="IEmbeddedRootProvider"/> instead.
     /// </remarks>
+    [PrivateApi]
     public interface IRootProvider
     {
         /// <summary>

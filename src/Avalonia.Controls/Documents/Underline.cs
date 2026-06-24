@@ -11,5 +11,10 @@
         {
             TextDecorationsProperty.OverrideDefaultValue<Underline>(Media.TextDecorations.Underline);
         }
+
+        public Underline()
+        {
+            SetCurrentValue(TextDecorationsProperty, Media.TextDecorations.Underline);
+        }
     }
 }

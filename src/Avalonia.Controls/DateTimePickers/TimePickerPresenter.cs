@@ -1,9 +1,8 @@
-﻿using Avalonia.Controls.Metadata;
+﻿using System;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using System;
 
 namespace Avalonia.Controls
 {
@@ -11,25 +10,25 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a time. Intended for use with
     /// <see cref="TimePicker"/> but can be used independently
     /// </summary>
-    [TemplatePart("PART_AcceptButton",     typeof(Button), IsRequired = true)]
-    [TemplatePart("PART_DismissButton",    typeof(Button))]
-    [TemplatePart("PART_HourDownButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_HourSelector",     typeof(DateTimePickerPanel), IsRequired = true)]
-    [TemplatePart("PART_HourUpButton",     typeof(RepeatButton))]
-    [TemplatePart("PART_MinuteDownButton", typeof(RepeatButton))]
-    [TemplatePart("PART_MinuteSelector",   typeof(DateTimePickerPanel), IsRequired = true)]
-    [TemplatePart("PART_MinuteUpButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_SecondDownButton", typeof(RepeatButton))]
-    [TemplatePart("PART_SecondHost",       typeof(Panel), IsRequired = true)]
-    [TemplatePart("PART_SecondSelector",   typeof(DateTimePickerPanel), IsRequired = true)]
-    [TemplatePart("PART_SecondUpButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_PeriodDownButton", typeof(RepeatButton))]
-    [TemplatePart("PART_PeriodHost",       typeof(Panel), IsRequired = true)]
-    [TemplatePart("PART_PeriodSelector",   typeof(DateTimePickerPanel), IsRequired = true)]
-    [TemplatePart("PART_PeriodUpButton",   typeof(RepeatButton))]
-    [TemplatePart("PART_PickerContainer",  typeof(Grid), IsRequired = true)]
-    [TemplatePart("PART_SecondSpacer",     typeof(Rectangle), IsRequired = true)]
-    [TemplatePart("PART_ThirdSpacer",      typeof(Rectangle), IsRequired = true)]
+    [TemplatePart(TemplateItems.AcceptButtonName,      typeof(Button), IsRequired = true)]
+    [TemplatePart(TemplateItems.DismissButtonName,     typeof(Button))]
+    [TemplatePart(TemplateItems.HourDownButtonName,    typeof(Button))]
+    [TemplatePart(TemplateItems.HourSelectorName,      typeof(DateTimePickerPanel), IsRequired = true)]
+    [TemplatePart(TemplateItems.HourUpButtonName,      typeof(Button))]
+    [TemplatePart(TemplateItems.MinuteDownButtonName,  typeof(Button))]
+    [TemplatePart(TemplateItems.MinuteSelectorName,    typeof(DateTimePickerPanel), IsRequired = true)]
+    [TemplatePart(TemplateItems.MinuteUpButtonName,    typeof(Button))]
+    [TemplatePart(TemplateItems.SecondDownButtonName,  typeof(Button))]
+    [TemplatePart(TemplateItems.SecondHostName,        typeof(Panel))]
+    [TemplatePart(TemplateItems.SecondSelectorName,    typeof(DateTimePickerPanel))]
+    [TemplatePart(TemplateItems.SecondUpButtonName,    typeof(Button))]
+    [TemplatePart(TemplateItems.PeriodDownButtonName,  typeof(Button))]
+    [TemplatePart(TemplateItems.PeriodHostName,        typeof(Panel), IsRequired = true)]
+    [TemplatePart(TemplateItems.PeriodSelectorName,    typeof(DateTimePickerPanel), IsRequired = true)]
+    [TemplatePart(TemplateItems.PeriodUpButtonName,    typeof(Button))]
+    [TemplatePart(TemplateItems.PickerContainerName,   typeof(Grid), IsRequired = true)]
+    [TemplatePart(TemplateItems.SecondSpacerName,      typeof(Control), IsRequired = true)]
+    [TemplatePart(TemplateItems.ThirdSpacerName,       typeof(Control))]
     public class TimePickerPresenter : PickerPresenterBase
     {
         /// <summary>
@@ -37,7 +36,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<int> MinuteIncrementProperty =
             TimePicker.MinuteIncrementProperty.AddOwner<TimePickerPresenter>();
-        
+
         /// <summary>
         /// Defines the <see cref="SecondIncrement"/> property
         /// </summary>
@@ -49,7 +48,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<string> ClockIdentifierProperty =
             TimePicker.ClockIdentifierProperty.AddOwner<TimePickerPresenter>();
-        
+
         /// <summary>
         /// Defines the <see cref="UseSeconds"/> property
         /// </summary>
@@ -72,26 +71,54 @@ namespace Avalonia.Controls
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TimePickerPresenter>(KeyboardNavigationMode.Cycle);
         }
 
-        // TemplateItems
-        private Grid? _pickerContainer;
-        private Button? _acceptButton;
-        private Button? _dismissButton;
-        private Rectangle? _spacer2;
-        private Rectangle? _spacer3;
-        private Panel? _secondHost;
-        private Panel? _periodHost;
-        private DateTimePickerPanel? _hourSelector;
-        private DateTimePickerPanel? _minuteSelector;
-        private DateTimePickerPanel? _secondSelector;
-        private DateTimePickerPanel? _periodSelector;
-        private Button? _hourUpButton;
-        private Button? _minuteUpButton;
-        private Button? _secondUpButton;
-        private Button? _periodUpButton;
-        private Button? _hourDownButton;
-        private Button? _minuteDownButton;
-        private Button? _secondDownButton;
-        private Button? _periodDownButton;
+        private struct TemplateItems
+        {
+            public Grid _pickerContainer;
+            public const string PickerContainerName = "PART_PickerContainer";
+
+            public Button _acceptButton; 
+            public const string AcceptButtonName = "PART_AcceptButton";
+            public Button? _dismissButton; 
+            public const string DismissButtonName = "PART_DismissButton";
+
+            public Control _secondSpacer; // the 2nd spacer, not seconds of time
+            public const string SecondSpacerName = "PART_SecondSpacer";
+            public Control? _thirdSpacer; 
+            public const string ThirdSpacerName = "PART_ThirdSpacer";
+
+            public Panel? _secondHost; 
+            public const string SecondHostName = "PART_SecondHost";
+            public Panel _periodHost; 
+            public const string PeriodHostName = "PART_PeriodHost";
+
+            public DateTimePickerPanel _hourSelector; 
+            public const string HourSelectorName = "PART_HourSelector";
+            public DateTimePickerPanel _minuteSelector; 
+            public const string MinuteSelectorName = "PART_MinuteSelector";
+            public DateTimePickerPanel? _secondSelector; 
+            public const string SecondSelectorName = "PART_SecondSelector";
+            public DateTimePickerPanel _periodSelector; 
+            public const string PeriodSelectorName = "PART_PeriodSelector";
+
+            public Button? _hourUpButton; 
+            public const string HourUpButtonName = "PART_HourUpButton";
+            public Button? _minuteUpButton; 
+            public const string MinuteUpButtonName = "PART_MinuteUpButton";
+            public Button? _secondUpButton; 
+            public const string SecondUpButtonName = "PART_SecondUpButton";
+            public Button? _periodUpButton; 
+            public const string PeriodUpButtonName = "PART_PeriodUpButton";
+            public Button? _hourDownButton; 
+            public const string HourDownButtonName = "PART_HourDownButton";
+            public Button? _minuteDownButton; 
+            public const string MinuteDownButtonName = "PART_MinuteDownButton";
+            public Button? _secondDownButton; 
+            public const string SecondDownButtonName = "PART_SecondDownButton";
+            public Button? _periodDownButton; 
+            public const string PeriodDownButtonName = "PART_PeriodDownButton";
+        }
+
+        private TemplateItems? _templateItems;
 
         /// <summary>
         /// Gets or sets the minute increment in the selector
@@ -101,7 +128,7 @@ namespace Avalonia.Controls
             get => GetValue(MinuteIncrementProperty);
             set => SetValue(MinuteIncrementProperty, value);
         }
-        
+
         /// <summary>
         /// Gets or sets the second increment in the selector
         /// </summary>
@@ -119,7 +146,7 @@ namespace Avalonia.Controls
             get => GetValue(ClockIdentifierProperty);
             set => SetValue(ClockIdentifierProperty, value);
         }
-        
+
         /// <summary>
         /// Gets or sets the current clock identifier, either 12HourClock or 24HourClock
         /// </summary>
@@ -142,54 +169,54 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
-            _pickerContainer = e.NameScope.Get<Grid>("PART_PickerContainer");
-            _periodHost = e.NameScope.Get<Panel>("PART_PeriodHost");
-            _secondHost = e.NameScope.Find<Panel>("PART_SecondHost");
+            _templateItems = new()
+            {
+                _pickerContainer = e.NameScope.Get<Grid>(TemplateItems.PickerContainerName),
+                _periodHost = e.NameScope.Get<Panel>(TemplateItems.PeriodHostName),
+                _secondHost = e.NameScope.Find<Panel>(TemplateItems.SecondHostName),
 
-            _hourSelector = e.NameScope.Get<DateTimePickerPanel>("PART_HourSelector");
-            _minuteSelector = e.NameScope.Get<DateTimePickerPanel>("PART_MinuteSelector");
-            _secondSelector = e.NameScope.Find<DateTimePickerPanel>("PART_SecondSelector");
-            _periodSelector = e.NameScope.Get<DateTimePickerPanel>("PART_PeriodSelector");
-            
-            _spacer2 = e.NameScope.Get<Rectangle>("PART_SecondSpacer");
-            _spacer3 = e.NameScope.Find<Rectangle>("PART_ThirdSpacer");
+                _hourSelector = e.NameScope.Get<DateTimePickerPanel>(TemplateItems.HourSelectorName),
+                _minuteSelector = e.NameScope.Get<DateTimePickerPanel>(TemplateItems.MinuteSelectorName),
+                _secondSelector = e.NameScope.Find<DateTimePickerPanel>(TemplateItems.SecondSelectorName),
+                _periodSelector = e.NameScope.Get<DateTimePickerPanel>(TemplateItems.PeriodSelectorName),
 
-            _acceptButton = e.NameScope.Get<Button>("PART_AcceptButton");
-            _acceptButton.Click += OnAcceptButtonClicked;
+                _secondSpacer = e.NameScope.Get<Control>(TemplateItems.SecondSpacerName),
+                _thirdSpacer = e.NameScope.Find<Control>(TemplateItems.ThirdSpacerName),
 
-            _hourUpButton = e.NameScope.Find<RepeatButton>("PART_HourUpButton");
-            if (_hourUpButton != null)
-                _hourUpButton.Click += OnSelectorButtonClick;
-            _hourDownButton = e.NameScope.Find<RepeatButton>("PART_HourDownButton");
-            if (_hourDownButton != null)
-                _hourDownButton.Click += OnSelectorButtonClick;
+                _acceptButton = e.NameScope.Get<Button>(TemplateItems.AcceptButtonName),
 
-            _minuteUpButton = e.NameScope.Find<RepeatButton>("PART_MinuteUpButton");
-            if (_minuteUpButton != null)
-                _minuteUpButton.Click += OnSelectorButtonClick;
-            _minuteDownButton = e.NameScope.Find<RepeatButton>("PART_MinuteDownButton");
-            if (_minuteDownButton != null)
-                _minuteDownButton.Click += OnSelectorButtonClick;
-            
-            _secondUpButton = e.NameScope.Find<RepeatButton>("PART_SecondUpButton");
-            if (_secondUpButton != null)
-                _secondUpButton.Click += OnSelectorButtonClick;
-            _secondDownButton = e.NameScope.Find<RepeatButton>("PART_SecondDownButton");
-            if (_secondDownButton != null)
-                _secondDownButton.Click += OnSelectorButtonClick;
+                _hourUpButton = SelectorButton(TemplateItems.HourUpButtonName, DateTimePickerPanelType.Hour, SpinDirection.Decrease),
+                _hourDownButton = SelectorButton(TemplateItems.HourDownButtonName, DateTimePickerPanelType.Hour, SpinDirection.Increase),
 
-            _periodUpButton = e.NameScope.Find<RepeatButton>("PART_PeriodUpButton");
-            if (_periodUpButton != null)
-                _periodUpButton.Click += OnSelectorButtonClick;
-            _periodDownButton = e.NameScope.Find<RepeatButton>("PART_PeriodDownButton");
-            if (_periodDownButton != null)
-                _periodDownButton.Click += OnSelectorButtonClick;
+                _minuteUpButton = SelectorButton(TemplateItems.MinuteUpButtonName, DateTimePickerPanelType.Minute, SpinDirection.Decrease),
+                _minuteDownButton = SelectorButton(TemplateItems.MinuteDownButtonName, DateTimePickerPanelType.Minute, SpinDirection.Increase),
 
-            _dismissButton = e.NameScope.Find<Button>("PART_DismissButton");
-            if (_dismissButton != null)
-                _dismissButton.Click += OnDismissButtonClicked;
+                _secondUpButton = SelectorButton(TemplateItems.SecondUpButtonName, DateTimePickerPanelType.Second, SpinDirection.Decrease),
+                _secondDownButton = SelectorButton(TemplateItems.SecondDownButtonName, DateTimePickerPanelType.Second, SpinDirection.Increase),
+
+                _periodUpButton = SelectorButton(TemplateItems.PeriodUpButtonName, DateTimePickerPanelType.TimePeriod, SpinDirection.Decrease),
+                _periodDownButton = SelectorButton(TemplateItems.PeriodDownButtonName, DateTimePickerPanelType.TimePeriod, SpinDirection.Increase),
+
+                _dismissButton = e.NameScope.Find<Button>(TemplateItems.DismissButtonName),
+            };
+
+            _templateItems.Value._acceptButton.Click += OnAcceptButtonClicked;
+            if (_templateItems.Value._dismissButton is { } dismissButton)
+            {
+                dismissButton.Click += OnDismissButtonClicked;
+            }
 
             InitPicker();
+
+            Button? SelectorButton(string name, DateTimePickerPanelType type, SpinDirection direction)
+            {
+                if (e.NameScope.Find<Button>(name) is { } button)
+                {
+                    button.Click += (s, e) => OnSelectorButtonClick(type, direction);
+                    return button;
+                }
+                return null;
+            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -232,100 +259,105 @@ namespace Avalonia.Controls
 
         protected override void OnConfirmed()
         {
-            var hr = _hourSelector!.SelectedValue;
-            var min = _minuteSelector!.SelectedValue;
-            var sec = _secondSelector?.SelectedValue ?? 0;
-            var per = _periodSelector!.SelectedValue;
-
-            if (ClockIdentifier == "12HourClock")
+            if (_templateItems is { } items)
             {
-                hr = per == 1 ? (hr == 12) ? 12 : hr + 12 : per == 0 && hr == 12 ? 0 : hr;
+                var hr = items._hourSelector.SelectedValue;
+                var min = items._minuteSelector.SelectedValue;
+                var sec = items._secondSelector?.SelectedValue ?? 0;
+                var per = items._periodSelector.SelectedValue;
+
+                if (ClockIdentifier == "12HourClock")
+                {
+                    hr = per == 1 ? (hr == 12) ? 12 : hr + 12 : per == 0 && hr == 12 ? 0 : hr;
+                }
+
+                SetCurrentValue(TimeProperty, new TimeSpan(hr, min, UseSeconds ? sec : 0));
             }
-
-            SetCurrentValue(TimeProperty, new TimeSpan(hr, min, UseSeconds ? sec : 0));
-
             base.OnConfirmed();
         }
 
         private void InitPicker()
         {
-            if (_pickerContainer == null)
+            if (_templateItems is not { } items)
                 return;
 
             bool clock12 = ClockIdentifier == "12HourClock";
-            _hourSelector!.MaximumValue = clock12 ? 12 : 23;
-            _hourSelector.MinimumValue = clock12 ? 1 : 0;
-            _hourSelector.ItemFormat = "%h";
+            items._hourSelector.MaximumValue = clock12 ? 12 : 23;
+            items._hourSelector.MinimumValue = clock12 ? 1 : 0;
+            items._hourSelector.ItemFormat = "%h";
             var hr = Time.Hours;
-            _hourSelector.SelectedValue = !clock12 ? hr :
+            items._hourSelector.SelectedValue = !clock12 ? hr :
                 hr > 12 ? hr - 12 : hr == 0 ? 12 : hr;
 
-            _minuteSelector!.MaximumValue = 59;
-            _minuteSelector.MinimumValue = 0;
-            _minuteSelector.Increment = MinuteIncrement;
-            _minuteSelector.ItemFormat = "mm";
-            _minuteSelector.SelectedValue = Time.Minutes;
+            items._minuteSelector.MaximumValue = 59;
+            items._minuteSelector.MinimumValue = 0;
+            items._minuteSelector.Increment = MinuteIncrement;
+            items._minuteSelector.ItemFormat = "mm";
+            items._minuteSelector.SelectedValue = Time.Minutes;
 
-            if (_secondSelector is not null)
+            if (items._secondSelector is { } secondSelector)
             {
-                _secondSelector.MaximumValue = 59;
-                _secondSelector.MinimumValue = 0;
-                _secondSelector.Increment = SecondIncrement;
-                _secondSelector.ItemFormat = "ss";
-                _secondSelector.SelectedValue = Time.Seconds;
+                secondSelector.MaximumValue = 59;
+                secondSelector.MinimumValue = 0;
+                secondSelector.Increment = SecondIncrement;
+                secondSelector.ItemFormat = "ss";
+                secondSelector.SelectedValue = Time.Seconds;
             }
 
-            _periodSelector!.MaximumValue = 1;
-            _periodSelector.MinimumValue = 0;
-            _periodSelector.SelectedValue = hr >= 12 ? 1 : 0;
+            items._periodSelector.MaximumValue = 1;
+            items._periodSelector.MinimumValue = 0;
+            items._periodSelector.SelectedValue = hr >= 12 ? 1 : 0;
 
-            SetGrid();
-            _hourSelector?.Focus(NavigationMethod.Pointer);
+            SetGrid(items);
+            items._hourSelector.Focus(NavigationMethod.Pointer);
         }
 
-        private void SetGrid()
+        private void SetGrid(TemplateItems items)
         {
             var use24HourClock = ClockIdentifier == "24HourClock";
-            var canUseSeconds = _secondHost is not null && _spacer3 is not null;
-            
-            var columnsD = new ColumnDefinitions();
-            columnsD.Add(new ColumnDefinition(GridLength.Star));
-            columnsD.Add(new ColumnDefinition(GridLength.Auto));
-            columnsD.Add(new ColumnDefinition(GridLength.Star));
-            if (canUseSeconds && UseSeconds)
+
+            var columnsD = new ColumnDefinitions
             {
-                columnsD.Add(new ColumnDefinition(GridLength.Auto));
-                columnsD.Add(new ColumnDefinition(GridLength.Star));
+                new(GridLength.Star),
+                new(GridLength.Auto),
+                new(GridLength.Star)
+            };
+
+            if (items._secondHost is not null && items._thirdSpacer is not null)
+            {
+                if (UseSeconds)
+                {
+                    columnsD.Add(new ColumnDefinition(GridLength.Auto));
+                    columnsD.Add(new ColumnDefinition(GridLength.Star));
+                }
+
+                items._secondSpacer.IsVisible = UseSeconds;
+                items._secondHost.IsVisible = UseSeconds;
+                items._thirdSpacer.IsVisible = !use24HourClock;
+                items._periodHost.IsVisible = !use24HourClock;
+
+                var amPmColumn = (UseSeconds) ? 6 : 4;
+
+                Grid.SetColumn(items._secondSpacer, UseSeconds ? 3 : 0);
+                Grid.SetColumn(items._secondHost, UseSeconds ? 4 : 0);
+                Grid.SetColumn(items._thirdSpacer, use24HourClock ? 0 : amPmColumn - 1);
+                Grid.SetColumn(items._periodHost, use24HourClock ? 0 : amPmColumn);
             }
+            else
+            {
+                items._secondSpacer.IsVisible = !use24HourClock;
+                items._periodHost.IsVisible = !use24HourClock;
+                Grid.SetColumn(items._secondSpacer, use24HourClock ? 0 : 3);
+                Grid.SetColumn(items._periodHost, use24HourClock ? 0 : 4);
+            }
+
             if (!use24HourClock)
             {
                 columnsD.Add(new ColumnDefinition(GridLength.Auto));
                 columnsD.Add(new ColumnDefinition(GridLength.Star));
             }
 
-            _pickerContainer!.ColumnDefinitions = columnsD;
-
-            if (canUseSeconds)
-            {
-                _spacer2!.IsVisible = UseSeconds;
-                _secondHost!.IsVisible = UseSeconds;
-                _spacer3!.IsVisible = !use24HourClock;
-                _periodHost!.IsVisible = !use24HourClock;
-
-                var amPmColumn = (UseSeconds) ? 6 : 4;
-
-                Grid.SetColumn(_spacer2, UseSeconds ? 3 : 0);
-                Grid.SetColumn(_secondHost, UseSeconds ? 4 : 0);
-                Grid.SetColumn(_spacer3, use24HourClock ? 0 : amPmColumn-1);
-                Grid.SetColumn(_periodHost, use24HourClock ? 0 : amPmColumn);
-            }
-            else
-            {
-                _spacer2!.IsVisible = !use24HourClock;
-                _periodHost!.IsVisible = !use24HourClock;
-                Grid.SetColumn(_spacer2, use24HourClock ? 0 : 3);
-                Grid.SetColumn(_periodHost, use24HourClock ? 0 : 4);
-            }
+            items._pickerContainer.ColumnDefinitions = columnsD;
         }
 
         private void OnDismissButtonClicked(object? sender, RoutedEventArgs e)
@@ -338,33 +370,37 @@ namespace Avalonia.Controls
             OnConfirmed();
         }
 
-        private void OnSelectorButtonClick(object? sender, RoutedEventArgs e)
+        private void OnSelectorButtonClick(DateTimePickerPanelType type, SpinDirection direction)
         {
-            if (sender == _hourUpButton)
-                _hourSelector!.ScrollUp();
-            else if (sender == _hourDownButton)
-                _hourSelector!.ScrollDown();
-            else if (sender == _minuteUpButton)
-                _minuteSelector!.ScrollUp();
-            else if (sender == _minuteDownButton)
-                _minuteSelector!.ScrollDown();
-            else if (sender == _secondUpButton)
-                _secondSelector!.ScrollUp();
-            else if (sender == _secondDownButton)
-                _secondSelector!.ScrollDown();
-            else if (sender == _periodUpButton)
-                _periodSelector!.ScrollUp();
-            else if (sender == _periodDownButton)
-                _periodSelector!.ScrollDown();
+            var target = type switch
+            {
+                DateTimePickerPanelType.Hour => _templateItems?._hourSelector,
+                DateTimePickerPanelType.Minute => _templateItems?._minuteSelector,
+                DateTimePickerPanelType.Second => _templateItems?._secondSelector,
+                DateTimePickerPanelType.TimePeriod => _templateItems?._periodSelector,
+                _ => throw new NotImplementedException(),
+            };
+
+            switch (direction)
+            {
+                case SpinDirection.Increase:
+                    target?.ScrollDown();
+                    break;
+                case SpinDirection.Decrease:
+                    target?.ScrollUp();
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         internal double GetOffsetForPopup()
         {
-            if (_hourSelector is null)
+            if (_templateItems is not { } items)
                 return 0;
 
-            var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
-            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_hourSelector.ItemHeight / 2);
+            var acceptDismissButtonHeight = items._acceptButton.Bounds.Height;
+            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (items._hourSelector.ItemHeight / 2);
         }
     }
 }

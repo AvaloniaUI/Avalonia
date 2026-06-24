@@ -6,14 +6,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
     public class TestValueConverter : IValueConverter
     {
-        public string Append { get; set; }
+        public string? Append { get; set; }
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            return value.ToString() + Append;
+            return value + Append;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
