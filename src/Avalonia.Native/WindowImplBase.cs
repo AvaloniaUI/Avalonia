@@ -70,7 +70,14 @@ namespace Avalonia.Native
         
         public override void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            themeVariant ??= AvaloniaLocator.Current.GetService<IPlatformSettings>()?.GetColorValues().ThemeVariant ?? PlatformThemeVariant.Light;
+            var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+
+            if (themeVariant is null && settings is NativePlatformSettings typedSettings)
+            {
+                typedSettings.OnColorValuesChanged();
+            }
+
+            themeVariant ??= settings?.GetColorValues().ThemeVariant ?? PlatformThemeVariant.Light;
             Native?.SetFrameThemeVariant((AvnPlatformThemeVariant)themeVariant);
         }
 
