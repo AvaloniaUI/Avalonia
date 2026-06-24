@@ -615,13 +615,13 @@ namespace Avalonia.Controls
                 case TextUnit.Character:
                     return forward ? NextCharacter(offset, text) : PrevCharacter(offset, text);
 
+                case TextUnit.Word:
+                    return WordBoundary(offset, forward, text);
+
                 default:
-                    var (start, end) = unit switch
-                    {
-                        TextUnit.Word => RangeBounds(GetWordRange(offset, text)),
-                        TextUnit.Sentence => RangeBounds(GetSentenceRange(offset, text)),
-                        _ => RangeBounds(GetLineRange(offset, text)),
-                    };
+                    var (start, end) = unit == TextUnit.Sentence
+                        ? RangeBounds(GetSentenceRange(offset, text))
+                        : RangeBounds(GetLineRange(offset, text));
 
                     if (forward)
                     {
@@ -961,33 +961,73 @@ namespace Avalonia.Controls
             return CreateLocalRange(start, end);
         }
 
+        // UAX-29 word segmentation: keeps contractions ("don't"), decimals ("3.14"), Hebrew/CJK runs
+        // and regional-indicator pairs together. Enumerates from the document start, so it is O(offset);
+        // word boundaries never cross a hard line break, so a future optimization could segment within
+        // the current line only.
         private ITextRange GetWordRange(int offset, string text)
         {
-            var length = text.Length;
-            if (length == 0)
+            if (text.Length == 0)
             {
                 return CreateLocalRange(0, 0);
             }
 
-            var position = Math.Clamp(offset, 0, length - 1);
-            if (!IsWordCharacter(text[position]))
+            var clamped = Math.Clamp(offset, 0, text.Length);
+            var enumerator = new WordBreakEnumerator(text.AsSpan());
+
+            while (enumerator.MoveNext(out var segment))
             {
-                return CreateLocalRange(position, position);
+                var end = segment.Offset + segment.Length;
+                if (clamped < end)
+                {
+                    return CreateLocalRange(segment.Offset, end);
+                }
             }
 
-            var start = position;
-            while (start > 0 && IsWordCharacter(text[start - 1]))
+            return CreateLocalRange(text.Length, text.Length);
+        }
+
+        private static int WordBoundary(int offset, bool forward, string text)
+        {
+            if (forward)
             {
-                start--;
+                if (offset >= text.Length)
+                {
+                    return text.Length;
+                }
+
+                var enumerator = new WordBreakEnumerator(text.AsSpan());
+                while (enumerator.MoveNext(out var segment))
+                {
+                    var end = segment.Offset + segment.Length;
+                    if (end > offset)
+                    {
+                        return end;
+                    }
+                }
+
+                return text.Length;
             }
 
-            var end = position + 1;
-            while (end < length && IsWordCharacter(text[end]))
+            if (offset <= 0)
             {
-                end++;
+                return 0;
             }
 
-            return CreateLocalRange(start, end);
+            var previous = 0;
+            var backward = new WordBreakEnumerator(text.AsSpan());
+            while (backward.MoveNext(out var segment))
+            {
+                var end = segment.Offset + segment.Length;
+                if (end >= offset)
+                {
+                    break;
+                }
+
+                previous = end;
+            }
+
+            return previous;
         }
 
         private ITextRange GetSentenceRange(int offset, string text)
@@ -1019,9 +1059,6 @@ namespace Avalonia.Controls
 
             return CreateLocalRange(start, end);
         }
-
-        private static bool IsWordCharacter(char c) =>
-            char.IsLetterOrDigit(c) || c == '_';
 
         private static bool IsSentenceBoundary(char c) =>
             c is '.' or '!' or '?' or '\n' or '\r';

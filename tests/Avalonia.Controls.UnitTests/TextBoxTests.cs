@@ -2331,6 +2331,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void InputMethodClient_TextNavigation_Word_Unit_Uses_Uax29()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "don't stop", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // UAX-29 keeps the contraction together; the old ASCII heuristic split it at the apostrophe.
+            var word = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 2), TextUnit.Word);
+            Assert.Equal(0, word.Start.Offset);
+            Assert.Equal(5, word.End.Offset);
+
+            // Word boundaries: 0 | "don't" 5 | " " 6 | "stop" 10.
+            Assert.Equal(5, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
+            Assert.Equal(0, nav.GetPosition(nav.GetPosition(nav.DocumentStart, 5), TextUnit.Word, -1).Offset);
+        }
+
+        [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {
             using var _ = UnitTestApplication.Start(Services);
