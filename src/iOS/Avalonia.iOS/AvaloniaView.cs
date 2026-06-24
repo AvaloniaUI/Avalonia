@@ -254,8 +254,13 @@ namespace Avalonia.iOS
 
             public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
-            public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+            public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
             {
+                if (themeVariant is null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is PlatformSettings settings)
+                {
+                    settings.OnColorValuesChanged();
+                }
+
 #if !TVOS
                 // TODO adjust status bar depending on full screen mode.
                 if ((OperatingSystem.IsIOSVersionAtLeast(13)
