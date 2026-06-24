@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pages="clr-namespace:ControlCatalog.Pages"
+             x:Class="ControlCatalog.Pages.CarouselDataBindingPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Collection" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Navigation" FontWeight="SemiBold" FontSize="13" />
+        <Button x:Name="PreviousButton" Content="Previous" HorizontalAlignment="Stretch" />
+        <Button x:Name="NextButton" Content="Next" HorizontalAlignment="Stretch" />
+
+        <Separator />
+
+        <TextBlock Text="Modify Items" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock TextWrapping="Wrap" FontSize="11" Opacity="0.6"
+                   Text="The Carousel is bound to an ObservableCollection. Changes reflect immediately." />
+        <Button x:Name="AddButton" Content="Add Item" HorizontalAlignment="Stretch" />
+        <Button x:Name="RemoveButton" Content="Remove Current" HorizontalAlignment="Stretch" />
+        <Button x:Name="ShuffleButton" Content="Shuffle" HorizontalAlignment="Stretch" />
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock x:Name="StatusText" Text="Item: 1 / 4"
+                   Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+      <Carousel x:Name="DemoCarousel"
+                Height="280"
+                IsSwipeEnabled="True">
+        <Carousel.PageTransition>
+          <CrossFade Duration="0.3" />
+        </Carousel.PageTransition>
+        <Carousel.ItemTemplate>
+          <DataTemplate x:DataType="pages:CarouselCardItem">
+            <Border CornerRadius="14" Margin="14,12" ClipToBounds="True"
+                    Background="{Binding Background}">
+              <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+                <TextBlock Text="{Binding Number}" FontSize="52" FontWeight="Bold"
+                           Foreground="White" HorizontalAlignment="Center" LetterSpacing="-2" />
+                <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
+                           Foreground="{Binding Accent}" HorizontalAlignment="Center" />
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </Carousel.ItemTemplate>
+      </Carousel>
+    </Border>
+  </DockPanel>
+</UserControl>

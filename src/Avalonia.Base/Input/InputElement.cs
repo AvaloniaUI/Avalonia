@@ -523,7 +523,7 @@ namespace Avalonia.Input
                 if (!IsEffectivelyEnabled && FocusManager.GetFocusManager(this) is { } focusManager
                     && Equals(focusManager.GetFocusedElement(), this))
                 {
-                    focusManager.ClearFocus();
+                    focusManager.Focus(null);
                 }
             }
         }
@@ -995,7 +995,7 @@ namespace Avalonia.Input
                     }
                     else
                     {
-                        focusManager.ClearFocus();
+                        focusManager.Focus(null);
                     }
                 }
             }

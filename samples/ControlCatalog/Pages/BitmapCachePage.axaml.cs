@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages;
 
-public partial class BitmapCachePage : UserControl
+public partial class BitmapCachePage : ContentPage
 {
     public BitmapCachePage()
     {

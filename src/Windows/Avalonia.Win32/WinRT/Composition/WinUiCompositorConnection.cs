@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Logging;
 using Avalonia.MicroCom;
@@ -17,9 +16,31 @@ namespace Avalonia.Win32.WinRT.Composition;
 internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFactory
 {
     private readonly WinUiCompositionShared _shared;
-    public event Action<TimeSpan>? Tick;
+    private readonly AutoResetEvent _wakeEvent = new(false);
+    private volatile bool _stopped = true;
+    private volatile Action<TimeSpan>? _tick;
+
     public bool RunsInBackground => true;
-    
+
+    public Action<TimeSpan>? Tick
+    {
+        get => _tick;
+        set
+        {
+            if (value != null)
+            {
+                _tick = value;
+                _stopped = false;
+                _wakeEvent.Set();
+            }
+            else
+            {
+                _stopped = true;
+                _tick = null;
+            }
+        }
+    }
+
     public WinUiCompositorConnection()
     {
         using var compositor = NativeWinRTMethods.CreateInstance<ICompositor>("Windows.UI.Composition.Compositor");
@@ -38,7 +59,7 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
         void* texture = null;
         surfInterop.BeginDraw(null, &IID_ID3D11Texture2D, &texture);
         */
-        
+
         _shared = new WinUiCompositionShared(compositor);
     }
 
@@ -58,7 +79,7 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
                 });
                 connect = new WinUiCompositorConnection();
                 AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connect);
-                AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
+                AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(connect));
                 tcs.SetResult(true);
 
             }
@@ -85,63 +106,97 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
         private readonly Stopwatch _st = Stopwatch.StartNew();
         private TimeSpan? _commitDueAt;
         private IAsyncAction? _currentCommit;
+        private bool _commitCompleted;
+
         public RunLoopHandler(WinUiCompositorConnection parent)
         {
             _parent = parent;
         }
 
         public void Invoke(IAsyncAction? asyncInfo, AsyncStatus asyncStatus)
-        { 
-            if (_currentCommit == null ||
-              _currentCommit.GetNativeIntPtr() != asyncInfo.GetNativeIntPtr())
-                return;
-            OnCommitCompleted();
-        }
-        
-        private void OnCommitCompleted()
-        {
-            _currentCommit?.Dispose();
-            _currentCommit = null;
-            _parent.Tick?.Invoke(_st.Elapsed);
-            ScheduleNextCommit();
-        }
-
-        private void ScheduleNextCommit()
         {
             lock (_parent._shared.SyncRoot)
             {
-                _commitDueAt = _st.Elapsed + TimeSpan.FromSeconds(1);
-                _currentCommit = _parent._shared.Compositor5.RequestCommitAsync();
-                _currentCommit.SetCompleted(this);
-            }
-        }
-
-        public void WatchDog()
-        {
-            // This is a workaround for a nasty WinUI composition API bug that prevents
-            // RequestCommitAsync to ever complete after D3D device loss event with some systems
-            // (A notable example is after pause/resume in Parallels Desktop)
-            // We check if we haven't got a commit completion callback for a second
-            // And forcefully trigger the next one, which makes the entire thing to unstuck
-            
-            if (_st.Elapsed > _commitDueAt && _currentCommit != null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this,
-                    "windows::UI::Composition::ICompositor5.RequestCommitAsync timed out, force-triggering next tick");
-                try
-                {
-                    _currentCommit?.GetResults();
-                }
-                catch (Exception e)
-                {
-                    Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this,
-                        "ICompositor5::RequestCommitAsync failed: {HR}, {ERR}", e.HResult, e.ToString());
-                }
+                if (_currentCommit == null || _currentCommit.GetNativeIntPtr() != asyncInfo.GetNativeIntPtr())
+                    return;
                 OnCommitCompleted();
             }
         }
 
-        public void Start() => ScheduleNextCommit();
+        private void OnCommitCompleted()
+        {
+            Debug.Assert(Monitor.IsEntered(_parent._shared.SyncRoot), "Lock should be held");
+
+            _currentCommit?.Dispose();
+            _currentCommit = null;
+            _parent._tick?.Invoke(_st.Elapsed);
+            // Always schedule a commit so the current frame's work reaches DWM.
+            ScheduleNextCommit();
+            _commitCompleted = true;
+        }
+
+        // This method should be called outside the shared lock, as it might wait for a long time.
+        public void OnAfterMessageWithoutLock()
+        {
+            Debug.Assert(!Monitor.IsEntered(_parent._shared.SyncRoot), "Lock should NOT be held");
+
+            if (!_commitCompleted)
+                return;
+
+            _commitCompleted = false;
+
+            if (_parent._stopped)
+            {
+                _parent._wakeEvent.WaitOne();
+                // Reset the expected commit callback time since we've paused
+                // the render loop due to app being idle
+                _commitDueAt = _st.Elapsed + TimeSpan.FromSeconds(1);
+            }
+        }
+
+        private void ScheduleNextCommit()
+        {
+            Debug.Assert(Monitor.IsEntered(_parent._shared.SyncRoot), "Lock should be held");
+
+            _commitDueAt = _st.Elapsed + TimeSpan.FromSeconds(1);
+            _currentCommit = _parent._shared.Compositor5.RequestCommitAsync();
+            _currentCommit.SetCompleted(this);
+        }
+
+        public void WatchDog()
+        {
+            lock (_parent._shared.SyncRoot)
+            {
+                // This is a workaround for a nasty WinUI composition API bug that prevents
+                // RequestCommitAsync to ever complete after D3D device loss event with some systems
+                // (A notable example is after pause/resume in Parallels Desktop)
+                // We check if we haven't got a commit completion callback for a second
+                // And forcefully trigger the next one, which makes the entire thing to unstuck
+
+                if (_st.Elapsed > _commitDueAt && _currentCommit != null)
+                {
+                    Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this,
+                        "windows::UI::Composition::ICompositor5.RequestCommitAsync timed out, force-triggering next tick");
+                    try
+                    {
+                        _currentCommit?.GetResults();
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this,
+                            "ICompositor5::RequestCommitAsync failed: {HR}, {ERR}", e.HResult, e.ToString());
+                    }
+
+                    OnCommitCompleted();
+                }
+            }
+        }
+
+        public void Start()
+        {
+            lock (_parent._shared.SyncRoot)
+                ScheduleNextCommit();
+        }
     }
 
     private void RunLoop()
@@ -153,23 +208,29 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
         var handler = new RunLoopHandler(this);
         handler.Start();
 
+        const int watchDogIntervalInMs = 1000;
+
         using var dw = new SimpleWindow((hwnd, msg, w, l) =>
         {
             if (msg == (uint)UnmanagedMethods.WindowsMessage.WM_TIMER)
             {
                 handler.WatchDog();
-                UnmanagedMethods.SetTimer(hwnd, IntPtr.Zero, 1000, null);
+                UnmanagedMethods.SetTimer(hwnd, IntPtr.Zero, watchDogIntervalInMs, null);
             }
             return UnmanagedMethods.DefWindowProc(hwnd, msg, w, l);
         });
-        UnmanagedMethods.SetTimer(dw.Handle, IntPtr.Zero, 1000, null);
+        UnmanagedMethods.SetTimer(dw.Handle, IntPtr.Zero, watchDogIntervalInMs, null);
+
+        // Warning: the completion callback (RunLoopHandler.Invoke) from ICompositor5.RequestCommitAsync()
+        // is called in DispatchMessage() on Windows 10, but in GetMessage() on Windows 11!
+        // Be careful when changing the scope of the shared lock.
 
         var result = 0;
         while (!cts.IsCancellationRequested
                && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
         {
-            lock (_shared.SyncRoot)
-                UnmanagedMethods.DispatchMessage(ref msg);
+            UnmanagedMethods.DispatchMessage(ref msg);
+            handler.OnAfterMessageWithoutLock();
         }
 
         if (result < 0)
@@ -183,7 +244,7 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
     {
         return Win32Platform.WindowsVersion >= WinUiCompositionShared.MinWinCompositionVersion;
     }
-    
+
     public static bool TryCreateAndRegister()
     {
         if (IsSupported())

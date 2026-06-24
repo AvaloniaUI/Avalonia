@@ -36,7 +36,7 @@
         <Separator />
 
         <TextBlock Text="Separators" FontWeight="SemiBold" />
-        <TextBlock Text="AppBarSeparator creates visual dividers between command groups."
+        <TextBlock Text="CommandBarSeparator creates visual dividers between command groups."
                    FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
       </StackPanel>
     </ScrollViewer>
@@ -52,35 +52,35 @@
             <TextBlock Text="Document Editor" VerticalAlignment="Center" Margin="8,0" />
           </CommandBar.Content>
           <CommandBar.PrimaryCommands>
-            <AppBarButton Label="New" Click="OnButtonClick">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton Label="Save" Click="OnButtonClick">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarSeparator />
-            <AppBarToggleButton Label="Bold" IsCheckedChanged="OnToggleChanged">
-              <AppBarToggleButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></AppBarToggleButton.Icon>
-            </AppBarToggleButton>
-            <AppBarToggleButton Label="Italic" IsCheckedChanged="OnToggleChanged">
-              <AppBarToggleButton.Icon><PathIcon Data="{StaticResource ItalicIcon}" /></AppBarToggleButton.Icon>
-            </AppBarToggleButton>
-            <AppBarSeparator />
-            <AppBarButton Label="Share" Click="OnButtonClick">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
+            <CommandBarButton Label="New" Click="OnButtonClick">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarButton Label="Save" Click="OnButtonClick">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarSeparator />
+            <CommandBarToggleButton Label="Bold" IsCheckedChanged="OnToggleChanged">
+              <CommandBarToggleButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></CommandBarToggleButton.Icon>
+            </CommandBarToggleButton>
+            <CommandBarToggleButton Label="Italic" IsCheckedChanged="OnToggleChanged">
+              <CommandBarToggleButton.Icon><PathIcon Data="{StaticResource ItalicIcon}" /></CommandBarToggleButton.Icon>
+            </CommandBarToggleButton>
+            <CommandBarSeparator />
+            <CommandBarButton Label="Share" Click="OnButtonClick">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
           </CommandBar.PrimaryCommands>
           <CommandBar.SecondaryCommands>
-            <AppBarButton Label="Export" Click="OnButtonClick">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton Label="Print" Click="OnButtonClick">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource PrintIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarSeparator />
-            <AppBarButton Label="Delete" Click="OnButtonClick">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
+            <CommandBarButton Label="Export" Click="OnButtonClick">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarButton Label="Print" Click="OnButtonClick">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource PrintIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarSeparator />
+            <CommandBarButton Label="Delete" Click="OnButtonClick">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
           </CommandBar.SecondaryCommands>
         </CommandBar>
 

@@ -18,15 +18,8 @@ using UIA = Avalonia.Win32.Automation.Interop;
 
 namespace Avalonia.Win32.Automation
 {
-#if NET8_0_OR_GREATER
     [GeneratedComClass]
     internal partial class AutomationNode :
-#else
-#if NET6_0_OR_GREATER
-    [RequiresUnreferencedCode("Requires .NET COM interop")]
-#endif
-    internal partial class AutomationNode : MarshalByRefObject,
-#endif
         IRawElementProviderSimple,
         IRawElementProviderSimple2,
         IRawElementProviderFragment,
@@ -34,6 +27,7 @@ namespace Avalonia.Win32.Automation
     {
         private static Dictionary<AutomationProperty, UiaPropertyId> s_propertyMap = new()
         {
+            { AutomationElementIdentifiers.AutomationIdProperty, UiaPropertyId.AutomationId },
             { AutomationElementIdentifiers.BoundingRectangleProperty, UiaPropertyId.BoundingRectangle },
             { AutomationElementIdentifiers.ClassNameProperty, UiaPropertyId.ClassName },
             { AutomationElementIdentifiers.NameProperty, UiaPropertyId.Name },
@@ -202,9 +196,7 @@ namespace Avalonia.Win32.Automation
 
         public void SetFocus() => InvokeSync(() => Peer.SetFocus());
 
-#if NET6_0_OR_GREATER
         [return: NotNullIfNotNull(nameof(peer))]
-#endif
         public static AutomationNode? GetOrCreate(AutomationPeer? peer)
         {
             return peer is null ? null : s_nodes.GetValue(peer, Create);
@@ -381,6 +373,7 @@ namespace Avalonia.Win32.Automation
                 AutomationControlType.TitleBar => UiaControlTypeId.TitleBar,
                 AutomationControlType.Separator => UiaControlTypeId.Separator,
                 AutomationControlType.Expander => UiaControlTypeId.Group,
+                AutomationControlType.ScrollViewer => UiaControlTypeId.Pane,
                 _ => UiaControlTypeId.Custom,
             };
         }
@@ -434,12 +427,7 @@ namespace Avalonia.Win32.Automation
 
         private static int GetProcessId()
         {
-#if NET6_0_OR_GREATER
             return Environment.ProcessId;
-#else
-            using var proccess = Process.GetCurrentProcess();
-            return proccess.Id;
-#endif
         }
     }
 }

@@ -1,9 +1,9 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -105,6 +105,7 @@ namespace Avalonia.Controls
         static Button()
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
+            PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue(typeof(Button), FeedbackType.Auto);
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>(OnAccessKeyPressed);
         }
 
@@ -355,6 +356,8 @@ namespace Avalonia.Controls
                     OpenFlyout();
                 }
 
+                this.PerformFeedback(FeedbackAction.Click);
+
                 var e = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(e);
 
@@ -543,11 +546,21 @@ namespace Avalonia.Controls
                     oldFlyout.Hide();
                 }
 
+                (oldFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(null);
+
                 // Must unregister events here while a reference to the old flyout still exists
                 UnregisterFlyoutEvents(oldFlyout);
 
                 RegisterFlyoutEvents(newFlyout);
+                (newFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(this);
                 UpdatePseudoClasses();
+            }
+            else if (change.Property == IsEffectivelyEnabledProperty)
+            {
+                if (!change.GetNewValue<bool>())
+                {
+                    IsPressed = false;
+                }
             }
         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using Android.OS;
 using AndroidX.Core.View.Accessibility;
 using AndroidX.CustomView.Widget;
@@ -8,6 +8,7 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using Java.Lang;
 
 namespace Avalonia.Android
@@ -134,9 +135,18 @@ namespace Avalonia.Android
 
         protected override bool OnPerformActionForVirtualView(int virtualViewId, int action, Bundle? arguments)
         {
-            return (GetNodeInfoProvidersFromVirtualViewId(virtualViewId) ?? [])
-                .Select(x => TryPerformNodeAction(x, action, arguments))
-                .Aggregate(false, (a, b) => a | b);
+            var providers = GetNodeInfoProvidersFromVirtualViewId(virtualViewId);
+            if (providers == null)
+            {
+                return false;
+            }
+
+            var result = false;
+            foreach (var provider in providers)
+            {
+                result |= TryPerformNodeAction(provider, action, arguments);
+            }
+            return result;
         }
 
         private static bool TryPerformNodeAction(INodeInfoProvider nodeInfoProvider, int action, Bundle? arguments)
@@ -199,8 +209,8 @@ namespace Avalonia.Android
             // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
             PixelRect screenRect = new PixelRect(
-                _view.TopLevelImpl.PointToScreen(bounds.TopLeft),
-                _view.TopLevelImpl.PointToScreen(bounds.BottomRight)
+                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.TopLeft) ?? default,
+                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.BottomRight) ?? default
                 );
             nodeInfo.SetBoundsInScreen(new(
                 screenRect.X, screenRect.Y,

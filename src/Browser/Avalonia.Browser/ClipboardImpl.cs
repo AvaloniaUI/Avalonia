@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
+using Avalonia.Browser.Interop;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
@@ -14,8 +15,13 @@ internal sealed class ClipboardImpl : IClipboardImpl
 {
     public async Task<IAsyncDataTransfer?> TryGetDataAsync()
     {
-        var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
-        return jsItems.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(jsItems);
+        var result = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
+        if (result.GetPropertyAsString("error") == "denied")
+        {
+            throw new UnauthorizedAccessException("Read permission is not granted for clipboard");
+        }
+        var items = result.GetPropertyAsJSObject("result");
+        return items == null ? null : items.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(items);
     }
 
     public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
@@ -29,7 +35,18 @@ internal sealed class ClipboardImpl : IClipboardImpl
         }
 
         // However, ConfigureAwait(false) is fine here: we're not doing anything after.
-        await WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, source).ConfigureAwait(false);
+        await WriteClipboardAsync(source).ConfigureAwait(false);
+    }
+
+    private async Task WriteClipboardAsync(JSObject? source)
+    {
+        // However, ConfigureAwait(false) is fine here: we're not doing anything after.
+        var error = await InputHelper.WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, source).ConfigureAwait(false);
+
+        if (error == "denied")
+        {
+            throw new UnauthorizedAccessException("Write permission is not granted for clipboard");
+        }
     }
 
     private async Task TryAddItemAsync(IAsyncDataTransferItem dataTransferItem, JSObject source)
@@ -40,6 +57,9 @@ internal sealed class ClipboardImpl : IClipboardImpl
         {
             foreach (var format in dataTransferItem.Formats)
             {
+                if (format.Kind == DataFormatKind.InProcess)
+                    continue;
+
                 var formatString = ToBrowserFormat(format);
                 if (!IsClipboardFormatSupported(formatString))
                     continue;
@@ -52,7 +72,7 @@ internal sealed class ClipboardImpl : IClipboardImpl
                     continue;
                 }
 
-                if(DataFormat.Bitmap.Equals(format))
+                if (DataFormat.Bitmap.Equals(format))
                 {
                     var bitmap = await dataTransferItem.TryGetValueAsync(DataFormat.Bitmap);
                     if (bitmap != null)
@@ -103,5 +123,5 @@ internal sealed class ClipboardImpl : IClipboardImpl
     }
 
     public Task ClearAsync()
-        => WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, null);
+        => WriteClipboardAsync(null);
 }

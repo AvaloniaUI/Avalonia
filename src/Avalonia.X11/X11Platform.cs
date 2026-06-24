@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.AtSpi;
@@ -87,7 +88,7 @@ namespace Avalonia.X11
                 : new X11PlatformThreading(this);
             Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl);
             AvaloniaLocator.CurrentMutable
-                .Bind<IRenderTimer>().ToConstant(timer)
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(timer))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
@@ -226,7 +227,35 @@ namespace Avalonia.X11
 
                 if (renderingMode == X11RenderingMode.Egl)
                 {
-                    if (EglPlatformGraphics.TryCreate() is { } egl)
+                    if (EglPlatformGraphics.TryCreate(() =>
+                        {
+                            var egl = new EglInterface();
+                            var options = new EglDisplayCreationOptions
+                            {
+                                SupportsContextSharing = true,
+                                SupportsMultipleContexts = true,
+                                GlVersions = opts.GlProfiles,
+                                Egl = egl,
+                                // nvidia exposes multiple indistinguishable configs of which only some work,
+                                // so we probe candidates by creating a throwaway window surface and pick a usable one.
+                                ProbeConfig = (probeEgl, display, configs) =>
+                                    X11EglHelper.ChooseConfig(info, probeEgl, display, configs)
+                            };
+
+                            // nvidia requires the display to be created through the X11 platform extension,
+                            // otherwise EGL_NATIVE_VISUAL_ID doesn't match the actual window visual.
+                            var clientExtensions = egl.QueryString(IntPtr.Zero, EglConsts.EGL_EXTENSIONS);
+                            if (egl.IsGetPlatformDisplayExtAvailable
+                                && clientExtensions != null
+                                && (clientExtensions.Contains("EGL_KHR_platform_x11")
+                                    || clientExtensions.Contains("EGL_EXT_platform_x11")))
+                            {
+                                options.PlatformType = EglConsts.EGL_PLATFORM_X11_EXT;
+                                options.PlatformDisplay = info.DeferredDisplay;
+                            }
+
+                            return new EglDisplay(options);
+                        }) is { } egl)
                     {
                         return egl;
                     }
@@ -482,13 +511,32 @@ namespace Avalonia
             , Message = "Experimental, used mostly for testing"
             #endif
             )]
-        public bool? EnableDrawnDecorations
-        {
-            get => EnableDrawnDecorationsInternal;
-            set => EnableDrawnDecorationsInternal = value;
-        }
+        public bool? EnableDrawnDecorations { get; set; }
+        
+        internal bool EnableDrawnDecorationsInternal =>
+#pragma warning disable AVALONIA_X11_CSD
+            EnableDrawnDecorations == true || ForceDrawnDecorationsInternal;
+#pragma warning restore AVALONIA_X11_CSD
 
-        internal bool? EnableDrawnDecorationsInternal { get; set; }
+
+        /// <summary>
+        /// Forces client-side drawn window decorations on X11 for all windows,
+        /// even when the app has not opted in via ExtendClientAreaToDecorationsHint.
+        /// In this mode, Window.ClientSize reflects the usable content area
+        /// (platform client size minus decoration margins) and the app is unaware
+        /// of the decorations.
+        /// Implies EnableDrawnDecorations = true.
+        /// </summary>
+        [Experimental("AVALONIA_X11_FORCE_CSD"
+            #if NET10_0_OR_GREATER
+            , Message = "Experimental, used mostly for testing"
+            #endif
+            )]
+        public bool ForceDrawnDecorations { get; set; }
+
+#pragma warning disable AVALONIA_X11_FORCE_CSD
+        internal bool ForceDrawnDecorationsInternal => ForceDrawnDecorations;
+#pragma warning restore AVALONIA_X11_FORCE_CSD
 
         /// <summary>
         /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame

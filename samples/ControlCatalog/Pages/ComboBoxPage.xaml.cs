@@ -4,7 +4,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ComboBoxPage : UserControl
+    public partial class ComboBoxPage : ContentPage
     {
         public ComboBoxPage()
         {

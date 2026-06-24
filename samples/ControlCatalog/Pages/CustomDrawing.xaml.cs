@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public partial class CustomDrawing : UserControl
+    public partial class CustomDrawing : ContentPage
     {
         public CustomDrawing()
         {

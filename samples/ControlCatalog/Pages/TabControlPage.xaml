@@ -1,7 +1,8 @@
-<UserControl
+<ContentPage
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="ControlCatalog.Pages.TabControlPage"
     xmlns="https://github.com/avaloniaui"
+             Header="TabControl"
     xmlns:viewModels="using:ControlCatalog.ViewModels"
     x:DataType="viewModels:TabControlPageViewModel">
     <DockPanel Classes.WithContentTemplates="{Binding IsChecked, ElementName=UseContentTemplates}">
@@ -108,4 +109,4 @@
             </StackPanel>
         </Grid>
     </DockPanel>
-</UserControl>
+</ContentPage>

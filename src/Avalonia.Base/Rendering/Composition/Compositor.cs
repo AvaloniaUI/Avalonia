@@ -51,7 +51,7 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         [PrivateApi]
         public Compositor(IPlatformGraphics? gpu, bool useUiThreadForSynchronousCommits = false)
-            : this(RenderLoop.LocatorAutoInstance, gpu, useUiThreadForSynchronousCommits)
+            : this(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gpu, useUiThreadForSynchronousCommits)
         {
         }
 

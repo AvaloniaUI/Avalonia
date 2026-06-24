@@ -8,6 +8,7 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageAttachedMethodsPage : UserControl
     {
+        private bool _initialized;
         private int _pageCount;
 
         public NavigationPageAttachedMethodsPage()
@@ -18,6 +19,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             await DemoNav.PushAsync(new ContentPage
             {
                 Header = "Root Page",

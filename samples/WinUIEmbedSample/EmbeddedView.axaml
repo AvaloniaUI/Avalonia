@@ -1,0 +1,228 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="WinUIEmbedSample.EmbeddedView">
+    <Border>
+        <ScrollViewer>
+            <StackPanel Margin="16" Spacing="8">
+                <TextBlock Text="Avalonia"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,4" />
+
+                <Button x:Name="AvButton"
+                        Content="Avalonia button"
+                        HorizontalAlignment="Stretch"
+                        Click="OnAvButtonClick" />
+                <TextBlock x:Name="AvClickCount" Text="Clicked 0 times" />
+
+                <Slider x:Name="AvSlider"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="25" />
+                <TextBlock x:Name="AvSliderValue" Text="Slider: 25" />
+
+                <TextBox PlaceholderText="Type something…"
+                         Text="Hello from Avalonia" />
+
+                <ToggleSwitch Content="ToggleSwitch" IsChecked="True" />
+
+                <TextBlock Text="Selection &amp; expand patterns"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <ComboBox x:Name="AvComboBox"
+                          PlaceholderText="Pick a color"
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Red" />
+                    <ComboBoxItem Content="Green" />
+                    <ComboBoxItem Content="Blue" IsSelected="True" />
+                </ComboBox>
+                <ListBox x:Name="AvListBox"
+                         Height="100"
+                         SelectionMode="Single">
+                    <ListBoxItem Content="Item 1" />
+                    <ListBoxItem Content="Item 2" IsSelected="True" />
+                    <ListBoxItem Content="Item 3" />
+                    <ListBoxItem Content="Item 4" />
+                </ListBox>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <RadioButton x:Name="AvRadioOne" GroupName="DemoGroup" Content="Option A" IsChecked="True" />
+                    <RadioButton x:Name="AvRadioTwo" GroupName="DemoGroup" Content="Option B" />
+                    <RadioButton x:Name="AvRadioThree" GroupName="DemoGroup" Content="Option C" />
+                </StackPanel>
+                <Expander x:Name="AvExpander" Header="Expandable section">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Content inside the expander." />
+                        <TextBlock Text="Used to verify ExpandCollapse pattern."
+                                   Opacity="0.7"
+                                   FontSize="12" />
+                    </StackPanel>
+                </Expander>
+                <TextBlock Text="Keys"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <Border BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="8"
+                        Focusable="True"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                    <StackPanel Spacing="2">
+                        <TextBlock x:Name="KeyReadout"
+                                   FontFamily="Cascadia Code,Consolas,monospace"
+                                   Text="(focus here and press a key)" />
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="Clipboard"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <TextBox x:Name="ClipboardText"
+                         Text="Hello clipboard" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Copy" Click="OnClipboardCopy" />
+                    <Button Content="Paste" Click="OnClipboardPaste" />
+                    <TextBlock x:Name="ClipboardStatus"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"
+                               Text="" />
+                </StackPanel>
+
+                <TextBlock Text="Drag source"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <Border x:Name="DragSourceBorder"
+                        Height="40"
+                        CornerRadius="4"
+                        BorderThickness="1"
+                        Padding="8"
+                        Cursor="SizeAll"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                    <TextBlock Text="Drag me — payload: &quot;Hello from Avalonia&quot;"
+                               VerticalAlignment="Center" />
+                </Border>
+
+                <TextBlock Text="Drop target"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <Border x:Name="DropTargetBorder"
+                        Height="80"
+                        CornerRadius="4"
+                        BorderThickness="1"
+                        Padding="8"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                    <TextBlock x:Name="DropStatus"
+                               Text="(drop something here)"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center" />
+                </Border>
+
+                <TextBlock Text="Cursors"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <TextBlock Text="Hover each tile — the system cursor should change to match the label."
+                           TextWrapping="Wrap"
+                           Opacity="0.7" />
+                <UniformGrid Columns="4" Rows="2">
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Ibeam"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="IBeam" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Hand"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="Hand" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Cross"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="Cross" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Wait"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="Wait" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="SizeAll"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="SizeAll" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="SizeWestEast"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="SizeWE" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Help"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="Help" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="No"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="No" HorizontalAlignment="Center" />
+                    </Border>
+                </UniformGrid>
+
+                <TextBlock Text="Hover"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <Border x:Name="HoverPanel"
+                        Height="60"
+                        CornerRadius="4"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                    <Border.Styles>
+                        <Style Selector="Border#HoverPanel:pointerover">
+                            <Setter Property="Background"
+                                    Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                        </Style>
+                    </Border.Styles>
+                    <TextBlock x:Name="HoverState"
+                               Text="out"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+
+                <TextBlock Text="Ink"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Height="240">
+                    <Canvas x:Name="InkCanvas"
+                            Background="Transparent"
+                            ClipToBounds="True"
+                            PointerPressed="OnInkPointerPressed"
+                            PointerMoved="OnInkPointerMoved"
+                            PointerReleased="OnInkPointerReleased" />
+                </Border>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Clear" Click="OnClearInk" />
+                    <TextBlock x:Name="InkStats"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"
+                               Text="0 points / 0 intermediate" />
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

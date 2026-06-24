@@ -1,4 +1,6 @@
+using System;
 using Avalonia.Controls.Templates;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
@@ -112,6 +114,17 @@ public class ContentPageTests
             Assert.Same(ctrl, page.Content);
         }
 
+        [Theory]
+        [InlineData(typeof(ContentPage))]
+        [InlineData(typeof(NavigationPage))]
+        [InlineData(typeof(TabbedPage))]
+        public void Content_SetAnyPageSubtype_ThrowsInvalidOperationException(Type pageType)
+        {
+            var host = new ContentPage();
+            var child = (Page)Activator.CreateInstance(pageType)!;
+            Assert.Throws<InvalidOperationException>(() => host.Content = child);
+        }
+
         [Fact]
         public void AutomaticallyApplySafeAreaPadding_DefaultIsTrue()
         {
@@ -222,18 +235,6 @@ public class ContentPageTests
             Assert.Empty(((ILogical)page).LogicalChildren);
         }
 
-        [Fact]
-        public void Content_ReplacedPage_ResetsSafeAreaPaddingOnOldPage()
-        {
-            var host = new ContentPage();
-            var oldChild = new ContentPage();
-            oldChild.SafeAreaPadding = new Thickness(10, 20, 10, 30);
-            host.Content = oldChild;
-
-            host.Content = new ContentPage();
-
-            Assert.Equal(default(Thickness), oldChild.SafeAreaPadding);
-        }
     }
 
     public class CommandBarPropertyTests : ScopedTestBase

@@ -95,7 +95,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
         
         [Fact]
-        public void Pause_Animation_When_IsEffectivelyVisible_Is_False()
+        public void OnlyIfVisible_Pauses_Animation_When_IsEffectivelyVisible_Is_False()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -117,6 +117,9 @@ namespace Avalonia.Base.UnitTests.Animation
                 Delay = TimeSpan.FromSeconds(3),
                 DelayBetweenIterations = TimeSpan.FromSeconds(3),
                 IterationCount = new IterationCount(2),
+                // Explicit opt-in: RunAsync (manual) with Auto resolves to Always,
+                // but this test specifically exercises the pause-on-invisible feature.
+                PlaybackBehavior = PlaybackBehavior.OnlyIfVisible,
                 Children = { keyframe1, keyframe2, keyframe3 }
             };
 
@@ -158,7 +161,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
         
         [Fact]
-        public void Pause_Animation_When_IsEffectivelyVisible_Is_False_Nested()
+        public void OnlyIfVisible_Pauses_Animation_When_IsEffectivelyVisible_Is_False_Nested()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -180,6 +183,9 @@ namespace Avalonia.Base.UnitTests.Animation
                 Delay = TimeSpan.FromSeconds(3),
                 DelayBetweenIterations = TimeSpan.FromSeconds(3),
                 IterationCount = new IterationCount(2),
+                // Explicit opt-in: RunAsync (manual) with Auto resolves to Always,
+                // but this test specifically exercises the pause-on-invisible feature.
+                PlaybackBehavior = PlaybackBehavior.OnlyIfVisible,
                 Children = { keyframe1, keyframe2, keyframe3 }
             };
 
@@ -262,7 +268,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
-        public void Pause_Animation_When_Control_Starts_Invisible()
+        public void OnlyIfVisible_Pauses_Animation_When_Control_Starts_Invisible()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -276,6 +282,9 @@ namespace Avalonia.Base.UnitTests.Animation
             {
                 Duration = TimeSpan.FromSeconds(3),
                 IterationCount = new IterationCount(1),
+                // Explicit opt-in: RunAsync (manual) with Auto resolves to Always,
+                // but this test specifically exercises the pause-on-invisible feature.
+                PlaybackBehavior = PlaybackBehavior.OnlyIfVisible,
                 Children = { keyframe2, keyframe1 }
             };
 
@@ -958,6 +967,339 @@ namespace Avalonia.Base.UnitTests.Animation
                 clock.Pulse(TimeSpan.FromSeconds(1));
                 Assert.True(task.IsCompleted);
             }
+        }
+
+        [Fact]
+        public void Animation_Can_Set_IsVisible_True_On_Invisible_Control()
+        {
+            // Reproduces a bug where an expand animation tries to make a collapsed
+            // (invisible) control visible at Cue 0.0, but the animation system pauses
+            // animations on invisible controls, creating a deadlock where the animation
+            // can't run to set IsVisible=true because the control is already invisible.
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(0.3),
+                FillMode = FillMode.Forward,
+                Children =
+                {
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(0.0),
+                        Setters = { new Setter(Visual.IsVisibleProperty, true) }
+                    },
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(1.0),
+                        Setters = { new Setter(Visual.IsVisibleProperty, true) }
+                    }
+                }
+            };
+
+            // Control starts invisible (collapsed state).
+            var border = new Border() { IsVisible = false };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+
+            // Kick off the animation.
+            clock.Step(TimeSpan.Zero);
+
+            // The Cue 0.0 keyframe should have set IsVisible = true,
+            // even though the control started invisible.
+            Assert.True(border.IsVisible);
+
+            // Animation should progress to completion.
+            clock.Step(TimeSpan.FromSeconds(0.3));
+            Assert.True(animationRun.IsCompleted);
+        }
+
+        [Fact]
+        public void Width_Animation_Resumes_After_IsVisible_Set_True_On_Invisible_Control()
+        {
+            // Tests the expand scenario with OnlyIfVisible: the control starts invisible
+            // and the animation is paused. Once IsVisible is set to true externally,
+            // the animation resumes and completes.
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(0.3),
+                Easing = new LinearEasing(),
+                FillMode = FillMode.Forward,
+                PlaybackBehavior = PlaybackBehavior.OnlyIfVisible,
+                Children =
+                {
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(0.0),
+                        Setters = { new Setter(Layoutable.WidthProperty, 0d) }
+                    },
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(1.0),
+                        Setters = { new Setter(Layoutable.WidthProperty, 100d) }
+                    }
+                }
+            };
+
+            // Control starts invisible (collapsed state).
+            var border = new Border() { Width = 0d, IsVisible = false };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+
+            // Animation is paused because control is invisible.
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(0d, border.Width);
+            Assert.False(animationRun.IsCompleted);
+
+            // Simulate what the expand handler does: set IsVisible = true externally.
+            border.IsVisible = true;
+
+            // The animation should now resume and complete.
+            clock.Step(TimeSpan.FromSeconds(0.3));
+            Assert.True(animationRun.IsCompleted);
+            Assert.Equal(100d, border.Width);
+        }
+
+        [Fact]
+        public void Animation_Can_Set_IsVisible_False_At_End_Without_Pausing_Itself()
+        {
+            // An animation that sets IsVisible=false at Cue 1.0 should complete normally.
+            // The visibility change at the final keyframe should not cause the animation
+            // to pause before it can report completion.
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(0.3),
+                FillMode = FillMode.Forward,
+                Children =
+                {
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(0.0),
+                        Setters = { new Setter(Visual.IsVisibleProperty, true) }
+                    },
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(1.0),
+                        Setters = { new Setter(Visual.IsVisibleProperty, false) }
+                    }
+                }
+            };
+
+            // Control starts visible (expanded state).
+            var border = new Border() { IsVisible = true };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.True(border.IsVisible);
+
+            // Step to the end: animation sets IsVisible=false.
+            clock.Step(TimeSpan.FromSeconds(0.3));
+
+            // Animation should have completed and the final value should hold.
+            Assert.True(animationRun.IsCompleted);
+            Assert.False(border.IsVisible);
+        }
+
+        [Fact]
+        public async Task Cancelling_Expand_Animation_Mid_Flight_Then_Collapsing_Works()
+        {
+            // Reproduces the scenario where a user rapidly toggles expand/collapse:
+            // the first animation is cancelled and a new one starts in the opposite direction.
+            // Uses single-property animations to isolate the visibility behavior.
+            var expandAnimation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(0.3),
+                FillMode = FillMode.Forward,
+                Children =
+                {
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(0.0),
+                        Setters = { new Setter(Visual.IsVisibleProperty, true) }
+                    },
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(1.0),
+                        Setters = { new Setter(Visual.IsVisibleProperty, true) }
+                    }
+                }
+            };
+
+            var collapseAnimation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(0.3),
+                FillMode = FillMode.Forward,
+                Children =
+                {
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(0.0),
+                        Setters = { new Setter(Visual.IsVisibleProperty, true) }
+                    },
+                    new KeyFrame()
+                    {
+                        Cue = new Cue(1.0),
+                        Setters = { new Setter(Visual.IsVisibleProperty, false) }
+                    }
+                }
+            };
+
+            var border = new Border() { IsVisible = false };
+
+            // Start expand.
+            var cts1 = new CancellationTokenSource();
+            var clock1 = new TestClock();
+            var expandRun = expandAnimation.RunAsync(border, clock1, cts1.Token);
+
+            clock1.Step(TimeSpan.Zero);
+            Assert.True(border.IsVisible);
+
+            // Partially through expand, cancel and start collapse.
+            clock1.Step(TimeSpan.FromSeconds(0.15));
+            cts1.Cancel();
+            await expandRun;
+
+            var cts2 = new CancellationTokenSource();
+            var clock2 = new TestClock();
+            var collapseRun = collapseAnimation.RunAsync(border, clock2, cts2.Token);
+
+            clock2.Step(TimeSpan.Zero);
+            clock2.Step(TimeSpan.FromSeconds(0.3));
+
+            Assert.True(collapseRun.IsCompleted);
+            Assert.False(border.IsVisible);
+        }
+
+        [Fact]
+        public void Auto_Pauses_On_Invisible_When_Started_From_Style()
+        {
+            // When started via Apply (the style path), Auto resolves to OnlyIfVisible.
+            // The animation should pause when the control becomes invisible.
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d) }, Cue = new Cue(0d)
+            };
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d) }, Cue = new Cue(1d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                IterationCount = new IterationCount(1),
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 50d };
+
+            var clock = new TestClock();
+            var completed = false;
+
+            // Apply (not RunAsync), this is the style-applied path.
+            var disposable = animation.Apply(border, clock, Observable.Return(true), () => completed = true);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(100d, border.Width);
+
+            // Hide the control, animation should pause under Auto.
+            border.IsVisible = false;
+
+            clock.Step(TimeSpan.FromSeconds(1.5));
+            // Width should not have advanced while invisible.
+            Assert.Equal(100d, border.Width);
+
+            // Show the control, animation resumes.
+            border.IsVisible = true;
+
+            clock.Step(TimeSpan.FromSeconds(4.5));
+            Assert.True(completed);
+
+            disposable.Dispose();
+        }
+
+        [Fact]
+        public void Auto_Does_Not_Pause_On_Invisible_When_Started_Manually()
+        {
+            // When started via RunAsync (manual), Auto resolves to Always.
+            // The animation should NOT pause when the control becomes invisible.
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d) }, Cue = new Cue(0d)
+            };
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d) }, Cue = new Cue(1d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                IterationCount = new IterationCount(1),
+                Easing = new LinearEasing(),
+                FillMode = FillMode.Forward,
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 50d };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(100d, border.Width);
+
+            // Hide the control, animation should keep running under Auto + manual.
+            border.IsVisible = false;
+
+            // Width should advance while invisible (not paused).
+            clock.Step(TimeSpan.FromSeconds(1.5));
+            Assert.Equal(150d, border.Width);
+            Assert.False(animationRun.IsCompleted);
+
+            clock.Step(TimeSpan.FromSeconds(3));
+            Assert.True(animationRun.IsCompleted);
+            Assert.Equal(200d, border.Width);
+        }
+
+        [Fact]
+        public void FillMode_Applies_Final_Value_When_Visual_Detached_During_Animation()
+        {
+            var keyframe1 = new KeyFrame
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d) },
+                Cue = new Cue(0d)
+            };
+            var keyframe2 = new KeyFrame
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 300d) },
+                Cue = new Cue(1d)
+            };
+
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromSeconds(5),
+                IterationCount = new IterationCount(1),
+                FillMode = FillMode.Forward,
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var border = new Border { Height = 100d, Width = 50d };
+            var root = new TestRoot(border);
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(100d, border.Width);
+
+            // Detach from visual tree immediately
+            root.Child = null;
+
+            // The final value should be applied
+            Assert.True(animationRun.IsCompleted);
+            Assert.Equal(300d, border.Width);
         }
 
         private sealed class FakeAnimator : InterpolatingAnimator<double>

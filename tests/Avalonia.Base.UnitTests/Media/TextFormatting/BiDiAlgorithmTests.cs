@@ -14,7 +14,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         }
 
         [ClassData(typeof(BiDiTestDataGenerator))]
-        [Theory(Skip = "Only run when the Unicode spec changes.")]
+        [Theory(Skip = "Only run when we update Unicode data.")]
         public void Should_Process(int lineNumber, BidiClass[] classes, sbyte paragraphEmbeddingLevel, int[] levels)
         {
             var bidi = new BidiAlgorithm();

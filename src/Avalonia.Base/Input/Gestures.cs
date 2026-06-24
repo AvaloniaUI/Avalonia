@@ -30,14 +30,12 @@ namespace Avalonia.Input
         private static readonly WeakReference<object?> s_lastPress = new WeakReference<object?>(null);
         private static Point s_lastPressPoint;
         private static CancellationTokenSource? s_holdCancellationToken;
-
         static Gestures()
         {
             InputElement.PointerPressedEvent.RouteFinished.Subscribe(PointerPressed);
             InputElement.PointerReleasedEvent.RouteFinished.Subscribe(PointerReleased);
             InputElement.PointerMovedEvent.RouteFinished.Subscribe(PointerMoved);
         }
-
         private static object? GetCaptured(RoutedEventArgs? args)
         {
             if (args is not PointerEventArgs pointerEventArgs)

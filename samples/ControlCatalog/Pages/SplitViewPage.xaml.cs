@@ -3,7 +3,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class SplitViewPage : UserControl
+    public partial class SplitViewPage : ContentPage
     {
         public SplitViewPage()
         {

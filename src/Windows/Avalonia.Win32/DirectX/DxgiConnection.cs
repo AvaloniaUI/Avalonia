@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
@@ -25,8 +26,10 @@ namespace Avalonia.Win32.DirectX
 
         public bool RunsInBackground => true;
 
-        public event Action<TimeSpan>? Tick;
+        private volatile Action<TimeSpan>? _tick;
         private readonly object _syncLock;
+        private readonly AutoResetEvent _wakeEvent = new(false);
+        private volatile bool _stopped = true;
 
         private IDXGIOutput? _output;
 
@@ -36,6 +39,25 @@ namespace Avalonia.Win32.DirectX
         public DxgiConnection(object syncLock)
         {
             _syncLock = syncLock;
+        }
+
+        public Action<TimeSpan>? Tick
+        {
+            get => _tick;
+            set
+            {
+                if (value != null)
+                {
+                    _tick = value;
+                    _stopped = false;
+                    _wakeEvent.Set();
+                }
+                else
+                {
+                    _stopped = true;
+                    _tick = null;
+                }
+            }
         }
         
         public static bool TryCreateAndRegister()
@@ -70,6 +92,9 @@ namespace Avalonia.Win32.DirectX
             {
                 try
                 {
+                    if (_stopped)
+                        _wakeEvent.WaitOne();
+
                     lock (_syncLock)
                     {
                         if (_output is not null)
@@ -94,7 +119,7 @@ namespace Avalonia.Win32.DirectX
                             // but theoretically someone could have a weirder setup out there 
                             DwmFlush();
                         }
-                        Tick?.Invoke(_stopwatch.Elapsed);
+                        _tick?.Invoke(_stopwatch.Elapsed);
                     }
                 }
                 catch (Exception ex)
@@ -199,7 +224,7 @@ namespace Avalonia.Win32.DirectX
                     var connection = new DxgiConnection(pumpLock);
 
                     AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connection);
-                    AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connection);
+                    AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(connection));
                     tcs.SetResult(true);
                     connection.RunLoop();
                 }

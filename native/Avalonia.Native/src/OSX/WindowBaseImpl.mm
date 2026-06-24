@@ -27,7 +27,7 @@ WindowBaseImpl::~WindowBaseImpl() {
 }
 
 WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) : TopLevelImpl(events) {
-    _children = std::list<WindowBaseImpl*>();
+    _children = std::list<ComObjectWeakPtr<WindowBaseImpl>>();
     _shown = false;
     _inResize = false;
     BaseEvents = events;

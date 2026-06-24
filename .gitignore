@@ -170,6 +170,7 @@ $RECYCLE.BIN/
 ## VS Code
 #################
 .vscode/
+*.lscache
 
 #################
 ## Cake
@@ -220,3 +221,10 @@ src/Browser/Avalonia.Browser/wwwroot
 api/diff
 src/Browser/Avalonia.Browser/staticwebassets
 .serena
+
+# Claude agent worktrees
+.claude/worktrees/
+/.claude/settings.local.json
+/planning
+BenchmarkDotNet.Artifacts.*
+.tokensave

@@ -32,7 +32,7 @@ namespace Avalonia.X11.Clipboard
             _avaloniaSaveTargetsAtom = XInternAtom(_x11.Display, "AVALONIA_SAVE_TARGETS_PROPERTY_ATOM", false);
             _textAtoms = new[]
             {
-                _x11.Atoms.XA_STRING,
+                _x11.Atoms.STRING,
                 _x11.Atoms.OEMTEXT,
                 _x11.Atoms.UTF8_STRING,
                 _x11.Atoms.UTF16_STRING
@@ -99,7 +99,7 @@ namespace Avalonia.X11.Clipboard
                 {
                     var atoms = ConvertDataTransfer(_storedDataTransfer);
                     XChangeProperty(_x11.Display, window, property,
-                        _x11.Atoms.XA_ATOM, 32, PropertyMode.Replace, atoms, atoms.Length);
+                        _x11.Atoms.ATOM, 32, PropertyMode.Replace, atoms, atoms.Length);
                     return property;
                 }
                 else if (target == _x11.Atoms.SAVE_TARGETS && _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)
@@ -253,6 +253,9 @@ namespace Avalonia.X11.Clipboard
             {
                 foreach (var format in dataTransfer.Formats)
                 {
+                    if (format.Kind == DataFormatKind.InProcess)
+                        continue;
+
                     foreach (var atom in ClipboardDataFormatHelper.ToAtoms(format, _textAtoms, _x11.Atoms))
                         atoms.Add(atom);
                 }
@@ -287,7 +290,7 @@ namespace Avalonia.X11.Clipboard
                     _storeAtomTcs = new TaskCompletionSource<bool>();
 
                 var atoms = ConvertDataTransfer(dataTransfer);
-                XChangeProperty(_x11.Display, _handle, _avaloniaSaveTargetsAtom, _x11.Atoms.XA_ATOM, 32,
+                XChangeProperty(_x11.Display, _handle, _avaloniaSaveTargetsAtom, _x11.Atoms.ATOM, 32,
                     PropertyMode.Replace, atoms, atoms.Length);
                 XConvertSelection(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER, _x11.Atoms.SAVE_TARGETS,
                     _avaloniaSaveTargetsAtom, _handle, IntPtr.Zero);

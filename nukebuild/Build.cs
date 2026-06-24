@@ -227,6 +227,10 @@ partial class Build : NukeBuild
             {
                 tfm = "net8.0";
             }
+            if (tfm == "$(AvsCurrentWindowsTargetFramework)")
+            {
+                tfm = "net10.0-windows";
+            }
             
             if (tfm.StartsWith("net4")
                 && (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -279,6 +283,9 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Headless.NUnit.PerTest.UnitTests");
             RunCoreTest("Avalonia.Headless.XUnit.PerAssembly.UnitTests");
             RunCoreTest("Avalonia.Headless.XUnit.PerTest.UnitTests");
+
+            if (Parameters.IsRunningOnWindows)
+                RunCoreTest("Avalonia.UnitTests.WpfCompare");
         });
 
     Target RunRenderTests => _ => _
@@ -460,6 +467,18 @@ partial class Build : NukeBuild
             file.GenerateCppHeader());
     });
 
+    Target GenerateUnicodeData => _ => _.Executes(() =>
+    {
+        var project = RootDirectory / "src" / "tools" / "Avalonia.UnicodeTrieGenerator"
+                      / "Avalonia.UnicodeTrieGenerator.csproj";
+        var output = RootDirectory / "src" / "Avalonia.Base" / "Media" / "TextFormatting" / "Unicode";
+        var cache = RootDirectory / "artifacts" / "ucd-cache";
+
+        DotNetRun(c => ApplySettingCore(c).Run
+            .SetProjectFile(project)
+            .AddApplicationArguments("--output", output, "--cache", cache));
+    });
+
     Target VerifyXamlCompilation => _ => _
         .DependsOn(CreateNugetPackages)
         .Executes(() =>
@@ -481,7 +500,7 @@ partial class Build : NukeBuild
                     .SetProperty("AvaloniaVersion", Parameters.Version)
                     .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
                     .SetPackageDirectory(nugetCacheDirectory)
-                    .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
+                    .SetProjectFile(buildTestsDirectory / "BuildTests.slnx")
                     .SetProcessAdditionalArguments("--nodeReuse:false"));
 
                 // Standard compilation - should have compiled XAML

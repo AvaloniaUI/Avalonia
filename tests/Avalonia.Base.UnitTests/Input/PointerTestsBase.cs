@@ -7,9 +7,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Moq;
 
 namespace Avalonia.Base.UnitTests.Input;

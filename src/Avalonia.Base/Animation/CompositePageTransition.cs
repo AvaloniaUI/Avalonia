@@ -28,7 +28,7 @@ namespace Avalonia.Animation
     /// </code>
     /// </para>
     /// </remarks>
-    public class CompositePageTransition : IPageTransition
+    public class CompositePageTransition : IPageTransition, IProgressPageTransition
     {
         /// <summary>
         /// Gets or sets the transitions to be executed. Can be defined from XAML.
@@ -43,6 +43,36 @@ namespace Avalonia.Animation
                 .Select(transition => transition.Start(from, to, forward, cancellationToken))
                 .ToArray();
             return Task.WhenAll(transitionTasks);
+        }
+
+        /// <inheritdoc />
+        public void Update(
+            double progress,
+            Visual? from,
+            Visual? to,
+            bool forward,
+            double pageLength,
+            IReadOnlyList<PageTransitionItem> visibleItems)
+        {
+            foreach (var transition in PageTransitions)
+            {
+                if (transition is IProgressPageTransition progressive)
+                {
+                    progressive.Update(progress, from, to, forward, pageLength, visibleItems);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public void Reset(Visual visual)
+        {
+            foreach (var transition in PageTransitions)
+            {
+                if (transition is IProgressPageTransition progressive)
+                {
+                    progressive.Reset(visual);
+                }
+            }
         }
     }
 }

@@ -93,7 +93,7 @@ namespace Avalonia.iOS
                         { Key.PageUp , "⇞" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
                         { Key.Up , "↑" }
                     }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"))
-                .Bind<IRenderTimer>().ToConstant(Timer)
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(Timer))
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
 
             if (appDelegate is not null)

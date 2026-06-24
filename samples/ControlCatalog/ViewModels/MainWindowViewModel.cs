@@ -8,7 +8,7 @@ using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    class MainWindowViewModel : ViewModelBase
+    partial class MainWindowViewModel : ViewModelBase
     {
         private WindowState _windowState;
         private WindowState[] _windowStates = Array.Empty<WindowState>();
@@ -20,6 +20,7 @@ namespace ControlCatalog.ViewModels
         private bool _canResize;
         private bool _canMinimize;
         private bool _canMaximize;
+        private int _selectedDecorationIndex;
 
         public MainWindowViewModel()
         {
@@ -51,6 +52,8 @@ namespace ControlCatalog.ViewModels
             CanResize = true;
             CanMinimize = true;
             CanMaximize = true;
+
+            Filter();
         }        
         
         public bool ExtendClientAreaEnabled
@@ -113,6 +116,11 @@ namespace ControlCatalog.ViewModels
             set { RaiseAndSetIfChanged(ref _canMaximize, value); }
         }
 
+        public int SelectedDecorationIndex
+        {
+            get { return _selectedDecorationIndex; }
+            set { RaiseAndSetIfChanged(ref _selectedDecorationIndex, value); }
+        }
 
         public MiniCommand AboutCommand { get; }
 
@@ -128,6 +136,15 @@ namespace ControlCatalog.ViewModels
         {
             get => _validatedDateExample;
             set => RaiseAndSetIfChanged(ref _validatedDateExample, value);
+        }
+
+        public Win32Properties.WindowCornerPreference[] Win32WindowCornerPreferences { get; } =
+            Enum.GetValues<Win32Properties.WindowCornerPreference>();
+
+        public Win32Properties.WindowCornerPreference Win32WindowCornerPreference
+        {
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
     }
 }

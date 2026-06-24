@@ -139,7 +139,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public async Task DrawerPage_CompactOverlay_Closed_ShowsRail()
+        public async Task DrawerPage_LeftPlacement_CompactOverlay_Closed_ShowsRail()
         {
             var target = new Decorator
             {
@@ -181,7 +181,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public async Task DrawerPage_CompactOverlay_Open_PaneOverlaysContent()
+        public async Task DrawerPage_LeftPlacement_CompactOverlay_Open_PaneOverlaysContent()
         {
             var target = new Decorator
             {
@@ -222,7 +222,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public async Task DrawerPage_CompactInline_Closed_ShowsRail()
+        public async Task DrawerPage_LeftPlacement_CompactInline_Closed_ShowsRail()
         {
             var target = new Decorator
             {
@@ -264,7 +264,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public async Task DrawerPage_CompactInline_Open_PanePushesContent()
+        public async Task DrawerPage_LeftPlacement_CompactInline_Open_PanePushesContent()
         {
             var target = new Decorator
             {
@@ -457,6 +457,256 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 
             target.Styles.Add(new SimpleTheme());
             target.Styles.Add(FontStyle);
+            await RenderToFile(target);
+            CompareImages(skipImmediate: true);
+        }
+
+        [Fact]
+        public async Task DrawerPage_RightPlacement_CompactOverlay_Closed_ShowsRail()
+        {
+            var target = new Decorator
+            {
+                Width = 500,
+                Height = 350,
+                Child = new DrawerPage
+                {
+                    Background = Brushes.White,
+                    DrawerLength = 200,
+                    DrawerLayoutBehavior = DrawerLayoutBehavior.CompactOverlay,
+                    CompactDrawerLength = 48,
+                    DrawerPlacement = DrawerPlacement.Right,
+                    DrawerBackground = new SolidColorBrush(Color.Parse("#E8EAF6")),
+                    Drawer = new StackPanel
+                    {
+                        Margin = new Thickness(0, 4),
+                        Children =
+                        {
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#3949AB")), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#E53935")), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#43A047")), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4) },
+                        }
+                    },
+                    Content = new Border
+                    {
+                        Width = 120,
+                        Height = 80,
+                        Background = new SolidColorBrush(Color.Parse("#DCEEFB")),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }
+                }
+            };
+
+            target.Styles.Add(new SimpleTheme());
+            await RenderToFile(target);
+            CompareImages(skipImmediate: true);
+        }
+
+        [Fact]
+        public async Task DrawerPage_RightPlacement_CompactInline_Closed_ShowsRail()
+        {
+            var target = new Decorator
+            {
+                Width = 500,
+                Height = 350,
+                Child = new DrawerPage
+                {
+                    Background = Brushes.White,
+                    DrawerLength = 200,
+                    DrawerLayoutBehavior = DrawerLayoutBehavior.CompactInline,
+                    CompactDrawerLength = 48,
+                    DrawerPlacement = DrawerPlacement.Right,
+                    DrawerBackground = new SolidColorBrush(Color.Parse("#E8F5E9")),
+                    Drawer = new StackPanel
+                    {
+                        Margin = new Thickness(0, 4),
+                        Children =
+                        {
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#2E7D32")), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#E53935")), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#FB8C00")), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4) },
+                        }
+                    },
+                    Content = new Border
+                    {
+                        Width = 120,
+                        Height = 80,
+                        Background = new SolidColorBrush(Color.Parse("#DCEEFB")),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }
+                }
+            };
+
+            target.Styles.Add(new SimpleTheme());
+            await RenderToFile(target);
+            CompareImages(skipImmediate: true);
+        }
+
+        [Fact]
+        public async Task DrawerPage_TopPlacement_CompactOverlay_Closed_ShowsRail()
+        {
+            var target = new Decorator
+            {
+                Width = 500,
+                Height = 350,
+                Child = new DrawerPage
+                {
+                    Background = Brushes.White,
+                    DrawerLength = 200,
+                    DrawerLayoutBehavior = DrawerLayoutBehavior.CompactOverlay,
+                    CompactDrawerLength = 48,
+                    DrawerPlacement = DrawerPlacement.Top,
+                    DrawerBackground = new SolidColorBrush(Color.Parse("#E8EAF6")),
+                    Drawer = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Margin = new Thickness(4, 0),
+                        Children =
+                        {
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#3949AB")), Margin = new Thickness(8, 0) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#E53935")), Margin = new Thickness(4, 0) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#43A047")), Margin = new Thickness(4, 0) },
+                        }
+                    },
+                    Content = new Border
+                    {
+                        Width = 120,
+                        Height = 80,
+                        Background = new SolidColorBrush(Color.Parse("#DCEEFB")),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }
+                }
+            };
+
+            target.Styles.Add(new SimpleTheme());
+            await RenderToFile(target);
+            CompareImages(skipImmediate: true);
+        }
+
+        [Fact]
+        public async Task DrawerPage_TopPlacement_CompactInline_Closed_ShowsRail()
+        {
+            var target = new Decorator
+            {
+                Width = 500,
+                Height = 350,
+                Child = new DrawerPage
+                {
+                    Background = Brushes.White,
+                    DrawerLength = 200,
+                    DrawerLayoutBehavior = DrawerLayoutBehavior.CompactInline,
+                    CompactDrawerLength = 48,
+                    DrawerPlacement = DrawerPlacement.Top,
+                    DrawerBackground = new SolidColorBrush(Color.Parse("#E8F5E9")),
+                    Drawer = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Margin = new Thickness(4, 0),
+                        Children =
+                        {
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#2E7D32")), Margin = new Thickness(8, 0) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#E53935")), Margin = new Thickness(4, 0) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#FB8C00")), Margin = new Thickness(4, 0) },
+                        }
+                    },
+                    Content = new Border
+                    {
+                        Width = 120,
+                        Height = 80,
+                        Background = new SolidColorBrush(Color.Parse("#DCEEFB")),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }
+                }
+            };
+
+            target.Styles.Add(new SimpleTheme());
+            await RenderToFile(target);
+            CompareImages(skipImmediate: true);
+        }
+
+        [Fact]
+        public async Task DrawerPage_BottomPlacement_CompactOverlay_Closed_ShowsRail()
+        {
+            var target = new Decorator
+            {
+                Width = 500,
+                Height = 350,
+                Child = new DrawerPage
+                {
+                    Background = Brushes.White,
+                    DrawerLength = 200,
+                    DrawerLayoutBehavior = DrawerLayoutBehavior.CompactOverlay,
+                    CompactDrawerLength = 48,
+                    DrawerPlacement = DrawerPlacement.Bottom,
+                    DrawerBackground = new SolidColorBrush(Color.Parse("#E8EAF6")),
+                    Drawer = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Margin = new Thickness(4, 0),
+                        Children =
+                        {
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#3949AB")), Margin = new Thickness(8, 0) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#E53935")), Margin = new Thickness(4, 0) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#43A047")), Margin = new Thickness(4, 0) },
+                        }
+                    },
+                    Content = new Border
+                    {
+                        Width = 120,
+                        Height = 80,
+                        Background = new SolidColorBrush(Color.Parse("#DCEEFB")),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }
+                }
+            };
+
+            target.Styles.Add(new SimpleTheme());
+            await RenderToFile(target);
+            CompareImages(skipImmediate: true);
+        }
+
+        [Fact]
+        public async Task DrawerPage_BottomPlacement_CompactInline_Closed_ShowsRail()
+        {
+            var target = new Decorator
+            {
+                Width = 500,
+                Height = 350,
+                Child = new DrawerPage
+                {
+                    Background = Brushes.White,
+                    DrawerLength = 200,
+                    DrawerLayoutBehavior = DrawerLayoutBehavior.CompactInline,
+                    CompactDrawerLength = 48,
+                    DrawerPlacement = DrawerPlacement.Bottom,
+                    DrawerBackground = new SolidColorBrush(Color.Parse("#E8F5E9")),
+                    Drawer = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Margin = new Thickness(4, 0),
+                        Children =
+                        {
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#2E7D32")), Margin = new Thickness(8, 0) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#E53935")), Margin = new Thickness(4, 0) },
+                            new Border { Width = 24, Height = 24, Background = new SolidColorBrush(Color.Parse("#FB8C00")), Margin = new Thickness(4, 0) },
+                        }
+                    },
+                    Content = new Border
+                    {
+                        Width = 120,
+                        Height = 80,
+                        Background = new SolidColorBrush(Color.Parse("#DCEEFB")),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }
+                }
+            };
+
+            target.Styles.Add(new SimpleTheme());
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }

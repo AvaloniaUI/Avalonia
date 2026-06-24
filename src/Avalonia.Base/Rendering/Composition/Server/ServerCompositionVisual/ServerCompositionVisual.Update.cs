@@ -56,7 +56,7 @@ internal partial class ServerCompositionVisual
         
         private bool NeedToPushBoundsAffectingProperties(ServerCompositionVisual node)
         {
-            return (node._isDirtyForRenderInSubgraph || node._hasExtraDirtyRect || node._contentChanged);
+            return (node._isDirtyForRenderInSubgraph || node._needsToAddExtraDirtyRectToDirtyRegion || node._contentChanged);
         }
         
         public void PreSubgraph(ServerCompositionVisual node, out bool visitChildren)
@@ -142,7 +142,7 @@ internal partial class ServerCompositionVisual
             // specified before the tranform, i.e. in inner space, hence we have to pick them
             // up before we pop the transform from the transform stack.
             //
-            if (node._hasExtraDirtyRect)
+            if (node._needsToAddExtraDirtyRectToDirtyRegion)
             {
                 AddToDirtyRegion(node._extraDirtyRect);
             }
@@ -169,7 +169,7 @@ internal partial class ServerCompositionVisual
             node._isDirtyForRender = false;
             node._isDirtyForRenderInSubgraph = false;
             node._needsBoundingBoxUpdate = false;
-            node._hasExtraDirtyRect = false;
+            node._needsToAddExtraDirtyRectToDirtyRegion = false;
             node._contentChanged = false;
         }
 

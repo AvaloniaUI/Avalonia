@@ -119,7 +119,7 @@ public partial class LAvenirAppPage : UserControl
             Content    = menuView,
             Background = new SolidColorBrush(BgLight),
             Header     = "Menu",
-            Icon       = "M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z",
+            Icon       = new PathIcon { Data = Geometry.Parse("M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z") },
         };
 
         var reservationsPage = new ContentPage
@@ -127,7 +127,7 @@ public partial class LAvenirAppPage : UserControl
             Content    = new LAvenirReservationsView(),
             Background = new SolidColorBrush(BgLight),
             Header     = "Reservations",
-            Icon       = "M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z",
+            Icon       = new PathIcon { Data = Geometry.Parse("M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z") },
         };
 
         var profilePage = new ContentPage
@@ -135,7 +135,7 @@ public partial class LAvenirAppPage : UserControl
             Content    = new LAvenirProfileView(),
             Background = new SolidColorBrush(BgLight),
             Header     = "Profile",
-            Icon       = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z",
+            Icon       = new PathIcon { Data = Geometry.Parse("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z") },
         };
 
         tp.Pages = new ObservableCollection<Page> { menuPage, reservationsPage, profilePage };

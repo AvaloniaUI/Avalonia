@@ -64,7 +64,7 @@ namespace Avalonia.LinuxFramebuffer
             
             Dispatcher.InitializeUIThreadDispatcher(new EpollDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
             AvaloniaLocator.CurrentMutable
-                .Bind<IRenderTimer>().ToConstant(timer)
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(timer))
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()

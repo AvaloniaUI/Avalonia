@@ -8,6 +8,7 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageTransitionsPage : UserControl
     {
+        private bool _initialized;
         private int _pageCount;
 
         public NavigationPageTransitionsPage()
@@ -18,6 +19,13 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+            {
+                UpdateTransition();
+                return;
+            }
+
+            _initialized = true;
             await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Transitions", "Choose a transition type and push pages.", 0), null);
             UpdateTransition();
         }

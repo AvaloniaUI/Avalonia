@@ -55,6 +55,13 @@ namespace Avalonia.Input
                 nameof(SwipeGesture), RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="SwipeGestureEnded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<SwipeGestureEndedEventArgs> SwipeGestureEndedEvent =
+            RoutedEvent.Register<InputElement, SwipeGestureEndedEventArgs>(
+                nameof(SwipeGestureEnded), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="ScrollGesture"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
@@ -239,6 +246,15 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Occurs when a swipe gesture ends on the control.
+        /// </summary>
+        public event EventHandler<SwipeGestureEndedEventArgs>? SwipeGestureEnded
+        {
+            add { AddHandler(SwipeGestureEndedEvent, value); }
+            remove { RemoveHandler(SwipeGestureEndedEvent, value); }
+        }
+
+        /// <summary>
         /// Occurs when the user performs a rapid dragging motion in a single direction on a touchpad.
         /// </summary>
         public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureSwipe
@@ -291,7 +307,7 @@ namespace Avalonia.Input
 
                 if (!e.Handled && e.HoldingState == HoldingState.Started)
                 {
-                    var contextEvent = new ContextRequestedEventArgs(e.PointerEventArgs);
+                    var contextEvent = new ContextRequestedEventArgs(e);
                     inputElement.RaiseEvent(contextEvent);
                     e.Handled = contextEvent.Handled;
 

@@ -11,7 +11,7 @@ namespace Avalonia.Controls.Primitives
 
         public static PopupOverlayLayer? GetPopupOverlayLayer(Visual visual)
         {
-            foreach (var v in visual.GetVisualAncestors())
+            foreach (var v in visual.GetSelfAndVisualAncestors())
                 if (v is VisualLayerManager { PopupOverlayLayer: { } layer })
                     return layer;
 

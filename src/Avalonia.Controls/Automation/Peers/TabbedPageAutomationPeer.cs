@@ -21,6 +21,22 @@ public class TabbedPageAutomationPeer : ControlAutomationPeer
         if (string.IsNullOrEmpty(result))
             result = Owner.Header?.ToString();
 
+        var index = Owner.SelectedIndex;
+        var tabCount = GetTabCount();
+
+        if (index >= 0 && tabCount > 0)
+        {
+            var header = Owner.SelectedPage?.Header?.ToString();
+            var position = $"Tab {index + 1} of {tabCount}";
+            var tabName = string.IsNullOrEmpty(header) ? position : $"{position}: {header}";
+            return string.IsNullOrEmpty(result) ? tabName : $"{result} {tabName}";
+        }
+
         return result;
+    }
+
+    private int GetTabCount()
+    {
+        return Owner.GetTabCount();
     }
 }

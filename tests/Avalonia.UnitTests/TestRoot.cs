@@ -74,10 +74,11 @@ namespace Avalonia.UnitTests
         IRenderer IPresentationSource.Renderer => Renderer;
         IHitTester IPresentationSource.HitTester => HitTester;
 
-        public IFocusManager FocusManager => _focusManager ??= new FocusManager(this);
+        public IFocusManager FocusManager => _focusManager ??= new FocusManager { ContentRoot = this };
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement? PointerOverElement { get; set; }
+        public IInputElement? CursorElement { get; set; }
         public ITextInputMethodImpl? InputMethod { get; }
         public InputElement RootElement => this;
         public InputElement FocusRoot => this;
@@ -113,9 +114,9 @@ namespace Avalonia.UnitTests
         {
         }
 
-        public Point PointToClient(PixelPoint p) => p.ToPoint(1);
+        public Point? PointToClient(PixelPoint p) => p.ToPoint(1);
 
-        public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
+        public PixelPoint? PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
         
 
         public void RegisterChildrenNames()
@@ -141,6 +142,10 @@ namespace Avalonia.UnitTests
         protected override Size MeasureOverride(Size availableSize)
         {
             return base.MeasureOverride(ClientSize);
+        }
+
+        public void PointerOverInvalidated()
+        {
         }
     }
 }

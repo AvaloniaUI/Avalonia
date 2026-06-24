@@ -304,7 +304,7 @@ namespace Avalonia.Controls
         {
             var constraint = ArrangeSetBounds(finalRect.Size);
             var arrangeSize = ArrangeOverride(constraint);
-            Bounds = new Rect(arrangeSize);
+            Bounds = new Rect(finalRect.Position, arrangeSize);
         }
 
         /// <summary>

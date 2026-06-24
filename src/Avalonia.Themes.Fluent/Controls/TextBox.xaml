@@ -113,17 +113,17 @@
         <DataValidationErrors>
           <Panel>
             <Border
-              Name="PART_BorderElement"
-              Background="{TemplateBinding Background}"
-              BorderBrush="{TemplateBinding BorderBrush}"
-              BorderThickness="{TemplateBinding BorderThickness}"
-              CornerRadius="{TemplateBinding CornerRadius}"
-              MinWidth="{TemplateBinding MinWidth}"
-              MinHeight="{TemplateBinding MinHeight}">
+            Name="PART_BorderElement"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="{TemplateBinding CornerRadius}"
+            MinWidth="{TemplateBinding MinWidth}"
+            MinHeight="{TemplateBinding MinHeight}">
             </Border>
 
             <Border
-              Margin="{TemplateBinding BorderThickness}">
+            Margin="{TemplateBinding BorderThickness}">
               <Grid ColumnDefinitions="Auto,*,Auto" >
                 <ContentPresenter Grid.Column="0"
                                   Grid.ColumnSpan="1"
@@ -147,13 +147,13 @@
                                 BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
                     <Panel>
                       <TextBlock Name="PART_Placeholder"
-                              Foreground="{TemplateBinding PlaceholderForeground}"
-                              Opacity="{DynamicResource TextControlPlaceholderOpacity}"
-                              Text="{TemplateBinding PlaceholderText}"
-                              TextAlignment="{TemplateBinding TextAlignment}"
-                              TextWrapping="{TemplateBinding TextWrapping}"
-                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                 Foreground="{TemplateBinding PlaceholderForeground}"
+                                 Opacity="{DynamicResource TextControlPlaceholderOpacity}"
+                                 Text="{TemplateBinding PlaceholderText}"
+                                 TextAlignment="{TemplateBinding TextAlignment}"
+                                 TextWrapping="{TemplateBinding TextWrapping}"
+                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                         <TextBlock.IsVisible>
                           <MultiBinding Converter="{x:Static BoolConverters.And}">
                             <Binding ElementName="PART_TextPresenter" Path="PreeditText" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
@@ -163,22 +163,22 @@
                       </TextBlock>
 
                       <TextPresenter Name="PART_TextPresenter"
-                                    Text="{TemplateBinding Text, Mode=TwoWay}"
-                                    CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
-                                    CaretIndex="{TemplateBinding CaretIndex}"
-                                    SelectionStart="{TemplateBinding SelectionStart}"
-                                    SelectionEnd="{TemplateBinding SelectionEnd}"
-                                    TextAlignment="{TemplateBinding TextAlignment}"
-                                    TextWrapping="{TemplateBinding TextWrapping}"
-                                    LineHeight="{TemplateBinding LineHeight}"
-                                    LetterSpacing="{TemplateBinding LetterSpacing}"
-                                    PasswordChar="{TemplateBinding PasswordChar}"
-                                    RevealPassword="{TemplateBinding RevealPassword}"
-                                    SelectionBrush="{TemplateBinding SelectionBrush}"
-                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                    CaretBrush="{TemplateBinding CaretBrush}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                     Text="{TemplateBinding Text, Mode=TwoWay}"
+                                     CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
+                                     CaretIndex="{TemplateBinding CaretIndex}"
+                                     SelectionStart="{TemplateBinding SelectionStart}"
+                                     SelectionEnd="{TemplateBinding SelectionEnd}"
+                                     TextAlignment="{TemplateBinding TextAlignment}"
+                                     TextWrapping="{TemplateBinding TextWrapping}"
+                                     LineHeight="{TemplateBinding LineHeight}"
+                                     LetterSpacing="{TemplateBinding LetterSpacing}"
+                                     PasswordChar="{TemplateBinding PasswordChar}"
+                                     RevealPassword="{TemplateBinding RevealPassword}"
+                                     SelectionBrush="{TemplateBinding SelectionBrush}"
+                                     SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                     CaretBrush="{TemplateBinding CaretBrush}"
+                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Panel>
                     <ScrollViewer.Styles>
                       <Style Selector="ScrollContentPresenter#PART_ContentPresenter">
@@ -197,6 +197,10 @@
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^:touch-mode">
+      <Setter Property="ContextFlyout" Value="{StaticResource HorizontalTextBoxContextFlyout}" />
+    </Style>
 
     <!-- Disabled State -->
     <Style Selector="^:disabled">

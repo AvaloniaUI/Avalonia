@@ -11,5 +11,5 @@ public interface IPlatformRenderSurface
 [PrivateApi]
 public interface IPlatformRenderSurfaceRenderTarget
 {
-    bool IsReady => true;
+    PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
 }

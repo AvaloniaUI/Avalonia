@@ -20,6 +20,7 @@ namespace ControlCatalog.Pages
         ];
 
         private int _modalCount;
+        private bool _initialized;
 
         public NavigationPageModalTransitionsPage()
         {
@@ -29,6 +30,13 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+            {
+                UpdateTransition();
+                return;
+            }
+
+            _initialized = true;
             await DemoNav.PushAsync(new ContentPage
             {
                 Header = "Modal Transitions",

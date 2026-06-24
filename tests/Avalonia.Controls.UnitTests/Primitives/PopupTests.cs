@@ -329,7 +329,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.ApplyTemplate();
 
-                var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
+                var popup = (Popup)target.GetTemplateDescendants().First(x => x.Name == "popup");
                 popup.Open();
 
                 var popupRoot = (Control)popup.Host!;
@@ -420,7 +420,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.ApplyTemplate();
 
-                var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
+                var popup = (Popup)target.GetTemplateDescendants().First(x => x.Name == "popup");
                 popup.Open();
 
                 var popupRoot = (Control)popup.Host!;
@@ -515,7 +515,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.ApplyTemplate();
 
-                var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
+                var popup = (Popup)target.GetTemplateDescendants().First(x => x.Name == "popup");
                 popup.Open();
 
                 var popupRoot = (Control)popup.Host!;

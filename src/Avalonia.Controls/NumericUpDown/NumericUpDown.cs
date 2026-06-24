@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -112,7 +113,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> PlaceholderTextProperty =
-            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(PlaceholderText));
+#pragma warning disable AVP1013
+            TextBox.PlaceholderTextProperty.AddOwner<NumericUpDown>();
+#pragma warning restore AVP1013
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
@@ -486,6 +489,8 @@ namespace Avalonia.Controls
             SetValidSpinDirection();
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new NumericUpDownAutomationPeer(this);
+
         /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -603,7 +608,7 @@ namespace Avalonia.Controls
         {
             if (IsInitialized)
             {
-                SyncTextAndValueProperties(false, null);
+                SyncTextAndValueProperties(false, null, true);
             }
         }
 

@@ -141,6 +141,7 @@ namespace Avalonia.Controls
 
             if (oldPresenter != null)
             {
+                oldPresenter.CurrentImClient = null;
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
 
                 if (_caretBoundsChangedHandler != null)
@@ -153,6 +154,7 @@ namespace Avalonia.Controls
 
             if (_presenter != null)
             {
+                _presenter.CurrentImClient = this;
                 _caretBoundsChangedHandler ??= OnPresenterCaretBoundsChanged;
                 _presenter.CaretBoundsChanged += _caretBoundsChangedHandler;
             }
@@ -485,11 +487,7 @@ namespace Avalonia.Controls
             {
                 if (run.Length > 0)
                 {
-#if NET6_0_OR_GREATER
                     builder.Append(run.Text.Span);
-#else
-                    builder.Append(run.Text.Span.ToArray());
-#endif
                 }
             }
 

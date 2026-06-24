@@ -494,6 +494,24 @@ namespace Avalonia.Win32.Input
         }
 
         /// <summary>
+        /// Gets a key symbol from a Windows virtual-key using MapVirtualKey.
+        /// Unlike <see cref="GetKeySymbol"/>, this does not call ToUnicodeEx and is safe to use
+        /// during WM_SYSKEYDOWN/UP where ToUnicodeEx would corrupt keyboard state.
+        /// </summary>
+        /// <param name="virtualKey">The Windows virtual-key.</param>
+        /// <returns>A key symbol, or null if none matched.</returns>
+        public static string? GetKeySymbolFromVirtualKey(int virtualKey)
+        {
+            var ch = MapVirtualKey((uint)virtualKey, (uint)MapVirtualKeyMapTypes.MAPVK_VK_TO_CHAR);
+            if (ch == 0)
+                return null;
+
+            // Bit 31 is set for dead keys — strip it to get the base character.
+            var c = (char)(ch & 0x7FFFFFFF);
+            return KeySymbolHelper.IsAllowedAsciiKeySymbol(c) ? c.ToString() : null;
+        }
+
+        /// <summary>
         /// Gets a key symbol from a Windows virtual-key and key data.
         /// </summary>
         /// <param name="virtualKey">The Windows virtual-key.</param>

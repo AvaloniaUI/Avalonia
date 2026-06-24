@@ -8,16 +8,25 @@
                    Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
 
         <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
-                   Text="Bind a TabbedPage to a data collection and use PageTemplate to render each item as a ContentPage." />
+                   Text="Bind a TabbedPage to a data collection, render each item with PageTemplate, and switch templates at runtime." />
 
         <Separator />
 
         <Button Content="Add Category" Click="OnAddCategory" HorizontalAlignment="Stretch" />
         <Button Content="Remove Last" Click="OnRemoveCategory" HorizontalAlignment="Stretch" />
+        <Button Content="Switch Template" Click="OnSwitchTemplate" HorizontalAlignment="Stretch" />
 
         <Separator />
 
-        <TextBlock x:Name="StatusText" Text="3 categories" Opacity="0.7" />
+        <TextBlock Text="Navigate" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="6">
+          <Button Content="Previous" Click="OnPrevious" HorizontalAlignment="Stretch" />
+          <Button Content="Next" Click="OnNext" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock x:Name="StatusText" Text="3 tabs" Opacity="0.7" />
       </StackPanel>
     </ScrollViewer>
 

@@ -308,7 +308,7 @@ internal sealed class InputHandler
         
         _tl.Input?.Invoke(new RawMouseWheelEventArgs(
             _mouseDevice, 
-            (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()), 
+            (ulong)Environment.TickCount64, 
             Root,
             _cachedScrollLocation ?? new Point(0, 0),
             new Vector(deltaX, deltaY),
@@ -372,7 +372,7 @@ internal sealed class InputHandler
         // until the inertia stops.
         _tl.Input?.Invoke(new RawMouseWheelEventArgs(
             _mouseDevice, 
-            (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()), 
+            (ulong)Environment.TickCount64, 
             Root,
             _cachedScrollLocation.Value,
             new Vector(_momentumVelocityX, _momentumVelocityY),

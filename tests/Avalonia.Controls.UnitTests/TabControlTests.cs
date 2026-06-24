@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -913,6 +915,165 @@ namespace Avalonia.Controls.UnitTests
                 Times.Once);
         }
 
+        [Fact]
+        public void Interrupted_PageTransition_Can_Select_Original_Control_Before_Previous_Transition_Completes()
+        {
+            using var app = Start();
+
+            var firstPage = new ContentPage { Content = "Alpha" };
+            var secondPage = new ContentPage { Content = "Beta" };
+            var starts = new List<(object? FromContent, object? ToContent, bool Forward)>();
+            var transitionGate = new TaskCompletionSource();
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Callback<Visual?, Visual?, bool, CancellationToken>((from, to, forward, _) =>
+                {
+                    starts.Add((
+                        (from as ContentPresenter)?.Content,
+                        (to as ContentPresenter)?.Content,
+                        forward));
+                })
+                .Returns(transitionGate.Task);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = firstPage },
+                    new TabItem { Name = "second", Content = secondPage },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Single(starts);
+            Assert.Same(firstPage, starts[0].FromContent);
+            Assert.Same(secondPage, starts[0].ToContent);
+            Assert.True(starts[0].Forward);
+
+            var exception = Record.Exception(() => target.SelectedIndex = 0);
+
+            Assert.Null(exception);
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(2, starts.Count);
+            Assert.Null(starts[1].FromContent);
+            Assert.Same(firstPage, starts[1].ToContent);
+            Assert.False(starts[1].Forward);
+            Assert.Same(firstPage, target.SelectedContent);
+        }
+
+        [Fact]
+        public void Pending_PageTransition_Can_Select_Original_Control_Before_Transition_Starts()
+        {
+            using var app = Start();
+
+            var firstPage = new ContentPage { Content = "Alpha" };
+            var secondPage = new ContentPage { Content = "Beta" };
+            var starts = new List<(object? FromContent, object? ToContent, bool Forward)>();
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Callback<Visual?, Visual?, bool, CancellationToken>((from, to, forward, _) =>
+                {
+                    starts.Add((
+                        (from as ContentPresenter)?.Content,
+                        (to as ContentPresenter)?.Content,
+                        forward));
+                })
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = firstPage },
+                    new TabItem { Name = "second", Content = secondPage },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 1;
+            var exception = Record.Exception(() => target.SelectedIndex = 0);
+
+            Assert.Null(exception);
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Single(starts);
+            Assert.Null(starts[0].FromContent);
+            Assert.Same(firstPage, starts[0].ToContent);
+            Assert.False(starts[0].Forward);
+            Assert.Same(firstPage, target.SelectedContent);
+        }
+
+        [Fact]
+        public void Interrupted_PageTransition_Clears_Reused_Control_From_Owning_SelectedContentHost()
+        {
+            using var app = Start();
+
+            var firstPage = new ContentPage { Content = "Alpha" };
+            var secondPage = new ContentPage { Content = "Beta" };
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                Items =
+                {
+                    new TabItem { Name = "first", Content = firstPage },
+                    new TabItem { Name = "second", Content = secondPage },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            var primary = target.GetVisualDescendants()
+                .OfType<ContentPresenter>()
+                .Single(x => x.Name == "PART_SelectedContentHost");
+            var secondary = target.GetVisualDescendants()
+                .OfType<ContentPresenter>()
+                .Single(x => x.Name == "PART_SelectedContentHost2");
+
+            // Simulate the stale presenter ownership that can happen when tab changes
+            // interrupt a transition: the page is still parented by the named content
+            // host, but the active field no longer points at that host.
+            primary.SetContentWithDataContext(firstPage, null);
+            secondary.IsVisible = false;
+            SetPrivateField(target, "_contentPart", secondary);
+            SetPrivateField(target, "_contentPresenter2", secondary);
+
+            target.PageTransition = transition.Object;
+            var exception = Record.Exception(() => target.SelectedIndex = 0);
+
+            Assert.Null(exception);
+            Assert.Same(firstPage, target.SelectedContent);
+            Assert.Null(primary.Content);
+            Assert.Same(firstPage, secondary.Content);
+        }
+
         private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
@@ -943,6 +1104,13 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
+        private static void SetPrivateField<T>(TabControl target, string name, T value)
+        {
+            var field = typeof(TabControl).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(field);
+            field.SetValue(target, value);
+        }
+
         private static IControlTemplate TabItemTemplate()
         {
             return new FuncControlTemplate<TabItem>((parent, scope) =>
@@ -953,6 +1121,30 @@ namespace Avalonia.Controls.UnitTests
                     [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.HeaderTemplateProperty),
                     RecognizesAccessKey = true,
                 }.RegisterInNameScope(scope));
+        }
+
+        private static IControlTemplate TabItemWithIconTemplate()
+        {
+            return new FuncControlTemplate<TabItem>((parent, scope) =>
+                new StackPanel
+                {
+                    Children =
+                    {
+                        new ContentPresenter
+                        {
+                            Name = "PART_IconPresenter",
+                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabItem.IconProperty),
+                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.IconTemplateProperty),
+                        }.RegisterInNameScope(scope),
+                        new ContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabItem.HeaderProperty),
+                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.HeaderTemplateProperty),
+                            RecognizesAccessKey = true,
+                        }.RegisterInNameScope(scope),
+                    }
+                });
         }
 
         private static ControlTheme CreateTabControlControlTheme()
@@ -1495,35 +1687,72 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void TabItem_Icon_DefaultIsNull()
+        public void TabItem_IconTemplate_Creates_Content_From_NonControl_Icon()
         {
-            var tabItem = new TabItem();
-            Assert.Null(tabItem.Icon);
+            var tabItem = new TabItem
+            {
+                Icon = "home",
+                IconTemplate = new FuncDataTemplate<object>((val, _) =>
+                    new TextBlock { Text = (string)val }),
+                Template = TabItemWithIconTemplate(),
+            };
+
+            var root = new TestRoot { Child = tabItem };
+            tabItem.ApplyTemplate();
+            tabItem.Presenter!.UpdateChild();
+
+            var iconPresenter = tabItem.GetTemplateDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            Assert.NotNull(iconPresenter);
+            Assert.Equal("home", iconPresenter!.Content);
+            Assert.NotNull(iconPresenter.ContentTemplate);
+
+            iconPresenter.UpdateChild();
+            var textBlock = iconPresenter.Child as TextBlock;
+            Assert.NotNull(textBlock);
+            Assert.Equal("home", textBlock!.Text);
         }
 
         [Fact]
-        public void TabItem_Icon_RoundTrips()
+        public void TabItem_Icon_Without_Template_Renders_Control_Directly()
         {
-            var tabItem = new TabItem();
             var icon = new Avalonia.Controls.Shapes.Path
             {
                 Data = new Avalonia.Media.EllipseGeometry { Rect = new Rect(0, 0, 10, 10) }
             };
-            tabItem.Icon = icon;
-            Assert.Same(icon, tabItem.Icon);
+            var tabItem = new TabItem
+            {
+                Icon = icon,
+                Template = TabItemWithIconTemplate(),
+            };
+
+            var root = new TestRoot { Child = tabItem };
+            tabItem.ApplyTemplate();
+            tabItem.Presenter!.UpdateChild();
+
+            var iconPresenter = tabItem.GetTemplateDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            Assert.NotNull(iconPresenter);
+            Assert.Same(icon, iconPresenter!.Content);
+            Assert.Null(iconPresenter.ContentTemplate);
         }
 
         [Fact]
-        public void TabItem_Icon_CanBeSetToNull()
+        public void TabItem_Icon_Change_Updates_Presenter_Content()
         {
-            var tabItem = new TabItem();
-            var icon = new Avalonia.Controls.Shapes.Path
+            var tabItem = new TabItem
             {
-                Data = new Avalonia.Media.EllipseGeometry { Rect = new Rect(0, 0, 10, 10) }
+                Icon = "first",
+                Template = TabItemWithIconTemplate(),
             };
-            tabItem.Icon = icon;
-            tabItem.Icon = null;
-            Assert.Null(tabItem.Icon);
+
+            var root = new TestRoot { Child = tabItem };
+            tabItem.ApplyTemplate();
+            tabItem.Presenter!.UpdateChild();
+
+            var iconPresenter = tabItem.GetTemplateDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            Assert.Equal("first", iconPresenter!.Content);
+
+            tabItem.Icon = "second";
+            Assert.Equal("second", iconPresenter.Content);
         }
 
         [Fact]

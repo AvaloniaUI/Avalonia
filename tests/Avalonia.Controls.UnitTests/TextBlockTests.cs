@@ -561,6 +561,33 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 32.45454545454545, 19.022727272727273), target.Bounds);
         }
 
+        [Fact]
+        public void Measure_And_Arrange_Should_Use_WidthIncludingTrailingWhitespace_For_Bounds()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock
+            {
+                Text = "fy",
+                FontStyle = FontStyle.Italic,
+                FontSize = 48,
+                UseLayoutRounding = false,
+                Padding = new Thickness(3, 2, 5, 4)
+            };
+
+            target.Measure(Size.Infinity);
+
+            var expectedSize =
+                new Size(target.TextLayout.WidthIncludingTrailingWhitespace, target.TextLayout.Height)
+                    .Inflate(target.Padding);
+
+            Assert.Equal(expectedSize, target.DesiredSize);
+
+            target.Arrange(new Rect(default, target.DesiredSize));
+
+            Assert.Equal(new Rect(default, expectedSize), target.Bounds);
+        }
+
         private class TestTextBlock : TextBlock
         {
             public Size Constraint => _constraint;

@@ -108,6 +108,7 @@ namespace Avalonia.Win32
         internal bool _ignoreWmChar;
         private WindowTransparencyLevel _transparencyLevel;
         private readonly WindowTransparencyLevel _defaultTransparencyLevel;
+        private WindowCornerPreference _cornerPreference;
 
         private const int MaxPointerHistorySize = 512;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
@@ -208,6 +209,7 @@ namespace Avalonia.Win32
 
         public Action<PixelPoint>? PositionChanged { get; set; }
 
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action? LostFocus { get; set; }
@@ -218,9 +220,9 @@ namespace Avalonia.Win32
         {
             get
             {
-                if (HasFullDecorations)
+                var style = GetStyle();
+                if (style.HasFlag(WindowStyles.WS_BORDER))
                 {
-                    var style = GetStyle();
                     var exStyle = GetExtendedStyle();
 
                     var padding = new RECT();
@@ -372,6 +374,13 @@ namespace Avalonia.Win32
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
+            if (transparencyLevels.Count == 1 && transparencyLevels[0] == WindowTransparencyLevel.None)
+            {
+                // Explicitly disable transparency. Ignore the UseRedirectionBitmap property.
+                TransparencyLevel = WindowTransparencyLevel.None;
+                return;
+            }
+
             foreach (var level in transparencyLevels)
             {
                 if (!IsSupported(level))
@@ -430,7 +439,7 @@ namespace Avalonia.Win32
 
         private bool SetTransparencyTransparent()
         {
-            if (CompositionEffectsSurface is {} surface)
+            if (CompositionEffectsSurface is { } surface)
             {
                 surface.SetBlur(BlurEffect.None);
                 return true;
@@ -528,7 +537,7 @@ namespace Avalonia.Win32
                     0,
                     0,
                     SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
-                
+
                 if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
                 {
                     var monitor = MonitorFromWindow(Handle.Handle, MONITOR.MONITOR_DEFAULTTONEAREST);
@@ -595,12 +604,18 @@ namespace Avalonia.Win32
 
             if (_isClientAreaExtended)
             {
-                // We told Windows we have a caption, but since we're actually extending into it,
+                // We told Windows we have a border, but since we're actually extending into it,
                 // it should be excluded from the final window bounds.
-                if (_windowProperties.Decorations != WindowDecorations.None)
+                var style = GetStyle();
+                if ((style & WindowStyles.WS_BORDER) != 0)
                 {
                     var borderOnlyRect = ClientRectToWindowRect(requestedClientRect, WindowStyles.WS_BORDER);
+
                     requestedWindowRect.top = borderOnlyRect.top;
+
+                    // If we're supposed to have a caption, the top border is actually collapsed into it.
+                    if ((style & WindowStyles.WS_CAPTION) == WindowStyles.WS_CAPTION)
+                        requestedWindowRect.top += 1;
                 }
             }
 
@@ -804,11 +819,14 @@ namespace Avalonia.Win32
             var hCursor = impl?.Handle ?? s_defaultCursor;
             SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
 
-            UnmanagedMethods.SetCursor(hCursor);    
+            UnmanagedMethods.SetCursor(hCursor);
         }
 
         public void SetIcon(IWindowIconImpl? icon)
         {
+            if (ReferenceEquals(_iconImpl, icon))
+                return;
+
             _iconImpl = (IconImpl?)icon;
             ClearIconCache();
             RefreshIcon();
@@ -921,7 +939,7 @@ namespace Avalonia.Win32
 
         private void EnsureTopmost()
         {
-            if(_topmost)
+            if (_topmost)
             {
                 SetWindowPos(_hwnd,
                     WindowPosZOrder.HWND_TOPMOST,
@@ -1005,7 +1023,7 @@ namespace Avalonia.Win32
 
             Handle = new WindowImplPlatformHandle(this);
 
-                RegisterTouchWindow(_hwnd, 0);
+            RegisterTouchWindow(_hwnd, 0);
 
             if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
             {
@@ -1180,10 +1198,23 @@ namespace Avalonia.Win32
             return margins;
         }
 
+        private void UpdateWindowCornerPreference()
+        {
+            if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+                return;
+
+            unsafe
+            {
+                var preference = (int)_cornerPreference;
+                DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(int));
+            }
+        }
+
         private void ExtendClientArea()
         {
             if (!_shown)
             {
+                ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
                 return;
             }
 
@@ -1199,18 +1230,8 @@ namespace Avalonia.Win32
                 var margins = UpdateExtendMargins();
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
-                // On Windows 11 21H2 and later, corners are configurable.
-                // When doing so, we need to make sure that DWM draws the non-client frame for that to work correctly.
-                if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000)) {
-                    SetWindowCornerPreference(DwmWindowCornerPreference.DWMWCP_ROUND);
-                    SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_ENABLED);
-                }
-                else
-                {
-                    // On older versions, we need to disable painting the non-client area to avoid issues
-                    // (alternatively, we could return 0 in WM_NCPAINT in this case).
-                    SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_DISABLED);
-                }
+                // Make sure that Windows still paints the non-client area so we get native borders and shadows.
+                SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_ENABLED);
             }
             else
             {
@@ -1219,16 +1240,7 @@ namespace Avalonia.Win32
 
                 _extendedMargins = new Thickness();
 
-                if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
-                    SetWindowCornerPreference(DwmWindowCornerPreference.DWMWCP_DEFAULT);
-
                 SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_USEWINDOWSTYLE);
-
-                unsafe
-                {
-                    int cornerPreference = (int)DwmWindowCornerPreference.DWMWCP_DEFAULT;
-                    DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(int));
-                }
             }
 
             if (!_isClientAreaExtended)
@@ -1249,9 +1261,6 @@ namespace Avalonia.Win32
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
-
-        private unsafe void SetWindowCornerPreference(DwmWindowCornerPreference value)
-            => DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_WINDOW_CORNER_PREFERENCE, &value, sizeof(int));
 
         private unsafe void SetNCRenderingPolicy(DwmNCRenderingPolicy value)
             => DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_NCRENDERING_POLICY, &value, sizeof(int));
@@ -1468,20 +1477,19 @@ namespace Avalonia.Win32
                 switch (newProperties.Decorations)
                 {
                     case WindowDecorations.Full:
-                        style |= WindowStyles.WS_BORDER | WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
-
-                        if (newProperties.IsMinimizable)
-                            style |= WindowStyles.WS_MINIMIZEBOX;
-
-                        if (newProperties.IsMaximizable || (newProperties.WindowState == WindowState.Maximized && newProperties.IsResizable))
-                            style |= WindowStyles.WS_MAXIMIZEBOX;
-
+                        style |= WindowStyles.WS_BORDER | WindowStyles.WS_SYSMENU | WindowStyles.WS_CAPTION;
                         break;
 
                     case WindowDecorations.BorderOnly:
                         style |= WindowStyles.WS_BORDER;
                         break;
                 }
+
+                if (newProperties.IsMinimizable)
+                    style |= WindowStyles.WS_MINIMIZEBOX;
+
+                if (newProperties.IsMaximizable || (newProperties.WindowState == WindowState.Maximized && newProperties.IsResizable))
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
 
                 if (newProperties.Decorations != WindowDecorations.None && newProperties.IsResizable)
                     style |= WindowStyles.WS_THICKFRAME;
@@ -1523,7 +1531,7 @@ namespace Avalonia.Win32
 
                 if (_shown || forceChanges)
                 {
-                    SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0 ,0,
+                    SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0, 0,
                         SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
                         SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOMOVE |
                         SetWindowPosFlags.SWP_FRAMECHANGED);
@@ -1602,6 +1610,12 @@ namespace Avalonia.Win32
             _extendTitleBarHint = titleBarHeight;
 
             ExtendClientArea();
+        }
+
+        public void SetWindowCornerPreference(WindowCornerPreference preference)
+        {
+            _cornerPreference = preference;
+            UpdateWindowCornerPreference();
         }
 
         /// <inheritdoc/>

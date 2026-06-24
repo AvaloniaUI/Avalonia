@@ -125,7 +125,7 @@ internal sealed class AndroidScreens : ScreensBase<Display, AndroidScreen>, IDis
 
     protected override Screen? ScreenFromTopLevelCore(ITopLevelImpl topLevel)
     {
-        var display = ((TopLevelImpl)topLevel).View.Display;
+        var display = ((TopLevelImpl)topLevel).View?.Display;
         return display is not null && TryGetScreen(display, out var screen) ? screen : null;
     }
 

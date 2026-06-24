@@ -6,6 +6,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls.Chrome;
 using Avalonia.Input;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls;
 
@@ -53,7 +54,7 @@ internal partial class TopLevelHost
     /// When non-null (including <see cref="DrawnWindowDecorationParts.None"/>), the decoration
     /// infrastructure is kept alive and parts/fullscreen state are updated.
     /// </summary>
-    internal void UpdateDrawnDecorations(DrawnWindowDecorationParts? parts, WindowState windowState)
+    internal void UpdateDrawnDecorations(DrawnWindowDecorationParts? parts, WindowState windowState, ControlTheme? theme)
     {
         if (parts == null)
         {
@@ -68,6 +69,14 @@ internal partial class TopLevelHost
             // Layers persist across part changes; pseudo-classes driven by EnabledParts
             // control visibility of individual decoration elements in the theme.
             _decorations.EnabledParts = enabledParts;
+
+            var oldTheme = _decorations.Theme;
+            if (oldTheme != theme)
+            {
+                _decorations.Theme = theme;
+                _decorations.ApplyStyling();
+            }
+
             if (_resizeGrips != null)
                 _resizeGrips.IsVisible = enabledParts.HasFlag(DrawnWindowDecorationParts.ResizeGrips);
         }
@@ -75,6 +84,7 @@ internal partial class TopLevelHost
         {
             _decorations = new WindowDrawnDecorations();
             _decorations.EnabledParts = enabledParts;
+            _decorations.Theme = theme;
 
             // Set up logical parenting
             LogicalChildren.Add(_decorations);
@@ -161,6 +171,7 @@ internal partial class TopLevelHost
         if (_decorations == null)
             return;
 
+        _decorations.ApplyStyling();
         _decorations.ApplyTemplate();
 
         var content = _decorations.Content;

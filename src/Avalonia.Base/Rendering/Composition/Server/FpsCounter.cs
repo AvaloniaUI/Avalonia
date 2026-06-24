@@ -42,11 +42,7 @@ internal class FpsCounter
             _lastFpsUpdate = now;
         }
 
-#if NET6_0_OR_GREATER
         var fpsLine = string.Create(CultureInfo.InvariantCulture, $"Frame #{_totalFrames:00000000} FPS: {_fps:000} {aux}");
-#else
-        var fpsLine = FormattableString.Invariant($"Frame #{_totalFrames:00000000} FPS: {_fps:000} {aux}");
-#endif
 
         var size = _textRenderer.MeasureAsciiText(fpsLine.AsSpan());
 

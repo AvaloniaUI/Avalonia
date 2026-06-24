@@ -37,6 +37,7 @@ namespace ControlCatalog.Pages
         ];
 
         private readonly ObservableCollection<ContactItem> _filteredItems = new(AllContacts);
+        private bool _initialized;
         private string _searchText = "";
 
         public NavigationPageInteractiveHeaderPage()
@@ -47,6 +48,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             var headerGrid = new Grid
             {
                 ColumnDefinitions = new ColumnDefinitions("*, Auto"),

@@ -61,7 +61,7 @@ public sealed class DataTransferItem : IDataTransferItem, IAsyncDataTransferItem
         if (_accessorByFormat is not null)
             return _accessorByFormat.TryGetValue(format, out var accessor) ? accessor : null;
 
-        if (_singleItem is { } singleItem)
+        if (_singleItem is { } singleItem && singleItem.Key.Equals(format))
             return singleItem.Value;
 
         return null;
