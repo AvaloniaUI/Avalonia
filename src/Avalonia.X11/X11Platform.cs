@@ -102,7 +102,7 @@ namespace Avalonia.X11
             
             Screens = X11Screens = new X11Screens(this);
 
-            if (options.AllowHighRefreshRate && timer is SleepLoopRenderTimer loopTimer)
+            if (timer is SleepLoopRenderTimer loopTimer)
             {
                 X11Screens.Changed += () => { loopTimer.DesiredFps = X11Screens.MaxRefreshRate; };
                 loopTimer.DesiredFps = X11Screens.MaxRefreshRate;
@@ -457,11 +457,6 @@ namespace Avalonia
         /// This setting is false by default.
         /// </summary>
         public bool ShouldRenderOnUIThread { get; set; }
-
-        /// <summary>
-        /// Query for display refresh rates from RANDR. May or may not use the refresh rate of your best display.
-        /// </summary>
-        public bool AllowHighRefreshRate { get; set; }
 
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
