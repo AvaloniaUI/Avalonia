@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls.Utils;
+using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.Input.TextInput;
 using Avalonia.Media;
@@ -326,7 +327,24 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         public ValueTask<List<AtSpiTextRange>> GetBoundedRangesAsync(
             int x, int y, int width, int height, uint coordType, uint xClipType, uint yClipType)
         {
-            return ValueTask.FromResult(new List<AtSpiTextRange>());
+            var result = new List<AtSpiTextRange>();
+
+            if (Navigation is { } nav &&
+                nav.GetPositionFromPoint(AtSpiCoordinateHelper.PointToTopLevel(node, x, y, coordType)) is { } startPos &&
+                nav.GetPositionFromPoint(AtSpiCoordinateHelper.PointToTopLevel(node, x + width, y + height, coordType)) is { } endPos)
+            {
+                var start = Math.Min(startPos.Offset, endPos.Offset);
+                var end = Math.Max(startPos.Offset, endPos.Offset);
+                if (end > start)
+                {
+                    var text = nav.GetText(nav.GetRange(
+                        nav.GetPosition(nav.DocumentStart, start),
+                        nav.GetPosition(nav.DocumentStart, end)));
+                    result.Add(new AtSpiTextRange(start, end, text, new DBusVariant(0)));
+                }
+            }
+
+            return ValueTask.FromResult(result);
         }
 
         // A TextBox is uniform, so the attribute run is the same set the whole document carries.

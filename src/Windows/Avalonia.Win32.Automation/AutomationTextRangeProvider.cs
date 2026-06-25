@@ -35,8 +35,13 @@ namespace Avalonia.Win32.Automation
 
         public void ExpandToEnclosingUnit(UIA.TextUnit unit) => _range.ExpandToEnclosingUnit(Map(unit));
 
-        // Deferred: attribute search.
-        public UIA.ITextRangeProvider FindAttribute(int attribute, object value, bool backward) => null!;
+        public UIA.ITextRangeProvider FindAttribute(int attribute, object value, bool backward)
+        {
+            // Attributes are uniform over a plain TextBox: the whole range matches iff its value equals
+            // the query (a richer control would search for the sub-range carrying the value).
+            var current = GetAttributeValue(attribute);
+            return current is not null && current.Equals(value) ? Clone() : null!;
+        }
 
         public UIA.ITextRangeProvider FindText(string text, bool backward, bool ignoreCase)
         {
@@ -90,7 +95,7 @@ namespace Avalonia.Win32.Automation
 
         public void ScrollIntoView(bool alignToTop) => _range.ScrollIntoView(alignToTop);
 
-        // Deferred: embedded objects.
+        // A plain TextBox has no embedded objects.
         public UIA.IRawElementProviderSimple[] GetChildren() => Array.Empty<UIA.IRawElementProviderSimple>();
 
         // Well-known UIA TextAttributeId values (UIAutomationClient.h).
