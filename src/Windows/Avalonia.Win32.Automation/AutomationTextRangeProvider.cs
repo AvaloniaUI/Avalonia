@@ -38,8 +38,11 @@ namespace Avalonia.Win32.Automation
         // Deferred: attribute search.
         public UIA.ITextRangeProvider FindAttribute(int attribute, object value, bool backward) => null!;
 
-        // Deferred: text search.
-        public UIA.ITextRangeProvider FindText(string text, bool backward, bool ignoreCase) => null!;
+        public UIA.ITextRangeProvider FindText(string text, bool backward, bool ignoreCase)
+        {
+            var match = _range.FindText(text, backward, ignoreCase);
+            return match is null ? null! : new AutomationTextRangeProvider(_owner, match);
+        }
 
         public object GetAttributeValue(int attribute)
         {

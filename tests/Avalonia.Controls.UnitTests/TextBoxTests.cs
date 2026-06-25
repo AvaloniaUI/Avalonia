@@ -2382,6 +2382,30 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void AutomationTextRange_FindText_Searches_The_Range()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar baz", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            Avalonia.Automation.AutomationTextRange Doc() => new(nav, nav.DocumentStart, nav.DocumentEnd);
+
+            Assert.Equal("bar", Doc().FindText("bar", false, false)!.GetText(-1));
+            Assert.Null(Doc().FindText("BAR", false, false));                     // case-sensitive miss
+            Assert.Equal("bar", Doc().FindText("BAR", false, true)!.GetText(-1)); // ignore case
+            Assert.Null(Doc().FindText("qux", false, false));                     // not found
+
+            // Forward finds the first "ba" (in "bar"); backward finds the last (in "baz").
+            var forward = Doc().FindText("ba", false, false)!;
+            var backward = Doc().FindText("ba", true, false)!;
+            Assert.True(forward.CompareEndpoints(
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start, backward,
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start) < 0);
+        }
+
+        [Fact]
         public void TextBoxAutomationPeer_Exposes_Text_Via_ITextProvider()
         {
             using var _ = UnitTestApplication.Start(Services);

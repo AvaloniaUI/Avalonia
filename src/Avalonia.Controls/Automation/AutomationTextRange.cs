@@ -138,6 +138,32 @@ namespace Avalonia.Automation
             return attributes.TryGetValue(attribute, out var value) ? value : null;
         }
 
+        public ITextRangeProvider? FindText(string text, bool backward, bool ignoreCase)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return null;
+            }
+
+            var haystack = _navigation.GetText(_navigation.GetRange(_start, _end));
+            var comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+            var index = backward
+                ? haystack.LastIndexOf(text, comparison)
+                : haystack.IndexOf(text, comparison);
+
+            if (index < 0)
+            {
+                return null;
+            }
+
+            // The match offsets are relative to this range's start.
+            return new AutomationTextRange(
+                _navigation,
+                _navigation.GetPosition(_start, index),
+                _navigation.GetPosition(_start, index + text.Length));
+        }
+
         // Moves an endpoint; if it passes the other endpoint the range collapses (UIA semantics).
         private void SetEndpoint(TextRangeEndpoint endpoint, ITextPointer position)
         {

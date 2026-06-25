@@ -66,5 +66,11 @@ namespace Avalonia.Automation.Provider
         /// <see cref="TextAttribute"/> vocabulary.
         /// </summary>
         object? GetAttributeValue(TextAttribute attribute);
+
+        /// <summary>
+        /// The first occurrence of <paramref name="text"/> within this range, searching toward the
+        /// document start when <paramref name="backward"/> is set, or null if not found.
+        /// </summary>
+        ITextRangeProvider? FindText(string text, bool backward, bool ignoreCase);
     }
 }
