@@ -90,6 +90,35 @@ namespace Avalonia.Win32.Automation
             });
         }
 
+        // Converts text-range rectangles (in top-level coordinates) to a flat screen-pixel
+        // [x, y, w, h, ...] array, as UIA GetBoundingRectangles expects.
+        internal double[] PointsToScreen(IReadOnlyList<Rect> topLevelRects)
+        {
+            return InvokeSync(() =>
+            {
+                if (topLevelRects.Count == 0 ||
+                    Peer.GetVisualRoot() is not ControlAutomationPeer root ||
+                    root.Owner.GetPresentationSource() is null)
+                {
+                    return Array.Empty<double>();
+                }
+
+                var result = new double[topLevelRects.Count * 4];
+                for (var i = 0; i < topLevelRects.Count; i++)
+                {
+                    var screen = new PixelRect(
+                        root.Owner.PointToScreen(topLevelRects[i].TopLeft),
+                        root.Owner.PointToScreen(topLevelRects[i].BottomRight)).ToRect(1);
+                    result[i * 4] = screen.X;
+                    result[i * 4 + 1] = screen.Y;
+                    result[i * 4 + 2] = screen.Width;
+                    result[i * 4 + 3] = screen.Height;
+                }
+
+                return result;
+            });
+        }
+
         public virtual IRawElementProviderFragmentRoot? GetFragmentRoot()
         {
             return InvokeSync(() => GetRoot());

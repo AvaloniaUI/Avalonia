@@ -13,5 +13,11 @@ namespace Avalonia.Automation.Provider
     {
         /// <summary>Sets the control's selection to <paramref name="range"/>.</summary>
         void SetSelection(ITextRange range);
+
+        /// <summary>
+        /// The top-level-coordinate rectangles covering <paramref name="range"/> (one per line); the
+        /// platform accessibility layer converts them to screen coordinates.
+        /// </summary>
+        Rect[] GetBoundingRectangles(ITextRange range);
     }
 }

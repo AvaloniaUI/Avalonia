@@ -115,6 +115,11 @@ namespace Avalonia.Automation
             }
         }
 
+        public Rect[] GetBoundingRectangles()
+            => _navigation is IAccessibleText accessible
+                ? accessible.GetBoundingRectangles(_navigation.GetRange(_start, _end))
+                : Array.Empty<Rect>();
+
         // Moves an endpoint; if it passes the other endpoint the range collapses (UIA semantics).
         private void SetEndpoint(TextRangeEndpoint endpoint, ITextPointer position)
         {

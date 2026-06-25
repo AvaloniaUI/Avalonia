@@ -56,5 +56,8 @@ namespace Avalonia.Automation.Provider
 
         /// <summary>Selects this range in the owning control, if the control supports it.</summary>
         void Select();
+
+        /// <summary>The screen-coordinate rectangles covering the range (one per line).</summary>
+        Rect[] GetBoundingRectangles();
     }
 }

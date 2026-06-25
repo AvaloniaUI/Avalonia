@@ -42,8 +42,7 @@ namespace Avalonia.Win32.Automation
         // Deferred: attribute values.
         public object GetAttributeValue(int attribute) => null!;
 
-        // Deferred: bounding rectangles (needs layout/screen coordinates).
-        public double[] GetBoundingRectangles() => Array.Empty<double>();
+        public double[] GetBoundingRectangles() => _owner.PointsToScreen(_range.GetBoundingRectangles());
 
         public UIA.IRawElementProviderSimple GetEnclosingElement() => _owner;
 

@@ -140,6 +140,18 @@ namespace Avalonia.Controls
             _textBox.SelectionEnd = OffsetOf(range.End);
         }
 
+        public Rect[] GetBoundingRectangles(ITextRange range)
+        {
+            var start = OffsetOf(range.Start);
+            var end = OffsetOf(range.End);
+            if (start > end)
+            {
+                (start, end) = (end, start);
+            }
+
+            return _textBox.GetTextRangeBounds(start, end - start);
+        }
+
         private void OnTextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property != TextBox.TextProperty)

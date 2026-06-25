@@ -22,6 +22,7 @@ using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -913,6 +914,30 @@ namespace Avalonia.Controls
         public int GetLineCount()
         {
             return this._presenter?.TextLayout.TextLines.Count ?? -1;
+        }
+
+        // Top-level-space rectangles for a character range, used by the automation text provider
+        // (the platform layer converts them to screen coordinates).
+        internal Rect[] GetTextRangeBounds(int start, int length)
+        {
+            if (_presenter is null || length <= 0 || this.GetVisualRoot() is not Visual root)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var transform = _presenter.TransformToVisual(root);
+            if (transform is null)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var result = new List<Rect>();
+            foreach (var rect in _presenter.TextLayout.HitTestTextRange(start, length))
+            {
+                result.Add(rect.TransformToAABB(transform.Value));
+            }
+
+            return result.ToArray();
         }
 
         /// <summary>
