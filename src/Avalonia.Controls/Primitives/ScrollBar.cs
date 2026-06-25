@@ -537,6 +537,12 @@ namespace Avalonia.Controls.Primitives
 
         private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
         {
+            if (e.PointerType is PointerType.Touch or PointerType.Pen)
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (e.TryGetPosition(this, out var position))
             {
                 _lastRightClickPosition = position;
