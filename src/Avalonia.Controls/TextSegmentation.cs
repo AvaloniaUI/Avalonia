@@ -117,7 +117,7 @@ namespace Avalonia.Controls
             return previous;
         }
 
-        // Logical line (scans to hard breaks), not the visual wrapped line.
+        // Logical line: the run between UAX-14 mandatory (hard) breaks, not the visual wrapped line.
         public static (int Start, int End) LineBounds(int offset, ReadOnlySpan<char> text)
         {
             var length = text.Length;
@@ -129,13 +129,13 @@ namespace Avalonia.Controls
             var position = Math.Clamp(offset, 0, length - 1);
 
             var start = position;
-            while (start > 0 && text[start - 1] != '\n' && text[start - 1] != '\r')
+            while (start > 0 && !IsMandatoryBreak(text[start - 1]))
             {
                 start--;
             }
 
             var end = position;
-            while (end < length && text[end] != '\n' && text[end] != '\r')
+            while (end < length && !IsMandatoryBreak(text[end]))
             {
                 end++;
             }
@@ -225,5 +225,16 @@ namespace Avalonia.Controls
         }
 
         private static bool IsSentenceBoundary(char c) => c is '.' or '!' or '?' or '\n' or '\r';
+
+        // A UAX-14 mandatory (hard) line break: LF, CR, NEL, and the BK class - which covers VT, FF,
+        // U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR. All are BMP, so one UTF-16 unit suffices.
+        private static bool IsMandatoryBreak(char c) => new Codepoint(c).LineBreakClass switch
+        {
+            LineBreakClass.MandatoryBreak => true,
+            LineBreakClass.LineFeed => true,
+            LineBreakClass.CarriageReturn => true,
+            LineBreakClass.NextLine => true,
+            _ => false,
+        };
     }
 }
