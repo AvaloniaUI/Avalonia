@@ -67,5 +67,7 @@ namespace Avalonia.Input
         }
 
         internal bool IsHolding => _holdRoutedEventArgs != null;
+
+        internal PointerType? PointerType => _pointerEventArgs?.Pointer.Type;
     }
 }
