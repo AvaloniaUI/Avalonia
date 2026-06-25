@@ -25,31 +25,42 @@ namespace Avalonia.Win32.Automation
             _range = range;
         }
 
-        public UIA.ITextRangeProvider Clone() => new AutomationTextRangeProvider(_owner, _range.Clone());
+        // UIA invokes these on its own thread; every call into the cross-platform range (which touches
+        // Avalonia UI objects) is marshalled onto the UI thread via the owner's InvokeSync.
 
-        public bool Compare(UIA.ITextRangeProvider range) => _range.Compare(Unwrap(range));
+        public UIA.ITextRangeProvider Clone()
+            => _owner.InvokeSync<UIA.ITextRangeProvider>(() => new AutomationTextRangeProvider(_owner, _range.Clone()));
+
+        public bool Compare(UIA.ITextRangeProvider range) => _owner.InvokeSync(() => _range.Compare(Unwrap(range)));
 
         public int CompareEndpoints(UIA.TextPatternRangeEndpoint endpoint, UIA.ITextRangeProvider targetRange,
             UIA.TextPatternRangeEndpoint targetEndpoint)
-            => _range.CompareEndpoints(Map(endpoint), Unwrap(targetRange), Map(targetEndpoint));
+            => _owner.InvokeSync(() => _range.CompareEndpoints(Map(endpoint), Unwrap(targetRange), Map(targetEndpoint)));
 
-        public void ExpandToEnclosingUnit(UIA.TextUnit unit) => _range.ExpandToEnclosingUnit(Map(unit));
+        public void ExpandToEnclosingUnit(UIA.TextUnit unit)
+            => _owner.InvokeSync(() => _range.ExpandToEnclosingUnit(Map(unit)));
 
         public UIA.ITextRangeProvider FindAttribute(int attribute, object value, bool backward)
-        {
-            // Attributes are uniform over a plain TextBox: the whole range matches iff its value equals
-            // the query (a richer control would search for the sub-range carrying the value).
-            var current = GetAttributeValue(attribute);
-            return current is not null && current.Equals(value) ? Clone() : null!;
-        }
+            => _owner.InvokeSync<UIA.ITextRangeProvider>(() =>
+            {
+                // Attributes are uniform over a plain TextBox: the whole range matches iff its value
+                // equals the query (a richer control would search for the sub-range carrying the value).
+                var current = GetAttributeValueCore(attribute);
+                return current is not null && current.Equals(value)
+                    ? new AutomationTextRangeProvider(_owner, _range.Clone())
+                    : null!;
+            });
 
         public UIA.ITextRangeProvider FindText(string text, bool backward, bool ignoreCase)
-        {
-            var match = _range.FindText(text, backward, ignoreCase);
-            return match is null ? null! : new AutomationTextRangeProvider(_owner, match);
-        }
+            => _owner.InvokeSync<UIA.ITextRangeProvider>(() =>
+            {
+                var match = _range.FindText(text, backward, ignoreCase);
+                return match is null ? null! : new AutomationTextRangeProvider(_owner, match);
+            });
 
-        public object GetAttributeValue(int attribute)
+        public object GetAttributeValue(int attribute) => _owner.InvokeSync(() => GetAttributeValueCore(attribute));
+
+        private object GetAttributeValueCore(int attribute)
         {
             // Map the well-known UIA TextAttributeId onto the shared vocabulary, then to its UIA form;
             // an unsupported attribute (or one that varies across the range) returns an empty value.
@@ -72,28 +83,29 @@ namespace Avalonia.Win32.Automation
             return value!;
         }
 
-        public double[] GetBoundingRectangles() => _owner.PointsToScreen(_range.GetBoundingRectangles());
+        public double[] GetBoundingRectangles()
+            => _owner.InvokeSync(() => _owner.PointsToScreen(_range.GetBoundingRectangles()));
 
         public UIA.IRawElementProviderSimple GetEnclosingElement() => _owner;
 
-        public string GetText(int maxLength) => _range.GetText(maxLength);
+        public string GetText(int maxLength) => _owner.InvokeSync(() => _range.GetText(maxLength));
 
-        public int Move(UIA.TextUnit unit, int count) => _range.Move(Map(unit), count);
+        public int Move(UIA.TextUnit unit, int count) => _owner.InvokeSync(() => _range.Move(Map(unit), count));
 
         public int MoveEndpointByUnit(UIA.TextPatternRangeEndpoint endpoint, UIA.TextUnit unit, int count)
-            => _range.MoveEndpointByUnit(Map(endpoint), Map(unit), count);
+            => _owner.InvokeSync(() => _range.MoveEndpointByUnit(Map(endpoint), Map(unit), count));
 
         public void MoveEndpointByRange(UIA.TextPatternRangeEndpoint endpoint, UIA.ITextRangeProvider targetRange,
             UIA.TextPatternRangeEndpoint targetEndpoint)
-            => _range.MoveEndpointByRange(Map(endpoint), Unwrap(targetRange), Map(targetEndpoint));
+            => _owner.InvokeSync(() => _range.MoveEndpointByRange(Map(endpoint), Unwrap(targetRange), Map(targetEndpoint)));
 
-        public void Select() => _range.Select();
+        public void Select() => _owner.InvokeSync(() => _range.Select());
 
         // A single-selection control treats adding-to-selection as replacing it; removal is a no-op.
-        public void AddToSelection() => _range.Select();
+        public void AddToSelection() => _owner.InvokeSync(() => _range.Select());
         public void RemoveFromSelection() { }
 
-        public void ScrollIntoView(bool alignToTop) => _range.ScrollIntoView(alignToTop);
+        public void ScrollIntoView(bool alignToTop) => _owner.InvokeSync(() => _range.ScrollIntoView(alignToTop));
 
         // A plain TextBox has no embedded objects.
         public UIA.IRawElementProviderSimple[] GetChildren() => Array.Empty<UIA.IRawElementProviderSimple>();

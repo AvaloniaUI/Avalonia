@@ -254,7 +254,9 @@ namespace Avalonia.Win32.Automation
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
         void IInvokeProvider.Invoke() => InvokeSync((AAP.IInvokeProvider x) => x.Invoke());
 
-        protected void InvokeSync(Action action)
+        // protected internal so the text-range provider (a separate COM object) can marshal its
+        // cross-platform calls onto the UI thread - UIA invokes those on its own thread.
+        protected internal void InvokeSync(Action action)
         {
             if (Dispatcher.UIThread.CheckAccess())
                 action();
@@ -262,7 +264,7 @@ namespace Avalonia.Win32.Automation
                 Dispatcher.UIThread.InvokeAsync(action).Wait();
         }
 
-        protected T InvokeSync<T>(Func<T> func)
+        protected internal T InvokeSync<T>(Func<T> func)
         {
             if (Dispatcher.UIThread.CheckAccess())
                 return func();
