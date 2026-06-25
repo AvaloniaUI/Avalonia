@@ -22,6 +22,18 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             return bounds;
         }
 
+        /// <summary>Converts a rect in top-level (visual-root) coordinates to screen coordinates.</summary>
+        public static Rect ToScreenRect(AtSpiNode node, Rect topLevelRect)
+        {
+            var root = node.Peer.GetVisualRoot();
+            if (root is null)
+                return topLevelRect;
+
+            return node.Server.TryGetAttachedNode(root) is RootAtSpiNode rootNode
+                ? rootNode.ToScreen(topLevelRect)
+                : topLevelRect;
+        }
+
         public static Rect TranslateRect(AtSpiNode node, Rect screenRect, uint coordType)
         {
             var ct = (AtSpiCoordType)coordType;

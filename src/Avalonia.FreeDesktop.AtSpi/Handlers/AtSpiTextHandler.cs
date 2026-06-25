@@ -249,6 +249,14 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         public ValueTask<(int X, int Y, int Width, int Height)> GetCharacterExtentsAsync(
             int offset, uint coordType)
         {
+            if (Navigation is { } nav)
+            {
+                var start = nav.GetPosition(nav.DocumentStart, offset);
+                var end = nav.GetPosition(start, TextUnit.Character, 1);
+                if (TryGetExtents(nav, nav.GetRange(start, end), coordType, out var extents))
+                    return ValueTask.FromResult(extents);
+            }
+
             return ValueTask.FromResult((0, 0, 0, 0));
         }
 
@@ -296,6 +304,15 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         public ValueTask<(int X, int Y, int Width, int Height)> GetRangeExtentsAsync(
             int startOffset, int endOffset, uint coordType)
         {
+            if (Navigation is { } nav)
+            {
+                var range = nav.GetRange(
+                    nav.GetPosition(nav.DocumentStart, startOffset),
+                    nav.GetPosition(nav.DocumentStart, endOffset));
+                if (TryGetExtents(nav, range, coordType, out var extents))
+                    return ValueTask.FromResult(extents);
+            }
+
             return ValueTask.FromResult((0, 0, 0, 0));
         }
 
@@ -372,6 +389,27 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             }
 
             return set;
+        }
+
+        // Unions the per-line top-level rects of a range and maps them to the requested coordinate space.
+        private bool TryGetExtents(
+            IAccessibleText nav, ITextRange range, uint coordType, out (int X, int Y, int Width, int Height) extents)
+        {
+            var rects = nav.GetBoundingRectangles(range);
+            if (rects.Length == 0)
+            {
+                extents = (0, 0, 0, 0);
+                return false;
+            }
+
+            var union = rects[0];
+            for (var i = 1; i < rects.Length; i++)
+                union = union.Union(rects[i]);
+
+            var screen = AtSpiCoordinateHelper.ToScreenRect(node, union);
+            var translated = AtSpiCoordinateHelper.TranslateRect(node, screen, coordType);
+            extents = ((int)translated.X, (int)translated.Y, (int)translated.Width, (int)translated.Height);
+            return true;
         }
 
         private string GetText()
