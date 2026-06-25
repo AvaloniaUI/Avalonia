@@ -76,19 +76,27 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
         return false;
     }
 
-    public async ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        string text,
+    public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
+        ReadOnlySpan<char> text,
         CultureInfo? culture,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (_manager is not { } manager ||
-            string.IsNullOrEmpty(text))
+        if (_manager is not { } manager || text.IsEmpty)
         {
-            return Array.Empty<SpellCheckResult>();
+            return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
         }
 
+        return CheckAsyncCore(manager, text.ToString(), culture, cancellationToken);
+    }
+
+    private static async ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsyncCore(
+        TextServicesManager manager,
+        string text,
+        CultureInfo? culture,
+        CancellationToken cancellationToken)
+    {
         using var listener = new SessionListener();
         var session = CreateSession(manager, culture, listener);
 

@@ -38,7 +38,7 @@ public partial class TextBoxSpellCheckPage : UserControl
         public bool IsLanguageSupported(CultureInfo? culture) => true;
 
         public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-            string text,
+            ReadOnlySpan<char> text,
             CultureInfo? culture,
             CancellationToken cancellationToken = default)
         {
@@ -48,7 +48,7 @@ public partial class TextBoxSpellCheckPage : UserControl
             return new ValueTask<IReadOnlyList<SpellCheckResult>>(
                 index < 0
                     ? Array.Empty<SpellCheckResult>()
-                    : new[] { new SpellCheckResult(index, misspelling.Length, text.Substring(index, misspelling.Length)) });
+                    : new[] { new SpellCheckResult(index, misspelling.Length, text.Slice(index, misspelling.Length).ToString()) });
         }
 
         public ValueTask<IReadOnlyList<string>> SuggestAsync(

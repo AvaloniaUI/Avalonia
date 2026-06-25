@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input.TextInput;
+using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.FreeDesktop;
 
 internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, IDisposable
 {
     private const string EnchantLibrary = "libenchant-2.so.2";
-    private static readonly Regex s_wordRegex = new(@"\b['’]?[\p{L}\p{M}]+(?:['’-][\p{L}\p{M}]+)*['’]?\b", RegexOptions.Compiled);
 
     private readonly Dictionary<string, IntPtr> _dictionaries = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _unsupportedDictionaries = new(StringComparer.OrdinalIgnoreCase);
@@ -55,7 +54,7 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
     }
 
     public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        string text,
+        ReadOnlySpan<char> text,
         CultureInfo? culture,
         CancellationToken cancellationToken = default)
     {
@@ -63,24 +62,33 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
 
         var dictionary = GetDictionary(culture);
 
-        if (dictionary == IntPtr.Zero || string.IsNullOrWhiteSpace(text))
+        if (dictionary == IntPtr.Zero || text.IsEmpty || IsWhiteSpace(text))
         {
             return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
         }
 
         var results = new List<SpellCheckResult>();
+        var wordBreaker = new WordBreakEnumerator(text);
 
-        foreach (Match match in s_wordRegex.Matches(text))
+        while (wordBreaker.MoveNext(out var segment))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!IsWordCorrect(dictionary, match.Value))
+            var word = text.Slice(segment.Offset, segment.Length);
+
+            if (!IsCheckableWord(word))
             {
-                results.Add(new SpellCheckResult(match.Index, match.Length, match.Value));
+                continue;
+            }
+
+            if (!IsWordCorrect(dictionary, word))
+            {
+                results.Add(new SpellCheckResult(segment.Offset, segment.Length, word.ToString()));
             }
         }
 
-        return new ValueTask<IReadOnlyList<SpellCheckResult>>(results);
+        return new ValueTask<IReadOnlyList<SpellCheckResult>>(
+            results.Count == 0 ? Array.Empty<SpellCheckResult>() : results);
     }
 
     public ValueTask<IReadOnlyList<string>> SuggestAsync(
@@ -132,7 +140,48 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
         }
     }
 
-    private bool IsWordCorrect(IntPtr dictionary, string word)
+    private static bool IsWhiteSpace(ReadOnlySpan<char> text)
+    {
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (!char.IsWhiteSpace(text[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsCheckableWord(ReadOnlySpan<char> word)
+    {
+        for (var i = 0; i < word.Length;)
+        {
+            var codepoint = Codepoint.ReadAt(word, i, out var count);
+
+            if (codepoint.GeneralCategory is
+                GeneralCategory.Letter or
+                GeneralCategory.CasedLetter or
+                GeneralCategory.LowercaseLetter or
+                GeneralCategory.ModifierLetter or
+                GeneralCategory.OtherLetter or
+                GeneralCategory.TitlecaseLetter or
+                GeneralCategory.UppercaseLetter or
+                GeneralCategory.Mark or
+                GeneralCategory.SpacingMark or
+                GeneralCategory.EnclosingMark or
+                GeneralCategory.NonspacingMark)
+            {
+                return true;
+            }
+
+            i += count;
+        }
+
+        return false;
+    }
+
+    private bool IsWordCorrect(IntPtr dictionary, ReadOnlySpan<char> word)
     {
         using var utf8Word = new Utf8String(word);
         return EnchantDictCheck(dictionary, utf8Word.Pointer, utf8Word.Length) == 0;
@@ -290,14 +339,12 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
     {
         private readonly GCHandle _handle;
 
-        public Utf8String(string value)
+        public Utf8String(ReadOnlySpan<char> value)
         {
-            var bytes = Encoding.UTF8.GetBytes(value);
-            var nullTerminated = new byte[bytes.Length + 1];
-            bytes.CopyTo(nullTerminated, 0);
+            var nullTerminated = new byte[Encoding.UTF8.GetByteCount(value) + 1];
+            Length = Encoding.UTF8.GetBytes(value, nullTerminated);
             _handle = GCHandle.Alloc(nullTerminated, GCHandleType.Pinned);
             Pointer = (byte*)_handle.AddrOfPinnedObject();
-            Length = bytes.Length;
         }
 
         public byte* Pointer { get; }

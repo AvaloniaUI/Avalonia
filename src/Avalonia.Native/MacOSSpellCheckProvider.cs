@@ -40,14 +40,14 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
     }
 
     public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        string text,
+        ReadOnlySpan<char> text,
         CultureInfo? culture,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (_spellChecker == IntPtr.Zero ||
-            string.IsNullOrEmpty(text) ||
+            text.IsEmpty ||
             GetSupportedLanguageTag(culture) is not { } language)
         {
             return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
@@ -83,7 +83,7 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
                 var start = checked((int)misspelled.Location);
                 var length = checked((int)misspelled.Length);
                 var word = start >= 0 && length > 0 && start + length <= text.Length
-                    ? text.Substring(start, length)
+                    ? text.Slice(start, length).ToString()
                     : null;
 
                 results.Add(new SpellCheckResult(start, length, word));
@@ -413,7 +413,7 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
         [DllImport(CoreFoundationLib, EntryPoint = "CFRelease")]
         private static extern void ReleaseCore(IntPtr value);
 
-        public static unsafe IntPtr Create(string value)
+        public static unsafe IntPtr Create(ReadOnlySpan<char> value)
         {
             fixed (char* chars = value)
             {

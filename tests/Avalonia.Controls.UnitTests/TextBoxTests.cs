@@ -3068,12 +3068,13 @@ namespace Avalonia.Controls.UnitTests
             public bool IsLanguageSupported(CultureInfo? culture) => _isLanguageSupported;
 
             public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                string text,
+                ReadOnlySpan<char> text,
                 CultureInfo? culture,
                 CancellationToken cancellationToken = default)
             {
                 CheckCount++;
-                LastCheckedText = text;
+                var textValue = text.ToString();
+                LastCheckedText = textValue;
 
                 if (_results.Count == 0)
                 {
@@ -3088,7 +3089,7 @@ namespace Avalonia.Controls.UnitTests
 
                     if (result.Word is { } word)
                     {
-                        var start = text.IndexOf(word, StringComparison.Ordinal);
+                        var start = textValue.IndexOf(word, StringComparison.Ordinal);
 
                         if (start < 0)
                         {
@@ -3098,7 +3099,7 @@ namespace Avalonia.Controls.UnitTests
                         results ??= new List<SpellCheckResult>();
                         results.Add(result with { Start = start, Length = word.Length });
                     }
-                    else if (result.Start >= 0 && result.Start < text.Length)
+                    else if (result.Start >= 0 && result.Start < textValue.Length)
                     {
                         results ??= new List<SpellCheckResult>();
                         results.Add(result);
@@ -3129,7 +3130,7 @@ namespace Avalonia.Controls.UnitTests
             public bool IsLanguageSupported(CultureInfo? culture) => true;
 
             public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                string text,
+                ReadOnlySpan<char> text,
                 CultureInfo? culture,
                 CancellationToken cancellationToken = default)
             {

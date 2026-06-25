@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -14,6 +15,8 @@ namespace Avalonia.Win32.Input;
 
 internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider, IDisposable
 {
+    private const int StackallocCharLimit = 256;
+
     private readonly Dictionary<string, ISpellChecker> _spellCheckers = new(StringComparer.OrdinalIgnoreCase);
     private ISpellCheckerFactory? _factory;
     private bool _disposed;
@@ -49,58 +52,76 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider, IDis
     }
 
     public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        string text,
+        ReadOnlySpan<char> text,
         CultureInfo? culture,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (string.IsNullOrEmpty(text) ||
+        if (text.IsEmpty ||
             GetSpellChecker(culture) is not { } spellChecker)
         {
             return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
         }
 
         var results = new List<SpellCheckResult>();
+        char[]? rented = null;
 
-        fixed (char* textPtr = text)
+        try
         {
-            var errors = spellChecker.Check(textPtr);
+            Span<char> textBuffer = text.Length <= StackallocCharLimit
+                ? stackalloc char[text.Length + 1]
+                : rented = ArrayPool<char>.Shared.Rent(text.Length + 1);
 
-            try
+            text.CopyTo(textBuffer);
+            textBuffer[text.Length] = '\0';
+
+            fixed (char* textPtr = textBuffer)
             {
-                while (true)
+                var errors = spellChecker.Check(textPtr);
+
+                try
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var hr = errors.Next(out var error);
-
-                    if (hr == HRESULT.S_FALSE)
+                    while (true)
                     {
-                        break;
-                    }
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                    hr.ThrowOnFailure();
+                        var hr = errors.Next(out var error);
 
-                    try
-                    {
-                        var start = checked((int)error.StartIndex);
-                        var length = checked((int)error.Length);
-                        var word = start >= 0 && length > 0 && start + length <= text.Length
-                            ? text.Substring(start, length)
-                            : null;
+                        if (hr == HRESULT.S_FALSE)
+                        {
+                            break;
+                        }
 
-                        results.Add(new SpellCheckResult(start, length, word));
-                    }
-                    finally
-                    {
-                        ReleaseComObject(error);
+                        hr.ThrowOnFailure();
+
+                        try
+                        {
+                            var start = checked((int)error.StartIndex);
+                            var length = checked((int)error.Length);
+                            var word = start >= 0 && length > 0 && start + length <= text.Length
+                                ? text.Slice(start, length).ToString()
+                                : null;
+
+                            results.Add(new SpellCheckResult(start, length, word));
+                        }
+                        finally
+                        {
+                            ReleaseComObject(error);
+                        }
                     }
                 }
+                finally
+                {
+                    ReleaseComObject(errors);
+                }
             }
-            finally
+        }
+        finally
+        {
+            if (rented is not null)
             {
-                ReleaseComObject(errors);
+                ArrayPool<char>.Shared.Return(rented);
             }
         }
 

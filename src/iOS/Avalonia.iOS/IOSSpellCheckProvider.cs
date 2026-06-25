@@ -20,7 +20,7 @@ internal sealed class IOSSpellCheckProvider : ISpellCheckProvider
     }
 
     public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        string text,
+        ReadOnlySpan<char> text,
         CultureInfo? culture,
         CancellationToken cancellationToken = default)
     {
@@ -28,20 +28,21 @@ internal sealed class IOSSpellCheckProvider : ISpellCheckProvider
 
         var language = GetSupportedLanguageTag(culture);
 
-        if (string.IsNullOrEmpty(text) || language is null)
+        if (text.IsEmpty || language is null)
         {
             return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
         }
 
+        var textValue = text.ToString();
         var results = new List<SpellCheckResult>();
-        var range = new NSRange(0, text.Length);
+        var range = new NSRange(0, textValue.Length);
         var offset = IntPtr.Zero;
 
-        while (offset.ToInt64() < text.Length)
+        while (offset.ToInt64() < textValue.Length)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var misspelled = _checker.RangeOfMisspelledWordInString(text, range, offset, false, language);
+            var misspelled = _checker.RangeOfMisspelledWordInString(textValue, range, offset, false, language);
 
             if (misspelled.Location == NSRange.NotFound || misspelled.Length == 0)
             {
@@ -50,8 +51,8 @@ internal sealed class IOSSpellCheckProvider : ISpellCheckProvider
 
             var start = checked((int)misspelled.Location);
             var length = checked((int)misspelled.Length);
-            var word = start >= 0 && length > 0 && start + length <= text.Length
-                ? text.Substring(start, length)
+            var word = start >= 0 && length > 0 && start + length <= textValue.Length
+                ? textValue.Substring(start, length)
                 : null;
 
             results.Add(new SpellCheckResult(start, length, word));

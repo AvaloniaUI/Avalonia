@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -25,7 +26,7 @@ public interface ISpellCheckProvider
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The misspelled text ranges.</returns>
     ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        string text,
+        ReadOnlySpan<char> text,
         CultureInfo? culture,
         CancellationToken cancellationToken = default);
 

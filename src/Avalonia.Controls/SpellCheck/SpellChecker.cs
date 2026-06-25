@@ -25,13 +25,12 @@ internal static class SpellChecker
             var range = ranges[i];
             var length = range.End - range.Start;
 
-            if (length <= 0 || IsWhiteSpace(text, range.Start, length))
+            if (length <= 0 || IsWhiteSpace(text.AsSpan(range.Start, length)))
             {
                 continue;
             }
 
-            var rangeText = text.Substring(range.Start, length);
-            var results = await provider.CheckAsync(rangeText, culture, cancellationToken);
+            var results = await provider.CheckAsync(text.AsSpan(range.Start, length), culture, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -111,11 +110,9 @@ internal static class SpellChecker
         }
     }
 
-    private static bool IsWhiteSpace(string text, int start, int length)
+    private static bool IsWhiteSpace(ReadOnlySpan<char> text)
     {
-        var end = Math.Min(text.Length, start + length);
-
-        for (var i = start; i < end; i++)
+        for (var i = 0; i < text.Length; i++)
         {
             if (!char.IsWhiteSpace(text[i]))
             {
