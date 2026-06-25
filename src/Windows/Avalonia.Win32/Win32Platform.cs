@@ -134,14 +134,7 @@ namespace Avalonia.Win32
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
 
-            var maxDisplayFrequency = Instance.Screen?.AllScreens?.Max(s => (s as WinScreen)?.Frequency);
-
-            if (maxDisplayFrequency != null &&
-                maxDisplayFrequency != 0 &&
-                renderTimer is SleepLoopRenderTimer sleepLoopRenderTimer)
-            {
-                sleepLoopRenderTimer.DesiredFps = (int)maxDisplayFrequency;
-            }
+            UpdateTimerFps();
 
             s_compositor = new Compositor( platformGraphics);
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(s_compositor);
@@ -203,6 +196,16 @@ namespace Avalonia.Win32
             TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
 
             return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        internal static void UpdateTimerFps()
+        {
+            var maxDisplayFrequency = Math.Max(60, Instance.Screen?.AllScreens?.Max(s => (s as WinScreen)?.Frequency) ?? 0);
+            if (AvaloniaLocator.Current.GetService<IRenderLoop>() is DefaultRenderLoop defaultRenderLoop &&
+                defaultRenderLoop.Timer is SleepLoopRenderTimer sleepLoopRenderTimer)
+            {
+                sleepLoopRenderTimer.DesiredFps = maxDisplayFrequency;
+            }
         }
 
         private void CreateMessageWindow()

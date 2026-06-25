@@ -876,14 +876,8 @@ namespace Avalonia.Win32
                     {
                         Screen?.OnChanged();
 
-                        var maxDisplayFrequency = Screen?.AllScreens?.Max(s => (s as WinScreen)?.Frequency);
-                        if (maxDisplayFrequency != null &&
-                            maxDisplayFrequency != 0 &&
-                            AvaloniaLocator.Current.GetService<IRenderLoop>() is DefaultRenderLoop defaultRenderLoop &&
-                            defaultRenderLoop.Timer is SleepLoopRenderTimer sleepLoopRenderTimer)
-                        {
-                            sleepLoopRenderTimer.DesiredFps = (int)maxDisplayFrequency;
-                        }
+                        Win32Platform.UpdateTimerFps();
+
                         return IntPtr.Zero;
                     }
 
