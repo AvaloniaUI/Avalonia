@@ -33,13 +33,18 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void LineBounds_Splits_Crlf_Content_Into_Two_Lines()
+        public void LineBounds_Treats_Crlf_As_A_Single_Break()
         {
-            // CR and LF are each mandatory; a caret inside either line's content sees that line only.
             var text = "ab" + (char)0x000D + (char)0x000A + "cd";
 
+            // Content carets resolve to their own line, terminator excluded.
             Assert.Equal((0, 2), TextSegmentation.LineBounds(0, text));
             Assert.Equal((4, 6), TextSegmentation.LineBounds(4, text));
+
+            // A caret on either half of the CR/LF pair belongs to the first line - CRLF is one break
+            // (UAX-14 LB5), not two with an empty line between them.
+            Assert.Equal((0, 2), TextSegmentation.LineBounds(2, text)); // on CR
+            Assert.Equal((0, 2), TextSegmentation.LineBounds(3, text)); // on LF
         }
     }
 }

@@ -117,7 +117,9 @@ namespace Avalonia.Controls
             return previous;
         }
 
-        // Logical line: the run between UAX-14 mandatory (hard) breaks, not the visual wrapped line.
+        // Logical line: bounded by UAX-14 mandatory breaks via LineBreakEnumerator (so CRLF is one
+        // break), with the terminator trimmed from the content but trailing spaces kept. This is not
+        // the visual wrapped line, which needs layout. O(offset), matching the UAX-29 word path.
         public static (int Start, int End) LineBounds(int offset, ReadOnlySpan<char> text)
         {
             var length = text.Length;
@@ -126,21 +128,37 @@ namespace Avalonia.Controls
                 return (0, 0);
             }
 
-            var position = Math.Clamp(offset, 0, length - 1);
+            offset = Math.Clamp(offset, 0, length - 1);
 
-            var start = position;
-            while (start > 0 && !IsMandatoryBreak(text[start - 1]))
+            var start = 0;
+            var enumerator = new LineBreakEnumerator(text);
+
+            while (enumerator.MoveNext(out var lineBreak))
             {
-                start--;
+                if (!lineBreak.Required)
+                {
+                    continue;
+                }
+
+                // PositionWrap is the start of the next line, past the break sequence.
+                if (lineBreak.PositionWrap <= offset)
+                {
+                    start = lineBreak.PositionWrap;
+                    continue;
+                }
+
+                // First hard break after the offset: end the content before the terminator
+                // characters, but keep any trailing spaces that precede them.
+                var end = lineBreak.PositionWrap;
+                while (end > start && IsMandatoryBreak(text[end - 1]))
+                {
+                    end--;
+                }
+
+                return (start, end);
             }
 
-            var end = position;
-            while (end < length && !IsMandatoryBreak(text[end]))
-            {
-                end++;
-            }
-
-            return (start, end);
+            return (start, length);
         }
 
         // Heuristic sentence bounds; there is no UAX-29 sentence segmenter in the tree.
@@ -226,8 +244,10 @@ namespace Avalonia.Controls
 
         private static bool IsSentenceBoundary(char c) => c is '.' or '!' or '?' or '\n' or '\r';
 
-        // A UAX-14 mandatory (hard) line break: LF, CR, NEL, and the BK class - which covers VT, FF,
-        // U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR. All are BMP, so one UTF-16 unit suffices.
+        // A UAX-14 mandatory (hard) line break character: LF, CR, NEL, and the BK class - which covers
+        // VT, FF, U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR. Used only to trim the terminator
+        // from a line's content; LineBreakEnumerator decides where lines break. All are BMP, so one
+        // UTF-16 unit suffices.
         private static bool IsMandatoryBreak(char c) => new Codepoint(c).LineBreakClass switch
         {
             LineBreakClass.MandatoryBreak => true,
