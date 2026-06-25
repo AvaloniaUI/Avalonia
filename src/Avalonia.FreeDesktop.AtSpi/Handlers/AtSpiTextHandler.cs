@@ -339,6 +339,14 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> ScrollSubstringToAsync(int startOffset, int endOffset, uint type)
         {
+            if (Navigation is { } nav)
+            {
+                nav.ScrollIntoView(nav.GetRange(
+                    nav.GetPosition(nav.DocumentStart, startOffset),
+                    nav.GetPosition(nav.DocumentStart, endOffset)));
+                return ValueTask.FromResult(true);
+            }
+
             return ValueTask.FromResult(false);
         }
 

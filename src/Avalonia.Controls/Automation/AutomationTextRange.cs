@@ -115,6 +115,14 @@ namespace Avalonia.Automation
             }
         }
 
+        public void ScrollIntoView(bool alignToTop)
+        {
+            if (_navigation is IAccessibleText accessible)
+            {
+                accessible.ScrollIntoView(_navigation.GetRange(_start, _end));
+            }
+        }
+
         public Rect[] GetBoundingRectangles()
             => _navigation is IAccessibleText accessible
                 ? accessible.GetBoundingRectangles(_navigation.GetRange(_start, _end))

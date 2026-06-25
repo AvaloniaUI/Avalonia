@@ -989,6 +989,33 @@ namespace Avalonia.Controls
             return start <= end ? (start, end) : (end, start);
         }
 
+        // Scrolls the presenter so the given character range is visible (best-effort, via the
+        // ScrollViewer's BringIntoView). Used by the automation text providers' scroll operations.
+        internal void ScrollTextRangeIntoView(int start, int length)
+        {
+            if (_presenter is null)
+            {
+                return;
+            }
+
+            if (length <= 0)
+            {
+                _presenter.BringIntoView(_presenter.TextLayout.HitTestTextPosition(start));
+                return;
+            }
+
+            Rect? union = null;
+            foreach (var rect in _presenter.TextLayout.HitTestTextRange(start, length))
+            {
+                union = union is null ? rect : union.Value.Union(rect);
+            }
+
+            if (union is { } bounds)
+            {
+                _presenter.BringIntoView(bounds);
+            }
+        }
+
         /// <summary>
         /// Raised when content is being copied to the clipboard
         /// </summary>

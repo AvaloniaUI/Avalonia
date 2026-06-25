@@ -72,5 +72,8 @@ namespace Avalonia.Automation.Provider
         /// document start when <paramref name="backward"/> is set, or null if not found.
         /// </summary>
         ITextRangeProvider? FindText(string text, bool backward, bool ignoreCase);
+
+        /// <summary>Scrolls the owning control so this range is visible, if it supports scrolling.</summary>
+        void ScrollIntoView(bool alignToTop);
     }
 }

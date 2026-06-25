@@ -173,6 +173,18 @@ namespace Avalonia.Controls
             return start < 0 ? null : new NavRange(CreatePointer(start), CreatePointer(end));
         }
 
+        public void ScrollIntoView(ITextRange range)
+        {
+            var start = OffsetOf(range.Start);
+            var end = OffsetOf(range.End);
+            if (start > end)
+            {
+                (start, end) = (end, start);
+            }
+
+            _textBox.ScrollTextRangeIntoView(start, end - start);
+        }
+
         public (IReadOnlyDictionary<TextAttribute, object?> Attributes, ITextRange Run) GetTextAttributes(ITextPointer position)
         {
             // Validate the pointer is ours; a TextBox is uniform, so the offset itself is unused.

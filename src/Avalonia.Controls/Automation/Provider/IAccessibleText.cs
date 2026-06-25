@@ -34,6 +34,9 @@ namespace Avalonia.Automation.Provider
         /// <summary>The text currently visible in the control's viewport, or null when it has no layout.</summary>
         ITextRange? GetVisibleRange();
 
+        /// <summary>Scrolls the control so <paramref name="range"/> is visible, if it supports scrolling.</summary>
+        void ScrollIntoView(ITextRange range);
+
         /// <summary>
         /// The formatting attributes in effect at <paramref name="position"/>, together with the run
         /// over which they are uniform (the whole document for a control with uniform formatting). An

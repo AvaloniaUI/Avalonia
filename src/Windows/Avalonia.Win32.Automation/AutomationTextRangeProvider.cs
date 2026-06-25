@@ -88,8 +88,7 @@ namespace Avalonia.Win32.Automation
         public void AddToSelection() => _range.Select();
         public void RemoveFromSelection() { }
 
-        // Deferred: scroll into view.
-        public void ScrollIntoView(bool alignToTop) { }
+        public void ScrollIntoView(bool alignToTop) => _range.ScrollIntoView(alignToTop);
 
         // Deferred: embedded objects.
         public UIA.IRawElementProviderSimple[] GetChildren() => Array.Empty<UIA.IRawElementProviderSimple>();
