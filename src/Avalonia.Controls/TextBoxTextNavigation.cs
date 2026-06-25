@@ -140,6 +140,13 @@ namespace Avalonia.Controls
             _textBox.SelectionEnd = OffsetOf(range.End);
         }
 
+        public ITextRange GetSelection()
+        {
+            var start = Math.Min(_textBox.SelectionStart, _textBox.SelectionEnd);
+            var end = Math.Max(_textBox.SelectionStart, _textBox.SelectionEnd);
+            return GetRange(CreatePointer(start), CreatePointer(end));
+        }
+
         public Rect[] GetBoundingRectangles(ITextRange range)
         {
             var start = OffsetOf(range.Start);

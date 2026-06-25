@@ -2424,6 +2424,38 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBoxAutomationPeer_IAccessibleText_GetSelection_Round_Trips_The_Control_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var accessible = Assert.IsAssignableFrom<Avalonia.Automation.Provider.IAccessibleText>(
+                peer.GetProvider<Avalonia.Automation.Provider.IAccessibleText>());
+
+            // Selection-read reflects the control and normalizes reversed anchors.
+            textBox.SelectionStart = 7;
+            textBox.SelectionEnd = 4;
+            var selection = accessible.GetSelection();
+            Assert.Equal(4, selection.Start.Offset);
+            Assert.Equal(7, selection.End.Offset);
+            Assert.False(selection.IsEmpty);
+
+            // A collapsed selection (the caret) is empty.
+            textBox.SelectionStart = textBox.SelectionEnd = 2;
+            Assert.True(accessible.GetSelection().IsEmpty);
+
+            // SetSelection writes back through the control.
+            accessible.SetSelection(accessible.GetRange(
+                accessible.GetPosition(accessible.DocumentStart, 0),
+                accessible.GetPosition(accessible.DocumentStart, 3)));
+            Assert.Equal(0, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+        }
+
+        [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {
             using var _ = UnitTestApplication.Start(Services);

@@ -38,7 +38,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public int CharacterCount => Navigation is { } nav ? nav.DocumentEnd.Offset : GetText().Length;
 
-        public int CaretOffset => 0;
+        public int CaretOffset => Navigation is { } nav ? nav.GetSelection().End.Offset : 0;
 
         public ValueTask<(string Text, int StartOffset, int EndOffset)> GetStringAtOffsetAsync(
             int offset, uint granularity)
@@ -101,6 +101,13 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> SetCaretOffsetAsync(int offset)
         {
+            if (Navigation is { } nav)
+            {
+                var position = nav.GetPosition(nav.DocumentStart, offset);
+                nav.SetSelection(nav.GetRange(position, position));
+                return ValueTask.FromResult(true);
+            }
+
             return ValueTask.FromResult(false);
         }
 
@@ -237,20 +244,23 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         }
 
         public ValueTask<int> GetNSelectionsAsync()
-        {
-            return ValueTask.FromResult(0);
-        }
+            => ValueTask.FromResult(Navigation is { } nav && !nav.GetSelection().IsEmpty ? 1 : 0);
 
         public ValueTask<(int StartOffset, int EndOffset)> GetSelectionAsync(int selectionNum)
         {
+            if (Navigation is { } nav)
+            {
+                var selection = nav.GetSelection();
+                return ValueTask.FromResult((selection.Start.Offset, selection.End.Offset));
+            }
+
             return ValueTask.FromResult((0, 0));
         }
 
         public ValueTask<bool> AddSelectionAsync(int startOffset, int endOffset)
-        {
-            return ValueTask.FromResult(false);
-        }
+            => SetSelectionAsync(0, startOffset, endOffset);
 
+        // A single-selection control cannot remove its only selection.
         public ValueTask<bool> RemoveSelectionAsync(int selectionNum)
         {
             return ValueTask.FromResult(false);
@@ -258,6 +268,14 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> SetSelectionAsync(int selectionNum, int startOffset, int endOffset)
         {
+            if (Navigation is { } nav)
+            {
+                nav.SetSelection(nav.GetRange(
+                    nav.GetPosition(nav.DocumentStart, startOffset),
+                    nav.GetPosition(nav.DocumentStart, endOffset)));
+                return ValueTask.FromResult(true);
+            }
+
             return ValueTask.FromResult(false);
         }
 
