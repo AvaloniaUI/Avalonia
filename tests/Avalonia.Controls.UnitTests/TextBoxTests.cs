@@ -2190,7 +2190,7 @@ namespace Avalonia.Controls.UnitTests
 
             var backwardPointer = structured.CreatePointer(2, LogicalDirection.Backward);
             Assert.Equal(2, backwardPointer.Offset);
-            Assert.Equal(LogicalDirection.Backward, backwardPointer.LogicalDirection);
+            Assert.Equal(LogicalDirection.Backward, backwardPointer.Gravity);
         }
 
         private static ITextNavigation GetNavigation(TextBox textBox)

@@ -21,6 +21,6 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// Gets the pointer's logical gravity for insertion behavior.
         /// </summary>
-        LogicalDirection LogicalDirection { get; }
+        LogicalDirection Gravity { get; }
     }
 }

@@ -415,8 +415,8 @@ partial class AvaloniaView
                         : LogicalDirection.Forward;
 
                 var granularity = inDirection is UITextLayoutDirection.Left or UITextLayoutDirection.Right
-                    ? TextGranularity.Character
-                    : TextGranularity.Line;
+                    ? TextUnit.Character
+                    : TextUnit.Line;
 
                 var pointer = structured.CreatePointer(fromPosition.Index, direction);
                 for (var i = 0; i < steps; i++)
@@ -512,7 +512,7 @@ partial class AvaloniaView
                     var boundaryDirection = direction is UITextLayoutDirection.Left or UITextLayoutDirection.Up
                         ? LogicalDirection.Backward
                         : LogicalDirection.Forward;
-                    var boundary = structured.GetBoundaryPosition(position, TextGranularity.Character, boundaryDirection);
+                    var boundary = structured.GetBoundaryPosition(position, TextUnit.Character, boundaryDirection);
 
                     if (boundary is null)
                     {

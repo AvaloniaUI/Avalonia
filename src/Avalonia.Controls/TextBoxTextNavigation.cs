@@ -190,14 +190,14 @@ namespace Avalonia.Controls
             {
                 Owner = owner;
                 Offset = offset;
-                LogicalDirection = direction;
+                Gravity = direction;
             }
 
             public TextBoxTextNavigation Owner { get; }
 
             public int Offset { get; }
 
-            public LogicalDirection LogicalDirection { get; }
+            public LogicalDirection Gravity { get; }
 
             public int CompareTo(ITextPointer? other) => other is null ? 1 : Offset.CompareTo(other.Offset);
 

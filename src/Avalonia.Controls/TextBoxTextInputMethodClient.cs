@@ -190,14 +190,6 @@ namespace Avalonia.Controls
             _presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, cursorPos);
         }
 
-        ITextPointer IStructuredTextInput.DocumentStart => CreateLocalPointer(0, LogicalDirection.Forward);
-
-        ITextPointer IStructuredTextInput.DocumentEnd =>
-            CreateLocalPointer(GetDocumentLength(), LogicalDirection.Backward);
-
-        ITextRange IStructuredTextInput.DocumentRange =>
-            CreateLocalRange(0, GetDocumentLength());
-
         ITextPointer IStructuredTextInput.CaretPosition =>
             CreateLocalPointer(_parent?.CaretIndex ?? 0, LogicalDirection.Forward);
 
@@ -232,14 +224,6 @@ namespace Avalonia.Controls
         {
             get => _compositionRange;
             set => SetCompositionRangeCore(value, raiseEvent: true);
-        }
-
-        string IStructuredTextInput.GetText(ITextRange range)
-        {
-            var text = GetDocumentText();
-            var (start, end) = GetAbsoluteRange(range);
-
-            return text.Substring(start, end - start);
         }
 
         ITextPointer IStructuredTextInput.CreatePointer(int offset, LogicalDirection direction)
@@ -392,7 +376,7 @@ namespace Avalonia.Controls
             var (start, end) = GetAbsoluteRange(withinRange);
             var clamped = Math.Clamp(closest.Offset, start, end);
 
-            return CreateLocalPointer(clamped, closest.LogicalDirection);
+            return CreateLocalPointer(clamped, closest.Gravity);
         }
 
         ITextRange? IStructuredTextInput.GetCharacterRangeAtPoint(Point point)
@@ -408,55 +392,20 @@ namespace Avalonia.Controls
             return CreateLocalRange(start, end);
         }
 
-        ITextRange? IStructuredTextInput.GetRangeEnclosing(ITextPointer position, TextGranularity granularity)
-        {
-            var offset = GetAbsoluteOffset(position);
-            var text = GetDocumentText();
-            var length = text.Length;
-
-            switch (granularity)
-            {
-                case TextGranularity.Document:
-                    return CreateLocalRange(0, length);
-
-                case TextGranularity.Character:
-                    if (length == 0)
-                    {
-                        return CreateLocalRange(0, 0);
-                    }
-
-                    var characterStart = Math.Clamp(offset, 0, Math.Max(0, length - 1));
-                    return CreateLocalRange(characterStart, Math.Min(length, characterStart + 1));
-
-                case TextGranularity.Line:
-                case TextGranularity.Paragraph:
-                    return GetLineRange(offset, text);
-
-                case TextGranularity.Word:
-                    return GetWordRange(offset, text);
-
-                case TextGranularity.Sentence:
-                    return GetSentenceRange(offset, text);
-
-                default:
-                    return null;
-            }
-        }
-
-        ITextPointer? IStructuredTextInput.GetBoundaryPosition(ITextPointer position, TextGranularity granularity,
+        ITextPointer? IStructuredTextInput.GetBoundaryPosition(ITextPointer position, TextUnit granularity,
             LogicalDirection direction)
         {
             var offset = GetAbsoluteOffset(position);
             var length = GetDocumentLength();
 
-            if (granularity == TextGranularity.Document)
+            if (granularity == TextUnit.Document)
             {
                 return direction == LogicalDirection.Forward
                     ? CreateLocalPointer(length, LogicalDirection.Forward)
                     : CreateLocalPointer(0, LogicalDirection.Backward);
             }
 
-            if (granularity == TextGranularity.Character)
+            if (granularity == TextUnit.Character)
             {
                 var characterBoundary = direction == LogicalDirection.Forward
                     ? Math.Min(length, offset + 1)
@@ -465,11 +414,7 @@ namespace Avalonia.Controls
                 return CreateLocalPointer(characterBoundary, direction);
             }
 
-            var enclosing = ((IStructuredTextInput)this).GetRangeEnclosing(position, granularity);
-            if (enclosing is null)
-            {
-                return null;
-            }
+            var enclosing = ((ITextNavigation)this).GetRangeEnclosing(position, granularity);
 
             return direction == LogicalDirection.Forward
                 ? CreateLocalPointer(enclosing.End.Offset, LogicalDirection.Forward)
@@ -504,7 +449,7 @@ namespace Avalonia.Controls
 
             if (count == 0)
             {
-                return CreateLocalPointer(offset, origin.LogicalDirection);
+                return CreateLocalPointer(offset, origin.Gravity);
             }
 
             var text = GetDocumentText();
@@ -877,14 +822,14 @@ namespace Avalonia.Controls
             {
                 Owner = owner;
                 Offset = offset;
-                LogicalDirection = logicalDirection;
+                Gravity = logicalDirection;
             }
 
             public TextBoxTextInputMethodClient Owner { get; }
 
             public int Offset { get; }
 
-            public LogicalDirection LogicalDirection { get; }
+            public LogicalDirection Gravity { get; }
 
             public int CompareTo(ITextPointer? other)
             {

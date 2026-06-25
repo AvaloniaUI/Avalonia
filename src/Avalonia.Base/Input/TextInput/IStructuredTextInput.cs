@@ -5,19 +5,17 @@ using Avalonia.Metadata;
 namespace Avalonia.Input.TextInput
 {
     /// <summary>
-    /// Provides structured text access and editing operations for IME integrations.
+    /// Provides structured text access and editing operations for IME integrations, layered on the
+    /// shared <see cref="ITextNavigation"/> positioning core.
     /// </summary>
     /// <remarks>
-    /// Offsets are UTF-16 code units and all members are UI-thread-only.
+    /// Offsets are UTF-16 code units and all members are UI-thread-only. Document anchors, ranges,
+    /// <see cref="ITextNavigation.GetText"/> and <see cref="ITextNavigation.GetRangeEnclosing"/> come
+    /// from the base navigation contract.
     /// </remarks>
     [Unstable]
-    public interface IStructuredTextInput
+    public interface IStructuredTextInput : ITextNavigation
     {
-        ITextPointer DocumentStart { get; }
-        ITextPointer DocumentEnd { get; }
-        ITextRange DocumentRange { get; }
-
-        string GetText(ITextRange range);
         ITextPointer CreatePointer(int offset, LogicalDirection direction);
         ITextRange CreateRange(ITextPointer start, ITextPointer end);
 
@@ -36,10 +34,9 @@ namespace Avalonia.Input.TextInput
         ITextPointer? GetClosestPosition(Point point, ITextRange withinRange);
         ITextRange? GetCharacterRangeAtPoint(Point point);
 
-        ITextRange? GetRangeEnclosing(ITextPointer position, TextGranularity granularity);
-        ITextPointer? GetBoundaryPosition(ITextPointer position, TextGranularity granularity, LogicalDirection direction);
+        ITextPointer? GetBoundaryPosition(ITextPointer position, TextUnit unit, LogicalDirection direction);
 
-        event EventHandler? TextChanged;
+        new event EventHandler? TextChanged;
         event EventHandler? CaretPositionChanged;
         event EventHandler? CompositionChanged;
     }
