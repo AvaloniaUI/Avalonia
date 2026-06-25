@@ -28,8 +28,7 @@ namespace Avalonia.Android
         protected override bool DispatchHoverEvent(MotionEvent? e)
         {
             var res = _view.PointerHelper.DispatchMotionEvent(e, out var callBase);
-            if (res == false)
-                callBase = (_accessHelper?.DispatchHoverEvent(e!) == true) && callBase;
+            callBase = (_accessHelper?.DispatchHoverEvent(e!) == true) && callBase;
 
             var baseResult = callBase && base.DispatchHoverEvent(e);
 
@@ -50,7 +49,7 @@ namespace Avalonia.Android
             var result = _view.PointerHelper.DispatchMotionEvent(e, out var callBase);
             var baseResult = callBase && base.DispatchTouchEvent(e);
 
-            if(result == true)
+            if (result == true)
             {
                 // Request focus for this view
                 RequestFocus();
