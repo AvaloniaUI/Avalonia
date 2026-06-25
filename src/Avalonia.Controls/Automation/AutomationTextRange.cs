@@ -107,6 +107,14 @@ namespace Avalonia.Automation
             SetEndpoint(endpoint, otherEndpoint == TextRangeEndpoint.Start ? range._start : range._end);
         }
 
+        public void Select()
+        {
+            if (_navigation is IAccessibleText accessible)
+            {
+                accessible.SetSelection(_navigation.GetRange(_start, _end));
+            }
+        }
+
         // Moves an endpoint; if it passes the other endpoint the range collapses (UIA semantics).
         private void SetEndpoint(TextRangeEndpoint endpoint, ITextPointer position)
         {

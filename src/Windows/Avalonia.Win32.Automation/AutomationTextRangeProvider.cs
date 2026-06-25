@@ -58,9 +58,10 @@ namespace Avalonia.Win32.Automation
             UIA.TextPatternRangeEndpoint targetEndpoint)
             => _range.MoveEndpointByRange(Map(endpoint), Unwrap(targetRange), Map(targetEndpoint));
 
-        // Deferred: selection write.
-        public void Select() { }
-        public void AddToSelection() { }
+        public void Select() => _range.Select();
+
+        // A single-selection control treats adding-to-selection as replacing it; removal is a no-op.
+        public void AddToSelection() => _range.Select();
         public void RemoveFromSelection() { }
 
         // Deferred: scroll into view.

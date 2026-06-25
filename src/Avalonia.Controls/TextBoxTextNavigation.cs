@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Automation.Provider;
 using Avalonia.Input.TextInput;
 using Avalonia.Media.TextFormatting;
 
@@ -10,7 +11,7 @@ namespace Avalonia.Controls
     /// navigation via <see cref="TextSegmentation"/>; the IME client keeps its own copy until a later
     /// pass routes both through one navigation instance.
     /// </summary>
-    internal sealed class TextBoxTextNavigation : ITextNavigation
+    internal sealed class TextBoxTextNavigation : IAccessibleText
     {
         private readonly TextBox _textBox;
         private long _version;
@@ -131,6 +132,12 @@ namespace Avalonia.Controls
             }
 
             return text.Substring(start, end - start);
+        }
+
+        public void SetSelection(ITextRange range)
+        {
+            _textBox.SelectionStart = OffsetOf(range.Start);
+            _textBox.SelectionEnd = OffsetOf(range.End);
         }
 
         private void OnTextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)

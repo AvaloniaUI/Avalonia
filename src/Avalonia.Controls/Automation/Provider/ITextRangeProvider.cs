@@ -53,5 +53,8 @@ namespace Avalonia.Automation.Provider
 
         /// <summary>Moves one endpoint of this range to an endpoint of <paramref name="other"/>.</summary>
         void MoveEndpointByRange(TextRangeEndpoint endpoint, ITextRangeProvider other, TextRangeEndpoint otherEndpoint);
+
+        /// <summary>Selects this range in the owning control, if the control supports it.</summary>
+        void Select();
     }
 }

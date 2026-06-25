@@ -2404,6 +2404,26 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBoxAutomationPeer_ITextRange_Select_Updates_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox));
+
+            // Expand the document range to the first word and select it through the UIA-shaped range.
+            var range = textProvider.DocumentRange;
+            range.ExpandToEnclosingUnit(TextUnit.Word);
+            range.Select();
+
+            Assert.Equal(0, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+        }
+
+        [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {
             using var _ = UnitTestApplication.Start(Services);
