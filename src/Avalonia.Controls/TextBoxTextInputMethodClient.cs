@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
@@ -492,7 +491,7 @@ namespace Avalonia.Controls
         {
             var text = GetDocumentText();
             var target = Math.Clamp(RequireOwnOffset(origin) + distance, 0, text.Length);
-            target = SnapToValid(target, text, forward: distance >= 0);
+            target = TextSegmentation.SnapToValid(target, text, forward: distance >= 0);
 
             return CreateLocalPointer(
                 target,
@@ -515,7 +514,7 @@ namespace Avalonia.Controls
 
             for (var i = 0; i < steps; i++)
             {
-                var next = MoveByUnitOnce(current, unit, forward, text);
+                var next = TextSegmentation.MoveByUnit(current, unit, forward, text);
                 if (next == current)
                 {
                     break;
@@ -546,7 +545,7 @@ namespace Avalonia.Controls
                     }
 
                     var characterStart = Math.Clamp(offset, 0, text.Length - 1);
-                    return CreateLocalRange(characterStart, NextCharacter(characterStart, text));
+                    return CreateLocalRange(characterStart, TextSegmentation.NextGrapheme(characterStart, text));
 
                 case TextUnit.Word:
                     return GetWordRange(offset, text);
@@ -603,98 +602,9 @@ namespace Avalonia.Controls
             return Math.Clamp(simple.Offset, 0, GetDocumentLength());
         }
 
-        private int MoveByUnitOnce(int offset, TextUnit unit, bool forward, string text)
-        {
-            switch (unit)
-            {
-                case TextUnit.Document:
-                case TextUnit.Page:
-                case TextUnit.Format:
-                    return forward ? text.Length : 0;
-
-                case TextUnit.Character:
-                    return forward ? NextCharacter(offset, text) : PrevCharacter(offset, text);
-
-                case TextUnit.Word:
-                    return WordBoundary(offset, forward, text);
-
-                default:
-                    var (start, end) = unit == TextUnit.Sentence
-                        ? RangeBounds(GetSentenceRange(offset, text))
-                        : RangeBounds(GetLineRange(offset, text));
-
-                    if (forward)
-                    {
-                        return end > offset ? end : NextCharacter(offset, text);
-                    }
-
-                    return start < offset ? start : PrevCharacter(offset, text);
-            }
-        }
-
-        private static (int Start, int End) RangeBounds(ITextRange range) => (range.Start.Offset, range.End.Offset);
-
-        // The Character unit is a grapheme cluster (UAX-29), so combining marks and ZWJ emoji
-        // sequences move as one. Reading the first grapheme of the slice at the offset is O(grapheme);
-        // the backward step enumerates the preceding text, which is bounded by the caret position.
-        private static int NextCharacter(int offset, string text)
-        {
-            if (offset >= text.Length)
-            {
-                return text.Length;
-            }
-
-            var enumerator = new GraphemeEnumerator(text.AsSpan(offset));
-            return enumerator.MoveNext(out var grapheme) ? offset + grapheme.Length : text.Length;
-        }
-
-        private static int PrevCharacter(int offset, string text)
-        {
-            if (offset <= 0)
-            {
-                return 0;
-            }
-
-            var enumerator = new GraphemeEnumerator(text.AsSpan(0, offset));
-            var start = 0;
-            while (enumerator.MoveNext(out var grapheme))
-            {
-                start = grapheme.Offset;
-            }
-
-            return start;
-        }
-
-        private static int SnapToValid(int offset, string text, bool forward)
-        {
-            if (offset > 0 && offset < text.Length &&
-                char.IsLowSurrogate(text[offset]) && char.IsHighSurrogate(text[offset - 1]))
-            {
-                return forward ? offset + 1 : offset - 1;
-            }
-
-            return offset;
-        }
-
         private void RaiseDocumentTextChanged(string oldText, string newText)
         {
-            var min = Math.Min(oldText.Length, newText.Length);
-
-            var prefix = 0;
-            while (prefix < min && oldText[prefix] == newText[prefix])
-            {
-                prefix++;
-            }
-
-            var suffix = 0;
-            while (suffix < min - prefix &&
-                   oldText[oldText.Length - 1 - suffix] == newText[newText.Length - 1 - suffix])
-            {
-                suffix++;
-            }
-
-            var oldLength = oldText.Length - prefix - suffix;
-            var newLength = newText.Length - prefix - suffix;
+            var (prefix, oldLength, newLength) = TextSegmentation.ComputeChange(oldText, newText);
 
             if (oldLength == 0 && newLength == 0)
             {
@@ -939,129 +849,21 @@ namespace Avalonia.Controls
 
         private ITextRange GetLineRange(int offset, string text)
         {
-            var length = text.Length;
-            if (length == 0)
-            {
-                return CreateLocalRange(0, 0);
-            }
-
-            var position = Math.Clamp(offset, 0, length - 1);
-            var start = position;
-            while (start > 0 && text[start - 1] != '\n' && text[start - 1] != '\r')
-            {
-                start--;
-            }
-
-            var end = position;
-            while (end < length && text[end] != '\n' && text[end] != '\r')
-            {
-                end++;
-            }
-
+            var (start, end) = TextSegmentation.LineBounds(offset, text);
             return CreateLocalRange(start, end);
         }
 
-        // UAX-29 word segmentation: keeps contractions ("don't"), decimals ("3.14"), Hebrew/CJK runs
-        // and regional-indicator pairs together. Enumerates from the document start, so it is O(offset);
-        // word boundaries never cross a hard line break, so a future optimization could segment within
-        // the current line only.
         private ITextRange GetWordRange(int offset, string text)
         {
-            if (text.Length == 0)
-            {
-                return CreateLocalRange(0, 0);
-            }
-
-            var clamped = Math.Clamp(offset, 0, text.Length);
-            var enumerator = new WordBreakEnumerator(text.AsSpan());
-
-            while (enumerator.MoveNext(out var segment))
-            {
-                var end = segment.Offset + segment.Length;
-                if (clamped < end)
-                {
-                    return CreateLocalRange(segment.Offset, end);
-                }
-            }
-
-            return CreateLocalRange(text.Length, text.Length);
-        }
-
-        private static int WordBoundary(int offset, bool forward, string text)
-        {
-            if (forward)
-            {
-                if (offset >= text.Length)
-                {
-                    return text.Length;
-                }
-
-                var enumerator = new WordBreakEnumerator(text.AsSpan());
-                while (enumerator.MoveNext(out var segment))
-                {
-                    var end = segment.Offset + segment.Length;
-                    if (end > offset)
-                    {
-                        return end;
-                    }
-                }
-
-                return text.Length;
-            }
-
-            if (offset <= 0)
-            {
-                return 0;
-            }
-
-            var previous = 0;
-            var backward = new WordBreakEnumerator(text.AsSpan());
-            while (backward.MoveNext(out var segment))
-            {
-                var end = segment.Offset + segment.Length;
-                if (end >= offset)
-                {
-                    break;
-                }
-
-                previous = end;
-            }
-
-            return previous;
+            var (start, end) = TextSegmentation.WordBounds(offset, text);
+            return CreateLocalRange(start, end);
         }
 
         private ITextRange GetSentenceRange(int offset, string text)
         {
-            var length = text.Length;
-            if (length == 0)
-            {
-                return CreateLocalRange(0, 0);
-            }
-
-            var position = Math.Clamp(offset, 0, length - 1);
-
-            var start = position;
-            while (start > 0 && !IsSentenceBoundary(text[start - 1]))
-            {
-                start--;
-            }
-
-            var end = position;
-            while (end < length && !IsSentenceBoundary(text[end]))
-            {
-                end++;
-            }
-
-            if (end < length)
-            {
-                end++;
-            }
-
+            var (start, end) = TextSegmentation.SentenceBounds(offset, text);
             return CreateLocalRange(start, end);
         }
-
-        private static bool IsSentenceBoundary(char c) =>
-            c is '.' or '!' or '?' or '\n' or '\r';
 
         private void RaiseTextChangedCore() => TextChanged?.Invoke(this, EventArgs.Empty);
 
