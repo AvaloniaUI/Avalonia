@@ -2456,6 +2456,47 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBoxAutomationPeer_IAccessibleText_Reports_Font_Attributes_Over_A_Uniform_Run()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "foo bar",
+                FontFamily = new FontFamily("Courier New"),
+                FontSize = 17,
+                FontWeight = FontWeight.Bold,
+                FontStyle = FontStyle.Italic,
+                Foreground = Brushes.Red,
+            };
+            textBox.ApplyTemplate();
+
+            var accessible = Assert.IsAssignableFrom<Avalonia.Automation.Provider.IAccessibleText>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox)
+                    .GetProvider<Avalonia.Automation.Provider.IAccessibleText>());
+
+            var (attributes, run) = accessible.GetTextAttributes(accessible.DocumentStart);
+
+            Assert.Equal("Courier New", attributes[TextAttribute.FontFamily]);
+            Assert.Equal(17d, attributes[TextAttribute.FontSize]);
+            Assert.Equal(FontWeight.Bold, attributes[TextAttribute.FontWeight]);
+            Assert.Equal(FontStyle.Italic, attributes[TextAttribute.FontStyle]);
+            Assert.Equal(Colors.Red, attributes[TextAttribute.Foreground]);
+            Assert.Equal(false, attributes[TextAttribute.IsReadOnly]);
+
+            // Uniform formatting: the run spans the whole document.
+            Assert.Equal(0, run.Start.Offset);
+            Assert.Equal(7, run.End.Offset);
+
+            // The UIA-shaped range reports the same value uniformly over any sub-range.
+            var word = new Avalonia.Automation.AutomationTextRange(
+                accessible, accessible.DocumentStart, accessible.GetPosition(accessible.DocumentStart, 3));
+            Assert.Equal(FontWeight.Bold, word.GetAttributeValue(TextAttribute.FontWeight));
+            Assert.Equal(Colors.Red, word.GetAttributeValue(TextAttribute.Foreground));
+        }
+
+        [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {
             using var _ = UnitTestApplication.Start(Services);

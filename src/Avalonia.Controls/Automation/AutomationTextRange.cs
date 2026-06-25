@@ -120,6 +120,24 @@ namespace Avalonia.Automation
                 ? accessible.GetBoundingRectangles(_navigation.GetRange(_start, _end))
                 : Array.Empty<Rect>();
 
+        public object? GetAttributeValue(TextAttribute attribute)
+        {
+            if (_navigation is not IAccessibleText accessible)
+            {
+                return null;
+            }
+
+            var (attributes, run) = accessible.GetTextAttributes(_start);
+
+            // Report the value only when its run covers the whole range; otherwise it is mixed.
+            if (run.Start.CompareTo(_start) > 0 || run.End.CompareTo(_end) < 0)
+            {
+                return null;
+            }
+
+            return attributes.TryGetValue(attribute, out var value) ? value : null;
+        }
+
         // Moves an endpoint; if it passes the other endpoint the range collapses (UIA semantics).
         private void SetEndpoint(TextRangeEndpoint endpoint, ITextPointer position)
         {

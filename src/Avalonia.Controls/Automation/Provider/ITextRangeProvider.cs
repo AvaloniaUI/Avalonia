@@ -59,5 +59,12 @@ namespace Avalonia.Automation.Provider
 
         /// <summary>The screen-coordinate rectangles covering the range (one per line).</summary>
         Rect[] GetBoundingRectangles();
+
+        /// <summary>
+        /// The value of <paramref name="attribute"/> when it is uniform across the range, or null when
+        /// the control does not expose it or it varies across the range. Values are boxed per the
+        /// <see cref="TextAttribute"/> vocabulary.
+        /// </summary>
+        object? GetAttributeValue(TextAttribute attribute);
     }
 }

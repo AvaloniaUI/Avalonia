@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Avalonia.Input.TextInput;
 using Avalonia.Metadata;
 
@@ -22,5 +23,13 @@ namespace Avalonia.Automation.Provider
         /// platform accessibility layer converts them to screen coordinates.
         /// </summary>
         Rect[] GetBoundingRectangles(ITextRange range);
+
+        /// <summary>
+        /// The formatting attributes in effect at <paramref name="position"/>, together with the run
+        /// over which they are uniform (the whole document for a control with uniform formatting). An
+        /// absent key means the control does not expose that attribute; present values are boxed per
+        /// the <see cref="TextAttribute"/> vocabulary.
+        /// </summary>
+        (IReadOnlyDictionary<TextAttribute, object?> Attributes, ITextRange Run) GetTextAttributes(ITextPointer position);
     }
 }

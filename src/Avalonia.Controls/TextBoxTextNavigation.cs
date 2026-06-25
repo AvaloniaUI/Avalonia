@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Automation.Provider;
 using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Controls
@@ -157,6 +159,33 @@ namespace Avalonia.Controls
             }
 
             return _textBox.GetTextRangeBounds(start, end - start);
+        }
+
+        public (IReadOnlyDictionary<TextAttribute, object?> Attributes, ITextRange Run) GetTextAttributes(ITextPointer position)
+        {
+            // Validate the pointer is ours; a TextBox is uniform, so the offset itself is unused.
+            _ = OffsetOf(position);
+
+            var attributes = new Dictionary<TextAttribute, object?>
+            {
+                [TextAttribute.FontFamily] = _textBox.FontFamily?.Name,
+                [TextAttribute.FontSize] = _textBox.FontSize,
+                [TextAttribute.FontWeight] = _textBox.FontWeight,
+                [TextAttribute.FontStyle] = _textBox.FontStyle,
+                [TextAttribute.IsReadOnly] = _textBox.IsReadOnly,
+            };
+
+            if ((_textBox.Foreground as ISolidColorBrush)?.Color is { } foreground)
+            {
+                attributes[TextAttribute.Foreground] = foreground;
+            }
+
+            if ((_textBox.Background as ISolidColorBrush)?.Color is { } background)
+            {
+                attributes[TextAttribute.Background] = background;
+            }
+
+            return (attributes, DocumentRange);
         }
 
         private void OnTextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)

@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices.Marshalling;
+using Avalonia.Media;
 using AAP = Avalonia.Automation.Provider;
+using AvTextAttribute = Avalonia.Input.TextInput.TextAttribute;
 using AvTextUnit = Avalonia.Input.TextInput.TextUnit;
 using UIA = Avalonia.Win32.Automation.Interop;
 
@@ -39,8 +41,28 @@ namespace Avalonia.Win32.Automation
         // Deferred: text search.
         public UIA.ITextRangeProvider FindText(string text, bool backward, bool ignoreCase) => null!;
 
-        // Deferred: attribute values.
-        public object GetAttributeValue(int attribute) => null!;
+        public object GetAttributeValue(int attribute)
+        {
+            // Map the well-known UIA TextAttributeId onto the shared vocabulary, then to its UIA form;
+            // an unsupported attribute (or one that varies across the range) returns an empty value.
+            object? value = attribute switch
+            {
+                UiaTextAttributeFontName => _range.GetAttributeValue(AvTextAttribute.FontFamily),
+                UiaTextAttributeFontSize => _range.GetAttributeValue(AvTextAttribute.FontSize),
+                UiaTextAttributeFontWeight =>
+                    _range.GetAttributeValue(AvTextAttribute.FontWeight) is FontWeight weight ? (int)weight : null,
+                UiaTextAttributeIsItalic =>
+                    _range.GetAttributeValue(AvTextAttribute.FontStyle) is FontStyle style ? style != FontStyle.Normal : null,
+                UiaTextAttributeForegroundColor =>
+                    _range.GetAttributeValue(AvTextAttribute.Foreground) is Color foreground ? ToColorRef(foreground) : null,
+                UiaTextAttributeBackgroundColor =>
+                    _range.GetAttributeValue(AvTextAttribute.Background) is Color background ? ToColorRef(background) : null,
+                UiaTextAttributeIsReadOnly => _range.GetAttributeValue(AvTextAttribute.IsReadOnly),
+                _ => null,
+            };
+
+            return value!;
+        }
 
         public double[] GetBoundingRectangles() => _owner.PointsToScreen(_range.GetBoundingRectangles());
 
@@ -68,6 +90,18 @@ namespace Avalonia.Win32.Automation
 
         // Deferred: embedded objects.
         public UIA.IRawElementProviderSimple[] GetChildren() => Array.Empty<UIA.IRawElementProviderSimple>();
+
+        // Well-known UIA TextAttributeId values (UIAutomationClient.h).
+        private const int UiaTextAttributeFontName = 30001;
+        private const int UiaTextAttributeFontSize = 30002;
+        private const int UiaTextAttributeFontWeight = 30003;
+        private const int UiaTextAttributeForegroundColor = 30008;
+        private const int UiaTextAttributeBackgroundColor = 30009;
+        private const int UiaTextAttributeIsItalic = 30016;
+        private const int UiaTextAttributeIsReadOnly = 30024;
+
+        // UIA colour attributes are a COLORREF (0x00BBGGRR).
+        private static int ToColorRef(Color color) => color.R | (color.G << 8) | (color.B << 16);
 
         private static AAP.ITextRangeProvider Unwrap(UIA.ITextRangeProvider range)
             => range is AutomationTextRangeProvider wrapper

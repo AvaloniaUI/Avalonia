@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls.Utils;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
@@ -218,19 +220,31 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<string> GetAttributeValueAsync(int offset, string attributeName)
         {
+            if (Navigation is { } nav)
+            {
+                var attributes = ToAtSpi(nav.GetTextAttributes(nav.GetPosition(nav.DocumentStart, offset)).Attributes);
+                if (attributes.TryGetValue(attributeName, out var value))
+                    return ValueTask.FromResult(value);
+            }
+
             return ValueTask.FromResult(string.Empty);
         }
 
         public ValueTask<(AtSpiAttributeSet Attributes, int StartOffset, int EndOffset)> GetAttributesAsync(int offset)
         {
-            var text = GetText();
-            return ValueTask.FromResult((new AtSpiAttributeSet(), 0, text.Length));
+            if (Navigation is { } nav)
+            {
+                var (attributes, run) = nav.GetTextAttributes(nav.GetPosition(nav.DocumentStart, offset));
+                return ValueTask.FromResult((ToAtSpi(attributes), run.Start.Offset, run.End.Offset));
+            }
+
+            return ValueTask.FromResult((new AtSpiAttributeSet(), 0, GetText().Length));
         }
 
         public ValueTask<AtSpiAttributeSet> GetDefaultAttributesAsync()
-        {
-            return ValueTask.FromResult(new AtSpiAttributeSet());
-        }
+            => ValueTask.FromResult(Navigation is { } nav
+                ? ToAtSpi(nav.GetTextAttributes(nav.DocumentStart).Attributes)
+                : new AtSpiAttributeSet());
 
         public ValueTask<(int X, int Y, int Width, int Height)> GetCharacterExtentsAsync(
             int offset, uint coordType)
@@ -291,17 +305,13 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             return ValueTask.FromResult(new List<AtSpiTextRange>());
         }
 
+        // A TextBox is uniform, so the attribute run is the same set the whole document carries.
         public ValueTask<(AtSpiAttributeSet Attributes, int StartOffset, int EndOffset)> GetAttributeRunAsync(
             int offset, bool includeDefaults)
-        {
-            var text = GetText();
-            return ValueTask.FromResult((new AtSpiAttributeSet(), 0, text.Length));
-        }
+            => GetAttributesAsync(offset);
 
         public ValueTask<AtSpiAttributeSet> GetDefaultAttributeSetAsync()
-        {
-            return ValueTask.FromResult(new AtSpiAttributeSet());
-        }
+            => GetDefaultAttributesAsync();
 
         public ValueTask<bool> ScrollSubstringToAsync(int startOffset, int endOffset, uint type)
         {
@@ -324,6 +334,45 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             TextGranularity.Paragraph => TextUnit.Paragraph,
             _ => TextUnit.Character,
         };
+
+        // Maps the shared attribute vocabulary onto AT-SPI's Pango/ATK attribute names. Read-only is
+        // intentionally omitted: AT-SPI exposes editability through the state set, not a text attribute.
+        private static AtSpiAttributeSet ToAtSpi(IReadOnlyDictionary<TextAttribute, object?> attributes)
+        {
+            var set = new AtSpiAttributeSet();
+
+            foreach (var (attribute, value) in attributes)
+            {
+                switch (attribute)
+                {
+                    case TextAttribute.FontFamily when value is string family:
+                        set["family-name"] = family;
+                        break;
+                    case TextAttribute.FontSize when value is double size:
+                        set["size"] = size.ToString("0.##", CultureInfo.InvariantCulture);
+                        break;
+                    case TextAttribute.FontWeight when value is FontWeight weight:
+                        set["weight"] = ((int)weight).ToString(CultureInfo.InvariantCulture);
+                        break;
+                    case TextAttribute.FontStyle when value is FontStyle style:
+                        set["style"] = style switch
+                        {
+                            FontStyle.Italic => "italic",
+                            FontStyle.Oblique => "oblique",
+                            _ => "normal",
+                        };
+                        break;
+                    case TextAttribute.Foreground when value is Color fg:
+                        set["fg-color"] = $"{fg.R},{fg.G},{fg.B}";
+                        break;
+                    case TextAttribute.Background when value is Color bg:
+                        set["bg-color"] = $"{bg.R},{bg.G},{bg.B}";
+                        break;
+                }
+            }
+
+            return set;
+        }
 
         private string GetText()
         {
