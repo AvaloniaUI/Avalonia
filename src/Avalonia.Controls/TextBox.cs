@@ -962,6 +962,33 @@ namespace Avalonia.Controls
             return hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
         }
 
+        // The character offset range currently visible in the presenter's viewport, hit-tested at the
+        // viewport corners. Returns (-1, -1) when there is no layout.
+        internal (int Start, int End) GetVisibleTextRange()
+        {
+            if (_presenter is null || this.GetVisualRoot() is not Visual root)
+            {
+                return (-1, -1);
+            }
+
+            var transform = _presenter.TransformToVisual(root);
+            if (transform is null)
+            {
+                return (-1, -1);
+            }
+
+            var bounds = new Rect(_presenter.Bounds.Size);
+            var start = GetOffsetFromTopLevelPoint(bounds.TopLeft.Transform(transform.Value));
+            var end = GetOffsetFromTopLevelPoint(bounds.BottomRight.Transform(transform.Value));
+
+            if (start < 0 || end < 0)
+            {
+                return (-1, -1);
+            }
+
+            return start <= end ? (start, end) : (end, start);
+        }
+
         /// <summary>
         /// Raised when content is being copied to the clipboard
         /// </summary>

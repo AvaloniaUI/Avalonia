@@ -167,6 +167,12 @@ namespace Avalonia.Controls
             return offset < 0 ? null : CreatePointer(offset);
         }
 
+        public ITextRange? GetVisibleRange()
+        {
+            var (start, end) = _textBox.GetVisibleTextRange();
+            return start < 0 ? null : new NavRange(CreatePointer(start), CreatePointer(end));
+        }
+
         public (IReadOnlyDictionary<TextAttribute, object?> Attributes, ITextRange Run) GetTextAttributes(ITextPointer position)
         {
             // Validate the pointer is ours; a TextBox is uniform, so the offset itself is unused.

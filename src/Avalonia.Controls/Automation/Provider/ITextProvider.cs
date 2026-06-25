@@ -39,5 +39,8 @@ namespace Avalonia.Automation.Provider
         /// coordinates to top-level before calling.
         /// </summary>
         ITextRangeProvider? RangeFromPoint(Point point);
+
+        /// <summary>The ranges currently visible in the control's viewport (empty when off-screen).</summary>
+        IReadOnlyList<ITextRangeProvider> GetVisibleRanges();
     }
 }

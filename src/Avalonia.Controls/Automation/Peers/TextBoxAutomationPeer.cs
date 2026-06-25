@@ -52,6 +52,15 @@ namespace Avalonia.Automation.Peers
             return position is null ? null : new AutomationTextRange(navigation, position, position);
         }
 
+        public IReadOnlyList<ITextRangeProvider> GetVisibleRanges()
+        {
+            var navigation = Navigation;
+            var visible = navigation.GetVisibleRange();
+            return visible is null
+                ? Array.Empty<ITextRangeProvider>()
+                : new ITextRangeProvider[] { new AutomationTextRange(navigation, visible.Start, visible.End) };
+        }
+
         private TextBoxTextNavigation Navigation => _navigation ??= new TextBoxTextNavigation(Owner);
 
         // Expose the text navigation as the cross-platform IAccessibleText provider (used by AT-SPI).

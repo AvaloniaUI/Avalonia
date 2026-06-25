@@ -18,8 +18,10 @@ namespace Avalonia.Win32.Automation
                 .Select(range => (UIA.ITextRangeProvider)new AutomationTextRangeProvider(this, range))
                 .ToArray();
 
-        // Deferred: visible ranges (needs viewport).
-        UIA.ITextRangeProvider[] UIA.ITextProvider.GetVisibleRanges() => Array.Empty<UIA.ITextRangeProvider>();
+        UIA.ITextRangeProvider[] UIA.ITextProvider.GetVisibleRanges()
+            => InvokeSync<AAP.ITextProvider, IReadOnlyList<AAP.ITextRangeProvider>>(x => x.GetVisibleRanges())
+                .Select(range => (UIA.ITextRangeProvider)new AutomationTextRangeProvider(this, range))
+                .ToArray();
 
         // Deferred: range-from-child (needs embedded-object mapping).
         UIA.ITextRangeProvider UIA.ITextProvider.RangeFromChild(UIA.IRawElementProviderSimple childElement) => null!;

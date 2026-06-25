@@ -31,6 +31,9 @@ namespace Avalonia.Automation.Provider
         /// </summary>
         ITextPointer? GetPositionFromPoint(Point point);
 
+        /// <summary>The text currently visible in the control's viewport, or null when it has no layout.</summary>
+        ITextRange? GetVisibleRange();
+
         /// <summary>
         /// The formatting attributes in effect at <paramref name="position"/>, together with the run
         /// over which they are uniform (the whole document for a control with uniform formatting). An

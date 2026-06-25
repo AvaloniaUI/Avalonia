@@ -2555,6 +2555,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBoxAutomationPeer_GetVisibleRanges_Covers_The_Visible_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello world" };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object) { Template = CreateTopLevelTemplate() };
+            topLevel.Content = textBox;
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+            textBox.Measure(Size.Infinity);
+
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox));
+
+            var visible = textProvider.GetVisibleRanges();
+            Assert.Single(visible);
+            Assert.Equal("Hello world", visible[0].GetText(-1));
+        }
+
+        [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {
             using var _ = UnitTestApplication.Start(Services);
