@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls.Utils;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
+using Avalonia.Input.TextInput;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
@@ -35,13 +36,20 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public uint Version => TextVersion;
 
-        public int CharacterCount => GetText().Length;
+        public int CharacterCount => Navigation is { } nav ? nav.DocumentEnd.Offset : GetText().Length;
 
         public int CaretOffset => 0;
 
         public ValueTask<(string Text, int StartOffset, int EndOffset)> GetStringAtOffsetAsync(
             int offset, uint granularity)
         {
+            if (Navigation is { } nav)
+            {
+                var position = nav.GetPosition(nav.DocumentStart, offset);
+                var range = nav.GetRangeEnclosing(position, MapGranularity((TextGranularity)granularity));
+                return ValueTask.FromResult((nav.GetText(range), range.Start.Offset, range.End.Offset));
+            }
+
             var text = GetText();
             if (text.Length == 0)
                 return ValueTask.FromResult((string.Empty, 0, 0));
@@ -288,8 +296,24 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             return ValueTask.FromResult(false);
         }
 
+        private IAccessibleText? Navigation => node.Peer.GetProvider<IAccessibleText>();
+
+        private static TextUnit MapGranularity(TextGranularity granularity) => granularity switch
+        {
+            TextGranularity.Word => TextUnit.Word,
+            TextGranularity.Sentence => TextUnit.Sentence,
+            TextGranularity.Line => TextUnit.Line,
+            TextGranularity.Paragraph => TextUnit.Paragraph,
+            _ => TextUnit.Character,
+        };
+
         private string GetText()
         {
+            if (Navigation is { } nav)
+            {
+                return nav.GetText(nav.DocumentRange);
+            }
+
             return node.Peer.GetProvider<IValueProvider>()?.Value ?? string.Empty;
         }
     }

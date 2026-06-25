@@ -47,6 +47,10 @@ namespace Avalonia.Automation.Peers
 
         private TextBoxTextNavigation Navigation => _navigation ??= new TextBoxTextNavigation(Owner);
 
+        // Expose the text navigation as the cross-platform IAccessibleText provider (used by AT-SPI).
+        protected override object? GetProviderCore(Type providerType)
+            => providerType == typeof(IAccessibleText) ? Navigation : base.GetProviderCore(providerType);
+
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.Edit;
