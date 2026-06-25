@@ -16,6 +16,22 @@ namespace Avalonia.Styling;
 public sealed record ThemeVariant
 {
     /// <summary>
+    /// Inherit theme variant from the parent. If set on Application, system theme is inherited.
+    /// Using Default as the ResourceDictionary.Key marks this dictionary as a fallback in case the theme variant or resource key is not found in other theme dictionaries.
+    /// </summary>
+    public static ThemeVariant Default { get; } = new(nameof(Default));
+
+    /// <summary>
+    /// Use the Light theme variant.
+    /// </summary>
+    public static ThemeVariant Light { get; } = new(nameof(Light));
+
+    /// <summary>
+    /// Use the Dark theme variant.
+    /// </summary>
+    public static ThemeVariant Dark { get; } = new(nameof(Dark));
+
+    /// <summary>
     /// Defines the ActualThemeVariant property.
     /// </summary>
     internal static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
@@ -63,22 +79,6 @@ public sealed record ThemeVariant
     /// </summary>
     public ThemeVariant? InheritVariant { get; }
 
-    /// <summary>
-    /// Inherit theme variant from the parent. If set on Application, system theme is inherited.
-    /// Using Default as the ResourceDictionary.Key marks this dictionary as a fallback in case the theme variant or resource key is not found in other theme dictionaries.
-    /// </summary>
-    public static ThemeVariant Default { get; } = new(nameof(Default));
-
-    /// <summary>
-    /// Use the Light theme variant.
-    /// </summary>
-    public static ThemeVariant Light { get; } = new(nameof(Light));
-
-    /// <summary>
-    /// Use the Dark theme variant.
-    /// </summary>
-    public static ThemeVariant Dark { get; } = new(nameof(Dark));
-
     public override string ToString()
     {
         return Key.ToString() ?? $"ThemeVariant {{ Key = {Key} }}";
@@ -100,11 +100,11 @@ public sealed record ThemeVariant
         {
             PlatformThemeVariant.Light => Light,
             PlatformThemeVariant.Dark => Dark,
-            _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null)
+            _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null),
         };
     }
 
-    public static explicit operator PlatformThemeVariant?(ThemeVariant themeVariant)
+    public static explicit operator PlatformThemeVariant?(ThemeVariant? themeVariant)
     {
         if (themeVariant == Light)
         {
@@ -114,7 +114,7 @@ public sealed record ThemeVariant
         {
             return PlatformThemeVariant.Dark;
         }
-        else if (themeVariant.InheritVariant is { } inheritVariant)
+        else if (themeVariant?.InheritVariant is { } inheritVariant)
         {
             return (PlatformThemeVariant?)inheritVariant;
         }

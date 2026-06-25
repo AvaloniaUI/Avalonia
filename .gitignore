@@ -227,3 +227,4 @@ src/Browser/Avalonia.Browser/staticwebassets
 /.claude/settings.local.json
 /planning
 BenchmarkDotNet.Artifacts.*
+.tokensave

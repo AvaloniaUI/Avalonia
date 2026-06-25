@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
+using Avalonia.Rendering.Composition;
 using Xunit;
 using Path = System.IO.Path;
 
@@ -71,7 +72,7 @@ namespace Avalonia.Skia.RenderTests
             var r = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             using(var cpuContext = r.CreateBackendContext(null))
             using (var target = cpuContext.CreateRenderTarget(new IPlatformRenderSurface[] { fb }))
-            using (var ctx = target.CreateDrawingContext(new IRenderTarget.RenderTargetSceneInfo(fb.Size, 1), out _))
+            using (var ctx = target.CreateDrawingContext(new IRenderTarget.RenderTargetSceneInfo(fb.Size, 1, CompositionTransparencyLevel.None), out _))
             {
                 ctx.Clear(Colors.Transparent);
                 ctx.PushOpacity(0.8, new Rect(0, 0, 80, 80));

@@ -388,12 +388,26 @@ namespace Avalonia.OpenGL
         [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
         public partial void GenVertexArrays(int n, int* rv);
 
+        [GetProcAddress("glReadBuffer", true)]
+        public partial void ReadBuffer(int buffer);
+        
+        [GetProcAddress("glDrawBuffer", true)]
+        public partial void DrawBuffer(int buffer);
+        
+        [GetProcAddress("glWriteBuffer", true)]
+        public partial void WriteBuffer(int buffer);
+
         public int GenVertexArray()
         {
             int rv = 0;
             GenVertexArrays(1, &rv);
             return rv;
         }
+
+        // GL_OES_EGL_image
+        [GetProcAddress(true)]
+        [GlExtensionEntryPoint("glEGLImageTargetTexture2DOES", "GL_OES_EGL_image")]
+        public partial void EGLImageTargetTexture2DOES(int target, IntPtr image);
 
         public static GlInterface FromNativeUtf8GetProcAddress(GlVersion version, Func<IntPtr, IntPtr> getProcAddress)
         {
