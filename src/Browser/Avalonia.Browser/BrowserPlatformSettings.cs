@@ -37,6 +37,11 @@ internal class BrowserPlatformSettings : DefaultPlatformSettings
         _isHighContrast = isHighContrast;
         OnColorValuesChanged(GetColorValues());
     }
+
+    public void OnValuesChanged()
+    {
+        OnColorValuesChanged(GetColorValues());
+    }
     
     private void EnsureBackend()
     {

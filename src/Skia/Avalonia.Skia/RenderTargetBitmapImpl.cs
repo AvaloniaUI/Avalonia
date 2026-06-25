@@ -1,5 +1,6 @@
 using Avalonia.Platform.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using SkiaSharp;
 
 namespace Avalonia.Skia;
@@ -20,7 +21,7 @@ internal class RenderTargetBitmapImpl : WriteableBitmapImpl,
     public IDrawingContextImpl CreateDrawingContext()
     {
         return _renderTarget.CreateDrawingContext(new IRenderTarget.RenderTargetSceneInfo(
-            PixelSize, Dpi.X / 96.0), out _);
+            PixelSize, Dpi.X / 96.0, CompositionTransparencyLevel.None), out _);
     }
 
 

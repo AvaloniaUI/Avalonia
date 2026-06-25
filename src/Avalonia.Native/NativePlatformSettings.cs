@@ -8,7 +8,6 @@ namespace Avalonia.Native;
 internal class NativePlatformSettings : DefaultPlatformSettings
 {
     private readonly IAvnPlatformSettings _platformSettings;
-    private PlatformColorValues? _lastColorValues;
 
     public NativePlatformSettings(IAvnPlatformSettings platformSettings)
     {
@@ -30,7 +29,7 @@ internal class NativePlatformSettings : DefaultPlatformSettings
 
         if (color > 0)
         {
-            _lastColorValues = new PlatformColorValues
+            return new PlatformColorValues
             {
                 ThemeVariant = theme,
                 ContrastPreference = contrast,
@@ -39,25 +38,17 @@ internal class NativePlatformSettings : DefaultPlatformSettings
         }
         else
         {
-            _lastColorValues = new PlatformColorValues
+            return new PlatformColorValues
             {
                 ThemeVariant = theme,
                 ContrastPreference = contrast
             };
         }
-
-        return _lastColorValues;
     }
 
     public void OnColorValuesChanged()
     {
-        var oldColorValues = _lastColorValues;
-        var colorValues = GetColorValues();
-
-        if (oldColorValues != colorValues)
-        {
-            OnColorValuesChanged(colorValues);
-        }
+        OnColorValuesChanged(GetColorValues());
     }
 
     private class ColorsChangeCallback : NativeCallbackBase, IAvnActionCallback

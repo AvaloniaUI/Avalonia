@@ -29,6 +29,8 @@ namespace Avalonia.X11
 {
     internal class AvaloniaX11Platform : IWindowingPlatform
     {
+        public const int DefaultFps = 60;
+
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         private X11AtSpiAccessibility? _accessibility;
         internal AtSpiServer? AtSpiServer => _accessibility?.Server;
@@ -75,8 +77,8 @@ namespace Avalonia.X11
             Resources = new XResources(this);
 
             IRenderTimer timer = options.ShouldRenderOnUIThread
-               ? new UiThreadRenderTimer(60)
-               : new SleepLoopRenderTimer(60);
+               ? new UiThreadRenderTimer(DefaultFps)
+               : new SleepLoopRenderTimer(DefaultFps);
 
             var clipboardImpl = new X11ClipboardImpl(this);
             var clipboard = new Input.Platform.Clipboard(clipboardImpl);
@@ -101,6 +103,13 @@ namespace Avalonia.X11
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
             Screens = X11Screens = new X11Screens(this);
+
+            if (timer is SleepLoopRenderTimer loopTimer)
+            {
+                X11Screens.Changed += () => { loopTimer.DesiredFps = X11Screens.MaxRefreshRate; };
+                loopTimer.DesiredFps = X11Screens.MaxRefreshRate;
+            }
+            
             if (Info.XInputVersion != null)
             {
                 XI2 = XI2Manager.TryCreate(this);
@@ -227,13 +236,35 @@ namespace Avalonia.X11
 
                 if (renderingMode == X11RenderingMode.Egl)
                 {
-                    if (EglPlatformGraphics.TryCreate(()=>new EglDisplay(new EglDisplayCreationOptions()
+                    if (EglPlatformGraphics.TryCreate(() =>
                         {
-                            SupportsContextSharing = true,
-                            SupportsMultipleContexts = true,
-                            GlVersions = opts.GlProfiles,
-                            Egl = new EglInterface()
-                        })) is { } egl)
+                            var egl = new EglInterface();
+                            var options = new EglDisplayCreationOptions
+                            {
+                                SupportsContextSharing = true,
+                                SupportsMultipleContexts = true,
+                                GlVersions = opts.GlProfiles,
+                                Egl = egl,
+                                // nvidia exposes multiple indistinguishable configs of which only some work,
+                                // so we probe candidates by creating a throwaway window surface and pick a usable one.
+                                ProbeConfig = (probeEgl, display, configs) =>
+                                    X11EglHelper.ChooseConfig(info, probeEgl, display, configs)
+                            };
+
+                            // nvidia requires the display to be created through the X11 platform extension,
+                            // otherwise EGL_NATIVE_VISUAL_ID doesn't match the actual window visual.
+                            var clientExtensions = egl.QueryString(IntPtr.Zero, EglConsts.EGL_EXTENSIONS);
+                            if (egl.IsGetPlatformDisplayExtAvailable
+                                && clientExtensions != null
+                                && (clientExtensions.Contains("EGL_KHR_platform_x11")
+                                    || clientExtensions.Contains("EGL_EXT_platform_x11")))
+                            {
+                                options.PlatformType = EglConsts.EGL_PLATFORM_X11_EXT;
+                                options.PlatformDisplay = info.DeferredDisplay;
+                            }
+
+                            return new EglDisplay(options);
+                        }) is { } egl)
                     {
                         return egl;
                     }
