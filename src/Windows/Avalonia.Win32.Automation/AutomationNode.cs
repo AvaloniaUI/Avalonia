@@ -145,22 +145,27 @@ namespace Avalonia.Win32.Automation
 
         public virtual object? GetPatternProvider(int patternId)
         {
-            AutomationNode? ThisIfPeerImplementsProvider<T>() => Peer.GetProvider<T>() is object ? this : null;
-
-            return (UiaPatternId)patternId switch
+            // A peer's GetProviderCore can touch UI properties (e.g. MenuItem.ToggleType); UIA calls this
+            // on its own thread, so resolve the pattern on the UI thread.
+            return InvokeSync(() =>
             {
-                UiaPatternId.ExpandCollapse => ThisIfPeerImplementsProvider<AAP.IExpandCollapseProvider>(),
-                UiaPatternId.Invoke => ThisIfPeerImplementsProvider<AAP.IInvokeProvider>(),
-                UiaPatternId.RangeValue => ThisIfPeerImplementsProvider<AAP.IRangeValueProvider>(),
-                UiaPatternId.Scroll => ThisIfPeerImplementsProvider<AAP.IScrollProvider>(),
-                UiaPatternId.ScrollItem => this,
-                UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
-                UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
-                UiaPatternId.Text => ThisIfPeerImplementsProvider<AAP.ITextProvider>(),
-                UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
-                UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
-                _ => null,
-            };
+                AutomationNode? ThisIfPeerImplementsProvider<T>() => Peer.GetProvider<T>() is object ? this : null;
+
+                return (UiaPatternId)patternId switch
+                {
+                    UiaPatternId.ExpandCollapse => ThisIfPeerImplementsProvider<AAP.IExpandCollapseProvider>(),
+                    UiaPatternId.Invoke => ThisIfPeerImplementsProvider<AAP.IInvokeProvider>(),
+                    UiaPatternId.RangeValue => ThisIfPeerImplementsProvider<AAP.IRangeValueProvider>(),
+                    UiaPatternId.Scroll => ThisIfPeerImplementsProvider<AAP.IScrollProvider>(),
+                    UiaPatternId.ScrollItem => this,
+                    UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
+                    UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
+                    UiaPatternId.Text => ThisIfPeerImplementsProvider<AAP.ITextProvider>(),
+                    UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
+                    UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
+                    _ => null,
+                };
+            });
         }
 
         public virtual object? GetPropertyValue(int propertyId)
@@ -274,7 +279,9 @@ namespace Avalonia.Win32.Automation
 
         protected void InvokeSync<TInterface>(Action<TInterface> action)
         {
-            if (Peer.GetProvider<TInterface>() is TInterface i)
+            // GetProvider runs the peer's GetProviderCore, which can touch UI properties, so marshal it
+            // onto the UI thread too - not just the action.
+            if (InvokeSync(() => Peer.GetProvider<TInterface>()) is TInterface i)
             {
                 try
                 {
@@ -293,7 +300,7 @@ namespace Avalonia.Win32.Automation
 
         protected TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
         {
-            if (Peer.GetProvider<TInterface>() is TInterface i)
+            if (InvokeSync(() => Peer.GetProvider<TInterface>()) is TInterface i)
             {
                 try
                 {
