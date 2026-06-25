@@ -355,6 +355,45 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.InRange(target.Value, target.Minimum, target.Maximum);
         }
 
+        [Theory]
+        [InlineData(PointerType.Touch)]
+        [InlineData(PointerType.Pen)]
+        public void ContextRequested_Should_Be_Handled_For_Touch_Or_Pen_Input(PointerType pointerType)
+        {
+            var target = CreateScrollBar();
+
+            var args = CreateContextRequested(target, pointerType);
+            target.RaiseEvent(args);
+
+            Assert.True(args.Handled);
+        }
+
+        [Fact]
+        public void ContextRequested_Should_Not_Be_Handled_For_Mouse_Input()
+        {
+            var target = CreateScrollBar();
+
+            var args = CreateContextRequested(target, PointerType.Mouse);
+            target.RaiseEvent(args);
+
+            Assert.False(args.Handled);
+        }
+
+        private static ContextRequestedEventArgs CreateContextRequested(ScrollBar target, PointerType pointerType)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), pointerType, true);
+            var pointerArgs = new PointerPressedEventArgs(
+                target,
+                pointer,
+                target,
+                default,
+                timestamp: 1,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.Other),
+                KeyModifiers.None);
+
+            return new ContextRequestedEventArgs(pointerArgs);
+        }
+
         private static ScrollBar CreateScrollBar(
             Orientation orientation = Orientation.Vertical,
             double minimum = 0,
