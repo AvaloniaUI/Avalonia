@@ -25,6 +25,13 @@ namespace Avalonia.Automation.Provider
         Rect[] GetBoundingRectangles(ITextRange range);
 
         /// <summary>
+        /// The position nearest <paramref name="point"/> (in top-level coordinates), or null when the
+        /// control has no layout. The inverse of <see cref="GetBoundingRectangles"/>; the platform
+        /// accessibility layer converts screen coordinates to top-level before calling.
+        /// </summary>
+        ITextPointer? GetPositionFromPoint(Point point);
+
+        /// <summary>
         /// The formatting attributes in effect at <paramref name="position"/>, together with the run
         /// over which they are uniform (the whole document for a control with uniform formatting). An
         /// absent key means the control does not expose that attribute; present values are boxed per

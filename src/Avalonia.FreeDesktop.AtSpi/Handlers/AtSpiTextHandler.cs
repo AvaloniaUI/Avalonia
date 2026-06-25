@@ -260,15 +260,15 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             return ValueTask.FromResult((0, 0, 0, 0));
         }
 
-        // TODO: hit-test point -> offset, deferred with the RichTextEditor accessibility work. Needs a
-        // navigation point->offset primitive (no IAccessibleText member exists yet) plus a TextBox bridge
-        // over TextLayout.HitTestPoint (the inverse of GetTextRangeBounds), then an inverse coordinate
-        // chain coordType -> screen -> top-level. The screen->top-level step must use the window's
-        // PointToClient: RootAtSpiNode.ToScreen goes through PointToScreen, so subtracting the window
-        // origin is wrong under non-100% DPI. That same point->offset primitive is what a rich-text
-        // document has to supply, so it is cheapest to add the navigation member and wire both at once.
         public ValueTask<int> GetOffsetAtPointAsync(int x, int y, uint coordType)
         {
+            if (Navigation is { } nav)
+            {
+                var point = AtSpiCoordinateHelper.PointToTopLevel(node, x, y, coordType);
+                if (nav.GetPositionFromPoint(point) is { } position)
+                    return ValueTask.FromResult(position.Offset);
+            }
+
             return ValueTask.FromResult(-1);
         }
 

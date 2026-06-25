@@ -34,6 +34,40 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 : topLevelRect;
         }
 
+        /// <summary>
+        /// Converts a point in the requested AT-SPI coordinate space to top-level (visual-root)
+        /// coordinates - the frame GetPositionFromPoint expects. Inverse of ToScreenRect + TranslateRect.
+        /// </summary>
+        public static Point PointToTopLevel(AtSpiNode node, int x, int y, uint coordType)
+        {
+            // 1. Bring the point into screen pixels.
+            switch ((AtSpiCoordType)coordType)
+            {
+                case AtSpiCoordType.Window:
+                {
+                    var windowRect = GetWindowRect(node);
+                    x += (int)windowRect.X;
+                    y += (int)windowRect.Y;
+                    break;
+                }
+                case AtSpiCoordType.Parent:
+                {
+                    var parentRect = GetParentScreenRect(node);
+                    x += (int)parentRect.X;
+                    y += (int)parentRect.Y;
+                    break;
+                }
+                // Screen: already in screen pixels.
+            }
+
+            // 2. Screen -> top-level via the root window's PointToClient (DPI-aware, not a bare subtract).
+            var root = node.Peer.GetVisualRoot();
+            if (root is not null && node.Server.TryGetAttachedNode(root) is RootAtSpiNode rootNode)
+                return rootNode.PointToClient(new PixelPoint(x, y));
+
+            return new Point(x, y);
+        }
+
         public static Rect TranslateRect(AtSpiNode node, Rect screenRect, uint coordType)
         {
             var ct = (AtSpiCoordType)coordType;

@@ -2497,6 +2497,40 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBoxAutomationPeer_GetPositionFromPoint_Hit_Tests_Back_To_The_Character()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello world" };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object) { Template = CreateTopLevelTemplate() };
+            topLevel.Content = textBox;
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+            textBox.Measure(Size.Infinity);
+
+            var accessible = Assert.IsAssignableFrom<Avalonia.Automation.Provider.IAccessibleText>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox)
+                    .GetProvider<Avalonia.Automation.Provider.IAccessibleText>());
+
+            // Top-level bounding rect of 'w' (offset 6 in "Hello world").
+            var wChar = accessible.GetRange(
+                accessible.GetPosition(accessible.DocumentStart, 6),
+                accessible.GetPosition(accessible.DocumentStart, 7));
+            var rects = accessible.GetBoundingRectangles(wChar);
+            Assert.NotEmpty(rects);
+
+            // A point just inside that rect hit-tests back into the same character (the inverse of
+            // GetBoundingRectangles round-trips).
+            var probe = new Point(rects[0].X + 1, rects[0].Center.Y);
+            var hit = accessible.GetPositionFromPoint(probe);
+
+            Assert.NotNull(hit);
+            Assert.Equal("w", accessible.GetText(accessible.GetRangeEnclosing(hit!, TextUnit.Character)));
+        }
+
+        [Fact]
         public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
         {
             using var _ = UnitTestApplication.Start(Services);

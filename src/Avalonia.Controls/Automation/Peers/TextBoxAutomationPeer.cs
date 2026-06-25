@@ -45,6 +45,13 @@ namespace Avalonia.Automation.Peers
             return new ITextRangeProvider[] { range };
         }
 
+        public ITextRangeProvider? RangeFromPoint(Point point)
+        {
+            var navigation = Navigation;
+            var position = navigation.GetPositionFromPoint(point);
+            return position is null ? null : new AutomationTextRange(navigation, position, position);
+        }
+
         private TextBoxTextNavigation Navigation => _navigation ??= new TextBoxTextNavigation(Owner);
 
         // Expose the text navigation as the cross-platform IAccessibleText provider (used by AT-SPI).

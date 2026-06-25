@@ -24,8 +24,12 @@ namespace Avalonia.Win32.Automation
         // Deferred: range-from-child (needs embedded-object mapping).
         UIA.ITextRangeProvider UIA.ITextProvider.RangeFromChild(UIA.IRawElementProviderSimple childElement) => null!;
 
-        // Deferred: range-from-point (needs hit-testing).
-        UIA.ITextRangeProvider UIA.ITextProvider.RangeFromPoint(double x, double y) => null!;
+        UIA.ITextRangeProvider UIA.ITextProvider.RangeFromPoint(double x, double y)
+        {
+            var point = PointFromScreen(x, y);
+            var range = InvokeSync<AAP.ITextProvider, AAP.ITextRangeProvider?>(p => p.RangeFromPoint(point));
+            return range is null ? null! : new AutomationTextRangeProvider(this, range);
+        }
 
         UIA.SupportedTextSelection UIA.ITextProvider.GetSupportedTextSelection()
             => (UIA.SupportedTextSelection)(int)InvokeSync<AAP.ITextProvider, AAP.SupportedTextSelection>(

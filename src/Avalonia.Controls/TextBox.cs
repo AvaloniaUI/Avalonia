@@ -940,6 +940,28 @@ namespace Avalonia.Controls
             return result.ToArray();
         }
 
+        // Nearest character offset for a point in top-level coordinates (the inverse of
+        // GetTextRangeBounds), used by the automation text provider for hit-testing. Returns -1 when
+        // there is no layout.
+        internal int GetOffsetFromTopLevelPoint(Point topLevelPoint)
+        {
+            if (_presenter is null || this.GetVisualRoot() is not Visual root)
+            {
+                return -1;
+            }
+
+            var transform = root.TransformToVisual(_presenter);
+            if (transform is null)
+            {
+                return -1;
+            }
+
+            var local = topLevelPoint.Transform(transform.Value);
+            var hit = _presenter.TextLayout.HitTestPoint(local);
+
+            return hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
+        }
+
         /// <summary>
         /// Raised when content is being copied to the clipboard
         /// </summary>

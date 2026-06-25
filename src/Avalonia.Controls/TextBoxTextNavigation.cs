@@ -161,6 +161,12 @@ namespace Avalonia.Controls
             return _textBox.GetTextRangeBounds(start, end - start);
         }
 
+        public ITextPointer? GetPositionFromPoint(Point point)
+        {
+            var offset = _textBox.GetOffsetFromTopLevelPoint(point);
+            return offset < 0 ? null : CreatePointer(offset);
+        }
+
         public (IReadOnlyDictionary<TextAttribute, object?> Attributes, ITextRange Run) GetTextAttributes(ITextPointer position)
         {
             // Validate the pointer is ours; a TextBox is uniform, so the offset itself is unused.

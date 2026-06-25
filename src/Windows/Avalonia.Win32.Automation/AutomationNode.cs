@@ -119,6 +119,22 @@ namespace Avalonia.Win32.Automation
             });
         }
 
+        // Converts a screen-pixel point to top-level coordinates (the inverse of the PointToScreen used
+        // by PointsToScreen), for UIA RangeFromPoint hit-testing.
+        internal Point PointFromScreen(double x, double y)
+        {
+            return InvokeSync(() =>
+            {
+                if (Peer.GetVisualRoot() is not ControlAutomationPeer root ||
+                    root.Owner.GetPresentationSource() is null)
+                {
+                    return default;
+                }
+
+                return root.Owner.PointToClient(new PixelPoint((int)x, (int)y));
+            });
+        }
+
         public virtual IRawElementProviderFragmentRoot? GetFragmentRoot()
         {
             return InvokeSync(() => GetRoot());

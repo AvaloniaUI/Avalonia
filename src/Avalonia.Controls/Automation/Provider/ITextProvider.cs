@@ -32,5 +32,12 @@ namespace Avalonia.Automation.Provider
 
         /// <summary>The currently selected ranges (one for a single-selection control).</summary>
         IReadOnlyList<ITextRangeProvider> GetSelection();
+
+        /// <summary>
+        /// A degenerate range at the position nearest <paramref name="point"/> (in top-level
+        /// coordinates), or null when the control has no layout. The platform layer converts screen
+        /// coordinates to top-level before calling.
+        /// </summary>
+        ITextRangeProvider? RangeFromPoint(Point point);
     }
 }
