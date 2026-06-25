@@ -1663,12 +1663,13 @@ namespace Avalonia.Controls
         /// Replaces the current misspelled word with a spell check suggestion.
         /// </summary>
         /// <param name="suggestion">The replacement text.</param>
-        public void ApplySpellCheckSuggestion(string? suggestion)
+        public void ApplySpellCheckSuggestion(object? suggestion)
         {
             var start = _spellCheckSuggestionStart;
             var length = _spellCheckSuggestionLength;
 
-            if (string.IsNullOrEmpty(suggestion) ||
+            if (suggestion is not string textInput ||
+                string.IsNullOrEmpty(textInput) ||
                 IsReadOnly ||
                 start < 0 ||
                 length <= 0 ||
@@ -1686,7 +1687,7 @@ namespace Avalonia.Controls
             SetCurrentValue(SelectionEndProperty, start + length);
 
             SnapshotUndoRedo();
-            HandleTextInput(suggestion);
+            HandleTextInput(textInput);
             ClearSpellCheckSuggestions();
         }
 
