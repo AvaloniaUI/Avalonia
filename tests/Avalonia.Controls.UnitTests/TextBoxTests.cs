@@ -2406,6 +2406,41 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void AutomationTextRange_Move_Advances_By_Whole_Units()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar baz", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            var word = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentStart);
+            word.ExpandToEnclosingUnit(TextUnit.Word);
+            Assert.Equal("foo", word.GetText(-1));
+
+            // Forward moves a whole word at a time, skipping inter-word whitespace.
+            Assert.Equal(1, word.Move(TextUnit.Word, 1));
+            Assert.Equal("bar", word.GetText(-1));
+            Assert.Equal(1, word.Move(TextUnit.Word, 1));
+            Assert.Equal("baz", word.GetText(-1));
+
+            // No more words forward.
+            Assert.Equal(0, word.Move(TextUnit.Word, 1));
+            Assert.Equal("baz", word.GetText(-1));
+
+            // Backward two words returns to the first.
+            Assert.Equal(-2, word.Move(TextUnit.Word, -2));
+            Assert.Equal("foo", word.GetText(-1));
+
+            // Character units tile.
+            var ch = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentStart);
+            ch.ExpandToEnclosingUnit(TextUnit.Character);
+            Assert.Equal("f", ch.GetText(-1));
+            Assert.Equal(2, ch.Move(TextUnit.Character, 2));
+            Assert.Equal("o", ch.GetText(-1));
+        }
+
+        [Fact]
         public void TextBoxAutomationPeer_Exposes_Text_Via_ITextProvider()
         {
             using var _ = UnitTestApplication.Start(Services);

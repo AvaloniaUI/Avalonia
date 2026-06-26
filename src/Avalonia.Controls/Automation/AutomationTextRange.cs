@@ -76,16 +76,92 @@ namespace Avalonia.Automation
 
         public int Move(TextUnit unit, int count)
         {
-            // Normalize to the enclosing unit, then move that unit by count.
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            // Normalize to the enclosing unit, then move whole units.
             ExpandToEnclosingUnit(unit);
 
-            var (moved, position) = StepByUnit(_start, unit, count);
-            var range = _navigation.GetRangeEnclosing(position, unit);
-            _start = range.Start;
-            _end = range.End;
+            var forward = count > 0;
+            var moved = 0;
 
-            return moved;
+            for (var target = Math.Abs(count); moved < target; moved++)
+            {
+                var startBefore = _start.Offset;
+                var endBefore = _end.Offset;
+
+                var stepped = forward ? MoveToNextUnit(unit, endBefore) : MoveToPreviousUnit(unit, startBefore);
+                if (!stepped || (_start.Offset == startBefore && _end.Offset == endBefore))
+                {
+                    break;
+                }
+            }
+
+            return forward ? moved : -moved;
         }
+
+        // The first enclosing unit beginning at or after `from`. Walking past the end skips the boundary
+        // positions that re-enclose to the current unit, and whitespace-only word segments (UIA word
+        // moves do not stop on a run of spaces between words).
+        private bool MoveToNextUnit(TextUnit unit, int from)
+        {
+            var probe = _end;
+            while (true)
+            {
+                var enclosing = _navigation.GetRangeEnclosing(probe, unit);
+                if (enclosing.Start.Offset >= from && enclosing.End.Offset > from)
+                {
+                    if (!IsWordGap(unit, enclosing))
+                    {
+                        _start = enclosing.Start;
+                        _end = enclosing.End;
+                        return true;
+                    }
+
+                    if (enclosing.End.Offset > probe.Offset)
+                    {
+                        probe = enclosing.End;
+                        continue;
+                    }
+                }
+
+                var next = _navigation.GetPosition(probe, 1);
+                if (next.Offset == probe.Offset)
+                {
+                    return false; // document end
+                }
+
+                probe = next;
+            }
+        }
+
+        private bool MoveToPreviousUnit(TextUnit unit, int from)
+        {
+            var probe = _start;
+            while (true)
+            {
+                var previous = _navigation.GetPosition(probe, -1);
+                if (previous.Offset == probe.Offset)
+                {
+                    return false; // document start
+                }
+
+                var enclosing = _navigation.GetRangeEnclosing(previous, unit);
+                if (enclosing.Start.Offset < from && !IsWordGap(unit, enclosing))
+                {
+                    _start = enclosing.Start;
+                    _end = enclosing.End;
+                    return true;
+                }
+
+                probe = enclosing.Start.Offset < probe.Offset ? enclosing.Start : previous;
+            }
+        }
+
+        private bool IsWordGap(TextUnit unit, ITextRange range)
+            => unit == TextUnit.Word && string.IsNullOrWhiteSpace(_navigation.GetText(range));
 
         public int MoveEndpointByUnit(TextRangeEndpoint endpoint, TextUnit unit, int count)
         {
