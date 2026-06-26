@@ -8,7 +8,6 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
-using Avalonia.Controls;
 using Java.Lang;
 
 namespace Avalonia.Android
@@ -199,7 +198,7 @@ namespace Avalonia.Android
             nodeInfo.Enabled = peer.IsEnabled();
 
             // Control focus state
-            bool canFocusAtAll = peer.IsContentElement() && !peer.IsOffscreen();
+            bool canFocusAtAll = peer.IsControlElement() && !peer.IsOffscreen();
             nodeInfo.ScreenReaderFocusable = canFocusAtAll;
             nodeInfo.Focusable = canFocusAtAll && peer.IsKeyboardFocusable();
 
