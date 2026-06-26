@@ -33,6 +33,9 @@ namespace Avalonia.Input.TextInput
         Background,
 
         /// <summary>Whether the text is read-only. Value: <see cref="bool"/>.</summary>
-        IsReadOnly
+        IsReadOnly,
+
+        /// <summary>The paragraph/character style, e.g. a heading level. Value: <see cref="TextStyleId"/>.</summary>
+        StyleId
     }
 }

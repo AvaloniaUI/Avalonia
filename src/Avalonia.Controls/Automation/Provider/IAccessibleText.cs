@@ -44,5 +44,13 @@ namespace Avalonia.Automation.Provider
         /// the <see cref="TextAttribute"/> vocabulary.
         /// </summary>
         (IReadOnlyDictionary<TextAttribute, object?> Attributes, ITextRange Run) GetTextAttributes(ITextPointer position);
+
+        /// <summary>
+        /// The text of <paramref name="range"/> with a line feed at each block boundary, matching how the
+        /// control serializes plain text (e.g. for the clipboard). Unlike <see cref="ITextNavigation.GetText"/>,
+        /// whose length equals the range's offset span, this is presentation text for accessibility clients.
+        /// Defaults to the flat text, which is correct for a control whose content is a single block.
+        /// </summary>
+        string GetBlockSeparatedText(ITextRange range) => GetText(range);
     }
 }

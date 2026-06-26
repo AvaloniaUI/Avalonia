@@ -1,8 +1,10 @@
 using System;
+using System.Linq;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Media;
 using AAP = Avalonia.Automation.Provider;
 using AvTextAttribute = Avalonia.Input.TextInput.TextAttribute;
+using AvTextStyleId = Avalonia.Input.TextInput.TextStyleId;
 using AvTextUnit = Avalonia.Input.TextInput.TextUnit;
 using UIA = Avalonia.Win32.Automation.Interop;
 
@@ -77,6 +79,9 @@ namespace Avalonia.Win32.Automation
                 UiaTextAttributeBackgroundColor =>
                     _range.GetAttributeValue(AvTextAttribute.Background) is Color background ? ToColorRef(background) : null,
                 UiaTextAttributeIsReadOnly => _range.GetAttributeValue(AvTextAttribute.IsReadOnly),
+                // UIA StyleId values are StyleId_Custom (70000) + ordinal, so Heading1 -> 70001, etc.
+                UiaTextAttributeStyleId =>
+                    _range.GetAttributeValue(AvTextAttribute.StyleId) is AvTextStyleId styleId ? 70000 + (int)styleId : (int?)null,
                 _ => null,
             };
 
@@ -86,7 +91,9 @@ namespace Avalonia.Win32.Automation
         public double[] GetBoundingRectangles()
             => _owner.InvokeSync(() => _owner.PointsToScreen(_range.GetBoundingRectangles()));
 
-        public UIA.IRawElementProviderSimple GetEnclosingElement() => _owner;
+        public UIA.IRawElementProviderSimple GetEnclosingElement()
+            => _owner.InvokeSync<UIA.IRawElementProviderSimple>(() =>
+                (_range.GetEnclosingElement() is { } enclosing ? AutomationNode.GetOrCreate(enclosing) : null) ?? _owner);
 
         public string GetText(int maxLength) => _owner.InvokeSync(() => _range.GetText(maxLength));
 
@@ -107,8 +114,10 @@ namespace Avalonia.Win32.Automation
 
         public void ScrollIntoView(bool alignToTop) => _owner.InvokeSync(() => _range.ScrollIntoView(alignToTop));
 
-        // A plain TextBox has no embedded objects.
-        public UIA.IRawElementProviderSimple[] GetChildren() => Array.Empty<UIA.IRawElementProviderSimple>();
+        public UIA.IRawElementProviderSimple[] GetChildren()
+            => _owner.InvokeSync(() => _range.GetChildren()
+                .Select(peer => (UIA.IRawElementProviderSimple)AutomationNode.GetOrCreate(peer)!)
+                .ToArray());
 
         // Well-known UIA TextAttributeId values (UIAutomationClient.h).
         private const int UiaTextAttributeFontName = 30001;
@@ -118,6 +127,7 @@ namespace Avalonia.Win32.Automation
         private const int UiaTextAttributeBackgroundColor = 30009;
         private const int UiaTextAttributeIsItalic = 30016;
         private const int UiaTextAttributeIsReadOnly = 30024;
+        private const int UiaTextAttributeStyleId = 30068;
 
         // UIA colour attributes are a COLORREF (0x00BBGGRR).
         private static int ToColorRef(Color color) => color.R | (color.G << 8) | (color.B << 16);

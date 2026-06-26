@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Input.TextInput;
 using Avalonia.Metadata;
@@ -69,7 +71,22 @@ namespace Avalonia.Automation
 
         public string GetText(int maxLength)
         {
-            var text = _navigation.GetText(_navigation.GetRange(_start, _end));
+            // Bound the read to maxLength source characters so a capped read of a large range does not
+            // materialize the whole document; block breaks only add characters, so this still yields at
+            // least maxLength of presentation text. Internal offset math elsewhere keeps using the flat
+            // navigation text, so the Length == Δoffset invariant is unaffected.
+            var end = _end;
+            if (maxLength >= 0)
+            {
+                var capped = _navigation.GetPosition(_start, maxLength);
+                if (capped.CompareTo(_end) < 0)
+                    end = capped;
+            }
+
+            var range = _navigation.GetRange(_start, end);
+            var text = _navigation is IAccessibleText accessible
+                ? accessible.GetBlockSeparatedText(range)
+                : _navigation.GetText(range);
 
             return maxLength >= 0 && text.Length > maxLength ? text.Substring(0, maxLength) : text;
         }
@@ -247,6 +264,16 @@ namespace Avalonia.Automation
                 _navigation.GetPosition(_start, index),
                 _navigation.GetPosition(_start, index + text.Length));
         }
+
+        public IReadOnlyList<AutomationPeer> GetChildren()
+            => _navigation is ITextEmbeddedObjects embedded
+                ? embedded.GetEmbeddedObjects(_navigation.GetRange(_start, _end))
+                : Array.Empty<AutomationPeer>();
+
+        public AutomationPeer? GetEnclosingElement()
+            => _navigation is ITextEmbeddedObjects embedded
+                ? embedded.GetEnclosingElement(_navigation.GetRange(_start, _end))
+                : null;
 
         // Moves an endpoint; if it passes the other endpoint the range collapses (UIA semantics).
         private void SetEndpoint(TextRangeEndpoint endpoint, ITextPointer position)

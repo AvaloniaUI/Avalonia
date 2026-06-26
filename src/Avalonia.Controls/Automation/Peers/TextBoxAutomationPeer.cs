@@ -61,6 +61,9 @@ namespace Avalonia.Automation.Peers
                 : new ITextRangeProvider[] { new AutomationTextRange(navigation, visible.Start, visible.End) };
         }
 
+        // A plain TextBox has uniform text with no embedded automation elements.
+        public ITextRangeProvider? RangeFromChild(AutomationPeer childElement) => null;
+
         private TextBoxTextNavigation Navigation => _navigation ??= new TextBoxTextNavigation(Owner);
 
         // Expose the text navigation as the cross-platform IAccessibleText provider (used by AT-SPI).

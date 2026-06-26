@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Avalonia.Automation.Peers;
 using Avalonia.Metadata;
 
 namespace Avalonia.Automation.Provider
@@ -42,5 +43,11 @@ namespace Avalonia.Automation.Provider
 
         /// <summary>The ranges currently visible in the control's viewport (empty when off-screen).</summary>
         IReadOnlyList<ITextRangeProvider> GetVisibleRanges();
+
+        /// <summary>
+        /// The range spanned by an embedded automation element (e.g. a hyperlink) of this provider, or
+        /// null when <paramref name="childElement"/> is not one of its embedded objects.
+        /// </summary>
+        ITextRangeProvider? RangeFromChild(AutomationPeer childElement);
     }
 }

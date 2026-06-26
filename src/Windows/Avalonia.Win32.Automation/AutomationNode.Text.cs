@@ -23,8 +23,14 @@ namespace Avalonia.Win32.Automation
                 .Select(range => (UIA.ITextRangeProvider)new AutomationTextRangeProvider(this, range))
                 .ToArray();
 
-        // A plain TextBox has no embedded objects to resolve a child against.
-        UIA.ITextRangeProvider UIA.ITextProvider.RangeFromChild(UIA.IRawElementProviderSimple childElement) => null!;
+        UIA.ITextRangeProvider UIA.ITextProvider.RangeFromChild(UIA.IRawElementProviderSimple childElement)
+        {
+            if (childElement is not AutomationNode node)
+                return null!;
+
+            var range = InvokeSync<AAP.ITextProvider, AAP.ITextRangeProvider?>(p => p.RangeFromChild(node.Peer));
+            return range is null ? null! : new AutomationTextRangeProvider(this, range);
+        }
 
         UIA.ITextRangeProvider UIA.ITextProvider.RangeFromPoint(double x, double y)
         {

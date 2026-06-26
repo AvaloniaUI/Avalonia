@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Avalonia.Automation.Peers;
 using Avalonia.Input.TextInput;
 using Avalonia.Metadata;
 
@@ -75,5 +77,17 @@ namespace Avalonia.Automation.Provider
 
         /// <summary>Scrolls the owning control so this range is visible, if it supports scrolling.</summary>
         void ScrollIntoView(bool alignToTop);
+
+        /// <summary>
+        /// The embedded automation elements contained in this range (hyperlinks, images...), in document
+        /// order; empty when the owning control exposes none.
+        /// </summary>
+        IReadOnlyList<AutomationPeer> GetChildren();
+
+        /// <summary>
+        /// The innermost embedded element that encloses this range, or null when only the text container
+        /// encloses it - the platform layer substitutes the container element in that case.
+        /// </summary>
+        AutomationPeer? GetEnclosingElement();
     }
 }
