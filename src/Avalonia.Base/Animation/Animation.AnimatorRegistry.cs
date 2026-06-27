@@ -37,6 +37,7 @@ partial class Animation
 
     static Animation()
     {
+        RegisterAnimator<ITransform?, ITransformAnimator>();
         RegisterAnimator<IEffect?, EffectAnimator>();
         RegisterAnimator<BoxShadow, BoxShadowAnimator>();
         RegisterAnimator<BoxShadows, BoxShadowsAnimator>();
