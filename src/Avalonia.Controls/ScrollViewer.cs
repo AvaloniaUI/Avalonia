@@ -808,14 +808,21 @@ namespace Avalonia.Controls
             }
             else if (e.Source == this)
             {
+                bool rtl = FlowDirection == Media.FlowDirection.RightToLeft;
                 if (e.Key == Key.Left)
                 {
-                    LineLeft();
+                    if (rtl)
+                        LineRight();
+                    else
+                        LineLeft();
                     e.Handled = true;
                 }
                 else if (e.Key == Key.Right)
                 {
-                    LineRight();
+                    if (rtl)
+                        LineLeft();
+                    else
+                        LineRight();
                     e.Handled = true;
                 }
                 else if (e.Key == Key.Up)
