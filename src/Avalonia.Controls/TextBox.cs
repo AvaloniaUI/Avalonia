@@ -1321,7 +1321,6 @@ namespace Avalonia.Controls
                 catch (Exception ex) when (ex is COMException or TimeoutException or UnauthorizedAccessException)
                 {
                     Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
-                        ?.Log(this, "Failed to write text to clipboard: {Error}", uex);
                         ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
                 }
             }
