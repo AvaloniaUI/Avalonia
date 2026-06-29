@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
