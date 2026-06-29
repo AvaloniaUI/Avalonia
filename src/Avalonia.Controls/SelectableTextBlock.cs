@@ -137,7 +137,17 @@ namespace Avalonia.Controls
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
                 if (clipboard != null)
-                    await clipboard.SetTextAsync(text);
+                    {
+                     try
+                     {
+                         await clipboard.SetTextAsync(text);
+                     }
+                     catch (Exception ex) when (ex is COMException or TimeoutException or UnauthorizedAccessException)
+                     {
+                         Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                             ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                     }
+                 }
             }
         }
 
