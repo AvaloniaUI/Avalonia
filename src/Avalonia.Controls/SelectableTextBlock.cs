@@ -7,6 +7,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
