@@ -55,6 +55,7 @@ internal class ImmediateRenderer
         using (context.PushTransform(transform))
         using (visual.HasMirrorTransform ? context.PushTransform(new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0)) : default(DrawingContext.PushedState?))
         using (context.PushOpacity(opacity))
+        using (visual.Effect is { } effect ? context.PushEffect(effect, rect) : default(DrawingContext.PushedState?))
         using (visual switch
         {
             { ClipToBounds: true } and IVisualWithRoundRectClip roundClipVisual => context.PushClip(new RoundedRect(rect, roundClipVisual.ClipToBoundsRadius)),
@@ -63,7 +64,6 @@ internal class ImmediateRenderer
         })
         using (visual.Clip is { } clip ? context.PushGeometryClip(clip) : default(DrawingContext.PushedState?))
         using (visual.OpacityMask is { } opctMask ? context.PushOpacityMask(opctMask, rect) : default(DrawingContext.PushedState?))
-        using (visual.Effect is { } effect ? context.PushEffect(effect, rect) : default(DrawingContext.PushedState?))
         {
             var totalTransform = transform * parentTransform;
             var effectRect = visual.Effect is { } e ? rect.Inflate(e.GetEffectOutputPadding()) : rect;
