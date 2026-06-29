@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using Avalonia.Wayland.Server.Interop;
 using Avalonia.Wayland.Server.Transient;
 using Avalonia.Wayland.Server.Transient.Rendering;
@@ -75,7 +76,7 @@ sealed class WaylandBitmapCursor : WaylandCursor, IPersistentWaylandObject, IWay
 
         var framebuffer = new WaylandFramebuffer(this);
         using var renderTarget = framebuffer.CreateFramebufferRenderTarget();
-        using var locked = renderTarget.Lock(new IRenderTarget.RenderTargetSceneInfo(_size, 1), out _);
+        using var locked = renderTarget.Lock(new IRenderTarget.RenderTargetSceneInfo(_size, 1, CompositionTransparencyLevel.None), out _);
         // The locked framebuffer is Bgra8888 premultiplied with stride == Width * 4, matching the
         // packed pixel data we captured on the UI thread. Disposing the lock attaches + commits.
         Marshal.Copy(_pixels, 0, locked.Address, _pixels.Length);

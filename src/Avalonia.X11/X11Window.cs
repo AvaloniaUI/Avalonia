@@ -62,6 +62,7 @@ namespace Avalonia.X11
         private XSyncState _xSyncState = 0;
         private bool _mapped;
         private bool _wasMappedAtLeastOnce = false;
+        private bool _shown;
         private double? _scalingOverride;
         private bool _disabled;
         private TransparencyHelper? _transparencyHelper;
@@ -797,13 +798,21 @@ namespace Avalonia.X11
             get => _lastWindowState;
             set
             {
-                if(_lastWindowState == value)
+                var previousState = _lastWindowState;
+                if (previousState == value)
                     return;
+
                 if (value == WindowState.Minimized)
                 {
                     XIconifyWindow(_x11.Display, _handle, _x11.DefaultScreen);
+                    return;
                 }
-                else if (value == WindowState.Maximized)
+
+                // When going from Minimized to any other state programatically, we might need to re-map the window.
+                // Not doing that will leave the window invisible.
+                var needsRemap = _shown && previousState == WindowState.Minimized && !_mapped;
+
+                if (value == WindowState.Maximized)
                 {
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
@@ -823,9 +832,13 @@ namespace Avalonia.X11
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
-                    SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
-                        IntPtr.Zero);
                 }
+
+                if (needsRemap)
+                    XMapWindow(_x11.Display, _handle);
+
+                if (_shown)
+                    SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, 1, _x11.LastActivityTimestamp, 0);
             }
         }
 
@@ -1649,7 +1662,13 @@ namespace Avalonia.X11
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
 
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+        public async void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
+        {
+            if (themeVariant == null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is DBusPlatformSettings platformSettings)
+            {
+                platformSettings.OnRequestDefaultThemeVariant();
+            }
+        }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
