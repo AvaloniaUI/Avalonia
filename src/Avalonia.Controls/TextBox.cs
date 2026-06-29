@@ -1308,9 +1308,11 @@ namespace Avalonia.Controls
                     if (clipboard != null)
                         await clipboard.SetTextAsync(text);
                 }
-                catch (UnauthorizedAccessException uex)
+                catch (Exception ex) when (ex is COMException or TimeoutException or UnauthorizedAccessException)
                 {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to write text to clipboard: {Error}", uex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", uex);
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
                 }
             }
         }
