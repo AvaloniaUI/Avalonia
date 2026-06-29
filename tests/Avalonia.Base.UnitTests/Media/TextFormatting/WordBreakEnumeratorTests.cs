@@ -31,7 +31,13 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             while (wordBreaker.MoveNext(out var segment))
             {
-                currentPosition += segment.CodepointLength;
+                var textSpan = segment.Text;
+                while (!textSpan.IsEmpty)
+                {
+                    Codepoint.ReadAt(textSpan, 0, out var consumed);
+                    textSpan = textSpan.Slice(consumed);
+                    currentPosition++;
+                }
                 foundBreaks.Add(currentPosition);
             }
 

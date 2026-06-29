@@ -9,13 +9,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
     {
         private readonly ReadOnlySpan<char> _text;
         private int _offset;
-        private int _codepointOffset;
 
         public WordBreakEnumerator(ReadOnlySpan<char> text)
         {
             _text = text;
             _offset = 0;
-            _codepointOffset = 0;
         }
 
         /// <summary>
@@ -33,10 +31,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             var segmentStart = _offset;
-            var segmentCodepointStart = _codepointOffset;
             var current = ReadForward(_offset);
             var currentEnd = current.End;
-            var boundaryCodepoint = _codepointOffset + 1;
 
             while (currentEnd < _text.Length)
             {
@@ -49,17 +45,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 current = next;
                 currentEnd = current.End;
-                boundaryCodepoint++;
             }
 
-            segment = new WordSegment(
-                segmentStart,
-                currentEnd - segmentStart,
-                segmentCodepointStart,
-                boundaryCodepoint - segmentCodepointStart);
-
+            segment = new WordSegment(segmentStart, _text.Slice(segmentStart, currentEnd - segmentStart));
             _offset = currentEnd;
-            _codepointOffset = boundaryCodepoint;
 
             return true;
         }

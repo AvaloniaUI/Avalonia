@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Avalonia.Controls.Documents;
-using Avalonia.Controls.Utils;
+
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -372,11 +373,11 @@ namespace Avalonia.Controls
                         {
                             if (_wordSelectionStart >= 0)
                             {
-                                var previousWord = StringUtils.PreviousWord(text, index);
+                                var previousWord = TextSegmentation.WordBoundary(index, false, text);
 
                                 if (index > _wordSelectionStart)
                                 {
-                                    SetCurrentValue(SelectionEndProperty, StringUtils.NextWord(text, index));
+                                    SetCurrentValue(SelectionEndProperty, TextSegmentation.WordBoundary(index, true, text));
                                 }
 
                                 if (index < _wordSelectionStart || previousWord == _wordSelectionStart)
@@ -399,18 +400,10 @@ namespace Avalonia.Controls
 
                         break;
                     case 2:
-                        if (!StringUtils.IsStartOfWord(text, index))
-                        {
-                            SetCurrentValue(SelectionStartProperty, StringUtils.PreviousWord(text, index));
-                        }
-
-                        _wordSelectionStart = SelectionStart;
-
-                        if (!StringUtils.IsEndOfWord(text, index))
-                        {
-                            SetCurrentValue(SelectionEndProperty, StringUtils.NextWord(text, index));
-                        }
-
+                        var (wordStart, wordEnd) = TextSegmentation.WordBounds(index, text);
+                        SetCurrentValue(SelectionStartProperty, wordStart);
+                        _wordSelectionStart = wordStart;
+                        SetCurrentValue(SelectionEndProperty, wordEnd);
                         break;
                     case 3:
                         _wordSelectionStart = -1;
@@ -449,7 +442,7 @@ namespace Avalonia.Controls
 
                     if (distance <= 0)
                     {
-                        SetCurrentValue(SelectionStartProperty, StringUtils.PreviousWord(text, textPosition));
+                        SetCurrentValue(SelectionStartProperty, TextSegmentation.WordBoundary(textPosition, false, text));
                     }
 
                     if (distance >= 0)
@@ -459,7 +452,7 @@ namespace Avalonia.Controls
                             SetCurrentValue(SelectionStartProperty, _wordSelectionStart);
                         }
 
-                        SetCurrentValue(SelectionEndProperty, StringUtils.NextWord(text, textPosition));
+                        SetCurrentValue(SelectionEndProperty, TextSegmentation.WordBoundary(textPosition, true, text));
                     }
                 }
                 else
