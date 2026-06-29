@@ -1280,8 +1280,17 @@ namespace Avalonia.Controls
                 if (clipboard == null)
                     return;
 
-                await clipboard.SetTextAsync(text);
-                DeleteSelection();
+               try
+               {
+                    await clipboard.SetTextAsync(text);
+               }
+               catch (Exception ex) when (ex is COMException or TimeoutException or UnauthorizedAccessException)
+               {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                    return; // don't delete the selection if it never made it to the clipboard
+               }
+               DeleteSelection();
             }
         }
 
