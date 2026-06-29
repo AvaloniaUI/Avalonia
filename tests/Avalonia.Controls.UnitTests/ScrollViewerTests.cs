@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -518,6 +519,55 @@ namespace Avalonia.Controls.UnitTests
             root.LayoutManager.ExecuteLayoutPass();
             Assert.Equal(1, panel.MeasureOverrideCalls);
             Assert.Equal(1, panel.ArrangeOverrideCalls);
+        }
+
+        [Fact]
+        public void Focus_KeyInput_Should_Scroll()
+        {
+            var panel = new Panel
+            {
+                Width = 100_000,
+                Height = 100_000,
+            };
+            var target = new ScrollViewer
+            {
+                Content = panel,
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+            };
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Page down and page up
+            KeyDown(target, Key.PageDown);
+            Assert.Equal(new(0, target.Viewport.Height), target.Offset);
+            KeyDown(target, Key.PageUp);
+            Assert.Equal(new(0, 0), target.Offset);
+
+            // Per-line scrolling in all directions with arrow keys
+            KeyDown(target, Key.Down);
+            Assert.Equal(new(0, target.SmallChange.Height), target.Offset);
+            KeyDown(target, Key.Right);
+            Assert.Equal(new(target.SmallChange.Width, target.SmallChange.Height), target.Offset);
+            KeyDown(target, Key.Up);
+            Assert.Equal(new(ScrollViewer.DefaultSmallChange, 0), target.Offset);
+            KeyDown(target, Key.Left);
+            Assert.Equal(new(0, 0), target.Offset);
+
+            // Scrolling horizontally with a right-to-left flow direction
+            target.FlowDirection = FlowDirection.RightToLeft;
+            KeyDown(target, Key.Left);
+            Assert.Equal(new(target.SmallChange.Width, 0), target.Offset);
+            KeyDown(target, Key.Right);
+            Assert.Equal(new(0, 0), target.Offset);
+        }
+
+        private static void KeyDown(IInputElement target, Key key)
+        {
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = key,
+            });
         }
 
         public class TestPanel : Panel
