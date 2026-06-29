@@ -1352,9 +1352,10 @@ namespace Avalonia.Controls
                 {
                     // Silently ignore.
                 }
-                catch (UnauthorizedAccessException uex)
+                catch (Exception ex) when (ex is COMException or UnauthorizedAccessException)
                 {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to read text from clipboard: {Error}", ex);
                 }
             }
 
