@@ -8,6 +8,7 @@ namespace Avalonia.Media.Imaging;
 internal class BitmapMemory : IDisposable
 {
     private readonly int _memorySize;
+    private IntPtr _address;
 
     public BitmapMemory(PixelFormat format, AlphaFormat alphaFormat, PixelSize size)
     {
@@ -16,24 +17,25 @@ internal class BitmapMemory : IDisposable
         Size = size;
 
         var bytesPerPixel = (format.BitsPerPixel + 7) / 8;
-        
+
         RowBytes =  4 * ((size.Width * bytesPerPixel + 3) / 4);
-        
+
         _memorySize = RowBytes * size.Height;
-        Address = Marshal.AllocHGlobal(_memorySize);
+        _address = Marshal.AllocHGlobal(_memorySize);
         GC.AddMemoryPressure(_memorySize);
     }
 
     private void ReleaseUnmanagedResources()
     {
-        // Idempotent: zero Address after freeing so a second Dispose()/finalize is a no-op. This
-        // matters because consumers may hand the buffer to a native API (e.g. SKBitmap.InstallPixels)
-        // whose release callback disposes us, and then dispose us again from their own cleanup path.
-        if (Address != IntPtr.Zero)
+        // Atomically claim the buffer so it is freed exactly once even if a second Dispose()/finalize
+        // races with us. This matters because consumers may hand the buffer to a native API (e.g.
+        // SKBitmap.InstallPixels) whose release callback disposes us, and then dispose us again from
+        // their own cleanup path.
+        var address = Interlocked.Exchange(ref _address, IntPtr.Zero);
+        if (address != IntPtr.Zero)
         {
             GC.RemoveMemoryPressure(_memorySize);
-            Marshal.FreeHGlobal(Address);
-            Address = IntPtr.Zero;
+            Marshal.FreeHGlobal(address);
         }
     }
 
@@ -48,7 +50,7 @@ internal class BitmapMemory : IDisposable
         ReleaseUnmanagedResources();
     }
 
-    public IntPtr Address { get; private set; }
+    public IntPtr Address => _address;
     public PixelSize Size { get; }
     public int RowBytes { get; }
     public PixelFormat Format { get; }
