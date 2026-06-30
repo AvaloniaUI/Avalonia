@@ -8,7 +8,6 @@ namespace Avalonia.Media.Imaging;
 internal class BitmapMemory : IDisposable
 {
     private readonly int _memorySize;
-    private IntPtr _address;
 
     public BitmapMemory(PixelFormat format, AlphaFormat alphaFormat, PixelSize size)
     {
@@ -17,21 +16,20 @@ internal class BitmapMemory : IDisposable
         Size = size;
 
         var bytesPerPixel = (format.BitsPerPixel + 7) / 8;
-
+        
         RowBytes =  4 * ((size.Width * bytesPerPixel + 3) / 4);
-
+        
         _memorySize = RowBytes * size.Height;
-        _address = Marshal.AllocHGlobal(_memorySize);
+        Address = Marshal.AllocHGlobal(_memorySize);
         GC.AddMemoryPressure(_memorySize);
     }
 
     private void ReleaseUnmanagedResources()
     {
-        var address = Interlocked.Exchange(ref _address, IntPtr.Zero);
-        if (address != IntPtr.Zero)
+        if (Address != IntPtr.Zero)
         {
             GC.RemoveMemoryPressure(_memorySize);
-            Marshal.FreeHGlobal(address);
+            Marshal.FreeHGlobal(Address);
         }
     }
 
@@ -46,7 +44,7 @@ internal class BitmapMemory : IDisposable
         ReleaseUnmanagedResources();
     }
 
-    public IntPtr Address => _address;
+    public IntPtr Address { get; private set; }
     public PixelSize Size { get; }
     public int RowBytes { get; }
     public PixelFormat Format { get; }

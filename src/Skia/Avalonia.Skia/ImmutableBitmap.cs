@@ -12,8 +12,6 @@ namespace Avalonia.Skia
     /// </summary>
     internal class ImmutableBitmap : IDrawableBitmapImpl, IReadableBitmapImpl
     {
-        private static readonly SKBitmapReleaseDelegate s_releaseDelegate = (_, ctx) => ((BitmapMemory)ctx).Dispose();
-
         private readonly SKImage _image;
         private readonly SKBitmap? _bitmap;
         private readonly Action? _customImageDispose = null;
@@ -133,43 +131,29 @@ namespace Avalonia.Skia
         /// <param name="data">Data pixels.</param>
         public ImmutableBitmap(PixelSize size, Vector dpi, int stride, PixelFormat format, AlphaFormat alphaFormat, IntPtr data)
         {
-            // Copy the caller's pixels into our own backing storage and hand ownership to Skia via a
-            // release proc. This avoids SKBitmap.Copy(), which internally spins up an SKCanvas and
-            // draws the source bitmap by assigning it as a shader on an SKPaint - way more expensive
-            // than a straight memory blit.
-            //
-            // CopyPixelsCore handles the general case (the source stride is allowed to be negative for
-            // bottom-up layouts and need not match our backing storage's row alignment) and takes a
-            // single contiguous blit internally when the layouts line up.
-            BitmapMemory? memory = new BitmapMemory(format, alphaFormat, size);
-            try
+            // Copy the caller's pixels into a Skia-owned bitmap. This avoids SKBitmap.Copy(), which
+            // internally spins up an SKCanvas and draws the source bitmap by assigning it as a shader on
+            // an SKPaint - way more expensive than a straight memory blit. CopyPixelsCore handles the
+            // general case (the source stride is allowed to be negative for bottom-up layouts and need
+            // not match the bitmap's row alignment) and takes a single contiguous blit when the layouts
+            // line up.
+            var info = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), alphaFormat.ToSkAlphaType());
+
+            _bitmap = new SKBitmap();
+            if (!_bitmap.TryAllocPixels(info))
             {
-                Bitmap.CopyPixelsCore(new PixelRect(size), data, stride, format, memory.Address,
-                    memory.RowBytes * size.Height, memory.RowBytes);
-
-                var info = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), alphaFormat.ToSkAlphaType());
-
-                _bitmap = new SKBitmap();
-                if (!_bitmap.InstallPixels(info, memory.Address, memory.RowBytes, s_releaseDelegate, memory))
-                {
-                    _bitmap.Dispose();
-                    throw new ArgumentException("Unable to create bitmap from provided data");
-                }
-
-                // InstallPixels succeeded: Skia now owns the memory and will dispose it via the release proc.
-                memory = null;
+                _bitmap.Dispose();
+                throw new ArgumentException("Unable to create bitmap from provided data");
             }
-            finally
-            {
-                memory?.Dispose();
-            }
+
+            Bitmap.CopyPixelsCore(new PixelRect(size), data, stride, format, _bitmap.GetPixels(),
+                _bitmap.RowBytes * size.Height, _bitmap.RowBytes);
 
             _bitmap.SetImmutable();
             _image = SKImage.FromBitmap(_bitmap);
 
             if (_image == null)
             {
-                // Disposing the bitmap runs the release proc, promptly freeing the backing memory.
                 _bitmap.Dispose();
                 throw new ArgumentException("Unable to create bitmap from provided data");
             }
