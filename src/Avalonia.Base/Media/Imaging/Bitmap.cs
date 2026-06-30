@@ -178,7 +178,7 @@ namespace Avalonia.Media.Imaging
 
         public virtual AlphaFormat? AlphaFormat => (PlatformImpl.Item as IReadableBitmapImpl)?.AlphaFormat;
 
-        private protected PixelRect ValidateSourceRect(PixelRect sourceRect)
+        private PixelRect ValidateSourceRect(PixelRect sourceRect)
         {
             if ((sourceRect.Width <= 0 || sourceRect.Height <= 0) && (sourceRect.X != 0 || sourceRect.Y != 0))
                 throw new ArgumentOutOfRangeException(nameof(sourceRect));
@@ -227,6 +227,18 @@ namespace Avalonia.Media.Imaging
             }
         }
 
+        /// <summary>
+        /// Validates <paramref name="sourceRect"/> against this bitmap and copies pixels out of the
+        /// given framebuffer. Self-contained convenience wrapper around the static
+        /// <see cref="CopyPixelsCore(PixelRect,IntPtr,int,PixelFormat,IntPtr,int,int)"/> for inheritors.
+        /// </summary>
+        private protected void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
+            ILockedFramebuffer fb)
+        {
+            sourceRect = ValidateSourceRect(sourceRect);
+            CopyPixelsCore(sourceRect, fb.Address, fb.RowBytes, fb.Format, buffer, bufferSize, stride);
+        }
+
         public virtual void CopyPixels(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride)
         {
             if (
@@ -241,10 +253,8 @@ namespace Avalonia.Media.Imaging
             if (_isTranscoded)
                 throw new NotSupportedException("CopyPixels is not supported for transcoded bitmaps");
 
-            sourceRect = ValidateSourceRect(sourceRect);
-
             using (var fb = readable.Lock())
-                CopyPixelsCore(sourceRect, fb.Address, fb.RowBytes, fb.Format, buffer, bufferSize, stride);
+                CopyPixelsCore(sourceRect, buffer, bufferSize, stride, fb);
         }
 
         /// <summary>
@@ -285,8 +295,7 @@ namespace Avalonia.Media.Imaging
             {
                 using (var fb = readable.Lock())
                 {
-                    CopyPixelsCore(new PixelRect(fb.Size), fb.Address, fb.RowBytes, fb.Format, buffer.Address,
-                        buffer.RowBytes * buffer.Size.Height, fb.RowBytes);
+                    CopyPixelsCore(new PixelRect(fb.Size), buffer.Address, buffer.RowBytes * buffer.Size.Height, fb.RowBytes, fb);
                 }
             }
         }
