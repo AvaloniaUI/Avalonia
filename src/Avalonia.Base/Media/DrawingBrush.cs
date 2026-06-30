@@ -1,6 +1,4 @@
 using System;
-using Avalonia.Media.Immutable;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
@@ -19,7 +17,7 @@ namespace Avalonia.Media
         /// </summary>
         public static readonly StyledProperty<Drawing?> DrawingProperty =
             AvaloniaProperty.Register<DrawingBrush, Drawing?>(nameof(Drawing));
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingBrush"/> class.
         /// </summary>
@@ -49,7 +47,7 @@ namespace Avalonia.Media
         {
             if (Drawing == null)
                 return null;
-            
+
             using var recorder = new RenderDataDrawingContext(null);
             Drawing?.Draw(recorder);
             return recorder.GetImmediateSceneBrushContent(this, null, true);
@@ -58,13 +56,14 @@ namespace Avalonia.Media
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
             static c => new ServerCompositionSimpleContentBrush(c.Server);
 
-        private InlineDictionary<Compositor, CompositionRenderData?> _renderDataDictionary;
-
-        private protected override void OnReferencedFromCompositor(Compositor c)
+        private sealed class RenderDataItem(CompositionRenderData data) : IDisposable
         {
-            _renderDataDictionary.Add(c, CreateServerContent(c));
-            base.OnReferencedFromCompositor(c);
+            public CompositionRenderData Data { get; } = data;
+            public bool IsDirty;
+            public void Dispose() => Data?.Dispose();
         }
+
+        private InlineDictionary<Compositor, RenderDataItem?> _renderDataDictionary;
 
         protected override void OnUnreferencedFromCompositor(Compositor c)
         {
@@ -72,24 +71,59 @@ namespace Avalonia.Media
                 content?.Dispose();
             base.OnUnreferencedFromCompositor(c);
         }
-        
+
         private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
         {
             base.SerializeChanges(c, writer);
-            if (_renderDataDictionary.TryGetValue(c, out var content) && content != null)
-                writer.WriteObject(new CompositionRenderDataSceneBrushContent.Properties(content.Server, null, true));
-            else
-                writer.WriteObject(null);
+
+            CompositionRenderDataSceneBrushContent.Properties? content = null;
+            if (IsOnCompositor(c)) // Should always be true here, but just in case do this check
+            {
+                _renderDataDictionary.TryGetValue(c, out var data);
+                if (data is null || data.IsDirty)
+                {
+                    var created = CreateServerContent(c);
+                    // Dispose the old render list _after_ creating a new one to avoid unnecessary detach/attach
+                    // sequence for referenced resources
+                    data?.Dispose();
+                    _renderDataDictionary[c] = data = created;
+                }
+
+                if (data is not null)
+                    content = new(data.Data.Server, null, true);
+            }
+
+            writer.WriteObject(content);
         }
-        
-        CompositionRenderData? CreateServerContent(Compositor c)
+
+        private void InvalidateContent()
         {
-            if (Drawing == null)
+            foreach (var item in _renderDataDictionary)
+                item.Value?.IsDirty = true;
+
+            RegisterForSerialization();
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            // Replacing the drawing changes the recorded content; mark it dirty so it's re-recorded.
+            // Changes _inside_ the drawing (e.g. a mutated geometry or brush) are compositor-aware
+            // resources and are propagated by the server without re-recording.
+            if (change.Property == DrawingProperty)
+                InvalidateContent();
+
+            base.OnPropertyChanged(change);
+        }
+
+        private RenderDataItem? CreateServerContent(Compositor c)
+        {
+            if (Drawing is not { } drawing)
                 return null;
-            
+
             using var recorder = new RenderDataDrawingContext(c);
-            Drawing?.Draw(recorder);
-            return recorder.GetRenderResults();
+            drawing.Draw(recorder);
+            var renderData = recorder.GetRenderResults();
+            return renderData is null ? null : new RenderDataItem(renderData);
         }
     }
 }
