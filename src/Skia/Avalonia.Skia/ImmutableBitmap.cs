@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
@@ -13,7 +12,7 @@ namespace Avalonia.Skia
     /// </summary>
     internal class ImmutableBitmap : IDrawableBitmapImpl, IReadableBitmapImpl
     {
-        private static readonly SKBitmapReleaseDelegate s_releaseDelegate = (address, _) => Marshal.FreeHGlobal(address);
+        private static readonly SKBitmapReleaseDelegate s_releaseDelegate = (_, ctx) => ((BitmapMemory)ctx).Dispose();
 
         private readonly SKImage _image;
         private readonly SKBitmap? _bitmap;
@@ -132,35 +131,37 @@ namespace Avalonia.Skia
         /// <param name="format">Format of data pixels.</param>
         /// <param name="alphaFormat">Alpha format of data pixels.</param>
         /// <param name="data">Data pixels.</param>
-        public unsafe ImmutableBitmap(PixelSize size, Vector dpi, int stride, PixelFormat format, AlphaFormat alphaFormat, IntPtr data)
+        public ImmutableBitmap(PixelSize size, Vector dpi, int stride, PixelFormat format, AlphaFormat alphaFormat, IntPtr data)
         {
-            var info = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), alphaFormat.ToSkAlphaType());
-
-            // Number of bytes Skia considers valid for this layout: full stride for every row but
-            // the last, which only needs its tightly-packed pixels. Mirrors SkImageInfo::computeByteSize
-            // and avoids reading past the end of the caller's buffer.
-            var byteSize = size.Height == 0 ? 0 : checked(stride * (size.Height - 1) + info.RowBytes);
-
-            // Allocate our own copy of the pixels and blit into it, then hand ownership to Skia via a
+            // Copy the caller's pixels into our own backing storage and hand ownership to Skia via a
             // release proc. This avoids SKBitmap.Copy(), which internally spins up an SKCanvas and
             // draws the source bitmap by assigning it as a shader on an SKPaint - way more expensive
             // than a straight memory blit.
-            var dst = Marshal.AllocHGlobal(byteSize);
+            //
+            // The copy is performed row by row (rather than as a single contiguous blit) because the
+            // source stride is allowed to be negative (bottom-up layouts) and need not match our
+            // backing storage's row alignment.
+            BitmapMemory? memory = new BitmapMemory(format, alphaFormat, size);
             try
             {
-                new ReadOnlySpan<byte>((void*)data, byteSize).CopyTo(new Span<byte>((void*)dst, byteSize));
+                Bitmap.CopyPixelsCore(new PixelRect(size), data, stride, format, memory.Address,
+                    memory.RowBytes * size.Height, memory.RowBytes);
+
+                var info = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), alphaFormat.ToSkAlphaType());
 
                 _bitmap = new SKBitmap();
-                if (!_bitmap.InstallPixels(info, dst, stride, s_releaseDelegate))
+                if (!_bitmap.InstallPixels(info, memory.Address, memory.RowBytes, s_releaseDelegate, memory))
+                {
+                    _bitmap.Dispose();
                     throw new ArgumentException("Unable to create bitmap from provided data");
+                }
 
-                // InstallPixels succeeded: Skia now owns the buffer and will free it via the release proc.
-                dst = IntPtr.Zero;
+                // InstallPixels succeeded: Skia now owns the memory and will dispose it via the release proc.
+                memory = null;
             }
             finally
             {
-                if (dst != IntPtr.Zero)
-                    Marshal.FreeHGlobal(dst);
+                memory?.Dispose();
             }
 
             _bitmap.SetImmutable();

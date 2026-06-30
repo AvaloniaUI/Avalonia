@@ -80,8 +80,9 @@ namespace Avalonia.Media.Imaging
 
         public override void CopyPixels(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride)
         {
+            sourceRect = ValidateSourceRect(sourceRect);
             using (var fb = Lock())
-                CopyPixelsCore(sourceRect, buffer, bufferSize, stride, fb);
+                CopyPixelsCore(sourceRect, fb.Address, fb.RowBytes, fb.Format, buffer, bufferSize, stride);
         }
 
         public static WriteableBitmap Decode(Stream stream)

@@ -178,7 +178,7 @@ namespace Avalonia.Media.Imaging
 
         public virtual AlphaFormat? AlphaFormat => (PlatformImpl.Item as IReadableBitmapImpl)?.AlphaFormat;
 
-        private PixelRect ValidateSourceRect(PixelRect sourceRect)
+        private protected PixelRect ValidateSourceRect(PixelRect sourceRect)
         {
             if ((sourceRect.Width <= 0 || sourceRect.Height <= 0) && (sourceRect.X != 0 || sourceRect.Y != 0))
                 throw new ArgumentOutOfRangeException(nameof(sourceRect));
@@ -196,15 +196,20 @@ namespace Avalonia.Media.Imaging
             return sourceRect;
         }
         
-        private protected unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
-            ILockedFramebuffer fb)
+        /// <summary>
+        /// Performs a row-by-row copy of pixels from a source buffer into a destination buffer.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="sourceRowBytes"/> is signed and may be negative: a negative value means the
+        /// source rows are laid out bottom-up, with <paramref name="sourceAddress"/> pointing at the
+        /// first (top) row. The destination <paramref name="stride"/> must be positive and at least the
+        /// tightly-packed row size. The caller is responsible for validating <paramref name="sourceRect"/>
+        /// against the source bounds (e.g. via <see cref="ValidateSourceRect"/>).
+        /// </remarks>
+        internal static unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr sourceAddress, int sourceRowBytes,
+            PixelFormat sourceFormat, IntPtr buffer, int bufferSize, int stride)
         {
-            if (Format == null)
-                throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
-
-            sourceRect = ValidateSourceRect(sourceRect);
-
-            int minStride = checked(((sourceRect.Width * fb.Format.BitsPerPixel) + 7) / 8);
+            int minStride = checked(((sourceRect.Width * sourceFormat.BitsPerPixel) + 7) / 8);
             if (stride < minStride)
                 throw new ArgumentOutOfRangeException(nameof(stride));
 
@@ -212,11 +217,11 @@ namespace Avalonia.Media.Imaging
             if (minBufferSize > bufferSize)
                 throw new ArgumentOutOfRangeException(nameof(bufferSize));
 
-            var offsetX = checked(((sourceRect.X * Format.Value.BitsPerPixel) + 7) / 8);
+            var offsetX = checked(((sourceRect.X * sourceFormat.BitsPerPixel) + 7) / 8);
 
             for (var y = 0; y < sourceRect.Height; y++)
             {
-                var srcAddress = fb.Address + fb.RowBytes * (sourceRect.Y + y) + offsetX;
+                var srcAddress = sourceAddress + sourceRowBytes * (sourceRect.Y + y) + offsetX;
                 var dstAddress = buffer + stride * y;
                 Unsafe.CopyBlock(dstAddress.ToPointer(), srcAddress.ToPointer(), (uint)minStride);
             }
@@ -235,9 +240,11 @@ namespace Avalonia.Media.Imaging
 
             if (_isTranscoded)
                 throw new NotSupportedException("CopyPixels is not supported for transcoded bitmaps");
-            
+
+            sourceRect = ValidateSourceRect(sourceRect);
+
             using (var fb = readable.Lock())
-                CopyPixelsCore(sourceRect, buffer, bufferSize, stride, fb);
+                CopyPixelsCore(sourceRect, fb.Address, fb.RowBytes, fb.Format, buffer, bufferSize, stride);
         }
 
         /// <summary>
@@ -278,7 +285,8 @@ namespace Avalonia.Media.Imaging
             {
                 using (var fb = readable.Lock())
                 {
-                    CopyPixelsCore(new PixelRect(fb.Size), buffer.Address, buffer.RowBytes * buffer.Size.Height, fb.RowBytes, fb);
+                    CopyPixelsCore(new PixelRect(fb.Size), fb.Address, fb.RowBytes, fb.Format, buffer.Address,
+                        buffer.RowBytes * buffer.Size.Height, fb.RowBytes);
                 }
             }
         }
