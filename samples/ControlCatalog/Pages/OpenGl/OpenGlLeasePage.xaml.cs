@@ -88,7 +88,7 @@ public partial class OpenGlLeasePage : ContentPage
                 using(snapshot)
                     if (snapshot != null)
                         skiaLease.SkCanvas.DrawImage(snapshot, new SKRect(0, 0,
-                            (float)bounds.Width, (float)bounds.Height));
+                            (float)bounds.Width, (float)bounds.Height), default(SKSamplingOptions));
             }
         }
 
