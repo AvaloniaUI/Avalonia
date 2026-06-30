@@ -213,7 +213,9 @@ namespace Avalonia.Media.Imaging
             if (stride < minStride)
                 throw new ArgumentOutOfRangeException(nameof(stride));
 
-            var minBufferSize = stride * sourceRect.Height;
+            // 64-bit to avoid overflowing the guard for very large strides/heights, which would
+            // otherwise let an oversized contiguous blit/loop run past the buffers.
+            var minBufferSize = (long)stride * sourceRect.Height;
             if (minBufferSize > bufferSize)
                 throw new ArgumentOutOfRangeException(nameof(bufferSize));
 

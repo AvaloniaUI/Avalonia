@@ -26,10 +26,14 @@ internal class BitmapMemory : IDisposable
 
     private void ReleaseUnmanagedResources()
     {
+        // Idempotent: zero Address after freeing so a second Dispose()/finalize is a no-op. This
+        // matters because consumers may hand the buffer to a native API (e.g. SKBitmap.InstallPixels)
+        // whose release callback disposes us, and then dispose us again from their own cleanup path.
         if (Address != IntPtr.Zero)
         {
             GC.RemoveMemoryPressure(_memorySize);
             Marshal.FreeHGlobal(Address);
+            Address = IntPtr.Zero;
         }
     }
 

@@ -138,9 +138,9 @@ namespace Avalonia.Skia
             // draws the source bitmap by assigning it as a shader on an SKPaint - way more expensive
             // than a straight memory blit.
             //
-            // The copy is performed row by row (rather than as a single contiguous blit) because the
-            // source stride is allowed to be negative (bottom-up layouts) and need not match our
-            // backing storage's row alignment.
+            // CopyPixelsCore handles the general case (the source stride is allowed to be negative for
+            // bottom-up layouts and need not match our backing storage's row alignment) and takes a
+            // single contiguous blit internally when the layouts line up.
             BitmapMemory? memory = new BitmapMemory(format, alphaFormat, size);
             try
             {
@@ -169,6 +169,8 @@ namespace Avalonia.Skia
 
             if (_image == null)
             {
+                // Disposing the bitmap runs the release proc, promptly freeing the backing memory.
+                _bitmap.Dispose();
                 throw new ArgumentException("Unable to create bitmap from provided data");
             }
 
