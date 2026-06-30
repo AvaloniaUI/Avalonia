@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Rendering;
 using RenderDemo.ViewModels;
@@ -36,6 +37,16 @@ namespace RenderDemo
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void SetNotTransparencyMenuItem_OnClick(object? sender, RoutedEventArgs e)
+        {
+            TransparencyLevelHint = [WindowTransparencyLevel.None];
+        }
+
+        private void SetTransparencyMenuItem_OnClick(object? sender, RoutedEventArgs e)
+        {
+            TransparencyLevelHint = [WindowTransparencyLevel.Transparent];
         }
     }
 }

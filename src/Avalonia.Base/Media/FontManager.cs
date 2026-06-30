@@ -351,36 +351,58 @@ namespace Avalonia.Media
             return [];
         }
 
-        private bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
+        internal bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
         {
             Debug.Assert(source.IsAbsoluteUri);
 
-            if (source.Scheme == SystemFontScheme)
+            // Both the systemfont: scheme and SystemFontsKey (fonts:SystemFonts) map to the system
+            // font collection. SystemFontsKey is checked before the generic IsFontCollection branch
+            // so that the SystemFontCollection is created on demand regardless of which URI form is used.
+            if (source.Scheme == SystemFontScheme || source == SystemFontsKey)
             {
-                source = SystemFontsKey;
+                fontCollection = GetOrCreateFontCollection(SystemFontsKey, PlatformImpl,
+                    static (_, impl) => new SystemFontCollection(impl));
+                return true;
             }
 
-            if (!_fontCollections.TryGetValue(source, out fontCollection))
+            // Other fonts: URIs are only returned when they have been explicitly registered
+            // via AddFontCollection — no implicit creation to avoid caching null for unknown keys.
+            if (source.IsFontCollection())
             {
-                if (source == SystemFontsKey)
-                {
-                    fontCollection = new SystemFontCollection(PlatformImpl);
-                }
-                else
-                {
-                    if (source.IsAbsoluteResm() || source.IsAvares())
-                    {
-                        fontCollection = new EmbeddedFontCollection(source, source);
-                    }
-                }
-
-                if (fontCollection != null)
-                {
-                    return _fontCollections.TryAdd(fontCollection.Key, fontCollection);
-                }
+                return _fontCollections.TryGetValue(source, out fontCollection);
             }
 
-            return fontCollection != null;
+            if (source.IsAbsoluteResm() || source.IsAvares())
+            {
+                fontCollection = GetOrCreateFontCollection(source, 0,
+                    static (key, _) => new EmbeddedFontCollection(key, key));
+                return true;
+            }
+
+            fontCollection = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Thread-safe get-or-create that disposes any candidate that loses the insertion race,
+        /// preventing resource leaks that <see cref="ConcurrentDictionary{TKey,TValue}.GetOrAdd(TKey,Func{TKey,TValue})"/>
+        /// can cause when the factory is invoked concurrently by multiple threads.
+        /// </summary>
+        private IFontCollection GetOrCreateFontCollection<TState>(Uri key, TState state, Func<Uri, TState, IFontCollection> factory)
+        {
+            if (_fontCollections.TryGetValue(key, out var existing))
+                return existing;
+
+            var candidate = factory(key, state);
+
+            // GetOrAdd(key, value) atomically inserts or returns the existing value;
+            // it never invokes a factory, so only one IFontCollection instance survives.
+            var winner = _fontCollections.GetOrAdd(key, candidate);
+
+            if (!ReferenceEquals(winner, candidate))
+                candidate.Dispose(); // Our candidate lost the race – dispose it to avoid the leak.
+
+            return winner;
         }
 
         private string GetDefaultFontFamilyName(FontManagerOptions? options)

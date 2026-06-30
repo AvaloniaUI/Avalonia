@@ -285,7 +285,8 @@ namespace Avalonia.Media
                 GeometryClip,
                 OpacityMask,
                 RenderOptions,
-                TextOptions
+                TextOptions,
+                Effect
             }
 
             public RestoreState(DrawingContext context, PushedStateType type)
@@ -314,6 +315,8 @@ namespace Avalonia.Media
                     _context.PopRenderOptionsCore();
                 else if (_type == PushedStateType.TextOptions)
                     _context.PopTextOptionsCore();
+                else if (_type == PushedStateType.Effect)
+                    _context.PopEffectCore();
             }
         }
 
@@ -433,9 +436,34 @@ namespace Avalonia.Media
             return new PushedState(this);
         }
 
+        /// <summary>
+        /// Pushes an effect.
+        /// </summary>
+        /// <param name="effect">The effect.</param>
+        /// <param name="bounds">
+        /// The content bounds of the area the effect is applied to (pre-inflation).
+        /// The drawing context will internally inflate these by the effect's output padding
+        /// to ensure the full effect output (e.g. blur/shadow) is not clipped.
+        /// </param>
+        /// <returns>A disposable used to undo the effect.</returns>
+        public PushedState PushEffect(IEffect effect, Rect bounds)
+        {
+            PushEffectCore(effect, bounds);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.Effect));
+            return new PushedState(this);
+        }
+
         protected abstract void PushTextOptionsCore(TextOptions textOptions);
-        
+
         protected abstract void PushTransformCore(Matrix matrix);
+
+        /// <summary>
+        /// Pushes an effect.
+        /// </summary>
+        /// <param name="effect">The effect.</param>
+        /// <param name="bounds">The bounds of the effect.</param>
+        protected abstract void PushEffectCore(IEffect effect, Rect bounds);
 
         protected abstract void PopClipCore();
         protected abstract void PopGeometryClipCore();
@@ -444,6 +472,11 @@ namespace Avalonia.Media
         protected abstract void PopTransformCore();
         protected abstract void PopRenderOptionsCore();
         protected abstract void PopTextOptionsCore();
+
+        /// <summary>
+        /// Pops an effect.
+        /// </summary>
+        protected abstract void PopEffectCore();
         
         private static bool PenIsVisible(IPen? pen)
         {

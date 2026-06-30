@@ -17,7 +17,7 @@ public class CompositorLifetimeTests : CompositorTestsBase
 
         var compositionTarget = ((CompositingRenderer)presentationSource.Renderer).CompositionTarget;
         Assert.True(compositionTarget.IsEnabled);
-        Assert.Equal(new PixelSize(200, 200), compositionTarget.PixelSize);
+        Assert.Equal(new Size(200, 200), compositionTarget.Size);
 
         // Stop rendering and invalidate a visual: this should not result in an update
         services.TopLevel.StopRendering();
@@ -25,12 +25,12 @@ public class CompositorLifetimeTests : CompositorTestsBase
         services.TopLevel.InvalidateVisual();
         services.RunJobs();
 
-        Assert.Equal(new PixelSize(200, 200), compositionTarget.PixelSize);
+        Assert.Equal(new Size(200, 200), compositionTarget.Size);
 
         // Check that restarting rendering re-queues the pending invalidation
         services.TopLevel.StartRendering();
         services.RunJobs();
 
-        Assert.Equal(new PixelSize(300, 300), compositionTarget.PixelSize);
+        Assert.Equal(new Size(300, 300), compositionTarget.Size);
     }
 }

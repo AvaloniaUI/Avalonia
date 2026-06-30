@@ -208,7 +208,8 @@ internal class BrowserInputHandler
             effectAllowed |= DragDropEffects.Move;
         }
 
-        if (effectAllowedStr.Equals("all", StringComparison.OrdinalIgnoreCase))
+        if (effectAllowedStr.Equals("all", StringComparison.OrdinalIgnoreCase)
+            || effectAllowedStr.Equals("uninitialized", StringComparison.OrdinalIgnoreCase))
         {
             effectAllowed |= DragDropEffects.Move | DragDropEffects.Copy | DragDropEffects.Link;
         }

@@ -459,7 +459,27 @@ namespace Avalonia.X11
         
         [DllImport(libX11)]
         public static extern IntPtr XCreateColormap(IntPtr display, IntPtr window, IntPtr visual, int create);
-        
+
+        [DllImport(libX11)]
+        public static extern int XFreeColormap(IntPtr display, IntPtr colormap);
+
+        public const long VisualIDMask = 0x1;
+
+        [DllImport(libX11)]
+        public static extern IntPtr XGetVisualInfo(IntPtr display, IntPtr vinfo_mask, ref XVisualInfo vinfo_template,
+            out int nitems);
+
+        public static unsafe XVisualInfo? XGetVisualInfoById(IntPtr display, IntPtr visualId)
+        {
+            var template = new XVisualInfo { visualid = visualId };
+            var ptr = XGetVisualInfo(display, new IntPtr(VisualIDMask), ref template, out var count);
+            if (ptr == IntPtr.Zero)
+                return null;
+            XVisualInfo? rv = count > 0 ? *(XVisualInfo*)ptr : null;
+            XFree(ptr);
+            return rv;
+        }
+
         public enum XLookupStatus : uint
         {
             XBufferOverflow = 0xffffffffu,
@@ -592,6 +612,27 @@ namespace Avalonia.X11
         [DllImport(libX11Randr)]
         public static extern XRRMonitorInfo*
             XRRGetMonitors(IntPtr dpy, IntPtr window, bool get_active, out int nmonitors);
+        
+        [DllImport(libX11Randr)]
+        public static extern void XRRFreeMonitors(XRRMonitorInfo* monitors);
+        
+        [DllImport(libX11Randr)]
+        public static extern XRRScreenResources * XRRGetScreenResources (IntPtr dpy, IntPtr window);
+
+        [DllImport(libX11Randr)]
+        public static extern void XRRFreeScreenResources(XRRScreenResources* resources);
+        
+        [DllImport(libX11Randr)]
+        public static extern XRROutputInfo * XRRGetOutputInfo (IntPtr dpy, XRRScreenResources *resources, IntPtr output);
+
+        [DllImport(libX11Randr)]
+        public static extern void XRRFreeOutputInfo(XRROutputInfo* outputInfo);
+
+        [DllImport(libX11Randr)]
+        public static extern XRRCrtcInfo* XRRGetCrtcInfo(IntPtr dpy, XRRScreenResources* resources, IntPtr crtc);
+
+        [DllImport(libX11Randr)]
+        public static extern void XRRFreeCrtcInfo(XRRCrtcInfo* crtcInfo);
 
         [DllImport(libX11Randr)]
         public static extern IntPtr* XRRListOutputProperties(IntPtr dpy, IntPtr output, out int count);

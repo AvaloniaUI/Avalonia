@@ -118,7 +118,8 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
 
     protected async Task<bool> EnsureExternalFilesPermission(bool write)
     {
-        if (!_needsExternalFilesPermission)
+        // Starting in API level 33, this permission has no effect.
+        if (!_needsExternalFilesPermission || OperatingSystem.IsAndroidVersionAtLeast(33))
         {
             return true;
         }
@@ -546,8 +547,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
         {
             var projection = new[]
             {
-                MediaStore.IMediaColumns.Size, MediaStore.IMediaColumns.DateAdded,
-                MediaStore.IMediaColumns.DateModified
+                Document.ColumnSize, Document.ColumnLastModified
             };
             using var cursor = Activity.ContentResolver!.Query(Uri, projection, null, null, null);
 
@@ -555,7 +555,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
             {
                 try
                 {
-                    var columnIndex = cursor.GetColumnIndex(MediaStore.IMediaColumns.Size);
+                    var columnIndex = cursor.GetColumnIndex(Document.ColumnSize);
                     if (columnIndex != -1)
                     {
                         size = (ulong)cursor.GetLong(columnIndex);
@@ -569,22 +569,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
 
                 try
                 {
-                    var columnIndex = cursor.GetColumnIndex(MediaStore.IMediaColumns.DateAdded);
-                    if (columnIndex != -1)
-                    {
-                        var longValue = cursor.GetLong(columnIndex);
-                        itemDate = longValue > 0 ? DateTimeOffset.FromUnixTimeMilliseconds(longValue) : null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
-                        .Log(this, "File DateAdded metadata reader failed: '{Exception}'", ex);
-                }
-
-                try
-                {
-                    var columnIndex = cursor.GetColumnIndex(MediaStore.IMediaColumns.DateModified);
+                    var columnIndex = cursor.GetColumnIndex(Document.ColumnLastModified);
                     if (columnIndex != -1)
                     {
                         var longValue = cursor.GetLong(columnIndex);
@@ -594,7 +579,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
                 catch (Exception ex)
                 {
                     Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
-                        .Log(this, "File DateAdded metadata reader failed: '{Exception}'", ex);
+                        .Log(this, "File LastModified metadata reader failed: '{Exception}'", ex);
                 }
             }
         }

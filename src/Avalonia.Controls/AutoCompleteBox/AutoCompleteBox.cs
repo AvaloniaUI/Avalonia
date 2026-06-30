@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
@@ -773,6 +774,8 @@ namespace Avalonia.Controls
             base.OnLostFocus(e);
             FocusChanged(HasFocus());
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new AutoCompleteBoxAutomationPeer(this);
 
         /// <summary>
         /// Determines whether the text box or drop-down portion of the
