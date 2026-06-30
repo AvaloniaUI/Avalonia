@@ -27,10 +27,6 @@ internal class BitmapMemory : IDisposable
 
     private void ReleaseUnmanagedResources()
     {
-        // Atomically claim the buffer so it is freed exactly once even if a second Dispose()/finalize
-        // races with us. This matters because consumers may hand the buffer to a native API (e.g.
-        // SKBitmap.InstallPixels) whose release callback disposes us, and then dispose us again from
-        // their own cleanup path.
         var address = Interlocked.Exchange(ref _address, IntPtr.Zero);
         if (address != IntPtr.Zero)
         {
