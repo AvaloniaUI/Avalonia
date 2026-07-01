@@ -1348,6 +1348,86 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             public override int Length { get; }
         }
 
+        /// <summary>
+        /// Regression test for https://github.com/AvaloniaUI/Avalonia/issues/21685.
+        /// Wrapping with paragraphWidth=0 must not create O(N) TextLineImpl instances.
+        /// </summary>
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.WrapWithOverflow)]
+        public void Should_Not_Create_O_N_Lines_When_ParagraphWidth_Is_Zero(TextWrapping wrapping)
+        {
+            using (Start())
+            {
+                const string text = "Hello world this is a long string that would create millions of lines";
+
+                var defaultProperties =
+                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: wrapping);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                // paragraphWidth=0 must not loop O(N) times — one line for all text is expected.
+                var textLine = formatter.FormatLine(textSource, 0, 0, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal(text.Length, textLine.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Produce_Single_Line_For_Negative_ParagraphWidth_With_Wrap()
+        {
+            using (Start())
+            {
+                const string text = "abc def";
+
+                var defaultProperties =
+                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, -1, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.Equal(text.Length, textLine.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Still_Wrap_Correctly_With_Positive_ParagraphWidth_After_Zero_Width_Format()
+        {
+            using (Start())
+            {
+                const string text = "Hello world";
+
+                var defaultProperties =
+                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                // First format with zero width — should not throw or hang
+                var zeroLine = formatter.FormatLine(textSource, 0, 0, paragraphProperties);
+                Assert.NotNull(zeroLine);
+
+                // Then format normally — should produce at least one line breaking normally
+                var normalLine = formatter.FormatLine(textSource, 0, 200, paragraphProperties);
+                Assert.NotNull(normalLine);
+                Assert.True(normalLine.Length > 0);
+            }
+        }
+
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

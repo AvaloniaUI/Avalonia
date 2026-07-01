@@ -878,6 +878,30 @@ namespace Avalonia.Media.TextFormatting
                 return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
             }
 
+            // A zero or negative paragraph width means there is no space to wrap into.
+            // Advancing one grapheme per call would create O(N) TextLineImpl instances for the
+            // entire text (one per character), causing catastrophic memory allocation.
+            // Treat it as unconstrained: put all runs on a single line without wrapping.
+            if (paragraphWidth <= 0)
+            {
+                var lineRuns = new TextRun[textRuns.Count];
+                var totalLength = 0;
+                for (var i = 0; i < textRuns.Count; i++)
+                {
+                    lineRuns[i] = textRuns[i];
+                    totalLength += textRuns[i].Length;
+                }
+
+                TextLineBreak? lineBreak = currentLineBreak?.TextEndOfLine is { } eol
+                    ? new TextLineBreak(eol, resolvedFlowDirection)
+                    : null;
+
+                var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex, totalLength,
+                    paragraphWidth, paragraphProperties, resolvedFlowDirection, lineBreak);
+                textLine.FinalizeLine();
+                return textLine;
+            }
+
             var measuredLength = MeasureLength(textRuns, paragraphWidth);
 
             if(measuredLength == 0)
