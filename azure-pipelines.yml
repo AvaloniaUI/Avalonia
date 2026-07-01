@@ -187,3 +187,9 @@ jobs:
       artifactName: 'Samples'
     condition: succeeded()
 
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.SourcesDirectory)/artifacts/sbom'
+      artifactName: 'SBOM'
+    condition: succeeded()
+

@@ -347,6 +347,19 @@ partial class Build : NukeBuild
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.snupkg");
         });
 
+    Target CreateSbom => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(() =>
+        {
+            SbomGenerator.Generate(
+                RootDirectory,
+                Parameters.NugetRoot,
+                Parameters.NugetIntermediateRoot,
+                RootDirectory / "nukebuild" / "numerge.json",
+                Parameters.SbomRoot,
+                Parameters.Version);
+        });
+
     Target DownloadApiBaselinePackages => _ => _
         .DependsOn(CreateNugetPackages)
         .Executes(async () =>
@@ -421,7 +434,8 @@ partial class Build : NukeBuild
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(VerifyXamlCompilation)
-        .DependsOn(ZipFiles);
+        .DependsOn(ZipFiles)
+        .DependsOn(CreateSbom);
 
     Target BuildToNuGetCache => _ => _
         .DependsOn(CreateNugetPackages)
