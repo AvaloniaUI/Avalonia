@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -84,11 +87,11 @@ public static class SbomGenerator
         }
 
         foreach (var (finalId, projectIds) in constituentProjectIdsByFinalId)
-            GenerateForPackage(rootDirectory, outputDirectory, version, finalId, projectIds);
+            GenerateForPackage(rootDirectory, nugetRoot, outputDirectory, version, finalId, projectIds);
     }
 
-    static void GenerateForPackage(AbsolutePath rootDirectory, AbsolutePath outputDirectory, string version,
-        string finalId, List<string> projectIds)
+    static void GenerateForPackage(AbsolutePath rootDirectory, AbsolutePath nugetRoot, AbsolutePath outputDirectory,
+        string version, string finalId, List<string> projectIds)
     {
         JsonObject? merged = null;
         var seenComponentKeys = new HashSet<string>();
@@ -152,6 +155,22 @@ public static class SbomGenerator
         var rootRef = merged["metadata"]?["component"]?["bom-ref"]?.GetValue<string>();
         foreach (var projectDir in scannedProjectDirs)
             AddNpmComponents(merged, seenComponentKeys, projectDir, rootRef);
+
+        // The final .nupkg carries the authoritative publisher/license/repository metadata and the
+        // actual shipped binaries; use it to flesh out the thin root component cyclonedx-dotnet
+        // emits and to verify nothing ships that the dependency scan didn't already account for.
+        var finalNupkg = nugetRoot.GlobFiles($"{finalId}.{version}.nupkg").FirstOrDefault()
+            ?? nugetRoot.GlobFiles("*.nupkg").FirstOrDefault(p => ReadPackageId((string)p) == finalId);
+        if (finalNupkg is not null)
+        {
+            var nuspec = ReadNuspecMetadata((string)finalNupkg);
+            EnrichRootComponent(merged, nuspec);
+            AddPackageContentComponents(merged, seenComponentKeys, (string)finalNupkg, finalId, projectIds, nuspec);
+        }
+        else
+        {
+            Warning($"SBOM: couldn't find the built .nupkg for '{finalId}' - root metadata and package-content verification were skipped.");
+        }
 
         File.WriteAllText(outputDirectory / $"{finalId}.{version}.cdx.json",
             merged.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
@@ -278,15 +297,11 @@ public static class SbomGenerator
     static JsonArray? BuildLicenses(JsonObject installedPackageJson)
     {
         // Modern npm: "license" is an SPDX id or expression. Legacy: "license"/"licenses" objects.
-        if (installedPackageJson["license"] is JsonValue licenseValue && licenseValue.TryGetValue(out string? spdx)
-            && !string.IsNullOrWhiteSpace(spdx))
+        if (installedPackageJson["license"] is JsonValue licenseValue && licenseValue.TryGetValue(out string? spdx))
         {
-            var isExpression = spdx.IndexOf(" OR ", StringComparison.Ordinal) >= 0
-                || spdx.IndexOf(" AND ", StringComparison.Ordinal) >= 0
-                || spdx.IndexOf(" WITH ", StringComparison.Ordinal) >= 0;
-            return new JsonArray(isExpression
-                ? new JsonObject { ["expression"] = spdx }
-                : new JsonObject { ["license"] = new JsonObject { ["id"] = spdx } });
+            var licenses = SpdxToLicenses(spdx);
+            if (licenses is not null)
+                return licenses;
         }
 
         var legacy = (installedPackageJson["license"] as JsonObject)?["type"]?.GetValue<string>()
@@ -295,6 +310,20 @@ public static class SbomGenerator
         return legacy is null
             ? null
             : new JsonArray(new JsonObject { ["license"] = new JsonObject { ["name"] = legacy } });
+    }
+
+    // Turns an SPDX string into a CycloneDX licenses array: a single license id becomes a
+    // {license:{id}} entry, a compound SPDX expression becomes an {expression} entry.
+    static JsonArray? SpdxToLicenses(string? spdx)
+    {
+        if (string.IsNullOrWhiteSpace(spdx))
+            return null;
+        var isExpression = spdx.IndexOf(" OR ", StringComparison.Ordinal) >= 0
+            || spdx.IndexOf(" AND ", StringComparison.Ordinal) >= 0
+            || spdx.IndexOf(" WITH ", StringComparison.Ordinal) >= 0;
+        return new JsonArray(isExpression
+            ? new JsonObject { ["expression"] = spdx }
+            : new JsonObject { ["license"] = new JsonObject { ["id"] = spdx } });
     }
 
     static (string Purl, string Version, AbsolutePath? InstalledDir) ResolveNpmComponent(
@@ -338,13 +367,200 @@ public static class SbomGenerator
     static string ComponentKey(JsonNode? component) =>
         component?["purl"]?.GetValue<string>() ?? component?["name"]?.GetValue<string>() ?? Guid.NewGuid().ToString();
 
-    static string ReadPackageId(string nupkgPath)
+    // Fills in the root component with the publisher, licence, description and repository details
+    // from the shipped .nuspec - cyclonedx-dotnet only emits type/name/version, which is far short
+    // of the manufacturer/provenance information a CRA-facing SBOM is expected to carry.
+    static void EnrichRootComponent(JsonObject merged, NuspecMetadata meta)
+    {
+        var component = merged["metadata"]?["component"]?.AsObject();
+        if (component is null)
+            return;
+
+        // These are shipped libraries, not applications (cyclonedx-dotnet's default type).
+        component["type"] = "library";
+        component["purl"] = $"pkg:nuget/{meta.Id}@{meta.Version}";
+        if (meta.Description is not null)
+            component["description"] = meta.Description;
+        if (meta.Copyright is not null)
+            component["copyright"] = meta.Copyright;
+
+        JsonObject? supplier = null;
+        if (meta.Authors is not null)
+        {
+            component["publisher"] = meta.Authors;
+            component["author"] = meta.Authors;
+            supplier = new JsonObject { ["name"] = meta.Authors };
+            if (meta.ProjectUrl is not null)
+                supplier["url"] = new JsonArray(meta.ProjectUrl);
+            component["supplier"] = supplier;
+        }
+
+        var licenses = SpdxToLicenses(meta.LicenseExpression ?? meta.LicenseId);
+        if (licenses is not null)
+            component["licenses"] = licenses;
+
+        var externalReferences = new JsonArray();
+        if (meta.ProjectUrl is not null)
+            externalReferences.Add(new JsonObject { ["url"] = meta.ProjectUrl, ["type"] = "website" });
+        if (meta.RepositoryUrl is not null)
+            externalReferences.Add(new JsonObject { ["url"] = meta.RepositoryUrl, ["type"] = "vcs" });
+        if (externalReferences.Count > 0)
+            component["externalReferences"] = externalReferences;
+
+        // Also record the manufacturer at the document level (the entity that supplied the BOM).
+        if (supplier is not null && merged["metadata"] is JsonObject metadata)
+            metadata["supplier"] = supplier.DeepClone();
+    }
+
+    // Cross-checks what the package actually ships against the components derived from the
+    // dependency graph. Avalonia's own merged modules (Numerge folds several projects' assemblies
+    // into one package) are recorded as manufacturer-supplied components with a verifiable SHA-512
+    // of the shipped bytes; any third-party binary that no restored dependency accounts for is
+    // added and flagged, so a future bundling regression can't silently escape the SBOM.
+    static void AddPackageContentComponents(JsonObject merged, HashSet<string> seenComponentKeys,
+        string nupkgPath, string finalId, List<string> constituentProjectIds, NuspecMetadata meta)
+    {
+        var productNames = new HashSet<string>(constituentProjectIds, StringComparer.OrdinalIgnoreCase) { finalId };
+        var representedNames = (merged["components"]?.AsArray() ?? new JsonArray())
+            .Select(c => c?["name"]?.GetValue<string>())
+            .Where(n => n is not null)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)!;
+
+        var supplier = meta.Authors is null ? null : new JsonObject { ["name"] = meta.Authors };
+        var target = merged["components"]?.AsArray() ?? (JsonArray)(merged["components"] = new JsonArray());
+
+        using var file = File.Open(nupkgPath, FileMode.Open, FileAccess.Read);
+        using var zip = new ZipArchive(file, ZipArchiveMode.Read);
+        foreach (var entry in zip.Entries)
+        {
+            var path = entry.FullName;
+            // Reference assemblies under ref/ are compile-time surface, not shipped runtime code;
+            // the real implementation lives under lib/ and is scanned there.
+            if (!IsShippedBinary(path) || path.StartsWith("ref/", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var bytes = ReadEntry(entry);
+            var assemblyName = TryReadAssemblyName(bytes, out var assemblyVersion);
+            var simpleName = assemblyName ?? Path.GetFileNameWithoutExtension(path);
+
+            // Third-party binaries already represented by a NuGet/npm component need no duplicate.
+            if (assemblyName is not null && representedNames.Contains(simpleName))
+                continue;
+
+            var isProduct = productNames.Contains(simpleName)
+                || simpleName.StartsWith("Avalonia.", StringComparison.OrdinalIgnoreCase)
+                || simpleName.Equals("Avalonia", StringComparison.OrdinalIgnoreCase);
+
+            // The package's primary assembly is the root component itself - don't list it as its own subcomponent.
+            if (isProduct && simpleName.Equals(finalId, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var version = assemblyVersion ?? meta.Version;
+            var bomRef = $"binary:{simpleName}@{version}";
+            if (!seenComponentKeys.Add(bomRef))
+                continue;
+
+            if (!isProduct)
+                Warning($"SBOM: package '{finalId}' ships '{path}' ({simpleName}) which no restored dependency accounts for - added from package contents, please verify its provenance.");
+
+            var component = new JsonObject
+            {
+                ["type"] = "library",
+                ["bom-ref"] = bomRef,
+                ["name"] = simpleName,
+                ["version"] = version,
+                ["scope"] = "required",
+                ["hashes"] = new JsonArray(new JsonObject
+                {
+                    ["alg"] = "SHA-512",
+                    ["content"] = Convert.ToHexString(SHA512.HashData(bytes))
+                }),
+                ["properties"] = new JsonArray(new JsonObject
+                {
+                    ["name"] = "avalonia:packagePath",
+                    ["value"] = path
+                })
+            };
+            if (isProduct && supplier is not null)
+                component["supplier"] = supplier.DeepClone();
+            target.Add(component);
+        }
+    }
+
+    static bool IsShippedBinary(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        return ext is ".dll" or ".so" or ".dylib" or ".wasm" or ".node" or ".a";
+    }
+
+    static byte[] ReadEntry(ZipArchiveEntry entry)
+    {
+        using var stream = entry.Open();
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        return ms.ToArray();
+    }
+
+    // Returns the managed assembly's simple name (and version), or null for native / non-managed binaries.
+    static string? TryReadAssemblyName(byte[] bytes, out string? version)
+    {
+        version = null;
+        try
+        {
+            using var pe = new PEReader(new MemoryStream(bytes));
+            if (!pe.HasMetadata)
+                return null;
+            var reader = pe.GetMetadataReader();
+            if (!reader.IsAssembly)
+                return null;
+            var assembly = reader.GetAssemblyDefinition();
+            version = assembly.Version.ToString();
+            return reader.GetString(assembly.Name);
+        }
+        catch (BadImageFormatException)
+        {
+            return null;
+        }
+    }
+
+    class NuspecMetadata
+    {
+        public string Id = "";
+        public string Version = "";
+        public string? Authors;
+        public string? LicenseId;
+        public string? LicenseExpression;
+        public string? ProjectUrl;
+        public string? RepositoryUrl;
+        public string? Description;
+        public string? Copyright;
+    }
+
+    static NuspecMetadata ReadNuspecMetadata(string nupkgPath)
     {
         using var file = File.Open(nupkgPath, FileMode.Open, FileAccess.Read);
         using var zip = new ZipArchive(file, ZipArchiveMode.Read);
         var nuspecEntry = zip.Entries.First(e => e.FullName.EndsWith(".nuspec") && e.FullName == e.Name);
-        return XDocument.Load(nuspecEntry.Open()).Root!
-            .Elements().First(x => x.Name.LocalName == "metadata")
-            .Elements().First(x => x.Name.LocalName == "id").Value;
+        var metadata = XDocument.Load(nuspecEntry.Open()).Root!
+            .Elements().First(x => x.Name.LocalName == "metadata");
+
+        string? Value(string name) => metadata.Elements().FirstOrDefault(x => x.Name.LocalName == name)?.Value;
+        var license = metadata.Elements().FirstOrDefault(x => x.Name.LocalName == "license");
+        var repository = metadata.Elements().FirstOrDefault(x => x.Name.LocalName == "repository");
+
+        return new NuspecMetadata
+        {
+            Id = Value("id") ?? "",
+            Version = Value("version") ?? "",
+            Authors = Value("authors"),
+            LicenseExpression = license?.Attribute("type")?.Value == "expression" ? license.Value : null,
+            LicenseId = license?.Attribute("type")?.Value == "expression" ? null : license?.Value,
+            ProjectUrl = Value("projectUrl"),
+            RepositoryUrl = repository?.Attribute("url")?.Value,
+            Description = Value("description"),
+            Copyright = Value("copyright")
+        };
     }
+
+    static string ReadPackageId(string nupkgPath) => ReadNuspecMetadata(nupkgPath).Id;
 }
