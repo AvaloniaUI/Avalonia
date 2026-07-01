@@ -436,6 +436,7 @@ public static class SbomGenerator
 
         var supplier = meta.Authors is null ? null : new JsonObject { ["name"] = meta.Authors };
         var target = merged["components"]?.AsArray() ?? (JsonArray)(merged["components"] = new JsonArray());
+        var rootRef = merged["metadata"]?["component"]?["bom-ref"]?.GetValue<string>();
 
         using var file = File.Open(nupkgPath, FileMode.Open, FileAccess.Read);
         using var zip = new ZipArchive(file, ZipArchiveMode.Read);
@@ -492,6 +493,13 @@ public static class SbomGenerator
             if (isProduct && supplier is not null)
                 component["supplier"] = supplier.DeepClone();
             target.Add(component);
+
+            // Link the shipped binary into the dependency graph so consumers that traverse from
+            // the root component reach it: give it its own (leaf) node and an edge from the root.
+            (merged["dependencies"]?.AsArray() ?? (JsonArray)(merged["dependencies"] = new JsonArray()))
+                .Add(new JsonObject { ["ref"] = bomRef, ["dependsOn"] = new JsonArray() });
+            if (rootRef is not null)
+                AddDependsOn(merged, rootRef, bomRef);
         }
     }
 
