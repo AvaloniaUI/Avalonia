@@ -353,7 +353,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             UngrabPointer();
 
             if (_targetState.Target is not { } target || _targetState.PendingDrop is not null)
+            {
+                Complete(DragDropEffects.None);
                 return;
+            }
 
             if (target.InProcessWindow is not null)
             {
