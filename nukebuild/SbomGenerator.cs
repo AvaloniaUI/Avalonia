@@ -172,8 +172,44 @@ public static class SbomGenerator
             Warning($"SBOM: couldn't find the built .nupkg for '{finalId}' - root metadata and package-content verification were skipped.");
         }
 
+        // cyclonedx-dotnet leaves dependsOn edges pointing at packages it excluded as dev
+        // dependencies (e.g. analyzers stripped by -ed), which dangle once the component is gone.
+        // Drop those so the graph only references components actually present in the SBOM.
+        PruneDanglingDependencyEdges(merged);
+
         File.WriteAllText(outputDirectory / $"{finalId}.{version}.cdx.json",
             merged.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    static void PruneDanglingDependencyEdges(JsonObject merged)
+    {
+        var deps = merged["dependencies"]?.AsArray();
+        if (deps is null)
+            return;
+
+        var known = new HashSet<string>();
+        var rootRef = merged["metadata"]?["component"]?["bom-ref"]?.GetValue<string>();
+        if (rootRef is not null)
+            known.Add(rootRef);
+        foreach (var component in merged["components"]?.AsArray() ?? new JsonArray())
+        {
+            if (component?["bom-ref"]?.GetValue<string>() is { } bomRef)
+                known.Add(bomRef);
+            if (component?["purl"]?.GetValue<string>() is { } purl)
+                known.Add(purl);
+        }
+
+        foreach (var node in deps.OfType<JsonObject>())
+        {
+            var dependsOn = node["dependsOn"]?.AsArray();
+            if (dependsOn is null)
+                continue;
+            var kept = new JsonArray();
+            foreach (var edge in dependsOn)
+                if (known.Contains(edge!.GetValue<string>()))
+                    kept.Add(edge.GetValue<string>());
+            node["dependsOn"] = kept;
+        }
     }
 
     static void MergeDependencyGraph(JsonObject target, JsonArray incoming)
