@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
+using Avalonia.Media.TextFormatting;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -86,6 +87,7 @@ partial class AvaloniaView
         private readonly UITextInputStringTokenizer _tokenizer;
         private readonly NSString _textInputContextIdentifier = new NSString(Guid.NewGuid().ToString());
         private bool _isInUpdate;
+        private NSWritingDirection _baseWritingDirection = NSWritingDirection.LeftToRight;
 
         public TextInputMethodClient? Client => _client;
 
@@ -133,6 +135,23 @@ partial class AvaloniaView
         private readonly AvaloniaView _view;
         private string? _markedText;
 
+        private IStructuredTextInput? StructuredClient => _client as IStructuredTextInput;
+
+        private static ITextRange CreateRange(IStructuredTextInput structured, int start, int end)
+        {
+            var normalizedStart = Math.Min(start, end);
+            var normalizedEnd = Math.Max(start, end);
+            var startPointer = structured.CreatePointer(normalizedStart, LogicalDirection.Forward);
+            var endPointer = structured.CreatePointer(normalizedEnd, LogicalDirection.Backward);
+            return structured.CreateRange(startPointer, endPointer);
+        }
+
+        private static AvaloniaTextRange ToAvaloniaRange(ITextRange range)
+            => new AvaloniaTextRange(range.Start.Offset, range.End.Offset);
+
+        private static CGRect ToCGRect(Rect rect)
+            => new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
+
 
 
         private void SurroundingTextChanged(object? sender, EventArgs e)
@@ -153,6 +172,8 @@ partial class AvaloniaView
                 _inSurroundingTextUpdateEvent--;
             }
         }
+
+        private void ClientStateChanged(object? sender, EventArgs e) => SurroundingTextChanged(sender, e);
 
         private void KeyPress(Key key, PhysicalKey physicalKey, string? keySymbol)
         {
@@ -202,17 +223,32 @@ partial class AvaloniaView
                 return;
             }
 
+            if (StructuredClient is { } structured)
+            {
+                structured.ReplaceText(structured.Selection, text);
+                structured.CommitComposition();
+                return;
+            }
+
             TextInput(text);
         }
 
         void IUIKeyInput.DeleteBackward() => KeyPress(Key.Back, PhysicalKey.Backspace, "\b");
 
-        bool IUIKeyInput.HasText => true;
+        bool IUIKeyInput.HasText =>
+            StructuredClient?.DocumentEnd.Offset > 0 ||
+            !string.IsNullOrEmpty(_client.SurroundingText) ||
+            !string.IsNullOrEmpty(_markedText);
 
         string IUITextInput.TextInRange(UITextRange range)
         {
             if (range is AvaloniaTextRange r)
             {
+                if (StructuredClient is { } structured)
+                {
+                    return structured.GetText(CreateRange(structured, r.StartIndex, r.EndIndex));
+                }
+
                 var surroundingText = _client.SurroundingText;
 
                 Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.TextInRange {start} {end}", r.StartIndex, r.EndIndex);
@@ -248,6 +284,13 @@ partial class AvaloniaView
             if (range is AvaloniaTextRange r)
             {
                 Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.ReplaceText {start} {end} {text}", r.StartIndex, r.EndIndex, text);
+
+                if (StructuredClient is { } structured)
+                {
+                    structured.ReplaceText(CreateRange(structured, r.StartIndex, r.EndIndex), text);
+                    return;
+                }
+
                 _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
                 TextInput(text);
             }
@@ -259,6 +302,12 @@ partial class AvaloniaView
                 .Log(null, "IUIKeyInput.SetMarkedText {start} {len} {text}", selectedRange.Location,
                     selectedRange.Location, markedText);
 
+            if (StructuredClient is { } structured)
+            {
+                structured.SetCompositionText(markedText, (int)selectedRange.Location);
+                return;
+            }
+
             _markedText = markedText;
             _client.SetPreeditText(markedText);
         }
@@ -266,6 +315,13 @@ partial class AvaloniaView
         void IUITextInput.UnmarkText()
         {
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.UnmarkText");
+
+            if (StructuredClient is { } structured)
+            {
+                structured.CommitComposition();
+                return;
+            }
+
             if (_markedText == null)
                 return;
             var commitString = _markedText;
@@ -340,6 +396,43 @@ partial class AvaloniaView
 
         private AvaloniaTextPosition? GetPositionCore(AvaloniaTextPosition fromPosition, UITextLayoutDirection inDirection, nint offset)
         {
+            if (StructuredClient is { } structured)
+            {
+                var steps = Math.Abs((int)offset);
+                if (steps == 0)
+                {
+                    return new AvaloniaTextPosition(fromPosition.Index);
+                }
+
+                var baseDirection = inDirection is UITextLayoutDirection.Right or UITextLayoutDirection.Down
+                    ? LogicalDirection.Forward
+                    : LogicalDirection.Backward;
+
+                var direction = offset >= 0
+                    ? baseDirection
+                    : baseDirection == LogicalDirection.Forward
+                        ? LogicalDirection.Backward
+                        : LogicalDirection.Forward;
+
+                var granularity = inDirection is UITextLayoutDirection.Left or UITextLayoutDirection.Right
+                    ? TextUnit.Character
+                    : TextUnit.Line;
+
+                var pointer = structured.CreatePointer(fromPosition.Index, direction);
+                for (var i = 0; i < steps; i++)
+                {
+                    var next = structured.GetBoundaryPosition(pointer, granularity, direction);
+                    if (next is null)
+                    {
+                        return null;
+                    }
+
+                    pointer = next;
+                }
+
+                return new AvaloniaTextPosition(pointer.Offset);
+            }
+
             var newPosition = fromPosition.Index;
 
             switch (inDirection)
@@ -392,6 +485,15 @@ partial class AvaloniaView
         {
             if (range is AvaloniaTextRange r)
             {
+                if (StructuredClient is { } structured)
+                {
+                    var structuredRange = CreateRange(structured, r.StartIndex, r.EndIndex);
+                    var pointer = direction is UITextLayoutDirection.Right or UITextLayoutDirection.Down
+                        ? structuredRange.End
+                        : structuredRange.Start;
+                    return new AvaloniaTextPosition(pointer.Offset);
+                }
+
                 if (direction is UITextLayoutDirection.Right or UITextLayoutDirection.Down)
                     return r.End;
                 return r.Start;
@@ -404,6 +506,26 @@ partial class AvaloniaView
         {
             if (byExtendingPosition is AvaloniaTextPosition p)
             {
+                if (StructuredClient is { } structured)
+                {
+                    var position = structured.CreatePointer(p.Index, LogicalDirection.Forward);
+                    var boundaryDirection = direction is UITextLayoutDirection.Left or UITextLayoutDirection.Up
+                        ? LogicalDirection.Backward
+                        : LogicalDirection.Forward;
+                    var boundary = structured.GetBoundaryPosition(position, TextUnit.Character, boundaryDirection);
+
+                    if (boundary is null)
+                    {
+                        return new AvaloniaTextRange(p.Index, p.Index);
+                    }
+
+                    var textRange = boundaryDirection == LogicalDirection.Backward
+                        ? structured.CreateRange(boundary, position)
+                        : structured.CreateRange(position, boundary);
+
+                    return ToAvaloniaRange(textRange);
+                }
+
                 if (direction is UITextLayoutDirection.Left or UITextLayoutDirection.Up)
                     return new AvaloniaTextRange(0, p.Index);
 
@@ -416,14 +538,12 @@ partial class AvaloniaView
         NSWritingDirection IUITextInput.GetBaseWritingDirection(UITextPosition forPosition,
             UITextStorageDirection direction)
         {
-            return NSWritingDirection.LeftToRight;
-
-            // todo query and retyrn RTL.
+            return _baseWritingDirection;
         }
 
         void IUITextInput.SetBaseWritingDirectionforRange(NSWritingDirection writingDirection, UITextRange range)
         {
-            // todo ? ignore?
+            _baseWritingDirection = writingDirection;
         }
 
         CGRect IUITextInput.GetFirstRectForRange(UITextRange range)
@@ -431,7 +551,22 @@ partial class AvaloniaView
 
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetFirstRectForRange");
-            // TODO: Query from the input client
+            if (range is AvaloniaTextRange textRange && StructuredClient is { } structured)
+            {
+                var rect = structured.GetFirstRectForRange(CreateRange(structured, textRange.StartIndex, textRange.EndIndex));
+                return ToCGRect(rect);
+            }
+
+            if (range is AvaloniaTextRange fallbackRange && _client.TextViewVisual is TextPresenter fallbackPresenter)
+            {
+                foreach (var rect in fallbackPresenter.TextLayout.HitTestTextRange(
+                             fallbackRange.StartIndex,
+                             Math.Max(0, fallbackRange.EndIndex - fallbackRange.StartIndex)))
+                {
+                    return new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
+                }
+            }
+
             var r = _view._cursorRect;
 
             return new CGRect(r.Left, r.Top, r.Width, r.Height);
@@ -439,9 +574,22 @@ partial class AvaloniaView
 
         CGRect IUITextInput.GetCaretRectForPosition(UITextPosition? position)
         {
-            // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetCaretRectForPosition");
+
+            if (position is AvaloniaTextPosition p && StructuredClient is { } structured)
+            {
+                var pointer = structured.CreatePointer(p.Index, LogicalDirection.Forward);
+                return ToCGRect(structured.GetCaretRect(pointer));
+            }
+
+            if (position is AvaloniaTextPosition fallbackPosition && _client.TextViewVisual is TextPresenter fallbackPresenter)
+            {
+                var clamped = Math.Clamp(fallbackPosition.Index, 0, DocumentLength);
+                var fallbackRect = fallbackPresenter.TextLayout.HitTestTextPosition(clamped);
+                return new CGRect(fallbackRect.X, fallbackRect.Y, fallbackRect.Width, fallbackRect.Height);
+            }
+
             var rect = _client.CursorRectangle;
 
             return new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
@@ -451,6 +599,12 @@ partial class AvaloniaView
         {
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetClosestPositionToPoint");
+
+            if (StructuredClient is { } structured)
+            {
+                var closest = structured.GetClosestPosition(new Point(point.X, point.Y));
+                return closest is null ? EmptyPosition : new AvaloniaTextPosition(closest.Offset);
+            }
 
             var presenter = _client.TextViewVisual as TextPresenter;
 
@@ -466,25 +620,83 @@ partial class AvaloniaView
 
         UITextPosition IUITextInput.GetClosestPositionToPoint(CGPoint point, UITextRange withinRange)
         {
-            // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetClosestPositionToPoint");
-            return new AvaloniaTextPosition(0);
+
+            if (withinRange is AvaloniaTextRange r && StructuredClient is { } structured)
+            {
+                var closest = structured.GetClosestPosition(new Point(point.X, point.Y),
+                    CreateRange(structured, r.StartIndex, r.EndIndex));
+                return closest is null ? EmptyPosition : new AvaloniaTextPosition(closest.Offset);
+            }
+
+            if (withinRange is AvaloniaTextRange fallbackRange)
+            {
+                var closest = ((IUITextInput)this).GetClosestPositionToPoint(point);
+                if (closest is AvaloniaTextPosition fallbackPosition)
+                {
+                    var clamped = Math.Clamp(fallbackPosition.Index, fallbackRange.StartIndex, fallbackRange.EndIndex);
+                    return new AvaloniaTextPosition(clamped);
+                }
+            }
+
+            return ((IUITextInput)this).GetClosestPositionToPoint(point);
         }
 
         UITextRange IUITextInput.GetCharacterRangeAtPoint(CGPoint point)
         {
-            // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetCharacterRangeAtPoint");
+
+            if (StructuredClient is { } structured)
+            {
+                var range = structured.GetCharacterRangeAtPoint(new Point(point.X, point.Y));
+                return range is null ? new AvaloniaTextRange(0, 0) : ToAvaloniaRange(range);
+            }
+
+            var closest = ((IUITextInput)this).GetClosestPositionToPoint(point);
+            if (closest is AvaloniaTextPosition fallbackPosition)
+            {
+                var start = Math.Clamp(fallbackPosition.Index, 0, DocumentLength);
+                var end = Math.Min(DocumentLength, start + 1);
+                return new AvaloniaTextRange(start, end);
+            }
+
             return new AvaloniaTextRange(0, 0);
         }
 
         UITextSelectionRect[] IUITextInput.GetSelectionRects(UITextRange range)
         {
-            // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetSelectionRect");
+
+            if (range is AvaloniaTextRange textRange && StructuredClient is { } structured)
+            {
+                var rects = structured.GetSelectionRects(CreateRange(structured, textRange.StartIndex, textRange.EndIndex));
+                var result = new UITextSelectionRect[rects.Length];
+                for (var i = 0; i < rects.Length; i++)
+                {
+                    result[i] = new AvaloniaSelectionRect(rects[i]);
+                }
+
+                return result;
+            }
+
+            if (range is AvaloniaTextRange fallbackRange && _client.TextViewVisual is TextPresenter fallbackPresenter)
+            {
+                var hitRects = fallbackPresenter.TextLayout.HitTestTextRange(
+                    fallbackRange.StartIndex,
+                    Math.Max(0, fallbackRange.EndIndex - fallbackRange.StartIndex));
+
+                var selectionRects = new System.Collections.Generic.List<UITextSelectionRect>();
+                foreach (var rect in hitRects)
+                {
+                    selectionRects.Add(new AvaloniaSelectionRect(rect));
+                }
+
+                return selectionRects.ToArray();
+            }
+
             return Array.Empty<UITextSelectionRect>();
         }
 
@@ -498,6 +710,11 @@ partial class AvaloniaView
         {
             get
             {
+                if (StructuredClient is { } structured)
+                {
+                    return ToAvaloniaRange(structured.Selection);
+                }
+
                 return new AvaloniaTextRange(_client.Selection.Start, _client.Selection.End);
             }
             set
@@ -507,10 +724,22 @@ partial class AvaloniaView
 
                 if (value is AvaloniaTextRange r)
                 {
+                    if (StructuredClient is { } structured)
+                    {
+                        structured.Selection = CreateRange(structured, r.StartIndex, r.EndIndex);
+                        return;
+                    }
+
                     _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
                 }
                 else
                 {
+                    if (StructuredClient is { } structured)
+                    {
+                        structured.Selection = CreateRange(structured, 0, 0);
+                        return;
+                    }
+
                     _client.Selection = default;
                 }
             }
@@ -524,17 +753,40 @@ partial class AvaloniaView
 
         UITextPosition IUITextInput.BeginningOfDocument => _beginningOfDocument;
 
-        private int DocumentLength => (_client.SurroundingText?.Length ?? 0) + (_markedText?.Length ?? 0);
+        private int DocumentLength => StructuredClient?.DocumentEnd.Offset ?? ((_client.SurroundingText?.Length ?? 0) + (_markedText?.Length ?? 0));
         UITextPosition IUITextInput.EndOfDocument => new AvaloniaTextPosition(DocumentLength);
 
         UITextRange IUITextInput.MarkedTextRange
         {
             get
             {
+                if (StructuredClient is { } structured)
+                {
+                    return structured.CompositionRange is { } range ? ToAvaloniaRange(range) : null!;
+                }
+
                 if (string.IsNullOrWhiteSpace(_markedText))
                     return null!;
                 return new AvaloniaTextRange(_client.Selection.Start, _client.Selection.Start + _markedText.Length);
             }
+        }
+
+        private sealed class AvaloniaSelectionRect : UITextSelectionRect
+        {
+            private readonly CGRect _rect;
+
+            public AvaloniaSelectionRect(Rect rect)
+            {
+                _rect = new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
+            }
+
+            public override CGRect Rect => _rect;
+
+            public override bool ContainsStart => false;
+
+            public override bool ContainsEnd => false;
+
+            public override bool IsVertical => false;
         }
 
         public override bool BecomeFirstResponder()
@@ -544,7 +796,19 @@ partial class AvaloniaView
             {
                 Logger.TryGet(LogEventLevel.Debug, "IOSIME")
                     ?.Log(null, "Became first responder");
-                _client.SurroundingTextChanged += SurroundingTextChanged;
+
+                if (StructuredClient is { } structured)
+                {
+                    structured.TextChanged += ClientStateChanged;
+                    structured.CaretPositionChanged += ClientStateChanged;
+                    structured.CompositionChanged += ClientStateChanged;
+                }
+                else
+                {
+                    _client.SurroundingTextChanged += ClientStateChanged;
+                    _client.SelectionChanged += ClientStateChanged;
+                }
+
                 CurrentAvaloniaResponder = this;
             }
 
@@ -560,7 +824,19 @@ partial class AvaloniaView
 
                 Logger.TryGet(LogEventLevel.Debug, "IOSIME")
                     ?.Log(null, "Resigned first responder");
-                _client.SurroundingTextChanged -= SurroundingTextChanged;
+
+                if (StructuredClient is { } structured)
+                {
+                    structured.TextChanged -= ClientStateChanged;
+                    structured.CaretPositionChanged -= ClientStateChanged;
+                    structured.CompositionChanged -= ClientStateChanged;
+                }
+                else
+                {
+                    _client.SurroundingTextChanged -= ClientStateChanged;
+                    _client.SelectionChanged -= ClientStateChanged;
+                }
+
                 CurrentAvaloniaResponder = null;
             }
 

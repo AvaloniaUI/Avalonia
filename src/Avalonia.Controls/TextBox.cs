@@ -22,6 +22,7 @@ using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -913,6 +914,106 @@ namespace Avalonia.Controls
         public int GetLineCount()
         {
             return this._presenter?.TextLayout.TextLines.Count ?? -1;
+        }
+
+        // Top-level-space rectangles for a character range, used by the automation text provider
+        // (the platform layer converts them to screen coordinates).
+        internal Rect[] GetTextRangeBounds(int start, int length)
+        {
+            if (_presenter is null || length <= 0 || this.GetVisualRoot() is not Visual root)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var transform = _presenter.TransformToVisual(root);
+            if (transform is null)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var result = new List<Rect>();
+            foreach (var rect in _presenter.TextLayout.HitTestTextRange(start, length))
+            {
+                result.Add(rect.TransformToAABB(transform.Value));
+            }
+
+            return result.ToArray();
+        }
+
+        // Nearest character offset for a point in top-level coordinates (the inverse of
+        // GetTextRangeBounds), used by the automation text provider for hit-testing. Returns -1 when
+        // there is no layout.
+        internal int GetOffsetFromTopLevelPoint(Point topLevelPoint)
+        {
+            if (_presenter is null || this.GetVisualRoot() is not Visual root)
+            {
+                return -1;
+            }
+
+            var transform = root.TransformToVisual(_presenter);
+            if (transform is null)
+            {
+                return -1;
+            }
+
+            var local = topLevelPoint.Transform(transform.Value);
+            var hit = _presenter.TextLayout.HitTestPoint(local);
+
+            return hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
+        }
+
+        // The character offset range currently visible in the presenter's viewport, hit-tested at the
+        // viewport corners. Returns (-1, -1) when there is no layout.
+        internal (int Start, int End) GetVisibleTextRange()
+        {
+            if (_presenter is null || this.GetVisualRoot() is not Visual root)
+            {
+                return (-1, -1);
+            }
+
+            var transform = _presenter.TransformToVisual(root);
+            if (transform is null)
+            {
+                return (-1, -1);
+            }
+
+            var bounds = new Rect(_presenter.Bounds.Size);
+            var start = GetOffsetFromTopLevelPoint(bounds.TopLeft.Transform(transform.Value));
+            var end = GetOffsetFromTopLevelPoint(bounds.BottomRight.Transform(transform.Value));
+
+            if (start < 0 || end < 0)
+            {
+                return (-1, -1);
+            }
+
+            return start <= end ? (start, end) : (end, start);
+        }
+
+        // Scrolls the presenter so the given character range is visible (best-effort, via the
+        // ScrollViewer's BringIntoView). Used by the automation text providers' scroll operations.
+        internal void ScrollTextRangeIntoView(int start, int length)
+        {
+            if (_presenter is null)
+            {
+                return;
+            }
+
+            if (length <= 0)
+            {
+                _presenter.BringIntoView(_presenter.TextLayout.HitTestTextPosition(start));
+                return;
+            }
+
+            Rect? union = null;
+            foreach (var rect in _presenter.TextLayout.HitTestTextRange(start, length))
+            {
+                union = union is null ? rect : union.Value.Union(rect);
+            }
+
+            if (union is { } bounds)
+            {
+                _presenter.BringIntoView(bounds);
+            }
         }
 
         /// <summary>
