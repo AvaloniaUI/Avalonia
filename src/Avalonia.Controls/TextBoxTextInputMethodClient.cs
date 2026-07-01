@@ -19,10 +19,12 @@ namespace Avalonia.Controls
         private ITextRange? _compositionRange;
         private long _documentVersion;
         private EventHandler<TextChange>? _navTextChanged;
+        private IReadOnlyList<TextInputDecoration> _inputDecorations = Array.Empty<TextInputDecoration>();
 
         public event EventHandler? TextChanged;
         public event EventHandler? CaretPositionChanged;
         public event EventHandler? CompositionChanged;
+        public event EventHandler? InputDecorationsChanged;
 
         public override Visual TextViewVisual => _presenter!;
 
@@ -294,6 +296,26 @@ namespace Avalonia.Controls
         void IStructuredTextInput.CommitComposition()
         {
             SetCompositionRangeCore(null, raiseEvent: true);
+
+            // Transient decorations belong to the composition/reconversion session; drop them on commit.
+            SetInputDecorationsCore(Array.Empty<TextInputDecoration>());
+        }
+
+        IReadOnlyList<TextInputDecoration> IStructuredTextInput.InputDecorations => _inputDecorations;
+
+        void IStructuredTextInput.SetInputDecorations(IReadOnlyList<TextInputDecoration> decorations)
+            => SetInputDecorationsCore(decorations ?? Array.Empty<TextInputDecoration>());
+
+        private void SetInputDecorationsCore(IReadOnlyList<TextInputDecoration> decorations)
+        {
+            if (ReferenceEquals(_inputDecorations, decorations) ||
+                (_inputDecorations.Count == 0 && decorations.Count == 0))
+            {
+                return;
+            }
+
+            _inputDecorations = decorations;
+            InputDecorationsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         Rect IStructuredTextInput.GetFirstRectForRange(ITextRange range)
