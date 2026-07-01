@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Avalonia.X11;
@@ -52,5 +53,14 @@ internal static partial class XLib
             if (prop != 0)
                 XFree(prop);
         }
+    }
+
+    public static unsafe IntPtr[] XRRListOutputPropertiesAsArray(IntPtr display, IntPtr output)
+    {
+        var pList = XRRListOutputProperties(display, output, out int propertyCount);
+        var rv = new IntPtr[propertyCount];
+        new Span<IntPtr>(pList, propertyCount).CopyTo(rv);
+        XFree(pList);
+        return rv;
     }
 }

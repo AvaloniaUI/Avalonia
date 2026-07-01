@@ -17,6 +17,8 @@
     <Compile Include="..\Shared\RawEventGrouping.cs" />
     <Compile Include="..\Avalonia.X11\X11IconLoader.cs" />
     <Compile Include="..\Avalonia.X11\Selections\UriListHelper.cs" />
+    <Compile Include="..\Avalonia.X11\Interop\Glib.cs" Link="Dispatching\Glib.cs" />
+    <Compile Include="..\Avalonia.X11\Dispatching\GlibDispatcherImplBase.cs" Link="Dispatching\GlibDispatcherImplBase.cs" />
   </ItemGroup>
   <Import Project="..\..\build\SourceGenerators.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
