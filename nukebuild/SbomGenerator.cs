@@ -149,8 +149,9 @@ public static class SbomGenerator
         // Bun/npm-built webapp directly into their published package (e.g. Avalonia.Browser's
         // staticwebassets, Avalonia.DesignerSupport's embedded previewer) - scan those separately
         // so their shipped JS dependencies aren't silently absent from the SBOM.
+        var rootRef = merged["metadata"]?["component"]?["bom-ref"]?.GetValue<string>();
         foreach (var projectDir in scannedProjectDirs)
-            AddNpmComponents(merged, seenComponentKeys, projectDir);
+            AddNpmComponents(merged, seenComponentKeys, projectDir, rootRef);
 
         File.WriteAllText(outputDirectory / $"{finalId}.{version}.cdx.json",
             merged.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
@@ -182,10 +183,14 @@ public static class SbomGenerator
     }
 
     // Scans <projectDir>/**/webapp/package.json for production "dependencies" (deliberately
-    // ignoring devDependencies, which never ship) and adds them as components. Resolves each
-    // dependency's actually-installed version from node_modules where possible, same rationale
-    // as scanning project.assets.json instead of trusting floating NuGet version ranges.
-    static void AddNpmComponents(JsonObject merged, HashSet<string> seenComponentKeys, AbsolutePath projectDir)
+    // ignoring devDependencies, which never ship) and adds them - plus their transitive
+    // dependencies, walked through the installed node_modules - as fully-formed components:
+    // bom-ref, resolved version, license, and dependency-graph edges, matching the shape of the
+    // NuGet components cyclonedx-dotnet emits so npm packages aren't second-class SBOM entries.
+    // Versions come from the actually-installed node_modules (same rationale as reading
+    // project.assets.json rather than trusting floating ranges).
+    static void AddNpmComponents(JsonObject merged, HashSet<string> seenComponentKeys, AbsolutePath projectDir,
+        string? rootRef)
     {
         foreach (string packageJsonPath in projectDir.GlobFiles("**/webapp/package.json"))
         {
@@ -193,41 +198,127 @@ public static class SbomGenerator
             var nodeModules = ((AbsolutePath)packageJsonPath).Parent / "node_modules";
             var dependencies = packageJson["dependencies"]?.AsObject() ?? new JsonObject();
 
+            // The webapp is bundled into the shipped package, so its direct production
+            // dependencies are direct dependencies of the final NuGet package.
             foreach (var (name, rangeNode) in dependencies)
             {
-                var (purl, componentVersion) = ResolveNpmComponent(name, rangeNode!.GetValue<string>(), nodeModules);
-                if (!seenComponentKeys.Add(purl))
-                    continue;
-
-                var target = merged["components"]?.AsArray() ?? (JsonArray)(merged["components"] = new JsonArray());
-                target.Add(new JsonObject
-                {
-                    ["type"] = "library",
-                    ["name"] = name,
-                    ["version"] = componentVersion,
-                    ["purl"] = purl
-                });
+                var purl = AddNpmComponentTree(merged, seenComponentKeys, nodeModules, name,
+                    rangeNode!.GetValue<string>(), nodeModules);
+                if (rootRef is not null)
+                    AddDependsOn(merged, rootRef, purl);
             }
         }
     }
 
-    static (string Purl, string Version) ResolveNpmComponent(string name, string declaredRange, AbsolutePath nodeModules)
+    // Adds the component for (name, range) and, recursively, everything it depends on, returning
+    // its purl. The component/graph node/subtree are materialised only the first time a purl is
+    // seen (which also breaks any dependency cycles); repeat encounters just return the purl so
+    // the caller can still record its own edge to it.
+    static string AddNpmComponentTree(JsonObject merged, HashSet<string> seenComponentKeys,
+        AbsolutePath topLevelNodeModules, string name, string declaredRange, AbsolutePath parentNodeModules)
     {
+        var (purl, componentVersion, installedDir) =
+            ResolveNpmComponent(name, declaredRange, parentNodeModules, topLevelNodeModules);
+
+        if (!seenComponentKeys.Add(purl))
+            return purl;
+
+        var installed = installedDir is not null && File.Exists(installedDir / "package.json")
+            ? JsonNode.Parse(File.ReadAllText(installedDir / "package.json"))!.AsObject()
+            : null;
+
+        var component = new JsonObject
+        {
+            ["type"] = "library",
+            ["bom-ref"] = purl,
+            ["name"] = name,
+            ["version"] = componentVersion,
+            ["purl"] = purl
+        };
+        // No hashes: npm's verifiable hashes live in the (binary bun) lockfile, not the installed
+        // tree, and a hash of the unpacked directory wouldn't be checkable against a registry.
+        var licenses = installed is null ? null : BuildLicenses(installed);
+        if (licenses is not null)
+            component["licenses"] = licenses;
+
+        var target = merged["components"]?.AsArray() ?? (JsonArray)(merged["components"] = new JsonArray());
+        target.Add(component);
+
+        var node = new JsonObject { ["ref"] = purl, ["dependsOn"] = new JsonArray() };
+        (merged["dependencies"]?.AsArray() ?? (JsonArray)(merged["dependencies"] = new JsonArray())).Add(node);
+
+        var childDeps = installed?["dependencies"]?.AsObject() ?? new JsonObject();
+        var childNodeModules = installedDir is not null ? installedDir / "node_modules" : parentNodeModules;
+        var dependsOn = node["dependsOn"]!.AsArray();
+        foreach (var (childName, childRange) in childDeps)
+        {
+            var childPurl = AddNpmComponentTree(merged, seenComponentKeys, topLevelNodeModules, childName,
+                childRange!.GetValue<string>(), childNodeModules);
+            dependsOn.Add(childPurl);
+        }
+
+        return purl;
+    }
+
+    static void AddDependsOn(JsonObject merged, string fromRef, string toPurl)
+    {
+        var deps = merged["dependencies"]?.AsArray() ?? (JsonArray)(merged["dependencies"] = new JsonArray());
+        var node = deps.OfType<JsonObject>().FirstOrDefault(d => d["ref"]?.GetValue<string>() == fromRef);
+        if (node is null)
+        {
+            node = new JsonObject { ["ref"] = fromRef, ["dependsOn"] = new JsonArray() };
+            deps.Add(node);
+        }
+
+        var dependsOn = node["dependsOn"]?.AsArray() ?? (JsonArray)(node["dependsOn"] = new JsonArray());
+        if (!dependsOn.Any(x => x!.GetValue<string>() == toPurl))
+            dependsOn.Add(toPurl);
+    }
+
+    static JsonArray? BuildLicenses(JsonObject installedPackageJson)
+    {
+        // Modern npm: "license" is an SPDX id or expression. Legacy: "license"/"licenses" objects.
+        if (installedPackageJson["license"] is JsonValue licenseValue && licenseValue.TryGetValue(out string? spdx)
+            && !string.IsNullOrWhiteSpace(spdx))
+        {
+            var isExpression = spdx.IndexOf(" OR ", StringComparison.Ordinal) >= 0
+                || spdx.IndexOf(" AND ", StringComparison.Ordinal) >= 0
+                || spdx.IndexOf(" WITH ", StringComparison.Ordinal) >= 0;
+            return new JsonArray(isExpression
+                ? new JsonObject { ["expression"] = spdx }
+                : new JsonObject { ["license"] = new JsonObject { ["id"] = spdx } });
+        }
+
+        var legacy = (installedPackageJson["license"] as JsonObject)?["type"]?.GetValue<string>()
+            ?? (installedPackageJson["licenses"] as JsonArray)?.OfType<JsonObject>()
+                .FirstOrDefault()?["type"]?.GetValue<string>();
+        return legacy is null
+            ? null
+            : new JsonArray(new JsonObject { ["license"] = new JsonObject { ["name"] = legacy } });
+    }
+
+    static (string Purl, string Version, AbsolutePath? InstalledDir) ResolveNpmComponent(
+        string name, string declaredRange, AbsolutePath parentNodeModules, AbsolutePath topLevelNodeModules)
+    {
+        // npm/bun hoist most packages to the top level but may nest a conflicting version under
+        // the depending package, so prefer the nested copy and fall back to the hoisted one.
+        var installedDir = new[] { parentNodeModules / name, topLevelNodeModules / name }
+            .FirstOrDefault(d => File.Exists(d / "package.json"));
+
         if (declaredRange.StartsWith("github:") || declaredRange.StartsWith("git") || declaredRange.Contains("://"))
         {
             var (owner, repo, reference) = ParseGitDependency(declaredRange);
-            return ($"pkg:github/{owner}/{repo}@{reference}", reference);
+            return ($"pkg:github/{owner}/{repo}@{reference}", reference, installedDir);
         }
 
-        var installedPackageJson = nodeModules / name / "package.json";
-        if (!File.Exists(installedPackageJson))
+        if (installedDir is null)
         {
-            Warning($"SBOM: npm dependency '{name}' isn't installed under {nodeModules} - recording its declared range '{declaredRange}' instead of a resolved version.");
-            return ($"pkg:npm/{EncodeNpmName(name)}@{declaredRange}", declaredRange);
+            Warning($"SBOM: npm dependency '{name}' isn't installed near {parentNodeModules} - recording its declared range '{declaredRange}' instead of a resolved version.");
+            return ($"pkg:npm/{EncodeNpmName(name)}@{declaredRange}", declaredRange, null);
         }
 
-        var installedVersion = JsonNode.Parse(File.ReadAllText(installedPackageJson))!["version"]!.GetValue<string>();
-        return ($"pkg:npm/{EncodeNpmName(name)}@{installedVersion}", installedVersion);
+        var installedVersion = JsonNode.Parse(File.ReadAllText(installedDir / "package.json"))!["version"]!.GetValue<string>();
+        return ($"pkg:npm/{EncodeNpmName(name)}@{installedVersion}", installedVersion, installedDir);
     }
 
     static string EncodeNpmName(string name) => name.StartsWith("@") ? $"%40{name[1..]}" : name;
