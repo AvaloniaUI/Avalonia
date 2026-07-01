@@ -60,7 +60,7 @@ namespace Avalonia.Media
         {
             public CompositionRenderData Data { get; } = data;
             public bool IsDirty;
-            public void Dispose() => Data?.Dispose();
+            public void Dispose() => Data.Dispose();
         }
 
         private InlineDictionary<Compositor, RenderDataItem?> _renderDataDictionary;
@@ -106,13 +106,23 @@ namespace Avalonia.Media
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            // Replacing the drawing changes the recorded content; mark it dirty so it's re-recorded.
-            // Changes _inside_ the drawing (e.g. a mutated geometry or brush) are compositor-aware
-            // resources and are propagated by the server without re-recording.
+            // Replacing the drawing, or a structural change inside it (e.g. a replaced brush, pen or geometry) changes
+            // the recorded content; mark it dirty so it's re-recorded. Mutations _within_ a referenced compositor-aware
+            // resource (a brush's color, a geometry's shape) are propagated by the server without re-recording.
             if (change.Property == DrawingProperty)
+            {
+                var (oldValue, newValue) = change.GetOldAndNewValue<Drawing?>();
+
+                oldValue?.Invalidated -= DrawingInvalidated;
+                newValue?.Invalidated += DrawingInvalidated;
+
                 InvalidateContent();
+            }
 
             base.OnPropertyChanged(change);
+
+            void DrawingInvalidated(object? sender, EventArgs e)
+                => InvalidateContent();
         }
 
         private RenderDataItem? CreateServerContent(Compositor c)
