@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -297,6 +299,7 @@ namespace Avalonia.Win32.Input
             if (IsActive)
             {
                 Client.SetPreeditText(null);
+                ClearCompositionDecorations();
 
                 if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
                 {
@@ -329,6 +332,7 @@ namespace Avalonia.Win32.Input
             if (IsActive)
             {
                 Client.SetPreeditText(null);
+                ClearCompositionDecorations();
             }
         }
 
@@ -342,10 +346,11 @@ namespace Avalonia.Win32.Input
             }
 
             var flags = (GCS)ToInt32(lParam);
-            
+
             if (flags == 0)
             {
                 CompositionChanged("");
+                ClearCompositionDecorations();
             }
 
             if ((flags & GCS.GCS_RESULTSTR) != 0)
@@ -356,18 +361,37 @@ namespace Avalonia.Win32.Input
                 {
                     Composition = null;
 
-                    if (IsActive)
+                    // Structured client (in-document composition, e.g. the rich text editor): replace the
+                    // composition range with the result in one atomic edit and commit. The legacy path below
+                    // clears the preedit first and then re-inserts the result as a separate text-input event -
+                    // a clear-then-reinsert that, for an in-document composition, resets the composition range
+                    // before the text input arrives, so the client's composition-commit handling is bypassed.
+                    if (IsActive && Client is IStructuredTextInput structured &&
+                        structured.CompositionRange is { IsEmpty: false } compositionRange)
                     {
-                        Client.SetPreeditText(null);
-                    }
+                        structured.ReplaceText(compositionRange, resultString);
+                        structured.CommitComposition();
+                        ClearCompositionDecorations();
 
-                    var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, resultString);
-
-                    if (_parent.Input != null)
-                    {
-                        _parent.Input(e);
-
+                        // The result is already in the document; ignore the WM_CHAR the IME posts next.
                         _parent._ignoreWmChar = true;
+                    }
+                    else
+                    {
+                        if (IsActive)
+                        {
+                            Client.SetPreeditText(null);
+                            ClearCompositionDecorations();
+                        }
+
+                        var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, resultString);
+
+                        if (_parent.Input != null)
+                        {
+                            _parent.Input(e);
+
+                            _parent._ignoreWmChar = true;
+                        }
                     }
                 }
             }
@@ -377,6 +401,128 @@ namespace Avalonia.Win32.Input
                 var compositionString = GetCompositionString(GCS.GCS_COMPSTR);
 
                 CompositionChanged(compositionString);
+
+                // Feed the per-clause composition attributes (GCS_COMPATTR) to a structured client so the IME
+                // chooses the clause highlighting instead of the framework hard-coding a preedit underline.
+                UpdateCompositionDecorations();
+            }
+        }
+
+        // GCS_COMPATTR clause attribute bytes (immdev.h ATTR_*), one per composition WCHAR.
+        private const byte ATTR_TARGET_CONVERTED = 0x01;
+        private const byte ATTR_CONVERTED = 0x02;
+        private const byte ATTR_TARGET_NOTCONVERTED = 0x03;
+        private const byte ATTR_INPUT_ERROR = 0x04;
+
+        // Reads GCS_COMPATTR (per-character clause attributes), groups it into contiguous clause runs, and
+        // reports them to a structured client as transient decorations over the composition range. A client
+        // without a structured CompositionRange (e.g. TextBox's legacy preedit overlay) is skipped, so its
+        // existing preedit underline is unaffected.
+        private void UpdateCompositionDecorations()
+        {
+            if (!IsActive || Client is not IStructuredTextInput structured)
+            {
+                return;
+            }
+
+            var range = structured.CompositionRange;
+            if (range is null || range.IsEmpty)
+            {
+                structured.SetInputDecorations(Array.Empty<TextInputDecoration>());
+                return;
+            }
+
+            var attributes = GetCompositionAttributes();
+            if (attributes is null || attributes.Length == 0)
+            {
+                structured.SetInputDecorations(Array.Empty<TextInputDecoration>());
+                return;
+            }
+
+            var decorations = BuildCompositionDecorations(structured, range.Start, attributes);
+            structured.SetInputDecorations(decorations);
+        }
+
+        private void ClearCompositionDecorations()
+        {
+            if (IsActive && Client is IStructuredTextInput structured)
+            {
+                structured.SetInputDecorations(Array.Empty<TextInputDecoration>());
+            }
+        }
+
+        private static IReadOnlyList<TextInputDecoration> BuildCompositionDecorations(
+            IStructuredTextInput structured, ITextPointer compositionStart, byte[] attributes)
+        {
+            var decorations = new List<TextInputDecoration>();
+
+            var runStart = 0;
+            for (var i = 1; i <= attributes.Length; i++)
+            {
+                if (i < attributes.Length && attributes[i] == attributes[runStart])
+                {
+                    continue;
+                }
+
+                var kind = MapAttribute(attributes[runStart]);
+                decorations.Add(structured.CreateClauseDecoration(compositionStart, runStart, i - runStart, kind));
+                runStart = i;
+            }
+
+            return decorations;
+        }
+
+        private static TextInputDecorationKind MapAttribute(byte attribute) => attribute switch
+        {
+            ATTR_TARGET_CONVERTED => TextInputDecorationKind.ConvertedTarget,
+            ATTR_CONVERTED => TextInputDecorationKind.Converted,
+            ATTR_TARGET_NOTCONVERTED => TextInputDecorationKind.TargetNotConverted,
+            ATTR_INPUT_ERROR => TextInputDecorationKind.InputError,
+            _ => TextInputDecorationKind.Input
+        };
+
+        private byte[]? GetCompositionAttributes()
+        {
+            if (!IsComposing)
+            {
+                return null;
+            }
+
+            var himc = ImmGetContext(Hwnd);
+            if (himc == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            try
+            {
+                var size = ImmGetCompositionString(himc, GCS.GCS_COMPATTR, IntPtr.Zero, 0);
+                if (size <= 0)
+                {
+                    return null;
+                }
+
+                var buffer = Marshal.AllocHGlobal(size);
+                try
+                {
+                    var written = ImmGetCompositionString(himc, GCS.GCS_COMPATTR, buffer, (uint)size);
+                    if (written <= 0)
+                    {
+                        return null;
+                    }
+
+                    var attributes = new byte[written];
+                    Marshal.Copy(buffer, attributes, 0, written);
+                    return attributes;
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+            finally
+            {
+                ImmReleaseContext(Hwnd, himc);
             }
         }
 
