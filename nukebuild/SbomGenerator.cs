@@ -221,6 +221,8 @@ public static class SbomGenerator
             // dependencies are direct dependencies of the final NuGet package.
             foreach (var (name, rangeNode) in dependencies)
             {
+                if (IsTypeOnlyPackage(name))
+                    continue;
                 var purl = AddNpmComponentTree(merged, seenComponentKeys, nodeModules, name,
                     rangeNode!.GetValue<string>(), nodeModules);
                 if (rootRef is not null)
@@ -271,6 +273,8 @@ public static class SbomGenerator
         var dependsOn = node["dependsOn"]!.AsArray();
         foreach (var (childName, childRange) in childDeps)
         {
+            if (IsTypeOnlyPackage(childName))
+                continue;
             var childPurl = AddNpmComponentTree(merged, seenComponentKeys, topLevelNodeModules, childName,
                 childRange!.GetValue<string>(), childNodeModules);
             dependsOn.Add(childPurl);
@@ -278,6 +282,10 @@ public static class SbomGenerator
 
         return purl;
     }
+
+    // @types/* packages are TypeScript declaration stubs: esbuild strips them at build time, so
+    // they're never part of the shipped bytes and don't belong in a scope-of-delivery SBOM.
+    static bool IsTypeOnlyPackage(string name) => name.StartsWith("@types/", StringComparison.Ordinal);
 
     static void AddDependsOn(JsonObject merged, string fromRef, string toPurl)
     {
