@@ -173,8 +173,9 @@ public static class SbomGenerator
         }
 
         // cyclonedx-dotnet leaves dependsOn edges pointing at packages it excluded as dev
-        // dependencies (e.g. analyzers stripped by -ed), which dangle once the component is gone.
-        // Drop those so the graph only references components actually present in the SBOM.
+        // dependencies (e.g. analyzers stripped by -ed), which dangle once the component is gone
+        // (upstream bug CycloneDX/cyclonedx-dotnet#761, still reproducing in 6.2.0). Drop those so
+        // the graph only references components actually present in the SBOM.
         PruneDanglingDependencyEdges(merged);
 
         File.WriteAllText(outputDirectory / $"{finalId}.{version}.cdx.json",
