@@ -1248,6 +1248,89 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         
         private static void AssertGreaterThan(double x, double y, string message) => Assert.True(x > y, $"{message}. {x} is not > {y}");
 
+        /// <summary>
+        /// Regression tests for https://github.com/AvaloniaUI/Avalonia/issues/21685.
+        /// TextLayout with TextWrapping and maxWidth=0 must not create O(N) TextLineImpl instances.
+        /// The fix converts zero/negative maxWidth to infinity before calling the formatter so that
+        /// all text lands on a single line rather than triggering emergency grapheme-level breaks.
+        /// </summary>
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.WrapWithOverflow)]
+        public void Should_Not_Create_O_N_Lines_When_MaxWidth_Is_Zero(TextWrapping wrapping)
+        {
+            using (Start())
+            {
+                const string text = "Hello world this is a long string that would create millions of lines";
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black,
+                    textWrapping: wrapping,
+                    maxWidth: 0);
+
+                // All text should be on one line — not one line per grapheme.
+                Assert.Equal(1, layout.TextLines.Count);
+                Assert.True(layout.TextLines[0].Length >= text.Length);
+            }
+        }
+
+        [Theory]
+        [InlineData(TextWrapping.Wrap)]
+        [InlineData(TextWrapping.WrapWithOverflow)]
+        public void Should_Not_Create_O_N_Lines_When_MaxWidth_Is_Negative(TextWrapping wrapping)
+        {
+            using (Start())
+            {
+                const string text = "abc def ghi";
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black,
+                    textWrapping: wrapping,
+                    maxWidth: -1);
+
+                Assert.Equal(1, layout.TextLines.Count);
+                Assert.True(layout.TextLines[0].Length >= text.Length);
+            }
+        }
+
+        [Fact]
+        public void Should_Wrap_Correctly_With_Positive_MaxWidth_After_Zero_MaxWidth()
+        {
+            using (Start())
+            {
+                const string text = "Hello world";
+
+                // Zero-width layout must not throw or hang.
+                var zeroLayout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    maxWidth: 0);
+
+                Assert.Equal(1, zeroLayout.TextLines.Count);
+
+                // A wide-enough layout must still wrap at word boundaries.
+                var normalLayout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    maxWidth: 200);
+
+                Assert.True(normalLayout.TextLines.Count >= 1);
+                Assert.True(normalLayout.Width <= 200);
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

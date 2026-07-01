@@ -1350,16 +1350,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         /// <summary>
         /// Regression test for https://github.com/AvaloniaUI/Avalonia/issues/21685.
-        /// Wrapping with paragraphWidth=0 must not create O(N) TextLineImpl instances.
+        /// TextFormatterImpl.FormatLine with paragraphWidth=0 and TextWrapping.Wrap performs
+        /// emergency grapheme-level breaks (one per call). The catastrophic-allocation fix lives
+        /// in TextLayout, which redirects zero-width to infinity before calling the formatter.
+        /// With WrapWithOverflow a single word is allowed to overflow so the whole run is returned.
         /// </summary>
         [Theory]
-        [InlineData(TextWrapping.Wrap)]
-        [InlineData(TextWrapping.WrapWithOverflow)]
-        public void Should_Not_Create_O_N_Lines_When_ParagraphWidth_Is_Zero(TextWrapping wrapping)
+        [InlineData(TextWrapping.Wrap, true)]
+        [InlineData(TextWrapping.WrapWithOverflow, false)]
+        public void FormatLine_WithZeroWidth_PerformsEmergencyBreak(TextWrapping wrapping, bool expectsBreak)
         {
             using (Start())
             {
-                const string text = "Hello world this is a long string that would create millions of lines";
+                // "abc" is a single word — Wrap will emergency-break after the first grapheme,
+                // WrapWithOverflow allows the whole word to overflow onto one line.
+                const string text = "abc";
 
                 var defaultProperties =
                     new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
@@ -1370,61 +1375,21 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var formatter = new TextFormatterImpl();
 
-                // paragraphWidth=0 must not loop O(N) times — one line for all text is expected.
                 var textLine = formatter.FormatLine(textSource, 0, 0, paragraphProperties);
 
                 Assert.NotNull(textLine);
-                Assert.Equal(text.Length, textLine.Length);
-            }
-        }
+                Assert.True(textLine.Length > 0);
 
-        [Fact]
-        public void Should_Produce_Single_Line_For_Negative_ParagraphWidth_With_Wrap()
-        {
-            using (Start())
-            {
-                const string text = "abc def";
-
-                var defaultProperties =
-                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
-
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
-
-                var textSource = new SingleBufferTextSource(text, defaultProperties);
-
-                var formatter = new TextFormatterImpl();
-
-                var textLine = formatter.FormatLine(textSource, 0, -1, paragraphProperties);
-
-                Assert.NotNull(textLine);
-                Assert.Equal(text.Length, textLine.Length);
-            }
-        }
-
-        [Fact]
-        public void Should_Still_Wrap_Correctly_With_Positive_ParagraphWidth_After_Zero_Width_Format()
-        {
-            using (Start())
-            {
-                const string text = "Hello world";
-
-                var defaultProperties =
-                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
-
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
-
-                var textSource = new SingleBufferTextSource(text, defaultProperties);
-
-                var formatter = new TextFormatterImpl();
-
-                // First format with zero width — should not throw or hang
-                var zeroLine = formatter.FormatLine(textSource, 0, 0, paragraphProperties);
-                Assert.NotNull(zeroLine);
-
-                // Then format normally — should produce at least one line breaking normally
-                var normalLine = formatter.FormatLine(textSource, 0, 200, paragraphProperties);
-                Assert.NotNull(normalLine);
-                Assert.True(normalLine.Length > 0);
+                if (expectsBreak)
+                {
+                    // Wrap mode: emergency break advances exactly one grapheme, not the whole string.
+                    Assert.True(textLine.Length < text.Length);
+                }
+                else
+                {
+                    // WrapWithOverflow: single word overflows onto one line.
+                    Assert.Equal(text.Length, textLine.Length);
+                }
             }
         }
 

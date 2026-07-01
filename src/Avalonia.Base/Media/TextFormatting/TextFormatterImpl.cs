@@ -878,13 +878,6 @@ namespace Avalonia.Media.TextFormatting
                 return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
             }
 
-            // A zero or negative paragraph width means there is no space to wrap into.
-            // Advancing one grapheme per call would create O(N) TextLineImpl instances for the
-            // entire text (one per character), causing catastrophic memory allocation.
-            // Treat it as unconstrained (infinite width) so all runs fit on one line.
-            if (paragraphWidth <= 0)
-                paragraphWidth = double.PositiveInfinity;
-
             var measuredLength = MeasureLength(textRuns, paragraphWidth);
 
             if(measuredLength == 0)
