@@ -28,7 +28,10 @@ class WaylandPlatform
         // that force an X11 fallback when the compositor lacks them.
 
         var inputDispatchQueue = new AutomaticRawEventGrouperDispatchQueue();
-        Dispatcher.InitializeUIThreadDispatcher(new ManagedDispatcherImpl(null));
+        IDispatcherImpl dispatcherImpl = options.UseGLibMainLoop
+            ? new WaylandGlibDispatcher(options.ExternalGLibMainLoopExceptionLogger)
+            : new ManagedDispatcherImpl(null);
+        Dispatcher.InitializeUIThreadDispatcher(dispatcherImpl);
         
         var worker = new WaylandWorker(inputDispatchQueue);
 
