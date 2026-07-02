@@ -132,6 +132,12 @@ jobs:
       artifactName: 'NuGetOSX'
     condition: succeeded()
 
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.SourcesDirectory)/artifacts/sbom'
+      artifactName: 'SBOMOSX'
+    condition: succeeded()
+
 - job: Windows
   pool:
     vmImage: 'windows-2025'

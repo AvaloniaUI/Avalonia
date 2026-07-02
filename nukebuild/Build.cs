@@ -433,7 +433,8 @@ partial class Build : NukeBuild
 
     Target CiAzureOSX => _ => _
         .DependsOn(Package)
-        .DependsOn(ZipFiles);
+        .DependsOn(ZipFiles)
+        .DependsOn(CreateSbom);
 
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
