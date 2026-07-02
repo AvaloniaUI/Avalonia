@@ -2188,7 +2188,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(textBox.Text!.Length, structured.DocumentEnd.Offset);
             Assert.Equal(textBox.Text, structured.GetText(structured.DocumentRange));
 
-            var backwardPointer = structured.CreatePointer(2, LogicalDirection.Backward);
+            var backwardPointer = structured.PointerAt(2, LogicalDirection.Backward);
             Assert.Equal(2, backwardPointer.Offset);
             Assert.Equal(LogicalDirection.Backward, backwardPointer.Gravity);
         }
@@ -2280,7 +2280,7 @@ namespace Avalonia.Controls.UnitTests
             var startVersion = nav.DocumentVersion;
 
             var structured = (IStructuredTextInput)nav;
-            structured.ReplaceText(structured.CreateRange(structured.DocumentEnd, structured.DocumentEnd), "!");
+            structured.ReplaceText(structured.GetRange(structured.DocumentEnd, structured.DocumentEnd), "!");
 
             Assert.NotNull(captured);
             Assert.Equal(5, captured!.Value.Position.Offset);
@@ -2309,6 +2309,46 @@ namespace Avalonia.Controls.UnitTests
             var navB = GetNavigation(b);
 
             Assert.Throws<ArgumentException>(() => navA.GetOffset(navA.DocumentStart, navB.DocumentStart));
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Rejects_Foreign_Pointer_In_Mutation()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var a = new TextBox { Template = CreateTemplate(), Text = "aaa" };
+            a.ApplyTemplate();
+            var b = new TextBox { Template = CreateTemplate(), Text = "bbb" };
+            b.ApplyTemplate();
+
+            var structuredA = (IStructuredTextInput)GetNavigation(a);
+            var navB = GetNavigation(b);
+
+            // The mutation path enforces the same provenance rule as the navigation reads.
+            Assert.Throws<ArgumentException>(() => structuredA.ReplaceText(navB.DocumentRange, "x"));
+            Assert.Equal("aaa", a.Text);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_GetRangeEnclosing_Honors_Gravity_At_Boundary()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // Offset 4 is the boundary between the " " gap segment [3,4) and "bar" [4,7).
+            var forward = nav.PointerAt(4, LogicalDirection.Forward);
+            var backward = nav.PointerAt(4, LogicalDirection.Backward);
+
+            var following = nav.GetRangeEnclosing(forward, TextUnit.Word);
+            Assert.Equal(4, following.Start.Offset);
+            Assert.Equal(7, following.End.Offset);
+
+            var preceding = nav.GetRangeEnclosing(backward, TextUnit.Word);
+            Assert.Equal(3, preceding.Start.Offset);
+            Assert.Equal(4, preceding.End.Offset);
         }
 
         [Fact]
@@ -2699,7 +2739,7 @@ namespace Avalonia.Controls.UnitTests
             structured.TextChanged += (_, _) => eventCount++;
 
             var end = structured.DocumentEnd;
-            structured.ReplaceText(structured.CreateRange(end, end), "!");
+            structured.ReplaceText(structured.GetRange(end, end), "!");
 
             Assert.Equal("abc!", textBox.Text);
             Assert.Equal(1, eventCount);
@@ -2762,7 +2802,7 @@ namespace Avalonia.Controls.UnitTests
             structured.CaretPositionChanged += (_, _) => eventCount++;
 
             var end = structured.DocumentEnd;
-            structured.ReplaceText(structured.CreateRange(end, end), "!");
+            structured.ReplaceText(structured.GetRange(end, end), "!");
 
             Assert.Equal("abc!", textBox.Text);
             Assert.True(eventCount > 0);
@@ -2792,9 +2832,9 @@ namespace Avalonia.Controls.UnitTests
             var eventCount = 0;
             structured.CaretPositionChanged += (_, _) => eventCount++;
 
-            var start = structured.CreatePointer(1, LogicalDirection.Forward);
-            var end = structured.CreatePointer(4, LogicalDirection.Backward);
-            structured.Selection = structured.CreateRange(start, end);
+            var start = structured.PointerAt(1, LogicalDirection.Forward);
+            var end = structured.PointerAt(4, LogicalDirection.Backward);
+            structured.Selection = structured.GetRange(start, end);
 
             Assert.Equal(1, textBox.SelectionStart);
             Assert.Equal(4, textBox.SelectionEnd);

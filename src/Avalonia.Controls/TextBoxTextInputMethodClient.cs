@@ -13,7 +13,6 @@ namespace Avalonia.Controls
         private TextBox? _parent;
         private TextPresenter? _presenter;
         private bool _selectionChanged;
-        private bool _textChanged;
         private bool _isInChange;
         private EventHandler? _caretBoundsChangedHandler;
         private ITextRange? _compositionRange;
@@ -21,7 +20,6 @@ namespace Avalonia.Controls
         private EventHandler<TextChange>? _navTextChanged;
         private IReadOnlyList<TextInputDecoration> _inputDecorations = Array.Empty<TextInputDecoration>();
 
-        public event EventHandler? TextChanged;
         public event EventHandler? CaretPositionChanged;
         public event EventHandler? CompositionChanged;
         public event EventHandler? InputDecorationsChanged;
@@ -228,12 +226,6 @@ namespace Avalonia.Controls
             set => SetCompositionRangeCore(value, raiseEvent: true);
         }
 
-        ITextPointer IStructuredTextInput.CreatePointer(int offset, LogicalDirection direction)
-            => CreateLocalPointer(offset, direction);
-
-        ITextRange IStructuredTextInput.CreateRange(ITextPointer start, ITextPointer end)
-            => CreateLocalRange(GetAbsoluteOffset(start), GetAbsoluteOffset(end));
-
         void IStructuredTextInput.ReplaceText(ITextRange range, string text)
         {
             if (_parent is null)
@@ -346,7 +338,7 @@ namespace Avalonia.Controls
                 return default;
             }
 
-            var offset = GetAbsoluteOffset(position);
+            var offset = RequireOwnOffset(position);
             var rect = _presenter.TextLayout.HitTestTextPosition(offset);
 
             return TransformPresenterRect(rect);
@@ -414,35 +406,6 @@ namespace Avalonia.Controls
             return CreateLocalRange(start, end);
         }
 
-        ITextPointer? IStructuredTextInput.GetBoundaryPosition(ITextPointer position, TextUnit granularity,
-            LogicalDirection direction)
-        {
-            var offset = GetAbsoluteOffset(position);
-            var length = GetDocumentLength();
-
-            if (granularity == TextUnit.Document)
-            {
-                return direction == LogicalDirection.Forward
-                    ? CreateLocalPointer(length, LogicalDirection.Forward)
-                    : CreateLocalPointer(0, LogicalDirection.Backward);
-            }
-
-            if (granularity == TextUnit.Character)
-            {
-                var characterBoundary = direction == LogicalDirection.Forward
-                    ? Math.Min(length, offset + 1)
-                    : Math.Max(0, offset - 1);
-
-                return CreateLocalPointer(characterBoundary, direction);
-            }
-
-            var enclosing = ((ITextNavigation)this).GetRangeEnclosing(position, granularity);
-
-            return direction == LogicalDirection.Forward
-                ? CreateLocalPointer(enclosing.End.Offset, LogicalDirection.Forward)
-                : CreateLocalPointer(enclosing.Start.Offset, LogicalDirection.Backward);
-        }
-
         // ── ITextNavigation ────────────────────────────────────────────────
 
         ITextPointer ITextNavigation.DocumentStart => CreateLocalPointer(0, LogicalDirection.Forward);
@@ -462,7 +425,9 @@ namespace Avalonia.Controls
 
             return CreateLocalPointer(
                 target,
-                distance >= 0 ? LogicalDirection.Forward : LogicalDirection.Backward);
+                distance > 0 ? LogicalDirection.Forward
+                : distance < 0 ? LogicalDirection.Backward
+                : origin.Gravity);
         }
 
         ITextPointer ITextNavigation.GetPosition(ITextPointer origin, TextUnit unit, int count)
@@ -505,27 +470,9 @@ namespace Avalonia.Controls
                 case TextUnit.Format:
                     return CreateLocalRange(0, text.Length);
 
-                case TextUnit.Character:
-                    if (text.Length == 0)
-                    {
-                        return CreateLocalRange(0, 0);
-                    }
-
-                    var characterStart = Math.Clamp(offset, 0, text.Length - 1);
-                    return CreateLocalRange(characterStart, TextSegmentation.NextGrapheme(characterStart, text));
-
-                case TextUnit.Word:
-                    return GetWordRange(offset, text);
-
-                case TextUnit.Sentence:
-                    return GetSentenceRange(offset, text);
-
-                case TextUnit.Line:
-                case TextUnit.Paragraph:
-                    return GetLineRange(offset, text);
-
                 default:
-                    return CreateLocalRange(offset, offset);
+                    var (start, end) = TextSegmentation.UnitBounds(offset, unit, position.Gravity, text);
+                    return CreateLocalRange(start, end);
             }
         }
 
@@ -642,11 +589,6 @@ namespace Avalonia.Controls
                 RaiseDocumentTextChanged(e.OldValue as string ?? string.Empty, e.NewValue as string ?? string.Empty);
 
                 RaiseSurroundingTextChanged();
-
-                if (_isInChange)
-                    _textChanged = true;
-                else
-                    RaiseTextChangedCore();
             }
 
             if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
@@ -674,16 +616,12 @@ namespace Avalonia.Controls
         {
             _isInChange = false;
 
-            if (_textChanged)
-                RaiseTextChangedCore();
-
             if (_selectionChanged)
             {
                 RaiseSelectionChanged();
                 RaiseCaretPositionChangedCore();
             }
 
-            _textChanged = false;
             _selectionChanged = false;
         }
 
@@ -699,26 +637,15 @@ namespace Avalonia.Controls
                 CreateLocalPointer(start, LogicalDirection.Forward),
                 CreateLocalPointer(end, LogicalDirection.Backward));
 
-        private int GetAbsoluteOffset(ITextPointer pointer)
-        {
-            if (pointer is null)
-                throw new ArgumentNullException(nameof(pointer));
-
-            if (pointer is SimpleTextPointer simplePointer)
-            {
-                return Math.Clamp(simplePointer.Offset, 0, GetDocumentLength());
-            }
-
-            return Math.Clamp(pointer.Offset, 0, GetDocumentLength());
-        }
-
+        // Mutation and geometry paths share the navigation paths' provenance rule: a foreign pointer
+        // throws instead of being silently reinterpreted by its raw offset.
         private (int Start, int End) GetAbsoluteRange(ITextRange range)
         {
             if (range is null)
                 throw new ArgumentNullException(nameof(range));
 
-            var start = GetAbsoluteOffset(range.Start);
-            var end = GetAbsoluteOffset(range.End);
+            var start = RequireOwnOffset(range.Start);
+            var end = RequireOwnOffset(range.End);
 
             return start <= end ? (start, end) : (end, start);
         }
@@ -813,26 +740,6 @@ namespace Avalonia.Controls
 
             return point.Transform(transform.Value);
         }
-
-        private ITextRange GetLineRange(int offset, string text)
-        {
-            var (start, end) = TextSegmentation.LineBounds(offset, text);
-            return CreateLocalRange(start, end);
-        }
-
-        private ITextRange GetWordRange(int offset, string text)
-        {
-            var (start, end) = TextSegmentation.WordBounds(offset, text);
-            return CreateLocalRange(start, end);
-        }
-
-        private ITextRange GetSentenceRange(int offset, string text)
-        {
-            var (start, end) = TextSegmentation.SentenceBounds(offset, text);
-            return CreateLocalRange(start, end);
-        }
-
-        private void RaiseTextChangedCore() => TextChanged?.Invoke(this, EventArgs.Empty);
 
         private void RaiseCaretPositionChangedCore() => CaretPositionChanged?.Invoke(this, EventArgs.Empty);
 

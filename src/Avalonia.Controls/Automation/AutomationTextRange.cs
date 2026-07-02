@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Input.TextInput;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 
 namespace Avalonia.Automation
@@ -64,10 +65,18 @@ namespace Avalonia.Automation
 
         public void ExpandToEnclosingUnit(TextUnit unit)
         {
-            var range = _navigation.GetRangeEnclosing(_start, unit);
+            var range = _navigation.GetRangeEnclosing(ForwardProbe(_start), unit);
             _start = range.Start;
             _end = range.End;
         }
+
+        // The cursor is offset-semantic (UIA ranges carry no gravity), so enclosing queries use
+        // forward-gravity probes: a boundary tie always resolves to the following unit, keeping the
+        // walk deterministic regardless of which endpoint the probe came from.
+        private ITextPointer ForwardProbe(ITextPointer position)
+            => position.Gravity == LogicalDirection.Forward
+                ? position
+                : _navigation.PointerAt(position.Offset, LogicalDirection.Forward);
 
         public string GetText(int maxLength)
         {
@@ -127,7 +136,7 @@ namespace Avalonia.Automation
             var probe = _end;
             while (true)
             {
-                var enclosing = _navigation.GetRangeEnclosing(probe, unit);
+                var enclosing = _navigation.GetRangeEnclosing(ForwardProbe(probe), unit);
                 if (enclosing.Start.Offset >= from && enclosing.End.Offset > from)
                 {
                     if (!IsWordGap(unit, enclosing))
@@ -165,7 +174,7 @@ namespace Avalonia.Automation
                     return false; // document start
                 }
 
-                var enclosing = _navigation.GetRangeEnclosing(previous, unit);
+                var enclosing = _navigation.GetRangeEnclosing(ForwardProbe(previous), unit);
                 if (enclosing.Start.Offset < from && !IsWordGap(unit, enclosing))
                 {
                     _start = enclosing.Start;

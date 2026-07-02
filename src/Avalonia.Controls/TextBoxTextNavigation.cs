@@ -27,7 +27,7 @@ namespace Avalonia.Controls
 
         public ITextPointer DocumentStart => CreatePointer(0);
 
-        public ITextPointer DocumentEnd => CreatePointer(Text.Length);
+        public ITextPointer DocumentEnd => CreatePointer(Text.Length, LogicalDirection.Backward);
 
         public ITextRange DocumentRange => new NavRange(CreatePointer(0), CreatePointer(Text.Length));
 
@@ -46,7 +46,11 @@ namespace Avalonia.Controls
             var text = Text;
             var target = Math.Clamp(OffsetOf(origin) + distance, 0, text.Length);
 
-            return CreatePointer(TextSegmentation.SnapToValid(target, text, distance >= 0));
+            return CreatePointer(
+                TextSegmentation.SnapToValid(target, text, distance >= 0),
+                distance > 0 ? LogicalDirection.Forward
+                : distance < 0 ? LogicalDirection.Backward
+                : origin.Gravity);
         }
 
         public ITextPointer GetPosition(ITextPointer origin, TextUnit unit, int count)
@@ -55,7 +59,7 @@ namespace Avalonia.Controls
 
             if (count == 0)
             {
-                return CreatePointer(offset);
+                return CreatePointer(offset, origin.Gravity);
             }
 
             var text = Text;
@@ -73,7 +77,7 @@ namespace Avalonia.Controls
                 current = next;
             }
 
-            return CreatePointer(current);
+            return CreatePointer(current, forward ? LogicalDirection.Forward : LogicalDirection.Backward);
         }
 
         public ITextRange GetRangeEnclosing(ITextPointer position, TextUnit unit)
@@ -88,26 +92,9 @@ namespace Avalonia.Controls
                 case TextUnit.Format:
                     return new NavRange(CreatePointer(0), CreatePointer(text.Length));
 
-                case TextUnit.Character:
-                    if (text.Length == 0)
-                    {
-                        return new NavRange(CreatePointer(0), CreatePointer(0));
-                    }
-
-                    var characterStart = Math.Clamp(offset, 0, text.Length - 1);
-                    return new NavRange(CreatePointer(characterStart), CreatePointer(TextSegmentation.NextGrapheme(characterStart, text)));
-
-                case TextUnit.Word:
-                    var (wordStart, wordEnd) = TextSegmentation.WordBounds(offset, text);
-                    return new NavRange(CreatePointer(wordStart), CreatePointer(wordEnd));
-
-                case TextUnit.Sentence:
-                    var (sentenceStart, sentenceEnd) = TextSegmentation.SentenceBounds(offset, text);
-                    return new NavRange(CreatePointer(sentenceStart), CreatePointer(sentenceEnd));
-
                 default:
-                    var (lineStart, lineEnd) = TextSegmentation.LineBounds(offset, text);
-                    return new NavRange(CreatePointer(lineStart), CreatePointer(lineEnd));
+                    var (start, end) = TextSegmentation.UnitBounds(offset, unit, position.Gravity, text);
+                    return new NavRange(CreatePointer(start), CreatePointer(end));
             }
         }
 
@@ -231,8 +218,8 @@ namespace Avalonia.Controls
             _textChanged?.Invoke(this, new TextChange(CreatePointer(offset), oldLength, newLength));
         }
 
-        private ITextPointer CreatePointer(int offset) =>
-            new NavPointer(this, Math.Clamp(offset, 0, Text.Length), LogicalDirection.Forward);
+        private ITextPointer CreatePointer(int offset, LogicalDirection gravity = LogicalDirection.Forward) =>
+            new NavPointer(this, Math.Clamp(offset, 0, Text.Length), gravity);
 
         private int OffsetOf(ITextPointer pointer)
         {

@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Input.TextInput;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Controls
@@ -50,6 +51,53 @@ namespace Avalonia.Controls
             }
 
             return offset;
+        }
+
+        /// <summary>
+        /// The bounds of the <paramref name="unit"/> containing <paramref name="offset"/>, with the
+        /// boundary tie broken by <paramref name="gravity"/>: a backward-gravity position exactly at a
+        /// unit start resolves to the preceding unit. Handles Character, Word, Sentence, Line and
+        /// Paragraph (Line and Paragraph both map to the logical line here).
+        /// </summary>
+        public static (int Start, int End) UnitBounds(int offset, TextUnit unit, LogicalDirection gravity, ReadOnlySpan<char> text)
+        {
+            var bounds = UnitBoundsCore(offset, unit, text);
+
+            if (gravity == LogicalDirection.Backward && offset > 0 && bounds.Start == offset)
+            {
+                bounds = unit == TextUnit.Character
+                    ? (PreviousGrapheme(offset, text), offset)
+                    : UnitBoundsCore(offset - 1, unit, text);
+            }
+
+            return bounds;
+        }
+
+        private static (int Start, int End) UnitBoundsCore(int offset, TextUnit unit, ReadOnlySpan<char> text)
+            => unit switch
+            {
+                TextUnit.Character => CharacterBounds(offset, text),
+                TextUnit.Word => WordBounds(offset, text),
+                TextUnit.Sentence => SentenceBounds(offset, text),
+                _ => LineBounds(offset, text),
+            };
+
+        public static (int Start, int End) CharacterBounds(int offset, ReadOnlySpan<char> text)
+        {
+            if (text.Length == 0)
+            {
+                return (0, 0);
+            }
+
+            // At the document end the only enclosing character is the last grapheme; clamping to
+            // length - 1 could land inside a surrogate pair or cluster.
+            if (offset >= text.Length)
+            {
+                return (PreviousGrapheme(text.Length, text), text.Length);
+            }
+
+            var start = Math.Max(0, offset);
+            return (start, NextGrapheme(start, text));
         }
 
         // UAX-29 word segmentation; enumerates from the document start, so O(offset).

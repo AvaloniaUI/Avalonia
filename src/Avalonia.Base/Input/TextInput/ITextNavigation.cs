@@ -18,10 +18,10 @@ namespace Avalonia.Input.TextInput
     [Unstable]
     public interface ITextNavigation
     {
-        /// <summary>The position at the start of the document.</summary>
+        /// <summary>The position at the start of the document. Carries forward gravity.</summary>
         ITextPointer DocumentStart { get; }
 
-        /// <summary>The position at the end of the document.</summary>
+        /// <summary>The position at the end of the document. Carries backward gravity.</summary>
         ITextPointer DocumentEnd { get; }
 
         /// <summary>The range covering the whole document.</summary>
@@ -33,7 +33,8 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// The position <paramref name="distance"/> UTF-16 code units from <paramref name="origin"/>
         /// (negative moves toward the document start), clamped to the document and snapped, in the
-        /// direction of travel, to a valid position.
+        /// direction of travel, to a valid position. The result carries the direction of travel as its
+        /// gravity; a zero-distance move preserves the origin's gravity.
         /// </summary>
         ITextPointer GetPosition(ITextPointer origin, int distance);
 
@@ -44,7 +45,8 @@ namespace Avalonia.Input.TextInput
         /// <remarks>
         /// A caller needing the number of boundaries actually crossed (UIA <c>Move</c>) single-steps with
         /// <c>count = +/-1</c>, counting until a step does not advance (the document edge). That count is
-        /// not recoverable from offsets - a code-unit distance is not a boundary count.
+        /// not recoverable from offsets - a code-unit distance is not a boundary count. The result carries
+        /// the direction of travel as its gravity; a zero-count move preserves the origin's gravity.
         /// </remarks>
         ITextPointer GetPosition(ITextPointer origin, TextUnit unit, int count);
 

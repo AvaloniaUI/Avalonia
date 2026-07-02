@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 
 namespace Avalonia.Input.TextInput
@@ -12,14 +11,16 @@ namespace Avalonia.Input.TextInput
     /// <remarks>
     /// Offsets are UTF-16 code units and all members are UI-thread-only. Document anchors, ranges,
     /// <see cref="ITextNavigation.GetText"/> and <see cref="ITextNavigation.GetRangeEnclosing"/> come
-    /// from the base navigation contract.
+    /// from the base navigation contract, and a platform offset <c>n</c> is resolved via
+    /// <c>GetPosition(DocumentStart, n)</c> (see the internal <c>TextNavigationExtensions</c> helpers) -
+    /// there is deliberately no member that fabricates a pointer from a bare integer. Text mutation is
+    /// observed through the base <see cref="ITextNavigation.TextChanged"/> delta;
+    /// <see cref="CaretPositionChanged"/> and <see cref="CompositionChanged"/> report caret/selection and
+    /// composition movement, which are not text changes.
     /// </remarks>
     [Unstable]
     public interface IStructuredTextInput : ITextNavigation
     {
-        ITextPointer CreatePointer(int offset, LogicalDirection direction);
-        ITextRange CreateRange(ITextPointer start, ITextPointer end);
-
         ITextPointer CaretPosition { get; }
         ITextRange Selection { get; set; }
         ITextRange? CompositionRange { get; set; }
@@ -35,9 +36,6 @@ namespace Avalonia.Input.TextInput
         ITextPointer? GetClosestPosition(Point point, ITextRange withinRange);
         ITextRange? GetCharacterRangeAtPoint(Point point);
 
-        ITextPointer? GetBoundaryPosition(ITextPointer position, TextUnit unit, LogicalDirection direction);
-
-        new event EventHandler? TextChanged;
         event EventHandler? CaretPositionChanged;
         event EventHandler? CompositionChanged;
 

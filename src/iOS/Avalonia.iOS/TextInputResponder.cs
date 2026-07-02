@@ -141,9 +141,7 @@ partial class AvaloniaView
         {
             var normalizedStart = Math.Min(start, end);
             var normalizedEnd = Math.Max(start, end);
-            var startPointer = structured.CreatePointer(normalizedStart, LogicalDirection.Forward);
-            var endPointer = structured.CreatePointer(normalizedEnd, LogicalDirection.Backward);
-            return structured.CreateRange(startPointer, endPointer);
+            return structured.RangeAt(normalizedStart, normalizedEnd - normalizedStart);
         }
 
         private static AvaloniaTextRange ToAvaloniaRange(ITextRange range)
@@ -174,6 +172,8 @@ partial class AvaloniaView
         }
 
         private void ClientStateChanged(object? sender, EventArgs e) => SurroundingTextChanged(sender, e);
+
+        private void ClientTextChanged(object? sender, TextChange change) => SurroundingTextChanged(sender, EventArgs.Empty);
 
         private void KeyPress(Key key, PhysicalKey physicalKey, string? keySymbol)
         {
@@ -418,19 +418,11 @@ partial class AvaloniaView
                     ? TextUnit.Character
                     : TextUnit.Line;
 
-                var pointer = structured.CreatePointer(fromPosition.Index, direction);
-                for (var i = 0; i < steps; i++)
-                {
-                    var next = structured.GetBoundaryPosition(pointer, granularity, direction);
-                    if (next is null)
-                    {
-                        return null;
-                    }
+                var pointer = structured.PointerAt(fromPosition.Index, direction);
+                var target = structured.GetPosition(pointer, granularity,
+                    direction == LogicalDirection.Forward ? steps : -steps);
 
-                    pointer = next;
-                }
-
-                return new AvaloniaTextPosition(pointer.Offset);
+                return new AvaloniaTextPosition(target.Offset);
             }
 
             var newPosition = fromPosition.Index;
@@ -508,22 +500,14 @@ partial class AvaloniaView
             {
                 if (StructuredClient is { } structured)
                 {
-                    var position = structured.CreatePointer(p.Index, LogicalDirection.Forward);
+                    var position = structured.PointerAt(p.Index, LogicalDirection.Forward);
                     var boundaryDirection = direction is UITextLayoutDirection.Left or UITextLayoutDirection.Up
                         ? LogicalDirection.Backward
                         : LogicalDirection.Forward;
-                    var boundary = structured.GetBoundaryPosition(position, TextUnit.Character, boundaryDirection);
+                    var boundary = structured.GetPosition(position, TextUnit.Character,
+                        boundaryDirection == LogicalDirection.Backward ? -1 : 1);
 
-                    if (boundary is null)
-                    {
-                        return new AvaloniaTextRange(p.Index, p.Index);
-                    }
-
-                    var textRange = boundaryDirection == LogicalDirection.Backward
-                        ? structured.CreateRange(boundary, position)
-                        : structured.CreateRange(position, boundary);
-
-                    return ToAvaloniaRange(textRange);
+                    return ToAvaloniaRange(structured.GetRange(position, boundary));
                 }
 
                 if (direction is UITextLayoutDirection.Left or UITextLayoutDirection.Up)
@@ -579,7 +563,7 @@ partial class AvaloniaView
 
             if (position is AvaloniaTextPosition p && StructuredClient is { } structured)
             {
-                var pointer = structured.CreatePointer(p.Index, LogicalDirection.Forward);
+                var pointer = structured.PointerAt(p.Index, LogicalDirection.Forward);
                 return ToCGRect(structured.GetCaretRect(pointer));
             }
 
@@ -799,7 +783,7 @@ partial class AvaloniaView
 
                 if (StructuredClient is { } structured)
                 {
-                    structured.TextChanged += ClientStateChanged;
+                    structured.TextChanged += ClientTextChanged;
                     structured.CaretPositionChanged += ClientStateChanged;
                     structured.CompositionChanged += ClientStateChanged;
                 }
@@ -827,7 +811,7 @@ partial class AvaloniaView
 
                 if (StructuredClient is { } structured)
                 {
-                    structured.TextChanged -= ClientStateChanged;
+                    structured.TextChanged -= ClientTextChanged;
                     structured.CaretPositionChanged -= ClientStateChanged;
                     structured.CompositionChanged -= ClientStateChanged;
                 }

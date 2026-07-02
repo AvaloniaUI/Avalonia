@@ -511,7 +511,7 @@ namespace Avalonia.Android.Platform.Input
                 // end - matches the whole-document result. Backward gravity keeps the preceding terminator in
                 // the slice when the caret sits on a sentence boundary.
                 var caret = ToTextSelection(structured.Selection).Start;
-                var caretPointer = structured.CreatePointer(caret, LogicalDirection.Backward);
+                var caretPointer = structured.PointerAt(caret, LogicalDirection.Backward);
                 var sentence = structured.GetRangeEnclosing(caretPointer, TextUnit.Sentence);
                 var start = Math.Min(sentence.Start.Offset, caret);
                 var text = structured.GetText(CreateRange(structured, start, caret));
@@ -629,10 +629,7 @@ namespace Avalonia.Android.Platform.Input
             if (_inputMethod.Client is IStructuredTextInput structured)
             {
                 _subscribedClient = structured;
-
-                // The delta event lives on ITextNavigation; IStructuredTextInput re-declares a parameterless
-                // TextChanged with `new`, so the cast is required to reach the TextChange payload.
-                ((ITextNavigation)structured).TextChanged += OnDocumentTextChanged;
+                structured.TextChanged += OnDocumentTextChanged;
             }
         }
 
@@ -640,7 +637,7 @@ namespace Avalonia.Android.Platform.Input
         {
             if (_subscribedClient is { } structured)
             {
-                ((ITextNavigation)structured).TextChanged -= OnDocumentTextChanged;
+                structured.TextChanged -= OnDocumentTextChanged;
                 _subscribedClient = null;
             }
 
@@ -764,9 +761,7 @@ namespace Avalonia.Android.Platform.Input
         {
             var normalizedStart = Math.Min(start, end);
             var normalizedEnd = Math.Max(start, end);
-            var startPointer = structured.CreatePointer(normalizedStart, LogicalDirection.Forward);
-            var endPointer = structured.CreatePointer(normalizedEnd, LogicalDirection.Backward);
-            return structured.CreateRange(startPointer, endPointer);
+            return structured.RangeAt(normalizedStart, normalizedEnd - normalizedStart);
         }
 
         private ExtractedText CreateExtractedText(IStructuredTextInput structured, int windowStart, int windowEnd)
