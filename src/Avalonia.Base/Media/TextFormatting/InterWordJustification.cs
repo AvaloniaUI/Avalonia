@@ -77,6 +77,23 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var glyphRun = shapedText.GlyphRun;
                     var shapedBuffer = shapedText.ShapedBuffer;
+                    var shapedBufferWithoutSpacing = shapedText.ShapedBufferWithoutSpacing;
+                    if (shapedBufferWithoutSpacing == shapedBuffer)
+                    {
+                        // Clone shapedBuffer into shapedBufferWithoutSpacing
+                        // This could be improved by providing a Clone method in ShapedBuffer,
+                        // but for now we can just create a new ShapedBuffer with the same data.
+                        var textShaper = TextShaper.Current;
+                        var glyphTypeface = textRun.Properties!.CachedGlyphTypeface;
+                        var fontRenderingEmSize = textRun.Properties.FontRenderingEmSize;
+                        var cultureInfo = textRun.Properties.CultureInfo;
+                        var fontFeatures = textRun.Properties.FontFeatures;
+                        var shaperOptions = new TextShaperOptions(glyphTypeface, fontRenderingEmSize,
+                            (sbyte)shapedBuffer.BidiLevel, cultureInfo, 0, 0, textRun.Properties.FontFeatures);
+
+                        shapedBufferWithoutSpacing = textShaper.ShapeText(textRun.Text, shaperOptions);
+                        shapedText.ShapedBufferWithoutSpacing = shapedBufferWithoutSpacing;
+                    }
 
                     while (breakOportunities.Count > 0)
                     {
@@ -92,7 +109,7 @@ namespace Avalonia.Media.TextFormatting
                         var glyphInfo = shapedBuffer[glyphIndex];
 
                         shapedBuffer[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex,
-                            glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance, JustifySpacing: spacing);
+                            glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
                     }
 
                     glyphRun.GlyphInfos = shapedBuffer;

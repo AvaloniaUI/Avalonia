@@ -494,7 +494,7 @@ namespace Avalonia.Media
                     case ShapedTextRun shaped:
                         {
                             // ShapedBuffer.GetCharRangeWidth uses the cluster cache; O(log clusters).
-                            width += shaped.ShapedBuffer.GetCharRangeWidth(overlapStart - runStart, overlapEnd - runStart, withoutSpacing: true);
+                            width += shaped.ShapedBufferWithoutSpacing.GetCharRangeWidth(overlapStart - runStart, overlapEnd - runStart);
                             break;
                         }
                     case DrawableTextRun d:

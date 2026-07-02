@@ -105,11 +105,8 @@ namespace Avalonia.Media.TextFormatting
         // larger arrays than requested so we always read through bounded indices
         // (_clusterStartIdx + [0.._clusterCount]).
         private double[]? _clusterPrefix;
-        // prefixes calculated from GlyphInfo.GlyphAdvanceWithoutSpacing
-        private double[]? _clusterPrefixWithoutSpacing;
         private int[]? _clusterStartChars;
         private IRef<PooledArray<double>>? _prefixRef;
-        private IRef<PooledArray<double>>? _prefixWithoutSpacingRef;
         private IRef<PooledArray<int>>? _startsRef;
         private int _clusterStartIdx;
         private int _clusterCount;
@@ -159,7 +156,6 @@ namespace Avalonia.Media.TextFormatting
             GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel,
             IRef<PooledArray<GlyphInfo>>? sourceGlyphRef,
             IRef<PooledArray<double>>? sourcePrefixRef,
-            IRef<PooledArray<double>>? sourcePrefixWithoutSpacingRef,
             IRef<PooledArray<int>>? sourceStartsRef,
             int clusterStartIdx, int clusterCount, int sourceCacheGeneration)
         {
@@ -174,12 +170,6 @@ namespace Avalonia.Media.TextFormatting
             {
                 _prefixRef = sourcePrefixRef.Clone();
                 _clusterPrefix = _prefixRef.Item.Array;
-
-                if (sourcePrefixWithoutSpacingRef is not null)
-                {
-                    _prefixWithoutSpacingRef = sourcePrefixWithoutSpacingRef.Clone();
-                    _clusterPrefixWithoutSpacing = _prefixWithoutSpacingRef.Item.Array;
-                }
 
                 if (sourceStartsRef is not null)
                 {
@@ -242,7 +232,6 @@ namespace Avalonia.Media.TextFormatting
 
             ReleaseClusterCacheRefs();
             _clusterPrefix = null;
-            _clusterPrefixWithoutSpacing = null;
             _clusterStartChars = null;
             _clusterStartIdx = 0;
             _clusterCount = 0;
@@ -258,8 +247,6 @@ namespace Avalonia.Media.TextFormatting
         {
             _prefixRef?.Dispose();
             _prefixRef = null;
-            _prefixWithoutSpacingRef?.Dispose();
-            _prefixWithoutSpacingRef = null;
             _startsRef?.Dispose();
             _startsRef = null;
         }
@@ -321,28 +308,6 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Returns the total advance of all glyphs in the buffer without spacing applied by Justify.
-        /// (i.e. the buffer's rendered width). Cached after first access; the value is summed in
-        /// logical cluster order, which can differ by ULPs from a visual-order sum
-        /// on RTL buffers — fine for layout but tests should use FP-tolerant equality.
-        /// </summary>
-        internal double TotalGlyphAdvanceWithoutSpacing
-        {
-            //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                var prefix = EnsureClusterCache(withoutSpacing: true);
-                /*if (_clusterPrefix.Length != _clusterPrefixWithoutSpacing.Length)
-                {
-                    throw new InvalidOperationException("Cluster prefix arrays are not the same length.");
-                }*/
-                var start = _clusterStartIdx;
-                return prefix[start + _clusterCount] - prefix[start];
-            }
-        }
-
-
-        /// <summary>
         /// Returns the character length of the first logical cluster in this buffer.
         /// Used by <c>MeasureLength</c> to satisfy the "include at least one cluster"
         /// rule when even the first cluster does not fit the paragraph width.
@@ -378,15 +343,14 @@ namespace Avalonia.Media.TextFormatting
         /// always in logical order: `startChars[0] == 0`, `startChars[count] == Text.Length`,
         /// and `prefix[count]` equals the total advance.
         /// </summary>
-        private double[] EnsureClusterCache(bool withoutSpacing = false)
+        private double[] EnsureClusterCache()
         {
             var currentGeneration = _glyphRef?.Item.Generation ?? 0;
-            var clusterPrefix = withoutSpacing ? _clusterPrefixWithoutSpacing : _clusterPrefix;
-            if (clusterPrefix is not null)
+            if (_clusterPrefix is not null)
             {
                 if (_cacheGeneration == currentGeneration)
                 {
-                    return clusterPrefix;
+                    return _clusterPrefix;
                 }
                 // A sibling mutated the shared glyph array since this cache was
                 // built — drop the stale view (releasing our refs; other
@@ -394,7 +358,7 @@ namespace Avalonia.Media.TextFormatting
                 // the current glyph data.
                 InvalidateClusterCache();
             }
-            
+
             var glyphInfos = _glyphInfos.Span;
             var bufferLength = _glyphInfos.Length;
 
@@ -403,7 +367,7 @@ namespace Avalonia.Media.TextFormatting
                 _clusterCount = 0;
                 _clusterStartChars = s_emptyStartChars;
                 _cacheGeneration = currentGeneration;
-                return _clusterPrefix = _clusterPrefixWithoutSpacing = s_emptyPrefix;
+                return _clusterPrefix = s_emptyPrefix;
             }
 
             var isLtr = IsLeftToRight;
@@ -448,11 +412,8 @@ namespace Avalonia.Media.TextFormatting
             // Split children / WithBidiLevel aliases will Clone these refs so the
             // arrays survive until every sibling has released them.
             var prefixHolder = new PooledArray<double>(clusters + 1);
-            var prefixWithoutSpacingHolder = new PooledArray<double>(clusters + 1);
             _prefixRef = RefCountable.Create(prefixHolder);
-            _prefixWithoutSpacingRef = RefCountable.Create(prefixWithoutSpacingHolder);
             var prefix = prefixHolder.Array;
-            var prefixWithoutSpacing = prefixWithoutSpacingHolder.Array;
 
             int[]? startChars = null;
             if (!simple)
@@ -466,12 +427,10 @@ namespace Avalonia.Media.TextFormatting
             // prefix slot must be zero (the loop below overwrites every other
             // slot we read, and startChars[0] is set explicitly when needed).
             prefix[0] = 0d;
-            prefixWithoutSpacing[0] = 0d;
 
             var clusterIndex = 0;
             var currentClusterId = baseCluster;
             var currentWidth = 0d;
-            var currentWidthWithoutSpacing = 0d;
             if (!simple)
             {
                 startChars![0] = 0;
@@ -484,7 +443,6 @@ namespace Avalonia.Media.TextFormatting
                 if (info.GlyphCluster != currentClusterId)
                 {
                     prefix[clusterIndex + 1] = prefix[clusterIndex] + currentWidth;
-                    prefixWithoutSpacing[clusterIndex + 1] = prefixWithoutSpacing[clusterIndex] + currentWidthWithoutSpacing;
                     if (!simple)
                     {
                         // Cluster IDs increase in logical order in both directions: for LTR
@@ -495,18 +453,15 @@ namespace Avalonia.Media.TextFormatting
                     clusterIndex++;
                     currentClusterId = info.GlyphCluster;
                     currentWidth = info.GlyphAdvance;
-                    currentWidthWithoutSpacing = info.GlyphAdvanceWithoutSpacing;
                 }
                 else
                 {
                     currentWidth += info.GlyphAdvance;
-                    currentWidthWithoutSpacing += info.GlyphAdvanceWithoutSpacing;
                 }
             }
 
             // Close the final cluster.
             prefix[clusterIndex + 1] = prefix[clusterIndex] + currentWidth;
-            prefixWithoutSpacing[clusterIndex + 1] = prefixWithoutSpacing[clusterIndex] + currentWidthWithoutSpacing;
             if (!simple)
             {
                 startChars![clusterIndex + 1] = textLength;
@@ -515,9 +470,8 @@ namespace Avalonia.Media.TextFormatting
             _clusterCount = clusters;
             _clusterStartChars = startChars;
             _clusterPrefix = prefix;
-            _clusterPrefixWithoutSpacing = prefixWithoutSpacing;
             _cacheGeneration = currentGeneration;
-            return withoutSpacing ? prefixWithoutSpacing : prefix;
+            return prefix;
         }
 
         /// <summary>
@@ -567,7 +521,6 @@ namespace Avalonia.Media.TextFormatting
             // EnsureClusterCache call (independent from any sibling's view).
             ReleaseClusterCacheRefs();
             _clusterPrefix = null;
-            _clusterPrefixWithoutSpacing = null;
             _clusterStartChars = null;
             _clusterStartIdx = 0;
             _clusterCount = 0;
@@ -593,14 +546,12 @@ namespace Avalonia.Media.TextFormatting
             // interpret the buffer, not the shaper's glyph order, so the
             // logical-order prefix sums are identical.
             IRef<PooledArray<double>>? prefixRef = null;
-            IRef<PooledArray<double>>? prefixRefWithoutSpacing = null;
             IRef<PooledArray<int>>? startsRef = null;
             var startIdx = 0;
             var count = 0;
             if (_prefixRef is not null)
             {
                 prefixRef = _prefixRef;
-                prefixRefWithoutSpacing = _prefixWithoutSpacingRef;
                 startsRef = _startsRef;
                 startIdx = _clusterStartIdx;
                 count = _clusterCount;
@@ -608,7 +559,7 @@ namespace Avalonia.Media.TextFormatting
 
             return new ShapedBuffer(
                 Text, _glyphInfos, GlyphTypeface, FontRenderingEmSize, paragraphEmbeddingLevel,
-                _glyphRef, prefixRef, prefixRefWithoutSpacing, startsRef, startIdx, count, _cacheGeneration);
+                _glyphRef, prefixRef, startsRef, startIdx, count, _cacheGeneration);
         }
 
         int IReadOnlyCollection<GlyphInfo>.Count => _glyphInfos.Length;
@@ -706,7 +657,7 @@ namespace Avalonia.Media.TextFormatting
             var leading = new ShapedBuffer(
                 firstText, firstGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
-                _glyphRef, _prefixRef, _prefixWithoutSpacingRef, _startsRef,
+                _glyphRef, _prefixRef, _startsRef,
                 _clusterStartIdx, leadingClusterCount, _cacheGeneration);
 
             if (secondText.Length == 0)
@@ -717,7 +668,7 @@ namespace Avalonia.Media.TextFormatting
             var trailing = new ShapedBuffer(
                 secondText, secondGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
-                _glyphRef, _prefixRef, _prefixWithoutSpacingRef, _startsRef,
+                _glyphRef, _prefixRef, _startsRef,
                 _clusterStartIdx + leadingClusterCount, _clusterCount - leadingClusterCount, _cacheGeneration);
 
             return new SplitResult<ShapedBuffer>(leading, trailing);
@@ -781,7 +732,7 @@ namespace Avalonia.Media.TextFormatting
             var first = new ShapedBuffer(
                 firstText, firstGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
-                _glyphRef, _prefixRef, _prefixWithoutSpacingRef, _startsRef,
+                _glyphRef, _prefixRef, _startsRef,
                 _clusterStartIdx, firstClusterCount, _cacheGeneration);
 
             if (secondText.Length == 0 || secondGlyphs.Length == 0)
@@ -792,7 +743,7 @@ namespace Avalonia.Media.TextFormatting
             var second = new ShapedBuffer(
                 secondText, secondGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
-                _glyphRef, _prefixRef, _prefixWithoutSpacingRef, _startsRef,
+                _glyphRef, _prefixRef, _startsRef,
                 _clusterStartIdx + firstClusterCount, _clusterCount - firstClusterCount, _cacheGeneration);
 
             return new SplitResult<ShapedBuffer>(first, second);
@@ -803,8 +754,7 @@ namespace Avalonia.Media.TextFormatting
         /// <c>[<paramref name="startChar"/>, <paramref name="endChar"/>)</c>
         /// within this sub-buffer. Uses the cluster cache via binary search, so
         /// each call is O(log clusters) regardless of how big the buffer is or
-        /// where the range sits inside it. If withoutSpacing is true, the advance
-        /// is calculated without spacing applied by justify text.
+        /// where the range sits inside it.
         /// </summary>
         /// <remarks>
         /// The cluster cache is built in <i>logical</i> order for both LTR and
@@ -812,14 +762,14 @@ namespace Avalonia.Media.TextFormatting
         /// logical char offsets and the same code path serves both directions.
         /// Out-of-range arguments are clamped to <c>[0, Text.Length]</c>.
         /// </remarks>
-        internal double GetCharRangeWidth(int startChar, int endChar, bool withoutSpacing = false)
+        internal double GetCharRangeWidth(int startChar, int endChar)
         {
             if (endChar <= startChar)
             {
                 return 0d;
             }
 
-            var prefix = EnsureClusterCache(withoutSpacing);
+            var prefix = EnsureClusterCache();
             var startIdx = _clusterStartIdx;
             var count = _clusterCount;
 

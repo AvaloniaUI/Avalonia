@@ -768,7 +768,7 @@ namespace Avalonia.Media.TextFormatting
                             // ShapedBuffer (which lives in the run cache), so the first
                             // layout pays the O(glyphs) cost and every subsequent layout
                             // is constant-time.
-                            var buffer = shapedTextCharacters.ShapedBuffer;
+                            var buffer = shapedTextCharacters.ShapedBufferWithoutSpacing;
 
                             if (buffer.Length == 0)
                             {
@@ -776,7 +776,7 @@ namespace Avalonia.Media.TextFormatting
                             }
 
                             var remaining = paragraphWidth - currentWidth;
-                            var bufferWidth = buffer.TotalGlyphAdvanceWithoutSpacing;
+                            var bufferWidth = buffer.TotalGlyphAdvance;
 
                             if (!MathUtilities.GreaterThan(bufferWidth, remaining))
                             {

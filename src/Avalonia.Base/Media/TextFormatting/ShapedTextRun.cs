@@ -23,6 +23,7 @@ namespace Avalonia.Media.TextFormatting
     {
         private GlyphRun? _glyphRun;
         private int _refCount = 1;
+        private ShapedBuffer? _shapedBufferWithoutSpacing = null;
 
         public ShapedTextRun(ShapedBuffer shapedBuffer, TextRunProperties properties)
         {
@@ -34,6 +35,24 @@ namespace Avalonia.Media.TextFormatting
         public sbyte BidiLevel => ShapedBuffer.BidiLevel;
 
         public ShapedBuffer ShapedBuffer { get; }
+
+        /// <summary>
+        /// Gets the underlying shaped buffer without any spacing adjustments applied.
+        /// This is needed for measuring the original text metrics before any justification or
+        /// adjustments are made.
+        /// </summary>
+        internal ShapedBuffer ShapedBufferWithoutSpacing {
+            get => _shapedBufferWithoutSpacing ?? ShapedBuffer;
+            set => _shapedBufferWithoutSpacing = value; 
+        }
+        /// <summary>
+        /// Resets the ShapedBufferWithoutSpacing
+        /// </summary>
+        internal void InvalidateShapedBufferWithoutSpacing()
+        {
+            _shapedBufferWithoutSpacing = null;
+        }
+
 
         /// <inheritdoc/>
         public override ReadOnlyMemory<char> Text
