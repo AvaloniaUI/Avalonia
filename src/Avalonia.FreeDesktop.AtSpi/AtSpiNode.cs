@@ -155,6 +155,8 @@ namespace Avalonia.FreeDesktop.AtSpi
             Parent = parent;
             Peer.ChildrenChanged += OnPeerChildrenChanged;
             Peer.PropertyChanged += OnPeerPropertyChanged;
+            Peer.TextChanged += OnPeerTextChanged;
+            Peer.TextSelectionChanged += OnPeerTextSelectionChanged;
 
             if (Server.A11yConnection is { } connection)
                 BuildAndRegisterHandlers(connection, Server.SyncContext);
@@ -378,6 +380,45 @@ namespace Avalonia.FreeDesktop.AtSpi
             {
                 eventHandler.EmitBoundsChangedSignal();
             }
+        }
+
+        private void OnPeerTextChanged(object? sender, AutomationTextChangedEventArgs e)
+        {
+            if (Server.A11yConnection is null || !Server.HasEventListeners)
+                return;
+
+            if (EventObjectHandler is not { } eventHandler)
+                return;
+
+            // AT-SPI models a replacement as a delete followed by an insert, each signal carrying the
+            // affected text so clients do not have to re-read the document.
+            if (e.RemovedText.Length > 0)
+                eventHandler.EmitTextChangedSignal("delete", e.Offset, e.RemovedText.Length, e.RemovedText);
+
+            if (e.InsertedText.Length > 0)
+                eventHandler.EmitTextChangedSignal("insert", e.Offset, e.InsertedText.Length, e.InsertedText);
+        }
+
+        // Whether the last reported state had a non-collapsed selection, so collapsing a selection
+        // still emits a final TextSelectionChanged.
+        private bool _hadTextSelection;
+
+        private void OnPeerTextSelectionChanged(object? sender, AutomationTextSelectionChangedEventArgs e)
+        {
+            var hasSelection = e.SelectionStart != e.SelectionEnd;
+            var hadSelection = _hadTextSelection;
+            _hadTextSelection = hasSelection;
+
+            if (Server.A11yConnection is null || !Server.HasEventListeners)
+                return;
+
+            if (EventObjectHandler is not { } eventHandler)
+                return;
+
+            eventHandler.EmitTextCaretMovedSignal(e.CaretOffset);
+
+            if (hasSelection || hadSelection)
+                eventHandler.EmitTextSelectionChangedSignal();
         }
     }
 }

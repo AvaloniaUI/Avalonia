@@ -2503,6 +2503,64 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBoxAutomationPeer_Raises_TextChanged_With_Delta()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abc" };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+
+            Avalonia.Automation.AutomationTextChangedEventArgs? change = null;
+            peer.TextChanged += (_, e) => change = e;
+
+            textBox.Text = "abXc";
+
+            Assert.NotNull(change);
+            Assert.Equal(2, change!.Offset);
+            Assert.Equal(string.Empty, change.RemovedText);
+            Assert.Equal("X", change.InsertedText);
+
+            textBox.Text = "aZXc";
+
+            Assert.Equal(1, change!.Offset);
+            Assert.Equal("b", change.RemovedText);
+            Assert.Equal("Z", change.InsertedText);
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Raises_TextSelectionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+
+            var count = 0;
+            Avalonia.Automation.AutomationTextSelectionChangedEventArgs? last = null;
+            peer.TextSelectionChanged += (_, e) => { count++; last = e; };
+
+            textBox.SelectionStart = 1;
+            textBox.SelectionEnd = 4;
+
+            Assert.True(count >= 1);
+            Assert.NotNull(last);
+            Assert.Equal(1, last!.SelectionStart);
+            Assert.Equal(4, last.SelectionEnd);
+            Assert.Equal(textBox.CaretIndex, last.CaretOffset);
+
+            // A caret move that collapses the selection reports the new state.
+            textBox.CaretIndex = 2;
+
+            Assert.Equal(2, last!.SelectionStart);
+            Assert.Equal(2, last.SelectionEnd);
+            Assert.Equal(2, last.CaretOffset);
+        }
+
+        [Fact]
         public void TextBoxAutomationPeer_ITextRange_Select_Updates_Selection()
         {
             using var _ = UnitTestApplication.Start(Services);

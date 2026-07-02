@@ -584,6 +584,42 @@ namespace Avalonia.Automation.Peers
             PropertyChanged?.Invoke(this, new AutomationPropertyChangedEventArgs(property, oldValue, newValue));
         }
 
+        /// <summary>
+        /// Occurs when the text content of a peer that exposes a text pattern has changed.
+        /// </summary>
+        public event EventHandler<AutomationTextChangedEventArgs>? TextChanged;
+
+        /// <summary>
+        /// Occurs when the text selection or caret of a peer that exposes a text pattern has moved.
+        /// </summary>
+        public event EventHandler<AutomationTextSelectionChangedEventArgs>? TextSelectionChanged;
+
+        /// <summary>
+        /// Raises an event to notify the automation client that text content changed. The removed and
+        /// inserted text let backends report the change without re-reading the document; UIA raises a
+        /// payload-free Text_TextChanged and clients re-query, AT-SPI forwards the texts in its
+        /// text-changed signals.
+        /// </summary>
+        /// <param name="offset">The UTF-16 code-unit offset at which the change starts.</param>
+        /// <param name="removedText">The removed text; empty for a pure insertion.</param>
+        /// <param name="insertedText">The inserted text; empty for a pure deletion.</param>
+        public void RaiseTextChangedEvent(int offset, string removedText, string insertedText)
+        {
+            TextChanged?.Invoke(this, new AutomationTextChangedEventArgs(offset, removedText, insertedText));
+        }
+
+        /// <summary>
+        /// Raises an event to notify the automation client that the text selection or caret moved.
+        /// </summary>
+        /// <param name="selectionStart">The normalized selection start, in UTF-16 code units.</param>
+        /// <param name="selectionEnd">The normalized selection end, in UTF-16 code units.</param>
+        /// <param name="caretOffset">The caret offset (the selection's active end).</param>
+        public void RaiseTextSelectionChangedEvent(int selectionStart, int selectionEnd, int caretOffset)
+        {
+            TextSelectionChanged?.Invoke(
+                this, new AutomationTextSelectionChangedEventArgs(selectionStart, selectionEnd, caretOffset));
+        }
+
         protected virtual string GetLocalizedControlTypeCore()
         {
             var controlType = GetAutomationControlType();

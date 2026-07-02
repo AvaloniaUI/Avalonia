@@ -33,6 +33,25 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             EmitSignal("SelectionChanged", string.Empty, 0, 0, new DBusVariant(0), EmptyProperties());
         }
 
+        /// <summary>
+        /// Emits object:text-changed with <paramref name="operation"/> "insert" or "delete";
+        /// detail1 is the offset, detail2 the length, and the affected text rides in any_data.
+        /// </summary>
+        public void EmitTextChangedSignal(string operation, int offset, int length, string text)
+        {
+            EmitSignal("TextChanged", operation, offset, length, new DBusVariant(text), EmptyProperties());
+        }
+
+        public void EmitTextCaretMovedSignal(int offset)
+        {
+            EmitSignal("TextCaretMoved", string.Empty, offset, 0, new DBusVariant(0), EmptyProperties());
+        }
+
+        public void EmitTextSelectionChangedSignal()
+        {
+            EmitSignal("TextSelectionChanged", string.Empty, 0, 0, new DBusVariant(0), EmptyProperties());
+        }
+
         public void EmitBoundsChangedSignal()
         {
             EmitSignal("BoundsChanged", string.Empty, 0, 0, new DBusVariant(0), EmptyProperties());

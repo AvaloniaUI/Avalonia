@@ -67,6 +67,8 @@ namespace Avalonia.Win32.Automation
             s_nodes.Add(peer, this);
             peer.ChildrenChanged += OnPeerChildrenChanged;
             peer.PropertyChanged += OnPeerPropertyChanged;
+            peer.TextChanged += OnPeerTextChanged;
+            peer.TextSelectionChanged += OnPeerTextSelectionChanged;
 
             if (Peer.GetProvider<AAP.IEmbeddedRootProvider>() is { } embeddedRoot)
                 embeddedRoot.FocusChanged += OnEmbeddedRootFocusChanged;
@@ -364,6 +366,17 @@ namespace Avalonia.Win32.Automation
             {
                 RaiseLiveRegionChanged();
             }
+        }
+
+        // UIA text events carry no payload; clients re-query the text pattern after the event.
+        private void OnPeerTextChanged(object? sender, AutomationTextChangedEventArgs e)
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)UiaEventId.Text_TextChanged);
+        }
+
+        private void OnPeerTextSelectionChanged(object? sender, AutomationTextSelectionChangedEventArgs e)
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)UiaEventId.Text_TextSelectionChanged);
         }
 
         private void OnEmbeddedRootFocusChanged(object? sender, EventArgs e)
