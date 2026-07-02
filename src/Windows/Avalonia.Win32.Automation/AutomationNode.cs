@@ -156,12 +156,16 @@ namespace Avalonia.Win32.Automation
                 return (UiaPatternId)patternId switch
                 {
                     UiaPatternId.ExpandCollapse => ThisIfPeerImplementsProvider<AAP.IExpandCollapseProvider>(),
+                    UiaPatternId.Grid => ThisIfPeerImplementsProvider<AAP.IGridProvider>(),
+                    UiaPatternId.GridItem => ThisIfPeerImplementsProvider<AAP.IGridItemProvider>(),
                     UiaPatternId.Invoke => ThisIfPeerImplementsProvider<AAP.IInvokeProvider>(),
                     UiaPatternId.RangeValue => ThisIfPeerImplementsProvider<AAP.IRangeValueProvider>(),
                     UiaPatternId.Scroll => ThisIfPeerImplementsProvider<AAP.IScrollProvider>(),
                     UiaPatternId.ScrollItem => this,
                     UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
                     UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
+                    UiaPatternId.Table => ThisIfPeerImplementsProvider<AAP.ITableProvider>(),
+                    UiaPatternId.TableItem => ThisIfPeerImplementsProvider<AAP.ITableItemProvider>(),
                     UiaPatternId.Text => ThisIfPeerImplementsProvider<AAP.ITextProvider>(),
                     UiaPatternId.Text2 => ThisIfPeerImplementsProvider<AAP.ITextProvider2>(),
                     UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
