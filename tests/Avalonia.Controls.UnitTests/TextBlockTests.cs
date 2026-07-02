@@ -562,11 +562,13 @@ namespace Avalonia.Controls.UnitTests
                 " libero vulputate sed.\n\n" +
                 "Ut fringilla arcu in condimentum accumsan. Duis elementum imperdiet pulvinar." +
                 " Mauris erat ante, efficitur a feugiat a, dignissim in ligula. Pellentesque pharetra ac" +
-                " nisl a porta. Donec quis lacinia nisl. Aliquam in justo ac ligula tincidunt malesuada" +
+                " nisl a porta. Donec quis lacinia nisl.\n" +
+                "Aliquam in justo ac ligula tincidunt malesuada" +
                 " sed ac sapien. Proin finibus hendrerit tellus venenatis ultricies. Morbi risus tortor," +
                 " iaculis id justo at, suscipit accumsan neque. In hac habitasse platea dictumst." +
                 " Praesent laoreet tincidunt justo a rhoncus.",
                 TextAlignment = TextAlignment.Justify,
+                TextWrapping = TextWrapping.Wrap,
                 Width = Width,
             };
 
@@ -578,15 +580,8 @@ namespace Avalonia.Controls.UnitTests
             var lines = layout.TextLines;
             foreach (var line in lines)
             {
-                var isLastLine = line == lines[lines.Count - 1];
-
-                var lastRun = line.TextRuns[line.TextRuns.Count - 1].Text.Span;
-                var lastRunCharacter = lastRun.Length > 0 ? lastRun[lastRun.Length - 1] : '\0';
-                var endsParagraph =
-                    line.TextLineBreak?.TextEndOfLine is TextEndOfParagraph ||
-                    lastRunCharacter == '\r' || lastRunCharacter == '\n';
-
-                if (isLastLine || endsParagraph)
+                if (line.TextLineBreak is null ||
+                    line.TextLineBreak.TextEndOfLine is TextEndOfParagraph)
                 {
                     Assert.True(line.WidthIncludingTrailingWhitespace < Width - 5);
                 }
