@@ -161,8 +161,73 @@ public static class SbomGenerator
         // the graph only references components actually present in the SBOM.
         PruneDanglingDependencyEdges(merged);
 
-        File.WriteAllText(outputDirectory / $"{finalId}.{version}.cdx.json",
-            merged.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+        var sbomJson = merged.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(outputDirectory / $"{finalId}.{version}.cdx.json", sbomJson);
+
+        // Embed the SBOM inside the shipped .nupkg so it travels with the package, in addition to
+        // the standalone copy written above (which CI publishes as the SBOM artifact) - belt and
+        // suspenders: consumers who only ever see the package still get its bill of materials.
+        if (finalNupkg is not null)
+            EmbedSbomInPackage(finalNupkg, sbomJson);
+    }
+
+    // The path inside the .nupkg where the CycloneDX SBOM is embedded. Mirrors the _manifest/
+    // layout Microsoft.Sbom.Targets uses for its SPDX manifest, but keeps CycloneDX's recognised
+    // *.cdx.json filename so tools that scan for that pattern still find it once unpacked.
+    const string EmbeddedSbomEntryPath = "_manifest/cyclonedx/bom.cdx.json";
+
+    // Adds the generated SBOM as a new part inside the shipped package. Must run before the package
+    // is signed - a NuGet signature covers the whole archive, so adding a part afterwards would
+    // invalidate it. That holds here: these packages are signed server-side by nuget.org on push,
+    // which happens after this build step.
+    static void EmbedSbomInPackage(AbsolutePath nupkgPath, string sbomJson)
+    {
+        using var file = File.Open(nupkgPath, FileMode.Open, FileAccess.ReadWrite);
+        using var zip = new ZipArchive(file, ZipArchiveMode.Update);
+
+        if (zip.Entries.Any(e => e.FullName.EndsWith(".signature.p7s", StringComparison.OrdinalIgnoreCase)))
+        {
+            Warning($"SBOM: '{nupkgPath.Name}' is already signed - skipping embed so its signature stays valid.");
+            return;
+        }
+
+        // Re-embedding (e.g. a re-run over the same output) should replace, not stack duplicates.
+        zip.GetEntry(EmbeddedSbomEntryPath)?.Delete();
+        using (var entryStream = zip.CreateEntry(EmbeddedSbomEntryPath).Open())
+        using (var writer = new StreamWriter(entryStream))
+            writer.Write(sbomJson);
+
+        EnsureJsonContentTypeRegistered(zip);
+    }
+
+    // A .nupkg is an OPC package: every part's extension must be declared in [Content_Types].xml or
+    // strict OPC readers - including NuGet's own signature verification - reject the package. The
+    // SBOM is a .json part, so register that extension before (or as) we add it.
+    static void EnsureJsonContentTypeRegistered(ZipArchive zip)
+    {
+        const string contentTypesEntryName = "[Content_Types].xml";
+        XNamespace ns = "http://schemas.openxmlformats.org/package/2006/content-types";
+
+        var entry = zip.GetEntry(contentTypesEntryName);
+        if (entry is null)
+            return; // not a well-formed OPC package; don't fabricate one
+
+        XDocument doc;
+        using (var read = entry.Open())
+            doc = XDocument.Load(read);
+
+        var alreadyRegistered = doc.Root!.Elements(ns + "Default")
+            .Any(d => string.Equals((string?)d.Attribute("Extension"), "json", StringComparison.OrdinalIgnoreCase));
+        if (alreadyRegistered)
+            return;
+
+        doc.Root.Add(new XElement(ns + "Default",
+            new XAttribute("Extension", "json"),
+            new XAttribute("ContentType", "application/json")));
+
+        entry.Delete();
+        using var write = zip.CreateEntry(contentTypesEntryName).Open();
+        doc.Save(write);
     }
 
     static void PruneDanglingDependencyEdges(JsonObject merged)
