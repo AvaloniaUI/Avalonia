@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Automation.Peers
 
         public event EventHandler? FocusChanged;
 
-        public AutomationPeer? GetFocus() => _focus is object ? GetOrCreate(_focus) : null;
+        public AutomationPeer? GetFocus() => _focus is object ? GetOrCreate(_focus).GetFocusTarget() : null;
 
         public AutomationPeer? GetPeerFromPoint(Point p)
         {
