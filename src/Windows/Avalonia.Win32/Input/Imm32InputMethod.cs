@@ -298,6 +298,15 @@ namespace Avalonia.Win32.Input
 
             if (IsActive)
             {
+                // A reconversion target armed as the structured composition range must survive
+                // until the first composition update replaces it in place; clearing the preedit
+                // or deleting the selection here would edit the target text.
+                if (Client is IStructuredTextInput { CompositionRange: { IsEmpty: false } })
+                {
+                    IsComposing = true;
+                    return;
+                }
+
                 Client.SetPreeditText(null);
                 ClearCompositionDecorations();
 
@@ -580,8 +589,8 @@ namespace Avalonia.Win32.Input
             return (IntPtr)Imm32ReconversionHelper.Write(lParam, text.AsSpan(), start, length);
         }
 
-        // The IME echoes back the range it settled on (it may snap to word boundaries). Move the
-        // selection to match so the following composition replaces exactly that text.
+        // The IME echoes back the range it settled on (it may snap to word boundaries). Record it as
+        // the reconversion target so the following composition replaces exactly that text.
         private IntPtr HandleConfirmReconvertString(IntPtr lParam)
         {
             if (!Imm32ReconversionHelper.ReadCompRange(lParam, out var start, out var length))
@@ -589,9 +598,31 @@ namespace Avalonia.Win32.Input
                 return IntPtr.Zero;
             }
 
-            Client!.Selection = new TextSelection(start, start + length);
+            SetReconversionTarget(start, length);
 
             return new IntPtr(1);
+        }
+
+        // The composition the IME opens next replaces exactly this range (surrounding-text space).
+        // An in-document client anchors the structured composition range directly: the composition
+        // updates then replace the target in place and the IME's clause attributes decorate it, so
+        // no transient selection highlight is needed. Overlay clients keep the selection sync -
+        // their composition replaces the selection.
+        private void SetReconversionTarget(int start, int length)
+        {
+            if (Client is IStructuredTextInput structured && Client.SupportsInDocumentComposition)
+            {
+                // Legacy Selection is relative to SurroundingText; the structured selection is the
+                // same range in document space. Their difference locates the surrounding text.
+                var legacySelection = Client.Selection;
+                var origin = structured.Selection.Start.Offset -
+                             Math.Min(legacySelection.Start, legacySelection.End);
+
+                structured.CompositionRange = structured.RangeAt(origin + start, length);
+                return;
+            }
+
+            Client!.Selection = new TextSelection(start, start + length);
         }
 
         /// <summary>
@@ -644,13 +675,13 @@ namespace Avalonia.Win32.Input
                     Marshal.WriteInt32(buffer, 0, size);
                     Imm32ReconversionHelper.Write(buffer, text.AsSpan(), start, length);
 
-                    // Let the IME snap the range to its dictionary boundaries, then sync the selection so
-                    // the composition that follows replaces exactly that text.
+                    // Let the IME snap the range to its dictionary boundaries, then record the target
+                    // so the composition that follows replaces exactly that text.
                     ImmSetCompositionString(himc, SCS_QUERYRECONVERTSTRING, buffer, (uint)size, IntPtr.Zero, 0);
 
                     if (Imm32ReconversionHelper.ReadCompRange(buffer, out var compStart, out var compLength))
                     {
-                        Client.Selection = new TextSelection(compStart, compStart + compLength);
+                        SetReconversionTarget(compStart, compLength);
                     }
 
                     return ImmSetCompositionString(himc, SCS_SETRECONVERTSTRING, buffer, (uint)size, IntPtr.Zero, 0);

@@ -45,6 +45,14 @@ namespace Avalonia.Input.TextInput
         public abstract bool SupportsPreedit { get; }
 
         /// <summary>
+        /// Indicates if the client renders the composition inside the document through the structured
+        /// composition range (<c>IStructuredTextInput.CompositionRange</c>) rather than as a preedit
+        /// overlay. Platform IMEs use this to anchor a composition over existing text - e.g. a
+        /// reconversion target - instead of routing the replacement through the visible selection.
+        /// </summary>
+        public virtual bool SupportsInDocumentComposition => false;
+
+        /// <summary>
         /// Indicates if text input client is capable of providing the text around the cursor
         /// </summary>
         public abstract bool SupportsSurroundingText { get; }
