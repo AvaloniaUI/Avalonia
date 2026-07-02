@@ -385,7 +385,13 @@ public static class SbomGenerator
             return ($"pkg:npm/{EncodeNpmName(name)}@{declaredRange}", declaredRange, null);
         }
 
-        var installedVersion = JsonNode.Parse(File.ReadAllText(installedDir / "package.json"))!["version"]!.GetValue<string>();
+        var installedVersion = JsonNode.Parse(File.ReadAllText(installedDir / "package.json"))!["version"]?.GetValue<string>();
+        if (installedVersion is null)
+        {
+            // package.json without a "version" is valid for private packages; don't let it NRE.
+            Warning($"SBOM: npm dependency '{name}' installed at {installedDir} has no version in its package.json - recording its declared range '{declaredRange}' instead.");
+            installedVersion = declaredRange;
+        }
         return ($"pkg:npm/{EncodeNpmName(name)}@{installedVersion}", installedVersion, installedDir);
     }
 
