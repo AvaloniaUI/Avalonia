@@ -45,14 +45,6 @@ namespace Avalonia.Media.TextFormatting
             get => _shapedBufferWithoutSpacing ?? ShapedBuffer;
             set => _shapedBufferWithoutSpacing = value; 
         }
-        /// <summary>
-        /// Resets the ShapedBufferWithoutSpacing
-        /// </summary>
-        internal void InvalidateShapedBufferWithoutSpacing()
-        {
-            _shapedBufferWithoutSpacing = null;
-        }
-
 
         /// <inheritdoc/>
         public override ReadOnlyMemory<char> Text
