@@ -184,6 +184,7 @@ namespace Avalonia.Android.Platform.Input
                 }
 
                 _inputConnection = new AvaloniaInputConnection(topLevel, this);
+                _inputConnection.IsMultiline = options.Multiline;
 
                 outAttrs.InputType = options.ContentType switch
                 {
