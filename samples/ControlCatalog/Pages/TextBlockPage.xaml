@@ -27,6 +27,7 @@
           <TextBlock Text="Left aligned text" TextAlignment="Left" />
           <TextBlock Text="Center aligned text" TextAlignment="Center" />
           <TextBlock Text="Right aligned text" TextAlignment="Right" />
+          <TextBlock Text="Justify alignet text, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue." TextAlignment="Justify" TextWrapping="Wrap" />
         </StackPanel>
       </Border>
       <Border>
