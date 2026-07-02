@@ -41,6 +41,11 @@ namespace Avalonia.Logging
         public const string Control = nameof(Control);
 
         /// <summary>
+        /// The log event comes from the text input / IME subsystem.
+        /// </summary>
+        public const string TextInput = nameof(TextInput);
+
+        /// <summary>
         /// The log event comes from Win32 Platform.
         /// </summary>
         public const string Platform = nameof(Platform);
