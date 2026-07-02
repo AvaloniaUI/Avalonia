@@ -105,6 +105,7 @@ namespace Avalonia.Media.TextFormatting
         // larger arrays than requested so we always read through bounded indices
         // (_clusterStartIdx + [0.._clusterCount]).
         private double[]? _clusterPrefix;
+        // prefixes calculated from GlyphInfo.GlyphAdvanceWithoutSpacing
         private double[]? _clusterPrefixWithoutSpacing;
         private int[]? _clusterStartChars;
         private IRef<PooledArray<double>>? _prefixRef;
@@ -319,6 +320,12 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
+        /// <summary>
+        /// Returns the total advance of all glyphs in the buffer without spacing applied by Justify.
+        /// (i.e. the buffer's rendered width). Cached after first access; the value is summed in
+        /// logical cluster order, which can differ by ULPs from a visual-order sum
+        /// on RTL buffers — fine for layout but tests should use FP-tolerant equality.
+        /// </summary>
         internal double TotalGlyphAdvanceWithoutSpacing
         {
             //[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -796,7 +803,8 @@ namespace Avalonia.Media.TextFormatting
         /// <c>[<paramref name="startChar"/>, <paramref name="endChar"/>)</c>
         /// within this sub-buffer. Uses the cluster cache via binary search, so
         /// each call is O(log clusters) regardless of how big the buffer is or
-        /// where the range sits inside it.
+        /// where the range sits inside it. If withoutSpacing is true, the advance
+        /// is calculated without spacing applied by justify text.
         /// </summary>
         /// <remarks>
         /// The cluster cache is built in <i>logical</i> order for both LTR and
