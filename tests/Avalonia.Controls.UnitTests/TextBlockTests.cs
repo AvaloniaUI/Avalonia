@@ -550,6 +550,19 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_Padding_In_ArrangeOverride()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "1980", UseLayoutRounding = false, Padding = new(2.25) };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(default, target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 32.45454545454545, 19.022727272727273), target.Bounds);
+        }
+
+        [Fact]
         public void TextBlock_TextAlignment_Justify_Last_Line_Not_Justified()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
