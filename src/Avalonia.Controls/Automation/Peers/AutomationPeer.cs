@@ -556,6 +556,39 @@ namespace Avalonia.Automation.Peers
         public T? GetProvider<T>() => (T?)GetProviderCore(typeof(T));
 
         /// <summary>
+        /// Gets the peer that automation clients should treat as focused when this peer's owner holds
+        /// keyboard focus.
+        /// </summary>
+        /// <remarks>
+        /// A composite control whose interaction patterns live on an inner element - an editor whose
+        /// text pattern is exposed by its text view, for example - redirects focus reporting there, so
+        /// clients see keyboard focus land on the element that carries the patterns. This is what lets
+        /// a screen reader engage its document behaviors (such as reading a focused document) instead
+        /// of stopping at a container. Redirection resolves transitively with a small bound so a
+        /// misconfigured cycle cannot hang the client.
+        /// </remarks>
+        public AutomationPeer GetFocusTarget()
+        {
+            var peer = this;
+
+            for (var i = 0; i < 8; i++)
+            {
+                var next = peer.GetFocusTargetCore();
+                if (next is null || next == peer)
+                    return peer;
+                peer = next;
+            }
+
+            return peer;
+        }
+
+        /// <summary>
+        /// Overridden by composite controls to redirect focus reporting to an inner peer; returning
+        /// null keeps focus reporting on this peer.
+        /// </summary>
+        protected virtual AutomationPeer? GetFocusTargetCore() => null;
+
+        /// <summary>
         /// Occurs when the children of the automation peer have changed.
         /// </summary>
         public event EventHandler? ChildrenChanged;

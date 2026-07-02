@@ -28,7 +28,7 @@ namespace Avalonia.Automation.Peers
             return AutomationControlType.Window;
         }
 
-        public AutomationPeer? GetFocus() => _focus is object ? GetOrCreate(_focus) : null;
+        public AutomationPeer? GetFocus() => _focus is object ? GetOrCreate(_focus).GetFocusTarget() : null;
 
         public AutomationPeer? GetPeerFromPoint(Point p)
         {
