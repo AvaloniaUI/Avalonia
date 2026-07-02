@@ -5,25 +5,22 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static Avalonia.X11.XLib;
 
-namespace Avalonia.X11.Clipboard;
+namespace Avalonia.X11.Selections;
 
-class ClipboardReadSession : IDisposable
+/// <summary>
+/// A session used to read a X11 selection (Clipboard/Drag-and-Drop) from a given window.
+/// </summary>
+internal sealed class SelectionReadSession(
+    IntPtr display,
+    IntPtr window,
+    IntPtr selection,
+    IXEventWaiter eventWaiter,
+    X11Atoms atoms)
+    : IDisposable
 {
-    private readonly AvaloniaX11Platform _platform;
-    private readonly EventStreamWindow _window;
-    private readonly X11Info _x11;
+    public void Dispose() => eventWaiter.Dispose();
 
-    public ClipboardReadSession(AvaloniaX11Platform platform)
-    {
-        _platform = platform;
-        _window = new EventStreamWindow(platform);
-        _x11 = _platform.Info;
-        XSelectInput(_x11.Display, _window.Handle, new IntPtr((int)XEventMask.PropertyChangeMask));
-    }
-
-    public void Dispose() => _window.Dispose();
-
-    class PropertyReadResult(IntPtr data, IntPtr actualTypeAtom, int actualFormat, IntPtr nItems)
+    private sealed class PropertyReadResult(IntPtr data, IntPtr actualTypeAtom, int actualFormat, IntPtr nItems)
         : IDisposable
     {
         public IntPtr Data => data;
@@ -40,39 +37,36 @@ class ClipboardReadSession : IDisposable
     private async Task<PropertyReadResult?>
         WaitForSelectionNotifyAndGetProperty(IntPtr property)
     {
-        var ev = await _window.WaitForEventAsync(ev =>
-            ev.type == XEventName.SelectionNotify 
-            && ev.SelectionEvent.selection == _x11.Atoms.CLIPBOARD
-            && ev.SelectionEvent.property == property
-        );
+        var ev = await eventWaiter.WaitForEventAsync(
+            ev => ev.type == XEventName.SelectionNotify &&
+                  ev.SelectionEvent.requestor == window &&
+                  ev.SelectionEvent.selection == selection &&
+                  ev.SelectionEvent.property == property,
+            SelectionHelper.Timeout);
         
         if (ev == null)
             return null;
         
-        var sel = ev.Value.SelectionEvent;
-        
-        return ReadProperty(sel.property);
+        return ReadProperty(property);
     }
 
     private PropertyReadResult ReadProperty(IntPtr property)
     {
-        XGetWindowProperty(_x11.Display, _window.Handle, property, IntPtr.Zero, new IntPtr (0x7fffffff), true, 
+        XGetWindowProperty(display, window, property, IntPtr.Zero, new IntPtr (0x7fffffff), true,
             (IntPtr)Atom.AnyPropertyType,
-            out var actualTypeAtom, out var actualFormat, out var nitems, out var bytes_after, out var prop);
+            out var actualTypeAtom, out var actualFormat, out var nitems, out _, out var prop);
         return new (prop, actualTypeAtom, actualFormat, nitems);
     }
 
-    private Task<PropertyReadResult?> ConvertSelectionAndGetProperty(
-        IntPtr target, IntPtr property)
+    private Task<PropertyReadResult?> ConvertSelectionAndGetProperty(IntPtr target, IntPtr property, IntPtr timestamp)
     {
-        XConvertSelection(_platform.Display, _x11.Atoms.CLIPBOARD, target, property, _window.Handle,
-            IntPtr.Zero);
+        XConvertSelection(display, selection, target, property, window, timestamp);
         return WaitForSelectionNotifyAndGetProperty(property);
     }
     
-    public async Task<IntPtr[]?> SendFormatRequest()
+    public async Task<IntPtr[]?> SendFormatRequest(IntPtr targetsAtom)
     {
-        using var res = await ConvertSelectionAndGetProperty(_x11.Atoms.TARGETS, _x11.Atoms.TARGETS);
+        using var res = await ConvertSelectionAndGetProperty(atoms.TARGETS, atoms.TARGETS, 0);
         if (res == null)
             return null;
         
@@ -97,7 +91,7 @@ class ClipboardReadSession : IDisposable
 
     private async Task<GetDataResult?> ReadIncr(IntPtr property)
     {
-        XFlush(_platform.Display);
+        XFlush(display);
         var ms = new MemoryStream();
         void Append(PropertyReadResult res)
         {
@@ -110,9 +104,11 @@ class ClipboardReadSession : IDisposable
         IntPtr actualTypeAtom = IntPtr.Zero;
         while (true)
         {
-            var ev = await _window.WaitForEventAsync(x =>
-                x is { type: XEventName.PropertyNotify, PropertyEvent.state: 0 } &&
-                x.PropertyEvent.atom == property);
+            var ev = await eventWaiter.WaitForEventAsync(
+                x => x is { type: XEventName.PropertyNotify, PropertyEvent.state: 0 } &&
+                     x.PropertyEvent.window == window &&
+                     x.PropertyEvent.atom == property,
+                SelectionHelper.Timeout);
             
             if (ev == null)
                 return null;
@@ -131,15 +127,15 @@ class ClipboardReadSession : IDisposable
         return new(null, ms, actualTypeAtom);
     }
     
-    public async Task<GetDataResult?> SendDataRequest(IntPtr format)
+    public async Task<GetDataResult?> SendDataRequest(IntPtr format, IntPtr timestamp)
     {
-        using var res = await ConvertSelectionAndGetProperty(format, format);
+        using var res = await ConvertSelectionAndGetProperty(format, format, timestamp);
         if (res == null)
             return null;
         
         if (res.NItems == IntPtr.Zero)
             return null;
-        if (res.ActualTypeAtom == _x11.Atoms.INCR)
+        if (res.ActualTypeAtom == atoms.INCR)
         {
             return await ReadIncr(format);
         }
