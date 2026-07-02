@@ -119,15 +119,16 @@ namespace Avalonia.Win32.Automation
                 .Select(peer => (UIA.IRawElementProviderSimple)AutomationNode.GetOrCreate(peer)!)
                 .ToArray());
 
-        // Well-known UIA TextAttributeId values (UIAutomationClient.h).
-        private const int UiaTextAttributeFontName = 30001;
-        private const int UiaTextAttributeFontSize = 30002;
-        private const int UiaTextAttributeFontWeight = 30003;
-        private const int UiaTextAttributeForegroundColor = 30008;
-        private const int UiaTextAttributeBackgroundColor = 30009;
-        private const int UiaTextAttributeIsItalic = 30016;
-        private const int UiaTextAttributeIsReadOnly = 30024;
-        private const int UiaTextAttributeStyleId = 30068;
+        // Well-known UIA_*AttributeId values (UIAutomationTextPattern.h; text attribute ids are the
+        // 40000 range - 30000 is the property-id family, which clients never use here).
+        private const int UiaTextAttributeBackgroundColor = 40001;
+        private const int UiaTextAttributeFontName = 40005;
+        private const int UiaTextAttributeFontSize = 40006;
+        private const int UiaTextAttributeFontWeight = 40007;
+        private const int UiaTextAttributeForegroundColor = 40008;
+        private const int UiaTextAttributeIsItalic = 40014;
+        private const int UiaTextAttributeIsReadOnly = 40015;
+        private const int UiaTextAttributeStyleId = 40034;
 
         // UIA colour attributes are a COLORREF (0x00BBGGRR).
         private static int ToColorRef(Color color) => color.R | (color.G << 8) | (color.B << 16);
