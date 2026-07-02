@@ -444,6 +444,10 @@ public static class SbomGenerator
         }
 
         var licenses = SpdxToLicenses(meta.LicenseExpression ?? meta.LicenseId);
+        // A file license has no SPDX id; record it by name rather than emitting an invalid id.
+        if (licenses is null && meta.LicenseFile is not null)
+            licenses = new JsonArray(new JsonObject
+                { ["license"] = new JsonObject { ["name"] = Path.GetFileName(meta.LicenseFile) } });
         if (licenses is not null)
             component["licenses"] = licenses;
 
@@ -586,6 +590,7 @@ public static class SbomGenerator
         public string? Authors;
         public string? LicenseId;
         public string? LicenseExpression;
+        public string? LicenseFile;
         public string? ProjectUrl;
         public string? RepositoryUrl;
         public string? Description;
@@ -609,8 +614,11 @@ public static class SbomGenerator
             Id = Value("id") ?? "",
             Version = Value("version") ?? "",
             Authors = Value("authors"),
+            // A nuspec <license> is either type="expression" (an SPDX expression) or type="file"
+            // (a path to a bundled licence file); only the former is a valid SPDX id/expression.
             LicenseExpression = license?.Attribute("type")?.Value == "expression" ? license.Value : null,
-            LicenseId = license?.Attribute("type")?.Value == "expression" ? null : license?.Value,
+            LicenseFile = license?.Attribute("type")?.Value == "file" ? license.Value : null,
+            LicenseId = license?.Attribute("type")?.Value is "expression" or "file" ? null : license?.Value,
             ProjectUrl = Value("projectUrl"),
             RepositoryUrl = repository?.Attribute("url")?.Value,
             Description = Value("description"),
