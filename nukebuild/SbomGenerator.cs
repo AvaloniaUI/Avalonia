@@ -364,8 +364,19 @@ public static class SbomGenerator
 
         if (declaredRange.StartsWith("github:") || declaredRange.StartsWith("git") || declaredRange.Contains("://"))
         {
-            var (owner, repo, reference) = ParseGitDependency(declaredRange);
-            return ($"pkg:github/{owner}/{repo}@{reference}", reference, installedDir);
+            if (TryParseGitHubDependency(declaredRange, out var owner, out var repo, out var reference))
+                return ($"pkg:github/{owner}/{repo}@{reference}", reference, installedDir);
+
+            // A non-GitHub git/URL specifier (GitLab/Bitbucket, a raw tarball URL, ...). We have no
+            // provider-specific purl for it, so degrade to a generic component - preferring the
+            // version installed on disk - rather than throwing and failing the whole release over a
+            // single dependency we can't classify precisely.
+            var resolvedVersion = installedDir is not null
+                ? JsonNode.Parse(File.ReadAllText(installedDir / "package.json"))!["version"]?.GetValue<string>()
+                : null;
+            resolvedVersion ??= declaredRange;
+            Warning($"SBOM: npm dependency '{name}' uses an unrecognised git/URL specifier '{declaredRange}' - recording it as a generic component with version '{resolvedVersion}'.");
+            return ($"pkg:generic/{EncodeNpmName(name)}@{resolvedVersion}", resolvedVersion, installedDir);
         }
 
         if (installedDir is null)
@@ -380,16 +391,19 @@ public static class SbomGenerator
 
     static string EncodeNpmName(string name) => name.StartsWith("@") ? $"%40{name[1..]}" : name;
 
-    static (string Owner, string Repo, string Reference) ParseGitDependency(string spec)
+    static bool TryParseGitHubDependency(string spec, out string owner, out string repo, out string reference)
     {
+        owner = repo = "";
         var hashIndex = spec.IndexOf('#');
-        var reference = hashIndex >= 0 ? spec[(hashIndex + 1)..] : "HEAD";
+        reference = hashIndex >= 0 ? spec[(hashIndex + 1)..] : "HEAD";
         var withoutRef = hashIndex >= 0 ? spec[..hashIndex] : spec;
 
         var match = Regex.Match(withoutRef, @"github(?:\.com)?[:/]+([^/]+)/([^/#]+?)(?:\.git)?$");
         if (!match.Success)
-            throw new NotSupportedException($"SBOM: don't know how to parse git dependency specifier '{spec}'.");
-        return (match.Groups[1].Value, match.Groups[2].Value, reference);
+            return false;
+        owner = match.Groups[1].Value;
+        repo = match.Groups[2].Value;
+        return true;
     }
 
     static string ComponentKey(JsonNode? component) =>
