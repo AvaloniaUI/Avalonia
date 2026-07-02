@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 // ReSharper disable InconsistentNaming
 
 namespace Avalonia.Win32.Automation.Marshalling;
@@ -160,6 +161,66 @@ internal unsafe partial struct SafeArrayRef
         });
     }
 
+    /// <summary>
+    /// Builds a VT_UNKNOWN SAFEARRAY from COM interface instances, creating each element's CCW via
+    /// <see cref="ComInterfaceMarshaller{T}"/> - the same path the single-interface signatures use.
+    /// <see cref="ComWrappers.TryGetComInstance"/> is not enough here: it only returns wrappers that
+    /// already exist, and the providers in these arrays are freshly constructed.
+    /// </summary>
+    public static unsafe SafeArrayRef CreateFromComInterfaces<T>(IReadOnlyList<T> items) where T : notnull
+    {
+        var pointers = ArrayPool<IntPtr>.Shared.Rent(items.Count);
+        try
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                // The rented buffer is longer than requested and not cleared: the SAFEARRAY gets
+                // exactly items.Count elements and an empty slot must be null, not stale pool data.
+                pointers[i] = items[i] is { } item
+                    ? (IntPtr)ComInterfaceMarshaller<T>.ConvertToUnmanaged(item)
+                    : IntPtr.Zero;
+            }
+
+            return CreateFromSpan<IntPtr>(pointers.AsSpan(0, items.Count), VarEnum.VT_UNKNOWN);
+        }
+        finally
+        {
+            ArrayPool<IntPtr>.Shared.Return(pointers);
+        }
+    }
+
+    private static SafeArrayRef CreateFromSpan<T>(ReadOnlySpan<T> span, VarEnum varEnum)
+    {
+        var bound = new SAFEARRAYBOUND { cElements = (uint)span.Length, lLbound = 0 };
+        var safearray = SafeArrayCreate(varEnum, 1, bound);
+        if (span.Length == 0)
+        {
+            return new SafeArrayRef
+            {
+                _ptr = safearray
+            };
+        }
+
+        var lockResult = SafeArrayLock(safearray);
+        if (lockResult != 0) throw new Win32Exception(lockResult);
+
+        try
+        {
+            // We assume it has the same length.
+            var output = new Span<T>(safearray->pvData, (int)safearray->rgsabound[0].cElements);
+            span.CopyTo(output);
+        }
+        finally
+        {
+            SafeArrayUnlock(safearray);
+        }
+
+        return new SafeArrayRef
+        {
+            _ptr = safearray
+        };
+    }
+
     public static bool TryCreate(IEnumerable? managed, [NotNullWhen(true)] out SafeArrayRef? safearray, out VarEnum varEnum)
     {
         safearray = default;
@@ -179,38 +240,6 @@ internal unsafe partial struct SafeArrayRef
                 _ => collection.ToArray()
             };
             return CreateFromSpan<T>(collectionSpan, varEnum);
-        }
-
-        static SafeArrayRef CreateFromSpan<T>(ReadOnlySpan<T> span, VarEnum varEnum)
-        {
-            var bound = new SAFEARRAYBOUND { cElements = (uint)span.Length, lLbound = 0 };
-            var safearray = SafeArrayCreate(varEnum, 1, bound);
-            if (span.Length == 0)
-            {
-                return new SafeArrayRef
-                {
-                    _ptr = safearray
-                };
-            }
-
-            var lockResult = SafeArrayLock(safearray);
-            if (lockResult != 0) throw new Win32Exception(lockResult);
-
-            try
-            {
-                // We assume it has the same length.
-                var output = new Span<T>(safearray->pvData, (int)safearray->rgsabound[0].cElements);
-                span.CopyTo(output);
-            }
-            finally
-            {
-                SafeArrayUnlock(safearray);
-            }
-
-            return new SafeArrayRef
-            {
-                _ptr = safearray
-            };
         }
 
         static SafeArrayRef CreateFromStrings(IReadOnlyList<string> strings, VarEnum varEnum)
@@ -259,13 +288,15 @@ internal unsafe partial struct SafeArrayRef
             {
                 for (int i = 0; i < objects.Count; i++)
                 {
-                    if (ComWrappers.TryGetComInstance(objects[i], out var pointer))
-                    {
-                        pointers[i] = pointer;
-                    }
+                    // Rented buffers are longer than requested and are not cleared: the SAFEARRAY must
+                    // get exactly objects.Count elements, and a slot TryGetComInstance cannot fill must
+                    // be null rather than stale pool data, or the consumer AddRef/Releases garbage.
+                    pointers[i] = ComWrappers.TryGetComInstance(objects[i], out var pointer)
+                        ? pointer
+                        : IntPtr.Zero;
                 }
 
-                return CreateFromSpan<IntPtr>(pointers, varEnum);
+                return CreateFromSpan<IntPtr>(pointers.AsSpan(0, objects.Count), varEnum);
             }
             finally
             {
