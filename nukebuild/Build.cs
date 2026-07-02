@@ -43,6 +43,9 @@ partial class Build : NukeBuild
     [NuGetPackage("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
     Tool IlRepackTool;
 
+    [NuGetPackage("CycloneDX", "CycloneDX.dll", Framework = "net10.0")]
+    Tool CycloneDxTool;
+
     protected override void OnBuildInitialized()
     {
         Parameters = new BuildParameters(this, ScheduledTargets.Contains(BuildToNuGetCache));
@@ -352,6 +355,7 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             SbomGenerator.Generate(
+                CycloneDxTool,
                 RootDirectory,
                 Parameters.NugetRoot,
                 Parameters.NugetIntermediateRoot,

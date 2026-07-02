@@ -14,7 +14,6 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
-using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Serilog.Log;
 
 // Generates one CycloneDX SBOM per published NuGet package, using the already-restored
@@ -31,8 +30,6 @@ using static Serilog.Log;
 // project, and unions their components (de-duplicated by purl) into one BOM per final package.
 public static class SbomGenerator
 {
-    const string CycloneDxToolVersion = "6.2.0";
-
     class NumergeConfigRoot
     {
         public List<NumergePackageGroup> Packages { get; set; } = new();
@@ -51,6 +48,7 @@ public static class SbomGenerator
     }
 
     public static void Generate(
+        Tool cycloneDx,
         AbsolutePath rootDirectory,
         AbsolutePath nugetRoot,
         AbsolutePath nugetIntermediateRoot,
@@ -59,8 +57,6 @@ public static class SbomGenerator
         string version)
     {
         outputDirectory.CreateOrCleanDirectory();
-
-        DotNet($"tool update --global CycloneDX --version {CycloneDxToolVersion}");
 
         var finalPackageIds = nugetRoot.GlobFiles("*.nupkg").Select(p => ReadPackageId((string)p)).ToHashSet();
         var intermediatePackageIds = nugetIntermediateRoot.GlobFiles("*.nupkg")
@@ -87,11 +83,11 @@ public static class SbomGenerator
         }
 
         foreach (var (finalId, projectIds) in constituentProjectIdsByFinalId)
-            GenerateForPackage(rootDirectory, nugetRoot, outputDirectory, version, finalId, projectIds);
+            GenerateForPackage(cycloneDx, rootDirectory, nugetRoot, outputDirectory, version, finalId, projectIds);
     }
 
-    static void GenerateForPackage(AbsolutePath rootDirectory, AbsolutePath nugetRoot, AbsolutePath outputDirectory,
-        string version, string finalId, List<string> projectIds)
+    static void GenerateForPackage(Tool cycloneDx, AbsolutePath rootDirectory, AbsolutePath nugetRoot,
+        AbsolutePath outputDirectory, string version, string finalId, List<string> projectIds)
     {
         JsonObject? merged = null;
         var seenComponentKeys = new HashSet<string>();
@@ -110,10 +106,9 @@ public static class SbomGenerator
             scannedProjectDirs.Add(project.Parent);
 
             var tempBom = outputDirectory / $"_{projectId}.tmp.json";
-            ProcessTasks.StartProcess("dotnet-CycloneDX",
-                    $"\"{project}\" -o \"{outputDirectory}\" -fn \"{tempBom.Name}\" -F Json -dpr -ed -sn \"{finalId}\" -sv \"{version}\"",
-                    workingDirectory: rootDirectory)
-                .AssertZeroExitCode();
+            cycloneDx(
+                $"\"{project}\" -o \"{outputDirectory}\" -fn \"{tempBom.Name}\" -F Json -dpr -ed -sn \"{finalId}\" -sv \"{version}\"",
+                workingDirectory: rootDirectory);
 
             var doc = JsonNode.Parse(File.ReadAllText(tempBom))!.AsObject();
             File.Delete(tempBom);
