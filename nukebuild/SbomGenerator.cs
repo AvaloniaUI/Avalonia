@@ -41,7 +41,13 @@ public static class SbomGenerator
     {
         outputDirectory.CreateOrCleanDirectory();
 
-        var finalPackageIds = nugetRoot.GlobFiles("*.nupkg").Select(p => ReadPackageId((string)p)).ToHashSet();
+        // Read each final package's id exactly once here (opening/unzipping a nupkg to parse its
+        // nuspec isn't free) and reuse the id->path map when locating each package's own nupkg
+        // below, rather than re-scanning every nupkg per final package.
+        var finalPackagePathsById = nugetRoot.GlobFiles("*.nupkg")
+            .GroupBy(p => ReadPackageId((string)p))
+            .ToDictionary(g => g.Key, g => g.First());
+        var finalPackageIds = finalPackagePathsById.Keys.ToHashSet();
         var intermediatePackageIds = nugetIntermediateRoot.GlobFiles("*.nupkg")
             .Select(p => ReadPackageId((string)p)).Distinct();
 
@@ -65,10 +71,11 @@ public static class SbomGenerator
         }
 
         foreach (var (finalId, projectIds) in constituentProjectIdsByFinalId)
-            GenerateForPackage(cycloneDx, rootDirectory, nugetRoot, outputDirectory, version, finalId, projectIds);
+            GenerateForPackage(cycloneDx, rootDirectory, finalPackagePathsById, outputDirectory, version, finalId, projectIds);
     }
 
-    static void GenerateForPackage(Tool cycloneDx, AbsolutePath rootDirectory, AbsolutePath nugetRoot,
+    static void GenerateForPackage(Tool cycloneDx, AbsolutePath rootDirectory,
+        IReadOnlyDictionary<string, AbsolutePath> finalPackagePathsById,
         AbsolutePath outputDirectory, string version, string finalId, List<string> projectIds)
     {
         JsonObject? merged = null;
@@ -136,8 +143,7 @@ public static class SbomGenerator
         // The final .nupkg carries the authoritative publisher/license/repository metadata and the
         // actual shipped binaries; use it to flesh out the thin root component cyclonedx-dotnet
         // emits and to verify nothing ships that the dependency scan didn't already account for.
-        var finalNupkg = nugetRoot.GlobFiles($"{finalId}.{version}.nupkg").FirstOrDefault()
-            ?? nugetRoot.GlobFiles("*.nupkg").FirstOrDefault(p => ReadPackageId((string)p) == finalId);
+        var finalNupkg = finalPackagePathsById.GetValueOrDefault(finalId);
         if (finalNupkg is not null)
         {
             var nuspec = ReadNuspecMetadata((string)finalNupkg);
