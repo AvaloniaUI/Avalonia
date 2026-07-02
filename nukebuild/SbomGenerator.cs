@@ -30,23 +30,6 @@ using static Serilog.Log;
 // project, and unions their components (de-duplicated by purl) into one BOM per final package.
 public static class SbomGenerator
 {
-    class NumergeConfigRoot
-    {
-        public List<NumergePackageGroup> Packages { get; set; } = new();
-    }
-
-    class NumergePackageGroup
-    {
-        public string Id { get; set; } = "";
-        public bool MergeAll { get; set; }
-        public List<NumergeMergeChild> Merge { get; set; } = new();
-    }
-
-    class NumergeMergeChild
-    {
-        public string Id { get; set; } = "";
-    }
-
     public static void Generate(
         Tool cycloneDx,
         AbsolutePath rootDirectory,
@@ -62,8 +45,7 @@ public static class SbomGenerator
         var intermediatePackageIds = nugetIntermediateRoot.GlobFiles("*.nupkg")
             .Select(p => ReadPackageId((string)p)).Distinct();
 
-        var numerge = JsonSerializer.Deserialize<NumergeConfigRoot>(File.ReadAllText(numergeConfigPath))
-            ?? new NumergeConfigRoot();
+        var numerge = Numerge.MergeConfiguration.LoadFile(numergeConfigPath);
         var explicitParentByChild = numerge.Packages
             .SelectMany(p => p.Merge.Select(c => (Parent: p.Id, Child: c.Id)))
             .ToDictionary(x => x.Child, x => x.Parent);
@@ -610,5 +592,5 @@ public static class SbomGenerator
         };
     }
 
-    static string ReadPackageId(string nupkgPath) => ReadNuspecMetadata(nupkgPath).Id;
+    public static string ReadPackageId(string nupkgPath) => ReadNuspecMetadata(nupkgPath).Id;
 }

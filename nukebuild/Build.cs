@@ -455,10 +455,7 @@ partial class Build : NukeBuild
             {
                 using var f = File.Open(path.ToString(), FileMode.Open, FileAccess.Read);
                 using var zip = new ZipArchive(f, ZipArchiveMode.Read);
-                var nuspecEntry = zip.Entries.First(e => e.FullName.EndsWith(".nuspec") && e.FullName == e.Name);
-                var packageId = XDocument.Load(nuspecEntry.Open()).Document.Root
-                    .Elements().First(x => x.Name.LocalName == "metadata")
-                    .Elements().First(x => x.Name.LocalName == "id").Value;
+                var packageId = SbomGenerator.ReadPackageId(path);
 
                 var packagePath = Path.Combine(
                     globalPackagesFolder,
