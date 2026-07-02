@@ -776,7 +776,7 @@ namespace Avalonia.Media.TextFormatting
                             }
 
                             var remaining = paragraphWidth - currentWidth;
-                            var bufferWidth = buffer.TotalGlyphAdvance;
+                            var bufferWidth = buffer.TotalGlyphAdvanceWithoutSpacing;
 
                             if (!MathUtilities.GreaterThan(bufferWidth, remaining))
                             {

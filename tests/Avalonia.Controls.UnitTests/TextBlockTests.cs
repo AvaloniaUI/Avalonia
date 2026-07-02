@@ -583,11 +583,11 @@ namespace Avalonia.Controls.UnitTests
                 if (line.TextLineBreak is null ||
                     line.TextLineBreak.TextEndOfLine is TextEndOfParagraph)
                 {
-                    Assert.True(line.WidthIncludingTrailingWhitespace < Width - 5);
+                    Assert.True(line.WidthIncludingTrailingWhitespace < Width - 2);
                 }
                 else
                 {
-                    Assert.True(line.WidthIncludingTrailingWhitespace >= Width - 5);
+                    Assert.True(line.WidthIncludingTrailingWhitespace >= Width - 2);
                 }
             }
         }

@@ -672,7 +672,11 @@ namespace Avalonia.Media.TextFormatting
                         {
                             var line = textLines[i];
 
-                            line.Justify(justificationProperties);
+                            if (line.TextLineBreak is not null &&
+                                line.TextLineBreak?.TextEndOfLine is not TextEndOfParagraph)
+                            {
+                                line.Justify(justificationProperties);
+                            }
                         }
                     }
                 }

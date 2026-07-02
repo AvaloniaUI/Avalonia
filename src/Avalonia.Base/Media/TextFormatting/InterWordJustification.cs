@@ -92,7 +92,7 @@ namespace Avalonia.Media.TextFormatting
                         var glyphInfo = shapedBuffer[glyphIndex];
 
                         shapedBuffer[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex,
-                            glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
+                            glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance, JustifySpacing: spacing);
                     }
 
                     glyphRun.GlyphInfos = shapedBuffer;
