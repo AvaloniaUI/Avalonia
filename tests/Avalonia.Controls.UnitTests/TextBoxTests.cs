@@ -2561,6 +2561,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBoxAutomationPeer_Exposes_The_Caret_Via_TextPattern2()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 3 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var provider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider2>(peer);
+
+            var caret = provider.GetCaretRange(out var isActive);
+
+            Assert.NotNull(caret);
+            Assert.False(isActive); // the box is not focused in this harness
+            Assert.Equal(string.Empty, caret!.GetText(-1)); // degenerate range at the caret
+
+            // Expanding the caret range to a character lands on the character at the caret index.
+            caret.ExpandToEnclosingUnit(TextUnit.Character);
+            Assert.Equal("l", caret.GetText(-1));
+        }
+
+        [Fact]
         public void TextBoxAutomationPeer_ITextRange_Select_Updates_Selection()
         {
             using var _ = UnitTestApplication.Start(Services);

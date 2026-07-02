@@ -5,7 +5,7 @@ using Avalonia.Controls;
 
 namespace Avalonia.Automation.Peers
 {
-    public class TextBoxAutomationPeer : ControlAutomationPeer, IValueProvider, ITextProvider
+    public class TextBoxAutomationPeer : ControlAutomationPeer, IValueProvider, ITextProvider2
     {
         private TextBoxTextNavigation? _navigation;
         private (int Start, int End, int Caret)? _lastReportedSelection;
@@ -64,6 +64,15 @@ namespace Avalonia.Automation.Peers
 
         // A plain TextBox has uniform text with no embedded automation elements.
         public ITextRangeProvider? RangeFromChild(AutomationPeer childElement) => null;
+
+        public ITextRangeProvider? GetCaretRange(out bool isActive)
+        {
+            isActive = HasKeyboardFocus();
+
+            var navigation = Navigation;
+            var caret = navigation.GetPosition(navigation.DocumentStart, Owner.CaretIndex);
+            return new AutomationTextRange(navigation, caret, caret);
+        }
 
         private TextBoxTextNavigation Navigation => _navigation ??= new TextBoxTextNavigation(Owner);
 

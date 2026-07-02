@@ -163,6 +163,7 @@ namespace Avalonia.Win32.Automation
                     UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
                     UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
                     UiaPatternId.Text => ThisIfPeerImplementsProvider<AAP.ITextProvider>(),
+                    UiaPatternId.Text2 => ThisIfPeerImplementsProvider<AAP.ITextProvider2>(),
                     UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
                     UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
                     _ => null,
