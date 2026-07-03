@@ -20,6 +20,7 @@ public sealed class TableViewColumnHeaderTests : ScopedTestBase
         var column = new TableViewColumn
         {
             Width = new GridLength(1, GridUnitType.Star),
+            CanResize = true,
             ActualWidth = 100
         };
         var header = new TableViewColumnHeader
@@ -48,6 +49,7 @@ public sealed class TableViewColumnHeaderTests : ScopedTestBase
         var column = new TableViewColumn
         {
             Width = new GridLength(50),
+            CanResize = true,
             ActualWidth = 50
         };
         var header = new TableViewColumnHeader
