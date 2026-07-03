@@ -59,6 +59,91 @@ internal class EglExternalObjectsFeature : IGlContextExternalObjectsFeature
             PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm
         };
 
+    private bool _dmaBufFormatsQueried;
+    private IReadOnlyList<PlatformGraphicsDrmFormat>? _dmaBufFormats;
+
+    public IReadOnlyList<PlatformGraphicsDrmFormat>? SupportedDmaBufFormats
+    {
+        get
+        {
+            if (!_dmaBufFormatsQueried)
+            {
+                using (_context.Display.Lock())
+                {
+                    if (!_dmaBufFormatsQueried)
+                    {
+                        _dmaBufFormats = TryQueryDmaBufFormats();
+                        _dmaBufFormatsQueried = true;
+                    }
+                }
+            }
+            return _dmaBufFormats;
+        }
+    }
+
+    private unsafe IReadOnlyList<PlatformGraphicsDrmFormat>? TryQueryDmaBufFormats()
+    {
+        var egl = _context.Display.EglInterface;
+        var display = _context.Display.Handle;
+        if (!_hasModifiers || !egl.IsQueryDmaBufFormatsEXTAvailable || !egl.IsQueryDmaBufModifiersEXTAvailable)
+            return null;
+
+        try
+        {
+            if (!egl.QueryDmaBufFormatsEXT(display, 0, null, out var formatCount) || formatCount <= 0)
+                return null;
+
+            var formats = new int[formatCount];
+            fixed (int* formatsPtr = formats)
+            {
+                if (!egl.QueryDmaBufFormatsEXT(display, formatCount, formatsPtr, out formatCount))
+                    return null;
+            }
+
+            var result = new List<PlatformGraphicsDrmFormat>();
+            for (var f = 0; f < formatCount; f++)
+            {
+                var format = formats[f];
+                if (!egl.QueryDmaBufModifiersEXT(display, format, 0, null, null, out var modifierCount))
+                    continue;
+                if (modifierCount <= 0)
+                {
+                    // No explicit modifiers reported: the format imports with the implicit layout.
+                    result.Add(new PlatformGraphicsDrmFormat((uint)format,
+                        PlatformGraphicsExternalImageProperties.DrmModifierInvalid));
+                    continue;
+                }
+
+                var modifiers = new ulong[modifierCount];
+                // EGLBoolean is 4 bytes; back the external-only buffer with ints.
+                var externalOnly = new int[modifierCount];
+                fixed (ulong* modifiersPtr = modifiers)
+                fixed (int* externalOnlyPtr = externalOnly)
+                {
+                    if (!egl.QueryDmaBufModifiersEXT(display, format, modifierCount, modifiersPtr,
+                            (bool*)externalOnlyPtr, out modifierCount))
+                        continue;
+                }
+
+                for (var m = 0; m < modifierCount; m++)
+                {
+                    // External-only modifiers can only be sampled via GL_TEXTURE_EXTERNAL_OES;
+                    // the import path binds GL_TEXTURE_2D, so they are not usable here.
+                    if (externalOnly[m] == 0)
+                        result.Add(new PlatformGraphicsDrmFormat((uint)format, modifiers[m]));
+                }
+            }
+
+            return result;
+        }
+        catch (Exception e)
+        {
+            Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log(this,
+                "Unable to enumerate EGL dma-buf import formats: " + e);
+            return null;
+        }
+    }
+
     public IGlExportableExternalImageTexture CreateImage(string type, PixelSize size,
         PlatformGraphicsExternalImageFormat format) => throw new NotSupportedException();
 
