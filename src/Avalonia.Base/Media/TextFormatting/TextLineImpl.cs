@@ -89,6 +89,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override double WidthIncludingTrailingWhitespace => _textLineMetrics.WidthIncludingTrailingWhitespace;
 
+        internal double WidthIncludingTrailingWhitespaceWithoutSpacing => _textLineMetrics.WidthIncludingTrailingWhitespaceWithoutSpacing;
         /// <summary>
         /// Get the logical text bounds.
         /// </summary>
@@ -1287,8 +1288,10 @@ namespace Avalonia.Media.TextFormatting
         {
             var fontMetrics = _paragraphProperties.DefaultTextRunProperties.CachedGlyphTypeface.Metrics;
             var fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
+            var justified = _paragraphProperties.TextAlignment == TextAlignment.Justify;
             var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
             var widthIncludingWhitespace = 0d;
+            var widthIncludingWhitespaceWithoutSpacing = 0d;
             var trailingWhitespaceLength = 0;
             var newLineLength = 0;
             var ascent = fontMetrics.Ascent * scale;
@@ -1359,7 +1362,16 @@ namespace Avalonia.Media.TextFormatting
 
                             inkBounds = inkBounds.Union(runBounds);
 
-                            widthIncludingWhitespace += textRun.Size.Width;
+                            var runWidth = textRun.Size.Width;
+                            widthIncludingWhitespace += runWidth;
+
+                            if (textRun.HasShapedBufferWithoutSpacing)
+                            {
+                                widthIncludingWhitespaceWithoutSpacing += textRun.SizeWithoutSpacing.Width;
+                            } else
+                            {
+                                widthIncludingWhitespaceWithoutSpacing += runWidth;
+                            }
 
                             break;
                         }
@@ -1371,7 +1383,9 @@ namespace Avalonia.Media.TextFormatting
 
                             inkBounds = inkBounds.Union(new Rect(new Point(widthIncludingWhitespace, offsetY), drawableTextRun.Size));
 
-                            widthIncludingWhitespace += drawableTextRun.Size.Width;
+                            var drawableWidth = drawableTextRun.Size.Width;
+                            widthIncludingWhitespace += drawableWidth;
+                            widthIncludingWhitespaceWithoutSpacing += drawableWidth;
 
                             break;
                         }
@@ -1457,6 +1471,7 @@ namespace Avalonia.Media.TextFormatting
                 TrailingWhitespaceLength = trailingWhitespaceLength,
                 Width = width,
                 WidthIncludingTrailingWhitespace = widthIncludingWhitespace,
+                WidthIncludingTrailingWhitespaceWithoutSpacing = widthIncludingWhitespaceWithoutSpacing,
                 OverhangLeading = overhangLeading,
                 OverhangTrailing = overhangTrailing,
                 OverhangAfter = overhangAfter

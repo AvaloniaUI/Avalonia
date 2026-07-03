@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+        Width="500" Height="450"
+        x:Class="AvaloniaApplication1.MainWindow"
+        Title="AvaloniaApplication1">
+  <Grid RowDefinitions="Auto,*,Auto,*">
+    <TextBlock Grid.Row="0">Justified Text:</TextBlock>
+    <TextBlock TextAlignment="Justify" TextWrapping="Wrap" Grid.Row="1">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam quis
+      facilisis justo. Nam non efficitur nibh. Aliquam erat volutpat. Sed sed
+      arcu ultrices, dictum elit a, facilisis eros.<LineBreak />
+      Aliquam enim urna, blandit ac feugiat sit amet, pulvinar sit amet dui.
+      Phasellus tincidunt metus a turpis lacinia, sit amet molestie felis ultricies.
+      Mauris eu tempus tellus. Duis accumsan hendrerit arcu blandit
+      rutrum.<LineBreak/>
+      Vivamus laoreet varius sapien, eget lacinia mi lacinia quis. Pellentesque
+      habitant morbi tristique senectus et netus et malesuada fames ac turpis
+      egestas. Fusce ultricies convallis molestie. Duis ut tortor iaculis,
+      pretium mauris in, elementum turpis. Ut velit massa, egestas ut
+      ipsum ac, euismod bibendum nibh.
+    </TextBlock>
+
+    <TextBlock Grid.Row="2">Normal wrapped Text:</TextBlock>
+    <TextBlock TextAlignment="Left" TextWrapping="Wrap" Grid.Row="3">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam quis
+      facilisis justo. Nam non efficitur nibh. Aliquam erat volutpat. Sed sed
+      arcu ultrices, dictum elit a, facilisis eros.<LineBreak/>
+      Aliquam enim urna, blandit ac feugiat sit amet, pulvinar sit amet dui.
+      Phasellus tincidunt metus a turpis lacinia, sit amet molestie felis ultricies.
+      Mauris eu tempus tellus. Duis accumsan hendrerit arcu blandit
+      rutrum.<LineBreak/>
+      Vivamus laoreet varius sapien, eget lacinia mi lacinia quis. Pellentesque
+      habitant morbi tristique senectus et netus et malesuada fames ac turpis
+      egestas. Fusce ultricies convallis molestie. Duis ut tortor iaculis,
+      pretium mauris in, elementum turpis. Ut velit massa, egestas ut
+      ipsum ac, euismod bibendum nibh.
+    </TextBlock>
+  </Grid>
+</Window>

@@ -24,6 +24,7 @@ namespace Avalonia.Media.TextFormatting
         private GlyphRun? _glyphRun;
         private int _refCount = 1;
         private ShapedBuffer? _shapedBufferWithoutSpacing = null;
+        private GlyphRun? _glyphRunWithoutSpacing;
 
         public ShapedTextRun(ShapedBuffer shapedBuffer, TextRunProperties properties)
         {
@@ -46,6 +47,26 @@ namespace Avalonia.Media.TextFormatting
             set => _shapedBufferWithoutSpacing = value; 
         }
 
+        internal void CreateShapedBufferWithoutSpacing()
+        {
+            if (_shapedBufferWithoutSpacing == null)
+            {
+                // Clone _shapedBuffer into _shapedBufferWithoutSpacing
+                // This could be improved by providing a Clone method in ShapedBuffer,
+                // but for now we can just create a new ShapedBuffer with the same data.
+                var textShaper = TextShaper.Current;
+                var glyphTypeface = Properties!.CachedGlyphTypeface;
+                var fontRenderingEmSize = Properties.FontRenderingEmSize;
+                var cultureInfo = Properties.CultureInfo;
+                var fontFeatures = Properties.FontFeatures;
+                var shaperOptions = new TextShaperOptions(glyphTypeface, fontRenderingEmSize,
+                    (sbyte)ShapedBuffer.BidiLevel, cultureInfo, 0, 0, fontFeatures);
+
+                _shapedBufferWithoutSpacing = textShaper.ShapeText(Text, shaperOptions);
+            }
+        }
+
+        public bool HasShapedBufferWithoutSpacing => _shapedBufferWithoutSpacing != null;
         /// <inheritdoc/>
         public override ReadOnlyMemory<char> Text
             => ShapedBuffer.Text;
@@ -62,8 +83,10 @@ namespace Avalonia.Media.TextFormatting
         public override double Baseline => -TextMetrics.Ascent + TextMetrics.LineGap * 0.5;
 
         public override Size Size => GlyphRun.Bounds.Size;
+        internal Size SizeWithoutSpacing => GlyphRunWithoutSpacing.Bounds.Size;
 
         public GlyphRun GlyphRun => _glyphRun ??= CreateGlyphRun();
+        internal GlyphRun GlyphRunWithoutSpacing => _glyphRunWithoutSpacing ??= CreateGlyphRunWithoutSpacing();
 
         /// <summary>
         /// Takes an additional reference to this run. Must be paired with <see cref="Dispose"/>.
@@ -151,10 +174,14 @@ namespace Avalonia.Media.TextFormatting
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
 
+            var hasSpacingBuffer = HasShapedBufferWithoutSpacing;
             var splitBuffer = ShapedBuffer.Split(length);
+            SplitResult<ShapedBuffer> splitBufferWithoutSpacing = default;
+            if (hasSpacingBuffer) splitBufferWithoutSpacing = ShapedBufferWithoutSpacing.Split(length);
 
             // first cannot be null as length > 0
             var first = new ShapedTextRun(splitBuffer.First!, Properties);
+            if (hasSpacingBuffer) first.ShapedBufferWithoutSpacing = splitBufferWithoutSpacing.First!;
 
             if (first.Length < length)
             {
@@ -167,6 +194,7 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var second = new ShapedTextRun(splitBuffer.Second, Properties);
+            if (hasSpacingBuffer) second.ShapedBufferWithoutSpacing = splitBufferWithoutSpacing.Second!;
 
             return new SplitResult<ShapedTextRun>(first, second);
         }
@@ -178,6 +206,16 @@ namespace Avalonia.Media.TextFormatting
                 ShapedBuffer.FontRenderingEmSize,
                 Text,
                 ShapedBuffer,
+                biDiLevel: BidiLevel);
+        }
+
+        internal GlyphRun CreateGlyphRunWithoutSpacing()
+        {
+            return new GlyphRun(
+                ShapedBufferWithoutSpacing.GlyphTypeface,
+                ShapedBufferWithoutSpacing.FontRenderingEmSize,
+                Text,
+                ShapedBufferWithoutSpacing,
                 biDiLevel: BidiLevel);
         }
 

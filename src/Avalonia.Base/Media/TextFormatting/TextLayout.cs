@@ -659,11 +659,6 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var justificationWidth = MaxWidth;
 
-                    if (_paragraphProperties.TextWrapping != TextWrapping.NoWrap)
-                    {
-                        justificationWidth = WidthIncludingTrailingWhitespace;
-                    }
-
                     if (justificationWidth > 0)
                     {
                         var justificationProperties = new InterWordJustification(justificationWidth);
@@ -672,11 +667,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             var line = textLines[i];
 
-                            if (line.TextLineBreak is not null &&
-                                line.TextLineBreak?.TextEndOfLine is not TextEndOfParagraph)
-                            {
-                                line.Justify(justificationProperties);
-                            }
+                            line.Justify(justificationProperties);
                         }
                     }
                 }

@@ -20,9 +20,9 @@
   <Folder Name="/Linux/">
     <Project Path="src/Avalonia.FreeDesktop.AtSpi/Avalonia.FreeDesktop.AtSpi.csproj" />
     <Project Path="src/Avalonia.FreeDesktop/Avalonia.FreeDesktop.csproj" />
+    <Project Path="src/Avalonia.Wayland/Avalonia.Wayland.csproj" />
     <Project Path="src/Avalonia.X11/Avalonia.X11.csproj" />
     <Project Path="src/Linux/Avalonia.LinuxFramebuffer/Avalonia.LinuxFramebuffer.csproj" />
-    <Project Path="src/Avalonia.Wayland/Avalonia.Wayland.csproj" />
   </Folder>
   <Folder Name="/Markup/">
     <Project Path="src/Markup/Avalonia.Markup.Xaml.Loader/Avalonia.Markup.Xaml.Loader.csproj" />
@@ -73,6 +73,7 @@
     <Project Path="samples/Generators.Sandbox/Generators.Sandbox.csproj" />
     <Project Path="samples/GpuInterop/GpuInterop.csproj" />
     <Project Path="samples/IntegrationTestApp/IntegrationTestApp.csproj" />
+    <Project Path="samples/JustifiedTextTestApp/JustifiedTextTestApp.csproj" />
     <Project Path="samples/MiniMvvm/MiniMvvm.csproj" />
     <Project Path="samples/PlatformSanityChecks/PlatformSanityChecks.csproj" />
     <Project Path="samples/RenderDemo/RenderDemo.csproj" />

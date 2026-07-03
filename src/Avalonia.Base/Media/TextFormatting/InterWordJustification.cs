@@ -58,9 +58,14 @@ namespace Avalonia.Media.TextFormatting
             {
                 return;
             }
-
-            var remainingSpace = Math.Max(0, paragraphWidth - lineImpl.WidthIncludingTrailingWhitespace);
-            var spacing = remainingSpace / breakOportunities.Count;
+            var remainingSpace = 0d;
+            var spacing = 0d;
+            if (textLine.TextLineBreak is not null &&
+                textLine.TextLineBreak?.TextEndOfLine is not TextEndOfParagraph)
+            {
+                remainingSpace = Math.Max(0, paragraphWidth - lineImpl.WidthIncludingTrailingWhitespaceWithoutSpacing);
+                spacing = remainingSpace / breakOportunities.Count;
+            }
 
             currentPosition = textLine.FirstTextSourceIndex;
 
@@ -77,23 +82,11 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var glyphRun = shapedText.GlyphRun;
                     var shapedBuffer = shapedText.ShapedBuffer;
-                    var shapedBufferWithoutSpacing = shapedText.ShapedBufferWithoutSpacing;
-                    if (shapedBufferWithoutSpacing == shapedBuffer)
-                    {
-                        // Clone shapedBuffer into shapedBufferWithoutSpacing
-                        // This could be improved by providing a Clone method in ShapedBuffer,
-                        // but for now we can just create a new ShapedBuffer with the same data.
-                        var textShaper = TextShaper.Current;
-                        var glyphTypeface = textRun.Properties!.CachedGlyphTypeface;
-                        var fontRenderingEmSize = textRun.Properties.FontRenderingEmSize;
-                        var cultureInfo = textRun.Properties.CultureInfo;
-                        var fontFeatures = textRun.Properties.FontFeatures;
-                        var shaperOptions = new TextShaperOptions(glyphTypeface, fontRenderingEmSize,
-                            (sbyte)shapedBuffer.BidiLevel, cultureInfo, 0, 0, textRun.Properties.FontFeatures);
 
-                        shapedBufferWithoutSpacing = textShaper.ShapeText(textRun.Text, shaperOptions);
-                        shapedText.ShapedBufferWithoutSpacing = shapedBufferWithoutSpacing;
-                    }
+                    if (!shapedText.HasShapedBufferWithoutSpacing)
+                        shapedText.CreateShapedBufferWithoutSpacing();
+
+                    var shapedBufferWithoutSpacing = shapedText.ShapedBufferWithoutSpacing;
 
                     while (breakOportunities.Count > 0)
                     {
@@ -107,9 +100,14 @@ namespace Avalonia.Media.TextFormatting
                         var offset = Math.Max(0, currentPosition - glyphRun.Metrics.FirstCluster);
                         var glyphIndex = glyphRun.FindGlyphIndex(characterIndex - offset);
                         var glyphInfo = shapedBuffer[glyphIndex];
+                        var originalGlyphInfo = shapedBufferWithoutSpacing[glyphIndex];
 
-                        shapedBuffer[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex,
-                            glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
+                        if (spacing > 0 ||
+                            originalGlyphInfo.GlyphAdvance != glyphInfo.GlyphAdvance)
+                        {
+                            shapedBuffer[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex,
+                            glyphInfo.GlyphCluster, originalGlyphInfo.GlyphAdvance + spacing);
+                        }
                     }
 
                     glyphRun.GlyphInfos = shapedBuffer;

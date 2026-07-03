@@ -47,6 +47,10 @@
         public double WidthIncludingTrailingWhitespace { get; init; }
 
         /// <summary>
+        /// Gets the raw width of a line of text wihtout justify spacing applied, including trailing whitespace characters.
+        /// </summary>
+        internal double WidthIncludingTrailingWhitespaceWithoutSpacing { get; init; }
+        /// <summary>
         /// Gets the distance from the top-most to bottom-most black pixel in a line.
         /// </summary>
         public double Extent { get; init; }

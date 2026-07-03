@@ -75,8 +75,17 @@ namespace Avalonia.Media.TextFormatting
                 // the formatter keeps the fresh-from-shape references for the current line.
                 if (textRunCache != null)
                 {
+                    // Add winout spacing info to runs if paragraph is justified
+                    if (paragraphProperties.TextAlignment == TextAlignment.Justify)
+                    {
+                        foreach (var run in shapedTextRuns)
+                        {
+                            if (run is ShapedTextRun shapedRun)
+                                shapedRun.CreateShapedBufferWithoutSpacing();
+                        }
+                    }
                     textRunCache.Add(firstTextSourceIndex,
-                        new CachedShapingResult(shapedTextRuns.ToArray(), resolvedFlowDirection,
+                    new CachedShapingResult(shapedTextRuns.ToArray(), resolvedFlowDirection,
                             textEndOfLine, textSourceLength));
                 }
 
@@ -1168,7 +1177,11 @@ namespace Avalonia.Media.TextFormatting
 
                             if (!ReferenceEquals(newBuffer, shapedTextRun.ShapedBuffer))
                             {
-                                trailingWhitespaceRuns[i] = new ShapedTextRun(newBuffer, shapedTextRun.Properties);
+                                var trailingWhitespaceRun = new ShapedTextRun(newBuffer, shapedTextRun.Properties);
+                                if (shapedTextRun.ShapedBufferWithoutSpacing != shapedTextRun.ShapedBuffer) {
+                                    trailingWhitespaceRun.ShapedBufferWithoutSpacing = shapedTextRun.ShapedBufferWithoutSpacing.WithBidiLevel(paragraphEmbeddingLevel);
+                                }
+                                trailingWhitespaceRuns[i] = trailingWhitespaceRun;
                                 shapedTextRun.Dispose();
                             }
                         }
