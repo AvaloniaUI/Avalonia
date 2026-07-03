@@ -82,6 +82,9 @@
         <Property Name="MiterLimit" Type="double" />
         <Property Name="Thickness" Type="double" />
     </Object>
+    <Object Name="CompositionSimpleGeometry" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">
+        <Property Name="GeometryImpl" Type="Avalonia.Platform.IGeometryImpl?" />
+    </Object>
     <Object Name="CompositionSimpleBrush" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">
         <Property Name="Opacity" Type="double" />
         <Property Name="TransformOrigin" Type="RelativePoint" />
