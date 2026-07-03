@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Collections;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters;
 
@@ -10,7 +11,11 @@ internal static class TableViewLayoutHelper
     /// Pixel columns take their fixed size; remaining space is split proportionally among star columns.
     /// Auto is treated as 1*.
     /// </summary>
-    public static bool UpdateActualWidths(AvaloniaList<TableViewColumn> columns, double availableWidth)
+    public static bool UpdateActualWidths(
+        AvaloniaList<TableViewColumn> columns,
+        double availableWidth,
+        bool useLayoutRounding,
+        double layoutScale)
     {
         if (columns.Count == 0)
             return false;
@@ -25,6 +30,9 @@ internal static class TableViewLayoutHelper
             if (width.IsAbsolute)
             {
                 var actualWidth = width.Value;
+
+                if (useLayoutRounding)
+                    actualWidth = LayoutHelper.RoundLayoutValue(actualWidth, layoutScale);
 
                 if (columns[i].ActualWidth != actualWidth)
                 {
@@ -52,13 +60,30 @@ internal static class TableViewLayoutHelper
         else
             starBudget = Math.Max(0.0, availableWidth - fixedTotal);
 
+        // Distribute the star budget by rounding the cumulative right edge of each star column rather than each width in
+        // isolation. This spreads the sub-pixel remainders across the columns instead of letting them accumulate, so the
+        // sum of the rounded star widths equals the rounded star budget and the final layout matches the available width.
+        var unroundedEdge = 0.0;
+        var roundedEdge = 0.0;
+
         for (var i = 0; i < columns.Count; i++)
         {
             var width = columns[i].Width;
             if (!width.IsAbsolute)
             {
                 var share = width.IsStar ? width.Value : 1.0;
-                var actualWidth = starTotal > 0 ? share / starTotal * starBudget : 0;
+                unroundedEdge += starTotal > 0 ? share / starTotal * starBudget : 0;
+
+                var actualWidth = unroundedEdge - roundedEdge;
+
+                if (useLayoutRounding)
+                {
+                    var nextRoundedEdge = LayoutHelper.RoundLayoutValue(unroundedEdge, layoutScale);
+                    actualWidth = nextRoundedEdge - roundedEdge;
+                    roundedEdge = nextRoundedEdge;
+                }
+                else
+                    roundedEdge = unroundedEdge;
 
                 if (columns[i].ActualWidth != actualWidth)
                 {

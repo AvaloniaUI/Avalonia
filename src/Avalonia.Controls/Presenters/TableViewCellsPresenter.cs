@@ -1,3 +1,4 @@
+using Avalonia.Layout;
 using static Avalonia.Controls.Presenters.TableViewLayoutHelper;
 
 namespace Avalonia.Controls.Presenters;
@@ -73,7 +74,7 @@ public class TableViewCellsPresenter : Panel
         // In a standard template, the column widths should have been computed by the headers' presenter.
         // If for some reason they weren't, do it now.
         if (NeedsActualWidths(columns))
-            UpdateActualWidths(columns, availableSize.Width);
+            UpdateActualWidths(columns, availableSize.Width, UseLayoutRounding, LayoutHelper.GetLayoutScale(this));
 
         return MeasureRow(columns, Children, availableSize);
     }
@@ -85,7 +86,7 @@ public class TableViewCellsPresenter : Panel
             return finalSize;
 
         if (NeedsActualWidths(columns))
-            UpdateActualWidths(columns, finalSize.Width);
+            UpdateActualWidths(columns, finalSize.Width, UseLayoutRounding, LayoutHelper.GetLayoutScale(this));
 
         return ArrangeRow(columns, Children, finalSize, 0);
     }

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using static Avalonia.Controls.Presenters.TableViewLayoutHelper;
 
@@ -80,7 +81,7 @@ public class TableViewColumnHeadersPresenter : Panel
         if (TableView is null)
             return default;
 
-        if (UpdateActualWidths(TableView.Columns, availableSize.Width))
+        if (UpdateActualWidths(TableView.Columns, availableSize.Width, UseLayoutRounding, LayoutHelper.GetLayoutScale(this)))
             TableView.InvalidateCellsMeasure();
 
         return MeasureRow(TableView.Columns, Children, availableSize);
@@ -94,7 +95,7 @@ public class TableViewColumnHeadersPresenter : Panel
 
         var columns = TableView.Columns;
 
-        if (UpdateActualWidths(columns, finalSize.Width))
+        if (UpdateActualWidths(columns, finalSize.Width, UseLayoutRounding, LayoutHelper.GetLayoutScale(this)))
             TableView.InvalidateCellsMeasure();
 
         var offset = TableView.Scroll?.Offset.X ?? 0;
