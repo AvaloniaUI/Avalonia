@@ -226,6 +226,7 @@ internal class RenderDataDrawingContext : DrawingContext
     protected override void PushEffectCore(IEffect effect, Rect bounds)
     {
         var before = Stream.OpcodeLength;
+        // Record inflated bounds so replay/backends can use them directly.
         Stream.PushEffect(effect.ToImmutable(), bounds.Inflate(effect.GetEffectOutputPadding()));
         PushedScope(before);
     }

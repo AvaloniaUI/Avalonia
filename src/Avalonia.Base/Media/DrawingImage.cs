@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia.Metadata;
 
 namespace Avalonia.Media
@@ -59,7 +59,12 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public Size Size => GetBounds().Size;
 
-        private Rect GetBounds() => Viewbox ?? Drawing?.GetBounds() ?? default;
+        /// <summary>
+        /// When Viewbox is set, the natural size exposed to Image should reflect the viewbox
+        /// so that Image computes destRect (with Stretch policies) based on that region.
+        /// </summary>
+        /// <returns>the calculated bounds</returns>
+        private Rect GetBounds() => Viewbox.HasValue ? Viewbox.Value : Drawing?.GetBounds() ?? default;
 
         /// <inheritdoc/>
         void IImage.Draw(
@@ -67,12 +72,17 @@ namespace Avalonia.Media
             Rect sourceRect,
             Rect destRect)
         {
-            if (Drawing is not { } drawing || sourceRect.Size == default || destRect.Size == default)
+            if (Drawing is not { } drawing || 
+                sourceRect.Width <= 0 || sourceRect.Height <= 0 ||
+                destRect.Width <= 0 || destRect.Height <= 0)
             {
                 return;
             }
 
             var bounds = GetBounds();
+            // Use the sourceRect provided by the caller (Image). When ViewBox is set, Size
+            // is based on ViewBox and Image will pass a 0-based sourceRect sized to the ViewBox.
+            var localSource = sourceRect;
 
             if (bounds.Size == default)
             {
@@ -80,13 +90,42 @@ namespace Avalonia.Media
             }
 
             var scale = Matrix.CreateScale(
-                destRect.Width / sourceRect.Width,
-                destRect.Height / sourceRect.Height);
+                destRect.Width / localSource.Width,
+                destRect.Height / localSource.Height);
+            // Align using the region we are displaying: if Viewbox is set, align to Viewbox
+            // (so we account for its X/Y offset); otherwise align to the drawing's bounds.
+            var alignBounds = Viewbox ?? (Drawing?.GetBounds() ?? bounds);
             var translate = Matrix.CreateTranslation(
-                -sourceRect.X + destRect.X - bounds.X,
-                -sourceRect.Y + destRect.Y - bounds.Y);
+                destRect.X - localSource.X - alignBounds.X,
+                destRect.Y - localSource.Y - alignBounds.Y);
 
-            using (context.PushClip(destRect))
+            // Always clip. If Viewbox is set (explicit crop), do NOT expand the clip beyond destRect.
+            // Otherwise, expand by effect output padding to avoid cutting off effect pixels.
+            var clipRect = destRect;
+            if (!Viewbox.HasValue)
+            {
+                var outer = drawing.GetOuterBounds();
+                var inner = drawing.GetEffectContentBounds();
+                if (!outer.IsEmpty() && !inner.IsEmpty() && inner is { Width: > 0, Height: > 0 })
+                {
+                    var sx = destRect.Width / localSource.Width;
+                    var sy = destRect.Height / localSource.Height;
+
+                    // Expand the destination clip by the positive padding between effect output (outer)
+                    // and effect content (inner), scaled to destination pixels.
+                    var dxLeft = Math.Max(0, (inner.X - outer.X) * sx);
+                    var dyTop = Math.Max(0, (inner.Y - outer.Y) * sy);
+                    var dxRight = Math.Max(0, ((outer.X + outer.Width) - (inner.X + inner.Width)) * sx);
+                    var dyBottom = Math.Max(0, ((outer.Y + outer.Height) - (inner.Y + inner.Height)) * sy);
+
+                    clipRect = new Rect(
+                        clipRect.X - dxLeft,
+                        clipRect.Y - dyTop,
+                        clipRect.Width + dxLeft + dxRight,
+                        clipRect.Height + dyTop + dyBottom);
+                }
+            }
+            using var clipScope = context.PushClip(clipRect);
             using (context.PushTransform(translate * scale))
             {
                 drawing.Draw(context);

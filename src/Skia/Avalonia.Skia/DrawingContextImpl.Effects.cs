@@ -14,9 +14,14 @@ partial class DrawingContextImpl
         var paint = SKPaintCache.Shared.Get();
         paint.ImageFilter = filter;
         if (effectClipRect.HasValue)
-            Canvas.SaveLayer(effectClipRect.Value.ToSKRect(), paint);
+        {
+            var skRect = effectClipRect.Value.ToSKRect();
+            Canvas.SaveLayer(skRect, paint);
+        }
         else
+        {
             Canvas.SaveLayer(paint);
+        }
         SKPaintCache.Shared.ReturnReset(paint);
     }
 

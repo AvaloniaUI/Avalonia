@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
@@ -48,9 +49,10 @@ public class DrawingContextTests : TestBase
             Width = 100,
             Height = 100,
             Background = Brushes.White,
-            Child = new Image { 
-                Source = new DrawingImage { Drawing = group }, 
-                Stretch = Stretch.None, 
+            Child = new Image
+            {
+                Source = new DrawingImage { Drawing = group },
+                Stretch = Stretch.None,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 ClipToBounds = false
@@ -61,6 +63,73 @@ public class DrawingContextTests : TestBase
         CompareImages();
     }
 
+    /// <summary>
+    /// This test ensures that DrawingImage takes effects into account when rendering.
+    /// </summary>
+    [Fact]
+    public async Task Should_Render_DrawingImage_With_Effect()
+    {
+        var group = new DrawingGroup();
+        using (var context = group.Open())
+        {
+            using (context.PushEffect(new DropShadowEffect { BlurRadius = 3, Color = Colors.Black, Opacity = 1, OffsetX = 3, OffsetY = 3}, new Rect(0, 0, 100, 100)))
+            {
+                context.DrawLine(new Pen(Brushes.Red, 30, lineCap: PenLineCap.Round), new Point(25, 25),
+                    new Point(75, 75));
+            }
+        }
+
+        var target = new Border
+        {
+            Width = 100,
+            Height = 100,
+            Background = Brushes.White,
+            Child = new Image
+            {
+                Source = new DrawingImage { Drawing = group },
+                Stretch = Stretch.None,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                ClipToBounds = false
+            }
+        };
+
+        await RenderToFile(target);
+        CompareImages();
+    }
+    
+    /// <summary>
+    /// This test ensures that effects are preserved for geometry having a stroke thickness set.
+    /// </summary>
+    [Fact]
+    public async Task Should_Render_Geometry_With_Effect()
+    {
+        var target = new Border
+        {
+            Width = 100,
+            Height = 100,
+            Background = Brushes.White,
+            Child = new Line()
+            {
+                StartPoint = new Point(25, 25),
+                EndPoint = new Point(75, 75),
+                Stroke = Brushes.Red,
+                StrokeThickness = 30,
+                StrokeLineCap = PenLineCap.Round,
+                Effect = new DropShadowEffect
+                {
+                    BlurRadius = 3, 
+                    Color = Colors.Black, 
+                    OffsetX = 3, 
+                    OffsetY = 3
+                }
+            }
+        };
+
+        await RenderToFile(target);
+        CompareImages();
+    }
+    
     internal class RenderControl : Control
     {
         private static readonly Typeface s_typeface = new Typeface(TestFontFamily);

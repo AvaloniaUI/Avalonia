@@ -93,6 +93,7 @@ internal sealed class PlatformDrawingContext : DrawingContext
     {
         if (_impl is IDrawingContextImplWithEffects effectImpl)
         {
+            // Inflate the effect bounds here so backends can use the final clip rect as-is.
             effectImpl.PushEffect(bounds.Inflate(effect.GetEffectOutputPadding()), effect);
         }
     }

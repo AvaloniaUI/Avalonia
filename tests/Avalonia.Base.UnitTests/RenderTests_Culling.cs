@@ -210,9 +210,54 @@ namespace Avalonia.Base.UnitTests
             }
         }
 
+        [Fact]
+        public void Effect_Bounds_Should_Cover_Visible_Clip()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var effectImpl = new Mock<IDrawingContextImplWithEffects>();
+                effectImpl.SetupProperty(x => x.Transform, Matrix.Identity);
+
+                Rect? effectBounds = null;
+                effectImpl
+                    .Setup(x => x.PushEffect(It.IsAny<Rect?>(), It.IsAny<IEffect>()))
+                    .Callback<Rect?, IEffect>((bounds, _) => effectBounds = bounds);
+
+                var root = new Canvas
+                {
+                    Width = 300,
+                    Height = 300,
+                    Children =
+                    {
+                        new TestControl
+                        {
+                            Width = 250,
+                            Height = 250,
+                            Effect = new DropShadowEffect
+                            {
+                                Color = Colors.Black,
+                                BlurRadius = 3,
+                                OffsetX = 3,
+                                OffsetY = 3,
+                            }
+                        }
+                    }
+                };
+
+                Render(root, new PlatformDrawingContext(effectImpl.Object, ownsImpl: false));
+
+                Assert.NotNull(effectBounds);
+                Assert.True(effectBounds.Value.Contains(root.Bounds));
+            }
+        }
+
         private void Render(Control control)
         {
-            var ctx = CreateDrawingContext();
+            Render(control, CreateDrawingContext());
+        }
+
+        private void Render(Control control, DrawingContext ctx)
+        {
             control.Measure(Size.Infinity);
             control.Arrange(new Rect(control.DesiredSize));
             ImmediateRenderer.Render(ctx, control);
