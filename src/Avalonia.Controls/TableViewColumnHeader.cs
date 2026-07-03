@@ -86,10 +86,18 @@ public class TableViewColumnHeader : ContentControl
 
     private void SetProperties(TableViewColumn column)
     {
-        SetValue(ThemeProperty, column.HeaderTheme);
+        SetOrClearValue(ThemeProperty, column.HeaderTheme);
         SetValue(HorizontalContentAlignmentProperty, column.HorizontalContentAlignment);
-        SetValue(ContentTemplateProperty, column.HeaderTemplate);
-        SetValue(ContentProperty, column.Header);
+        SetOrClearValue(ContentTemplateProperty, column.HeaderTemplate);
+        SetOrClearValue(ContentProperty, column.Header);
+
+        void SetOrClearValue<T>(StyledProperty<T?> property, T? value) where T : class
+        {
+            if (value is not null)
+                SetValue(property, value);
+            else
+                ClearValue(property);
+        }
     }
 
     internal void Refresh()
