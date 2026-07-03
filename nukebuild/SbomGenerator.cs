@@ -477,8 +477,15 @@ public static class SbomGenerator
         return true;
     }
 
+    // Prefer purl (or bom-ref) as the identity; both encode version. Fall back to name+version so
+    // distinct versions of the same package aren't collapsed into one, and to a fresh GUID when
+    // there's nothing identifiable to key on (treating it as unique rather than deduping blindly).
     static string ComponentKey(JsonNode? component) =>
-        component?["purl"]?.GetValue<string>() ?? component?["name"]?.GetValue<string>() ?? Guid.NewGuid().ToString();
+        component?["purl"]?.GetValue<string>()
+        ?? component?["bom-ref"]?.GetValue<string>()
+        ?? (component?["name"]?.GetValue<string>() is { } name
+            ? $"{name}@{component?["version"]?.GetValue<string>()}"
+            : Guid.NewGuid().ToString());
 
     // Fills in the root component with the publisher, licence, description and repository details
     // from the shipped .nuspec - cyclonedx-dotnet only emits type/name/version, which is far short
@@ -666,8 +673,9 @@ public static class SbomGenerator
     {
         using var file = File.Open(nupkgPath, FileMode.Open, FileAccess.Read);
         using var zip = new ZipArchive(file, ZipArchiveMode.Read);
-        var nuspecEntry = zip.Entries.First(e => e.FullName.EndsWith(".nuspec") && e.FullName == e.Name);
-        var metadata = XDocument.Load(nuspecEntry.Open()).Root!
+        var nuspecEntry = zip.Entries.First(e => e.FullName.EndsWith(".nuspec", StringComparison.Ordinal) && e.FullName == e.Name);
+        using var nuspecStream = nuspecEntry.Open();
+        var metadata = XDocument.Load(nuspecStream).Root!
             .Elements().First(x => x.Name.LocalName == "metadata");
 
         string? Value(string name) => metadata.Elements().FirstOrDefault(x => x.Name.LocalName == name)?.Value;

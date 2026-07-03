@@ -318,7 +318,9 @@ partial class Build : NukeBuild
         });
 
     Target ZipFiles => _ => _
-        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package)
+        // CreateSbom embeds the SBOM into each .nupkg in NugetRoot, so it must run before we zip
+        // that directory - otherwise the zipped NuGet artifacts would omit the embedded SBOM.
+        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package, CreateSbom)
         .Executes(() =>
         {
             var data = Parameters;
