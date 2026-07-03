@@ -455,6 +455,32 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
+    public void Re_Templating_Row_Detaches_Old_Cells_And_Rebuilds_New_Cells()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        target.Columns.Add(new TableViewColumn());
+        target.Columns.Add(new TableViewColumn());
+
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var oldCells = GetCellsPresenter(row).Children.ToArray();
+        Assert.Equal(2, oldCells.Length);
+        Assert.Equal(oldCells, row.GetLogicalChildren());
+
+        row.Template = RowTemplate();
+        row.ApplyTemplate();
+
+        var newCells = GetCellsPresenter(row).Children.ToArray();
+        Assert.Equal(2, newCells.Length);
+
+        Assert.All(oldCells, cell => Assert.Null(cell.Parent));
+        Assert.Equal(newCells, row.GetLogicalChildren());
+    }
+
+    [Fact]
     public void CanResizeColumns_Defaults_To_True()
     {
         Assert.True(new TableView().CanResizeColumns);
@@ -607,13 +633,16 @@ public sealed class TableViewTests : ScopedTestBase
         {
             Setters =
             {
-                new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TableViewRow>((_, scope) =>
-                    new TableViewCellsPresenter
-                    {
-                        Name = "PART_CellsPresenter"
-                    }.RegisterInNameScope(scope)))
+                new Setter(TemplatedControl.TemplateProperty, RowTemplate())
             }
         };
+
+    private static FuncControlTemplate<TableViewRow> RowTemplate()
+        => new((_, scope) =>
+            new TableViewCellsPresenter
+            {
+                Name = "PART_CellsPresenter"
+            }.RegisterInNameScope(scope));
 
     private class Person
     {

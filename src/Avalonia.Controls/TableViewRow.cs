@@ -26,8 +26,8 @@ public class TableViewRow : ListBoxItem
         if (_cellsPresenter is not null)
         {
             Debug.Assert(_cellsPresenter.Row == this);
-            _cellsPresenter.Row = null;
             _cellsPresenter.RemoveCells();
+            _cellsPresenter.Row = null;
         }
 
         _cellsPresenter = e.NameScope.Find<TableViewCellsPresenter>(PartCellsPresenter);
