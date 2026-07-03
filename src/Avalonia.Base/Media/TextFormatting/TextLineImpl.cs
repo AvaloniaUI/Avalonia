@@ -1461,6 +1461,15 @@ namespace Avalonia.Media.TextFormatting
                     var whitespaceWidth = glyphRun.Bounds.Width - glyphRunMetrics.Width;
 
                     width -= whitespaceWidth;
+
+                    if (glyphRunMetrics.TrailingWhitespaceLength != currentRun.Length)
+                    {
+                        // This run has visible content before its own trailing whitespace, so it -
+                        // not an earlier run - is the true end of the line's visible content. An
+                        // earlier run's own trailing whitespace is interior to the line (followed by
+                        // this run's visible content) and must not be excluded from Width too.
+                        break;
+                    }
                 }
             }
 
