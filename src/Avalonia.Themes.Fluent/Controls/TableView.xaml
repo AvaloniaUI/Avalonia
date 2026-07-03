@@ -26,10 +26,6 @@
                       DockPanel.Dock="Top">
                 <TableViewColumnHeadersPresenter />
               </Border>
-              <Rectangle Height="1"
-                         Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"
-                         Opacity="0.2"
-                         DockPanel.Dock="Top" />
               <ScrollContentPresenter Name="PART_ContentPresenter"
                                       Background="{TemplateBinding Background}"
                                       HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
