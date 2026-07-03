@@ -1778,6 +1778,41 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             return advances;
         }
 
+        [Fact]
+        public void Width_Excludes_Only_The_Lines_True_Trailing_Whitespace()
+        {
+            using (Start())
+            {
+                // Two runs split by a font-size change. The FIRST (interior) run also ends in a
+                // space of its own ("foo "), but that space is followed by more visible content
+                // ("bar") in the next run, so it is NOT trailing whitespace for the line as a
+                // whole - only the space at the true end of the line is. A reference line without
+                // any trailing space isolates exactly how much Width should differ.
+                var first = new GenericTextRunProperties(Typeface.Default, 20);
+                var second = new GenericTextRunProperties(Typeface.Default, 14);
+                var formatter = new TextFormatterImpl();
+
+                var reference = formatter.FormatLine(new SplitStyleTextSource("foo bar", 4, first, second), 0,
+                    double.PositiveInfinity, new GenericTextParagraphProperties(first));
+
+                var withTrailingSpace = formatter.FormatLine(new SplitStyleTextSource("foo bar ", 4, first, second), 0,
+                    double.PositiveInfinity, new GenericTextParagraphProperties(first));
+
+                Assert.NotNull(reference);
+                Assert.NotNull(withTrailingSpace);
+
+                // Confirm both lines are genuinely multi-run, and the reference truly has no
+                // trailing whitespace, otherwise the comparison proves nothing.
+                Assert.True(reference.TextRuns.OfType<ShapedTextRun>().Count() >= 2);
+                Assert.Equal(0, reference.TrailingWhitespaceLength);
+
+                // Only the one added trailing space is excluded - not that space AND "foo "'s own
+                // interior trailing space too.
+                Assert.Equal(1, withTrailingSpace.TrailingWhitespaceLength);
+                Assert.Equal(reference.Width, withTrailingSpace.Width, 3);
+            }
+        }
+
         private static void AssertGreaterThan(double x, double y, string message) => Assert.True(x > y, $"{message}. {x} is not > {y}");
 
         private static IDisposable Start()
