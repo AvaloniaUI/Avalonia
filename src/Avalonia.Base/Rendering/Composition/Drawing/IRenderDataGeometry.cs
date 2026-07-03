@@ -10,7 +10,7 @@ namespace Avalonia.Rendering.Composition.Drawing;
 /// (which returns its current, mutable backing geometry). This lets the render data stay strongly typed
 /// while still resolving to the concrete <see cref="IGeometryImpl"/> that platform drawing contexts require.
 /// </summary>
-[NotClientImplementable]
+[PrivateApi]
 public interface IRenderDataGeometry
 {
     /// <summary>
