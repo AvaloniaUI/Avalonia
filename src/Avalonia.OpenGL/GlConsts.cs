@@ -85,7 +85,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_CW = 0x0900;
 //        public const int GL_CCW = 0x0901;
 //        public const int GL_FRONT = 0x0404;
-//        public const int GL_BACK = 0x0405;
+        public const int GL_BACK = 0x0405;
 //        public const int GL_POLYGON_MODE = 0x0B40;
 //        public const int GL_POLYGON_SMOOTH = 0x0B41;
 //        public const int GL_POLYGON_STIPPLE = 0x0B42;
@@ -412,8 +412,8 @@ namespace Avalonia.OpenGL
 //        public const int GL_TEXTURE_ENV_MODE = 0x2200;
 //        public const int GL_TEXTURE_1D = 0x0DE0;
         public const int GL_TEXTURE_2D = 0x0DE1;
-//        public const int GL_TEXTURE_WRAP_S = 0x2802;
-//        public const int GL_TEXTURE_WRAP_T = 0x2803;
+        public const int GL_TEXTURE_WRAP_S = 0x2802;
+        public const int GL_TEXTURE_WRAP_T = 0x2803;
         public const int GL_TEXTURE_MAG_FILTER = 0x2800;
         public const int GL_TEXTURE_MIN_FILTER = 0x2801;
 //        public const int GL_TEXTURE_ENV_COLOR = 0x2201;
@@ -530,7 +530,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_ALL_CLIENT_ATTRIB_BITS = -1;
 //        public const int GL_CLIENT_ALL_ATTRIB_BITS = -1;
 //        public const int GL_RESCALE_NORMAL = 0x803A;
-//        public const int GL_CLAMP_TO_EDGE = 0x812F;
+        public const int GL_CLAMP_TO_EDGE = 0x812F;
 //        public const int GL_MAX_ELEMENTS_VERTICES = 0x80E8;
 //        public const int GL_MAX_ELEMENTS_INDICES = 0x80E9;
 //        public const int GL_BGR = 0x80E0;

@@ -27,6 +27,9 @@ public static class AsyncDataTransferExtensions
         return new AsyncToSyncDataTransfer(asyncDataTransfer);
     }
 
+    internal static IAsyncDataTransfer ToAsynchronous(this IDataTransfer dataTransfer)
+        => dataTransfer as IAsyncDataTransfer ?? new SyncToAsyncDataTransfer(dataTransfer);
+
     /// <summary>
     /// Gets whether a <see cref="IAsyncDataTransfer"/> supports a specific format.
     /// </summary>

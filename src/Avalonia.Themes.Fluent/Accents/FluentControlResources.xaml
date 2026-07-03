@@ -1670,7 +1670,7 @@
 
       <!-- Resources for WindowDrawnDecorations.xaml -->
       <SolidColorBrush x:Key="CaptionButtonForeground" Color="White" />
-      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ff1d170f" />
       <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
       <StaticResource x:Key="TitleBarBackgroundBrush" ResourceKey="SystemControlBackgroundAltHighBrush" />
 
