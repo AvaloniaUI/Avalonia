@@ -20,8 +20,10 @@ namespace Avalonia.Media.Fonts
         // Make this internal for testing purposes
         internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache = new();
 
-        // Cache of resolved script/culture fallback family names. A null value is a *negative* cache
-        // entry which prevents repeated platform-fallback calls for the same script bucket.
+        // Cache of resolved script/culture fallback family names. A non-null value is the preferred
+        // fallback family for that script bucket: a Tier B hint that is still re-checked for coverage
+        // per codepoint, and which does NOT by itself suppress a platform call. A null value is a
+        // *negative* entry that prevents repeated platform-fallback calls for the same script bucket.
         private readonly ConcurrentDictionary<ScriptFallbackKey, string?> _scriptFallbackCache = new();
 
         private readonly object _fontFamiliesLock = new();
@@ -45,6 +47,16 @@ namespace Avalonia.Media.Fonts
 
         public virtual bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
             string? familyName, CultureInfo? culture, out Typeface match)
+            => TryMatchCharacter(codepoint, style, weight, stretch, familyName, culture, Script.Unknown, out match);
+
+        /// <summary>
+        /// Character-to-typeface match with an optional shaping-capability constraint. When
+        /// <paramref name="shapingScript"/> is a complex script, only candidates that can shape it
+        /// (<see cref="GlyphTypeface.CanShapeScript"/>) are considered; <see cref="Script.Unknown"/>
+        /// imposes no constraint and is identical to the public overload.
+        /// </summary>
+        internal bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
+            string? familyName, CultureInfo? culture, Script shapingScript, out Typeface match)
         {
             match = default;
 
@@ -57,7 +69,7 @@ namespace Avalonia.Media.Fonts
             // --- Tier A: requested family, coverage-checked, culture-compatible ---
             if (familyName != null &&
                 _glyphTypefaceCache.TryGetValue(familyName, out var requestedFamily) &&
-                TryGetCoveringMatch(requestedFamily, key, codepoint, isLastResort: false, out var requestedGlyphTypeface) &&
+                TryGetCoveringMatchForFamily(requestedFamily, key, codepoint, culture, shapingScript, out var requestedGlyphTypeface) &&
                 IsCultureCompatible(requestedGlyphTypeface, culture, script))
             {
                 match = BuildTypefaceWithSynthesis(requestedGlyphTypeface, key);
@@ -71,7 +83,7 @@ namespace Avalonia.Media.Fonts
                     cachedFamily != null &&
                     !string.Equals(cachedFamily, familyName, StringComparison.OrdinalIgnoreCase) &&
                     _glyphTypefaceCache.TryGetValue(cachedFamily, out var cachedTypefaces) &&
-                    TryGetCoveringMatch(cachedTypefaces, key, codepoint, isLastResort: false, out var cachedGlyphTypeface))
+                    TryGetCoveringMatchForFamily(cachedTypefaces, key, codepoint, culture, shapingScript, out var cachedGlyphTypeface))
                 {
                     match = BuildTypefaceWithSynthesis(cachedGlyphTypeface, key);
                     return true;
@@ -79,8 +91,14 @@ namespace Avalonia.Media.Fonts
             }
 
             // --- Tier C: deterministic cache sweep (non last-resort), culture-scored ---
-            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, isLastResort: false, out var bestGt, out var bestFamilyName))
-            {               
+            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, shapingScript, isLastResort: false, out var bestGt, out var bestFamilyName))
+            {
+                // The sweep returns the nearest cached key for the winning family. A codepoint the
+                // bucket family can't cover (e.g. the Simplified-only 华 when the bucket is a JP font)
+                // lands here, so the exact-key upgrade is needed here too: otherwise a Bold face cached
+                // for an earlier run is rendered for a Normal request.
+                bestGt = PreferExactKey(bestGt, key, codepoint, culture, shapingScript);
+
                 if (FontFallbackScriptHints.IsLocaleSensitive(refinedScript) || culture != null)
                 {
                     _scriptFallbackCache.TryAdd(scriptKey, bestFamilyName);
@@ -90,25 +108,41 @@ namespace Avalonia.Media.Fonts
                 return true;
             }
 
-            // --- Tier D: platform fallback (at most once per (script, culture)) ---
-            var platformAlreadyAttempted = _scriptFallbackCache.ContainsKey(scriptKey);
-
-            if (!platformAlreadyAttempted &&
-                TryMatchCharacterFromPlatform(codepoint, key, familyName, culture, out var platformGt))
+            // --- Tier D: platform fallback ---
+            // Only a *negative* cache entry (the platform had no font for this script bucket)
+            // suppresses a retry. A *positive* entry must not: it records a preferred family for the
+            // bucket, but that family may not cover THIS codepoint - e.g. 中 (U+4E2D) resolves to a CJK
+            // font that lacks the Simplified-only 华 (U+534E) - and the platform resolves per codepoint,
+            // so it may still place a codepoint the bucket's font cannot. Reaching Tier D already means
+            // no cached family covered this codepoint.
+            // Skipped for shaping-constrained queries: the platform match is not capability-checked,
+            // and the caller's unconstrained pass already covers the platform path (so the negative
+            // cache stays consistent with unconstrained lookups).
+            if (shapingScript == Script.Unknown)
             {
-                _scriptFallbackCache.TryAdd(scriptKey, platformGt.FamilyName);
-                match = BuildTypefaceWithSynthesis(platformGt, key);
-                return true;
-            }
+                var hasCacheEntry = _scriptFallbackCache.TryGetValue(scriptKey, out var cachedFamily);
+                var platformAlreadyAttempted = hasCacheEntry && cachedFamily is null;
 
-            if (!platformAlreadyAttempted)
-            {
-                // Remember the negative answer so we don't ask the platform again.
-                _scriptFallbackCache.TryAdd(scriptKey, null);
+                if (!platformAlreadyAttempted &&
+                    TryMatchCharacterFromPlatform(codepoint, key, familyName, culture, out var platformGt))
+                {
+                    // Keep any existing positive hint (TryAdd won't overwrite); registering the match
+                    // lets later lookups for this codepoint be served by Tier C without the platform.
+                    _scriptFallbackCache.TryAdd(scriptKey, platformGt.FamilyName);
+                    match = BuildTypefaceWithSynthesis(platformGt, key);
+                    return true;
+                }
+
+                // Record a negative only when nothing was cached for the bucket yet, so a positive hint
+                // for one codepoint isn't downgraded to a negative by another the platform can't place.
+                if (!hasCacheEntry)
+                {
+                    _scriptFallbackCache.TryAdd(scriptKey, null);
+                }
             }
 
             // --- Tier E: last-resort cache sweep ---
-            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, isLastResort: true, out var lrGt, out _))
+            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, shapingScript, isLastResort: true, out var lrGt, out _))
             {
                 match = BuildTypefaceWithSynthesis(lrGt, key);
                 return true;
@@ -124,6 +158,7 @@ namespace Avalonia.Media.Fonts
             CultureInfo? culture,
             Script script,
             Script refinedScript,
+            Script shapingScript,
             bool isLastResort,
             [NotNullWhen(true)] out GlyphTypeface? bestGlyphTypeface,
             [NotNullWhen(true)] out string? bestFamilyName)
@@ -149,7 +184,7 @@ namespace Avalonia.Media.Fonts
                     continue;
                 }
 
-                if (!TryGetCoveringMatch(glyphTypefaces, key, codepoint, isLastResort, out var candidate))
+                if (!TryGetCoveringMatch(glyphTypefaces, key, codepoint, isLastResort, shapingScript, out var candidate))
                 {
                     continue;
                 }
@@ -280,7 +315,7 @@ namespace Avalonia.Media.Fonts
         /// <summary>
         /// Hook for platform-backed collections (e.g. <see cref="SystemFontCollection"/>) to consult
         /// the underlying font manager for a fallback typeface. Invoked at most once per
-        /// (script-bucket, culture) pair from <see cref="TryMatchCharacter"/>.
+        /// (script-bucket, culture) pair from <see cref="FontCollectionBase.TryMatchCharacter(int, FontStyle, FontWeight, FontStretch, string?, CultureInfo?, out Typeface)"/>.
         /// </summary>
         protected virtual bool TryMatchCharacterFromPlatform(
             int codepoint,
@@ -294,22 +329,81 @@ namespace Avalonia.Media.Fonts
         }
 
         /// <summary>
+        /// Resolves a covering face for a single family at the requested key. Takes the cheap cached
+        /// covering match first (an exact-key hit needs nothing more) and only escalates to the exact
+        /// key when that match differs in any axis, so a Bold (or Italic, or Condensed) face cached for
+        /// one run is not reused for a differently-keyed request of the same family.
+        /// </summary>
+        private bool TryGetCoveringMatchForFamily(
+            ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
+            FontCollectionKey key,
+            int codepoint,
+            CultureInfo? culture,
+            Script shapingScript,
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        {
+            if (!TryGetCoveringMatch(glyphTypefaces, key, codepoint, isLastResort: false, shapingScript, out glyphTypeface))
+            {
+                return false;
+            }
+
+            glyphTypeface = PreferExactKey(glyphTypeface, key, codepoint, culture, shapingScript);
+            return true;
+        }
+
+        /// <summary>
+        /// When <paramref name="glyphTypeface"/> differs from the requested <paramref name="key"/> in
+        /// any axis (style, weight or stretch), asks the platform for the exact-key face of the same
+        /// family - the only source of a key the cache lacks - via <see cref="TryMatchCharacterFromPlatform"/>,
+        /// and returns it when it is an exact, shapeable match; otherwise returns the input unchanged.
+        /// The platform is consulted only on a mismatch, and a collection without one keeps the
+        /// neighbouring match. This guards every key axis, not just weight.
+        /// </summary>
+        private GlyphTypeface PreferExactKey(
+            GlyphTypeface glyphTypeface,
+            FontCollectionKey key,
+            int codepoint,
+            CultureInfo? culture,
+            Script shapingScript)
+        {
+            // The platform's character match, biased by the family already resolved, yields that family
+            // at the requested key when it has that face (MatchCharacter covers the codepoint, so no
+            // extra coverage check is needed). Accept it only when it is the exact key and can shape.
+            if (glyphTypeface.ToFontCollectionKey() != key &&
+                TryMatchCharacterFromPlatform(codepoint, key, glyphTypeface.FamilyName, culture, out var exact) &&
+                exact.ToFontCollectionKey() == key &&
+                CanShape(exact, shapingScript))
+            {
+                return exact;
+            }
+
+            return glyphTypeface;
+        }
+
+        /// <summary>
         /// Picks a variant of the family that both is close to the requested key and actually maps
         /// the requested codepoint. Falls back through the existing weight/stretch search but
         /// filters every candidate through the font's character-to-glyph map.
         /// </summary>
+        // A candidate satisfies a shaping-capability constraint when it can shape the requested
+        // script; Script.Unknown means no constraint (the historical, unconstrained behaviour).
+        private static bool CanShape(GlyphTypeface glyphTypeface, Script shapingScript)
+            => shapingScript == Script.Unknown || glyphTypeface.CanShapeScript(shapingScript);
+
         private static bool TryGetCoveringMatch(
             ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
             int codepoint,
             bool isLastResort,
+            Script shapingScript,
             [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             // Exact key first.
             if (glyphTypefaces.TryGetValue(key, out glyphTypeface) &&
                 glyphTypeface != null &&
                 glyphTypeface.IsLastResort == isLastResort &&
-                glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
+                glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _) &&
+                CanShape(glyphTypeface, shapingScript))
             {
                 return true;
             }
@@ -330,7 +424,8 @@ namespace Avalonia.Media.Fonts
                     continue;
                 }
 
-                if (!candidate.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
+                if (!candidate.CharacterToGlyphMap.TryGetGlyph(codepoint, out _) ||
+                    !CanShape(candidate, shapingScript))
                 {
                     continue;
                 }

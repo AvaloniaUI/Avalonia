@@ -42,7 +42,7 @@ namespace Avalonia.Win32
         private static Win32PlatformOptions? s_options;
         private static Compositor? s_compositor;
         internal const int TIMERID_DISPATCHER = 1;
-
+        private const int DefaultFramesPerSecond = 60;
         private WndProc? _wndProcDelegate;
         private IntPtr _hwnd;
         private Win32DispatcherImpl _dispatcher;
@@ -85,7 +85,7 @@ namespace Avalonia.Win32
 
             Dispatcher.InitializeUIThreadDispatcher(s_instance._dispatcher);
             
-            var renderTimer = options.ShouldRenderOnUIThread ? new UiThreadRenderTimer(60) : new DefaultRenderTimer(60);
+            IRenderTimer renderTimer = options.ShouldRenderOnUIThread ? new UiThreadRenderTimer(DefaultFramesPerSecond) : new SleepLoopRenderTimer(DefaultFramesPerSecond);
             var clipboardImpl = new ClipboardImpl();
             var clipboard = new Clipboard(clipboardImpl);
 
@@ -131,7 +131,9 @@ namespace Avalonia.Win32
             
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
-            
+
+            UpdateTimerFps();
+
             s_compositor = new Compositor( platformGraphics);
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(s_compositor);
         }
@@ -192,6 +194,16 @@ namespace Avalonia.Win32
             TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
 
             return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        internal static void UpdateTimerFps()
+        {
+            var maxDisplayFrequency = Math.Max(60, Instance.Screen?.AllScreens?.Max(s => (s as WinScreen)?.Frequency) ?? 0);
+            if (AvaloniaLocator.Current.GetService<IRenderLoop>() is DefaultRenderLoop defaultRenderLoop &&
+                defaultRenderLoop.Timer is SleepLoopRenderTimer sleepLoopRenderTimer)
+            {
+                sleepLoopRenderTimer.DesiredFps = maxDisplayFrequency;
+            }
         }
 
         private void CreateMessageWindow()
