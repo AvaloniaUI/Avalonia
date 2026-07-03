@@ -14,6 +14,7 @@ public interface IGlContextExternalObjectsFeature
     IReadOnlyList<string> SupportedImportableExternalSemaphoreTypes { get; }
     IReadOnlyList<string> SupportedExportableExternalSemaphoreTypes { get; }
     IReadOnlyList<PlatformGraphicsExternalImageFormat> GetSupportedFormatsForExternalMemoryType(string type);
+    IReadOnlyList<PlatformGraphicsDrmFormat>? SupportedDmaBufFormats => null;
 
     IGlExportableExternalImageTexture CreateImage(string type,PixelSize size, PlatformGraphicsExternalImageFormat format);
 

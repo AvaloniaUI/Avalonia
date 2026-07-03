@@ -24,6 +24,15 @@ public enum PlatformGraphicsExternalImageFormat
 }
 
 /// <summary>
+/// A DRM fourcc format + modifier pair the GPU backend can import as a
+/// <see cref="KnownPlatformGraphicsExternalImageHandleTypes.DmaBufFileDescriptor"/> image.
+/// <see cref="Format"/> is a DRM_FORMAT_* fourcc; <see cref="Modifier"/> is a
+/// DRM_FORMAT_MOD_* layout (<see cref="PlatformGraphicsExternalImageProperties.DrmModifierInvalid"/>
+/// meaning the implicit, driver-chosen layout).
+/// </summary>
+public readonly record struct PlatformGraphicsDrmFormat(uint Format, ulong Modifier);
+
+/// <summary>
 /// Describes various GPU memory handle types that are currently supported by Avalonia graphics backends
 /// </summary>
 public static class KnownPlatformGraphicsExternalImageHandleTypes
