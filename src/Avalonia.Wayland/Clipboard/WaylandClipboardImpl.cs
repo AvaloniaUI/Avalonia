@@ -8,7 +8,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Wayland.Server;
 using Avalonia.Wayland.Server.Transient.Clipboard;
-using Avalonia.X11.Clipboard;
+using Avalonia.X11.Selections;
 
 namespace Avalonia.Wayland.Clipboard;
 
@@ -79,7 +79,7 @@ class WaylandClipboardImpl : IOwnedClipboardImpl
         if (DataFormat.File.Equals(format))
         {
             if (await transfer.TryGetFilesAsync().ConfigureAwait(false) is { Length: > 0 } files)
-                await stream.WriteAsync(ClipboardUriListHelper.FileUriListToUtf8Bytes(files)).ConfigureAwait(false);
+                await stream.WriteAsync(UriListHelper.FileUriListToUtf8Bytes(files)).ConfigureAwait(false);
             return;
         }
         
