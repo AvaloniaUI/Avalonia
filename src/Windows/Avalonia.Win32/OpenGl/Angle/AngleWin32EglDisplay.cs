@@ -112,10 +112,9 @@ namespace Avalonia.Win32.OpenGl.Angle
                             chosenAdapterIndex = firstNonAdreno;
                             Logger.TryGet(LogEventLevel.Warning, "OpenGL")?.Log(null,
                                 "ARM64 Adreno GPU detected; the Adreno rendering blocklist is forcing a " +
-                                "fallback to '{FallbackAdapter}' (typically the software Microsoft Basic " +
-                                "Render Driver), which can significantly increase CPU usage. Set " +
+                                "fallback to '{FallbackAdapter}' (typically a software renderer). Set " +
                                 "Win32PlatformOptions.GraphicsAdapterSelectionCallback to choose an adapter " +
-                                "explicitly, or switch to Win32RenderingMode.Vulkan.",
+                                "explicitly, or switch Win32PlatformOptions.RenderingMode to Vulkan or Wgl.",
                                 adapters[firstNonAdreno].desc.Description);
                         }
                     }
