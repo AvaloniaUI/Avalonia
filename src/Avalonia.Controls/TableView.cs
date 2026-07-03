@@ -84,35 +84,55 @@ public class TableView : ListBox
     {
         Debug.Assert(_columnsSubscription is null);
 
+        var isInitialIteration = true;
+
         _columnsSubscription = columns.ForEachItem(
-            column =>
+            [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
+            (column) =>
             {
-                if (column.TableView is not null && column.TableView != this)
-                {
-                    throw new InvalidOperationException(
-                        $"The column {column.DebugDisplay} is already attached to a {nameof(TableView)}.");
-                }
-
-                column.TableView = this;
-
-                OnColumnsChanged();
+                AttachColumn(column);
+                if (!isInitialIteration)
+                    OnColumnsChanged();
             },
             column =>
             {
-                Debug.Assert(column.TableView == this);
-
-                column.TableView = null;
-                column.ActualWidth = double.NaN;
-
+                DetachColumn(column);
                 OnColumnsChanged();
             },
             () => { });
+
+        isInitialIteration = false;
+    }
+
+    private void AttachColumn(TableViewColumn column)
+    {
+        if (column.TableView is not null && column.TableView != this)
+        {
+            throw new InvalidOperationException(
+                $"The column {column.DebugDisplay} is already attached to a {nameof(TableView)}.");
+        }
+
+        column.TableView = this;
+    }
+
+    private void DetachColumn(TableViewColumn column)
+    {
+        Debug.Assert(column.TableView == this || column.TableView is null);
+
+        column.TableView = null;
+        column.ActualWidth = double.NaN;
     }
 
     private void UnsubscribeFromColumns()
     {
-        _columnsSubscription?.Dispose();
+        if (_columnsSubscription is null)
+            return;
+
+        _columnsSubscription.Dispose();
         _columnsSubscription = null;
+
+        foreach (var column in Columns)
+            DetachColumn(column);
     }
 
     /// <inheritdoc/>
