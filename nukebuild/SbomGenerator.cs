@@ -541,6 +541,13 @@ public static class SbomGenerator
     // into one package) are recorded as manufacturer-supplied components with a verifiable SHA-512
     // of the shipped bytes; any third-party binary that no restored dependency accounts for is
     // added and flagged, so a future bundling regression can't silently escape the SBOM.
+    //
+    // These shipped binaries are *constituents* of the package, not dependencies of it: the package
+    // is made up of them (Component C bundles D and E, in CycloneDX's terms), so they're modelled as
+    // a CycloneDX "assembly" via a top-level `compositions` entry rather than with a dependsOn edge
+    // from the root - "contains" and "depends on" are different relationships, and an assembly does
+    // not imply a dependency. They stay flat top-level components (not nested subcomponents) so their
+    // per-assembly hashes remain visible to scanners that ignore nested components.
     static void AddPackageContentComponents(JsonObject merged, HashSet<string> seenComponentKeys,
         string nupkgPath, string finalId, List<string> constituentProjectIds, NuspecMetadata meta)
     {
@@ -553,6 +560,16 @@ public static class SbomGenerator
         var supplier = meta.Authors is null ? null : new JsonObject { ["name"] = meta.Authors };
         var target = merged["components"]?.AsArray() ?? (JsonArray)(merged["components"] = new JsonArray());
         var rootRef = merged["metadata"]?["component"]?["bom-ref"]?.GetValue<string>();
+
+        // The bundled first-party assemblies share the package's licence; cyclonedx-dotnet only puts
+        // it on the root component, so carry it onto them too (same derivation as EnrichRootComponent).
+        var productLicenses = SpdxToLicenses(meta.LicenseExpression ?? meta.LicenseId);
+        if (productLicenses is null && meta.LicenseFile is not null)
+            productLicenses = new JsonArray(new JsonObject
+                { ["license"] = new JsonObject { ["name"] = Path.GetFileName(meta.LicenseFile) } });
+
+        // bom-refs of every shipped binary added below; declared as a complete assembly at the end.
+        var assemblyRefs = new List<string>();
 
         using var file = File.Open(nupkgPath, FileMode.Open, FileAccess.Read);
         using var zip = new ZipArchive(file, ZipArchiveMode.Read);
@@ -606,16 +623,36 @@ public static class SbomGenerator
                     ["value"] = path
                 })
             };
-            if (isProduct && supplier is not null)
-                component["supplier"] = supplier.DeepClone();
+            if (isProduct)
+            {
+                if (supplier is not null)
+                    component["supplier"] = supplier.DeepClone();
+                if (productLicenses is not null)
+                    component["licenses"] = productLicenses.DeepClone();
+            }
             target.Add(component);
 
-            // Link the shipped binary into the dependency graph so consumers that traverse from
-            // the root component reach it: give it its own (leaf) node and an edge from the root.
-            (merged["dependencies"]?.AsArray() ?? (JsonArray)(merged["dependencies"] = new JsonArray()))
-                .Add(new JsonObject { ["ref"] = bomRef, ["dependsOn"] = new JsonArray() });
+            assemblyRefs.Add(bomRef);
+        }
+
+        // Declare the package's assembly: the root component consists of exactly these bundled
+        // binaries. We've read every shipped binary out of the .nupkg, so the enumeration is
+        // complete (third-party dependencies remain in the dependency graph, as they should).
+        if (assemblyRefs.Count > 0)
+        {
+            var assemblies = new JsonArray();
             if (rootRef is not null)
-                AddDependsOn(merged, rootRef, bomRef);
+                assemblies.Add(rootRef);
+            foreach (var bomRef in assemblyRefs)
+                assemblies.Add(bomRef);
+
+            var compositions = merged["compositions"]?.AsArray()
+                ?? (JsonArray)(merged["compositions"] = new JsonArray());
+            compositions.Add(new JsonObject
+            {
+                ["aggregate"] = "complete",
+                ["assemblies"] = assemblies
+            });
         }
     }
 
