@@ -3,11 +3,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             AttachedToVisualTree="OnAttachedToVisualTree"
              x:Class="IntegrationTestApp.Pages.ScreensPage">
   <StackPanel Spacing="4">
     <Button Name="ScreenRefresh"
             Content="Refresh"
             Click="ScreenRefresh_Click"/>
+    <Button Name="UpdateViewOnly"
+            Content="Update View Only"
+            Click="UpdateViewOnly_OnClick"/>
     <TextBox Name="ScreenName" PlaceholderText="DisplayName" UseFloatingPlaceholder="true" />
     <TextBox Name="ScreenHandle" PlaceholderText="Handle" UseFloatingPlaceholder="true" />
     <TextBox Name="ScreenScaling" PlaceholderText="Scaling" UseFloatingPlaceholder="true" />
@@ -15,5 +19,6 @@
     <TextBox Name="ScreenWorkArea" PlaceholderText="WorkArea" UseFloatingPlaceholder="true" />
     <TextBox Name="ScreenOrientation" PlaceholderText="Orientation" UseFloatingPlaceholder="true" />
     <TextBox Name="ScreenSameReference" PlaceholderText="Is same reference" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenOnChangedCounter" PlaceholderText="Screens.Changed Counter" UseFloatingPlaceholder="True" />
   </StackPanel>
 </UserControl>

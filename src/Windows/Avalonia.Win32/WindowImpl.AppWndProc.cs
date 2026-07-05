@@ -872,6 +872,15 @@ namespace Avalonia.Win32
                         break;
                     }
 
+                case WindowsMessage.WM_SETTINGCHANGE:
+                    //https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
+                    // SPI_SETWORKAREA
+                    if (wParam == 0x002F)
+                    {
+                        Screen?.OnChanged();
+                    }
+                    break;
+
                 case WindowsMessage.WM_DISPLAYCHANGE:
                     {
                         Screen?.OnChanged();
