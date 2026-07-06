@@ -16,7 +16,7 @@ namespace Avalonia.Headless;
 /// <summary>
 /// Headless unit test session that needs to be used by the actual testing framework.
 /// All UI tests are supposed to be executed from one of the <see cref="Dispatch"/> methods to keep execution flow on the UI thread.
-/// Disposing unit test session stops internal dispatcher loop. 
+/// Disposing unit test session stops internal dispatcher loop.
 /// </summary>
 public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 {
@@ -96,9 +96,18 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
             using var globalCts = token.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
             using var localCts = cancellationToken.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
 
-            var application = _isolated
-                ? EnsureIsolatedApplication()
-                : EnsureSharedApplication();
+            IDisposable application = null!;
+            try
+            {
+                application = _isolated
+                    ? EnsureIsolatedApplication()
+                    : EnsureSharedApplication();
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+                return; // Exit the dispatcher action if application initialization fails
+            }
 
             bool shouldCancel = false;
             Exception? caught = null;
@@ -212,7 +221,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
+    /// Creates instance of <see cref="HeadlessUnitTestSession"/>.
     /// </summary>
     /// <param name="entryPointType">
     /// Parameter from which <see cref="AppBuilder"/> should be created.
@@ -228,7 +237,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
+    /// Creates instance of <see cref="HeadlessUnitTestSession"/>.
     /// </summary>
     /// <param name="entryPointType">
     /// Parameter from which <see cref="AppBuilder"/> should be created.
@@ -283,7 +292,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
                     }
                     else
                     {
-                        action();   
+                        action();
                     }
                 }
                 catch (OperationCanceledException)
@@ -297,7 +306,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Creates a session from AvaloniaTestApplicationAttribute attribute or reuses any existing.
-    /// If AvaloniaTestApplicationAttribute doesn't exist, empty application is used. 
+    /// If AvaloniaTestApplicationAttribute doesn't exist, empty application is used.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2072",
         Justification = "AvaloniaTestApplicationAttribute attribute should preserve type information.")]

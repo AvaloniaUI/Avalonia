@@ -18,22 +18,25 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
 using Avalonia.X11;
-using Avalonia.X11.Clipboard;
 using Avalonia.X11.Dispatching;
 using Avalonia.X11.Glx;
-using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
+using Avalonia.X11.Selections.Clipboard;
+using Avalonia.X11.Selections.DragDrop;
+using Avalonia.X11.Vulkan;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
     internal class AvaloniaX11Platform : IWindowingPlatform
     {
+        public const int DefaultFps = 60;
+
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         private X11AtSpiAccessibility? _accessibility;
         internal AtSpiServer? AtSpiServer => _accessibility?.Server;
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
+        public Dictionary<IntPtr, X11WindowInfo> Windows { get; } = new ();
         public XI2Manager? XI2 { get; private set; }
         public X11Info Info { get; private set; } = null!;
         public X11Screens X11Screens { get; private set; } = null!;
@@ -75,8 +78,8 @@ namespace Avalonia.X11
             Resources = new XResources(this);
 
             IRenderTimer timer = options.ShouldRenderOnUIThread
-               ? new UiThreadRenderTimer(60)
-               : new SleepLoopRenderTimer(60);
+               ? new UiThreadRenderTimer(DefaultFps)
+               : new SleepLoopRenderTimer(DefaultFps);
 
             var clipboardImpl = new X11ClipboardImpl(this);
             var clipboard = new Input.Platform.Clipboard(clipboardImpl);
@@ -95,12 +98,20 @@ namespace Avalonia.X11
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
                 .Bind<IClipboard>().ToConstant(clipboard)
+                .Bind<IPlatformDragSource>().ToConstant(new X11DragSource(this))
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
             Screens = X11Screens = new X11Screens(this);
+
+            if (timer is SleepLoopRenderTimer loopTimer)
+            {
+                X11Screens.Changed += () => { loopTimer.DesiredFps = X11Screens.MaxRefreshRate; };
+                loopTimer.DesiredFps = X11Screens.MaxRefreshRate;
+            }
+            
             if (Info.XInputVersion != null)
             {
                 XI2 = XI2Manager.TryCreate(this);

@@ -65,7 +65,7 @@ internal class AndroidStorageProvider : IStorageProvider
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsFile)
         {
-            return new AndroidStorageFile(_activity, androidUri);
+            return new BclStorageFile(new System.IO.FileInfo(javaFile.AbsolutePath));
         }
 
         return null;
@@ -92,7 +92,7 @@ internal class AndroidStorageProvider : IStorageProvider
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsDirectory)
         {
-            return new AndroidStorageFolder(_activity, androidUri, false);
+            return new BclStorageFolder(new System.IO.DirectoryInfo(javaFile.AbsolutePath));
         }
 
         return null;
@@ -121,16 +121,9 @@ internal class AndroidStorageProvider : IStorageProvider
             return Task.FromResult<IStorageFolder?>(null);
         }
 
-        var uri = AndroidUri.FromFile(dir);
-        if (uri is null)
-        {
-            return Task.FromResult<IStorageFolder?>(null);
-        }
-
-        // To make TryGetWellKnownFolder API easier to use, we don't check for the permissions.
-        // It will work with file picker activities, but it will fail on any direct access to the folder, like getting list of children.
-        // We pass "needsExternalFilesPermission" parameter here, so folder itself can check for permissions on any FS access. 
-        return Task.FromResult<IStorageFolder?>(new WellKnownAndroidStorageFolder(_activity, dirCode, uri, true));
+        // From Android 10(API 29), WellKnownFolders points to the app's external files directories, rather than the system's.
+        // These paths can be access directly using File apis without need to go though the ContextResolver or requesting permissions.
+        return Task.FromResult<IStorageFolder?>(new BclStorageFolder(new System.IO.DirectoryInfo(dir.AbsolutePath)));
     }
 
     public Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
