@@ -704,9 +704,13 @@
         if (childPeers->Get(i, &child) != S_OK)
             continue;
 
+        // Acquire ignored elements too: the automation node created by acquire
+        // is what receives ChildrenChanged when e.g. a popup opens under an
+        // ignored overlay layer.
+        id element = [AvnAccessibilityElement acquire:child];
+
         if (child->IsControlElement())
         {
-            id element = [AvnAccessibilityElement acquire:child];
             if (element != nil)
                 [array addObject:element];
         }
