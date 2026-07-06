@@ -481,9 +481,9 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
-    public void CanResizeColumns_Defaults_To_True()
+    public void CanUserResizeColumns_Defaults_To_True()
     {
-        Assert.True(new TableView().CanResizeColumns);
+        Assert.True(new TableView().CanUserResizeColumns);
     }
 
     [Theory]
@@ -493,7 +493,7 @@ public sealed class TableViewTests : ScopedTestBase
     [InlineData(false, null, false)] // inherits the table's value
     [InlineData(false, true, true)] // column opts in
     [InlineData(false, false, false)] // column opts out
-    public void Column_CanEffectivelyResize_Combines_TableView_And_Column_Settings(
+    public void Column_CanUserEffectivelyResize_Combines_TableView_And_Column_Settings(
         bool canResizeColumns,
         bool? canResize,
         bool expected)
@@ -501,17 +501,17 @@ public sealed class TableViewTests : ScopedTestBase
         using var app = Start();
 
         var target = CreateTarget(new[] { "Foo" });
-        target.CanResizeColumns = canResizeColumns;
-        var column = new TableViewColumn { CanResize = canResize };
+        target.CanUserResizeColumns = canResizeColumns;
+        var column = new TableViewColumn { CanUserResize = canResize };
         target.Columns.Add(column);
 
         Prepare(target);
 
-        Assert.Equal(expected, column.CanEffectivelyResize);
+        Assert.Equal(expected, column.CanUserEffectivelyResize);
     }
 
     [Fact]
-    public void Column_CanEffectivelyResize_Updates_When_TableView_CanResizeColumns_Changes()
+    public void Column_CanUserEffectivelyResize_Updates_When_TableView_CanResizeColumns_Changes()
     {
         using var app = Start();
 
@@ -521,34 +521,34 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target);
 
-        Assert.True(column.CanEffectivelyResize);
+        Assert.True(column.CanUserEffectivelyResize);
 
-        target.CanResizeColumns = false;
-        Assert.False(column.CanEffectivelyResize);
+        target.CanUserResizeColumns = false;
+        Assert.False(column.CanUserEffectivelyResize);
 
-        target.CanResizeColumns = true;
-        Assert.True(column.CanEffectivelyResize);
+        target.CanUserResizeColumns = true;
+        Assert.True(column.CanUserEffectivelyResize);
     }
 
     [Fact]
-    public void Column_CanEffectivelyResize_Updates_When_Column_CanResize_Changes()
+    public void Column_CanUserEffectivelyResize_Updates_When_Column_CanResize_Changes()
     {
         using var app = Start();
 
         var target = CreateTarget(new[] { "Foo" });
-        target.CanResizeColumns = false;
+        target.CanUserResizeColumns = false;
         var column = new TableViewColumn();
         target.Columns.Add(column);
 
         Prepare(target);
 
-        Assert.False(column.CanEffectivelyResize);
+        Assert.False(column.CanUserEffectivelyResize);
 
-        column.CanResize = true;
-        Assert.True(column.CanEffectivelyResize);
+        column.CanUserResize = true;
+        Assert.True(column.CanUserEffectivelyResize);
 
-        column.CanResize = null;
-        Assert.False(column.CanEffectivelyResize);
+        column.CanUserResize = null;
+        Assert.False(column.CanUserEffectivelyResize);
     }
 
     private static IDisposable Start()

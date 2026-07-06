@@ -57,10 +57,10 @@ public class TableViewColumn : StyledElement, IHeadered
         AvaloniaProperty.Register<TableViewColumn, BindingBase?>(nameof(Binding));
 
     /// <summary>
-    /// Defines the <see cref="CanResize"/> property.
+    /// Defines the <see cref="CanUserResize"/> property.
     /// </summary>
-    public static readonly StyledProperty<bool?> CanResizeProperty =
-        AvaloniaProperty.Register<TableViewColumn, bool?>(nameof(CanResize));
+    public static readonly StyledProperty<bool?> CanUserResizeProperty =
+        AvaloniaProperty.Register<TableViewColumn, bool?>(nameof(CanUserResize));
 
     /// <summary>
     /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -82,10 +82,10 @@ public class TableViewColumn : StyledElement, IHeadered
         AvaloniaProperty.RegisterDirect<TableViewColumn, double>(nameof(ActualWidth), o => o.ActualWidth);
 
     /// <summary>
-    /// Defines the <see cref="CanEffectivelyResize"/> property.
+    /// Defines the <see cref="CanUserEffectivelyResize"/> property.
     /// </summary>
-    public static readonly DirectProperty<TableViewColumn, bool> CanEffectivelyResizeProperty =
-        AvaloniaProperty.RegisterDirect<TableViewColumn, bool>(nameof(CanEffectivelyResize), o => o.CanEffectivelyResize);
+    public static readonly DirectProperty<TableViewColumn, bool> CanUserEffectivelyResizeProperty =
+        AvaloniaProperty.RegisterDirect<TableViewColumn, bool>(nameof(CanUserEffectivelyResize), o => o.CanUserEffectivelyResize);
 
     /// <summary>
     /// Gets or sets the theme to apply to the header.
@@ -161,13 +161,13 @@ public class TableViewColumn : StyledElement, IHeadered
 
     /// <summary>
     /// Gets or sets whether the column can be resized.
-    /// Set to null to use the value from <see cref="TableView.CanResizeColumns"/>.
+    /// Set to null to use the value from <see cref="Avalonia.Controls.TableView.CanUserResizeColumns"/>.
     /// The default is null.
     /// </summary>
-    public bool? CanResize
+    public bool? CanUserResize
     {
-        get => GetValue(CanResizeProperty);
-        set => SetValue(CanResizeProperty, value);
+        get => GetValue(CanUserResizeProperty);
+        set => SetValue(CanUserResizeProperty, value);
     }
 
     /// <summary>
@@ -188,7 +188,7 @@ public class TableViewColumn : StyledElement, IHeadered
         internal set
         {
             if (SetAndRaise(TableViewProperty, ref field, value))
-                UpdateCanEffectivelyResize();
+                UpdateCanUserEffectivelyResize();
         }
     }
 
@@ -204,13 +204,13 @@ public class TableViewColumn : StyledElement, IHeadered
 
     /// <summary>
     /// Gets whether the column can be effectively resized.
-    /// The value of this property depends on both <see cref="CanResize"/> and
-    /// <see cref="Avalonia.Controls.TableView.CanResizeColumns"/>.
+    /// The value of this property depends on both <see cref="CanUserResize"/> and
+    /// <see cref="Avalonia.Controls.TableView.CanUserResizeColumns"/>.
     /// </summary>
-    public bool CanEffectivelyResize
+    public bool CanUserEffectivelyResize
     {
         get;
-        internal set => SetAndRaise(CanEffectivelyResizeProperty, ref field, value);
+        internal set => SetAndRaise(CanUserEffectivelyResizeProperty, ref field, value);
     }
 
     private static bool IsCellProperty(AvaloniaProperty property)
@@ -232,8 +232,8 @@ public class TableViewColumn : StyledElement, IHeadered
 
         if (change.Property == WidthProperty)
             TableView?.OnColumnsSizeChanged();
-        else if (change.Property == CanResizeProperty)
-            UpdateCanEffectivelyResize();
+        else if (change.Property == CanUserResizeProperty)
+            UpdateCanUserEffectivelyResize();
         else
         {
             if (IsHeaderProperty(change.Property))
@@ -243,8 +243,8 @@ public class TableViewColumn : StyledElement, IHeadered
         }
     }
 
-    internal void UpdateCanEffectivelyResize()
-        => CanEffectivelyResize = CanResize ?? TableView?.CanResizeColumns ?? true;
+    internal void UpdateCanUserEffectivelyResize()
+        => CanUserEffectivelyResize = CanUserResize ?? TableView?.CanUserResizeColumns ?? true;
 
     internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
     {

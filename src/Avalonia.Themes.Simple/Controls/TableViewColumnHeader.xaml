@@ -44,7 +44,7 @@
                  HorizontalAlignment="Right"
                  Cursor="SizeWestEast"
                  Margin="{DynamicResource TableViewColumnResizerMargin}"
-                 IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Column?.CanEffectivelyResize, FallbackValue=False}">
+                 IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Column?.CanUserEffectivelyResize, FallbackValue=False}">
           </Thumb>
         </Panel>
       </ControlTemplate>

@@ -54,7 +54,7 @@ public class TableViewColumnHeader : ContentControl
 
     private void OnResizerDragDelta(object? sender, VectorEventArgs e)
     {
-        if (Column is not { CanEffectivelyResize: true } column)
+        if (Column is not { CanUserEffectivelyResize: true } column)
             return;
 
         var actualWidth = column.ActualWidth;

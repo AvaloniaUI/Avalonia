@@ -25,10 +25,10 @@ public class TableView : ListBox
             (o, v) => o.Columns = v);
 
     /// <summary>
-    /// Defines the <see cref="CanResizeColumns"/> property.
+    /// Defines the <see cref="CanUserResizeColumns"/> property.
     /// </summary>
-    public static readonly StyledProperty<bool> CanResizeColumnsProperty =
-        AvaloniaProperty.Register<TableView, bool>(nameof(CanResizeColumns), true);
+    public static readonly StyledProperty<bool> CanUserResizeColumnsProperty =
+        AvaloniaProperty.Register<TableView, bool>(nameof(CanUserResizeColumns), true);
 
     private IDisposable? _columnsSubscription;
     private AvaloniaList<TableViewColumn>? _columns;
@@ -98,10 +98,10 @@ public class TableView : ListBox
     /// Gets or sets a value indicating whether the user can resize columns by dragging the
     /// separator between column headers.
     /// </summary>
-    public bool CanResizeColumns
+    public bool CanUserResizeColumns
     {
-        get => GetValue(CanResizeColumnsProperty);
-        set => SetValue(CanResizeColumnsProperty, value);
+        get => GetValue(CanUserResizeColumnsProperty);
+        set => SetValue(CanUserResizeColumnsProperty, value);
     }
 
     internal TableViewColumnHeadersPresenter? HeadersPresenter { get; set; }
@@ -275,10 +275,10 @@ public class TableView : ListBox
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == CanResizeColumnsProperty && _columns is not null)
+        if (change.Property == CanUserResizeColumnsProperty && _columns is not null)
         {
             foreach (var column in _columns)
-                column.UpdateCanEffectivelyResize();
+                column.UpdateCanUserEffectivelyResize();
         }
     }
 }
