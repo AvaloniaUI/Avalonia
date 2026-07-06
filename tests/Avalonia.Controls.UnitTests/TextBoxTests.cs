@@ -1528,6 +1528,40 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Command_States_Update_When_RevealPassword_Changes()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    PasswordChar = '*',
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                tb.Measure(Size.Infinity);
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = true;
+
+                Assert.True(tb.CanCopy);
+                Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = false;
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        [Fact]
         public void ReadOnly_Editing_Hotkeys_Do_Not_Modify_Text_Or_Undo_State()
         {
             using (UnitTestApplication.Start(Services))
