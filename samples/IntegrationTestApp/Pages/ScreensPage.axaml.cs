@@ -12,6 +12,8 @@ public partial class ScreensPage : UserControl
     private Screen? _lastScreen;
     private int _onScreenChangedCounter;
 
+    private Window? _lastWindow;
+
     public ScreensPage()
     {
         InitializeComponent();
@@ -19,12 +21,18 @@ public partial class ScreensPage : UserControl
 
     private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        var window = TopLevel.GetTopLevel(this) as Window ??
-                     throw new AvaloniaInternalException("ScreensPage is not attached to a Window.");
-        window.Screens.Changed += OnScreenChanged;
+        _lastWindow = TopLevel.GetTopLevel(this) as Window ??
+                      throw new AvaloniaInternalException("ScreensPage is not attached to a Window.");
+        _lastWindow.Screens.Changed += OnScreenChanged;
 
         _onScreenChangedCounter = 0;
         ScreenOnChangedCounter.Text = _onScreenChangedCounter.ToString();
+    }
+
+    private void OnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        _lastWindow?.Screens.Changed -= OnScreenChanged;
+        _lastWindow = null;
     }
 
     private void OnScreenChanged(object? sender, EventArgs e)
