@@ -337,6 +337,12 @@
 {
     auto parentPeer = _peer->GetParent();
 
+    // An ignored ancestor never appears in any children array, so report the
+    // nearest unignored ancestor to keep the parent chain consistent with the
+    // spliced children chain.
+    while (parentPeer != nullptr && !parentPeer->IsRootProvider() && !parentPeer->IsControlElement())
+        parentPeer = parentPeer->GetParent();
+
     if (parentPeer == nullptr)
         return [NSApplication sharedApplication];
 
@@ -663,30 +669,40 @@
         _peer->SetFocus();
 }
 
-- (void)recalculateChildren
+// An element reporting isAccessibilityElement == NO declares itself ignored,
+// but AppKit only applies the ignored-element splice to NSView hierarchies;
+// custom accessibility elements must vend unignored children themselves
+// (the NSAccessibilityUnignoredChildren convention).
++ (void)appendUnignoredChildrenOf:(IAvnAutomationPeer *)peer to:(NSMutableArray *)array
 {
-    auto childPeers = _peer->GetChildren();
+    auto childPeers = peer->GetChildren();
     auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
 
-    if (childCount > 0)
+    for (int i = 0; i < childCount; ++i)
     {
-        _children = [[NSMutableArray alloc] initWithCapacity:childCount];
-        
-        for (int i = 0; i < childCount; ++i)
+        IAvnAutomationPeer* child;
+
+        if (childPeers->Get(i, &child) != S_OK)
+            continue;
+
+        if (child->IsControlElement())
         {
-            IAvnAutomationPeer* child;
-            
-            if (childPeers->Get(i, &child) == S_OK)
-            {
-                id element = [AvnAccessibilityElement acquire:child];
-                [_children addObject:element];
-            }
+            id element = [AvnAccessibilityElement acquire:child];
+            if (element != nil)
+                [array addObject:element];
+        }
+        else
+        {
+            [AvnAccessibilityElement appendUnignoredChildrenOf:child to:array];
         }
     }
-    else
-    {
-        _children = nil;
-    }
+}
+
+- (void)recalculateChildren
+{
+    auto children = [NSMutableArray new];
+    [AvnAccessibilityElement appendUnignoredChildrenOf:_peer.getRaw() to:children];
+    _children = children.count > 0 ? children : nil;
 }
 
 @end

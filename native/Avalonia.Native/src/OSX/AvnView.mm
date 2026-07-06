@@ -1009,22 +1009,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     {
         return;
     }
-    auto childPeers = peer->GetChildren();
-    auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
-
-    if (childCount > 0)
-    {
-        for (int i = 0; i < childCount; ++i)
-        {
-            IAvnAutomationPeer* child;
-
-            if (childPeers->Get(i, &child) == S_OK)
-            {
-                id element = [AvnAccessibilityElement acquire:child];
-                [_accessibilityChildren addObject:element];
-            }
-        }
-    }
+    [AvnAccessibilityElement appendUnignoredChildrenOf:peer to:_accessibilityChildren];
 }
 
 - (void) setText:(NSString *)text{
