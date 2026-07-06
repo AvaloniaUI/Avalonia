@@ -554,6 +554,25 @@
 
 - (void)raiseChildrenChanged
 {
+    // An ignored element's children are vended from its nearest unignored
+    // ancestor's spliced array, so the change must be raised there instead.
+    if (![self isAccessibilityElement])
+    {
+        _children = nullptr;
+
+        id target = [self accessibilityParent];
+        if ([target isKindOfClass:[AvnAccessibilityElement class]])
+        {
+            [(AvnAccessibilityElement*)target raiseChildrenChanged];
+            return;
+        }
+        if ([target isKindOfClass:[AvnView class]])
+        {
+            [(AvnView*)target raiseAccessibilityChildrenChanged];
+            return;
+        }
+    }
+
     auto changed = _children ? [NSMutableSet setWithArray:_children] : [NSMutableSet set];
 
     [self recalculateChildren];
