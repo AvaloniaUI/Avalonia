@@ -331,7 +331,7 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == SelectionStartProperty || 
+            if (change.Property == SelectionStartProperty ||
                 change.Property == SelectionEndProperty)
             {
                 RaisePropertyChanged(SelectedTextProperty, "", "");
@@ -339,7 +339,7 @@ namespace Avalonia.Controls
                 InvalidateTextLayout();
             }
 
-            if(change.Property == SelectionForegroundBrushProperty)
+            if (change.Property == SelectionForegroundBrushProperty)
             {
                 InvalidateTextLayout();
             }
@@ -432,13 +432,9 @@ namespace Avalonia.Controls
             if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var text = HasComplexContent ? Inlines?.Text : Text;
+
                 var padding = Padding;
-
                 var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
-
-                point = new Point(
-                    MathUtilities.Clamp(point.X, 0, Math.Max(TextLayout.WidthIncludingTrailingWhitespace, 0)),
-                    MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Height, 0)));
 
                 var hit = TextLayout.HitTestPoint(point);
                 var textPosition = hit.TextPosition;
