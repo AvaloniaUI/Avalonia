@@ -3,6 +3,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using Avalonia.Metadata;
 using static Avalonia.Controls.Presenters.TableViewLayoutHelper;
 
 namespace Avalonia.Controls;
@@ -29,6 +32,29 @@ public class TableView : ListBox
 
     private IDisposable? _columnsSubscription;
     private AvaloniaList<TableViewColumn>? _columns;
+
+    [Obsolete(
+        $"{nameof(ItemsControl.DisplayMemberBinding)} has no effect on a {nameof(TableView)}. " +
+        $"Use {nameof(TableViewColumn)}.{nameof(TableViewColumn.Binding)} instead.")]
+    [SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Calls the base")]
+    [AssignBinding]
+    [InheritDataTypeFromItems(nameof(ItemsSource))]
+    public new BindingBase? DisplayMemberBinding
+    {
+        get => base.DisplayMemberBinding;
+        set => base.DisplayMemberBinding = value;
+    }
+
+    [Obsolete(
+        $"{nameof(ItemsControl.ItemTemplate)} has no effect on a {nameof(TableView)}. " +
+        $"Use {nameof(TableViewColumn)}.{nameof(TableViewColumn.CellTemplate)} instead.")]
+    [SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Calls the base")]
+    [InheritDataTypeFromItems(nameof(ItemsSource))]
+    public new IDataTemplate? ItemTemplate
+    {
+        get => base.ItemTemplate;
+        set => base.ItemTemplate = value;
+    }
 
     /// <summary>
     /// Gets or sets the collection of columns displayed by this <see cref="TableView"/>.
