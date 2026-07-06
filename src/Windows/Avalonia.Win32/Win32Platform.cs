@@ -185,6 +185,12 @@ namespace Avalonia.Win32
                 {
                     win32PlatformSettings.OnColorValuesChanged();   
                 }
+
+                // Notify WorkingArea changed to Screens
+                if ((SystemParametersInfo)wParam == SystemParametersInfo.SPI_SETWORKAREA)
+                {
+                    Screen?.OnChanged();
+                }
             }
 
             if (msg == (uint)WindowsMessage.WM_TIMER)

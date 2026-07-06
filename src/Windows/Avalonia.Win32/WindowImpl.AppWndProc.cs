@@ -872,13 +872,6 @@ namespace Avalonia.Win32
                         break;
                     }
 
-                case WindowsMessage.WM_SETTINGCHANGE:
-                    if ((SystemParametersInfo)wParam == SystemParametersInfo.SPI_SETWORKAREA)
-                    {
-                        Screen?.OnChanged();
-                    }
-                    break;
-
                 case WindowsMessage.WM_DISPLAYCHANGE:
                     {
                         Screen?.OnChanged();
