@@ -1041,7 +1041,9 @@ namespace Avalonia.Controls
                 UpdatePseudoclasses();
                 UpdateCommandStates();
             }
-            else if (change.Property == IsReadOnlyProperty || change.Property == PasswordCharProperty)
+            else if (change.Property == IsReadOnlyProperty ||
+                change.Property == PasswordCharProperty ||
+                change.Property == RevealPasswordProperty)
             {
                 UpdateCommandStates();
             }
@@ -1746,7 +1748,7 @@ namespace Avalonia.Controls
                 else
                 {
                     // We select the current held word, or the whole hidden content
-                    if (IsPasswordBox && !RevealPassword)
+                    if (IsPasswordBox)
                     {
                         _wordSelectionStart = -1;
 
@@ -1881,7 +1883,7 @@ namespace Avalonia.Controls
 
         private void SelectWord(string text, int caretIndex, int selectionStart, int selectionEnd)
         {
-            if (IsPasswordBox && !RevealPassword)
+            if (IsPasswordBox)
             {
                 // double-clicking in a cloaked single-line password box selects all text
                 // see https://github.com/AvaloniaUI/Avalonia/issues/14956
@@ -2530,7 +2532,7 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":touch-mode", _isInTouchMode);
         }
 
-        private bool IsPasswordBox => PasswordChar != default(char);
+        private bool IsPasswordBox => PasswordChar != default(char) && !RevealPassword;
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {
