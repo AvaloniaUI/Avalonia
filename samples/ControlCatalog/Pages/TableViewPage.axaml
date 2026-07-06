@@ -33,7 +33,7 @@
                 IsChecked="True"
                 Margin="8" />
 
-      <CheckBox Name="CanResizeColumns"
+      <CheckBox Name="CanUserResizeColumns"
                 Content="Allow column resizing"
                 IsChecked="True"
                 Margin="8" />
@@ -41,7 +41,7 @@
     </StackPanel>
 
     <TableView ItemsSource="{Binding Countries}"
-               CanResizeColumns="{Binding #CanResizeColumns.IsChecked}">
+               CanUserResizeColumns="{Binding #CanUserResizeColumns.IsChecked}">
       <TableView.Columns>
         <TableViewColumn Header="Name"
                          Binding="{Binding Name}"
