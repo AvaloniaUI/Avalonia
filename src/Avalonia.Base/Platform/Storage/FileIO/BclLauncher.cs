@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Avalonia.Logging;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
@@ -68,8 +69,10 @@ internal class BclLauncher : ILauncher
                 return false;
             }
         }
-        catch
+        catch(Exception ex)
         {
+            Logger.TryGet(LogEventLevel.Error, nameof(BclLauncher))?
+                .Log(null, "Exception during BclLauncher.Exec: {Error}", ex);
             return false;
         }
     }
