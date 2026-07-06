@@ -873,9 +873,7 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_SETTINGCHANGE:
-                    //https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
-                    // SPI_SETWORKAREA
-                    if (wParam == 0x002F)
+                    if ((SystemParametersInfo)wParam == SystemParametersInfo.SPI_SETWORKAREA)
                     {
                         Screen?.OnChanged();
                     }
