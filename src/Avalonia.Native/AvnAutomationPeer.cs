@@ -48,7 +48,22 @@ namespace Avalonia.Native
         public AvnAutomationControlType AutomationControlType => (AvnAutomationControlType)_inner.GetAutomationControlType();
         public IAvnString? AutomationId => _inner.GetAutomationId().ToAvnString();
         public AvnRect BoundingRectangle => _inner.GetBoundingRectangle().ToAvnRect();
-        public IAvnAutomationPeerArray Children => new AvnAutomationPeerArray(_inner.GetChildren());
+        public IAvnAutomationPeerArray Children => new AvnAutomationPeerArray(GetControlViewChildren(_inner));
+
+        // Invisible content leaves the AX tree the way it leaves UIA's control
+        // view: offscreen non-control elements are pruned, descendants promoted.
+        private static List<AutomationPeer> GetControlViewChildren(AutomationPeer peer)
+        {
+            var result = new List<AutomationPeer>();
+            foreach (var child in peer.GetChildren())
+            {
+                if (child.IsControlElement() || !child.IsOffscreen())
+                    result.Add(child);
+                else
+                    result.AddRange(GetControlViewChildren(child));
+            }
+            return result;
+        }
         public IAvnString? ClassName => _inner.GetClassName().ToAvnString();
         public IAvnAutomationPeer? LabeledBy => Wrap(_inner.GetLabeledBy());
         public IAvnString? Name => _inner.GetName().ToAvnString();
