@@ -8,6 +8,7 @@ class IAvnAutomationPeer;
 
 @interface AvnAccessibilityElement : NSAccessibilityElement <AvnAccessibility>
 + (id _Nullable) acquire:(IAvnAutomationPeer *) peer;
++ (NSArray * _Nullable) filterVisibleChildren:(NSArray * _Nullable) children;
 @end
 
 NS_ASSUME_NONNULL_END

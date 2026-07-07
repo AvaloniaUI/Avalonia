@@ -69,6 +69,7 @@ namespace Avalonia.Native
         public int IsControlElement() => _inner.IsControlElement().AsComBool();
         public int IsEnabled() => _inner.IsEnabled().AsComBool();
         public int IsKeyboardFocusable() => _inner.IsKeyboardFocusable().AsComBool();
+        public int IsOffscreen() => _inner.IsOffscreen().AsComBool();
         public void SetFocus() => _inner.SetFocus();
         public int ShowContextMenu() => _inner.ShowContextMenu().AsComBool();
         public void BringIntoView() => _inner.BringIntoView();

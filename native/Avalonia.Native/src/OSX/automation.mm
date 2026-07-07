@@ -327,6 +327,34 @@
     return _children;
 }
 
+// The subset of accessibilityChildren visible to a sighted user; offscreen
+// children are excluded.
++ (NSArray *)filterVisibleChildren:(NSArray *)children
+{
+    if (children == nil)
+        return nil;
+
+    NSMutableArray* result = [NSMutableArray arrayWithCapacity:[children count]];
+
+    for (id child in children)
+    {
+        if ([child isKindOfClass:[AvnAccessibilityElement class]])
+        {
+            auto peer = [(AvnAccessibilityElement*)child peer];
+            if (peer != nullptr && peer->IsOffscreen())
+                continue;
+        }
+        [result addObject:child];
+    }
+
+    return result;
+}
+
+- (NSArray *)accessibilityVisibleChildren
+{
+    return [AvnAccessibilityElement filterVisibleChildren:[self accessibilityChildren]];
+}
+
 - (NSRect)accessibilityFrame
 {
     auto bounds = _peer->GetBoundingRectangle();

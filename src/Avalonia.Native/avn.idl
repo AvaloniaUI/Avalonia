@@ -1282,6 +1282,7 @@ interface IAvnAutomationPeer : IUnknown
      bool IsControlElement();
      bool IsEnabled();
      bool IsKeyboardFocusable();
+     bool IsOffscreen();
      void SetFocus();
      bool ShowContextMenu();
      void BringIntoView();

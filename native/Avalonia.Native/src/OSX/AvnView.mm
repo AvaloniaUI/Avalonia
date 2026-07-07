@@ -960,6 +960,11 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     return _accessibilityChildren;
 }
 
+- (NSArray *)accessibilityVisibleChildren
+{
+    return [AvnAccessibilityElement filterVisibleChildren:[self accessibilityChildren]];
+}
+
 - (id _Nullable) accessibilityHitTest:(NSPoint)point
 {
     if (![[self window] isKindOfClass:[AvnWindow class]])
