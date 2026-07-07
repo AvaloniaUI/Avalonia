@@ -182,6 +182,7 @@
     {
         _attributeNames = @[
             @"AXARIALive", // kAXARIALiveAttribute
+            NSAccessibilityVisibleChildrenAttribute,
         ];
     }
     return _attributeNames;
@@ -189,6 +190,12 @@
 
 - (id)accessibilityAttributeValue:(NSAccessibilityAttributeName)attribute
 {
+    // Answer AXVisibleChildren in the legacy API as well: AppKit's legacy
+    // fallback otherwise computes it by recursing NSAccessibilityUnignoredChildren
+    // over the whole subtree.
+    if ([attribute isEqualToString:NSAccessibilityVisibleChildrenAttribute])
+        return [AvnAccessibilityElement filterVisibleChildren:[self accessibilityChildren]];
+
     if ([attribute isEqualToString:@"AXARIALive" /* kAXARIALiveAttribute */])
     {
         switch (_peer->GetLiveSetting())
