@@ -81,19 +81,19 @@ namespace Avalonia.Android
                     }
                 };
 
-                if (peer is IExpandCollapseProvider)
+                if (peer.GetProvider<IExpandCollapseProvider>() is not null)
                     nodeInfoProviders.Add(new ExpandCollapseNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IInvokeProvider)
+                if (peer.GetProvider<IInvokeProvider>() is not null)
                     nodeInfoProviders.Add(new InvokeNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IRangeValueProvider)
+                if (peer.GetProvider<IRangeValueProvider>() is not null)
                     nodeInfoProviders.Add(new RangeValueNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IScrollProvider)
+                if (peer.GetProvider<IScrollProvider>() is not null)
                     nodeInfoProviders.Add(new ScrollNodeInfoProvider(this, peer, peerViewId));
-                if (peer is ISelectionItemProvider)
+                if (peer.GetProvider<ISelectionItemProvider>() is not null)
                     nodeInfoProviders.Add(new SelectionItemNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IToggleProvider)
+                if (peer.GetProvider<IToggleProvider>() is not null)
                     nodeInfoProviders.Add(new ToggleNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IValueProvider)
+                if (peer.GetProvider<IValueProvider>() is not null)
                     nodeInfoProviders.Add(new ValueNodeInfoProvider(this, peer, peerViewId));
             }
 
