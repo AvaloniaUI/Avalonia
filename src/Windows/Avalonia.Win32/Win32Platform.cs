@@ -1,24 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Avalonia.Reactive;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-using System.Collections.Generic;
 
 namespace Avalonia
 {
@@ -282,7 +280,7 @@ namespace Avalonia.Win32
         {
             using (var memoryStream = new MemoryStream())
             {
-                bitmap.Save(memoryStream);
+                bitmap.Save(memoryStream, PngBitmapEncoderOptions.Default);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 return new IconImpl(memoryStream);
             }

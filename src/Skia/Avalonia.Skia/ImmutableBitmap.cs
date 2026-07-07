@@ -173,16 +173,9 @@ namespace Avalonia.Skia
             _bitmap?.Dispose();
         }
 
-        /// <inheritdoc />
-        public void Save(string fileName, int? quality = null)
+        public void Save(Stream stream, BitmapEncoderOptions options)
         {
-            ImageSavingHelper.SaveImage(_image, fileName, quality);
-        }
-
-        /// <inheritdoc />
-        public void Save(Stream stream, int? quality = null)
-        {
-            ImageSavingHelper.SaveImage(_image, stream, quality);
+            ImageSavingHelper.SaveImage(_image, stream, options);
         }
 
         /// <inheritdoc />
