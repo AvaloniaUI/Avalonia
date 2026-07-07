@@ -657,20 +657,32 @@ namespace Avalonia.Media.TextFormatting
 
                 if (_paragraphProperties.TextAlignment == TextAlignment.Justify)
                 {
+                    // Justify fills each line to the column width, which is MaxWidth for both
+                    // wrapped and non-wrapped text. Targeting the widest produced line instead
+                    // (the previous behaviour for wrapping) leaves wrapped text short of the
+                    // margin, since the full non-last lines already equal that width. When
+                    // MaxWidth is infinite there is no column to fill, so skip.
                     var justificationWidth = MaxWidth;
 
-                    if (_paragraphProperties.TextWrapping != TextWrapping.NoWrap)
-                    {
-                        justificationWidth = WidthIncludingTrailingWhitespace;
-                    }
-
-                    if (justificationWidth > 0)
+                    if (!double.IsInfinity(justificationWidth) && justificationWidth > 0)
                     {
                         var justificationProperties = new InterWordJustification(justificationWidth);
 
                         for (var i = 0; i < textLines.Count; i++)
                         {
                             var line = textLines[i];
+
+                            // Only width-driven wrapped lines are stretched to the column. Skip
+                            // the last line of the layout, any line ended by a newline
+                            // (NewLineLength > 0), and any line ended by a source-provided required
+                            // break (TextEndOfLine) - these stay start-aligned per standard
+                            // typographic convention.
+                            if (i == textLines.Count - 1
+                                || line.NewLineLength > 0
+                                || line.TextLineBreak?.TextEndOfLine != null)
+                            {
+                                continue;
+                            }
 
                             line.Justify(justificationProperties);
                         }
