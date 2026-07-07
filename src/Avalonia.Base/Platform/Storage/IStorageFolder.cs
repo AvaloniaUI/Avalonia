@@ -37,16 +37,20 @@ public interface IStorageFolder : IStorageItem
     Task<IStorageFile?> GetFileAsync(string name);
 
     /// <summary>
-    /// Creates a file with specified name as a child of the current storage folder
+    /// Creates, or truncates and overwrites, a file with specified name as a child of the current storage folder.
     /// </summary>
     /// <param name="name">The display name</param>
-    /// <returns>A new <see cref="IStorageFile"/> pointing to the moved file. If not null, the current storage item becomes invalid</returns>
+    /// <returns>
+    /// A <see cref="IStorageFile"/> that provides read/write access to the file specified in <c>name</c>.
+    /// </returns>
     Task<IStorageFile?> CreateFileAsync(string name);
 
     /// <summary>
-    /// Creates a folder with specified name as a child of the current storage folder
+    /// Creates a folder with specified name as a child of the current storage folder unless they already exist.
     /// </summary>
     /// <param name="name">The display name</param>
-    /// <returns>A new <see cref="IStorageFolder"/> pointing to the moved file. If not null, the current storage item becomes invalid</returns>
+    /// <returns>
+    /// A <see cref="IStorageFolder"/> that represents the directory at the specified <c>name</c>. This object is returned regardless of whether a directory at the specified <c>name</c> already exists.
+    /// </returns>
     Task<IStorageFolder?> CreateFolderAsync(string name);
 }

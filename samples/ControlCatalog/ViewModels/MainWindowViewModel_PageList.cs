@@ -7,6 +7,8 @@ using Avalonia;
 using MiniMvvm;
 using Avalonia.Collections;
 using ControlCatalog.Pages;
+using System.Globalization;
+using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +50,6 @@ namespace ControlCatalog.ViewModels
             new PageItem("ContextMenu",() => new ContextMenuPage(), Icons.Menu),
             new PageItem("Cursor",() => new CursorPage(), Icons.Cursor),
             new PageItem("Custom Drawing",() => new CustomDrawing(), Icons.Brush),
-            new PageItem("DataGrid",() => new DataGridPage(), Icons.Grid),
             new PageItem("Data Validation",() => new DataValidationPage(), Icons.Shield),
             new PageItem("Date/Time Picker",() => new DateTimePickerPage(), Icons.Clock),
             new PageItem("CalendarDatePicker",() => new CalendarDatePickerPage(), Icons.Calendar),
@@ -82,6 +83,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("TabbedPage",() => new TabbedDemoPage(), Icons.Tab),
             new PageItem("TabControl",() => new TabControlPage(), Icons.Tab),
             new PageItem("TabStrip",() => new TabStripPage(), Icons.Tab),
+            new PageItem("TableView",() => new TableViewPage(), Icons.Grid),
             new PageItem("TextBox",() => new TextBoxPage(), Icons.TextInput),
             new PageItem("TextBlock",() => new TextBlockPage(), Icons.TextInput),
             new PageItem("Theme Variants",() => new ThemePage(), Icons.Theme),
@@ -105,10 +107,29 @@ namespace ControlCatalog.ViewModels
                 _ignoreListChange = true;
                 Pages.Clear();
 
-                if (!string.IsNullOrWhiteSpace(query))
-                    Pages.AddRange(_items.Where(x => x.Header.Contains(query)));
-                else
+                if (string.IsNullOrWhiteSpace(query))
+                {
                     Pages.AddRange(_items);
+                }
+                else
+                {
+                    var querySearchKey = PageItem.CreateSearchKey(query);
+
+                    if (querySearchKey.Length == 0)
+                    {
+                        Pages.AddRange(_items);
+                    }
+                    else
+                    {
+                        foreach (var item in _items)
+                        {
+                            if (item.MatchesSearch(querySearchKey))
+                            {
+                                Pages.Add(item);
+                            }
+                        }
+                    }
+                }
             }
             finally
             {
@@ -190,7 +211,38 @@ namespace ControlCatalog.ViewModels
         public string Header { get; } = header;
         public Func<object> Factory { get; } = factory;
         public string? IconData { get; } = iconData;
+        private string SearchKey { get; } = CreateSearchKey(header);
 
         public bool IsVisible { get; set; } = true;
+
+        public bool MatchesSearch(string searchKey)
+        {
+            return SearchKey.Contains(searchKey, StringComparison.Ordinal);
+        }
+
+        public static string CreateSearchKey(string value)
+        {
+            var normalizedValue = value.Normalize(NormalizationForm.FormKD);
+            var builder = new StringBuilder(normalizedValue.Length);
+
+            foreach (var c in normalizedValue)
+            {
+                var category = CharUnicodeInfo.GetUnicodeCategory(c);
+
+                if (category is UnicodeCategory.NonSpacingMark or
+                    UnicodeCategory.SpacingCombiningMark or
+                    UnicodeCategory.EnclosingMark)
+                {
+                    continue;
+                }
+
+                if (char.IsLetterOrDigit(c))
+                {
+                    builder.Append(char.ToUpperInvariant(c));
+                }
+            }
+
+            return builder.ToString();
+        }
     }
 }

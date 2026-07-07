@@ -69,7 +69,7 @@ static class TestRenderHelper
                 target.Measure(size);
                 target.Arrange(new Rect(size));
                 bitmap.Render(target);
-                bitmap.Save(path);
+                bitmap.Save(path, PngBitmapEncoderOptions.Default);
             }
         }
         else
@@ -91,7 +91,8 @@ static class TestRenderHelper
                     renderer.Paint(new Rect(root.Bounds.Size), false);
                 }
 
-                writableBitmap.Save(path);
+                using var fileStream = File.Create(path);
+                writableBitmap.Save(fileStream, PngBitmapEncoderOptions.Default);
             }
         }
 

@@ -7,6 +7,7 @@ namespace Avalonia.OpenGL.Egl
     public sealed class EglPlatformGraphics : IPlatformGraphics
     {
         private readonly EglDisplay _display;
+        internal EglDisplay Display => _display;
         public bool UsesSharedContext => false;
         public IPlatformGraphicsContext CreateContext() => _display.CreateContext(null);
         public IPlatformGraphicsContext GetSharedContext() => throw new NotSupportedException();

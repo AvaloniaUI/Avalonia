@@ -83,10 +83,10 @@
                   <Setter Property="CornerRadius" Value="4" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:disabled">
                   <Setter Property="Opacity" Value="0.4" />
@@ -104,10 +104,10 @@
                   <Setter Property="CornerRadius" Value="0" />
                 </Style>
                 <Style Selector="Button#PART_OverflowButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
                 </Style>
                 <Style Selector="Button#PART_OverflowButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
                 </Style>
               </Grid.Styles>
 

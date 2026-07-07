@@ -2,6 +2,7 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -29,6 +30,7 @@ namespace Avalonia.Controls
             PressedMixin.Attach<ListBoxItem>();
             FocusableProperty.OverrideDefaultValue<ListBoxItem>(true);
             AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<ListBoxItem>(IsOffscreenBehavior.FromClip);
+            PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue<ListBoxItem>(FeedbackType.Auto);
         }
 
         /// <summary>

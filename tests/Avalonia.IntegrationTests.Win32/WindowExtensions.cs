@@ -27,12 +27,8 @@ internal static class WindowExtensions
         }
     }
 
-    public static Screen GetScreen(this Window window)
-    {
-        var screen = window.Screens.ScreenFromWindow(window);
-        Assert.NotNull(screen);
-        return screen;
-    }
+    public static Screen GetScreenAtIndex(this Window window, int index)
+        => window.Screens.All[index];
 
     public static PixelSize GetWin32ClientSize(this Window window)
     {
