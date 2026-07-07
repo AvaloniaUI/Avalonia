@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
+using Avalonia.Threading;
 using Avalonia.Wayland.Server.Interop;
 using Avalonia.Wayland.Server.Transient;
 using Avalonia.Wayland.Server.Transient.Rendering;
@@ -710,7 +711,7 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         batch.MaxSize = CalculateMaxSize();
         _pendingBatch = new();
         
-        _topLevelEventSink.OnConfigure(batch);
+        _topLevelEventSink.OnConfigure(batch, DispatcherPriority.AsyncRenderTargetResize);
         BasicInitCompletedTcs.TrySetResult(batch);
         
         base.OnConfigureBatchComplete(serial);
@@ -726,7 +727,7 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
                 _ => DecorationMode.ClientSide,
             };
             if (p.BasicInitCompletedTcs.Task.IsCompleted)
-                p._topLevelEventSink.OnDecorationModeChanged(translated);
+                p._topLevelEventSink.OnDecorationModeChanged(translated, DispatcherPriority.AsyncRenderTargetResize);
             else
                 p._pendingBatch.InitialDecorationMode = translated;
         }
@@ -992,7 +993,7 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
         batch.Serial = serial;
         _pendingBatch = new();
 
-        _popupEventSink.OnPopupConfigure(batch);
+        _popupEventSink.OnPopupConfigure(batch, DispatcherPriority.AsyncRenderTargetResize);
 
         base.OnConfigureBatchComplete(serial);
     }

@@ -21,6 +21,8 @@
     <Project Path="src/Avalonia.FreeDesktop.AtSpi/Avalonia.FreeDesktop.AtSpi.csproj" />
     <Project Path="src/Avalonia.FreeDesktop/Avalonia.FreeDesktop.csproj" />
     <Project Path="src/Avalonia.X11/Avalonia.X11.csproj" />
+    <Project Path="src/Avalonia.Wayland.Embedding/Avalonia.Wayland.Embedding.csproj" />
+    <Project Path="src/Avalonia.Wayland.Embedding.Gtk/Avalonia.Wayland.Embedding.Gtk.csproj" />
     <Project Path="src/Linux/Avalonia.LinuxFramebuffer/Avalonia.LinuxFramebuffer.csproj" />
     <Project Path="src/Avalonia.Wayland/Avalonia.Wayland.csproj" />
   </Folder>
@@ -94,6 +96,7 @@
       <Deploy />
     </Project>
     <Project Path="samples/XEmbedSample/XEmbedSample.csproj" />
+    <Project Path="samples/WaylandEmbedSample/WaylandEmbedSample.csproj" />
   </Folder>
   <Folder Name="/Samples/Interop/">
     <Project Path="samples/interop/WindowsInteropTest/WindowsInteropTest.csproj" />
@@ -157,6 +160,7 @@
     <Project Path="tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj" />
     <Project Path="tests/Avalonia.Skia.UnitTests/Avalonia.Skia.UnitTests.csproj" />
     <Project Path="tests/Avalonia.UnitTests/Avalonia.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Wayland.Embedding.Tests/Avalonia.Wayland.Embedding.Tests.csproj" />
     <Project Path="tests/Avalonia.Wayland.UnitTests/Avalonia.Wayland.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Tests/TestFiles/" />

@@ -15,6 +15,7 @@
       "samples\\TextTestApp\\TextTestApp.csproj",
       "samples\\UnloadableAssemblyLoadContext\\UnloadableAssemblyLoadContextPlug\\UnloadableAssemblyLoadContextPlug.csproj",
       "samples\\UnloadableAssemblyLoadContext\\UnloadableAssemblyLoadContext\\UnloadableAssemblyLoadContext.csproj",
+      "samples\\WaylandEmbedSample\\WaylandEmbedSample.csproj",
       "samples\\XEmbedSample\\XEmbedSample.csproj",
       "src\\Avalonia.Base\\Avalonia.Base.csproj",
       "src\\Avalonia.Build.Tasks\\Avalonia.Build.Tasks.csproj",
@@ -34,6 +35,8 @@
       "src\\Avalonia.Themes.Fluent\\Avalonia.Themes.Fluent.csproj",
       "src\\Avalonia.Themes.Simple\\Avalonia.Themes.Simple.csproj",
       "src\\Avalonia.Vulkan\\Avalonia.Vulkan.csproj",
+      "src\\Avalonia.Wayland.Embedding.Gtk\\Avalonia.Wayland.Embedding.Gtk.csproj",
+      "src\\Avalonia.Wayland.Embedding\\Avalonia.Wayland.Embedding.csproj",
       "src\\Avalonia.Wayland\\Avalonia.Wayland.csproj",
       "src\\Avalonia.X11\\Avalonia.X11.csproj",
       "src\\HarfBuzz\\Avalonia.HarfBuzz\\Avalonia.HarfBuzz.csproj",
@@ -73,6 +76,7 @@
       "tests\\Avalonia.Skia.RenderTests\\Avalonia.Skia.RenderTests.csproj",
       "tests\\Avalonia.Skia.UnitTests\\Avalonia.Skia.UnitTests.csproj",
       "tests\\Avalonia.UnitTests\\Avalonia.UnitTests.csproj",
+      "tests\\Avalonia.Wayland.Embedding.Tests\\Avalonia.Wayland.Embedding.Tests.csproj",
       "tests\\Avalonia.Wayland.UnitTests\\Avalonia.Wayland.UnitTests.csproj",
       "tests\\TestFiles\\BuildTasks\\PInvoke\\PInvoke.csproj"
     ]
