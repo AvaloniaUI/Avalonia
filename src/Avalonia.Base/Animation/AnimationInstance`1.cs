@@ -37,6 +37,7 @@ namespace Avalonia.Animation
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChangedDelegate;
         private EventHandler? _visibilityChangedHandler;
         private EventHandler<VisualTreeAttachmentEventArgs>? _detachedHandler;
+        private EventHandler<VisualTreeAttachmentEventArgs>? _attachedHandler;
 
         private readonly bool _shouldPauseOnInvisible;
 
@@ -111,6 +112,12 @@ namespace Avalonia.Animation
                     visual.DetachedFromVisualTree -= _detachedHandler;
                     _detachedHandler = null;
                 }
+
+                if (_attachedHandler is not null)
+                {
+                    visual.AttachedToVisualTree -= _attachedHandler;
+                    _attachedHandler = null;
+                }
             }
 
             _clock!.PlayState = PlayState.Stop;
@@ -145,15 +152,32 @@ namespace Avalonia.Animation
                     // If already invisible when animation starts, pause immediately.
                     if (!visual.IsEffectivelyVisible)
                         _clock.PlayState = PlayState.Pause;
-                }
 
-                // Stop and dispose the animation when detached from the visual tree.
-                _detachedHandler = (_, _) =>
+                    _detachedHandler = (_, _) =>
+                    {
+                        if (_clock is { PlayState: PlayState.Run })
+                            _clock.PlayState = PlayState.Pause;
+                    };
+                    visual.DetachedFromVisualTree += _detachedHandler;
+
+                    _attachedHandler = (_, _) =>
+                    {
+                        if (_clock is { PlayState: PlayState.Pause } && visual.IsEffectivelyVisible)
+                            _clock.PlayState = PlayState.Run;
+                    };
+                    visual.AttachedToVisualTree += _attachedHandler;
+                }
+                else
                 {
-                    SetFinalValue();
-                    DoComplete();
-                };
-                visual.DetachedFromVisualTree += _detachedHandler;
+                    // Manually started animations stop and dispose when
+                    // detached from the visual tree so that their awaited task completes.
+                    _detachedHandler = (_, _) =>
+                    {
+                        SetFinalValue();
+                        DoComplete();
+                    };
+                    visual.DetachedFromVisualTree += _detachedHandler;
+                }
             }
 
             _propertyChangedDelegate ??= ControlPropertyChanged;

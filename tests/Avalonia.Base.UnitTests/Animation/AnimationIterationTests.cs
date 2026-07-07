@@ -1302,6 +1302,64 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.Equal(300d, border.Width);
         }
 
+        [Fact]
+        public void Style_Animation_Pauses_On_Visual_Tree_Detach_And_Resumes_On_Reattach()
+        {
+            var keyframe1 = new KeyFrame
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d) }, Cue = new Cue(0d)
+            };
+            var keyframe2 = new KeyFrame
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d) }, Cue = new Cue(1d)
+            };
+
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromSeconds(10),
+                IterationCount = new IterationCount(1),
+                Easing = new LinearEasing(),
+                FillMode = FillMode.Forward,
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var border = new Border { Height = 100d, Width = 50d };
+            var root = new TestRoot(border);
+            var clock = new TestClock();
+            var completed = false;
+
+            // Apply (not RunAsync) is the style-applied path.
+            var disposable = animation.Apply(border, clock, Observable.Return(true), () => completed = true);
+
+            clock.Step(TimeSpan.Zero);
+            clock.Step(TimeSpan.FromSeconds(2));
+            Assert.Equal(120d, border.Width);
+            Assert.False(completed);
+
+            // Detach, the animation should pause, not complete.
+            root.Child = null;
+            Assert.False(completed);
+
+            var widthAtDetach = border.Width;
+            clock.Step(TimeSpan.FromSeconds(5));
+            // Paused while detached: no further progress and no completion.
+            Assert.Equal(widthAtDetach, border.Width);
+            Assert.False(completed);
+
+            // Reattach, the animation resumes from where it paused.
+            root.Child = border;
+            clock.Step(TimeSpan.FromSeconds(7));
+            Assert.Equal(140d, border.Width);
+            Assert.False(completed);
+
+            // And it can still run to completion.
+            clock.Step(TimeSpan.FromSeconds(13));
+            Assert.True(completed);
+            Assert.Equal(200d, border.Width);
+
+            disposable.Dispose();
+        }
+
         private sealed class FakeAnimator : InterpolatingAnimator<double>
         {
             public double LastProgress { get; set; } = double.NaN;
