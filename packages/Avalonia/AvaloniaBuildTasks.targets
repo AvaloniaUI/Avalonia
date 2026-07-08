@@ -50,6 +50,10 @@
                                  Exclude="@(AvaloniaXaml)" />
       <AdditionalFiles Include="@(_AvaloniaResourceOnly)" SourceItemGroup="AvaloniaResource" />
     </ItemGroup>
+    <!-- Unfortunatelly, we can't include binary files as AdditionalFiles, so for general use avalonia resources we add AvaloniaResourcePaths instead -->
+    <PropertyGroup>
+      <AvaloniaResourcePaths>@(AvaloniaResource->'%(FullPath)', ',')</AvaloniaResourcePaths>
+    </PropertyGroup>
   </Target>
 
   <UsingTask TaskName="GenerateAvaloniaResourcesTask"
