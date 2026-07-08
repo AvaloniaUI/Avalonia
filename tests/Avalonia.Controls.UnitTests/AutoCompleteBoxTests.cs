@@ -1359,6 +1359,43 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(2, textChangedCount);
             }
         }
+
+        [Fact]
+        public void Tab_Commits_Selection_And_Closes_Dropdown()
+        {
+            RunTest((control, textbox) =>
+            {
+                // Ensure dropdown opens with suggestions
+                control.MinimumPrefixLength = 0;
+                textbox.Text = "cu"; // matches items like "cucumber", "cup", etc.
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.True(control.IsDropDownOpen);
+
+                // Move selection to the first item in the suggestion list
+                control.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down
+                });
+                Dispatcher.UIThread.RunJobs();
+
+                var selectedBefore = control.SelectedItem;
+                Assert.NotNull(selectedBefore);
+
+                // Press Tab to commit selection and close the dropdown
+                control.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Tab
+                });
+
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.False(control.IsDropDownOpen);
+                Assert.Equal(selectedBefore!.ToString(), control.Text);
+            });
+        }
     }
 
     public class AutoCompleteBoxViewModel : INotifyPropertyChanged
