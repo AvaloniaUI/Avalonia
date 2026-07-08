@@ -425,7 +425,6 @@ namespace Avalonia.Automation.Peers
         /// <see cref="GetBoundingRectangle"/>, to screen coordinates; returns null if the peer is
         /// not currently hosted in a rendered visual tree.
         /// </summary>
-        [PrivateApi]
         public Rect? ToScreen(Rect rect) => ToScreenCore(rect);
 
         /// <summary>
