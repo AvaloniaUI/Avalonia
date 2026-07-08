@@ -747,14 +747,11 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Tab:
-                    // When the dropdown is open, treat Tab like Enter to commit the
-                    // current selection and close the dropdown, but DO NOT mark the
-                    // event as handled so that focus traversal with Tab still occurs.
+                    // When the dropdown is open, close it but let Tab focus navigation proceed.
                     if (IsDropDownOpen)
                     {
-                        OnAdapterSelectionComplete(this, new RoutedEventArgs());
-                        // Intentionally not setting e.Handled = true here to allow
-                        // normal Tab focus navigation to proceed after committing.
+                        SetCurrentValue(IsDropDownOpenProperty, false);
+                        ClearTextBoxSelection();
                     }
                     break;
 

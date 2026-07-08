@@ -1373,7 +1373,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(control.IsDropDownOpen);
 
                 // Move selection to the first item in the suggestion list
-                control.RaiseEvent(new KeyEventArgs
+                textbox.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = Key.Down
@@ -1384,11 +1384,13 @@ namespace Avalonia.Controls.UnitTests
                 Assert.NotNull(selectedBefore);
 
                 // Press Tab to commit selection and close the dropdown
-                control.RaiseEvent(new KeyEventArgs
+                var tabArgs = new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = Key.Tab
-                });
+                };
+                textbox.RaiseEvent(tabArgs);
+                Assert.False(tabArgs.Handled);
 
                 Dispatcher.UIThread.RunJobs();
 
