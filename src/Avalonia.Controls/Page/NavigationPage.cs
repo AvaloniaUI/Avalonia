@@ -79,6 +79,7 @@ namespace Avalonia.Controls
         private bool _hasOverrideTransition;
         private readonly HashSet<object> _pageSet = new(ReferenceEqualityComparer.Instance);
         private bool _restoringPagesProperty;
+        private PageTransitionPresenterConstraints? _pageTransitionPresenterConstraints;
 
         private bool IsRtl => FlowDirection == FlowDirection.RightToLeft;
 
@@ -661,6 +662,8 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
+            ClearPageTransitionPresenterConstraints();
+
             BackButton = e.NameScope.Get<Button>("PART_BackButton");
             _backButtonDefaultIcon = e.NameScope.Find<Control>("PART_BackButtonDefaultIcon");
             _backButtonContentPresenter = e.NameScope.Find<ContentPresenter>("PART_BackButtonContentPresenter");
@@ -736,6 +739,7 @@ namespace Avalonia.Controls
 
             var t = _currentTransition;
             _currentTransition = null;
+            ClearPageTransitionPresenterConstraints();
             t?.Cancel();
             t?.Dispose();
 
@@ -1796,9 +1800,11 @@ namespace Avalonia.Controls
                     resolvedTransition = PageTransition;
                 }
 
-                _currentTransition?.Cancel();
-                _currentTransition?.Dispose();
+                var currentTransition = _currentTransition;
                 _currentTransition = null;
+                ClearPageTransitionPresenterConstraints();
+                currentTransition?.Cancel();
+                currentTransition?.Dispose();
 
                 _pageBackPresenter.IsVisible = false;
                 _pageBackPresenter.Content = null;
@@ -1833,7 +1839,18 @@ namespace Avalonia.Controls
                         oldPresenter.ZIndex = 0;
                     }
 
-                    _lastPageTransitionTask = RunPageTransitionAsync(resolvedTransition, oldPresenter, newPresenter, !isPop, cancel.Token);
+                    var presenterConstraints = ApplyPageTransitionPresenterConstraints(
+                        cancel,
+                        oldPresenter,
+                        newPresenter);
+
+                    _lastPageTransitionTask = RunPageTransitionAsync(
+                        resolvedTransition,
+                        oldPresenter,
+                        newPresenter,
+                        !isPop,
+                        cancel.Token,
+                        presenterConstraints);
 
                     (_pagePresenter, _pageBackPresenter) = (newPresenter, oldPresenter);
                 }
@@ -1913,7 +1930,8 @@ namespace Avalonia.Controls
             ContentPresenter from,
             ContentPresenter to,
             bool forward,
-            CancellationToken ct)
+            CancellationToken ct,
+            PageTransitionPresenterConstraints? presenterConstraints)
         {
             try
             {
@@ -1928,6 +1946,11 @@ namespace Avalonia.Controls
                 Logger.TryGet(LogEventLevel.Error, LogArea.Control)
                     ?.Log(this, "Page transition threw an unhandled exception: {Exception}", e);
             }
+            finally
+            {
+                if (presenterConstraints is { } constraints)
+                    ClearPageTransitionPresenterConstraints(constraints);
+            }
 
             if (ct.IsCancellationRequested)
                 return;
@@ -1936,6 +1959,88 @@ namespace Avalonia.Controls
             from.Content = null;
             from.RenderTransform = null;
             from.Opacity = 1;
+        }
+
+        private PageTransitionPresenterConstraints? ApplyPageTransitionPresenterConstraints(
+            CancellationTokenSource transition,
+            ContentPresenter from,
+            ContentPresenter to)
+        {
+            var size = _contentHost?.Bounds.Size ?? default;
+            if (!double.IsFinite(size.Width) ||
+                !double.IsFinite(size.Height) ||
+                size.Width <= 0 ||
+                size.Height <= 0)
+            {
+                return null;
+            }
+
+            var constraints = new PageTransitionPresenterConstraints(
+                transition,
+                from,
+                to,
+                from.MaxWidth,
+                from.MaxHeight,
+                to.MaxWidth,
+                to.MaxHeight);
+
+            from.SetCurrentValue(MaxWidthProperty, Math.Min(from.MaxWidth, size.Width));
+            from.SetCurrentValue(MaxHeightProperty, Math.Min(from.MaxHeight, size.Height));
+            to.SetCurrentValue(MaxWidthProperty, Math.Min(to.MaxWidth, size.Width));
+            to.SetCurrentValue(MaxHeightProperty, Math.Min(to.MaxHeight, size.Height));
+
+            _pageTransitionPresenterConstraints = constraints;
+            return constraints;
+        }
+
+        private void ClearPageTransitionPresenterConstraints()
+        {
+            if (_pageTransitionPresenterConstraints is not { } activeConstraints)
+                return;
+
+            RestorePageTransitionPresenterConstraints(activeConstraints);
+        }
+
+        private void ClearPageTransitionPresenterConstraints(PageTransitionPresenterConstraints constraints)
+        {
+            if (_pageTransitionPresenterConstraints is not { } activeConstraints ||
+                !ReferenceEquals(activeConstraints.Transition, constraints.Transition))
+                return;
+
+            RestorePageTransitionPresenterConstraints(activeConstraints);
+        }
+
+        private void RestorePageTransitionPresenterConstraints(PageTransitionPresenterConstraints constraints)
+        {
+            constraints.From.SetCurrentValue(MaxWidthProperty, constraints.FromMaxWidth);
+            constraints.From.SetCurrentValue(MaxHeightProperty, constraints.FromMaxHeight);
+            constraints.To.SetCurrentValue(MaxWidthProperty, constraints.ToMaxWidth);
+            constraints.To.SetCurrentValue(MaxHeightProperty, constraints.ToMaxHeight);
+            _pageTransitionPresenterConstraints = null;
+        }
+
+        private readonly struct PageTransitionPresenterConstraints(
+            CancellationTokenSource transition,
+            ContentPresenter from,
+            ContentPresenter to,
+            double fromMaxWidth,
+            double fromMaxHeight,
+            double toMaxWidth,
+            double toMaxHeight)
+        {
+            public CancellationTokenSource Transition { get; } = transition;
+
+            public ContentPresenter From { get; } = from;
+
+            public ContentPresenter To { get; } = to;
+
+            public double FromMaxWidth { get; } = fromMaxWidth;
+
+            public double FromMaxHeight { get; } = fromMaxHeight;
+
+            public double ToMaxWidth { get; } = toMaxWidth;
+
+            public double ToMaxHeight { get; } = toMaxHeight;
         }
 
         private Task AwaitPageTransitionAsync()
