@@ -530,7 +530,10 @@
 
 - (NSRect)rectToScreen:(AvnRect)rect
 {
-    id topLevel = [self accessibilityTopLevelUIElement];
+    // GetBoundingRectangle is measured in the element's own window, so convert through that window
+    // (accessibilityWindow) rather than the top-level UI element. The two differ when a peer's
+    // automation-root window is not its top-most UI-element ancestor.
+    id topLevel = [self accessibilityWindow];
 
     if (![topLevel isKindOfClass:[AvnWindow class]])
         return NSZeroRect;
