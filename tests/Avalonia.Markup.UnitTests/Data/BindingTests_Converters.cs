@@ -158,6 +158,38 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Same(localBrush, textBlock.Foreground);
         }
 
+        [Fact]
+        public void Converter_UnsetValue_With_NonLocal_Priority_Should_Not_Create_Effective_Value()
+        {
+            var source = new BrushSource(-1);
+            var localBrush = Brushes.Red;
+            var textBlock = new TextBlock
+            {
+                DataContext = source,
+            };
+
+            textBlock.Bind(
+                TextBlock.ForegroundProperty,
+                new Binding(nameof(BrushSource.Value))
+                {
+                    Converter = new IntToBrushConverter(localBrush),
+                    Priority = BindingPriority.Style,
+                });
+
+            Assert.Same(Brushes.Black, textBlock.Foreground);
+            Assert.False(textBlock.IsSet(TextBlock.ForegroundProperty));
+
+            source.Value = 1;
+            Assert.Same(localBrush, textBlock.Foreground);
+
+            source.Value = -1;
+            Assert.Same(Brushes.Black, textBlock.Foreground);
+            Assert.False(textBlock.IsSet(TextBlock.ForegroundProperty));
+
+            source.Value = 2;
+            Assert.Same(localBrush, textBlock.Foreground);
+        }
+
         private class Class1
         {
             public string Foo { get; set; } = "foo";
