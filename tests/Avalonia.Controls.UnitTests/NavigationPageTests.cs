@@ -2441,16 +2441,77 @@ public class NavigationPageTests
             Assert.False(navigatedToDuringTransition);
         }
 
+        [Fact]
+        public async Task ReplaceAsync_Does_Not_Measure_Virtualized_Page_With_Unbounded_Size_During_Transition()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var tcs = new TaskCompletionSource();
+                var nav = CreateNavigationPage(null, out var root, new Size(400, 300));
+                await nav.PushAsync(CreateContentPage(new TextBlock { Text = "Root" }));
+                root.LayoutManager.ExecuteLayoutPass();
+
+                nav.PageTransition = new ControllableTransition(tcs.Task);
+                var listBox = CreateVirtualizedListBox();
+                var replaceTask = nav.ReplaceAsync(CreateContentPage(listBox));
+
+                try
+                {
+                    Assert.False(replaceTask.IsCompleted);
+
+                    nav.InvalidateMeasure();
+                    nav.Measure(Size.Infinity);
+
+                    var realizedDuringTransition = listBox.GetRealizedContainers().Count();
+                    Assert.InRange(realizedDuringTransition, 1, 100);
+                    Assert.InRange(listBox.DesiredSize.Height, 1, root.ClientSize.Height);
+                }
+                finally
+                {
+                    tcs.TrySetResult();
+                    await replaceTask;
+                }
+            }
+        }
+
         private static NavigationPage CreateNavigationPage(IPageTransition? transition)
+            => CreateNavigationPage(transition, out _);
+
+        private static NavigationPage CreateNavigationPage(
+            IPageTransition? transition,
+            out TestRoot root,
+            Size? clientSize = null)
         {
             var nav = new NavigationPage
             {
                 PageTransition = transition,
                 Template = NavigationPageTemplate()
             };
-            var root = new TestRoot { Child = nav };
+            root = new TestRoot { Child = nav };
+            if (clientSize.HasValue)
+                root.ClientSize = clientSize.Value;
             root.LayoutManager.ExecuteInitialLayoutPass();
             return nav;
+        }
+
+        private static ContentPage CreateContentPage(Control content)
+        {
+            return new ContentPage
+            {
+                Content = content,
+                Template = ContentPageTemplate()
+            };
+        }
+
+        private static ListBox CreateVirtualizedListBox()
+        {
+            return new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemsSource = Enumerable.Range(0, 10000).ToArray(),
+                ItemTemplate = new FuncDataTemplate<int>((_, _) => new TextBlock { Height = 20 }),
+                ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel { CacheLength = 0 }),
+            };
         }
 
         private static IControlTemplate NavigationPageTemplate()
@@ -2483,6 +2544,46 @@ public class NavigationPageTests
                     }
                 };
             });
+        }
+
+        private static IControlTemplate ContentPageTemplate()
+        {
+            return new FuncControlTemplate<ContentPage>((parent, ns) =>
+            {
+                return new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [~ContentPresenter.ContentProperty] =
+                        parent.GetObservable(ContentPage.ContentProperty).ToBinding(),
+                    [~ContentPresenter.ContentTemplateProperty] =
+                        parent.GetObservable(ContentPage.ContentTemplateProperty).ToBinding(),
+                }.RegisterInNameScope(ns);
+            });
+        }
+
+        private static Control CreateListBoxTemplate(TemplatedControl parent, INameScope scope)
+        {
+            return new ScrollViewer
+            {
+                Name = "PART_ScrollViewer",
+                Template = new FuncControlTemplate(CreateScrollViewerTemplate),
+                Content = new ItemsPresenter
+                {
+                    Name = "PART_ItemsPresenter",
+                    [~ItemsPresenter.ItemsPanelProperty] =
+                        ((ListBox)parent).GetObservable(ItemsControl.ItemsPanelProperty).ToBinding(),
+                }.RegisterInNameScope(scope)
+            }.RegisterInNameScope(scope);
+        }
+
+        private static Control CreateScrollViewerTemplate(TemplatedControl parent, INameScope scope)
+        {
+            return new ScrollContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+                [~ContentPresenter.ContentProperty] =
+                    parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
+            }.RegisterInNameScope(scope);
         }
 
         private class ControllableTransition : IPageTransition
