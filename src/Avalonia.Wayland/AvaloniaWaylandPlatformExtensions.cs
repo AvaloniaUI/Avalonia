@@ -1,3 +1,5 @@
+using System;
+using Avalonia.Logging;
 using Avalonia.Wayland;
 
 // UseXxx are deliberately in global Avalonia namespace
@@ -25,4 +27,39 @@ public static class AvaloniaWaylandPlatformExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Configures the application to use the Wayland windowing backend when a usable Wayland
+    /// compositor is available, falling back to the previously configured windowing backend
+    /// otherwise. Call it after <c>UseX11</c> or <c>UsePlatformDetect</c>, e. g.
+    /// <c>.UsePlatformDetect().UseWaylandWithFallback()</c>. Does nothing on non-Linux platforms.
+    /// </summary>
+    /// <param name="builder">The application builder.</param>
+    /// <returns>The same <paramref name="builder"/> for chaining.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// No windowing backend was configured prior to this call (on Linux).
+    /// </exception>
+    public static AppBuilder UseWaylandWithFallback(this AppBuilder builder)
+    {
+        if (!OperatingSystem.IsLinux())
+            return builder;
+
+        var fallback = builder.WindowingSubsystemInitializer
+            ?? throw new InvalidOperationException(
+                "A fallback windowing backend must be configured before calling UseWaylandWithFallback, " +
+                "e.g. via UseX11 or UsePlatformDetect.");
+
+        return builder
+            .UseStandardRuntimePlatformSubsystem()
+            .UseWindowingSubsystem(() =>
+            {
+                var error = WaylandPlatform.TryInitialize(
+                    AvaloniaLocator.Current.GetService<WaylandPlatformOptions>() ?? new WaylandPlatformOptions());
+                if (error != null)
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Platform)?.Log(null,
+                        "Unable to initialize the Wayland backend, falling back: {Error}", error.SourceException);
+                    fallback();
+                }
+            });
+    }
 }
