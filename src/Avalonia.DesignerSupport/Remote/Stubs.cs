@@ -196,7 +196,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public bool NeedsManagedDecorations => false;
 
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
@@ -272,32 +272,6 @@ namespace Avalonia.DesignerSupport.Remote
                 Bounds = WorkingArea = new PixelRect(0, 0, 4000, 4000);
                 IsPrimary = true;
             }
-        }
-    }
-
-    internal class NoopStorageProvider : BclStorageProvider
-    {
-        public override bool CanOpen => false;
-        public override Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
-        {
-            return Task.FromResult<IReadOnlyList<IStorageFile>>(Array.Empty<IStorageFile>());
-        }
-
-        public override bool CanSave => false;
-        public override Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
-        {
-            return Task.FromResult<IStorageFile?>(null);
-        }
-
-        public override Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
-        {
-            return Task.FromResult(new SaveFilePickerResult());
-        }
-
-        public override bool CanPickFolder => false;
-        public override Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
-        {
-            return Task.FromResult<IReadOnlyList<IStorageFolder>>(Array.Empty<IStorageFolder>());
         }
     }
 }

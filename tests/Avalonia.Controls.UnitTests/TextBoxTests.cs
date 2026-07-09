@@ -1483,6 +1483,151 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Command_States_Update_When_ReadOnly_And_PasswordChar_Change()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                tb.Measure(Size.Infinity);
+
+                Assert.True(tb.CanCopy);
+                Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.IsReadOnly = true;
+
+                Assert.True(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.False(tb.CanPaste);
+
+                tb.PasswordChar = '*';
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.False(tb.CanPaste);
+
+                tb.IsReadOnly = false;
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.PasswordChar = default;
+
+                Assert.True(tb.CanCopy);
+                Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        [Fact]
+        public void Command_States_Update_When_RevealPassword_Changes()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    PasswordChar = '*',
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                tb.Measure(Size.Infinity);
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = true;
+
+                Assert.True(tb.CanCopy);
+                Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = false;
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        [Fact]
+        public void ReadOnly_Editing_Hotkeys_Do_Not_Modify_Text_Or_Undo_State()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    AcceptsReturn = true,
+                    AcceptsTab = true,
+                };
+
+                tb.Measure(Size.Infinity);
+
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+
+                Assert.Equal("ABCDEF", tb.Text);
+
+                tb.Undo();
+
+                Assert.Equal("ABC", tb.Text);
+                Assert.True(tb.CanUndo);
+                Assert.True(tb.CanRedo);
+
+                tb.IsReadOnly = true;
+                tb.CaretIndex = tb.Text!.Length;
+                tb.SelectionStart = 0;
+                tb.SelectionEnd = tb.Text.Length;
+
+                var originalText = tb.Text;
+                var originalCaretIndex = tb.CaretIndex;
+                var originalSelectionStart = tb.SelectionStart;
+                var originalSelectionEnd = tb.SelectionEnd;
+                var originalCanUndo = tb.CanUndo;
+                var originalCanRedo = tb.CanRedo;
+
+                var cutRaised = 0;
+                var pasteRaised = 0;
+                tb.CuttingToClipboard += (_, _) => cutRaised++;
+                tb.PastingFromClipboard += (_, _) => pasteRaised++;
+
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Application.Current!.PlatformSettings!.HotkeyConfiguration.Cut, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Application.Current.PlatformSettings.HotkeyConfiguration.Paste, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Application.Current.PlatformSettings.HotkeyConfiguration.Undo, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Application.Current.PlatformSettings.HotkeyConfiguration.Redo, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Back, KeyModifiers.None, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Back, KeyModifiers.Control, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Delete, KeyModifiers.None, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Delete, KeyModifiers.Control, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Enter, KeyModifiers.None, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Tab, KeyModifiers.None, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Space, KeyModifiers.None, handled: false);
+
+                Assert.Equal(originalText, tb.Text);
+                Assert.Equal(originalCaretIndex, tb.CaretIndex);
+                Assert.Equal(originalSelectionStart, tb.SelectionStart);
+                Assert.Equal(originalSelectionEnd, tb.SelectionEnd);
+                Assert.Equal(originalCanUndo, tb.CanUndo);
+                Assert.Equal(originalCanRedo, tb.CanRedo);
+                Assert.Equal(0, cutRaised);
+                Assert.Equal(0, pasteRaised);
+            }
+        }
+
+        [Fact]
         public void UndoLimit_Count_Is_Respected()
         {
             using (UnitTestApplication.Start(Services))
@@ -2247,14 +2392,52 @@ namespace Avalonia.Controls.UnitTests
             }.RegisterInNameScope(scope));
         }
 
-        private static void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
+        private static void AssertReadOnlyHotkeyLeavesStateUntouched(
+            TextBox textBox,
+            IReadOnlyList<KeyGesture> gestures,
+            bool handled)
         {
-            textBox.RaiseEvent(new KeyEventArgs
+            Assert.NotEmpty(gestures);
+            var gesture = gestures[0];
+            AssertReadOnlyHotkeyLeavesStateUntouched(textBox, gesture.Key, gesture.KeyModifiers, handled);
+        }
+
+        private static void AssertReadOnlyHotkeyLeavesStateUntouched(
+            TextBox textBox,
+            Key key,
+            KeyModifiers inputModifiers,
+            bool handled)
+        {
+            var originalText = textBox.Text;
+            var originalCaretIndex = textBox.CaretIndex;
+            var originalSelectionStart = textBox.SelectionStart;
+            var originalSelectionEnd = textBox.SelectionEnd;
+            var originalCanUndo = textBox.CanUndo;
+            var originalCanRedo = textBox.CanRedo;
+
+            var args = RaiseKeyEvent(textBox, key, inputModifiers);
+
+            Assert.Equal(handled, args.Handled);
+            Assert.Equal(originalText, textBox.Text);
+            Assert.Equal(originalCaretIndex, textBox.CaretIndex);
+            Assert.Equal(originalSelectionStart, textBox.SelectionStart);
+            Assert.Equal(originalSelectionEnd, textBox.SelectionEnd);
+            Assert.Equal(originalCanUndo, textBox.CanUndo);
+            Assert.Equal(originalCanRedo, textBox.CanRedo);
+        }
+
+        private static KeyEventArgs RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
+        {
+            var args = new KeyEventArgs
             {
                 RoutedEvent = InputElement.KeyDownEvent,
                 KeyModifiers = inputModifiers,
                 Key = key
-            });
+            };
+
+            textBox.RaiseEvent(args);
+
+            return args;
         }
 
         private static void RaiseTextEvent(TextBox textBox, string text)

@@ -21,10 +21,11 @@ public class EmbedSampleGtk : INativeDemoControl
         }
 
         var control = createDefault();
-        var nodes = Path.GetFullPath(Path.Combine(typeof(EmbedSample).Assembly.GetModules()[0].FullyQualifiedName,
-            "..", "NativeControls", "Gtk", "nodes.mp4"));
+        var nodesFile = Path.Combine(AppContext.BaseDirectory, "NativeControls", "Gtk", "nodes.mp4");
+        nodesFile = Path.GetFullPath(nodesFile);
+
         _mplayer = Process.Start(new ProcessStartInfo("mplayer",
-            $"-vo x11 -zoom -loop 0 -wid {control.Handle.ToInt64()} \"{nodes}\"")
+            $"-vo x11 -zoom -loop 0 -wid {control.Handle.ToInt64()} \"{nodesFile}\"")
         {
             UseShellExecute = false,
 

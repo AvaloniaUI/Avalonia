@@ -562,6 +562,23 @@ namespace Avalonia.Media.TextFormatting
                 _glyphRef, prefixRef, startsRef, startIdx, count, _cacheGeneration);
         }
 
+        /// <summary>
+        /// Creates a deep copy backed by a fresh, non-pooled <see cref="GlyphInfo"/> array so the
+        /// copy's advances can be mutated (e.g. by justification) without touching glyph storage
+        /// shared with a <see cref="TextRunCache"/> entry, a <see cref="Split"/> sibling or a
+        /// <see cref="WithBidiLevel"/> alias. The copy owns no ref-counted pooled handles (its
+        /// <c>_glyphRef</c> is null) and builds its own cluster cache lazily.
+        /// </summary>
+        internal ShapedBuffer CloneWritable()
+        {
+            var span = _glyphInfos.Span;
+            var glyphs = new GlyphInfo[span.Length];
+
+            span.CopyTo(glyphs);
+
+            return new ShapedBuffer(Text, new ArraySlice<GlyphInfo>(glyphs), GlyphTypeface, FontRenderingEmSize, BidiLevel);
+        }
+
         int IReadOnlyCollection<GlyphInfo>.Count => _glyphInfos.Length;
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

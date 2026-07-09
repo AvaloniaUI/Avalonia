@@ -9,8 +9,8 @@ namespace Avalonia.Controls.PullToRefresh
     {
         internal const double DefaultExecutionRatio = 0.8;
 
-        private readonly PullDirection _refreshPullDirection;
-        private readonly Size _refreshVisualizerSize;
+        private PullDirection _refreshPullDirection;
+        private Size _refreshVisualizerSize;
 
         private readonly CompositionVisual? _visual;
         private bool _isInteractingForRefresh;
@@ -29,6 +29,14 @@ namespace Avalonia.Controls.PullToRefresh
         public static readonly DirectProperty<RefreshInfoProvider, double> InteractionRatioProperty =
             AvaloniaProperty.RegisterDirect<RefreshInfoProvider, double>(nameof(InteractionRatio),
                 s => s.InteractionRatio, (s, o) => s.InteractionRatio = o);
+
+        public static readonly DirectProperty<RefreshInfoProvider, PullDirection> PullDirectionProperty =
+            AvaloniaProperty.RegisterDirect<RefreshInfoProvider, PullDirection>(nameof(PullDirection),
+                s => s.PullDirection, (s, o) => s.PullDirection = o);
+
+        public static readonly DirectProperty<RefreshInfoProvider, Size> RefreshVisualizerSizeProperty =
+            AvaloniaProperty.RegisterDirect<RefreshInfoProvider, Size>(nameof(RefreshVisualizerSize),
+                s => s.RefreshVisualizerSize, (s, o) => s.RefreshVisualizerSize = o);
 
         /// <summary>
         /// Defines the <see cref="RefreshStarted"/> event.
@@ -54,6 +62,17 @@ namespace Avalonia.Controls.PullToRefresh
                 if (isInteractingForRefresh != _isInteractingForRefresh)
                 {
                     SetAndRaise(IsInteractingForRefreshProperty, ref _isInteractingForRefresh, isInteractingForRefresh);
+
+                    // Keep _entered in sync with IsInteractingForRefresh.
+                    // The flag can be cleared by paths other than PullGestureEnded
+                    // (ScrollViewer_ScrollChanged / ScrollViewer_PointerReleased on the adapter).
+                    // Without this, InteractingStateEntered would short-circuit and never
+                    // re-assert the flag for the rest of the gesture, leaving the visualizer
+                    // stuck in Idle and the spinner invisible until the next gesture.
+                    if (!isInteractingForRefresh)
+                    {
+                        _entered = false;
+                    }
                 }
             }
         }
@@ -62,6 +81,18 @@ namespace Avalonia.Controls.PullToRefresh
         {
             get => _interactionRatio;
             set => SetAndRaise(InteractionRatioProperty, ref _interactionRatio, value);
+        }
+
+        public Size RefreshVisualizerSize
+        {
+            get => _refreshVisualizerSize;
+            set => SetAndRaise(RefreshVisualizerSizeProperty, ref _refreshVisualizerSize, value);
+        }
+
+        public PullDirection PullDirection
+        {
+            get => _refreshPullDirection;
+            set => SetAndRaise(PullDirectionProperty, ref _refreshPullDirection, value);
         }
 
         public double ExecutionRatio
@@ -130,7 +161,7 @@ namespace Avalonia.Controls.PullToRefresh
                     break;
                 case PullDirection.LeftToRight:
                 case PullDirection.RightToLeft:
-                    InteractionRatio = _refreshVisualizerSize.Height == 0 ? 1 : Math.Min(1, value.X / _refreshVisualizerSize.Width);
+                    InteractionRatio = _refreshVisualizerSize.Width == 0 ? 1 : Math.Min(1, value.X / _refreshVisualizerSize.Width);
                     break;
             }
         }
