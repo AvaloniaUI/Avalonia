@@ -1960,9 +1960,7 @@ namespace Avalonia.Controls
             if (_pageTransitionMeasureConstraint is not { } constraint)
                 return availableSize;
 
-            return new Size(
-                Math.Min(availableSize.Width, constraint.Width),
-                Math.Min(availableSize.Height, constraint.Height));
+            return availableSize.Constrain(constraint);
         }
 
         private Size? GetPageTransitionMeasureConstraint()

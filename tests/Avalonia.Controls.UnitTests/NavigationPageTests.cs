@@ -2441,19 +2441,29 @@ public class NavigationPageTests
             Assert.False(navigatedToDuringTransition);
         }
 
-        [Fact]
-        public async Task ReplaceAsync_Does_Not_Measure_Virtualized_Page_With_Unbounded_Size_During_Transition()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ReplaceAsync_Does_Not_Measure_Virtualized_Page_With_Unbounded_Size_During_Transition(
+            bool virtualizedPageIsOutgoing)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var tcs = new TaskCompletionSource();
                 var nav = CreateNavigationPage(null, out var root, new Size(400, 300));
-                await nav.PushAsync(CreateContentPage(new TextBlock { Text = "Root" }));
+                var listBox = CreateVirtualizedListBox();
+                var simpleContent = new TextBlock { Text = "Simple page" };
+                Control outgoingContent = virtualizedPageIsOutgoing ? listBox : simpleContent;
+                Control incomingContent = virtualizedPageIsOutgoing ? simpleContent : listBox;
+
+                await nav.PushAsync(CreateContentPage(outgoingContent));
                 root.LayoutManager.ExecuteLayoutPass();
 
+                if (virtualizedPageIsOutgoing)
+                    Assert.InRange(listBox.GetRealizedContainers().Count(), 1, 100);
+
                 nav.PageTransition = new ControllableTransition(tcs.Task);
-                var listBox = CreateVirtualizedListBox();
-                var replaceTask = nav.ReplaceAsync(CreateContentPage(listBox));
+                var replaceTask = nav.ReplaceAsync(CreateContentPage(incomingContent));
 
                 try
                 {
@@ -2464,7 +2474,51 @@ public class NavigationPageTests
 
                     var realizedDuringTransition = listBox.GetRealizedContainers().Count();
                     Assert.InRange(realizedDuringTransition, 1, 100);
-                    Assert.InRange(listBox.DesiredSize.Height, 1, root.ClientSize.Height);
+                    if (!virtualizedPageIsOutgoing)
+                        Assert.InRange(listBox.DesiredSize.Height, 1, root.ClientSize.Height);
+                }
+                finally
+                {
+                    tcs.TrySetResult();
+                    await replaceTask;
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ReplaceAsync_Does_Not_Constrain_Measure_After_Transition_Cleanup(bool cancelTransition)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var tcs = new TaskCompletionSource();
+                var nav = CreateNavigationPage(null, out var root, new Size(400, 300));
+                await nav.PushAsync(CreateContentPage(new TextBlock { Text = "Root" }));
+                root.LayoutManager.ExecuteLayoutPass();
+
+                nav.PageTransition = new ControllableTransition(tcs.Task);
+                var content = new MeasureConstraintControl();
+                var replaceTask = nav.ReplaceAsync(CreateContentPage(content));
+
+                try
+                {
+                    Assert.False(replaceTask.IsCompleted);
+
+                    nav.InvalidateMeasure();
+                    nav.Measure(Size.Infinity);
+                    Assert.True(double.IsFinite(content.MeasureConstraint.Width));
+                    Assert.True(double.IsFinite(content.MeasureConstraint.Height));
+
+                    if (cancelTransition)
+                        root.Child = null;
+                    else
+                        tcs.SetResult();
+
+                    await replaceTask;
+                    nav.Measure(Size.Infinity);
+
+                    Assert.Equal(Size.Infinity, content.MeasureConstraint);
                 }
                 finally
                 {
@@ -2599,9 +2653,20 @@ public class NavigationPageTests
             {
                 if (to != null)
                     to.IsVisible = true;
-                await _gate;
+                await _gate.WaitAsync(cancellationToken);
                 if (from != null)
                     from.IsVisible = false;
+            }
+        }
+
+        private class MeasureConstraintControl : Control
+        {
+            public Size MeasureConstraint { get; private set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                MeasureConstraint = availableSize;
+                return new Size(800, 600).Constrain(availableSize);
             }
         }
     }
