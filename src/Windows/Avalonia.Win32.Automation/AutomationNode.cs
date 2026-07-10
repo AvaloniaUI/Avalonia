@@ -11,7 +11,6 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Avalonia.Win32.Automation.Interop;
 using AAP = Avalonia.Automation.Provider;
 using UIA = Avalonia.Win32.Automation.Interop;
@@ -76,18 +75,7 @@ namespace Avalonia.Win32.Automation
 
         public virtual Rect GetBoundingRectangle()
         {
-            return InvokeSync(() =>
-            {
-                if (Peer.GetVisualRoot() is ControlAutomationPeer root &&
-                    root.Owner.GetPresentationSource() is not null)
-                {
-                    var originalRect = Peer.GetBoundingRectangle();
-                    return new PixelRect(root.Owner.PointToScreen(originalRect.TopLeft),
-                        root.Owner.PointToScreen(originalRect.BottomRight)).ToRect(1);
-                }
-
-                return default;
-            });
+            return InvokeSync(() => Peer.ToScreen(Peer.GetBoundingRectangle()) ?? default);
         }
 
         public virtual IRawElementProviderFragmentRoot? GetFragmentRoot()
