@@ -2,7 +2,8 @@
         xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluent="using:Avalonia.Themes.Fluent2"
-        xmlns:accents="using:Avalonia.Themes.Fluent2.Accents">
+        xmlns:accents="using:Avalonia.Themes.Fluent2.Accents"
+        xmlns:strings="using:Avalonia.Themes.Fluent2.Strings">
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -13,11 +14,17 @@
         <accents:SystemAccentColors />
         <fluent:ColorPaletteResourcesCollection />
 
-        <!-- Resources and brushes will be merged into current dictionary for slightly better performance and possible optimizations -->
+        <!-- Invariant strings, then culture-aware overrides: the provider is merged after the
+             invariant dictionary so a translation for the current UI culture wins, and it
+             returns false for untranslated cultures, falling back to invariant. -->
+        <ResourceInclude Source="/Strings/InvariantResources.xaml" />
+        <strings:LocalizedStringsProvider />
+
+        <!-- Resources and brushes will be merged into current dictionary for slightly better
+             performance and possible optimizations (MergeResourceInclude must come last) -->
         <MergeResourceInclude Source="/Accents/BaseResources.xaml" />
         <MergeResourceInclude Source="/Accents/Fluent2TokenResources.xaml" />
         <MergeResourceInclude Source="/Accents/FluentControlResources.xaml" />
-        <MergeResourceInclude Source="/Strings/InvariantResources.xaml" />
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->

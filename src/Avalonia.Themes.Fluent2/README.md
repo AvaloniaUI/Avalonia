@@ -61,6 +61,17 @@ The full WinUI 3 token family (`TextFillColor*`, `ControlFillColor*`,
 border brushes, acrylic fallbacks) is available for app use alongside the
 legacy `SystemControl*` aliases.
 
+## Localization
+
+DatePicker/TimePicker field names and the text-selection flyout labels
+(Cut/Copy/Paste) are localized for the ~85 languages WinUI ships, resolved
+against `CultureInfo.CurrentUICulture` with per-key fallback to the invariant
+English values. Data sources: Unicode CLDR date-field display names
+(Unicode-3.0 license) and microsoft-ui-xaml's CommandBarFlyout resources (MIT).
+Regenerate `Strings/LocalizedControlStrings.cs` with
+`Strings/generate-localized-strings.py`. ManagedFileChooser strings remain
+English-only for now.
+
 ## Known scope limitations
 
 - Acrylic/Mica surfaces ship as their solid fallback colors (WinUI's own
