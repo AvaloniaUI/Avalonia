@@ -17,6 +17,7 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="geometry">The geometry in global coordinates.</param>
         /// <returns>The <see cref="IntersectionDetail"/> describing the intersecting between the hit geometry and the node's geometry.</returns>
+        /// <remarks>
         /// This method does not recurse to childs, if you want
         /// to hit test children they must be hit tested manually.
         /// </remarks>
