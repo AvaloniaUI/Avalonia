@@ -45,22 +45,25 @@
                             Padding="{TemplateBinding Padding}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
-          <!-- Selection pill: WinUI animates its height 0 -> 16 over 167ms when the item is selected.
-               ListViewItemSelectionIndicatorBrush is not aliased in this theme yet, so the
-               Fluent 2 token AccentFillColorDefaultBrush is referenced directly. -->
+          <!-- Selection pill: WinUI animates its height 0 -> 16 over 167ms when the item is selected;
+               expressed here as a scaleY render transform so the animation doesn't run layout every
+               frame (technique from FluentAvalonia). ListViewItemSelectionIndicatorBrush is not aliased
+               in this theme yet, so the Fluent 2 token AccentFillColorDefaultBrush is referenced directly. -->
           <Rectangle Name="SelectionIndicator"
                      IsVisible="False"
                      Width="3"
-                     Height="0"
+                     Height="16"
                      RadiusX="1.5"
                      RadiusY="1.5"
                      HorizontalAlignment="Left"
                      VerticalAlignment="Center"
                      IsHitTestVisible="False"
+                     UseLayoutRounding="False"
+                     RenderTransform="scaleY(0)"
                      Fill="{DynamicResource AccentFillColorDefaultBrush}">
             <Rectangle.Transitions>
               <Transitions>
-                <DoubleTransition Property="Height" Duration="0:0:0.167" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.167" Easing="0,0 0,1" />
               </Transitions>
             </Rectangle.Transitions>
           </Rectangle>
@@ -94,7 +97,7 @@
 
       <Style Selector="^ /template/ Rectangle#SelectionIndicator">
         <Setter Property="IsVisible" Value="True" />
-        <Setter Property="Height" Value="16" />
+        <Setter Property="RenderTransform" Value="scaleY(1)" />
       </Style>
 
       <Style Selector="^:disabled /template/ Rectangle#SelectionIndicator">

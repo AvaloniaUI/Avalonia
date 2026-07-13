@@ -114,7 +114,8 @@
                                   Margin="{TemplateBinding Padding}" />
               </Grid>
               <!-- WinUI selection indicator pill: 3x16, fully rounded ends, accent fill,
-                   pinned to the left edge of the row (before indentation). -->
+                   pinned to the left edge of the row (before indentation). Scale-animated
+                   like the ListBoxItem one. -->
               <Rectangle Name="SelectionIndicator"
                          Width="3"
                          Height="16"
@@ -123,7 +124,15 @@
                          Fill="{DynamicResource AccentFillColorDefaultBrush}"
                          HorizontalAlignment="Left"
                          VerticalAlignment="Center"
-                         IsVisible="False" />
+                         UseLayoutRounding="False"
+                         RenderTransform="scaleY(0)"
+                         IsVisible="False">
+                <Rectangle.Transitions>
+                  <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.167" Easing="0,0 0,1" />
+                  </Transitions>
+                </Rectangle.Transitions>
+              </Rectangle>
             </Panel>
           </Border>
           <ItemsPresenter Name="PART_ItemsPresenter"
@@ -199,6 +208,7 @@
     <!--  Selection indicator pill (WinUI SelectionIndicator)  -->
     <Style Selector="^:selected /template/ Rectangle#SelectionIndicator">
       <Setter Property="IsVisible" Value="True" />
+      <Setter Property="RenderTransform" Value="scaleY(1)" />
     </Style>
     <Style Selector="^:disabled /template/ Rectangle#SelectionIndicator">
       <Setter Property="Fill" Value="{DynamicResource TextFillColorDisabledBrush}" />

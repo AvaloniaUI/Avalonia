@@ -232,6 +232,11 @@
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <!-- WinUI slides the content open with a height animation, which Avalonia's Expander can't
+         express in XAML; a cross-fade is the pragmatic desktop default (as in FluentAvalonia). -->
+    <Setter Property="ContentTransition">
+      <CrossFade Duration="0:0:0.25" />
+    </Setter>
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel MinWidth="{TemplateBinding MinWidth}"

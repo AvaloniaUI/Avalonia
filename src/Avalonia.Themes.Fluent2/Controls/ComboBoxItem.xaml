@@ -46,21 +46,24 @@
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             Padding="{TemplateBinding Padding}" />
-          <!-- Selection pill: ComboBoxItemPillFillBrush is not aliased in this theme yet, so the
-               Fluent 2 token AccentFillColorDefaultBrush is referenced directly. -->
+          <!-- Selection pill, scale-animated like the ListBoxItem one. ComboBoxItemPillFillBrush is
+               not aliased in this theme yet, so the Fluent 2 token AccentFillColorDefaultBrush is
+               referenced directly. -->
           <Rectangle Name="SelectionIndicator"
                      IsVisible="False"
                      Width="{DynamicResource ComboBoxItemPillWidth}"
-                     Height="0"
+                     Height="{DynamicResource ComboBoxItemPillHeight}"
                      RadiusX="1.5"
                      RadiusY="1.5"
                      HorizontalAlignment="Left"
                      VerticalAlignment="Center"
                      IsHitTestVisible="False"
+                     UseLayoutRounding="False"
+                     RenderTransform="scaleY(0)"
                      Fill="{DynamicResource AccentFillColorDefaultBrush}">
             <Rectangle.Transitions>
               <Transitions>
-                <DoubleTransition Property="Height" Duration="0:0:0.167" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.167" Easing="0,0 0,1" />
               </Transitions>
             </Rectangle.Transitions>
           </Rectangle>
@@ -98,7 +101,7 @@
       </Style>
       <Style Selector="^ /template/ Rectangle#SelectionIndicator">
         <Setter Property="IsVisible" Value="True" />
-        <Setter Property="Height" Value="{DynamicResource ComboBoxItemPillHeight}" />
+        <Setter Property="RenderTransform" Value="scaleY(1)" />
       </Style>
       <!--  Selected Disabled state  -->
       <Style Selector="^:disabled /template/ ContentPresenter">
