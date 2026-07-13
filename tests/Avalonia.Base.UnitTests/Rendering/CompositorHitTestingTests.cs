@@ -445,6 +445,42 @@ public class CompositorHitTestingTests : CompositorTestsBase
     }
     
     [Fact]
+    public void Removing_ICustomHitTest_Child_Should_Restore_SubTree_Bounds_Optimization()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            var custom = new CustomHitTestBorder
+            {
+                Width = 100,
+                Height = 100,
+                Background = Brushes.Red
+            };
+            var container = new Panel
+            {
+                Width = 200,
+                Height = 200,
+                Children = { custom }
+            };
+
+            s.TopLevel.Content = container;
+            s.RunJobs();
+
+            var containerVisual = ElementComposition.GetElementVisual(container);
+            Assert.NotNull(containerVisual);
+
+            // While the subtree contains an ICustomHitTest visual, the bounds-based optimization must be disabled.
+            Assert.True(containerVisual!.DisableSubTreeBoundsHitTestOptimization);
+
+            container.Children.Remove(custom);
+            s.RunJobs();
+
+            // Once the custom hit test visual leaves the subtree, the accounting must return to zero and re-enable
+            // the optimization. A sign bug when attaching to a new parent leaves the count stuck at a non-zero value.
+            Assert.False(containerVisual.DisableSubTreeBoundsHitTestOptimization);
+        }
+    }
+
+    [Fact]
     public void HitTest_Should_Not_Hit_Controls_Next_Pixel()
     {
         using (var s = new CompositorTestServices(new Size(200, 200)))
