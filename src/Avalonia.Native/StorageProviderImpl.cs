@@ -14,15 +14,22 @@ internal sealed class StorageProviderImpl(TopLevelImpl topLevel, StorageProvider
 
     public bool CanPickFolder => true;
 
-    public Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+    public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
-        return native.OpenFileDialog(topLevel, options);
+        var result = await OpenFilePickerWithResultAsync(options).ConfigureAwait(false);
+        return result.Files;
+    }
+
+    public async Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options)
+    {
+        var (files, selectedType) = await native.OpenFileDialog(topLevel, options).ConfigureAwait(false);
+        return new OpenFilePickerResult { Files = files, SelectedFileType = selectedType };
     }
 
     public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
-        var (file, _) = await native.SaveFileDialog(topLevel, options).ConfigureAwait(false);
-        return file;
+        var result = await SaveFilePickerWithResultAsync(options).ConfigureAwait(false);
+        return result.File;
     }
 
     public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)

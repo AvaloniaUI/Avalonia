@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.Native
@@ -20,7 +21,7 @@ namespace Avalonia.Native
 
             public void Save(Stream outputStream)
             {
-                _bitmap.Save(outputStream);
+                _bitmap.Save(outputStream, PngBitmapEncoderOptions.Default);
             }
         }
 
@@ -39,7 +40,7 @@ namespace Avalonia.Native
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
             var ms = new MemoryStream();
-            bitmap.Save(ms);
+            bitmap.Save(ms, PngBitmapEncoderOptions.Default);
             ms.Seek(0, SeekOrigin.Begin);
             return LoadIcon(ms);
         }

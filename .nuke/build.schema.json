@@ -33,6 +33,7 @@
         "CompileNative",
         "CreateIntermediateNugetPackages",
         "CreateNugetPackages",
+        "CreateSbom",
         "DownloadApiBaselinePackages",
         "GenerateCppHeaders",
         "GenerateUnicodeData",

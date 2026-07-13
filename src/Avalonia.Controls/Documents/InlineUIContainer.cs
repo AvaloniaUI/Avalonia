@@ -66,6 +66,10 @@ namespace Avalonia.Controls.Documents
 
         internal override void AppendText(StringBuilder stringBuilder)
         {
+            // EmbeddedControlRun occupies one position in TextLayout (TextRun.DefaultTextSourceLength = 1).
+            // Append the Unicode Object Replacement Character so that Inlines.Text stays in sync with
+            // the character offsets returned by TextLayout.HitTestPoint.
+            stringBuilder.Append('\uFFFC');
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

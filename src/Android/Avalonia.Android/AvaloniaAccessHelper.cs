@@ -8,13 +8,42 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
-using Avalonia.Controls;
 using Java.Lang;
 
 namespace Avalonia.Android
 {
     internal class AvaloniaAccessHelper : ExploreByTouchHelper
     {
+        private static readonly HashSet<AutomationControlType> s_containerTypes =
+            new HashSet<AutomationControlType>()
+            {
+                AutomationControlType.Calendar,
+                AutomationControlType.ComboBoxItem,
+                AutomationControlType.Custom,
+                AutomationControlType.DataGrid,
+                AutomationControlType.DataItem,
+                AutomationControlType.Document,
+                AutomationControlType.Expander,
+                AutomationControlType.Group,
+                AutomationControlType.List,
+                AutomationControlType.ListItem,
+                AutomationControlType.Menu,
+                AutomationControlType.MenuBar,
+                AutomationControlType.MenuItem,
+                AutomationControlType.None,
+                AutomationControlType.Pane,
+                AutomationControlType.ScrollViewer,
+                AutomationControlType.SplitButton,
+                AutomationControlType.Tab,
+                AutomationControlType.TabItem,
+                AutomationControlType.Table,
+                AutomationControlType.TitleBar,
+                AutomationControlType.ToolBar,
+                AutomationControlType.Tree,
+                AutomationControlType.TreeItem,
+                AutomationControlType.Window,
+            };
+
         private readonly Dictionary<int, AutomationPeer> _peers;
         private readonly Dictionary<AutomationPeer, int> _peerIds;
 
@@ -82,19 +111,19 @@ namespace Avalonia.Android
                     }
                 };
 
-                if (peer is IExpandCollapseProvider)
+                if (peer.GetProvider<IExpandCollapseProvider>() is not null)
                     nodeInfoProviders.Add(new ExpandCollapseNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IInvokeProvider)
+                if (peer.GetProvider<IInvokeProvider>() is not null)
                     nodeInfoProviders.Add(new InvokeNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IRangeValueProvider)
+                if (peer.GetProvider<IRangeValueProvider>() is not null)
                     nodeInfoProviders.Add(new RangeValueNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IScrollProvider)
+                if (peer.GetProvider<IScrollProvider>() is not null)
                     nodeInfoProviders.Add(new ScrollNodeInfoProvider(this, peer, peerViewId));
-                if (peer is ISelectionItemProvider)
+                if (peer.GetProvider<ISelectionItemProvider>() is not null)
                     nodeInfoProviders.Add(new SelectionItemNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IToggleProvider)
+                if (peer.GetProvider<IToggleProvider>() is not null)
                     nodeInfoProviders.Add(new ToggleNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IValueProvider)
+                if (peer.GetProvider<IValueProvider>() is not null)
                     nodeInfoProviders.Add(new ValueNodeInfoProvider(this, peer, peerViewId));
             }
 
@@ -109,7 +138,17 @@ namespace Avalonia.Android
             AutomationPeer? peer = embeddedRootProvider?.GetPeerFromPoint(p);
             if (peer is not null)
             {
-                GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
+                int virtualViewId;
+                if (peer.GetParent() is AutomationPeer parent && 
+                    !s_containerTypes.Contains(parent.GetAutomationControlType()))
+                {
+                    GetOrCreateNodeInfoProvidersFromPeer(parent, out virtualViewId);
+                }
+                else
+                {
+                    GetOrCreateNodeInfoProvidersFromPeer(peer, out virtualViewId);
+                }
+
                 return virtualViewId == 0 ? InvalidId : virtualViewId;
             }
             else
@@ -199,7 +238,7 @@ namespace Avalonia.Android
             nodeInfo.Enabled = peer.IsEnabled();
 
             // Control focus state
-            bool canFocusAtAll = peer.IsContentElement() && !peer.IsOffscreen();
+            bool canFocusAtAll = peer.IsControlElement() && !peer.IsOffscreen();
             nodeInfo.ScreenReaderFocusable = canFocusAtAll;
             nodeInfo.Focusable = canFocusAtAll && peer.IsKeyboardFocusable();
 
