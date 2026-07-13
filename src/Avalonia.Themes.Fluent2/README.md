@@ -5,8 +5,7 @@ language** (the design system Microsoft shipped with Windows 11), built as a
 **drop-in replacement** for `Avalonia.Themes.Fluent`.
 
 Reference implementation: the WinUI 3 resource dictionaries (release 1.5.2
-baseline, individual controls up to 1.8.x) as ported by Uno Platform's
-`Uno.UI.FluentTheme.v2`.
+baseline, individual controls up to 1.8.x). Used `Uno.UI.FluentTheme.v2` and `FluentAvalonia` as inspiration. 
 
 ## Usage
 
