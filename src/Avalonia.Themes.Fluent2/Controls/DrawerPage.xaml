@@ -10,41 +10,140 @@
     </DrawerPage>
   </Design.PreviewWith>
 
+  <!-- WinUI 3 mapping (NavigationView.xaml / NavigationView_themeresources.xaml):
+       DrawerPage plays the role of NavigationView. Display modes map to pane display modes -
+       Inline = Left (expanded), CompactInline/CompactOverlay = LeftCompact, Overlay = LeftMinimal.
+       The three anatomy rules ported from WinUI:
+       1. The hamburger toggle lives at the top of the pane (PaneToggleButtonStyle, 40x36,
+          margin 4,2 inside a 0,4 button-holder row), not in a chrome bar over the content.
+          Only LeftMinimal (Overlay) keeps a transparent toggle strip above the content.
+       2. The content area is a "layer" card: LayerFillColorDefault fill, CardStrokeColorDefault
+          1,1,0,0 stroke, OverlayCornerRadius on the pane-side top corner. Minimal/top-nav modes
+          flatten it to a 0,1,0,0 hairline with no rounding.
+       3. The pane is transparent when it does not overlay content (PaneNotOverlaying state) and
+          uses the in-app acrylic fill (solid fallback here) while overlaying. No smoke dim -
+          light dismiss is a transparent hit-target, as in WinUI. -->
+
+  <!-- Fluent E700 GlobalNavigationButton hamburger, drawn on a 24x24 grid. -->
   <StreamGeometry x:Key="DrawerPaneButtonIcon">M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z</StreamGeometry>
 
+  <!-- Kept from v1 for resource-key parity; the strip is transparent in the WinUI 3 look. -->
   <x:Double x:Key="NavigationControlNavBarHeight">48</x:Double>
-  <SolidColorBrush x:Key="NavigationControlNavBarBackground" Color="{DynamicResource SolidBackgroundFillColorBaseAlt}" />
+  <SolidColorBrush x:Key="NavigationControlNavBarBackground" Color="Transparent" />
+
+  <!-- WinUI 3 NavigationView metrics, verbatim. -->
+  <x:Double x:Key="PaneToggleButtonWidth">40</x:Double>
+  <x:Double x:Key="PaneToggleButtonHeight">36</x:Double>
+  <Thickness x:Key="NavigationViewItemButtonMargin">4,2</Thickness>
+  <Thickness x:Key="NavigationViewButtonHolderGridMargin">0,4</Thickness>
+  <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
+  <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
+  <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0,1,0,0</Thickness>
+  <CornerRadius x:Key="NavigationViewMinimalContentGridCornerRadius">0</CornerRadius>
+  <Thickness x:Key="TopNavigationViewContentGridBorderThickness">0,1,0,0</Thickness>
+  <CornerRadius x:Key="TopNavigationViewContentGridCornerRadius">0</CornerRadius>
+
+  <!-- WinUI 3 NavigationView brushes. Colors track the palette tokens so ColorPaletteResources
+       and token overrides flow through. -->
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="NavigationViewContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="NavigationViewContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <!-- WinUI PaneToggleButtonStyle: 40x36 minimum, transparent rest state, subtle fills on
+       hover/press, ControlCornerRadius, 16px glyph. Checked (= drawer open) renders like rest,
+       matching the stateless WinUI pane toggle Button. -->
+  <ControlTheme x:Key="Fluent2DrawerPaneToggleButton" TargetType="ToggleButton">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="MinWidth" Value="{DynamicResource PaneToggleButtonWidth}" />
+    <Setter Property="MinHeight" Value="{DynamicResource PaneToggleButtonHeight}" />
+    <!-- NavigationViewButtonHolderGridMargin 0,4 + NavigationViewItemButtonMargin 4,2 -->
+    <Setter Property="Margin" Value="4,6" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Padding="{TemplateBinding Padding}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+    </Style>
+  </ControlTheme>
 
   <ControlTheme x:Key="{x:Type DrawerPage}" TargetType="DrawerPage">
-    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
+    <!-- Content chrome = WinUI ContentGrid: layer fill, card stroke, rounded pane-side corner.
+         Flows onto PART_ContentPresenter through the standard template bindings. -->
+    <Setter Property="Background" Value="{DynamicResource NavigationViewContentBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource NavigationViewContentGridBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource NavigationViewContentGridBorderThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource NavigationViewContentGridCornerRadius}" />
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-    <!-- Smoke layer shown behind the drawer in the overlay display modes. -->
-    <Setter Property="BackdropBrush" Value="{DynamicResource SmokeFillColorDefaultBrush}" />
+    <!-- WinUI overlay panes light-dismiss without dimming; a transparent brush keeps the
+         click-outside-to-close hit target without the smoke. -->
+    <Setter Property="BackdropBrush" Value="Transparent" />
     <Setter Property="Template">
       <ControlTemplate>
         <SplitView Name="PART_SplitView"
                    DisplayMode="{TemplateBinding DisplayMode}"
                    OpenPaneLength="{TemplateBinding DrawerLength}"
                    CompactPaneLength="{TemplateBinding CompactDrawerLength}"
-                   PaneBackground="{Binding DrawerBackground, RelativeSource={RelativeSource TemplatedParent}}"
+                   PaneBackground="{Binding DrawerBackground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={StaticResource NavigationViewExpandedPaneBackground}}"
                    IsPaneOpen="{Binding IsOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
           <SplitView.Pane>
-            <DockPanel Background="{TemplateBinding DrawerBackground}">
-              <!-- Compact-mode toggle: visible only in CompactOverlay/CompactInline. -->
+            <DockPanel>
+              <!-- WinUI TogglePaneButton: anchored at the pane top in every left display mode;
+                   in the compact strip it doubles as the strip toggle. -->
               <ToggleButton Name="PART_CompactPaneToggle"
+                            Theme="{StaticResource Fluent2DrawerPaneToggleButton}"
                             DockPanel.Dock="Top"
                             IsChecked="{Binding #PART_SplitView.IsPaneOpen, Mode=TwoWay}"
-                            Background="Transparent"
-                            IsVisible="False"
-                            HorizontalAlignment="Left"
-                            Width="{TemplateBinding CompactDrawerLength}"
-                            Height="{TemplateBinding CompactDrawerLength}"
                             AutomationProperties.Name="Toggle navigation drawer"
                             ToolTip.Tip="Toggle navigation drawer">
                 <Panel>
                   <PathIcon
                     IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
                     Data="{DynamicResource DrawerPaneButtonIcon}"
+                    Width="16"
+                    Height="16"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>
                   <ContentPresenter
@@ -78,27 +177,17 @@
           <Grid HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
             <DockPanel Name="PART_ContentDock">
+              <!-- LeftMinimal-only toggle strip: transparent, no divider; the layer card's
+                   0,1,0,0 hairline provides the separation, as in WinUI. -->
               <Border
                 Name="PART_TopBar"
-                Padding="5"
                 Height="{DynamicResource NavigationControlNavBarHeight}"
                 Background="{DynamicResource NavigationControlNavBarBackground}"
-                BackgroundSizing="InnerBorderEdge"
-                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
-                BorderThickness="0,0,0,1"
                 DockPanel.Dock="Top">
                 <DockPanel HorizontalAlignment="Stretch">
-                  <DockPanel.Styles>
-                    <Styles>
-                      <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background"
-                                Value="Transparent" />
-                      </Style>
-                    </Styles>
-                  </DockPanel.Styles>
                   <ToggleButton x:Name="PART_PaneButton"
+                                Theme="{StaticResource Fluent2DrawerPaneToggleButton}"
                                 IsChecked="{Binding #PART_SplitView.IsPaneOpen, Mode=TwoWay}"
-                                Background="Transparent"
                                 DockPanel.Dock="Left"
                                 AutomationProperties.Name="Toggle navigation drawer"
                                 ToolTip.Tip="Toggle navigation drawer">
@@ -106,6 +195,8 @@
                       <PathIcon
                         IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
                         Data="{DynamicResource DrawerPaneButtonIcon}"
+                        Width="16"
+                        Height="16"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
                       <ContentPresenter
@@ -130,26 +221,14 @@
               </Border>
               <Border
                 Name="PART_BottomBar"
-                Padding="5"
                 Height="{DynamicResource NavigationControlNavBarHeight}"
                 Background="{DynamicResource NavigationControlNavBarBackground}"
-                BackgroundSizing="InnerBorderEdge"
-                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,0"
                 DockPanel.Dock="Bottom"
                 IsVisible="False">
                 <DockPanel HorizontalAlignment="Stretch">
-                  <DockPanel.Styles>
-                    <Styles>
-                      <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background"
-                                Value="Transparent" />
-                      </Style>
-                    </Styles>
-                  </DockPanel.Styles>
                   <ToggleButton x:Name="PART_BottomPaneButton"
+                                Theme="{StaticResource Fluent2DrawerPaneToggleButton}"
                                 IsChecked="{Binding #PART_SplitView.IsPaneOpen, Mode=TwoWay}"
-                                Background="Transparent"
                                 DockPanel.Dock="Left"
                                 AutomationProperties.Name="Toggle navigation drawer"
                                 ToolTip.Tip="Toggle navigation drawer">
@@ -157,6 +236,8 @@
                       <PathIcon
                         IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
                         Data="{DynamicResource DrawerPaneButtonIcon}"
+                        Width="16"
+                        Height="16"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
                       <ContentPresenter
@@ -198,6 +279,48 @@
       </ControlTemplate>
     </Setter>
 
+    <!-- Pane surface while overlaying content (WinUI PaneOverlaying state):
+         in-app acrylic fill (solid fallback). The SplitView theme supplies the rounded free
+         edge and flyout stroke. A user-set DrawerBackground wins over both states. -->
+    <Style Selector="^[DisplayMode=Overlay] /template/ SplitView#PART_SplitView:open">
+      <Setter Property="PaneBackground" Value="{DynamicResource NavigationViewDefaultPaneBackground}" />
+    </Style>
+    <Style Selector="^[DisplayMode=CompactOverlay] /template/ SplitView#PART_SplitView:open">
+      <Setter Property="PaneBackground" Value="{DynamicResource NavigationViewDefaultPaneBackground}" />
+    </Style>
+
+    <!-- The toggle strip exists only in the Overlay (LeftMinimal) display mode; every other
+         mode hosts the toggle inside the pane. -->
+    <Style Selector="^[DisplayMode=Inline] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^[DisplayMode=CompactInline] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^[DisplayMode=CompactOverlay] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- Minimal (Overlay) content chrome: flat hairline, no rounding (WinUI Minimal state). -->
+    <Style Selector="^[DisplayMode=Overlay]">
+      <Setter Property="BorderThickness" Value="{DynamicResource NavigationViewMinimalContentGridBorderThickness}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource NavigationViewMinimalContentGridCornerRadius}" />
+    </Style>
+
+    <!-- Placement variants mirror the pane-side corner/stroke of the content card. -->
+    <Style Selector="^:placement-right">
+      <Setter Property="BorderThickness" Value="0,1,1,0" />
+      <Setter Property="CornerRadius" Value="0,8,0,0" />
+    </Style>
+    <Style Selector="^:placement-top">
+      <Setter Property="BorderThickness" Value="{DynamicResource TopNavigationViewContentGridBorderThickness}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource TopNavigationViewContentGridCornerRadius}" />
+    </Style>
+    <Style Selector="^:placement-bottom">
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="CornerRadius" Value="0" />
+    </Style>
+
     <Style Selector="^:placement-right /template/ ToggleButton#PART_PaneButton">
       <Setter Property="DockPanel.Dock" Value="Right" />
     </Style>
@@ -210,7 +333,10 @@
       <Setter Property="IsVisible" Value="True" />
     </Style>
 
-    <!-- Bottom placement + compact modes: pane compact strip provides toggle, hide bottom bar -->
+    <!-- Bottom placement + non-minimal modes: the pane hosts the toggle, hide the bottom bar -->
+    <Style Selector="^:placement-bottom[DisplayMode=Inline] /template/ Border#PART_BottomBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
     <Style Selector="^:placement-bottom[DisplayMode=CompactOverlay] /template/ Border#PART_BottomBar">
       <Setter Property="IsVisible" Value="False" />
     </Style>
@@ -218,7 +344,7 @@
       <Setter Property="IsVisible" Value="False" />
     </Style>
 
-    <!-- Horizontal pane (Bottom/Top): compact toggle must dock Left so drawer content can fill the rest -->
+    <!-- Horizontal pane (Bottom/Top): pane toggle must dock Left so drawer content can fill the rest -->
     <Style Selector="^:placement-bottom /template/ ToggleButton#PART_CompactPaneToggle">
       <Setter Property="DockPanel.Dock" Value="Left" />
     </Style>
@@ -226,11 +352,17 @@
       <Setter Property="DockPanel.Dock" Value="Left" />
     </Style>
 
+    <!-- No toggle when the drawer cannot be toggled. -->
     <Style Selector="^[DrawerBehavior=Locked] /template/ Border#PART_TopBar">
       <Setter Property="IsVisible" Value="False" />
     </Style>
-
+    <Style Selector="^[DrawerBehavior=Locked] /template/ ToggleButton#PART_CompactPaneToggle">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
     <Style Selector="^[DrawerBehavior=Disabled] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^[DrawerBehavior=Disabled] /template/ ToggleButton#PART_CompactPaneToggle">
       <Setter Property="IsVisible" Value="False" />
     </Style>
 
@@ -238,27 +370,11 @@
       <Setter Property="IsVisible" Value="False" />
     </Style>
 
-    <Style Selector="^[DisplayMode=CompactOverlay] /template/ Border#PART_TopBar">
-      <Setter Property="IsVisible" Value="False" />
-    </Style>
-
-    <Style Selector="^[DisplayMode=CompactOverlay] /template/ ToggleButton#PART_CompactPaneToggle">
-      <Setter Property="IsVisible" Value="True" />
-    </Style>
-
-    <Style Selector="^[DisplayMode=CompactInline] /template/ Border#PART_TopBar">
-      <Setter Property="IsVisible" Value="False" />
-    </Style>
-
-    <Style Selector="^[DisplayMode=CompactInline] /template/ ToggleButton#PART_CompactPaneToggle">
-      <Setter Property="IsVisible" Value="True" />
-    </Style>
-
     <Style Selector="^[IsInNavigationPage=True] /template/ Border#PART_TopBar">
       <Setter Property="IsVisible" Value="False" />
     </Style>
 
-    <!-- NavigationPage already hosts a hamburger toggle — suppress the compact pane toggle. -->
+    <!-- NavigationPage already hosts a hamburger toggle — suppress the pane toggle. -->
     <Style Selector="^:detail-is-navpage /template/ ToggleButton#PART_CompactPaneToggle">
       <Setter Property="IsVisible" Value="False" />
     </Style>

@@ -99,8 +99,8 @@
                        Color="{StaticResource SystemChromeMediumLowColor}" />
       <SolidColorBrush x:Key="SystemControlDisabledListMediumBrush" Color="{StaticResource SystemListMediumColor}" />
       <SolidColorBrush x:Key="SystemControlDisabledTransparentBrush" Color="Transparent" />
-      <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{DynamicResource FocusStrokeColorOuter}" />
-      <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{DynamicResource FocusStrokeColorInner}" />
+      <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{StaticResource FocusStrokeColorOuter}" />
+      <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{StaticResource FocusStrokeColorInner}" />
       <SolidColorBrush x:Key="SystemControlRevealFocusVisualBrush" Color="{DynamicResource SystemAccentColor}" />
       <SolidColorBrush x:Key="SystemControlForegroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
       <SolidColorBrush x:Key="SystemControlForegroundAltHighBrush" Color="{StaticResource SystemAltHighColor}" />
@@ -260,8 +260,8 @@
                        Color="{StaticResource SystemChromeMediumLowColor}" />
       <SolidColorBrush x:Key="SystemControlDisabledListMediumBrush" Color="{StaticResource SystemListMediumColor}" />
       <SolidColorBrush x:Key="SystemControlDisabledTransparentBrush" Color="Transparent" />
-      <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{DynamicResource FocusStrokeColorOuter}" />
-      <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{DynamicResource FocusStrokeColorInner}" />
+      <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{StaticResource FocusStrokeColorOuter}" />
+      <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{StaticResource FocusStrokeColorInner}" />
       <SolidColorBrush x:Key="SystemControlRevealFocusVisualBrush" Color="{DynamicResource SystemAccentColor}" />
       <SolidColorBrush x:Key="SystemControlForegroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
       <SolidColorBrush x:Key="SystemControlForegroundAltHighBrush" Color="{StaticResource SystemAltHighColor}" />

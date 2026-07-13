@@ -1,5 +1,25 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TabbedPageTabItemHeaderForegroundUnselected" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabbedPageTabItemHeaderForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabbedPageTabItemHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="TabbedPageTabStripBackground" ResourceKey="SolidBackgroundFillColorBaseAltBrush" />
+      <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TabbedPageTabItemHeaderForegroundUnselected" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TabbedPageTabItemHeaderForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TabbedPageTabItemHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="TabbedPageTabStripBackground" ResourceKey="SolidBackgroundFillColorBaseAltBrush" />
+      <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
   <Design.PreviewWith>
     <Border Width="400" Height="400">
       <TabbedPage>
@@ -19,16 +39,11 @@
   <!-- Backgrounds -->
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselected" Color="Transparent" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelected" Color="Transparent" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPointerOver" Color="{DynamicResource SubtleFillColorSecondary}" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPointerOver" Color="Transparent" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPressed" Color="{DynamicResource SubtleFillColorTertiary}" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPressed" Color="Transparent" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundDisabled" Color="Transparent" />
 
   <!-- Foregrounds (override via TabbedPageTabItemHeaderForegroundSelected / TabbedPageTabItemHeaderForegroundUnselected resources) -->
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundUnselected" Color="{DynamicResource TextFillColorSecondary}" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelected" Color="{DynamicResource TextFillColorPrimary}" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundDisabled" Color="{DynamicResource TextFillColorDisabled}" />
   <x:Double x:Key="TabbedPageTabItemHeaderPipeThickness">3</x:Double>
   <x:Double x:Key="TabbedPageTabItemHeaderVerticalPipeHeight">18</x:Double>
 
@@ -48,10 +63,8 @@
 
   <!-- Tab strip (bar) styling. Divider edge defaults to the top (Bottom placement);
        the other placements are corrected via TabStripPlacement styles below. -->
-  <SolidColorBrush x:Key="TabbedPageTabStripBackground" Color="{DynamicResource SolidBackgroundFillColorBaseAlt}" />
   <CornerRadius x:Key="TabbedPageTabStripCornerRadius">0</CornerRadius>
   <Thickness x:Key="TabbedPageTabStripBorderThickness">0,1,0,0</Thickness>
-  <SolidColorBrush x:Key="TabbedPageTabStripBorderBrush" Color="{DynamicResource DividerStrokeColorDefault}" />
   <Thickness x:Key="TabbedPageTabStripMargin">0</Thickness>
   <Thickness x:Key="TabbedPageTabStripPadding">0</Thickness>
 

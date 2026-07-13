@@ -112,6 +112,59 @@ public class KeyParityTests
             "Compact density keys missing in Fluent2: " + string.Join(", ", missing));
     }
 
+    [AvaloniaFact]
+    public void Window_scoped_dark_variant_resolves_same_values_as_theme_dark()
+    {
+        // Regression guard: brushes defined outside ThemeDictionaries that wrap
+        // variant-scoped colors anchor to the app variant instead of the consumer's
+        // scope. Every key must resolve identically whether dark is requested at
+        // theme level or via a window-scoped RequestedThemeVariant override.
+        var theme = new Fluent2Theme();
+        var app = Application.Current!;
+        app.Styles.Add(theme);
+        var window = new Window
+        {
+            RequestedThemeVariant = ThemeVariant.Dark,
+            Content = new ContentControl(),
+        };
+        window.Show();
+        try
+        {
+            var control = (ContentControl)window.Content!;
+            var problems = new List<string>();
+            foreach (var key in ThemeResourceWalker.CollectKeys(theme))
+            {
+                if (!((IResourceNode)theme).TryGetResource(key, ThemeVariant.Dark, out var expected))
+                    continue;
+                if (expected is not (IBrush or Color))
+                    continue;
+                control.TryFindResource(key, control.ActualThemeVariant, out var actual);
+                var expectedText = Describe(expected);
+                var actualText = Describe(actual);
+                if (expectedText != actualText)
+                    problems.Add($"{key}: theme-dark={expectedText} window-dark={actualText}");
+            }
+
+            Assert.True(problems.Count == 0,
+                $"{problems.Count} keys resolve differently under window-scoped dark:\n" +
+                string.Join("\n", problems.Take(30)));
+        }
+        finally
+        {
+            window.Close();
+            app.Styles.Remove(theme);
+        }
+    }
+
+    private static string Describe(object? value) => value switch
+    {
+        ISolidColorBrush b => $"solid:{b.Color}",
+        Color c => $"color:{c}",
+        IBrush b => $"{b.GetType().Name}:{b.GetHashCode()}",
+        null => "null",
+        _ => value.GetType().Name,
+    };
+
     private static ResourceDictionary GetCompactStyles(object theme)
     {
         // Both themes stash the keyed CompactStyles dictionary in a private field;
