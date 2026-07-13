@@ -18,6 +18,31 @@ public partial class ColorPaletteResources : ResourceProvider
 {
     private readonly Dictionary<string, Color> _colors = new(StringComparer.InvariantCulture);
 
+    private readonly record struct TokenDerivation(string SourceKey, byte? LightAlpha, byte? DarkAlpha);
+
+    // Legacy palette colors also drive the nearest Fluent 2 (WinUI 3) tokens so that
+    // v1-era palette customization keeps affecting the new visuals. The token's own
+    // per-variant alpha is applied over the user's RGB; a null alpha keeps the user's.
+    // This is a documented heuristic — for exact control override the token keys directly.
+    private static readonly Dictionary<string, TokenDerivation[]> s_tokenDerivations = new(StringComparer.InvariantCulture)
+    {
+        ["TextFillColorPrimary"] = new[] { new TokenDerivation("SystemBaseHighColor", 0xE4, 0xFF) },
+        ["TextFillColorSecondary"] = new[] { new TokenDerivation("SystemBaseMediumHighColor", 0x9E, 0xC5) },
+        ["TextFillColorTertiary"] = new[] { new TokenDerivation("SystemBaseMediumColor", 0x72, 0x87) },
+        ["ControlFillColorDefault"] = new[] { new TokenDerivation("SystemBaseLowColor", 0xB3, 0x0F) },
+        ["ControlFillColorSecondary"] = new[] { new TokenDerivation("SystemBaseLowColor", 0x80, 0x15) },
+        ["ControlFillColorTertiary"] = new[] { new TokenDerivation("SystemBaseLowColor", 0x4D, 0x08) },
+        ["SolidBackgroundFillColorBase"] = new[] { new TokenDerivation("SystemRegionColor", null, null) },
+        ["SolidBackgroundFillColorSecondary"] = new[] { new TokenDerivation("SystemRegionColor", null, null) },
+        ["SolidBackgroundFillColorTertiary"] = new[] { new TokenDerivation("SystemRegionColor", null, null) },
+        ["SolidBackgroundFillColorQuarternary"] = new[]
+        {
+            new TokenDerivation("SystemChromeMediumColor", null, null),
+            new TokenDerivation("SystemRegionColor", null, null),
+        },
+        ["SystemFillColorCritical"] = new[] { new TokenDerivation("SystemErrorTextColor", null, null) },
+    };
+
     public override bool HasResources => _hasAccentColor || _colors.Count > 0;
 
     public override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
@@ -70,6 +95,30 @@ public partial class ColorPaletteResources : ResourceProvider
             {
                 value = color;
                 return true;
+            }
+
+            if (TryGetDerivedTokenColor(strKey, theme, out value))
+            {
+                return true;
+            }
+        }
+
+        value = null;
+        return false;
+    }
+
+    private bool TryGetDerivedTokenColor(string key, ThemeVariant? theme, out object? value)
+    {
+        if (s_tokenDerivations.TryGetValue(key, out var derivations))
+        {
+            foreach (var derivation in derivations)
+            {
+                if (_colors.TryGetValue(derivation.SourceKey, out var source))
+                {
+                    var alpha = theme == ThemeVariant.Dark ? derivation.DarkAlpha : derivation.LightAlpha;
+                    value = alpha is { } a ? new Color(a, source.R, source.G, source.B) : source;
+                    return true;
+                }
             }
         }
 

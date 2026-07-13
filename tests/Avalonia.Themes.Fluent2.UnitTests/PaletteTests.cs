@@ -66,6 +66,41 @@ public class PaletteTests
     }
 
     [AvaloniaFact]
+    public void Legacy_palette_colors_derive_fluent2_tokens()
+    {
+        var theme = new Fluent2Theme();
+        theme.Palettes[ThemeVariant.Light] = new ColorPaletteResources
+        {
+            RegionColor = Color.Parse("#FFF0E0D0"),
+            BaseHigh = Color.Parse("#FF102030"),
+            ErrorText = Colors.Orange,
+        };
+
+        var app = Application.Current!;
+        app.Styles.Add(theme);
+        try
+        {
+            Assert.True(app.TryGetResource("SolidBackgroundFillColorBase", ThemeVariant.Light, out var region));
+            Assert.Equal(Color.Parse("#FFF0E0D0"), Assert.IsType<Color>(region));
+
+            // BaseHigh drives TextFillColorPrimary with the token's light-variant alpha (0xE4).
+            Assert.True(app.TryGetResource("TextFillColorPrimary", ThemeVariant.Light, out var textPrimary));
+            Assert.Equal(Color.FromArgb(0xE4, 0x10, 0x20, 0x30), Assert.IsType<Color>(textPrimary));
+
+            Assert.True(app.TryGetResource("SystemFillColorCritical", ThemeVariant.Light, out var critical));
+            Assert.Equal(Colors.Orange, Assert.IsType<Color>(critical));
+
+            // Legacy keys themselves still answer, as in v1.
+            Assert.True(app.TryGetResource("SystemBaseHighColor", ThemeVariant.Light, out var baseHigh));
+            Assert.Equal(Color.Parse("#FF102030"), Assert.IsType<Color>(baseHigh));
+        }
+        finally
+        {
+            app.Styles.Remove(theme);
+        }
+    }
+
+    [AvaloniaFact]
     public void Compact_density_switches_metric_resources()
     {
         var theme = new Fluent2Theme();
