@@ -155,6 +155,7 @@
   </Folder>
   <Folder Name="/Themes/">
     <Project Path="src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
+    <Project Path="src/Avalonia.Themes.Fluent2/Avalonia.Themes.Fluent2.csproj" />
     <Project Path="src/Avalonia.Themes.Simple/Avalonia.Themes.Simple.csproj" />
   </Folder>
   <Folder Name="/Tools/">

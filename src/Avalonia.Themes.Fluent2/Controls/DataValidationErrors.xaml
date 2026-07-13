@@ -1,0 +1,113 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System"
+                    xmlns:collections="using:System.Collections"
+                    x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <TextBox Text="Sample">
+          <DataValidationErrors.Error>
+            <sys:Exception />
+          </DataValidationErrors.Error>
+        </TextBox>
+        <TextBox Text="Sample">
+          <TextBox.Styles>
+            <Style Selector="DataValidationErrors">
+              <Setter Property="Theme" Value="{DynamicResource TooltipDataValidationErrors}" />
+            </Style>
+          </TextBox.Styles>
+          <DataValidationErrors.Error>
+            <sys:Exception />
+          </DataValidationErrors.Error>
+        </TextBox>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <ControlTheme x:Key="{x:Type DataValidationErrors}"
+                TargetType="DataValidationErrors">
+    <Setter Property="Template">
+      <ControlTemplate TargetType="DataValidationErrors">
+        <DockPanel LastChildFill="True">
+          <ContentControl x:Name="InlineDataValidationContentControl"
+                          Margin="0,4,0,0"
+                          Content="{Binding (DataValidationErrors.Errors)}"
+                          ContentTemplate="{TemplateBinding ErrorTemplate}"
+                          DataContext="{TemplateBinding Owner}"
+                          DockPanel.Dock="Bottom"
+                          IsVisible="{Binding (DataValidationErrors.HasErrors)}" />
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            CornerRadius="{TemplateBinding CornerRadius}" />
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="ErrorTemplate">
+      <DataTemplate>
+        <ItemsControl x:DataType="DataValidationErrors"
+                      Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                      ItemsSource="{Binding}">
+          <ItemsControl.Styles>
+            <Style Selector="TextBlock">
+              <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+          </ItemsControl.Styles>
+        </ItemsControl>
+      </DataTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="TooltipDataValidationErrors"
+                TargetType="DataValidationErrors">
+    <Setter Property="Template">
+      <ControlTemplate TargetType="DataValidationErrors">
+        <DockPanel LastChildFill="True">
+          <ContentControl Content="{Binding (DataValidationErrors.Errors)}"
+                          ContentTemplate="{TemplateBinding ErrorTemplate}"
+                          DataContext="{TemplateBinding Owner}"
+                          DockPanel.Dock="Right"
+                          IsVisible="{Binding (DataValidationErrors.HasErrors)}" />
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            CornerRadius="{TemplateBinding CornerRadius}" />
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="ErrorTemplate">
+      <DataTemplate>
+        <Panel Name="PART_InlineErrorTemplatePanel"
+               Background="Transparent">
+          <Panel.Styles>
+            <Style Selector="Panel#PART_InlineErrorTemplatePanel">
+              <Setter Property="Margin" Value="8,0" />
+            </Style>
+            <Style Selector="Panel#PART_InlineErrorTemplatePanel ToolTip">
+              <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+            </Style>
+            <Style Selector="Panel#PART_InlineErrorTemplatePanel ToolTip TextBlock">
+              <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+          </Panel.Styles>
+          <ToolTip.Tip>
+            <ItemsControl ItemsSource="{Binding}" x:DataType="collections:IEnumerable" />
+          </ToolTip.Tip>
+          <Path Width="14"
+                Height="14"
+                Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2"
+                Stroke="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                StrokeThickness="2" />
+        </Panel>
+      </DataTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

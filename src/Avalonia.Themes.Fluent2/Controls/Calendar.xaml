@@ -1,0 +1,42 @@
+﻿<!--
+    // (c) Copyright Microsoft Corporation.
+    // This source is subject to the Microsoft Public License (Ms-PL).
+    // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
+    // All other rights reserved.
+-->
+
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <Calendar />
+    </Border>
+  </Design.PreviewWith>
+
+  <ControlTheme x:Key="{x:Type Calendar}" TargetType="Calendar">
+    <Setter Property="Foreground" Value="{DynamicResource CalendarViewForeground}" />
+    <Setter Property="Background" Value="{DynamicResource CalendarViewBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontSize" Value="{DynamicResource CalendarFontSize}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel
+            Name="PART_Root"
+            HorizontalAlignment="Center"
+            ClipToBounds="True">
+          <CalendarItem
+              Name="PART_CalendarItem"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              HeaderBackground="{TemplateBinding HeaderBackground}" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>
