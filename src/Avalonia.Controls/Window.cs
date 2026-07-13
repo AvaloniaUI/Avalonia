@@ -494,7 +494,6 @@ namespace Avalonia.Controls
         /// Enables or disables maximizing the window.
         /// </summary>
         /// <remarks>
-        /// <para>When <see cref="CanResize"/> is false, this property is always false.</para>
         /// <para>On macOS, setting this property to false also disables the full screen mode.</para>
         /// <para>This property might be ignored by some window managers on Linux.</para>
         /// </remarks>
