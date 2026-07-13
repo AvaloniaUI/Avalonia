@@ -12,10 +12,12 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: ListView (Fluent 2 / WinUI 3): the items host itself is transparent and
+       borderless; all chrome lives on the items (see ListBoxItem.xaml). -->
   <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox">
-    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
-    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ListBoxBorderThemeThickness}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />

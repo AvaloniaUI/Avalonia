@@ -19,6 +19,12 @@
     </ScrollViewer>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: ScrollViewer.xaml (DefaultScrollViewerStyle). Scroll bars sit in the
+       right column / bottom row with a corner separator plate; in WinUI the content presenter
+       always spans both cells (overlay scroll bars), which maps here to the AllowAutoHide=True
+       row/column-span style below. Collapsed/expanded visuals and the deferred (auto-hide)
+       indicator behavior are provided by the ScrollBar theme itself. The separator fade matches
+       the scroll bar choreography: 83ms (ScrollBarOpacityChangeDuration) after a ~100ms delay. -->
   <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Template">
@@ -53,7 +59,7 @@
                  Opacity="0">
             <Panel.Transitions>
               <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                <DoubleTransition Property="Opacity" Duration="0:0:0.083" Delay="0:0:0.1" />
               </Transitions>
             </Panel.Transitions>
           </Panel>

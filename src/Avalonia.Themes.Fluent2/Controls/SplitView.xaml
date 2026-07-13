@@ -16,6 +16,13 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: SplitView_themeresources.xaml (via Uno.UI.FluentTheme.v2).
+       SplitViewOpenPaneThemeLength 320, SplitViewCompactPaneThemeLength 48,
+       SplitViewPaneAnimationOpenDuration 200ms, SplitViewPaneAnimationCloseDuration 100ms,
+       spline 0.1,0.9 0.2,1.0 - all matched below with the v1 width/height-transition mechanism.
+       WinUI 3 additions: overlay-mode panes are rounded by OverlayCornerRadius on their open
+       (free) edge and carry a 1px SurfaceStrokeColorFlyout stroke on that edge; the pane surface
+       uses the solid background fill. -->
   <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
   <x:Double x:Key="SplitViewCompactPaneThemeLength">48</x:Double>
   <sys:TimeSpan x:Key="SplitViewPaneAnimationOpenDuration">00:00:00.2</sys:TimeSpan>
@@ -25,7 +32,9 @@
   <ControlTheme x:Key="{x:Type SplitView}" TargetType="SplitView">
     <Setter Property="OpenPaneLength" Value="{DynamicResource SplitViewOpenPaneThemeLength}" />
     <Setter Property="CompactPaneLength" Value="{DynamicResource SplitViewCompactPaneThemeLength}" />
-    <Setter Property="PaneBackground" Value="{DynamicResource SystemControlPageBackgroundChromeLowBrush}" />
+    <Setter Property="PaneBackground" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
+    <!-- Filtered per placement onto Border#PaneBorder in the overlay display modes only. -->
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
 
     <Style Selector="^:left">
       <Setter Property="Template">
@@ -38,13 +47,18 @@
             </Grid.ColumnDefinitions>
 
             <Panel Name="PART_PaneRoot"
-                   Background="{TemplateBinding PaneBackground}"
                    ClipToBounds="True"
                    HorizontalAlignment="Left"
                    ZIndex="100">
-              <ContentPresenter x:Name="PART_PanePresenter"
-                                Content="{TemplateBinding Pane}"
-                                ContentTemplate="{TemplateBinding PaneTemplate}" />
+              <Border Name="PaneBorder"
+                      Background="{TemplateBinding PaneBackground}"
+                      BackgroundSizing="InnerBorderEdge"
+                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                      BorderThickness="0">
+                <ContentPresenter x:Name="PART_PanePresenter"
+                                  Content="{TemplateBinding Pane}"
+                                  ContentTemplate="{TemplateBinding PaneTemplate}" />
+              </Border>
               <Rectangle Name="HCPaneBorder"
                          Fill="{DynamicResource SystemControlForegroundTransparentBrush}"
                          Width="1"
@@ -122,13 +136,19 @@
               <ColumnDefinition Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneColumnGridLength}"/>
             </Grid.ColumnDefinitions>
 
-            <Panel Name="PART_PaneRoot" Background="{TemplateBinding PaneBackground}"
+            <Panel Name="PART_PaneRoot"
                    ClipToBounds="True"
                    HorizontalAlignment="Right"
                    ZIndex="100">
-              <ContentPresenter x:Name="PART_PanePresenter"
-                                Content="{TemplateBinding Pane}"
-                                ContentTemplate="{TemplateBinding PaneTemplate}"/>
+              <Border Name="PaneBorder"
+                      Background="{TemplateBinding PaneBackground}"
+                      BackgroundSizing="InnerBorderEdge"
+                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                      BorderThickness="0">
+                <ContentPresenter x:Name="PART_PanePresenter"
+                                  Content="{TemplateBinding Pane}"
+                                  ContentTemplate="{TemplateBinding PaneTemplate}"/>
+              </Border>
               <Rectangle Name="HCPaneBorder"
                          Fill="{DynamicResource SystemControlForegroundTransparentBrush}"
                          Width="1" HorizontalAlignment="Left"  />
@@ -205,13 +225,18 @@
             </Grid.RowDefinitions>
 
             <Panel Name="PART_PaneRoot"
-                   Background="{TemplateBinding PaneBackground}"
                    ClipToBounds="True"
                    VerticalAlignment="Top"
                    ZIndex="100">
-              <ContentPresenter x:Name="PART_PanePresenter"
-                                Content="{TemplateBinding Pane}"
-                                ContentTemplate="{TemplateBinding PaneTemplate}" />
+              <Border Name="PaneBorder"
+                      Background="{TemplateBinding PaneBackground}"
+                      BackgroundSizing="InnerBorderEdge"
+                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                      BorderThickness="0">
+                <ContentPresenter x:Name="PART_PanePresenter"
+                                  Content="{TemplateBinding Pane}"
+                                  ContentTemplate="{TemplateBinding PaneTemplate}" />
+              </Border>
               <Rectangle Name="HCPaneBorder"
                          Fill="{DynamicResource SystemControlForegroundTransparentBrush}"
                          Height="1"
@@ -290,13 +315,19 @@
               <RowDefinition Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneRowGridLength}"/>
             </Grid.RowDefinitions>
 
-            <Panel Name="PART_PaneRoot" Background="{TemplateBinding PaneBackground}"
+            <Panel Name="PART_PaneRoot"
                    ClipToBounds="True"
                    VerticalAlignment="Bottom"
                    ZIndex="100">
-              <ContentPresenter x:Name="PART_PanePresenter"
-                                Content="{TemplateBinding Pane}"
-                                ContentTemplate="{TemplateBinding PaneTemplate}"/>
+              <Border Name="PaneBorder"
+                      Background="{TemplateBinding PaneBackground}"
+                      BackgroundSizing="InnerBorderEdge"
+                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                      BorderThickness="0">
+                <ContentPresenter x:Name="PART_PanePresenter"
+                                  Content="{TemplateBinding Pane}"
+                                  ContentTemplate="{TemplateBinding PaneTemplate}"/>
+              </Border>
               <Rectangle Name="HCPaneBorder"
                          Fill="{DynamicResource SystemControlForegroundTransparentBrush}"
                          Height="1" VerticalAlignment="Top"  />
@@ -440,6 +471,42 @@
         </Transitions>
       </Setter>
       <Setter Property="Height" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClosedPaneHeight}" />
+    </Style>
+
+    <!-- Overlay-mode pane chrome: OverlayCornerRadius (via SplitView.CornerRadius) filtered onto the
+         pane's open (free) edge plus a 1px SurfaceStrokeColorFlyout stroke on that edge. Inline modes
+         and the closed compact strip stay square and strokeless. -->
+    <Style Selector="^:left:overlay /template/ Border#PaneBorder">
+      <Setter Property="CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
+      <Setter Property="BorderThickness" Value="0,0,1,0" />
+    </Style>
+    <Style Selector="^:left:compactoverlay:open /template/ Border#PaneBorder">
+      <Setter Property="CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
+      <Setter Property="BorderThickness" Value="0,0,1,0" />
+    </Style>
+    <Style Selector="^:right:overlay /template/ Border#PaneBorder">
+      <Setter Property="CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
+      <Setter Property="BorderThickness" Value="1,0,0,0" />
+    </Style>
+    <Style Selector="^:right:compactoverlay:open /template/ Border#PaneBorder">
+      <Setter Property="CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
+      <Setter Property="BorderThickness" Value="1,0,0,0" />
+    </Style>
+    <Style Selector="^:top:overlay /template/ Border#PaneBorder">
+      <Setter Property="CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style Selector="^:top:compactoverlay:open /template/ Border#PaneBorder">
+      <Setter Property="CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style Selector="^:bottom:overlay /template/ Border#PaneBorder">
+      <Setter Property="CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+      <Setter Property="BorderThickness" Value="0,1,0,0" />
+    </Style>
+    <Style Selector="^:bottom:compactoverlay:open /template/ Border#PaneBorder">
+      <Setter Property="CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+      <Setter Property="BorderThickness" Value="0,1,0,0" />
     </Style>
 
     <Style Selector="^:lightDismiss /template/ Rectangle#LightDismissLayer">

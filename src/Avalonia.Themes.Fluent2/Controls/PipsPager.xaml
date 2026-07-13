@@ -4,6 +4,14 @@
     <PipsPager NumberOfPages="5" SelectedPageIndex="2" />
   </Design.PreviewWith>
 
+  <!-- WinUI reference: PipsPager.xaml + PipsPager_themeresources.xaml, tag winui3/release/1.4.2 (via Uno.UI).
+       Pip = 4px dot (ControlStrongFillColorDefault), 6px on hover/selection (hover TextFillColorSecondary,
+       selected ControlStrongFillColorDefault - WinUI does not use the accent for the selected pip).
+       Pip hit target 12x20 (20x12 vertical); nav buttons 20x20, ControlCornerRadius, 8px solid-caret glyphs
+       (EDDB/EDDC at FontSize 8), transparent fills. Brush values below are the Fluent 2 token colors inlined
+       per variant (token key noted per group). WinUI's 0.875 press scale on the nav buttons is intentionally
+       not reproduced (no press-scale in this theme). -->
+
   <!-- Icon path data for navigation buttons -->
   <!-- Horizontal (left/right arrows) -->
   <StreamGeometry x:Key="PipsPagerPreviousPageButtonData">M 8.12,2.29 L 3.41,7.00 C 3.14,7.27 3.14,7.71 3.41,7.98 L 8.12,12.69 C 8.57,13.14 9.33,12.82 9.33,12.19 L 9.33,2.79 C 9.33,2.16 8.57,1.84 8.12,2.29 Z</StreamGeometry>
@@ -19,8 +27,9 @@
     <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource PipsPagerNavigationButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Width" Value="24" />
-    <Setter Property="Height" Value="24" />
+    <!-- WinUI PipsPagerNavigationButtonWidth/Height = 20 -->
+    <Setter Property="Width" Value="20" />
+    <Setter Property="Height" Value="20" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -66,8 +75,9 @@
   <ControlTheme x:Key="PipsPagerNextButtonTheme" TargetType="Button" BasedOn="{StaticResource PipsPagerNavigationButtonTheme}" />
 
   <ControlTheme x:Key="PipsPagerItemTheme" TargetType="ListBoxItem">
+    <!-- WinUI PipsPagerHorizontalOrientationButtonWidth/Height = 12x20 -->
     <Setter Property="Width" Value="12" />
-    <Setter Property="Height" Value="24" />
+    <Setter Property="Height" Value="20" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="MinWidth" Value="0" />
@@ -174,7 +184,8 @@
                   IsVisible="{TemplateBinding IsPreviousButtonVisible}"
                   VerticalAlignment="Center"
                   HorizontalAlignment="Center">
-            <PathIcon Name="PreviousButtonIcon" Width="10" Height="10"
+            <!-- WinUI PipsPagerNavigationButtonFontSize = 8 -->
+            <PathIcon Name="PreviousButtonIcon" Width="8" Height="8"
                       Data="{StaticResource PipsPagerPreviousPageButtonData}" />
           </Button>
 
@@ -211,7 +222,8 @@
                   IsVisible="{TemplateBinding IsNextButtonVisible}"
                   VerticalAlignment="Center"
                   HorizontalAlignment="Center">
-            <PathIcon Name="NextButtonIcon" Width="10" Height="10"
+            <!-- WinUI PipsPagerNavigationButtonFontSize = 8 -->
+            <PathIcon Name="NextButtonIcon" Width="8" Height="8"
                       Data="{StaticResource PipsPagerNextPageButtonData}" />
           </Button>
         </StackPanel>
@@ -222,8 +234,9 @@
       <Setter Property="Orientation" Value="Horizontal" />
     </Style>
 
+    <!-- WinUI PipsPagerVerticalOrientationButtonWidth/Height = 20x12 -->
     <Style Selector="^:vertical /template/ ListBox ListBoxItem">
-      <Setter Property="Width" Value="24" />
+      <Setter Property="Width" Value="20" />
       <Setter Property="Height" Value="12" />
     </Style>
 
@@ -249,18 +262,15 @@
       <Setter Property="IsHitTestVisible" Value="False" />
     </Style>
 
-    <Style Selector="^ /template/ Button#PART_PreviousButton:pressed">
-      <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
-      <Setter Property="RenderTransform" Value="scale(0.875)" />
-    </Style>
-    <Style Selector="^ /template/ Button#PART_NextButton:pressed">
-      <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
-      <Setter Property="RenderTransform" Value="scale(0.875)" />
-    </Style>
+    <!-- WinUI applies a 0.875 press scale to the navigation buttons; deliberately omitted here
+         (this theme uses no press-scale feedback). Press feedback comes from the foreground change. -->
   </ControlTheme>
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
+      <!-- Token values (light): backgrounds/borders = ControlFillColorTransparent; rest foreground =
+           ControlStrongFillColorDefault #72000000; hover/pressed = TextFillColorSecondary #9E000000;
+           selected = ControlStrongFillColorDefault #72000000; disabled = ControlStrongFillColorDisabled #51000000. -->
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackground" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPointerOver" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPressed" Color="Transparent" />
@@ -274,7 +284,7 @@
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#72000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#9E000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#9E000000" />
-      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#FF000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#72000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#51000000" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackground" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPointerOver" Color="Transparent" />
@@ -290,6 +300,7 @@
       <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundDisabled" Color="#51000000" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Default">
+      <!-- Fallback variant mirrors Light (same convention as the rest of this file). -->
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackground" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPointerOver" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPressed" Color="Transparent" />
@@ -303,7 +314,7 @@
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#72000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#9E000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#9E000000" />
-      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#FF000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#72000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#51000000" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackground" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPointerOver" Color="Transparent" />
@@ -319,6 +330,9 @@
       <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundDisabled" Color="#51000000" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
+      <!-- Token values (dark): backgrounds/borders = ControlFillColorTransparent; rest foreground =
+           ControlStrongFillColorDefault #8BFFFFFF; hover/pressed = TextFillColorSecondary #C5FFFFFF;
+           selected = ControlStrongFillColorDefault #8BFFFFFF; disabled = ControlStrongFillColorDisabled #3FFFFFFF. -->
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackground" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPointerOver" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPressed" Color="Transparent" />
@@ -332,7 +346,7 @@
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#8BFFFFFF" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#C5FFFFFF" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#C5FFFFFF" />
-      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#FFFFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#8BFFFFFF" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#3FFFFFFF" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackground" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPointerOver" Color="Transparent" />

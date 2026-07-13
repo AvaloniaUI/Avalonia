@@ -57,8 +57,16 @@
   <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
   <x:Double x:Key="ComboBoxMinHeight">32</x:Double>
 
+  <!-- WinUI reference: ComboBox_themeresources.xaml (DefaultComboBoxStyle), 820 lines.
+       Closed control is Button-like: ControlFillColorDefault fill with a ControlElevationBorder
+       (both via the re-pointed ComboBox* aliases), radius 4 (ControlCornerRadius), background
+       sized to the inner border edge, 12px chevron in TextFillColorSecondary. The dropdown is an
+       acrylic flyout: OverlayCornerRadius 8, 1px SurfaceStrokeColorFlyout border and 0,4 content
+       margin (ComboBoxDropdownContentMargin). Press feedback is a fill change with an 83ms
+       cross-fade; WinUI has no press scale. -->
   <ControlTheme x:Key="{x:Type ComboBox}" TargetType="ComboBox">
     <Setter Property="Padding" Value="{DynamicResource ComboBoxPadding}" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="MaxDropDownHeight" Value="504" />
     <Setter Property="Foreground" Value="{DynamicResource ComboBoxForeground}" />
@@ -82,14 +90,22 @@
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Background="{TemplateBinding Background}"
+                    BackgroundSizing="{TemplateBinding BackgroundSizing}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
-                    MinWidth="{DynamicResource ComboBoxThemeMinWidth}" />
+                    MinWidth="{DynamicResource ComboBoxThemeMinWidth}">
+              <Border.Transitions>
+                <Transitions>
+                  <BrushTransition Property="Background" Duration="0:0:0.083" />
+                </Transitions>
+              </Border.Transitions>
+            </Border>
             <Border x:Name="HighlightBackground"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Background="{DynamicResource ComboBoxBackgroundUnfocused}"
+                    BackgroundSizing="InnerBorderEdge"
                     BorderBrush="{DynamicResource ComboBoxBackgroundBorderBrushUnfocused}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
@@ -131,8 +147,11 @@
                      BorderThickness="0"
                      IsVisible="{TemplateBinding IsEditable}">
               <TextBox.Resources>
+                <!-- WinUI's editable ComboBox hosts a chromeless TextBox (ComboBoxTextBoxStyle):
+                     no fill and, unlike a standalone TextBox, no focus accent underline. -->
                 <SolidColorBrush x:Key="TextControlBackgroundFocused">Transparent</SolidColorBrush>
                 <SolidColorBrush x:Key="TextControlBackgroundPointerOver">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="TextControlBorderBrushFocused">Transparent</SolidColorBrush>
                 <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
               </TextBox.Resources>
             </TextBox>
@@ -167,6 +186,7 @@
                    InheritsTransform="True">
               <Border x:Name="PopupBorder"
                       Background="{DynamicResource ComboBoxDropDownBackground}"
+                      BackgroundSizing="InnerBorderEdge"
                       BorderBrush="{DynamicResource ComboBoxDropDownBorderBrush}"
                       BorderThickness="{DynamicResource ComboBoxDropdownBorderThickness}"
                       Padding="{DynamicResource ComboBoxDropdownBorderPadding}"

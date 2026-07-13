@@ -17,17 +17,24 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: ToolTip_themeresources.xaml (DefaultToolTipStyle), tag winui3/release/1.5.2.
+       Tooltips keep ControlCornerRadius (4), NOT OverlayCornerRadius. WinUI 3 pads with the local
+       ToolTipBorderPadding key (9,6,9,8) rather than the legacy shared ToolTipBorderThemePadding.
+       Background maps to WinUI ToolTipBackgroundBrush -> AcrylicInAppFillColorDefaultBrush; the
+       token brush is referenced directly because no ToolTipBackgroundBrush alias exists yet. -->
   <sys:Double x:Key="ToolTipContentMaxWidth">320</sys:Double>
+  <Thickness x:Key="ToolTipBorderPadding">9,6,9,8</Thickness>
 
   <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
-    <Setter Property="Background" Value="{DynamicResource ToolTipBackground}" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="BorderBrush" Value="{DynamicResource ToolTipBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ToolTipBorderThemeThickness}" />
     <Setter Property="FontSize" Value="{DynamicResource ToolTipContentThemeFontSize}" />
-    <Setter Property="Padding" Value="{DynamicResource ToolTipBorderThemePadding}" />
+    <Setter Property="Padding" Value="{DynamicResource ToolTipBorderPadding}" />
     <Setter Property="MaxWidth" Value="{DynamicResource ToolTipContentMaxWidth}" />
-    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Opacity" Value="0" />
     <Setter Property="Transitions">
       <Transitions>
@@ -39,6 +46,7 @@
         <Border Name="PART_LayoutRoot"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Background="{TemplateBinding Background}"
+                BackgroundSizing="{TemplateBinding BackgroundSizing}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 Padding="{TemplateBinding Padding}"
                 CornerRadius="{TemplateBinding CornerRadius}">

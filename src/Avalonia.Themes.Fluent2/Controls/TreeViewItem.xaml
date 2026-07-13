@@ -20,9 +20,15 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: TreeViewItem.xaml (MUX_TreeViewItemStyle) + TreeView_themeresources.xaml,
+       tag winui3/release/1.4.2. The row is a ListViewItem-like rounded rect inset 4,2 inside the
+       tree, with a 3x16 accent selection indicator pill on the left edge when selected.
+       WinUI has no press scale; state changes are fill cross-fades. -->
+
   <x:Double x:Key="TreeViewItemIndent">16</x:Double>
   <x:Double x:Key="TreeViewItemExpandCollapseChevronSize">12</x:Double>
   <Thickness x:Key="TreeViewItemExpandCollapseChevronMargin">12, 0, 12, 0</Thickness>
+  <Thickness x:Key="TreeViewItemPresenterMargin">4, 2, 4, 2</Thickness>
   <StreamGeometry x:Key="TreeViewItemCollapsedChevronPathData">M 1,0 10,10 l -9,10 -1,-1 L 8,10 -0,1 Z</StreamGeometry>
   <StreamGeometry x:Key="TreeViewItemExpandedChevronPathData">M0,1 L10,10 20,1 19,0 10,8 1,0 Z</StreamGeometry>
 
@@ -39,7 +45,7 @@
                 VerticalAlignment="Center">
           <Path x:Name="ChevronPath"
                 Data="{StaticResource TreeViewItemCollapsedChevronPathData}"
-                Fill="{DynamicResource TreeViewItemForeground}"
+                Fill="{DynamicResource TextFillColorSecondaryBrush}"
                 Stretch="Uniform"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center" />
@@ -55,8 +61,10 @@
   <ControlTheme x:Key="{x:Type TreeViewItem}" TargetType="TreeViewItem">
     <Setter Property="Padding" Value="0" />
     <Setter Property="Background" Value="{DynamicResource TreeViewItemBackground}" />
+    <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
     <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TreeViewItemBorderThemeThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForeground}" />
     <Setter Property="MinHeight" Value="{DynamicResource TreeViewItemMinHeight}" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -67,36 +75,56 @@
                   Classes="TreeViewItemLayoutRoot"
                   Focusable="True"
                   Background="{TemplateBinding Background}"
+                  BackgroundSizing="{TemplateBinding BackgroundSizing}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   CornerRadius="{TemplateBinding CornerRadius}"
+                  Margin="{DynamicResource TreeViewItemPresenterMargin}"
                   MinHeight="{TemplateBinding MinHeight}"
                   TemplatedControl.IsTemplateFocusTarget="True">
-            <Grid Name="PART_Header"
-                  ColumnDefinitions="Auto, *">
-              <Grid.Margin>
-                <MultiBinding Converter="{x:Static converters:TreeViewItemIndentConverter.Instance}">
-                  <Binding Path="Level" RelativeSource="{RelativeSource TemplatedParent}" />
-                  <DynamicResource ResourceKey="TreeViewItemIndent" />
-                </MultiBinding>
-              </Grid.Margin>
-              <Panel Name="PART_ExpandCollapseChevronContainer"
-                     Margin="{StaticResource TreeViewItemExpandCollapseChevronMargin}">
-                <ToggleButton Name="PART_ExpandCollapseChevron"
-                              Theme="{StaticResource FluentTreeViewExpandCollapseChevron}"
-                              Focusable="False"
-                              IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
-              </Panel>
-              <ContentPresenter Name="PART_HeaderPresenter"
-                                Grid.Column="1"
+            <Border.Transitions>
+              <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.083" />
+              </Transitions>
+            </Border.Transitions>
+            <Panel>
+              <Grid Name="PART_Header"
+                    ColumnDefinitions="Auto, *">
+                <Grid.Margin>
+                  <MultiBinding Converter="{x:Static converters:TreeViewItemIndentConverter.Instance}">
+                    <Binding Path="Level" RelativeSource="{RelativeSource TemplatedParent}" />
+                    <DynamicResource ResourceKey="TreeViewItemIndent" />
+                  </MultiBinding>
+                </Grid.Margin>
+                <Panel Name="PART_ExpandCollapseChevronContainer"
+                       Margin="{StaticResource TreeViewItemExpandCollapseChevronMargin}">
+                  <ToggleButton Name="PART_ExpandCollapseChevron"
+                                Theme="{StaticResource FluentTreeViewExpandCollapseChevron}"
                                 Focusable="False"
-                                Background="Transparent"
-                                Content="{TemplateBinding Header}"
-                                ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                                Margin="{TemplateBinding Padding}" />
-            </Grid>
+                                IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
+                </Panel>
+                <ContentPresenter Name="PART_HeaderPresenter"
+                                  Grid.Column="1"
+                                  Focusable="False"
+                                  Background="Transparent"
+                                  Content="{TemplateBinding Header}"
+                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                  HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                  VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                  Margin="{TemplateBinding Padding}" />
+              </Grid>
+              <!-- WinUI selection indicator pill: 3x16, fully rounded ends, accent fill,
+                   pinned to the left edge of the row (before indentation). -->
+              <Rectangle Name="SelectionIndicator"
+                         Width="3"
+                         Height="16"
+                         RadiusX="1.5"
+                         RadiusY="1.5"
+                         Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                         HorizontalAlignment="Left"
+                         VerticalAlignment="Center"
+                         IsVisible="False" />
+            </Panel>
           </Border>
           <ItemsPresenter Name="PART_ItemsPresenter"
                           IsVisible="{TemplateBinding IsExpanded}"
@@ -166,6 +194,14 @@
     </Style>
     <Style Selector="^:disabled:selected /template/ Border#PART_LayoutRoot > ContentPresenter#PART_HeaderPresenter">
       <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedDisabled}" />
+    </Style>
+
+    <!--  Selection indicator pill (WinUI SelectionIndicator)  -->
+    <Style Selector="^:selected /template/ Rectangle#SelectionIndicator">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:disabled /template/ Rectangle#SelectionIndicator">
+      <Setter Property="Fill" Value="{DynamicResource TextFillColorDisabledBrush}" />
     </Style>
 
     <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">

@@ -1,6 +1,8 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <!-- Popup chrome passthrough: Background must stay null and TransparencyLevelHint Transparent
+       so the Fluent 2 flyout chrome (OverlayCornerRadius rounding + shadows) renders correctly. -->
   <ControlTheme x:Key="{x:Type PopupRoot}" TargetType="PopupRoot">
     <Setter Property="Background" Value="{x:Null}" />
     <Setter Property="TransparencyLevelHint" Value="Transparent" />

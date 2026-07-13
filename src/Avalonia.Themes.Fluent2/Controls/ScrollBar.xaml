@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
   <Design.PreviewWith>
@@ -18,8 +18,27 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: ScrollBar_themeresources.xaml (DefaultScrollBarStyle), tag winui3/release/1.6.5.
+       WinUI draws the thumb as a rail-wide rectangle whose 6px transparent stroke leaves a 6px
+       visible fill when expanded and a 2px fill when collapsed (rest). Here the Thumb IS the
+       visible fill: 6px thick, fully rounded (radius = thickness / 2, WinUI ScrollBarCornerRadius),
+       scaled to one third (2px) when collapsed with its outer edge fixed, matching WinUI's rest
+       state. The expanded rail shows an acrylic-fallback track plate (ScrollBarTrackFill) with a
+       radius of ScrollBarCornerRadius x 2, plus fade-in caret line buttons. Expansion/contraction
+       runs 167ms (ScrollBarExpandDuration) on a decelerating spline (KeySpline 0,0,0,1) after a
+       ~100ms delay; opacity fades take 83ms (ScrollBarOpacityChangeDuration). WinUI's pressed
+       arrow shrink (ScrollBarButtonArrowScalePressed) is intentionally not reproduced - no press
+       scale in this theme. -->
+  <x:Double x:Key="ScrollBarThumbThickness">6</x:Double>
+  <x:Double x:Key="ScrollBarThumbMinLength">30</x:Double>
+  <CornerRadius x:Key="ScrollBarThumbCornerRadius">3</CornerRadius>
+  <x:Double x:Key="ScrollBarTrackCornerRadius">6</x:Double>
+  <TransformOperations x:Key="ScrollBarVerticalThumbCollapsedTransform">scaleX(0.3333)</TransformOperations>
+  <TransformOperations x:Key="ScrollBarHorizontalThumbCollapsedTransform">scaleY(0.3333)</TransformOperations>
+
   <ControlTheme x:Key="FluentScrollBarThumb" TargetType="Thumb">
     <Setter Property="Background" Value="{DynamicResource ScrollBarPanningThumbBackground}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ScrollBarThumbCornerRadius}"/>
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
@@ -31,7 +50,11 @@
     <Setter Property="Transitions">
       <Transitions>
         <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.1" />
-        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.167" Delay="0:0:0.1">
+          <TransformOperationsTransition.Easing>
+            <SplineEasing X1="0" Y1="0" X2="0" Y2="1" />
+          </TransformOperationsTransition.Easing>
+        </TransformOperationsTransition>
       </Transitions>
     </Setter>
 
@@ -71,7 +94,7 @@
     </Setter>
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.083" Delay="0:0:0.1" />
       </Transitions>
     </Setter>
 
@@ -122,11 +145,13 @@
                            Fill="{DynamicResource ScrollBarTrackFill}"
                            Stroke="{DynamicResource ScrollBarTrackStroke}"
                            StrokeThickness="{DynamicResource ScrollBarTrackBorderThemeThickness}"
+                           RadiusX="{DynamicResource ScrollBarTrackCornerRadius}"
+                           RadiusY="{DynamicResource ScrollBarTrackCornerRadius}"
                            Opacity="0"
                            Grid.RowSpan="3">
                   <Rectangle.Transitions>
                     <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.083" Delay="0:0:0.1" />
                     </Transitions>
                   </Rectangle.Transitions>
                 </Rectangle>
@@ -139,7 +164,8 @@
                               MinWidth="{DynamicResource ScrollBarSize}"
                               Height="{DynamicResource ScrollBarSize}"
                               AutomationProperties.Name="Line up">
-                  <PathIcon Data="M 19.091797 14.970703 L 10 5.888672 L 0.908203 14.970703 L 0.029297 14.091797 L 10 4.111328 L 19.970703 14.091797 Z"
+                  <!-- Segoe Fluent CaretUpSolid8-style solid caret (WinUI FontIcon glyph U+EDDB) -->
+                  <PathIcon Data="M 10 4 L 20 14 L 0 14 Z"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
                 </RepeatButton>
@@ -167,9 +193,10 @@
                                   AutomationProperties.Name="Page down"/>
                   </Track.IncreaseButton>
                   <Thumb Theme="{StaticResource FluentScrollBarThumb}"
-                         Width="{DynamicResource ScrollBarSize}"
-                         MinHeight="{DynamicResource ScrollBarSize}"
-                         RenderTransform="{DynamicResource VerticalSmallScrollThumbScaleTransform}"
+                         Width="{DynamicResource ScrollBarThumbThickness}"
+                         MinHeight="{DynamicResource ScrollBarThumbMinLength}"
+                         HorizontalAlignment="Center"
+                         RenderTransform="{DynamicResource ScrollBarVerticalThumbCollapsedTransform}"
                          RenderTransformOrigin="100%,50%"
                          AutomationProperties.Name="Position"/>
                 </Track>
@@ -182,7 +209,8 @@
                               MinWidth="{DynamicResource ScrollBarSize}"
                               Height="{DynamicResource ScrollBarSize}"
                               AutomationProperties.Name="Line down">
-                  <PathIcon Data="M 18.935547 4.560547 L 19.814453 5.439453 L 10 15.253906 L 0.185547 5.439453 L 1.064453 4.560547 L 10 13.496094 Z"
+                  <!-- Segoe Fluent CaretDownSolid8-style solid caret (WinUI FontIcon glyph U+EDDC) -->
+                  <PathIcon Data="M 0 6 L 20 6 L 10 16 Z"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
                 </RepeatButton>
@@ -205,11 +233,13 @@
                            Fill="{DynamicResource ScrollBarTrackFill}"
                            Stroke="{DynamicResource ScrollBarTrackStroke}"
                            StrokeThickness="{DynamicResource ScrollBarTrackBorderThemeThickness}"
+                           RadiusX="{DynamicResource ScrollBarTrackCornerRadius}"
+                           RadiusY="{DynamicResource ScrollBarTrackCornerRadius}"
                            Opacity="0"
                            Grid.ColumnSpan="3">
                   <Rectangle.Transitions>
                     <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.083" Delay="0:0:0.1" />
                     </Transitions>
                   </Rectangle.Transitions>
                 </Rectangle>
@@ -222,7 +252,8 @@
                               MinHeight="{DynamicResource ScrollBarSize}"
                               Width="{DynamicResource ScrollBarSize}"
                               AutomationProperties.Name="Column left">
-                  <PathIcon Data="M 14.091797 19.970703 L 4.111328 10 L 14.091797 0.029297 L 14.970703 0.908203 L 5.888672 10 L 14.970703 19.091797 Z"
+                  <!-- Segoe Fluent CaretLeftSolid8-style solid caret (WinUI FontIcon glyph U+EDD9) -->
+                  <PathIcon Data="M 14 0 L 14 20 L 4 10 Z"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
                 </RepeatButton>
@@ -249,9 +280,10 @@
                                   AutomationProperties.Name="Page right"/>
                   </Track.IncreaseButton>
                   <Thumb Theme="{StaticResource FluentScrollBarThumb}"
-                         Height="{DynamicResource ScrollBarSize}"
-                         MinWidth="{DynamicResource ScrollBarSize}"
-                         RenderTransform="{DynamicResource HorizontalSmallScrollThumbScaleTransform}"
+                         Height="{DynamicResource ScrollBarThumbThickness}"
+                         MinWidth="{DynamicResource ScrollBarThumbMinLength}"
+                         VerticalAlignment="Center"
+                         RenderTransform="{DynamicResource ScrollBarHorizontalThumbCollapsedTransform}"
                          RenderTransformOrigin="50%,100%"
                          AutomationProperties.Name="Position"/>
                 </Track>
@@ -264,7 +296,8 @@
                               MinHeight="{DynamicResource ScrollBarSize}"
                               Width="{DynamicResource ScrollBarSize}"
                               AutomationProperties.Name="Column right">
-                  <PathIcon Data="M 5.029297 19.091797 L 14.111328 10 L 5.029297 0.908203 L 5.908203 0.029297 L 15.888672 10 L 5.908203 19.970703 Z"
+                  <!-- Segoe Fluent CaretRightSolid8-style solid caret (WinUI FontIcon glyph U+EDDA) -->
+                  <PathIcon Data="M 6 0 L 16 10 L 6 20 Z"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
                 </RepeatButton>
@@ -291,6 +324,11 @@
       <Style Selector="^ /template/ RepeatButton">
         <Setter Property="Opacity" Value="1" />
       </Style>
+    </Style>
+
+    <!-- WinUI Disabled visual state dims the whole rail to 50%. -->
+    <Style Selector="^:disabled /template/ Grid#Root">
+      <Setter Property="Opacity" Value="0.5" />
     </Style>
   </ControlTheme>
 

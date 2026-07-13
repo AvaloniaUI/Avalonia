@@ -1,16 +1,21 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <!-- WinUI reference: MenuFlyout_themeresources.xaml (MenuFlyoutSeparator): a 1px
+       DividerStrokeColorDefault rule with 1px breathing room above/below. WinUI uses
+       Padding="-4,1,-4,1" to cancel the 4px item margin; here the items panel has no
+       horizontal inset, so a 0 horizontal margin already runs the rule edge-to-edge. -->
+  <Thickness x:Key="MenuFlyoutSeparatorMargin">0,1,0,1</Thickness>
+
   <ControlTheme x:Key="{x:Type Separator}" TargetType="Separator">
-    <Setter Property="Background" Value="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+    <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Height" Value="{DynamicResource MenuFlyoutSeparatorThemeHeight}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="Margin" Value="{DynamicResource MenuFlyoutSeparatorThemePadding}" />
+    <Setter Property="Margin" Value="{DynamicResource MenuFlyoutSeparatorMargin}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Padding="{TemplateBinding Margin}"
-                Height="{TemplateBinding Height}"
+        <Border Height="{TemplateBinding Height}"
                 HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalAlignment}"
                 BorderBrush="{TemplateBinding BorderBrush}"

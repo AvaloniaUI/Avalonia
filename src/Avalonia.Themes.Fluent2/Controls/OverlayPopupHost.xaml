@@ -1,6 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <!-- Popup chrome passthrough: no Background setter (defaults to null) so the Fluent 2 flyout
+       chrome (OverlayCornerRadius rounding + shadows) renders correctly in the overlay layer. -->
   <ControlTheme x:Key="{x:Type OverlayPopupHost}" TargetType="OverlayPopupHost">
     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}"/>

@@ -45,6 +45,13 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: Expander.xaml + Expander_themeresources.xaml, winui 1.8.2 (via Uno.UI.FluentTheme.v2).
+       Card idiom: 48px header row, CardBackgroundFillColorDefault header on a 1px CardStrokeColorDefault
+       border, CardBackgroundFillColorSecondary content, 32x32 subtle-fill chevron well with a 12px glyph.
+       The Expander* brush aliases below are defined in Accents/FluentControlResources.xaml (shared file) and
+       still carry v1 values; see the conversion notes for the required re-points. Avalonia alias names differ
+       from WinUI (e.g. ExpanderHeaderBorderBrushPointerOver vs WinUI ExpanderHeaderBorderPointerOverBrush). -->
+
   <!-- Shared header/content -->
   <x:Double x:Key="ExpanderMinHeight">48</x:Double>
 
@@ -78,6 +85,7 @@
         <Border x:Name="ToggleButtonBackground"
                 CornerRadius="{TemplateBinding CornerRadius}"
                 Background="{TemplateBinding Background}"
+                BackgroundSizing="InnerBorderEdge"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
           <Grid x:Name="ToggleButtonGrid"
@@ -188,27 +196,28 @@
 
   </ControlTheme>
 
+  <!-- 12px chevron glyphs (WinUI ExpanderChevronGlyphSize = 12, FontSize 12 E70D/E70E fallback). -->
   <ControlTheme x:Key="FluentExpanderToggleButtonUpTheme" TargetType="ToggleButton" BasedOn="{StaticResource FluentExpanderToggleButtonTheme}">
     <Style Selector="^ /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Data" Value="M 0 7 L 7 0 L 14 7" />
+      <Setter Property="Data" Value="M 0 6 L 6 0 L 12 6" />
     </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="FluentExpanderToggleButtonDownTheme" TargetType="ToggleButton" BasedOn="{StaticResource FluentExpanderToggleButtonTheme}">
     <Style Selector="^ /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Data" Value="M 0 0 L 7 7 L 14 0" />
+      <Setter Property="Data" Value="M 0 0 L 6 6 L 12 0" />
     </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="FluentExpanderToggleButtonLeftTheme" TargetType="ToggleButton" BasedOn="{StaticResource FluentExpanderToggleButtonTheme}">
     <Style Selector="^ /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Data" Value="M 7 0 L 0 7 L 7 14" />
+      <Setter Property="Data" Value="M 6 0 L 0 6 L 6 12" />
     </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="FluentExpanderToggleButtonRightTheme" TargetType="ToggleButton" BasedOn="{StaticResource FluentExpanderToggleButtonTheme}">
     <Style Selector="^ /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Data" Value="M 0 0 L 7 7 L 0 14" />
+      <Setter Property="Data" Value="M 0 0 L 6 6 L 0 12" />
     </Style>
   </ControlTheme>
 
@@ -237,6 +246,7 @@
           <Border x:Name="ExpanderContent"
                   IsVisible="{TemplateBinding IsExpanded, Mode=TwoWay}"
                   Background="{TemplateBinding Background}"
+                  BackgroundSizing="InnerBorderEdge"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   MinHeight="{TemplateBinding MinHeight}"

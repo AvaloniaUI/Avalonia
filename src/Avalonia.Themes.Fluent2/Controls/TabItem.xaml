@@ -12,9 +12,16 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: Pivot_themeresources.xaml (DefaultPivotHeaderItemStyle),
+       Uno.UI.FluentTheme.v2 Version2/PriorityDefault. Header: 24px SemiLight, padding 12,0,
+       height 48, subtle rounded hover fill; the selection indicator is an accent pill under
+       the header text (thickness bumped 2 -> 3 with fully rounded ends per the WinUI 3
+       Fluent 2 selection-indicator shape). WinUI has no press scale. -->
+
   <x:Double x:Key="TabItemMinHeight">48</x:Double>
   <x:Double x:Key="TabItemVerticalPipeHeight">24</x:Double>
-  <x:Double x:Key="TabItemPipeThickness">2</x:Double>
+  <x:Double x:Key="TabItemPipeThickness">3</x:Double>
+  <CornerRadius x:Key="TabItemPipeCornerRadius">1.5</CornerRadius>
 
   <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem">
     <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
@@ -24,6 +31,7 @@
     <Setter Property="Padding" Value="{DynamicResource TabItemHeaderMargin}" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="MinHeight" Value="{DynamicResource TabItemMinHeight}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -34,6 +42,11 @@
             BorderThickness="{TemplateBinding BorderThickness}"
             CornerRadius="{TemplateBinding CornerRadius}"
             Padding="{TemplateBinding Padding}">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </Border.Transitions>
           <Panel>
             <ContentPresenter
                 Name="PART_ContentPresenter"
@@ -44,7 +57,7 @@
                 />
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
-                    CornerRadius="{DynamicResource ControlCornerRadius}"
+                    CornerRadius="{DynamicResource TabItemPipeCornerRadius}"
                     IsVisible="False"/>
           </Panel>
         </Border>

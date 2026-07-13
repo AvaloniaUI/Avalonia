@@ -1,14 +1,28 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <FlyoutPresenter>
+        <TextBlock Text="Flyout content" />
+      </FlyoutPresenter>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- WinUI reference: FlyoutPresenter_themeresources.xaml (DefaultFlyoutPresenterStyle).
+       This is the theme's popup chrome recipe: acrylic-fallback fill, flyout surface stroke,
+       OverlayCornerRadius. WinUI 3 pads content with the local FlyoutContentPadding key
+       (16,15,16,17) rather than the legacy shared FlyoutContentThemePadding (12,11,12,12). -->
   <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="FlyoutContentPadding">16,15,16,17</Thickness>
   <ControlTheme x:Key="{x:Type FlyoutPresenter}" TargetType="FlyoutPresenter">
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Background" Value="{DynamicResource FlyoutPresenterBackground}" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="BorderBrush" Value="{DynamicResource FlyoutBorderThemeBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource FlyoutBorderThemeThickness}" />
-    <Setter Property="Padding" Value="{DynamicResource FlyoutContentThemePadding}" />
+    <Setter Property="Padding" Value="{DynamicResource FlyoutContentPadding}" />
     <Setter Property="MinWidth" Value="{DynamicResource FlyoutThemeMinWidth}" />
     <Setter Property="MaxWidth" Value="{DynamicResource FlyoutThemeMaxWidth}" />
     <Setter Property="MinHeight" Value="{DynamicResource FlyoutThemeMinHeight}" />
@@ -20,6 +34,7 @@
       <ControlTemplate>
         <Border Name="LayoutRoot"
                 Background="{TemplateBinding Background}"
+                BackgroundSizing="{TemplateBinding BackgroundSizing}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Padding="{DynamicResource FlyoutBorderThemePadding}"

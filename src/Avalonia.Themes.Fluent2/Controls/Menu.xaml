@@ -11,11 +11,18 @@
     </Border>
   </Design.PreviewWith>
 
-  <x:Double x:Key="MenuBarHeight">32</x:Double>
+  <!-- WinUI MenuBar_themeresources.xaml: MenuBarHeight is 40, items float with a 4px margin. -->
+  <x:Double x:Key="MenuBarHeight">40</x:Double>
+  <Thickness x:Key="MenuBarItemMargin">4,4,4,4</Thickness>
 
+  <!-- WinUI reference: MenuBarItem.xaml + MenuBar_themeresources.xaml. Top-level items are
+       rounded (ControlCornerRadius, 4) pills: rest transparent, hover SubtleFillColorSecondary,
+       pressed/open SubtleFillColorTertiary, no border. -->
   <ControlTheme x:Key="FluentTopLevelMenuItem" TargetType="MenuItem">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Margin" Value="{DynamicResource MenuBarItemMargin}" />
     <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
     <Setter Property="Padding" Value="{DynamicResource MenuBarItemPadding}" />
     <Setter Property="Template">
@@ -40,6 +47,7 @@
                    Placement="BottomEdgeAlignedLeft"
                    OverlayInputPassThroughElement="{Binding $parent[Menu]}">
               <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
+                      BackgroundSizing="InnerBorderEdge"
                       BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
                       BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
                       Padding="{DynamicResource MenuFlyoutPresenterThemePadding}"
@@ -79,6 +87,11 @@
       <Style Selector="^ ContentPresenter#PART_HeaderPresenter">
         <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPressed}" />
       </Style>
+    </Style>
+
+    <!--  WinUI MenuBarItem "Selected" state (submenu open) uses the tertiary subtle fill.  -->
+    <Style Selector="^:open /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPressed}" />
     </Style>
 
     <Style Selector="^:disabled">

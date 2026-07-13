@@ -19,6 +19,9 @@
     </ScrollViewer>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: MenuFlyout_themeresources.xaml (DefaultMenuFlyoutPresenterStyle scroll host).
+       WinUI scrolls menus with line-up/line-down repeat buttons; the arrow glyphs reuse the
+       Fluent 2 scroll-bar arrow tokens (ScrollBarButtonArrowForeground / -IconFontSize). -->
   <ControlTheme x:Key="FluentMenuScrollViewer" TargetType="ScrollViewer">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="IsScrollChainingEnabled" Value="False" />

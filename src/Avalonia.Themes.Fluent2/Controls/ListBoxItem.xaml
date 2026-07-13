@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
   <Design.PreviewWith>
@@ -9,69 +9,114 @@
                      Padding="20">
           Test
         </ListBoxItem>
+        <ListBoxItem IsSelected="True">Selected</ListBoxItem>
         <ListBoxItem>Test</ListBoxItem>
       </ListBox>
     </Border>
   </Design.PreviewWith>
-  <Thickness x:Key="ListBoxItemPadding">12,9,12,12</Thickness>
+
+  <!-- WinUI reference: ListViewItem_themeresources.xaml (ListViewItemExpanded, the live default).
+       Rounded WinUI 3 list items: backplate inset from the list edges, CornerRadius 4, MinHeight 40,
+       transparent rest state, subtle-fill hover/press/selection and an accent selection pill
+       (3x16, r1.5, vertically centered on the left edge) that only shows when selected.
+       The 4,2 backplate inset and the pill metrics are baked into WinUI's ListViewItemPresenter
+       rather than exposed as theme resources, so they are approximated here from the WinUI visuals. -->
+  <Thickness x:Key="ListBoxItemPadding">12,0,12,0</Thickness>
+  <x:Double x:Key="ListBoxItemMinHeight">40</x:Double>
   <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
     <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     <Setter Property="Padding" Value="{DynamicResource ListBoxItemPadding}" />
+    <Setter Property="MinHeight" Value="{DynamicResource ListBoxItemMinHeight}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <ContentPresenter Name="PART_ContentPresenter"
-                          Background="{TemplateBinding Background}"
-                          BorderBrush="{TemplateBinding BorderBrush}"
-                          BorderThickness="{TemplateBinding BorderThickness}"
-                          CornerRadius="{TemplateBinding CornerRadius}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          Content="{TemplateBinding Content}"
-                          Padding="{TemplateBinding Padding}"
-                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+        <!-- WinUI's ListViewItemPresenter insets the rounded backplate from the item bounds. -->
+        <Panel Margin="4,2">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BackgroundSizing="InnerBorderEdge"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Padding="{TemplateBinding Padding}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+          <!-- Selection pill: WinUI animates its height 0 -> 16 over 167ms when the item is selected.
+               ListViewItemSelectionIndicatorBrush is not aliased in this theme yet, so the
+               Fluent 2 token AccentFillColorDefaultBrush is referenced directly. -->
+          <Rectangle Name="SelectionIndicator"
+                     IsVisible="False"
+                     Width="3"
+                     Height="0"
+                     RadiusX="1.5"
+                     RadiusY="1.5"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Center"
+                     IsHitTestVisible="False"
+                     Fill="{DynamicResource AccentFillColorDefaultBrush}">
+            <Rectangle.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Height" Duration="0:0:0.167" />
+              </Transitions>
+            </Rectangle.Transitions>
+          </Rectangle>
+        </Panel>
       </ControlTemplate>
     </Setter>
 
     <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource SystemControlDisabledBaseMediumLowBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
     </Style>
 
     <!--  PointerOver State  -->
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     </Style>
 
     <!--  Pressed State  -->
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     </Style>
 
     <!--  Selected State  -->
     <Style Selector="^:selected">
 
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+      </Style>
+
+      <Style Selector="^ /template/ Rectangle#SelectionIndicator">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Height" Value="16" />
+      </Style>
+
+      <Style Selector="^:disabled /template/ Rectangle#SelectionIndicator">
+        <Setter Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
       </Style>
 
       <!--  Selected Unfocused State  -->
       <Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
       </Style>
 
       <!--  Selected PointerOver State  -->
       <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentMediumBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
       </Style>
 
       <!--  Selected Pressed State  -->
       <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentHighBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
       </Style>
     </Style>
   </ControlTheme>

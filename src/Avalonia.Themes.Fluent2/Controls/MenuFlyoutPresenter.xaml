@@ -1,6 +1,10 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <!-- WinUI reference: MenuFlyout_themeresources.xaml (DefaultMenuFlyoutPresenterStyle).
+       Chrome: OverlayCornerRadius (8), AcrylicInAppFillColorDefault background (solid fallback token),
+       1px SurfaceStrokeColorFlyout stroke, BackgroundSizing InnerBorderEdge, 4px top/bottom item inset
+       (MenuFlyoutScrollerMargin). -->
   <ControlTheme x:Key="{x:Type MenuFlyoutPresenter}" TargetType="MenuFlyoutPresenter">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutPresenterBorderBrush}" />
@@ -15,6 +19,7 @@
       <ControlTemplate>
         <Border Name="LayoutRoot"
                 Background="{TemplateBinding Background}"
+                BackgroundSizing="InnerBorderEdge"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Padding="{DynamicResource FlyoutBorderThemePadding}"

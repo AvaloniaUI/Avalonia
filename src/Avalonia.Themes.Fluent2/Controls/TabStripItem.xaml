@@ -12,8 +12,14 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: Pivot_themeresources.xaml (DefaultPivotHeaderItemStyle),
+       Uno.UI.FluentTheme.v2 Version2/PriorityDefault. Mirrors TabItem.xaml: 24px SemiLight
+       header, padding 12,0, subtle rounded hover fill, accent selection pipe bumped
+       2 -> 3 with fully rounded ends. WinUI has no press scale. -->
+
   <x:Double x:Key="TabStripItemMinHeight">48</x:Double>
-  <x:Double x:Key="TabStripItemPipeThickness">2</x:Double>
+  <x:Double x:Key="TabStripItemPipeThickness">3</x:Double>
+  <CornerRadius x:Key="TabStripItemPipeCornerRadius">1.5</CornerRadius>
 
   <ControlTheme x:Key="{x:Type TabStripItem}" TargetType="TabStripItem">
     <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
@@ -23,6 +29,7 @@
     <Setter Property="Padding" Value="{DynamicResource TabItemHeaderMargin}" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="MinHeight" Value="{DynamicResource TabStripItemMinHeight}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -33,6 +40,11 @@
             BorderThickness="{TemplateBinding BorderThickness}"
             CornerRadius="{TemplateBinding CornerRadius}"
             Padding="{TemplateBinding Padding}">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </Border.Transitions>
           <Panel>
             <ContentPresenter
                 Name="PART_ContentPresenter"
@@ -42,7 +54,7 @@
                 ContentTemplate="{TemplateBinding ContentTemplate}" />
             <Border Name="PART_SelectedPipe"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
-                    CornerRadius="{DynamicResource ControlCornerRadius}"
+                    CornerRadius="{DynamicResource TabStripItemPipeCornerRadius}"
                     Height="{DynamicResource TabStripItemPipeThickness}"
                     IsVisible="False"
                     Margin="0,0,0,2"
