@@ -9,16 +9,16 @@
   <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
   <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
   <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
-  <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
-  <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
+  <Thickness x:Key="TextControlBorderThemeThicknessFocused">1,1,1,2</Thickness>
+  <Thickness x:Key="TextControlThemePadding">10,5,6,6</Thickness>
   <sys:Double x:Key="IconElementThemeHeight">20</sys:Double>
   <sys:Double x:Key="IconElementThemeWidth">20</sys:Double>
   <sys:Double x:Key="RefreshVisualizerIndicatorSize">24</sys:Double>
-  <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
+  <Thickness x:Key="ButtonPadding">11,5,11,6</Thickness>
 
-  <!-- Override system shape defaults -->
-  <CornerRadius x:Key="ControlCornerRadius">3</CornerRadius>
-  <CornerRadius x:Key="OverlayCornerRadius">5</CornerRadius>
+  <!-- Fluent 2 (WinUI 3) shape defaults -->
+  <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+  <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
 
   <!-- ScrollBar animation -->
   <TransformOperations x:Key="VerticalSmallScrollThumbScaleTransform">scaleX(0.125) translateX(-2px)</TransformOperations>
@@ -99,8 +99,8 @@
                        Color="{StaticResource SystemChromeMediumLowColor}" />
       <SolidColorBrush x:Key="SystemControlDisabledListMediumBrush" Color="{StaticResource SystemListMediumColor}" />
       <SolidColorBrush x:Key="SystemControlDisabledTransparentBrush" Color="Transparent" />
-      <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{DynamicResource SystemBaseHighColor}" />
-      <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{DynamicResource SystemAltMediumColor}" />
+      <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{DynamicResource FocusStrokeColorOuter}" />
+      <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{DynamicResource FocusStrokeColorInner}" />
       <SolidColorBrush x:Key="SystemControlRevealFocusVisualBrush" Color="{DynamicResource SystemAccentColor}" />
       <SolidColorBrush x:Key="SystemControlForegroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
       <SolidColorBrush x:Key="SystemControlForegroundAltHighBrush" Color="{StaticResource SystemAltHighColor}" />
@@ -260,8 +260,8 @@
                        Color="{StaticResource SystemChromeMediumLowColor}" />
       <SolidColorBrush x:Key="SystemControlDisabledListMediumBrush" Color="{StaticResource SystemListMediumColor}" />
       <SolidColorBrush x:Key="SystemControlDisabledTransparentBrush" Color="Transparent" />
-      <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{DynamicResource SystemBaseHighColor}" />
-      <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{DynamicResource SystemAltMediumColor}" />
+      <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="{DynamicResource FocusStrokeColorOuter}" />
+      <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="{DynamicResource FocusStrokeColorInner}" />
       <SolidColorBrush x:Key="SystemControlRevealFocusVisualBrush" Color="{DynamicResource SystemAccentColor}" />
       <SolidColorBrush x:Key="SystemControlForegroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
       <SolidColorBrush x:Key="SystemControlForegroundAltHighBrush" Color="{StaticResource SystemAltHighColor}" />

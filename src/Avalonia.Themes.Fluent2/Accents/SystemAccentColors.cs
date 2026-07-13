@@ -18,6 +18,15 @@ internal sealed class SystemAccentColors : ResourceProvider
     public const string AccentLight3Key = "SystemAccentColorLight3";
     
     private static readonly Color s_defaultSystemAccentColor = Color.FromRgb(0, 120, 215);
+    // Static shade values from WinUI (matching the Uno/WinUI SystemResources defaults). Used when
+    // the platform provides no accent color, so the out-of-the-box palette matches WinUI exactly.
+    // OS-provided accent colors get computed shades instead.
+    private static readonly Color s_defaultSystemAccentColorDark1 = Color.FromUInt32(0xFF005A9E);
+    private static readonly Color s_defaultSystemAccentColorDark2 = Color.FromUInt32(0xFF004275);
+    private static readonly Color s_defaultSystemAccentColorDark3 = Color.FromUInt32(0xFF002642);
+    private static readonly Color s_defaultSystemAccentColorLight1 = Color.FromUInt32(0xFF429CE3);
+    private static readonly Color s_defaultSystemAccentColorLight2 = Color.FromUInt32(0xFF76B9ED);
+    private static readonly Color s_defaultSystemAccentColorLight3 = Color.FromUInt32(0xFFA6D8FF);
     private bool _invalidateColors = true;
     private Color _systemAccentColor;
     private Color _systemAccentColorDark1, _systemAccentColorDark2, _systemAccentColorDark3;
@@ -109,10 +118,25 @@ internal sealed class SystemAccentColors : ResourceProvider
             _invalidateColors = false;
 
             var platformSettings = GetFromOwner(Owner);
-            
+
             _systemAccentColor = platformSettings?.GetColorValues().AccentColor1 ?? s_defaultSystemAccentColor;
-            (_systemAccentColorDark1,_systemAccentColorDark2, _systemAccentColorDark3,
-                    _systemAccentColorLight1, _systemAccentColorLight2, _systemAccentColorLight3) = CalculateAccentShades(_systemAccentColor);
+
+            if (_systemAccentColor == s_defaultSystemAccentColor)
+            {
+                // Platforms without a real accent color report the default; use WinUI's static
+                // shade values so the out-of-the-box palette matches WinUI exactly.
+                _systemAccentColorDark1 = s_defaultSystemAccentColorDark1;
+                _systemAccentColorDark2 = s_defaultSystemAccentColorDark2;
+                _systemAccentColorDark3 = s_defaultSystemAccentColorDark3;
+                _systemAccentColorLight1 = s_defaultSystemAccentColorLight1;
+                _systemAccentColorLight2 = s_defaultSystemAccentColorLight2;
+                _systemAccentColorLight3 = s_defaultSystemAccentColorLight3;
+            }
+            else
+            {
+                (_systemAccentColorDark1, _systemAccentColorDark2, _systemAccentColorDark3,
+                        _systemAccentColorLight1, _systemAccentColorLight2, _systemAccentColorLight3) = CalculateAccentShades(_systemAccentColor);
+            }
         }
     }
 

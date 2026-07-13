@@ -1,18 +1,24 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
-  <Thickness x:Key="SystemControlFocusVisualMargin">0</Thickness>
+  <!-- WinUI 3 focus visual: 2px outer ring + 1px inner ring drawn outside the control bounds,
+       with the corner radius following the control's radius (ControlCornerRadius + offset). -->
+  <Thickness x:Key="SystemControlFocusVisualMargin">-3</Thickness>
   <Thickness x:Key="SystemControlFocusVisualPrimaryThickness">2</Thickness>
   <Thickness x:Key="SystemControlFocusVisualSecondaryThickness">1</Thickness>
-  
+  <CornerRadius x:Key="FocusVisualCornerRadius">7</CornerRadius>
+  <CornerRadius x:Key="FocusVisualInnerCornerRadius">5</CornerRadius>
+
   <ControlTheme x:Key="{x:Type AdornerLayer}" TargetType="AdornerLayer">
     <Setter Property="DefaultFocusAdorner">
       <FocusAdornerTemplate>
         <Border BorderThickness="{DynamicResource SystemControlFocusVisualPrimaryThickness}"
                 BorderBrush="{DynamicResource SystemControlFocusVisualPrimaryBrush}"
+                CornerRadius="{DynamicResource FocusVisualCornerRadius}"
                 Margin="{DynamicResource SystemControlFocusVisualMargin}">
           <Border BorderThickness="{DynamicResource SystemControlFocusVisualSecondaryThickness}"
-                  BorderBrush="{DynamicResource SystemControlFocusVisualSecondaryBrush}" />
+                  BorderBrush="{DynamicResource SystemControlFocusVisualSecondaryBrush}"
+                  CornerRadius="{DynamicResource FocusVisualInnerCornerRadius}" />
         </Border>
       </FocusAdornerTemplate>
     </Setter>
