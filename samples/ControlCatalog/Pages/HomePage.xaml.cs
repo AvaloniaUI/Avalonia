@@ -25,10 +25,10 @@ namespace ControlCatalog.Pages
             if (DataContext is not MainWindowViewModel)
                 DataContext = this.FindAncestorOfType<MainView>()?.DataContext;
 
-            StartFloatingAnimation(FloatIcon1, 12, 8, TimeSpan.FromSeconds(12));
-            StartFloatingAnimation(FloatIcon2, -14, 8, TimeSpan.FromSeconds(10));
-            StartFloatingAnimation(FloatIcon3, -12, -12, TimeSpan.FromSeconds(14));
-            StartFloatingAnimation(FloatIcon4, 12, -8, TimeSpan.FromSeconds(11));
+            StartFloatingAnimation(BannerLogo1, 12, 8, TimeSpan.FromSeconds(12));
+            StartFloatingAnimation(BannerLogo2, -14, 8, TimeSpan.FromSeconds(10));
+            StartFloatingAnimation(BannerLogo3, -12, -12, TimeSpan.FromSeconds(14));
+            StartFloatingAnimation(BannerLogo4, 12, -8, TimeSpan.FromSeconds(11));
         }
 
         private static void StartFloatingAnimation(Control target, double dx, double dy, TimeSpan duration)
