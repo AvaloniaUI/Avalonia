@@ -37,6 +37,7 @@ namespace ControlCatalog.ViewModels
             {
                 (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
             });
+            NavigateToPageCommand = MiniCommand.Create<PageItem>(NavigateToPage);
 
             WindowState = WindowState.Normal;
 
@@ -126,6 +127,8 @@ namespace ControlCatalog.ViewModels
         public MiniCommand AboutCommand { get; }
 
         public MiniCommand ExitCommand { get; }
+
+        public MiniCommand NavigateToPageCommand { get; }
 
         private DateTime? _validatedDateExample;
 

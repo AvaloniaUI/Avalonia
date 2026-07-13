@@ -1,0 +1,174 @@
+<ContentPage Theme="{StaticResource ScrollPage}"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:ControlCatalog"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.HomePage"
+             x:DataType="viewModels:MainWindowViewModel"
+             Header="Home">
+
+  <ContentPage.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+          <SolidColorBrush x:Key="HomeCardBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="HomeCardBorderBrush" Color="#E5E5EA" />
+          <SolidColorBrush x:Key="HomeCardBorderBrushHover" Color="#3E6DF3" />
+          <SolidColorBrush x:Key="HomeSubtleForeground" Color="#64646E" />
+          <SolidColorBrush x:Key="HomeBadgeBackground" Color="#E8EFFD" />
+          <SolidColorBrush x:Key="HomeBadgeForeground" Color="#3462D9" />
+          <SolidColorBrush x:Key="HomeSectionDivider" Color="#EBEBEF" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="HomeCardBackground" Color="#2B2B33" />
+          <SolidColorBrush x:Key="HomeCardBorderBrush" Color="#3A3A45" />
+          <SolidColorBrush x:Key="HomeCardBorderBrushHover" Color="#8AB4FF" />
+          <SolidColorBrush x:Key="HomeSubtleForeground" Color="#9C9CAB" />
+          <SolidColorBrush x:Key="HomeBadgeBackground" Color="#31395A" />
+          <SolidColorBrush x:Key="HomeBadgeForeground" Color="#8AB4FF" />
+          <SolidColorBrush x:Key="HomeSectionDivider" Color="#3A3A45" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </ContentPage.Resources>
+
+  <ContentPage.Styles>
+    <!-- Neutralize the themed Button chrome so only the inner card Border shows. -->
+    <Style Selector="Button.card /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.card:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.card:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.card > Border">
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Button.card:pointerover > Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource HomeCardBorderBrushHover}" />
+    </Style>
+  </ContentPage.Styles>
+
+  <StackPanel Spacing="28" Margin="0,0,15,20" HorizontalAlignment="Stretch">
+
+    <!-- Hero banner -->
+    <Border CornerRadius="16" ClipToBounds="True" Height="220" HorizontalAlignment="Stretch">
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+          <GradientStop Offset="0" Color="#6D28D9" />
+          <GradientStop Offset="0.55" Color="#4338CA" />
+          <GradientStop Offset="1" Color="#2563EB" />
+        </LinearGradientBrush>
+      </Border.Background>
+      <Grid ClipToBounds="True">
+        <!-- Floating control glyphs, animated from code-behind -->
+        <Canvas IsHitTestVisible="False">
+          <PathIcon x:Name="FloatIcon1"
+                    Data="{x:Static local:Icons.CursorClick}"
+                    Foreground="#26FFFFFF"
+                    Width="120" Height="120"
+                    Canvas.Left="-30" Canvas.Bottom="-25" />
+          <PathIcon x:Name="FloatIcon2"
+                    Data="{x:Static local:Icons.Palette}"
+                    Foreground="#21FFFFFF"
+                    Width="96" Height="96"
+                    Canvas.Left="200" Canvas.Top="-30" />
+          <PathIcon x:Name="FloatIcon3"
+                    Data="{x:Static local:Icons.Calendar}"
+                    Foreground="#26FFFFFF"
+                    Width="110" Height="110"
+                    Canvas.Right="-25" Canvas.Top="-20" />
+          <PathIcon x:Name="FloatIcon4"
+                    Data="{x:Static local:Icons.Toggle}"
+                    Foreground="#21FFFFFF"
+                    Width="130" Height="130"
+                    Canvas.Right="170" Canvas.Bottom="-40" />
+        </Canvas>
+        <!-- Centered lockup -->
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+          <Image Source="/Assets/Icon.png" Height="64" />
+          <TextBlock Text="Avalonia Control Catalog"
+                     FontSize="26" FontWeight="Bold"
+                     Foreground="White"
+                     HorizontalAlignment="Center" />
+          <TextBlock Text="Explore every control, on every platform, in every theme"
+                     FontSize="13"
+                     Foreground="#B3FFFFFF"
+                     HorizontalAlignment="Center" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Card sections -->
+    <ItemsControl ItemsSource="{Binding HomeSections}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate DataType="viewModels:HomeSection">
+          <StackPanel Spacing="14" Margin="0,0,0,26">
+            <TextBlock Text="{Binding Title}"
+                       FontSize="19" FontWeight="Bold" />
+            <ItemsControl ItemsSource="{Binding Items}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="viewModels:PageItem">
+                  <Button Classes="card"
+                          Command="{Binding $parent[ContentPage].((viewModels:MainWindowViewModel)DataContext).NavigateToPageCommand}"
+                          CommandParameter="{Binding}"
+                          Margin="0,0,12,12"
+                          Padding="0"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Cursor="Hand">
+                    <Border Background="{DynamicResource HomeCardBackground}"
+                            BorderBrush="{DynamicResource HomeCardBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="16,14"
+                            Width="248"
+                            MinHeight="118"
+                            BoxShadow="0 1 3 0 #0D000000">
+                      <StackPanel Spacing="10">
+                        <Border Background="{DynamicResource HomeBadgeBackground}"
+                                CornerRadius="8"
+                                Width="36" Height="36"
+                                HorizontalAlignment="Left">
+                          <PathIcon Data="{Binding IconData}"
+                                    Foreground="{DynamicResource HomeBadgeForeground}"
+                                    Width="18" Height="18"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Spacing="3">
+                          <TextBlock Text="{Binding Header}"
+                                     FontSize="14" FontWeight="SemiBold" />
+                          <TextBlock Text="{Binding Description}"
+                                     FontSize="12"
+                                     Foreground="{DynamicResource HomeSubtleForeground}"
+                                     TextWrapping="Wrap"
+                                     MaxLines="2" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Border>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+  </StackPanel>
+</ContentPage>
