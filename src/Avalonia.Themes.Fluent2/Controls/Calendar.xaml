@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     // (c) Copyright Microsoft Corporation.
     // This source is subject to the Microsoft Public License (Ms-PL).
     // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
@@ -14,11 +14,15 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: CalendarView_themeresources.xaml (Fluent v2 resources), tag winui3/release/1.5.2.
+       The outer chrome is a solid surface (CalendarViewBackground) with a 1px stroke
+       (CalendarViewBorderBrush) and the Windows 11 overlay radius of 8. -->
   <ControlTheme x:Key="{x:Type Calendar}" TargetType="Calendar">
     <Setter Property="Foreground" Value="{DynamicResource CalendarViewForeground}" />
     <Setter Property="Background" Value="{DynamicResource CalendarViewBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="FontSize" Value="{DynamicResource CalendarFontSize}" />

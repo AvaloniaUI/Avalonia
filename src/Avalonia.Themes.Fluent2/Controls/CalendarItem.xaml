@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 // (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
@@ -23,29 +23,45 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: CalendarView_themeresources.xaml (Fluent v2 resources), tag winui3/release/1.5.2.
+       The header button and the prev/next chevron buttons are Windows 11 subtle buttons: transparent
+       rest state, subtle-fill hover/press, 4px corner radius. -->
   <ControlTheme x:Key="FluentCalendarButton" TargetType="Button">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Background" Value="{DynamicResource CalendarViewNavigationButtonBackground}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <!-- HCA was changed here to ensure nav arrows display correctly -->
         <ContentPresenter Name="PART_ContentPresenter" Background="{TemplateBinding Background}"
+                          BackgroundSizing="InnerBorderEdge"
                           BorderBrush="{DynamicResource CalendarViewNavigationButtonBorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
                           Content="{TemplateBinding Content}"
-                          Margin="{TemplateBinding Padding}"
+                          Padding="{TemplateBinding Padding}"
                           HorizontalContentAlignment="Stretch"
-                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+          <ContentPresenter.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </ContentPresenter.Transitions>
+        </ContentPresenter>
       </ControlTemplate>
     </Setter>
 
+    <!-- Subtle-fill hover/press per Windows 11; there is no navigation-button fill alias in this
+         theme (WinUI 2 used a reveal border), so Fluent 2 tokens are referenced directly. -->
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewNavigationButtonBorderBrushPointerOver}" />
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPointerOver}" />
     </Style>
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter">
@@ -57,6 +73,7 @@
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="DayTitleTemplate">
       <Template x:DataType="x:String">
+        <!-- Weekday names: WinUI WeekDayNameStyle is caption text (12px regular, primary). -->
         <TextBlock Text="{Binding}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
@@ -68,6 +85,7 @@
       <ControlTemplate>
         <Border BorderThickness="{TemplateBinding BorderThickness}"
                 Background="{TemplateBinding Background}"
+                BackgroundSizing="InnerBorderEdge"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <!-- To keep calendar from resizing when switching DisplayMode
@@ -77,40 +95,56 @@
                  -->
           <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" RowDefinitions="40,*" MinWidth="294">
             <Grid ColumnDefinitions="5*,*,*">
+              <!-- WinUI 3 header label is body-strong text (14px SemiBold); the size is baked into
+                   the WinUI template rather than exposed as a theme resource. -->
               <Button Name="PART_HeaderButton"
                       Theme="{StaticResource FluentCalendarButton}"
                       Foreground="{TemplateBinding Foreground}"
+                      FontSize="14"
+                      FontWeight="SemiBold"
+                      Margin="0,3,0,4"
                       Padding="12,0,0,0"
                       HorizontalContentAlignment="Left" />
               <Button Name="PART_PreviousButton"
                       Grid.Column="1"
                       Theme="{StaticResource FluentCalendarButton}"
                       Foreground="{TemplateBinding Foreground}"
+                      Margin="2,3,2,4"
                       Padding="1"
                       HorizontalContentAlignment="Left">
-                <!--Path mimics Segoe MDL2 Assets font glyph used in WinUI-->
-                <Path Stroke="{DynamicResource CalendarViewForeground}"
-                      StrokeThickness="1.5" 
-                      Data="M 0,9 L 9,0 L 18,9" 
-                      HorizontalAlignment="Center" 
+                <!-- Chevron mimics the Segoe Fluent Icons glyph used in WinUI; rest color is
+                     TextFillColorSecondary (no navigation-glyph alias exists in this theme). -->
+                <Path Stroke="{DynamicResource TextFillColorSecondaryBrush}"
+                      StrokeThickness="1"
+                      Data="M 0,5 L 6,0 L 12,5"
+                      HorizontalAlignment="Center"
                       VerticalAlignment="Center" />
               </Button>
               <Button Name="PART_NextButton"
                       Grid.Column="2"
                       Theme="{StaticResource FluentCalendarButton}"
                       Foreground="{TemplateBinding Foreground}"
+                      Margin="2,3,2,4"
                       Padding="1"
                       HorizontalContentAlignment="Left">
-                <!--Path mimics Segoe MDL2 Assets font glyph used in WinUI-->
-                <Path Stroke="{DynamicResource CalendarViewForeground}"
-                      StrokeThickness="1.5" 
-                      Data="M 0,0 L 9,9 L 18,0" 
-                      HorizontalAlignment="Center" 
+                <!-- Chevron mimics the Segoe Fluent Icons glyph used in WinUI; rest color is
+                     TextFillColorSecondary (no navigation-glyph alias exists in this theme). -->
+                <Path Stroke="{DynamicResource TextFillColorSecondaryBrush}"
+                      StrokeThickness="1"
+                      Data="M 0,0 L 6,5 L 12,0"
+                      HorizontalAlignment="Center"
                       VerticalAlignment="Center" />
               </Button>
+              <!-- Hairline divider under the header row, per the Windows 11 calendar flyout. -->
+              <Rectangle Name="HeaderDivider"
+                         Grid.ColumnSpan="3"
+                         Height="1"
+                         Fill="{DynamicResource DividerStrokeColorDefaultBrush}"
+                         VerticalAlignment="Bottom" />
             </Grid>
-            <!--Border below is used only for MonthView but it can't be moved inside of Grid because CalendarItem expects it to be empty and it will cause side-effects-->
-            <Border Name="BackgroundLayer" Background="{TemplateBinding BorderBrush}" Margin="0,38,0,0" IsVisible="{Binding #PART_MonthView.IsVisible}" Grid.Row="1" />
+            <!--Border below is used only for MonthView but it can't be moved inside of Grid because CalendarItem expects it to be empty and it will cause side-effects.
+                Windows 11 draws no grid lines between day items, so it no longer paints the BorderBrush.-->
+            <Border Name="BackgroundLayer" Background="Transparent" Margin="0,38,0,0" IsVisible="{Binding #PART_MonthView.IsVisible}" Grid.Row="1" />
             <Grid Name="PART_MonthView" Grid.Row="1" IsVisible="False" MinHeight="290">
               <Grid.RowDefinitions>
                 <!--This should always be the week day names??-->
@@ -133,7 +167,7 @@
               </Grid.ColumnDefinitions>
             </Grid>
             <Grid Name="PART_YearView"
-                  Background="{TemplateBinding BorderBrush}"
+                  Background="Transparent"
                   MinHeight="290"
                   Grid.Row="1"
                   IsVisible="False">
@@ -158,6 +192,11 @@
     </Style>
     <Style Selector="^ /template/ Button:pressed > Path">
       <Setter Property="Stroke" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
+    </Style>
+    <!-- CalendarViewNavigationButtonForegroundDisabled is not aliased in this theme yet; the
+         weekday disabled alias resolves to the same Fluent 2 disabled text token. -->
+    <Style Selector="^ /template/ Button:disabled > Path">
+      <Setter Property="Stroke" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

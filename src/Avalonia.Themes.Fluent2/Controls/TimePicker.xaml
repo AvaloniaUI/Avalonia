@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 // (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
@@ -28,6 +28,8 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: TimePicker_themeresources.xaml (DefaultTimePickerStyle /
+       DefaultTimePickerFlyoutPresenterStyle), tag winui3/release/1.5.2. -->
   <x:Double x:Key="TimePickerFlyoutPresenterItemHeight">40</x:Double>
   <x:Double x:Key="TimePickerSpacerThemeWidth">1</x:Double>
   <Thickness x:Key="TimePickerBorderThemeThickness">1</Thickness>
@@ -37,29 +39,44 @@
   <x:Double x:Key="TimePickerThemeMaxWidth">456</x:Double>
   <Thickness x:Key="TimePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
   <Thickness x:Key="TimePickerHostPadding">0,3,0,6</Thickness>
+  <Thickness x:Key="TimePickerFlyoutPresenterAcceptMargin">4,4,2,4</Thickness>
+  <Thickness x:Key="TimePickerFlyoutPresenterDismissMargin">2,4,4,4</Thickness>
 
+  <!-- WinUI: TimePickerFlyoutButtonStyle — the closed picker reads as a TextBox-like field
+       (ControlFillColorDefault fill, elevation hairline border, ControlCornerRadius).
+       WinUI has no press scale; press feedback is the fill/foreground swap. -->
   <ControlTheme x:Key="FluentTimePickerFlyoutButton" TargetType="Button">
-    <Setter Property="RenderTransform" Value="none" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"
                           BorderBrush="{TemplateBinding BorderBrush}"
                           Background="{TemplateBinding Background}"
+                          BackgroundSizing="{TemplateBinding BackgroundSizing}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           Content="{TemplateBinding Content}"
                           Foreground="{TemplateBinding Foreground}"
                           HorizontalContentAlignment="Stretch"
                           VerticalContentAlignment="Stretch"
-                          CornerRadius="{TemplateBinding CornerRadius}"/>
+                          CornerRadius="{TemplateBinding CornerRadius}">
+          <ContentPresenter.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </ContentPresenter.Transitions>
+        </ContentPresenter>
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:pressed">
-      <Setter Property="RenderTransform" Value="scale(0.98)" />
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPointerOver}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushPointerOver}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForegroundPointerOver}"/>
     </Style>
 
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPressed}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushPressed}"/>
       <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForegroundPressed}"/>
     </Style>
 
@@ -130,7 +147,7 @@
                            HorizontalAlignment="Center"
                            Width="{DynamicResource TimePickerSpacerThemeWidth}"
                            Grid.Column="3" />
-                
+
                 <Border x:Name="PART_ThirdPickerHost"
                         Grid.Column="4"
                         HorizontalAlignment="Stretch"
@@ -170,11 +187,14 @@
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
-    
+
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Fill" Value="{DynamicResource TimePickerSpacerFillDisabled}"/>
     </Style>
 
+    <!-- Changes foreground for watermark text when SelectedTime is null.
+         WinUI: TimePickerButtonForegroundDefault (TextFillColorSecondary); the
+         TextControlPlaceholderForeground alias resolves to the same token. -->
     <Style Selector="^:hasnotime /template/ Button#PART_FlyoutButton TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
     </Style>
@@ -184,6 +204,9 @@
     </Style>
   </ControlTheme>
 
+  <!--WinUI: TimePickerFlyoutPresenter (DefaultTimePickerFlyoutPresenterStyle) — acrylic fill,
+      1px SurfaceStrokeColorFlyout border, OverlayCornerRadius, 1px divider spacers and a
+      full-width accent highlight pill behind the selected row. -->
   <ControlTheme x:Key="{x:Type TimePickerPresenter}" TargetType="TimePickerPresenter">
     <Setter Property="Width" Value="242" />
     <Setter Property="MinWidth" Value="242" />
@@ -198,11 +221,17 @@
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
+                BackgroundSizing="InnerBorderEdge"
                 CornerRadius="{TemplateBinding CornerRadius}"
                 Padding="{DynamicResource DateTimeFlyoutBorderPadding}"
                 MaxHeight="398">
           <Grid Name="ContentPanel" RowDefinitions="*,Auto">
             <Grid Name="PART_PickerContainer">
+              <Grid.Styles>
+                <Style Selector="DateTimePickerPanel > ListBoxItem">
+                  <Setter Property="Theme" Value="{StaticResource FluentDateTimePickerItem}" />
+                </Style>
+              </Grid.Styles>
               <!--Ignore col defs here, set in code-->
               <Panel Name="PART_HourHost" Grid.Column="0">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
@@ -227,7 +256,7 @@
                 <RepeatButton Name="PART_MinuteUpButton" Theme="{StaticResource FluentDateTimePickerUpButton}"/>
                 <RepeatButton Name="PART_MinuteDownButton" Theme="{StaticResource FluentDateTimePickerDownButton}"/>
               </Panel>
-              
+
               <Panel Name="PART_SecondHost" Grid.Column="4">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Hidden">
@@ -252,12 +281,18 @@
                 <RepeatButton Name="PART_PeriodDownButton" Theme="{StaticResource FluentDateTimePickerDownButton}"/>
               </Panel>
 
-              <Rectangle x:Name="HighlightRect" ZIndex="-1"
-                         Fill="{DynamicResource TimePickerFlyoutPresenterHighlightFill}"
-                         Grid.Column="0"
-                         Grid.ColumnSpan="7"
-                         VerticalAlignment="Center"
-                         Height="{DynamicResource TimePickerFlyoutPresenterHighlightHeight}" />
+              <!-- WinUI 3 highlight: AccentAAFillColorDefault rounded pill (CornerRadius 4,
+                   Margin 4,2,4,2) behind the selected row. Neither that token nor an accurate
+                   TimePickerFlyoutPresenterHighlightFill alias exists in this theme yet, so the
+                   Fluent 2 token AccentFillColorDefaultBrush is referenced directly. -->
+              <Border x:Name="HighlightRect" IsHitTestVisible="False" ZIndex="-1"
+                      Background="{DynamicResource AccentFillColorDefaultBrush}"
+                      CornerRadius="{DynamicResource ControlCornerRadius}"
+                      Margin="4,2,4,2"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="7"
+                      VerticalAlignment="Center"
+                      Height="{DynamicResource TimePickerFlyoutPresenterHighlightHeight}" />
               <Rectangle Name="PART_FirstSpacer"
                          Fill="{DynamicResource TimePickerFlyoutPresenterSpacerFill}"
                          HorizontalAlignment="Center"
@@ -277,32 +312,34 @@
 
             <Grid Name="AcceptDismissGrid"
                   Grid.Row="1"
+                  Height="{DynamicResource TimePickerFlyoutPresenterAcceptDismissHostGridHeight}"
                   ColumnDefinitions="*,*">
-              <Rectangle Height="{DynamicResource TimePickerSpacerThemeWidth}" 
+              <Rectangle Height="{DynamicResource TimePickerSpacerThemeWidth}"
                          VerticalAlignment="Top"
                          Fill="{DynamicResource TimePickerFlyoutPresenterSpacerFill}"
                          Grid.ColumnSpan="2"/>
               <Button Name="PART_AcceptButton"
                       Grid.Column="0"
                       Theme="{StaticResource FluentDateTimePickerButton}"
-                      Height="{DynamicResource TimePickerFlyoutPresenterAcceptDismissHostGridHeight}"
+                      Margin="{DynamicResource TimePickerFlyoutPresenterAcceptMargin}"
+                      Padding="4"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch">
                 <Path Stroke="{Binding $parent[Button].Foreground}"
                       StrokeLineCap="Round"
-                      StrokeThickness="0.75"
+                      StrokeThickness="1"
                       Data="M0.5,8.5 5,13.5 15.5,3" />
               </Button>
               <Button Name="PART_DismissButton"
                       Grid.Column="1"
                       Theme="{StaticResource FluentDateTimePickerButton}"
-                      Height="{DynamicResource TimePickerFlyoutPresenterAcceptDismissHostGridHeight}"
-                      FontSize="16" 
-                      HorizontalAlignment="Stretch" 
+                      Margin="{DynamicResource TimePickerFlyoutPresenterDismissMargin}"
+                      Padding="4"
+                      HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch">
-                <Path Stroke="{Binding $parent[Button].Foreground}" 
+                <Path Stroke="{Binding $parent[Button].Foreground}"
                       StrokeLineCap="Round"
-                      StrokeThickness="0.75" 
+                      StrokeThickness="1"
                       Data="M2,2 14,14 M2,14 14 2" />
               </Button>
             </Grid>
@@ -310,10 +347,12 @@
         </Border>
       </ControlTemplate>
     </Setter>
-    
+
     <Style Selector="^ /template/ Panel">
       <Style Selector="^:pointerover RepeatButton">
         <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Opacity" Value="1" />
       </Style>
-    </Style>  </ControlTheme>
+    </Style>
+  </ControlTheme>
 </ResourceDictionary>

@@ -14,26 +14,43 @@
         <ListBoxItem Theme="{DynamicResource FluentDateTimePickerItem}">Standard Item</ListBoxItem>
         <ListBoxItem Theme="{DynamicResource FluentDateTimePickerItem}" Classes="MonthItem">Month Item</ListBoxItem>
         <RepeatButton Theme="{DynamicResource FluentDateTimePickerButton}">Button</RepeatButton>
-        <RepeatButton Theme="{DynamicResource FluentDateTimePickerUpButton}" IsVisible="True"/>
-        <RepeatButton Theme="{DynamicResource FluentDateTimePickerDownButton}" IsVisible="True"/>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerUpButton}" IsVisible="True" Opacity="1"/>
+        <RepeatButton Theme="{DynamicResource FluentDateTimePickerDownButton}" IsVisible="True" Opacity="1"/>
       </StackPanel>
     </Border>
   </Design.PreviewWith>
 
-  <!-- Theme for the items displayed in the selectors -->
+  <!-- WinUI: LoopingSelectorUpDownButtonHeight, DateTimePickerFlyout_themeresources.xaml,
+       tag winui3/release/1.5.2. -->
+  <x:Double x:Key="LoopingSelectorUpDownButtonHeight">34</x:Double>
+
+  <!-- Theme for the items displayed in the selectors.
+       WinUI reference: DateTimePickerFlyout_themeresources.xaml (LoopingSelectorItem style),
+       tag winui3/release/1.5.2. The Fluent 2 ListBoxItem base theme already provides the
+       WinUI 3 rounded backplate (CornerRadius 4, 4,2 inset) and the subtle-fill hover/press
+       states, matching LoopingSelectorItemMargin (4,2,4,2) and
+       LoopingSelectorItemBackgroundPointerOver/Pressed. -->
   <ControlTheme x:Key="FluentDateTimePickerItem" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
     <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterItemPadding}"/>
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
 
+    <!-- Selected row: the accent highlight rect is drawn by the presenter (HighlightRect,
+         behind the items), so the item itself stays transparent and only swaps to on-accent
+         text. WinUI recolors the selected row with a MonochromaticOverlayPresenter using
+         DatePickerFlyoutPresenterHighlightForegroundColor (TextOnAccentAAFillColorPrimary);
+         neither the primitive nor that alias exists here, so the Fluent 2 token
+         TextOnAccentFillColorPrimaryBrush is referenced directly as an approximation.
+         The base theme's subtle-fill selected backplate and selection pill are suppressed. -->
     <Style Selector="^:selected">
       <Setter Property="IsHitTestVisible" Value="False"/>
-      <Style Selector="^/template/ Rectangle#PressedBackground">
-        <Setter Property="Fill" Value="Transparent"/>
-      </Style>
-      <Style Selector="^/template/ ContentPresenter">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+      </Style>
+      <Style Selector="^ /template/ Rectangle#SelectionIndicator">
+        <Setter Property="IsVisible" Value="False"/>
+        <Setter Property="Height" Value="0"/>
       </Style>
     </Style>
     <Style Selector="^.MonthItem">
@@ -42,76 +59,141 @@
     </Style>
   </ControlTheme>
 
-  <!-- This is used for both the accept/dismiss & repeatbuttons in the presenter-->
+  <!-- This is used for both the accept/dismiss & repeatbuttons in the presenter.
+       WinUI reference: DateTimePickerFlyout_themeresources.xaml
+       (DateTimePickerFlyoutButtonStyle), tag winui3/release/1.5.2: transparent rest state,
+       subtle-fill hover/press, CornerRadius 4 (ControlCornerRadius), no border
+       (DateTimeFlyoutButtonBorderThickness is 0) and an 83ms background cross-fade.
+       WinUI has no press scale. -->
   <ControlTheme x:Key="FluentDateTimePickerButton" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackground}" />
-    <Setter Property="Height" Value="22" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="HorizontalContentAlignment" Value="Center"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <!-- 
-                The background is doubled here for the loopingselector up/down repeat buttons 
-                that appear opaque. Not sure how MS does it though I suspect this is it
-                but source isn't MIT yet, so this is my solution -->
+        <!-- The outer border paints the control-level background full-bleed and square: the
+             looping-selector up/down buttons set it to the flyout's acrylic fill so they
+             occlude the items scrolling beneath them (WinUI keeps the same split between
+             LoopingSelectorUpDownButtonBackground and the hover state). The inner presenter
+             carries the rounded subtle-fill interaction states. -->
         <Border Background="{TemplateBinding Background}">
           <ContentPresenter x:Name="PART_ContentPresenter"
-                  Background="{TemplateBinding Background}"
+                  Background="{DynamicResource SubtleFillColorTransparentBrush}"
+                  BackgroundSizing="{TemplateBinding BackgroundSizing}"
                   BorderBrush="{DynamicResource DateTimePickerFlyoutButtonBorderBrush}"
                   BorderThickness="{DynamicResource DateTimeFlyoutButtonBorderThickness}"
                   Content="{TemplateBinding Content}"
-                  Foreground="{DynamicResource SystemControlHighlightAltBaseHighBrush}"
+                  Foreground="{TemplateBinding Foreground}"
                   ContentTemplate="{TemplateBinding ContentTemplate}"
                   Padding="{TemplateBinding Padding}"
                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                  CornerRadius="{TemplateBinding CornerRadius}"/>
+                  CornerRadius="{TemplateBinding CornerRadius}">
+            <ContentPresenter.Transitions>
+              <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.083" />
+              </Transitions>
+            </ContentPresenter.Transitions>
+          </ContentPresenter>
         </Border>
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPointerOver}"/>
-      <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPointerOver}"/>
+    <!-- Foreground is styled on the control (not the presenter) because the glyph Paths used
+         as content bind their Stroke to the parent button's Foreground. -->
+    <Style Selector="^:pointerover">
       <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPointerOver}"/>
     </Style>
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPointerOver}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPointerOver}"/>
+    </Style>
 
-    <Style Selector="^:pressed /template/ ContentPresenter">
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPressed}"/>
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPressed}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPressed}"/>
-      <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPressed}"/>
     </Style>
   </ControlTheme>
 
+  <!-- WinUI reference: DateTimePickerFlyout_themeresources.xaml
+       (DateTimePickerFlyoutLoopingSelectorNavigationButtonStyle + the LoopingSelector
+       UpButton/DownButton), tag winui3/release/1.5.2: 34px strips pinned to the top/bottom
+       of each column that fade in while the column is hovered (visibility is toggled by the
+       DatePickerPresenter/TimePickerPresenter themes; WinUI snaps Visibility, the 167ms
+       opacity fade is an Avalonia refinement of that storyboard). Chevron rests at
+       TextFillColorSecondary and steps to primary on hover. The LoopingSelectorUpDownButton*
+       brushes are not aliased in this theme, so the Fluent 2 tokens
+       (AcrylicBackgroundFillColorDefaultBrush / TextFillColor*Brush) are referenced directly. -->
   <ControlTheme x:Key="FluentDateTimePickerUpButton" TargetType="RepeatButton" BasedOn="{StaticResource FluentDateTimePickerButton}">
     <Setter Property="VerticalAlignment" Value="Top"/>
-    <Setter Property="Height" Value="22" />
+    <Setter Property="Height" Value="{DynamicResource LoopingSelectorUpDownButtonHeight}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
     <Setter Property="IsVisible" Value="False"/>
+    <Setter Property="Opacity" Value="0"/>
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.167" />
+      </Transitions>
+    </Setter>
     <Setter Property="Content">
       <Template>
-        <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,9 L 9,0 L 18,9"/>
-        </Viewbox>
+        <Path Stroke="{Binding $parent[RepeatButton].Foreground}"
+              StrokeThickness="1"
+              StrokeLineCap="Round"
+              StrokeJoin="Round"
+              Data="M 0,4.5 L 4.5,0 L 9,4.5"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"/>
       </Template>
     </Setter>
+    <!-- Re-declared after this theme's Foreground setter so the hover/press swaps still win. -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="FluentDateTimePickerDownButton" TargetType="RepeatButton" BasedOn="{StaticResource FluentDateTimePickerButton}">
     <Setter Property="VerticalAlignment" Value="Bottom"/>
-    <Setter Property="Height" Value="22" />
+    <Setter Property="Height" Value="{DynamicResource LoopingSelectorUpDownButtonHeight}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
     <Setter Property="IsVisible" Value="False"/>
+    <Setter Property="Opacity" Value="0"/>
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.167" />
+      </Transitions>
+    </Setter>
     <Setter Property="Content">
       <Template>
-        <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,0 L 9,9 L 18,0"/>
-        </Viewbox>
+        <Path Stroke="{Binding $parent[RepeatButton].Foreground}"
+              StrokeThickness="1"
+              StrokeLineCap="Round"
+              StrokeJoin="Round"
+              Data="M 0,0 L 4.5,4.5 L 9,0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"/>
       </Template>
     </Setter>
+    <!-- Re-declared after this theme's Foreground setter so the hover/press swaps still win. -->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
   </ControlTheme>
 </ResourceDictionary>

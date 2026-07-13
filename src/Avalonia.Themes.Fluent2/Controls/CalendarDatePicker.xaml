@@ -8,6 +8,11 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: CalendarDatePicker_themeresources.xaml (DefaultCalendarDatePicker),
+       tag winui3/release/1.5.2. The closed field matches a WinUI 3 TextBox: ControlFillColorDefault
+       fill behind an elevation hairline stroke with 4px corners; the calendar glyph is
+       TextFillColorSecondary; the flyout is an 8px-radius surface with the flyout stroke and the
+       acrylic fallback fill. -->
   <x:Double x:Key="CalendarDatePickerCurrentDayFontSize">12</x:Double>
   <x:Double x:Key="CalendarDatePickerMinHeight">32</x:Double>
 
@@ -81,6 +86,7 @@
                  VerticalAlignment="Stretch">
             <Border x:Name="Background"
                     CornerRadius="{TemplateBinding CornerRadius}"
+                    BackgroundSizing="InnerBorderEdge"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     Background="{TemplateBinding Background}" />
@@ -125,15 +131,29 @@
                       Grid.Column="1"
                       Focusable="False" />
               <Popup Name="PART_Popup"
+                     WindowManagerAddShadowHint="False"
                      PlacementTarget="{TemplateBinding}"
                      IsLightDismissEnabled="True">
-                <Calendar Name="PART_Calendar"
-                          FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
-                          IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
-                          SelectedDate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedDate, Mode=TwoWay}"
-                          DisplayDate="{TemplateBinding DisplayDate}"
-                          DisplayDateStart="{TemplateBinding DisplayDateStart}"
-                          DisplayDateEnd="{TemplateBinding DisplayDateEnd}" />
+                <!-- WinUI 3 flyout chrome: OverlayCornerRadius surface with the flyout stroke and
+                     the acrylic fallback fill; the calendar inside draws no chrome of its own.
+                     There are no CalendarDatePicker flyout aliases in this theme, so the Fluent 2
+                     tokens are referenced directly. -->
+                <Border Name="PopupBorder"
+                        Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
+                        BackgroundSizing="InnerBorderEdge"
+                        BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{DynamicResource OverlayCornerRadius}">
+                  <Calendar Name="PART_Calendar"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
+                            IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
+                            SelectedDate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedDate, Mode=TwoWay}"
+                            DisplayDate="{TemplateBinding DisplayDate}"
+                            DisplayDateStart="{TemplateBinding DisplayDateStart}"
+                            DisplayDateEnd="{TemplateBinding DisplayDateEnd}" />
+                </Border>
               </Popup>
             </Grid>
           </Panel>
