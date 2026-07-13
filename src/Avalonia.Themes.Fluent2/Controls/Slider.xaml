@@ -33,17 +33,26 @@
       </DockPanel>
     </Border>
   </Design.PreviewWith>
-  
+
+  <!-- WinUI reference: Slider_themeresources.xaml (DefaultSliderStyle), tag winui3/release/1.5.2.
+       Track is 4px tall with 2px rounded ends (NOTE: track thickness comes from the shared
+       SliderTrackThemeHeight key, which is still 2 in FluentControlResources.xaml and must be
+       updated to 4 there). The thumb is a 22px ControlSolidFillColorDefault circle with a 1px
+       CircleElevationBorderBrush ring containing an accent inner ellipse that is 12px at rest,
+       grows to 14px on thumb hover and shrinks to 10px while pressed/dragged (167ms). -->
   <Thickness x:Key="SliderTopHeaderMargin">0,0,0,4</Thickness>
-  <GridLength x:Key="SliderPreContentMargin">15</GridLength>
-  <GridLength x:Key="SliderPostContentMargin">15</GridLength>
+  <GridLength x:Key="SliderPreContentMargin">14</GridLength>
+  <GridLength x:Key="SliderPostContentMargin">14</GridLength>
   <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
   <x:Double x:Key="SliderVerticalWidth">32</x:Double>
-  <CornerRadius x:Key="SliderThumbCornerRadius">10</CornerRadius>
-  <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
-  <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
-  <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
-  <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
+  <CornerRadius x:Key="SliderThumbCornerRadius">11</CornerRadius>
+  <CornerRadius x:Key="SliderTrackCornerRadius">2</CornerRadius>
+  <x:Double x:Key="SliderHorizontalThumbWidth">22</x:Double>
+  <x:Double x:Key="SliderHorizontalThumbHeight">22</x:Double>
+  <x:Double x:Key="SliderVerticalThumbWidth">22</x:Double>
+  <x:Double x:Key="SliderVerticalThumbHeight">22</x:Double>
+  <x:Double x:Key="SliderInnerThumbWidth">12</x:Double>
+  <x:Double x:Key="SliderInnerThumbHeight">12</x:Double>
 
   <ControlTheme x:Key="FluentSliderHorizontalRepeatButton" TargetType="RepeatButton">
     <Setter Property="Template">
@@ -52,7 +61,7 @@
           <Border Name="FocusTarget" Margin="0,-10" Background="Transparent" />
           <Border Name="TrackBackground"
                   Background="{TemplateBinding Background}"
-                  CornerRadius="{DynamicResource ControlCornerRadius}"
+                  CornerRadius="{DynamicResource SliderTrackCornerRadius}"
                   Height="{DynamicResource SliderTrackThemeHeight}"
                   VerticalAlignment="Center"/>
         </Grid>
@@ -67,7 +76,7 @@
           <Border Name="FocusTarget" Margin="0,-10" Background="Transparent" />
           <Border Name="TrackBackground"
                   Background="{TemplateBinding Background}"
-                  CornerRadius="{DynamicResource ControlCornerRadius}"
+                  CornerRadius="{DynamicResource SliderTrackCornerRadius}"
                   Width="{DynamicResource SliderTrackThemeHeight}"
                   HorizontalAlignment="Center"/>
         </Grid>
@@ -75,16 +84,49 @@
     </Setter>
   </ControlTheme>
 
+  <!-- WinUI SliderThumbStyle: outer circle is SliderOuterThumbBackground
+       (ControlSolidFillColorDefault) ringed by SliderThumbBorderBrush; the aliases are not in
+       the shared layer yet, so the token brushes are used. The Thumb's Background templates
+       into the inner accent ellipse, so all existing Slider-level state selectors that set
+       Thumb.Background keep recoloring the inner ellipse. -->
   <ControlTheme x:Key="FluentSliderThumbTheme" TargetType="Thumb">
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CircleElevationBorderBrush}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border
-            Background="{TemplateBinding Background}"
+        <Border x:Name="ThumbBorder"
+            Background="{DynamicResource ControlSolidFillColorDefaultBrush}"
+            BackgroundSizing="InnerBorderEdge"
             BorderBrush="{TemplateBinding BorderBrush}"
             BorderThickness="{TemplateBinding BorderThickness}"
-            CornerRadius="{DynamicResource SliderThumbCornerRadius}" />
+            CornerRadius="{DynamicResource SliderThumbCornerRadius}">
+          <Ellipse x:Name="SliderInnerThumb"
+                   Fill="{TemplateBinding Background}"
+                   Width="{DynamicResource SliderInnerThumbWidth}"
+                   Height="{DynamicResource SliderInnerThumbHeight}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center">
+            <Ellipse.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Width" Duration="0:0:0.167" Easing="0,0 0,1" />
+                <DoubleTransition Property="Height" Duration="0:0:0.167" Easing="0,0 0,1" />
+              </Transitions>
+            </Ellipse.Transitions>
+          </Ellipse>
+        </Border>
       </ControlTemplate>
     </Setter>
+
+    <!-- WinUI Thumb CommonStates: inner ellipse 12px at rest, 14px on hover, 10px pressed. -->
+    <Style Selector="^:pointerover /template/ Ellipse#SliderInnerThumb">
+      <Setter Property="Width" Value="14" />
+      <Setter Property="Height" Value="14" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ Ellipse#SliderInnerThumb">
+      <Setter Property="Width" Value="10" />
+      <Setter Property="Height" Value="10" />
+    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type Slider}" TargetType="Slider">
@@ -127,7 +169,7 @@
                         Height="{DynamicResource SliderOutsideTickBarThemeHeight}"
                         Margin="0,0,0,4"
                         VerticalAlignment="Bottom"
-                        Placement="Top" 
+                        Placement="Top"
                         IsVisible="False"
                         IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
                         Fill="{DynamicResource SliderTickBarFill}"/>
@@ -177,7 +219,6 @@
                           Margin="0"
                           Padding="0"
                           Background="{DynamicResource SliderThumbBackground}"
-                          BorderThickness="0"
                           Theme="{StaticResource FluentSliderThumbTheme}"
                           DataContext="{TemplateBinding Value}"/>
                     </Track>
@@ -229,7 +270,7 @@
                         IsVisible="False"
                         IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
                         Fill="{DynamicResource SliderTickBarFill}"/>
-                    <TickBar 
+                    <TickBar
                         Name="RightTickBar"
                         Grid.RowSpan="3"
                         Grid.Column="2"
@@ -241,7 +282,7 @@
                         Width="{DynamicResource SliderOutsideTickBarThemeHeight}"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
-                        Placement="Right" 
+                        Placement="Right"
                         IsVisible="False"
                         IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
                         Fill="{DynamicResource SliderTickBarFill}"/>
@@ -276,7 +317,6 @@
                           Margin="0"
                           Padding="0"
                           Background="{DynamicResource SliderThumbBackground}"
-                          BorderThickness="0"
                           Theme="{StaticResource FluentSliderThumbTheme}"
                           DataContext="{TemplateBinding Value}" />
                     </Track>
@@ -309,24 +349,20 @@
     <!--  PointerOver State  -->
     <Style Selector="^:pointerover">
       <Style Selector="^ /template/ Grid#SliderContainer">
-        <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundDisabled}" />
+        <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundPointerOver}" />
       </Style>
+
       <Style Selector="^ /template/ RepeatButton#PART_IncreaseButton">
         <Setter Property="Background" Value="{DynamicResource SliderTrackFillPointerOver}" />
-      </Style>
-
-      <Style Selector="^ /template/ Thumb">
-        <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
-      </Style>
-
-      <Style Selector="^ /template/ Grid#SliderContainer">
-        <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundPointerOver}" />
       </Style>
 
       <Style Selector="^ /template/ RepeatButton#PART_DecreaseButton">
         <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillPointerOver}" />
       </Style>
 
+      <Style Selector="^ /template/ Thumb">
+        <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
+      </Style>
     </Style>
 
     <!--  Pressed State  -->

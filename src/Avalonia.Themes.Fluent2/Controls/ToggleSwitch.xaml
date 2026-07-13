@@ -1,4 +1,4 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:ClassModifier="internal">
@@ -16,11 +16,22 @@
     </StackPanel>
   </Design.PreviewWith>
 
-  <Thickness x:Key="ToggleSwitchTopHeaderMargin">0,0,0,6</Thickness>
-  <GridLength x:Key="ToggleSwitchPreContentMargin">6</GridLength>
-  <GridLength x:Key="ToggleSwitchPostContentMargin">6</GridLength>
+  <Thickness x:Key="ToggleSwitchTopHeaderMargin">0,0,0,4</Thickness>
+  <GridLength x:Key="ToggleSwitchPreContentMargin">10</GridLength>
+  <GridLength x:Key="ToggleSwitchPostContentMargin">10</GridLength>
   <x:Double x:Key="ToggleSwitchThemeMinWidth">0</x:Double>
+  <x:Double x:Key="ToggleSwitchKnobSize">12</x:Double>
+  <x:Double x:Key="ToggleSwitchKnobPointerOverSize">14</x:Double>
+  <x:Double x:Key="ToggleSwitchKnobPressedLength">17</x:Double>
+  <x:Double x:Key="ToggleSwitchKnobPressedSize">14</x:Double>
+  <!-- WinUI ControlFastOutSlowInKeySpline -->
+  <Easing x:Key="ToggleSwitchKnobEasing">0,0,0,1</Easing>
 
+  <!-- WinUI reference: ToggleSwitch_themeresources.xaml (DefaultToggleSwitchStyle), tag winui3/release/1.5.2.
+       Track is 40x20 with a 10px corner radius; off = 1px strong stroke over a subtle alt fill,
+       on = accent fill with zero stroke. The 12px knob grows to 14px on hover and stretches to a
+       17x14 pill anchored to the near track edge while pressed; knob size and slide changes use a
+       167ms fast-out-slow-in spline. -->
   <ControlTheme x:Key="{x:Type ToggleSwitch}" TargetType="ToggleSwitch">
     <Setter Property="Foreground" Value="{DynamicResource ToggleSwitchContentForeground}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
@@ -30,9 +41,9 @@
     <Setter Property="KnobTransitions">
       <Transitions>
           <DoubleTransition
-              Easing="CubicEaseOut"
+              Easing="{StaticResource ToggleSwitchKnobEasing}"
               Property="Canvas.Left"
-              Duration="0:0:0.2" />
+              Duration="0:0:0.167" />
         </Transitions>
     </Setter>
     <Setter Property="Template">
@@ -122,13 +133,27 @@
                 <Ellipse
                   x:Name="SwitchKnobOn"
                   Fill="{DynamicResource ToggleSwitchKnobFillOn}"
-                  Width="10"
-                  Height="10" />
+                  Width="{DynamicResource ToggleSwitchKnobSize}"
+                  Height="{DynamicResource ToggleSwitchKnobSize}">
+                  <Ellipse.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Width" Duration="0:0:0.167" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                      <DoubleTransition Property="Height" Duration="0:0:0.167" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                    </Transitions>
+                  </Ellipse.Transitions>
+                </Ellipse>
                 <Ellipse
                   x:Name="SwitchKnobOff"
                   Fill="{DynamicResource ToggleSwitchKnobFillOff}"
-                  Width="10"
-                  Height="10" />
+                  Width="{DynamicResource ToggleSwitchKnobSize}"
+                  Height="{DynamicResource ToggleSwitchKnobSize}">
+                  <Ellipse.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Width" Duration="0:0:0.167" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                      <DoubleTransition Property="Height" Duration="0:0:0.167" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                    </Transitions>
+                  </Ellipse.Transitions>
+                </Ellipse>
               </Grid>
             </Canvas>
           </Grid>
@@ -152,10 +177,14 @@
 
     <Style Selector="^:pointerover /template/ Ellipse#SwitchKnobOff">
       <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOffPointerOver}" />
+      <Setter Property="Width" Value="{DynamicResource ToggleSwitchKnobPointerOverSize}" />
+      <Setter Property="Height" Value="{DynamicResource ToggleSwitchKnobPointerOverSize}" />
     </Style>
 
     <Style Selector="^:pointerover /template/ Ellipse#SwitchKnobOn">
       <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOnPointerOver}" />
+      <Setter Property="Width" Value="{DynamicResource ToggleSwitchKnobPointerOverSize}" />
+      <Setter Property="Height" Value="{DynamicResource ToggleSwitchKnobPointerOverSize}" />
     </Style>
 
     <Style Selector="^:pointerover /template/ Border#SwitchKnobBounds">
@@ -178,12 +207,22 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ToggleSwitchStrokeOnPressed}" />
     </Style>
 
+    <!-- While held, the knob stretches into a 17x14 pill anchored to the near edge of the
+         track (WinUI Pressed state setters). Each knob is only visible in its own state. -->
     <Style Selector="^:pressed /template/ Ellipse#SwitchKnobOff">
       <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOffPressed}" />
+      <Setter Property="Width" Value="{DynamicResource ToggleSwitchKnobPressedLength}" />
+      <Setter Property="Height" Value="{DynamicResource ToggleSwitchKnobPressedSize}" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="Margin" Value="3,0,0,0" />
     </Style>
 
     <Style Selector="^:pressed /template/ Ellipse#SwitchKnobOn">
       <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOnPressed}" />
+      <Setter Property="Width" Value="{DynamicResource ToggleSwitchKnobPressedLength}" />
+      <Setter Property="Height" Value="{DynamicResource ToggleSwitchKnobPressedSize}" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="Margin" Value="0,0,3,0" />
     </Style>
 
     <Style Selector="^:pressed /template/ Grid#SwitchAreaGrid">

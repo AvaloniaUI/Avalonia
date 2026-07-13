@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
   <Design.PreviewWith>
@@ -11,20 +11,25 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: RepeatButton_themeresources.xaml (DefaultRepeatButtonStyle),
+       tag winui3/release/1.5.2. Press feedback is a fill change with an 83ms cross-fade;
+       WinUI has no press scale. -->
   <ControlTheme x:Key="{x:Type RepeatButton}" TargetType="RepeatButton">
     <Setter Property="Background" Value="{DynamicResource RepeatButtonBackground}" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="Foreground" Value="{DynamicResource RepeatButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RepeatButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
+    <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="RenderTransform" Value="none" />
+
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter x:Name="PART_ContentPresenter"
                           Background="{TemplateBinding Background}"
+                          BackgroundSizing="{TemplateBinding BackgroundSizing}"
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           CornerRadius="{TemplateBinding CornerRadius}"
@@ -32,7 +37,13 @@
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Padding="{TemplateBinding Padding}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+          <ContentPresenter.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </ContentPresenter.Transitions>
+        </ContentPresenter>
       </ControlTemplate>
     </Setter>
 
@@ -40,10 +51,6 @@
       <Setter Property="Background" Value="{DynamicResource RepeatButtonBackgroundPointerOver}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RepeatButtonBorderBrushPointerOver}" />
       <Setter Property="Foreground" Value="{DynamicResource RepeatButtonForegroundPointerOver}" />
-    </Style>
-
-    <Style Selector="^:pressed">
-      <Setter Property="RenderTransform" Value="scale(0.98)" />
     </Style>
 
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">

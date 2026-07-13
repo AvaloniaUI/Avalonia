@@ -25,6 +25,10 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- No WinUI counterpart: harmonized with the Fluent 2 token layer.
+       Error text and the error icon use SystemFillColorCriticalBrush; the tooltip-style
+       flyout uses flyout chrome (OverlayCornerRadius, AcrylicInAppFillColorDefaultBrush
+       fallback fill, 1px SurfaceStrokeColorFlyoutBrush stroke). -->
   <ControlTheme x:Key="{x:Type DataValidationErrors}"
                 TargetType="DataValidationErrors">
     <Setter Property="Template">
@@ -50,7 +54,7 @@
     <Setter Property="ErrorTemplate">
       <DataTemplate>
         <ItemsControl x:DataType="DataValidationErrors"
-                      Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                      Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                       ItemsSource="{Binding}">
           <ItemsControl.Styles>
             <Style Selector="TextBlock">
@@ -92,7 +96,10 @@
               <Setter Property="Margin" Value="8,0" />
             </Style>
             <Style Selector="Panel#PART_InlineErrorTemplatePanel ToolTip">
-              <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+              <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
+              <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorFlyoutBrush}" />
+              <Setter Property="BorderThickness" Value="1" />
+              <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
             </Style>
             <Style Selector="Panel#PART_InlineErrorTemplatePanel ToolTip TextBlock">
               <Setter Property="TextWrapping" Value="Wrap" />
@@ -104,7 +111,7 @@
           <Path Width="14"
                 Height="14"
                 Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2"
-                Stroke="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                Stroke="{DynamicResource SystemFillColorCriticalBrush}"
                 StrokeThickness="2" />
         </Panel>
       </DataTemplate>

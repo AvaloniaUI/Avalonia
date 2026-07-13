@@ -10,7 +10,11 @@
               IsEnabled="{Binding $parent[SelectableTextBlock].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}" />
   </MenuFlyout>
 
+  <!-- WinUI reference: TextBlock_themeresources.xaml, tag winui3/release/1.7.1.
+       Selection highlight follows the text controls: TextControlSelectionHighlightColor is
+       re-pointed to AccentFillColorSelectedTextBackgroundBrush in Accents/FluentControlResources.xaml. -->
   <ControlTheme x:Key="{x:Type SelectableTextBlock}" TargetType="SelectableTextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
 
     <Style Selector="^[IsEnabled=True]">

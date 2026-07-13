@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System"
                     xmlns:converters="using:Avalonia.Controls.Converters"
@@ -36,43 +36,66 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- Retained for compatibility: the Fluent 2 spin buttons are borderless, so these
+       converters are no longer used by the template below. -->
   <converters:MarginMultiplierConverter x:Key="ButtonSpinnerLeftThickness" Indent="1" Left="True" />
   <converters:MarginMultiplierConverter x:Key="ButtonSpinnerRightThickness" Indent="1" Right="True" />
   <StreamGeometry x:Key="ButtonSpinnerIncreaseButtonIcon">M0,9 L10,0 20,9 19,10 10,2 1,10 z</StreamGeometry>
   <StreamGeometry x:Key="ButtonSpinnerDecreaseButtonIcon">M0,1 L10,10 20,1 19,0 10,8 1,0 z</StreamGeometry>
 
+  <!-- WinUI reference: NumberBox.xaml (NumberBoxSpinButtonStyle), tag winui3/release/1.7.1.
+       Inline spin buttons are subtle-fill RepeatButtons (transparent at rest, SubtleFillColorSecondary
+       on hover, SubtleFillColorTertiary when pressed) with ControlCornerRadius, inset inside the field.
+       Press feedback is a fill change with an 83ms cross-fade; WinUI has no press scale. -->
   <ControlTheme x:Key="FluentButtonSpinnerRepeatButton" TargetType="RepeatButton">
-    <Setter Property="MinWidth" Value="34" />
+    <Setter Property="MinWidth" Value="32" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource TextControlButtonBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextControlButtonForeground}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter x:Name="PART_ContentPresenter"
                           Background="{TemplateBinding Background}"
+                          BackgroundSizing="InnerBorderEdge"
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
                           Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Padding="{TemplateBinding Padding}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+          <ContentPresenter.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </ContentPresenter.Transitions>
+        </ContentPresenter>
       </ControlTemplate>
     </Setter>
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource RepeatButtonBackgroundPointerOver}" />
+      <Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPointerOver}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextControlButtonForegroundPointerOver}" />
     </Style>
 
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource RepeatButtonBackgroundPressed}" />
+      <Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPressed}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextControlButtonForegroundPressed}" />
     </Style>
 
     <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource RepeatButtonBackgroundDisabled}" />
-      <Setter Property="Foreground" Value="{DynamicResource RepeatButtonForegroundDisabled}" />
+      <Setter Property="Background" Value="{DynamicResource TextControlButtonBackground}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
     </Style>
   </ControlTheme>
 
+  <!-- WinUI reference: NumberBox.xaml / TextBox_themeresources.xaml, tag winui3/release/1.7.1.
+       The control is a TextBox-like field: ControlFillColorDefault fill, hairline elevation border
+       (TextControlElevationBorderBrush), ControlCornerRadius, with the spin buttons laid out inline. -->
   <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
-    <Setter Property="Padding" Value="10, 0" />
+    <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
@@ -82,74 +105,96 @@
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Focusable" Value="True"/>
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Border Background="{TemplateBinding Background}"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{TemplateBinding CornerRadius}"
-                  MinHeight="{TemplateBinding MinHeight}">
-            <DockPanel>
-              <StackPanel Name="PART_SpinnerPanel"
-                          TabIndex="2"
-                          DockPanel.Dock="Right"
-                          Orientation="Horizontal"
-                          IsVisible="{TemplateBinding ShowButtonSpinner}">
-                <RepeatButton Name="PART_IncreaseButton"
-                              IsTabStop="{TemplateBinding IsTabStop}"
-                              Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
-                              Background="{TemplateBinding Background}"
-                              BorderBrush="{TemplateBinding BorderBrush}"
-                              BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerLeftThickness}}"
-                              VerticalAlignment="Stretch"
-                              VerticalContentAlignment="Center"
-                              Foreground="{TemplateBinding Foreground}"
-                              MinWidth="34">
-                  <PathIcon Width="16"
-                            Height="8"
-                            Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
-                </RepeatButton>
+          <Panel>
+            <Border Name="BorderElement"
+                    Background="{TemplateBinding Background}"
+                    BackgroundSizing="InnerBorderEdge"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    MinHeight="{TemplateBinding MinHeight}" />
 
-                <RepeatButton Name="PART_DecreaseButton"
-                              IsTabStop="{TemplateBinding IsTabStop}"
-                              Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
-                              Background="{TemplateBinding Background}"
-                              BorderBrush="{TemplateBinding BorderBrush}"
-                              BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerLeftThickness}}"
-                              VerticalAlignment="Stretch"
-                              VerticalContentAlignment="Center"
-                              Foreground="{TemplateBinding Foreground}"
-                              MinWidth="34">
-                  <PathIcon Width="16"
-                            Height="8"
-                            Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
-                </RepeatButton>
-              </StackPanel>
+            <Border Margin="{TemplateBinding BorderThickness}">
+              <DockPanel>
+                <StackPanel Name="PART_SpinnerPanel"
+                            TabIndex="2"
+                            DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            IsVisible="{TemplateBinding ShowButtonSpinner}">
+                  <RepeatButton Name="PART_IncreaseButton"
+                                IsTabStop="{TemplateBinding IsTabStop}"
+                                Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
+                                Margin="3"
+                                VerticalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Center">
+                    <PathIcon Width="12"
+                              Height="6"
+                              Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
+                  </RepeatButton>
 
-              <ContentPresenter Name="PART_ContentPresenter"
-                                Grid.Column="1"
-                                TabIndex="1"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Content="{TemplateBinding Content}"
-                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Padding="{TemplateBinding Padding}" />
-            </DockPanel>
-          </Border>
+                  <RepeatButton Name="PART_DecreaseButton"
+                                IsTabStop="{TemplateBinding IsTabStop}"
+                                Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
+                                Margin="0,3,3,3"
+                                VerticalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                HorizontalContentAlignment="Center">
+                    <PathIcon Width="12"
+                              Height="6"
+                              Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
+                  </RepeatButton>
+                </StackPanel>
+
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  TabIndex="1"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Content="{TemplateBinding Content}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  Padding="{TemplateBinding Padding}" />
+              </DockPanel>
+            </Border>
+          </Panel>
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
+
+    <!-- Disabled State -->
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundDisabled}" />
+
+      <Style Selector="^ /template/ Border#BorderElement">
+        <Setter Property="Background" Value="{DynamicResource TextControlBackgroundDisabled}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
+      </Style>
+    </Style>
+
+    <!-- PointerOver State. Only the fill changes; the hairline border is left alone so an
+         error border stays visible while hovered (WinUI hover reuses the rest border brush). -->
+    <Style Selector="^:pointerover /template/ Border#BorderElement">
+      <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
+    </Style>
+
+    <!-- Focused State: input-active fill plus the accent focus underline, matching TextBox. -->
+    <Style Selector="^:focus-within /template/ Border#BorderElement">
+      <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}" />
+      <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
+    </Style>
+
     <Style Selector="^:left">
       <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
         <Setter Property="DockPanel.Dock" Value="Left"/>
       </Style>
-      <Style Selector="^ /template/ RepeatButton">
-        <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness, Converter={StaticResource ButtonSpinnerRightThickness}}"/>
-      </Style>
     </Style>
-    <Style Selector="^:error">
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemErrorTextColor}" />
+
+    <Style Selector="^:error /template/ Border#BorderElement">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}" />
     </Style>
   </ControlTheme>
 

@@ -11,10 +11,10 @@
           <ProgressBar Value="50" Minimum="25" Maximum="75" />
           <ProgressBar IsIndeterminate="True" />
           <ProgressBar ShowProgressText="True" Value="50"/>
-          <ProgressBar ShowProgressText="True" 
+          <ProgressBar ShowProgressText="True"
                        ProgressTextFormat="\{1\} percent"
-                       Minimum="50" 
-                       Maximum="100" 
+                       Minimum="50"
+                       Maximum="100"
                        Value="70"/>
         </StackPanel>
         <ProgressBar IsIndeterminate="True" Orientation="Vertical" />
@@ -25,59 +25,80 @@
 
   <converters:StringFormatConverter x:Key="StringFormatConverter"/>
 
+  <!-- WinUI reference: ProgressBar.xaml / ProgressBar_themeresources.xaml, tag winui3/release/1.4.2.
+       Determinate: a 3px (ProgressBarMinHeight) accent bar with 1.5 corner radius riding over a 1px
+       (ProgressBarTrackHeight) centered track line (ControlStrongStrokeColorDefaultBrush, radius 0.5).
+       The bar visual is confined to a MinHeight-tall (MinWidth-wide when vertical) strip centered in
+       the control, matching WinUI's Grid Height="{TemplateBinding MinHeight}".
+       Indeterminate: two rounded accent segments (40%/60% of the track length) sliding across on a 2s
+       loop with 0.4,0,0.6,1 easing, exactly per the WinUI Indeterminate storyboard; the track line is
+       hidden while indeterminate. Vertical orientation and ShowProgressText behaviors are kept. -->
   <ControlTheme x:Key="{x:Type ProgressBar}" TargetType="ProgressBar">
-    <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ControlStrongStrokeColorDefaultBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarBorderThemeThickness}" />
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightTransparentBrush}" />
+    <!-- WinUI ProgressBarCornerRadius -->
+    <Setter Property="CornerRadius" Value="1.5" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
     <Setter Property="MinHeight" Value="{DynamicResource ProgressBarThemeMinHeight}" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate TargetType="ProgressBar">
         <Border
             x:Name="ProgressBarRoot"
-            Background="{TemplateBinding Background}"
             BorderBrush="{TemplateBinding BorderBrush}"
             BorderThickness="{TemplateBinding BorderThickness}"
             ClipToBounds="True"
             CornerRadius="{TemplateBinding CornerRadius}">
           <Panel>
-            <Panel x:Name="DeterminateRoot" Opacity="1">
-              <Panel.Transitions>
-                <Transitions>
-                  <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
-                </Transitions>
-              </Panel.Transitions>
+            <!-- WinUI confines the bar visuals to a MinHeight-tall strip centered in the control. -->
+            <Panel x:Name="ProgressBarTrackArea">
               <Border
-                  x:Name="PART_Indicator"
-                  Margin="{TemplateBinding Padding}"
-                  Background="{TemplateBinding Foreground}"
-                  CornerRadius="{TemplateBinding CornerRadius}" />
-            </Panel>
-            <Panel x:Name="IndeterminateRoot" Opacity="0">
-              <Panel.Transitions>
-                <Transitions>
-                  <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
-                </Transitions>
-              </Panel.Transitions>
-              <Border
-                  x:Name="IndeterminateProgressBarIndicator"
-                  Margin="{TemplateBinding Padding}"
-                  Background="{TemplateBinding Foreground}"
-                  CornerRadius="{TemplateBinding CornerRadius}" />
-              <Border
-                  x:Name="IndeterminateProgressBarIndicator2"
-                  Margin="{TemplateBinding Padding}"
-                  Background="{TemplateBinding Foreground}"
-                  CornerRadius="{TemplateBinding CornerRadius}" />
+                  x:Name="ProgressBarTrack"
+                  Background="{TemplateBinding Background}"
+                  CornerRadius="0.5">
+                <Border.Transitions>
+                  <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
+                  </Transitions>
+                </Border.Transitions>
+              </Border>
+              <Panel x:Name="DeterminateRoot" Opacity="1">
+                <Panel.Transitions>
+                  <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
+                  </Transitions>
+                </Panel.Transitions>
+                <Border
+                    x:Name="PART_Indicator"
+                    Margin="{TemplateBinding Padding}"
+                    Background="{TemplateBinding Foreground}"
+                    CornerRadius="{TemplateBinding CornerRadius}" />
+              </Panel>
+              <Panel x:Name="IndeterminateRoot" Opacity="0">
+                <Panel.Transitions>
+                  <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
+                  </Transitions>
+                </Panel.Transitions>
+                <Border
+                    x:Name="IndeterminateProgressBarIndicator"
+                    Margin="{TemplateBinding Padding}"
+                    Background="{TemplateBinding Foreground}"
+                    CornerRadius="{TemplateBinding CornerRadius}" />
+                <Border
+                    x:Name="IndeterminateProgressBarIndicator2"
+                    Margin="{TemplateBinding Padding}"
+                    Background="{TemplateBinding Foreground}"
+                    CornerRadius="{TemplateBinding CornerRadius}" />
+              </Panel>
             </Panel>
             <LayoutTransformControl
                 x:Name="PART_LayoutTransformControl"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsVisible="{TemplateBinding ShowProgressText}">
-              <TextBlock Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}">
+              <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                   <TextBlock.Text>
                     <MultiBinding Converter="{StaticResource StringFormatConverter}">
                       <TemplateBinding Property="ProgressTextFormat"/>
@@ -93,6 +114,25 @@
         </Border>
       </ControlTemplate>
     </Setter>
+    <Style Selector="^:horizontal /template/ Panel#ProgressBarTrackArea">
+      <Setter Property="Height" Value="{Binding $parent[ProgressBar].MinHeight}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="^:vertical /template/ Panel#ProgressBarTrackArea">
+      <Setter Property="Width" Value="{Binding $parent[ProgressBar].MinWidth}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <!-- WinUI ProgressBarTrackHeight: a 1px line centered within the 3px bar strip. -->
+    <Style Selector="^:horizontal /template/ Border#ProgressBarTrack">
+      <Setter Property="Height" Value="1" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="^:vertical /template/ Border#ProgressBarTrack">
+      <Setter Property="Width" Value="1" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Stretch" />
+    </Style>
     <Style Selector="^:horizontal /template/ Border#PART_Indicator">
       <Setter Property="HorizontalAlignment" Value="Left" />
       <Setter Property="VerticalAlignment" Value="Stretch" />
@@ -103,10 +143,10 @@
     </Style>
     <Style Selector="^:horizontal">
       <Setter Property="MinWidth" Value="200" />
-      <Setter Property="MinHeight" Value="4" />
+      <Setter Property="MinHeight" Value="3" />
     </Style>
     <Style Selector="^:vertical">
-      <Setter Property="MinWidth" Value="4" />
+      <Setter Property="MinWidth" Value="3" />
       <Setter Property="MinHeight" Value="200" />
     </Style>
     <Style Selector="^:vertical /template/ LayoutTransformControl#PART_LayoutTransformControl">
@@ -121,6 +161,10 @@
     </Style>
     <Style Selector="^:indeterminate /template/ Panel#IndeterminateRoot">
       <Setter Property="Opacity" Value="1" />
+    </Style>
+    <!-- WinUI hides the track line while indeterminate (ProgressBarTrack.Opacity = 0). -->
+    <Style Selector="^:indeterminate /template/ Border#ProgressBarTrack">
+      <Setter Property="Opacity" Value="0" />
     </Style>
     <Style Selector="^:horizontal:indeterminate /template/ Border#IndeterminateProgressBarIndicator">
       <Style.Animations>

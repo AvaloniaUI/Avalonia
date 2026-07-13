@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
 
@@ -12,10 +12,15 @@
 
   <Thickness x:Key="HyperlinkButtonBorderThemeThickness">1</Thickness>
 
+  <!-- WinUI reference: HyperlinkButton_themeresources.xaml (DefaultHyperlinkButtonStyle),
+       tag winui3/release/1.5.2. WinUI 3 hyperlink buttons have no text underline; the
+       foreground is the accent text colour and hover/press show a subtle background fill
+       cross-faded over 83ms. WinUI has no press scale. The :visited state is
+       Avalonia-specific and has no WinUI equivalent. -->
   <ControlTheme x:Key="{x:Type HyperlinkButton}" TargetType="HyperlinkButton">
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Background" Value="{DynamicResource HyperlinkButtonBackground}" />
-    <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource HyperlinkButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource HyperlinkButtonBorderThemeThickness}" />
@@ -23,13 +28,6 @@
     <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="RenderTransform" Value="none" />
-    <Setter Property="TextBlock.TextDecorations" Value="Underline" />
-    <Setter Property="Transitions">
-      <Transitions>
-        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.075" />
-      </Transitions>
-    </Setter>
 
     <Setter Property="Template">
       <ControlTemplate>
@@ -43,7 +41,13 @@
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Padding="{TemplateBinding Padding}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+          <ContentPresenter.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </ContentPresenter.Transitions>
+        </ContentPresenter>
       </ControlTemplate>
     </Setter>
 
@@ -55,10 +59,6 @@
       <Setter Property="Background" Value="{DynamicResource HyperlinkButtonBackgroundPointerOver}" />
       <Setter Property="BorderBrush" Value="{DynamicResource HyperlinkButtonBorderBrushPointerOver}" />
       <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundPointerOver}" />
-    </Style>
-
-    <Style Selector="^:pressed">
-      <Setter Property="RenderTransform" Value="scale(0.98)" />
     </Style>
 
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">

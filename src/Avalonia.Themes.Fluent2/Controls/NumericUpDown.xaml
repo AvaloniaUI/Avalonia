@@ -49,6 +49,11 @@
     </Border>
   </Design.PreviewWith>
 
+  <!-- WinUI reference: NumberBox.xaml, tag winui3/release/1.7.1.
+       The control composes a Fluent 2 ButtonSpinner (the TextBox-like field with inline spin
+       buttons) around a chromeless TextBox part. Padding follows TextControlThemePadding, and
+       the inner TextBox supplies the input-active fill and accent focus underline over the text
+       area while the ButtonSpinner mirrors them across the whole field via :focus-within. -->
   <ControlTheme x:Key="{x:Type NumericUpDown}" TargetType="NumericUpDown">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
@@ -97,5 +102,21 @@
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
+
+    <!-- Square off the inner TextBox corners on the spinner side so its focus underline runs
+         straight into the spin-button strip instead of curling up at the rounded corner. -->
+    <Style Selector="^ /template/ TextBox#PART_TextBox">
+      <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
+    </Style>
+    <Style Selector="^[ButtonSpinnerLocation=Left] /template/ TextBox#PART_TextBox">
+      <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
+    </Style>
+    <Style Selector="^[ShowButtonSpinner=False] /template/ TextBox#PART_TextBox">
+      <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+    </Style>
+
+    <Style Selector="^:error /template/ ButtonSpinner#PART_Spinner">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+    </Style>
   </ControlTheme>
 </ResourceDictionary>
