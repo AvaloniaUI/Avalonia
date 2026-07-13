@@ -115,6 +115,7 @@
             <Border
             Name="PART_BorderElement"
             Background="{TemplateBinding Background}"
+            BackgroundSizing="InnerBorderEdge"
             BorderBrush="{TemplateBinding BorderBrush}"
             BorderThickness="{TemplateBinding BorderThickness}"
             CornerRadius="{TemplateBinding CornerRadius}"

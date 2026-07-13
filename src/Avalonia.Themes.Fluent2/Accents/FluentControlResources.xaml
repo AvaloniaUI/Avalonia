@@ -3,32 +3,32 @@
                     x:ClassModifier="internal">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <!-- Resources for Button.xaml -->
-      <StaticResource x:Key="AccentButtonBackground" ResourceKey="SystemControlBackgroundAccentBrush" />
-      <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="{DynamicResource SystemAccentColorLight1}" />
-      <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="{DynamicResource SystemAccentColorDark1}" />
-      <StaticResource x:Key="AccentButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <StaticResource x:Key="AccentButtonForeground" ResourceKey="SystemControlBackgroundChromeWhiteBrush" />
-      <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="SystemControlBackgroundChromeWhiteBrush" />
-      <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="SystemControlBackgroundChromeWhiteBrush" />
-      <StaticResource x:Key="AccentButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="AccentButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-      <StaticResource x:Key="AccentButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
-      <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-      <StaticResource x:Key="AccentButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+      <!-- Resources for Button.xaml (WinUI Button_themeresources.xaml, 1.5.2) -->
+      <StaticResource x:Key="AccentButtonBackground" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="AccentButtonForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="AccentButtonForegroundDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
+      <StaticResource x:Key="AccentButtonBorderBrush" ResourceKey="AccentControlElevationBorderBrush" />
+      <StaticResource x:Key="AccentButtonBorderBrushPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
+      <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="AccentButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
       <Thickness x:Key="ButtonBorderThemeThickness">1</Thickness>
-      <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
-      <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-      <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <StaticResource x:Key="ButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
-      <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
-      <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-      <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
-      <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-      <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+      <StaticResource x:Key="ButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+      <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
+      <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+      <StaticResource x:Key="ButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="ButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
 
       <!-- Resources for RepeatButton.xaml -->
       <StaticResource x:Key="RepeatButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
@@ -240,38 +240,38 @@
       <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
       <Thickness x:Key="HorizontalMenuFlyoutItemThemePaddingNarrow">8,4,8,7</Thickness>
 
-      <!-- Resources for TextBox.xaml -->
-      <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledLowBrush" />
-      <StaticResource x:Key="TextControlBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
-      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="SystemControlBackgroundAltMediumBrush" />
-      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="SystemControlHighlightAccentBrush" />
-      <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
-      <x:Double x:Key="TextControlPlaceholderOpacity">0.5</x:Double>
-      <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
+      <!-- Resources for TextBox.xaml (WinUI TextBox_themeresources.xaml, 1.5.2) -->
+      <StaticResource x:Key="TextControlForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="TextControlBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+      <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderFocusedBrush" />
+      <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <x:Double x:Key="TextControlPlaceholderOpacity">1</x:Double>
+      <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver"
-                      ResourceKey="SystemControlPageTextBaseMediumBrush" />
+                      ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundDisabled"
-                      ResourceKey="SystemControlDisabledChromeDisabledLowBrush" />
-      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="SystemControlHighlightAccentBrush" />
-      <StaticResource x:Key="TextControlButtonBackground" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SystemControlHighlightAccentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
+                      ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackgroundBrush" />
+      <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TextControlButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="TextControlButtonForegroundPressed"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemControlBackgroundAltHighBrush" />
-      <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-      <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-      <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-      <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
+                      ResourceKey="TextFillColorTertiaryBrush" />
+      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ControlFillColorInputActiveBrush" />
+      <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
+      <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
+      <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundFocused"
-                      ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
+                      ResourceKey="TextFillColorSecondaryBrush" />
 
       <!-- Resources for AutoCompleteBox.xaml -->
       <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground"
@@ -280,109 +280,78 @@
 
       <!-- Resources for CheckBox.xaml -->
       <Thickness x:Key="CheckBoxBorderThemeThickness">1</Thickness>
-      <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundUncheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxForegroundChecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundCheckedPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundCheckedPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxForegroundIndeterminate" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundIndeterminatePointerOver"
-                      ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundIndeterminatePressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundIndeterminateDisabled"
-                      ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundUnchecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundUncheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundUncheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundUncheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundChecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundCheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundCheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundCheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundIndeterminate" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundIndeterminatePointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundIndeterminatePressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundIndeterminateDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushUnchecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushUncheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushUncheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushUncheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushChecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushCheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushCheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushCheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushIndeterminate" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushIndeterminatePointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushIndeterminatePressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushIndeterminateDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUnchecked"
-                      ResourceKey="SystemControlForegroundBaseMediumBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver"
-                      ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed"
-                      ResourceKey="SystemControlHighlightBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedDisabled"
-                      ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver"
-                       Color="{DynamicResource SystemAccentColorLight1}" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed"
-                      ResourceKey="SystemControlHighlightTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminate"
-                      ResourceKey="SystemControlHighlightAccentBrush" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePointerOver"
-                       Color="{DynamicResource SystemAccentColorLight1}" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePressed"
-                       Color="{DynamicResource SystemAccentColorDark1}" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminateDisabled"
-                      ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillUnchecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver"
-                      ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPressed"
-                      ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillChecked" ResourceKey="SystemControlHighlightAccentBrush" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver"
-                       Color="{DynamicResource SystemAccentColorLight1}" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed"
-                       Color="{DynamicResource SystemAccentColorDark1}" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedDisabled"
-                      ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminate" ResourceKey="SystemControlHighlightAccentBrush" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePointerOver"
-                       Color="{DynamicResource SystemAccentColorLight1}" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePressed"
-                       Color="{DynamicResource SystemAccentColorDark1}" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminateDisabled"
-                      ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUnchecked"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedPointerOver"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedPressed"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedDisabled"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundChecked"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver"
-                      ResourceKey="SystemControlForegroundChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPressed"
-                      ResourceKey="SystemControlForegroundChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedDisabled"
-                      ResourceKey="SystemControlForegroundChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminate"
-                      ResourceKey="SystemControlForegroundChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver"
-                      ResourceKey="SystemControlForegroundChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed"
-                      ResourceKey="SystemControlForegroundChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled"
-                      ResourceKey="SystemControlForegroundChromeWhiteBrush" />
+      <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundUncheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxForegroundChecked" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundCheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundCheckedPressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxForegroundIndeterminate" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundIndeterminatePointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundIndeterminatePressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundIndeterminateDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundUnchecked" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundUncheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundUncheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundUncheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundChecked" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundCheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundCheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundCheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundIndeterminate" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundIndeterminatePointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundIndeterminatePressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundIndeterminateDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushUnchecked" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushUncheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushUncheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushUncheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushChecked" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushCheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushCheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushCheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushIndeterminate" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushIndeterminatePointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushIndeterminatePressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushIndeterminateDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUnchecked" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedDisabled" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedDisabled" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminate" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminateDisabled" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillUnchecked" ResourceKey="ControlAltFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" ResourceKey="ControlAltFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" ResourceKey="ControlAltFillColorQuarternaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedDisabled" ResourceKey="ControlAltFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminate" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminatePointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminatePressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminateDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUnchecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedPressed" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminate" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
 
       <!-- Resources for Calendar.xaml, CalendarButton.xaml, CalendarDayButton.xaml, CalendarItem.xaml -->
       <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush"
@@ -828,32 +797,32 @@
       <StaticResource x:Key="TitleBarBackgroundBrush" ResourceKey="SystemControlBackgroundAltHighBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <!-- Resources for Button.xaml -->
-      <StaticResource x:Key="AccentButtonBackground" ResourceKey="SystemControlBackgroundAccentBrush" />
-      <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="{DynamicResource SystemAccentColorLight1}" />
-      <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="{DynamicResource SystemAccentColorDark1}" />
-      <StaticResource x:Key="AccentButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <StaticResource x:Key="AccentButtonForeground" ResourceKey="SystemControlBackgroundChromeWhiteBrush" />
-      <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="SystemControlBackgroundChromeWhiteBrush" />
-      <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="SystemControlBackgroundChromeWhiteBrush" />
-      <StaticResource x:Key="AccentButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="AccentButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-      <StaticResource x:Key="AccentButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
-      <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-      <StaticResource x:Key="AccentButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+      <!-- Resources for Button.xaml (WinUI Button_themeresources.xaml, 1.5.2) -->
+      <StaticResource x:Key="AccentButtonBackground" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="AccentButtonForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="AccentButtonForegroundDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
+      <StaticResource x:Key="AccentButtonBorderBrush" ResourceKey="AccentControlElevationBorderBrush" />
+      <StaticResource x:Key="AccentButtonBorderBrushPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
+      <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="AccentButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
       <Thickness x:Key="ButtonBorderThemeThickness">1</Thickness>
-      <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
-      <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-      <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <StaticResource x:Key="ButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
-      <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
-      <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-      <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
-      <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-      <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+      <StaticResource x:Key="ButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+      <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
+      <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+      <StaticResource x:Key="ButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="ButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
 
       <!-- Resources for RepeatButton.xaml -->
       <StaticResource x:Key="RepeatButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
@@ -1066,38 +1035,37 @@
       <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
       <Thickness x:Key="HorizontalMenuFlyoutItemThemePaddingNarrow">8,4,8,7</Thickness>
 
-      <!-- Resources for TextBox.xaml -->
-      <!-- Copied from FluentBaseDark.xaml -->
-      <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledLowBrush" />
-      <StaticResource x:Key="TextControlBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
-      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="SystemControlBackgroundAltMediumBrush" />
-      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-      <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="SystemControlHighlightAccentBrush" />
-      <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
+      <!-- Resources for TextBox.xaml (WinUI TextBox_themeresources.xaml, 1.5.2) -->
+      <StaticResource x:Key="TextControlForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="TextControlBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+      <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderFocusedBrush" />
+      <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver"
-                      ResourceKey="SystemControlPageTextBaseMediumBrush" />
+                      ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundDisabled"
-                      ResourceKey="SystemControlDisabledChromeDisabledLowBrush" />
-      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="SystemControlHighlightAccentBrush" />
-      <StaticResource x:Key="TextControlButtonBackground" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SystemControlHighlightAccentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
+                      ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackgroundBrush" />
+      <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="TextControlButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="TextControlButtonForegroundPressed"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemControlBackgroundAltHighBrush" />
-      <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-      <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-      <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-      <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
+                      ResourceKey="TextFillColorTertiaryBrush" />
+      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ControlFillColorInputActiveBrush" />
+      <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
+      <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
+      <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundFocused"
-                      ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
+                      ResourceKey="TextFillColorSecondaryBrush" />
 
 
       <!-- Resources for AutoCompleteBox.xaml -->
@@ -1107,109 +1075,78 @@
 
       <!-- Resources for Checkbox.xaml -->
       <Thickness x:Key="CheckBoxBorderThemeThickness">1</Thickness>
-      <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundUncheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxForegroundChecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundCheckedPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundCheckedPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxForegroundIndeterminate" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundIndeterminatePointerOver"
-                      ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundIndeterminatePressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxForegroundIndeterminateDisabled"
-                      ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundUnchecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundUncheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundUncheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundUncheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundChecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundCheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundCheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundCheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundIndeterminate" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundIndeterminatePointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundIndeterminatePressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBackgroundIndeterminateDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushUnchecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushUncheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushUncheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushUncheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushChecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushCheckedPointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushCheckedPressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushCheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushIndeterminate" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushIndeterminatePointerOver" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushIndeterminatePressed" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxBorderBrushIndeterminateDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUnchecked"
-                      ResourceKey="SystemControlForegroundBaseMediumBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver"
-                      ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed"
-                      ResourceKey="SystemControlHighlightBaseHighBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedDisabled"
-                      ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver"
-                       Color="{DynamicResource SystemAccentColorDark1}" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed"
-                       Color="{DynamicResource SystemAccentColorLight1}" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminate"
-                      ResourceKey="SystemControlForegroundAccentBrush" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePointerOver"
-                       Color="{DynamicResource SystemAccentColorLight1}" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePressed"
-                       Color="{DynamicResource SystemAccentColorDark1}" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminateDisabled"
-                      ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillUnchecked" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver"
-                      ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPressed"
-                      ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedDisabled" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillChecked" ResourceKey="SystemControlHighlightAccentBrush" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver"
-                       Color="{DynamicResource SystemAccentColorLight1}" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed"
-                       Color="{DynamicResource SystemAccentColorDark1}" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedDisabled"
-                      ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminate" ResourceKey="SystemControlHighlightAccentBrush" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePointerOver"
-                       Color="{DynamicResource SystemAccentColorLight1}" />
-      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePressed"
-                       Color="{DynamicResource SystemAccentColorDark1}" />
-      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminateDisabled"
-                      ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUnchecked"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedPointerOver"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedPressed"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedDisabled"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundChecked"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPressed"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedDisabled"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminate"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled"
-                      ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
+      <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundUncheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxForegroundChecked" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundCheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundCheckedPressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxForegroundIndeterminate" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundIndeterminatePointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundIndeterminatePressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxForegroundIndeterminateDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundUnchecked" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundUncheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundUncheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundUncheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundChecked" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundCheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundCheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundCheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundIndeterminate" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundIndeterminatePointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundIndeterminatePressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBackgroundIndeterminateDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushUnchecked" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushUncheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushUncheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushUncheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushChecked" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushCheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushCheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushCheckedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushIndeterminate" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushIndeterminatePointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushIndeterminatePressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxBorderBrushIndeterminateDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUnchecked" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedDisabled" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedDisabled" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminate" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundStrokeIndeterminateDisabled" ResourceKey="ControlStrongStrokeColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillUnchecked" ResourceKey="ControlAltFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" ResourceKey="ControlAltFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" ResourceKey="ControlAltFillColorQuarternaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedDisabled" ResourceKey="ControlAltFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminate" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminatePointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminatePressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckBackgroundFillIndeterminateDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUnchecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedPressed" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundUncheckedDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminate" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
 
       <!-- Resources for Calendar.xaml, CalendarButton.xaml, CalendarDayButton.xaml, CalendarItem.xaml -->
       <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush"

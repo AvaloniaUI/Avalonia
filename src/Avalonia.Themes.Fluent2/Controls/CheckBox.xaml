@@ -13,16 +13,19 @@
   </Design.PreviewWith>
 
   <StreamGeometry x:Key="CheckMarkPathData">M5.5 10.586 1.707 6.793A1 1 0 0 0 .293 8.207l4.5 4.5a1 1 0 0 0 1.414 0l11-11A1 1 0 0 0 15.793.293L5.5 10.586Z</StreamGeometry>
-  <x:Double x:Key="CheckBoxMinHeight">32</x:Double> 
-  
+  <x:Double x:Key="CheckBoxMinHeight">32</x:Double>
+  <x:Double x:Key="CheckBoxMinWidth">120</x:Double>
+
+  <!-- WinUI reference: CheckBox_themeresources.xaml (DefaultCheckBoxStyle), tag winui3/release/1.5.2 -->
   <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
-    <Setter Property="Padding" Value="8,0,0,0" />
+    <Setter Property="Padding" Value="8,5,0,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Top" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinHeight" Value="{DynamicResource CheckBoxMinHeight}" />
+    <Setter Property="MinWidth" Value="{DynamicResource CheckBoxMinWidth}" />
     <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
     <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUnchecked}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUnchecked}" />
@@ -144,7 +147,7 @@
       <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushChecked}" />
 
       <Style Selector="^ /template/ Border#NormalRectangle">
-        <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundFillChecked}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeChecked}" />
         <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillChecked}" />
       </Style>
 
