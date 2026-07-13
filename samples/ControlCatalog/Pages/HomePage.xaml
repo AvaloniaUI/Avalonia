@@ -1,7 +1,6 @@
 <ContentPage Theme="{StaticResource ScrollPage}"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="using:ControlCatalog"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
              x:Class="ControlCatalog.Pages.HomePage"
              x:DataType="viewModels:MainWindowViewModel"
@@ -60,51 +59,41 @@
 
   <StackPanel Spacing="28" Margin="0,0,15,20" HorizontalAlignment="Stretch">
 
-    <!-- Hero banner -->
-    <Border CornerRadius="16" ClipToBounds="True" Height="220" HorizontalAlignment="Stretch">
-      <Border.Background>
-        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-          <GradientStop Offset="0" Color="#6D28D9" />
-          <GradientStop Offset="0.55" Color="#4338CA" />
-          <GradientStop Offset="1" Color="#2563EB" />
-        </LinearGradientBrush>
-      </Border.Background>
+    <!-- Hero banner (1:1 from the Accelerate demo dashboard) -->
+    <Border CornerRadius="20" ClipToBounds="True" HorizontalAlignment="Stretch" Height="220">
       <Grid ClipToBounds="True">
-        <!-- Floating control glyphs, animated from code-behind -->
+        <Image Source="/Assets/banner-bg.png"
+               Stretch="UniformToFill" />
         <Canvas IsHitTestVisible="False">
-          <PathIcon x:Name="FloatIcon1"
-                    Data="{x:Static local:Icons.CursorClick}"
-                    Foreground="#26FFFFFF"
-                    Width="120" Height="120"
-                    Canvas.Left="-30" Canvas.Bottom="-25" />
-          <PathIcon x:Name="FloatIcon2"
-                    Data="{x:Static local:Icons.Palette}"
-                    Foreground="#21FFFFFF"
-                    Width="96" Height="96"
-                    Canvas.Left="200" Canvas.Top="-30" />
-          <PathIcon x:Name="FloatIcon3"
-                    Data="{x:Static local:Icons.Calendar}"
-                    Foreground="#26FFFFFF"
-                    Width="110" Height="110"
-                    Canvas.Right="-25" Canvas.Top="-20" />
-          <PathIcon x:Name="FloatIcon4"
-                    Data="{x:Static local:Icons.Toggle}"
-                    Foreground="#21FFFFFF"
-                    Width="130" Height="130"
-                    Canvas.Right="170" Canvas.Bottom="-40" />
+          <Image x:Name="BannerLogo1"
+                 Source="/Assets/logo1.png"
+                 Width="230"
+                 Stretch="Uniform"
+                 Canvas.Left="-60"
+                 Canvas.Bottom="-50" />
+          <Image x:Name="BannerLogo2"
+                 Source="/Assets/logo2.png"
+                 Width="150"
+                 Stretch="Uniform"
+                 Canvas.Left="240"
+                 Canvas.Top="-60" />
+          <Image x:Name="BannerLogo3"
+                 Source="/Assets/logo3.png"
+                 Width="210"
+                 Stretch="Uniform"
+                 Canvas.Right="-70"
+                 Canvas.Top="-50" />
+          <Image x:Name="BannerLogo4"
+                 Source="/Assets/logo4.png"
+                 Width="170"
+                 Stretch="Uniform"
+                 Canvas.Right="40"
+                 Canvas.Bottom="-60" />
         </Canvas>
-        <!-- Centered lockup -->
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
-          <Image Source="/Assets/Icon.png" Height="64" />
-          <TextBlock Text="Avalonia Control Catalog"
-                     FontSize="26" FontWeight="Bold"
-                     Foreground="White"
-                     HorizontalAlignment="Center" />
-          <TextBlock Text="Explore every control, on every platform, in every theme"
-                     FontSize="13"
-                     Foreground="#B3FFFFFF"
-                     HorizontalAlignment="Center" />
-        </StackPanel>
+        <Image Source="/Assets/banner-logo.png"
+               Width="220"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
       </Grid>
     </Border>
 
