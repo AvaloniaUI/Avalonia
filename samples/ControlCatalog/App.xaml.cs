@@ -37,7 +37,7 @@ namespace ControlCatalog
             _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
             _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
 
-            SetCatalogThemes(CatalogTheme.Fluent);
+            SetCatalogThemes(CatalogTheme.Fluent2);
         }
 
         public override void OnFrameworkInitializationCompleted()
