@@ -48,6 +48,12 @@ Migrating from `Avalonia.Themes.Fluent`: change the package reference and swap
 | Scroll bars | 16 px rail | **12 px rail, 2 px collapsed thumb** |
 | Window background | AltHigh | **SolidBackgroundFillColorBase** (#F3F3F3/#202020) |
 | Default accent shades | HSL-computed | **WinUI static values** (when no OS accent) |
+| OS accent shades (Windows) | HSL-computed | **read from the OS** (`UISettings` Light1–3/Dark1–3) |
+
+One deliberate deviation from WinUI (following FluentAvalonia's lead): CheckBox
+and RadioButton do **not** get WinUI's forced 120 px `MinWidth` — they size to
+content plus 8 px trailing padding, as in v1. Set the `CheckBoxMinWidth` /
+`RadioButtonMinWidth` resources to restore the WinUI metric.
 
 The full WinUI 3 token family (`TextFillColor*`, `ControlFillColor*`,
 `SubtleFillColor*`, `ControlStrokeColor*`, `CardBackgroundFillColor*`,
@@ -64,8 +70,10 @@ legacy `SystemControl*` aliases.
 - No HighContrast variant yet (same as v1).
 - AnimatedIcon glyph animations are approximated with static glyphs and simple
   transitions.
-- OS-provided accent colors still use HSL-computed shades, which can deviate
-  slightly from Windows' palette algorithm.
+- On Windows the six accent shades (`SystemAccentColorDark1`…`Light3`) come
+  straight from the OS; on platforms that report only a base accent color
+  (macOS, Linux) the shades are HSL-computed and can deviate slightly from
+  Windows' palette algorithm.
 
 ## Compatibility tests
 

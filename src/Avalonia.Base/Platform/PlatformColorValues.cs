@@ -61,6 +61,37 @@ public record PlatformColorValues
         init => _accentColor3 = value;
     }
 
+    /// <summary>
+    /// Dark shade 1 of <see cref="AccentColor1"/>, when the platform provides one (Windows does).
+    /// Null when the platform only reports the base accent color; consumers are expected to compute a shade instead.
+    /// </summary>
+    public Color? AccentColorDark1 { get; init; }
+
+    /// <summary>
+    /// Dark shade 2 of <see cref="AccentColor1"/>, when the platform provides one. See <see cref="AccentColorDark1"/>.
+    /// </summary>
+    public Color? AccentColorDark2 { get; init; }
+
+    /// <summary>
+    /// Dark shade 3 of <see cref="AccentColor1"/>, when the platform provides one. See <see cref="AccentColorDark1"/>.
+    /// </summary>
+    public Color? AccentColorDark3 { get; init; }
+
+    /// <summary>
+    /// Light shade 1 of <see cref="AccentColor1"/>, when the platform provides one. See <see cref="AccentColorDark1"/>.
+    /// </summary>
+    public Color? AccentColorLight1 { get; init; }
+
+    /// <summary>
+    /// Light shade 2 of <see cref="AccentColor1"/>, when the platform provides one. See <see cref="AccentColorDark1"/>.
+    /// </summary>
+    public Color? AccentColorLight2 { get; init; }
+
+    /// <summary>
+    /// Light shade 3 of <see cref="AccentColor1"/>, when the platform provides one. See <see cref="AccentColorDark1"/>.
+    /// </summary>
+    public Color? AccentColorLight3 { get; init; }
+
     public PlatformColorValues()
     {
         AccentColor1 = DefaultAccent;

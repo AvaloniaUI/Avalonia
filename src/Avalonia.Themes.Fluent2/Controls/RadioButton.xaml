@@ -12,7 +12,9 @@
   </Design.PreviewWith>
 
   <x:Double x:Key="RadioButtonMinHeight">32</x:Double>
-  <x:Double x:Key="RadioButtonMinWidth">120</x:Double>
+  <!-- WinUI forces MinWidth=120, which breaks desktop form layouts (and v1 never had it).
+       Deliberately 0 here; override this resource to restore the WinUI metric. -->
+  <x:Double x:Key="RadioButtonMinWidth">0</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphSize">12</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphPointerOverSize">14</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphPressedOverSize">10</x:Double>
@@ -28,7 +30,9 @@
     <Setter Property="Foreground" Value="{DynamicResource RadioButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <Setter Property="Padding" Value="8,6,0,0" />
+    <!-- WinUI pads 8,6,0,0 and relies on MinWidth for trailing space; with MinWidth dropped,
+         8px right padding keeps a sane hit target (same amendment FluentAvalonia made). -->
+    <Setter Property="Padding" Value="8,6,8,0" />
     <Setter Property="MinWidth" Value="{DynamicResource RadioButtonMinWidth}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />

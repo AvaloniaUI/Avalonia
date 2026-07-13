@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Styling;
 
 namespace Avalonia.Themes.Fluent2.UnitTests;
@@ -63,6 +64,48 @@ public class PaletteTests
         {
             app.Styles.Remove(theme);
         }
+    }
+
+    [AvaloniaFact]
+    public void Platform_provided_accent_shades_take_precedence_over_computed_ones()
+    {
+        var originalSettings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        Assert.NotNull(originalSettings);
+        AvaloniaLocator.CurrentMutable.Bind<IPlatformSettings>().ToConstant(new ShadeReportingPlatformSettings());
+
+        var theme = new Fluent2Theme();
+        var app = Application.Current!;
+        app.Styles.Add(theme);
+        try
+        {
+            Assert.True(app.TryGetResource("SystemAccentColor", ThemeVariant.Light, out var accent));
+            Assert.Equal(Colors.Crimson, Assert.IsType<Color>(accent));
+
+            // The OS-reported shades are used verbatim, not HSL-computed from the base color.
+            Assert.True(app.TryGetResource("SystemAccentColorDark1", ThemeVariant.Light, out var dark1));
+            Assert.Equal(Colors.DarkRed, Assert.IsType<Color>(dark1));
+            Assert.True(app.TryGetResource("SystemAccentColorLight3", ThemeVariant.Light, out var light3));
+            Assert.Equal(Colors.MistyRose, Assert.IsType<Color>(light3));
+        }
+        finally
+        {
+            app.Styles.Remove(theme);
+            AvaloniaLocator.CurrentMutable.Bind<IPlatformSettings>().ToConstant(originalSettings);
+        }
+    }
+
+    private sealed class ShadeReportingPlatformSettings : DefaultPlatformSettings
+    {
+        public override PlatformColorValues GetColorValues() => new()
+        {
+            AccentColor1 = Colors.Crimson,
+            AccentColorDark1 = Colors.DarkRed,
+            AccentColorDark2 = Colors.Maroon,
+            AccentColorDark3 = Colors.Brown,
+            AccentColorLight1 = Colors.Salmon,
+            AccentColorLight2 = Colors.LightSalmon,
+            AccentColorLight3 = Colors.MistyRose,
+        };
     }
 
     [AvaloniaFact]

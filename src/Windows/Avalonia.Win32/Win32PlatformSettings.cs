@@ -73,8 +73,14 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
                     PlatformThemeVariant.Dark :
                     PlatformThemeVariant.Light,
                 ContrastPreference = ColorContrastPreference.NoPreference,
-                AccentColor1 = accent
-            };   
+                AccentColor1 = accent,
+                AccentColorDark1 = uiSettings.GetColorValue(UIColorType.AccentDark1).ToAvalonia(),
+                AccentColorDark2 = uiSettings.GetColorValue(UIColorType.AccentDark2).ToAvalonia(),
+                AccentColorDark3 = uiSettings.GetColorValue(UIColorType.AccentDark3).ToAvalonia(),
+                AccentColorLight1 = uiSettings.GetColorValue(UIColorType.AccentLight1).ToAvalonia(),
+                AccentColorLight2 = uiSettings.GetColorValue(UIColorType.AccentLight2).ToAvalonia(),
+                AccentColorLight3 = uiSettings.GetColorValue(UIColorType.AccentLight3).ToAvalonia()
+            };
         }
     }
     
