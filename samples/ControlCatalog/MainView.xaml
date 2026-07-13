@@ -124,6 +124,7 @@
                     ToolTip.Tip="Catalog Theme">
             <ComboBox.Items>
               <models:CatalogTheme>Fluent</models:CatalogTheme>
+              <models:CatalogTheme>Fluent2</models:CatalogTheme>
               <models:CatalogTheme>Simple</models:CatalogTheme>
             </ComboBox.Items>
           </ComboBox>

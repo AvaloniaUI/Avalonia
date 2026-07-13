@@ -16,6 +16,7 @@ namespace ControlCatalog
     {
         private readonly Styles _themeStylesContainer = new();
         private FluentTheme? _fluentTheme;
+        private Avalonia.Themes.Fluent2.Fluent2Theme? _fluent2Theme;
         private SimpleTheme? _simpleTheme;
         private IStyle? _colorPickerFluent, _colorPickerSimple;
 
@@ -31,6 +32,7 @@ namespace ControlCatalog
             AvaloniaXamlLoader.Load(this);
 
             _fluentTheme = (FluentTheme)Resources["FluentTheme"]!;
+            _fluent2Theme = (Avalonia.Themes.Fluent2.Fluent2Theme)Resources["Fluent2Theme"]!;
             _simpleTheme = (SimpleTheme)Resources["SimpleTheme"]!;
             _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
             _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
@@ -123,6 +125,11 @@ namespace ControlCatalog
             if (theme == CatalogTheme.Fluent)
             {
                 app._themeStylesContainer[0] = app._fluentTheme!;
+                app._themeStylesContainer[1] = app._colorPickerFluent!;
+            }
+            else if (theme == CatalogTheme.Fluent2)
+            {
+                app._themeStylesContainer[0] = app._fluent2Theme!;
                 app._themeStylesContainer[1] = app._colorPickerFluent!;
             }
             else if (theme == CatalogTheme.Simple)
