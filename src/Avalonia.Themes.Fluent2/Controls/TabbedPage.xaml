@@ -19,20 +19,20 @@
   <!-- Backgrounds -->
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselected" Color="Transparent" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelected" Color="Transparent" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPointerOver" Color="{DynamicResource SystemListLowColor}" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPointerOver" Color="{DynamicResource SubtleFillColorSecondary}" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPointerOver" Color="Transparent" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPressed" Color="{DynamicResource SystemListMediumColor}" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPressed" Color="{DynamicResource SubtleFillColorTertiary}" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPressed" Color="Transparent" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundDisabled" Color="Transparent" />
 
   <!-- Foregrounds (override via TabbedPageTabItemHeaderForegroundSelected / TabbedPageTabItemHeaderForegroundUnselected resources) -->
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundUnselected" Color="{DynamicResource SystemBaseMediumColor}" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelected" Color="{DynamicResource SystemAccentColor}" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundDisabled" Color="{DynamicResource SystemBaseLowColor}" />
-  <x:Double x:Key="TabbedPageTabItemHeaderPipeThickness">2</x:Double>
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundUnselected" Color="{DynamicResource TextFillColorSecondary}" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelected" Color="{DynamicResource TextFillColorPrimary}" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundDisabled" Color="{DynamicResource TextFillColorDisabled}" />
+  <x:Double x:Key="TabbedPageTabItemHeaderPipeThickness">3</x:Double>
   <x:Double x:Key="TabbedPageTabItemHeaderVerticalPipeHeight">18</x:Double>
 
-  <CornerRadius x:Key="TabbedPageTabItemHeaderIndicatorCornerRadius">0</CornerRadius>
+  <CornerRadius x:Key="TabbedPageTabItemHeaderIndicatorCornerRadius">1.5</CornerRadius>
   <Thickness x:Key="TabbedPageTabItemHeaderIndicatorMargin">0</Thickness>
 
   <!-- Tab item sizing & shape -->
@@ -46,11 +46,12 @@
   <x:Double x:Key="TabbedPageTabItemHeaderFontSize">12</x:Double>
   <x:Double x:Key="TabbedPageTabItemHeaderSpacing">4</x:Double>
 
-  <!-- Tab strip (bar) styling -->
-  <SolidColorBrush x:Key="TabbedPageTabStripBackground" Color="Transparent" />
+  <!-- Tab strip (bar) styling. Divider edge defaults to the top (Bottom placement);
+       the other placements are corrected via TabStripPlacement styles below. -->
+  <SolidColorBrush x:Key="TabbedPageTabStripBackground" Color="{DynamicResource SolidBackgroundFillColorBaseAlt}" />
   <CornerRadius x:Key="TabbedPageTabStripCornerRadius">0</CornerRadius>
-  <Thickness x:Key="TabbedPageTabStripBorderThickness">0</Thickness>
-  <SolidColorBrush x:Key="TabbedPageTabStripBorderBrush" Color="Transparent" />
+  <Thickness x:Key="TabbedPageTabStripBorderThickness">0,1,0,0</Thickness>
+  <SolidColorBrush x:Key="TabbedPageTabStripBorderBrush" Color="{DynamicResource DividerStrokeColorDefault}" />
   <Thickness x:Key="TabbedPageTabStripMargin">0</Thickness>
   <Thickness x:Key="TabbedPageTabStripPadding">0</Thickness>
 
@@ -66,6 +67,7 @@
         <DockPanel>
           <Border Name="PART_TabStrip"
                   Background="{TemplateBinding Background}"
+                  BackgroundSizing="InnerBorderEdge"
                   CornerRadius="{TemplateBinding CornerRadius}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
@@ -98,6 +100,17 @@
       <Setter Property="Rows" Value="0" />
       <Setter Property="Columns" Value="1" />
     </Style>
+
+    <!-- Keep the 1px divider on the edge that faces the content for each placement. -->
+    <Style Selector="^[TabStripPlacement=Top]">
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style Selector="^[TabStripPlacement=Left]">
+      <Setter Property="BorderThickness" Value="0,0,1,0" />
+    </Style>
+    <Style Selector="^[TabStripPlacement=Right]">
+      <Setter Property="BorderThickness" Value="1,0,0,0" />
+    </Style>
   </ControlTheme>
 
   <!-- TabbedPage TabItem theme -->
@@ -114,7 +127,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="IndicatorTemplate">
       <DataTemplate>
-        <Border Background="{Binding $parent[TabItem].Foreground}"
+        <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
                 CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                 Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                 HorizontalAlignment="Stretch"
@@ -184,7 +197,7 @@
     <Style Selector="^[TabStripPlacement=Right]">
       <Setter Property="IndicatorTemplate">
         <DataTemplate>
-          <Border Background="{Binding $parent[TabItem].Foreground}"
+          <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
                   CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                   Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                   Width="{DynamicResource TabbedPageTabItemHeaderPipeThickness}"
@@ -199,7 +212,7 @@
     <Style Selector="^[TabStripPlacement=Left]">
       <Setter Property="IndicatorTemplate">
         <DataTemplate>
-          <Border Background="{Binding $parent[TabItem].Foreground}"
+          <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
                   CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                   Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                   Width="{DynamicResource TabbedPageTabItemHeaderPipeThickness}"
@@ -240,13 +253,13 @@
 
     <!-- Focus visible -->
     <Style Selector="^:focus-visible /template/ Border#PART_LayoutRoot">
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource FocusStrokeColorOuterBrush}" />
       <Setter Property="BorderThickness" Value="2" />
     </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type TabbedPage}" TargetType="TabbedPage">
-    <Setter Property="Background" Value="{DynamicResource SystemControlPageBackgroundAltHighBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Panel Background="{TemplateBinding Background}">

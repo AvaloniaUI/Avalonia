@@ -10,8 +10,8 @@
 
   <StreamGeometry x:Key="NavigationPageBackIcon">M12.7347,4.20949 C13.0332,3.92233 13.508,3.93153 13.7952,4.23005 C14.0823,4.52857 14.0731,5.00335 13.7746,5.29051 L5.50039,13.25 L24.2532,13.25 C24.6674,13.25 25.0032,13.5858 25.0032,13.9999982 C25.0032,14.4142 24.6674,14.75 24.2532,14.75 L5.50137,14.75 L13.7746,22.7085 C14.0731,22.9957 14.0823,23.4705 13.7952,23.769 C13.508,24.0675 13.0332,24.0767 12.7347,23.7896 L3.30673,14.7202 C2.89776,14.3268 2.89776,13.6723 3.30673,13.2788 L12.7347,4.20949 Z</StreamGeometry>
 
-  <SolidColorBrush x:Key="NavigationBarBackground" Color="{DynamicResource SystemChromeMediumColor}" />
-  <SolidColorBrush x:Key="NavigationBarForeground" Color="{DynamicResource SystemBaseMediumColor}" />
+  <SolidColorBrush x:Key="NavigationBarBackground" Color="{DynamicResource SolidBackgroundFillColorBaseAlt}" />
+  <SolidColorBrush x:Key="NavigationBarForeground" Color="{DynamicResource TextFillColorPrimary}" />
 
   <ControlTheme x:Key="{x:Type NavigationPage}" TargetType="NavigationPage">
     <!-- Transparent keeps the hit-test surface active for the back-swipe gesture edge area. -->
@@ -75,6 +75,9 @@
                   ZIndex="1"
                   VerticalAlignment="Top"
                   ClipToBounds="True"
+                  BackgroundSizing="InnerBorderEdge"
+                  BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                  BorderThickness="0,0,0,1"
                   Height="{TemplateBinding EffectiveBarHeight}">
             <Grid Margin="12,0,0,0" ColumnDefinitions="Auto, *, Auto">
               <Grid.Styles>
@@ -83,16 +86,16 @@
                   <Setter Property="CornerRadius" Value="4" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:disabled">
                   <Setter Property="Opacity" Value="0.4" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+                  <Setter Property="BorderBrush" Value="{DynamicResource FocusStrokeColorOuterBrush}" />
                   <Setter Property="BorderThickness" Value="2" />
                   <Setter Property="CornerRadius" Value="4" />
                 </Style>
@@ -104,20 +107,23 @@
                   <Setter Property="CornerRadius" Value="0" />
                 </Style>
                 <Style Selector="Button#PART_OverflowButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                 </Style>
                 <Style Selector="Button#PART_OverflowButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
                 </Style>
               </Grid.Styles>
 
               <Button x:Name="PART_BackButton"
                       Grid.Column="0"
                       Background="Transparent"
+                      BorderThickness="0"
                       Foreground="{DynamicResource NavigationBarForeground}"
                       IsVisible="{TemplateBinding IsBackButtonEffectivelyVisible}"
-                      VerticalAlignment="Stretch"
-                      Padding="8,0"
+                      Width="40"
+                      Height="40"
+                      VerticalAlignment="Center"
+                      Padding="0"
                       ToolTip.Tip="{x:Null}">
                 <Panel Background="Transparent">
                   <Path Data="{DynamicResource NavigationPageBackIcon}"
@@ -137,7 +143,8 @@
 
               <ContentPresenter Name="PART_Header"
                                 Grid.Column="1"
-                                FontSize="20"
+                                FontSize="14"
+                                FontWeight="SemiBold"
                                 Foreground="{DynamicResource NavigationBarForeground}"
                                 Content="{Binding CurrentPage?.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
                                 ContentTemplate="{Binding CurrentPage?.HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"

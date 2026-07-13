@@ -13,11 +13,13 @@
   <StreamGeometry x:Key="DrawerPaneButtonIcon">M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z</StreamGeometry>
 
   <x:Double x:Key="NavigationControlNavBarHeight">48</x:Double>
-  <SolidColorBrush x:Key="NavigationControlNavBarBackground" Color="{DynamicResource SystemChromeMediumColor}" />
+  <SolidColorBrush x:Key="NavigationControlNavBarBackground" Color="{DynamicResource SolidBackgroundFillColorBaseAlt}" />
 
   <ControlTheme x:Key="{x:Type DrawerPage}" TargetType="DrawerPage">
-    <Setter Property="Background" Value="{DynamicResource SystemControlPageBackgroundAltHighBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <!-- Smoke layer shown behind the drawer in the overlay display modes. -->
+    <Setter Property="BackdropBrush" Value="{DynamicResource SmokeFillColorDefaultBrush}" />
     <Setter Property="Template">
       <ControlTemplate>
         <SplitView Name="PART_SplitView"
@@ -81,6 +83,9 @@
                 Padding="5"
                 Height="{DynamicResource NavigationControlNavBarHeight}"
                 Background="{DynamicResource NavigationControlNavBarBackground}"
+                BackgroundSizing="InnerBorderEdge"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1"
                 DockPanel.Dock="Top">
                 <DockPanel HorizontalAlignment="Stretch">
                   <DockPanel.Styles>
@@ -128,6 +133,9 @@
                 Padding="5"
                 Height="{DynamicResource NavigationControlNavBarHeight}"
                 Background="{DynamicResource NavigationControlNavBarBackground}"
+                BackgroundSizing="InnerBorderEdge"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0"
                 DockPanel.Dock="Bottom"
                 IsVisible="False">
                 <DockPanel HorizontalAlignment="Stretch">

@@ -2,30 +2,42 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:DataType="WindowNotificationManager"
                     x:ClassModifier="internal">
+  <!-- WinUI reference: InfoBar_themeresources.xaml, winui3/release/1.4.2 (via Uno.UI.FluentTheme.v2).
+       Stack metrics follow the WinUI teaching-tip/notification idiom: 8px gap between cards, 16px inset
+       from the window edges. Title/message typography per InfoBar: title SemiBold 14 TextFillColorPrimary
+       (InfoBarTitleFontWeight/FontSize), message 14 (message uses TextFillColorSecondary here — WinUI
+       InfoBar uses Primary for both; see conversion notes). Vertical InfoBarPanel margins: title 0,14,0,0,
+       message +4, 16 bottom padding. Horizontal padding comes from the NotificationCard template. -->
   <ControlTheme x:Key="{x:Type WindowNotificationManager}" TargetType="WindowNotificationManager">
     <Setter Property="Margin" Value="0 0" />
     <Setter Property="Template">
       <ControlTemplate>
-        <ReversibleStackPanel Name="PART_Items">
+        <ReversibleStackPanel Name="PART_Items" Margin="16" Spacing="8">
           <ReversibleStackPanel.DataTemplates>
             <DataTemplate DataType="INotification">
               <StackPanel
-                  Margin="12"
-                  Spacing="8"
-                  TextElement.Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}">
-                <TextBlock FontWeight="Medium" Text="{Binding Title}" />
+                  Margin="0,14,0,16"
+                  Spacing="4"
+                  TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                <TextBlock FontWeight="SemiBold"
+                           FontSize="14"
+                           Text="{Binding Title}"
+                           TextWrapping="Wrap" />
                 <TextBlock
                     MaxHeight="80"
-                    Margin="0,0,12,0"
+                    FontSize="14"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                     Text="{Binding Message}"
                     TextWrapping="Wrap" />
               </StackPanel>
             </DataTemplate>
             <DataTemplate DataType="x:String">
               <TextBlock
-                  Margin="12"
-                  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
-                  Text="{Binding}" />
+                  Margin="0,14,0,14"
+                  FontSize="14"
+                  Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                  Text="{Binding}"
+                  TextWrapping="Wrap" />
             </DataTemplate>
           </ReversibleStackPanel.DataTemplates>
         </ReversibleStackPanel>

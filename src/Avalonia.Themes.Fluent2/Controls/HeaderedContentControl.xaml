@@ -1,6 +1,16 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <HeaderedContentControl Header="Header">
+        <TextBlock Text="Content" />
+      </HeaderedContentControl>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- No WinUI counterpart. The header follows the WinUI BodyStrong text style
+       (14px SemiBold, TextFillColorPrimary) with an 8px gap between header and content. -->
   <ControlTheme x:Key="{x:Type HeaderedContentControl}"
                 TargetType="HeaderedContentControl">
 
@@ -16,6 +26,10 @@
             <ContentPresenter Name="PART_HeaderPresenter"
                               Content="{TemplateBinding Header}"
                               ContentTemplate="{TemplateBinding HeaderTemplate}"
+                              FontSize="{DynamicResource ControlContentThemeFontSize}"
+                              FontWeight="SemiBold"
+                              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                              Margin="0,0,0,8"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                               Grid.Row="0" />
@@ -36,7 +50,7 @@
 
     <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
       <Setter Property="RecognizesAccessKey" Value="True" />
-    </Style> 
+    </Style>
 
   </ControlTheme>
 </ResourceDictionary>

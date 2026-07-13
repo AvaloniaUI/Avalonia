@@ -1,6 +1,11 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <!-- WinUI reference: RefreshVisualizer.xaml / RefreshVisualizer_themeresources.xaml.
+       Structure matches WinUI (root Grid, MinHeight 80, Height 100, transparent
+       background). The progress glyph inherits the control Foreground, harmonized to
+       AccentFillColorDefault so the refresh affordance reads as the accent-colored
+       progress indicator. -->
   <ControlTheme x:Key="{x:Type RefreshVisualizer}"
                 TargetType="RefreshVisualizer">
     <Setter Property="IsTabStop" Value="False"/>
@@ -10,7 +15,7 @@
     <Setter Property="Background"
             Value="{DynamicResource RefreshVisualizerBackground}"/>
     <Setter Property="Foreground"
-            Value="{DynamicResource RefreshVisualizerForeground}"/>
+            Value="{DynamicResource AccentFillColorDefaultBrush}"/>
     <Setter Property="Content">
       <Template>
         <PathIcon Name="PART_Icon"

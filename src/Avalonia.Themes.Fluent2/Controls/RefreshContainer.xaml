@@ -1,8 +1,16 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <!-- WinUI reference: RefreshContainer.xaml / RefreshContainer_themeresources.xaml
+       (DefaultRefreshContainerStyle). Structure matches WinUI: a root Grid hosting the
+       content presenter with the visualizer presenter Grid layered on top. WinUI's
+       RefreshContainerBackgroundBrush is Transparent in every theme. WinUI's Foreground
+       setter (RefreshContainerForegroundBrush) is intentionally not mirrored so user
+       content keeps its inherited foreground; the visualizer brings its own. -->
   <ControlTheme x:Key="{x:Type RefreshContainer}"
                 TargetType="RefreshContainer">
+    <Setter Property="IsTabStop" Value="False"/>
+    <Setter Property="Background" Value="Transparent"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>

@@ -1,15 +1,25 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
   <x:Double x:Key="ControlContentThemeFontSize">14</x:Double>
   <x:Double x:Key="TextControlThemeMinHeight">24</x:Double>
   <x:Double x:Key="TextControlThemeMinWidth">32</x:Double>
-  <Thickness x:Key="TextControlThemePadding">4, 2</Thickness>
-  <Thickness x:Key="ListBoxItemPadding">4,2</Thickness>
+  <!-- Base 10,5,6,6: horizontal kept so text stays aligned with ComboBox/Button; vertical trimmed to 1/3
+       so a 20px text line fits the 24px compact min-height (same 1/3 rhythm as compact ComboBoxPadding). -->
+  <Thickness x:Key="TextControlThemePadding">10,1,6,3</Thickness>
+  <!-- Base 12,0,12,0: v1's -8 horizontal trim applied; vertical stays 0 because the Fluent 2 row height
+       comes from ListBoxItemMinHeight (defined locally in Controls/ListBoxItem.xaml, not overridable here). -->
+  <x:Double x:Key="ListBoxItemMinHeight">24</x:Double>
+  <Thickness x:Key="ListBoxItemPadding">4,0,4,0</Thickness>
   <x:Double x:Key="ListViewItemMinHeight">24</x:Double>
+  <!-- Unchanged from base 11,5,11,7 (v1 compact did not reduce this key either). -->
   <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
+  <!-- Base 11,4,11,5: vertical normalized to 4 (v1 did the same from 4/7); horizontal tightened as in v1. -->
   <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">4 4 8 4</Thickness>
+  <!-- Half of the Fluent 2 base 10,4 - happens to equal the v1 compact value. -->
   <Thickness x:Key="MenuBarItemPadding">5, 2</Thickness>
+  <!-- Base dropped 32 -> 28 in Fluent 2; held at the 24px compact floor shared by the other item heights
+       (the raw -8 delta would give 20, i.e. bare line height with no breathing room). -->
   <x:Double x:Key="TreeViewItemMinHeight">24</x:Double>
   <Thickness x:Key="TimePickerHostPadding">0,1,0,2</Thickness>
   <Thickness x:Key="DatePickerHostPadding">0,1,0,2</Thickness>
@@ -20,7 +30,9 @@
   <x:Double x:Key="NavigationViewItemOnLeftMinHeight">32</x:Double>
   <x:Double x:Key="TabItemMinHeight">28</x:Double>
   <Thickness x:Key="TabItemHeaderMargin">6, 0</Thickness>
-  <Thickness x:Key="ButtonPadding">6,4</Thickness>
+  <!-- v1 trimmed 8,5,8,6 -> 6,4; the same trim on the Fluent 2 base 11,5,11,6 gives 9,4
+       (a 28px compact button: 20px line + 4 + 4, matching v1's compact button height). -->
+  <Thickness x:Key="ButtonPadding">9,4</Thickness>
   <x:Double x:Key="CheckBoxMinHeight">24</x:Double>
   <x:Double x:Key="RadioButtonMinHeight">24</x:Double>
 </ResourceDictionary>

@@ -1,8 +1,19 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="8">
+        <Label Content="_Label" />
+        <Label Content="Disabled label" IsEnabled="False" />
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
 
+  <!-- No WinUI counterpart (Label is WPF-style). Harmonized with the Fluent 2 text tokens:
+       TextFillColorPrimary at rest, TextFillColorDisabled when disabled. -->
   <ControlTheme x:Key="{x:Type Label}" TargetType="Label">
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     <Setter Property="Padding" Value="3"/>
     <Setter Property="Template">
       <ControlTemplate>
@@ -21,6 +32,10 @@
 
     <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

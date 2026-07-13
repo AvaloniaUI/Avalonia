@@ -1,14 +1,28 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+    <Design.PreviewWith>
+      <Border Padding="20">
+        <Grid Width="200" Height="80" ColumnDefinitions="*,Auto,*">
+          <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+          <GridSplitter Grid.Column="1" />
+          <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+        </Grid>
+      </Border>
+    </Design.PreviewWith>
+
+    <!-- No WinUI counterpart (closest is the Windows Community Toolkit GridSplitter/SizerBase).
+         Harmonized with the Fluent 2 interaction fills: transparent at rest,
+         SubtleFillColorSecondary while hovered or dragged, accent drag preview. -->
     <ControlTheme x:Key="{x:Type GridSplitter}" TargetType="GridSplitter">
       <Setter Property="Focusable" Value="True" />
       <Setter Property="MinWidth" Value="6" />
       <Setter Property="MinHeight" Value="6" />
-      <Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+      <!-- Transparent (not null) so the splitter stays hit-testable at rest. -->
+      <Setter Property="Background" Value="Transparent" />
       <Setter Property="PreviewContent">
         <Template>
-          <Rectangle Fill="{DynamicResource SystemAccentColor}" />
+          <Rectangle Fill="{DynamicResource AccentFillColorDefaultBrush}" />
         </Template>
       </Setter>
       <Setter Property="Template">
@@ -19,5 +33,13 @@
                   Background="{TemplateBinding Background}" />
         </ControlTemplate>
       </Setter>
+
+      <Style Selector="^:pointerover">
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+      </Style>
+
+      <Style Selector="^:pressed">
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+      </Style>
     </ControlTheme>
 </ResourceDictionary>
