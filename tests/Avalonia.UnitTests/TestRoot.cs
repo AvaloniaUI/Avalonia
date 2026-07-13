@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -30,11 +31,15 @@ namespace Avalonia.UnitTests
             SetPresentationSourceForRootVisual(this);
         }
 
-        class NullHitTester : IHitTester
+        class NullHitTester :  IHitTester
         {
             public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter) => Array.Empty<Visual>();
 
+            public IEnumerable<Visual> HitTest(Geometry geometry, Visual root, Func<Visual, bool> filter) => Array.Empty<Visual>();
+
             public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter) => null;
+
+            public Visual? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter) => null;
         }
 
         public TestRoot(Control? child)

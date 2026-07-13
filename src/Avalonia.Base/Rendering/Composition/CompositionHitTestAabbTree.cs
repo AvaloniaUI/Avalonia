@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Collections.Pooled;
+using Avalonia.Media;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering.Composition;
@@ -139,6 +140,41 @@ internal sealed class CompositionHitTestAabbTree
         }
     }
 
+    public void Query(Rect bounds, PooledList<CompositionVisual> results, ulong readbackRevision)
+    {
+        var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
+        var stack = ArrayPool<int>.Shared.Rent(16);
+        var candidateCount = 0;
+
+        try
+        {
+            for (var i = _buckets.Count - 1; i >= 0; i--)
+            {
+                UpdateBucket(i, readbackRevision);
+
+                var bucket = _buckets[i];
+                if (bucket.Root == Null && bucket.Unbounded is not { Count: > 0 })
+                    continue;
+
+                candidateCount = 0;
+                var stackCount = 0;
+                QueryBucket(bucket, bounds, ref candidates, ref candidateCount, ref stack, ref stackCount);
+                candidates.AsSpan(0, candidateCount).Sort(s_candidateComparer);
+
+                for (var j = 0; j < candidateCount; j++)
+                    results.Add(candidates[j].Visual);
+
+                candidates.AsSpan(0, candidateCount).Clear();
+            }
+        }
+        finally
+        {
+            candidates.AsSpan(0, candidateCount).Clear();
+            ArrayPool<Candidate>.Shared.Return(candidates);
+            ArrayPool<int>.Shared.Return(stack);
+        }
+    }
+
     public CompositionVisual? QueryFirst(CompositionTarget target, Point point, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter, ulong readbackRevision)
     {
         var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
@@ -163,6 +199,47 @@ internal sealed class CompositionHitTestAabbTree
                 for (var j = 0; j < candidateCount; j++)
                 {
                     var hit = target.HitTestFirstCore(candidates[j].Visual, point, filter, resultFilter);
+                    if (hit != null)
+                        return hit;
+                }
+
+                candidates.AsSpan(0, candidateCount).Clear();
+            }
+        }
+        finally
+        {
+            candidates.AsSpan(0, candidateCount).Clear();
+            ArrayPool<Candidate>.Shared.Return(candidates);
+            ArrayPool<int>.Shared.Return(stack);
+        }
+
+        return null;
+    }
+
+    public CompositionVisual? QueryFirst(CompositionTarget target, Geometry geometry, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter, ulong readbackRevision)
+    {
+        var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
+        var stack = ArrayPool<int>.Shared.Rent(16);
+        var candidateCount = 0;
+
+        try
+        {
+            for (var i = _buckets.Count - 1; i >= 0; i--)
+            {
+                UpdateBucket(i, readbackRevision);
+
+                var bucket = _buckets[i];
+                if (bucket.Root == Null && bucket.Unbounded is not { Count: > 0 })
+                    continue;
+
+                candidateCount = 0;
+                var stackCount = 0;
+                QueryBucket(bucket, geometry.Bounds, ref candidates, ref candidateCount, ref stack, ref stackCount);
+                candidates.AsSpan(0, candidateCount).Sort(s_candidateComparer);
+
+                for (var j = 0; j < candidateCount; j++)
+                {
+                    var hit = target.HitTestFirstCore(candidates[j].Visual, geometry, filter, resultFilter);
                     if (hit != null)
                         return hit;
                 }
@@ -251,6 +328,36 @@ internal sealed class CompositionHitTestAabbTree
             var node = _nodes[nodeIndex];
 
             if (!node.Bounds.Contains(point))
+                continue;
+
+            if (node.IsLeaf)
+            {
+                if (node.Visual != null)
+                    AddCandidate(ref candidates, ref candidateCount, new Candidate(node.Visual, node.Order));
+            }
+            else
+            {
+                PushQueryNode(ref stack, ref stackCount, node.Child1);
+                PushQueryNode(ref stack, ref stackCount, node.Child2);
+            }
+        }
+
+        if (bucket.Unbounded != null)
+            foreach (var visual in bucket.Unbounded)
+                if (_entries.TryGetValue(visual, out var entry))
+                    AddCandidate(ref candidates, ref candidateCount, new Candidate(visual, entry.Order));
+    }
+
+    private void QueryBucket(Bucket bucket, Rect bounds, ref Candidate[] candidates, ref int candidateCount, ref int[] stack, ref int stackCount)
+    {
+        PushQueryNode(ref stack, ref stackCount, bucket.Root);
+
+        while (stackCount > 0)
+        {
+            var nodeIndex = stack[--stackCount];
+            var node = _nodes[nodeIndex];
+
+            if (!node.Bounds.Overlaps(new LtrbRect(bounds)))
                 continue;
 
             if (node.IsLeaf)

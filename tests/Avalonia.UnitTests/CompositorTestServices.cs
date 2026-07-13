@@ -9,6 +9,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering;
@@ -107,10 +108,24 @@ public class CompositorTestServices : IDisposable
         Assert.Equal(expected, tested);
     }
 
+    public void AssertHitTest(Geometry geometry, Func<Visual, bool>? filter, params Visual[] expected)
+    {
+        RunJobs();
+        var tested = Renderer.HitTest(geometry, TopLevel, filter);
+        Assert.Equal(expected, tested);
+    }
+
     public void AssertHitTestFirst(Point pt, Func<Visual, bool>? filter, Visual? expected)
     {
         RunJobs();
         var tested = Renderer.HitTestFirst(pt, TopLevel, filter);
+        Assert.Equal(expected, tested);
+    }
+
+    public void AssertHitTestFirst(Geometry geometry, Func<Visual, bool>? filter, Visual? expected)
+    {
+        RunJobs();
+        var tested = Renderer.HitTestFirst(geometry, TopLevel, filter);
         Assert.Equal(expected, tested);
     }
 

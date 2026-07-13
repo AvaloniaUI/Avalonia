@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
-using Avalonia.Utilities;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -169,6 +168,28 @@ namespace Avalonia.Skia
                 _pathCache.Dispose();
                 _pathCache = default;
             }
+        }
+
+        /// <inheritdoc />
+        public IntersectionDetail FillContains(IGeometryImpl geometry)
+        {
+            var other = geometry as GeometryImpl;
+            if (other == null || FillPath == null || other.FillPath == null)
+                return IntersectionDetail.Empty;
+
+            var region = new SKRegion(FillPath);
+            var otherRegion = new SKRegion(other.FillPath);
+
+            if(region.Contains(otherRegion))
+                return IntersectionDetail.FullyInside;
+
+            if (otherRegion.Contains(region))
+                return IntersectionDetail.FullyContains;
+
+            if (region.Intersects(otherRegion))
+                return IntersectionDetail.Intersects;
+
+            return IntersectionDetail.Empty;
         }
 
         private struct PathCache : IDisposable

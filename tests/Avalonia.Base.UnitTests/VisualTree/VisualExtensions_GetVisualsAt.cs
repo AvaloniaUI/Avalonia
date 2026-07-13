@@ -51,6 +51,44 @@ namespace Avalonia.Base.UnitTests.VisualTree
         }
 
         [Fact]
+        public void Should_Find_Control_With_Geometry()
+        {
+            Border target;
+            using var services = new CompositorTestServices(new Size(200, 200))
+            {
+                TopLevel =
+                {
+                    Content = new StackPanel
+                    {
+                        Background = null,
+                        Children =
+                        {
+                            (target = new Border
+                            {
+                                Width = 100,
+                                Height = 200,
+                                Background = Brushes.Red,
+                            }),
+                            new Border
+                            {
+                                Width = 100,
+                                Height = 200,
+                                Background = Brushes.Green,
+                            }
+                        },
+                        Orientation = Orientation.Horizontal,
+                    }
+                }
+            };
+
+            services.RunJobs();
+            var geo = new RectangleGeometry(target.Bounds);
+            var result = target.GetVisualsAt(geo);
+
+            Assert.Same(target, result.Single());
+        }
+
+        [Fact]
         public void Should_Not_Find_Sibling_Control()
         {
             Border target;

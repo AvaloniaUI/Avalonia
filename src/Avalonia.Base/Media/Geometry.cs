@@ -1,8 +1,8 @@
 using System;
-using Avalonia.Platform;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Drawing;
@@ -118,6 +118,16 @@ namespace Avalonia.Media
         public bool FillContains(Point point)
         {
             return PlatformImpl?.FillContains(point) == true;
+        }
+
+        /// <summary>
+        /// Returns a value that describes the intersection between the current geometry and the specified geometry
+        /// </summary>
+        /// <param name="geometry">The geometry to test for containment.</param>
+        /// <returns>The <see cref="IntersectionDetail"/> describing the intersection between the geometries</returns>
+        public IntersectionDetail? FillContains(Geometry geometry)
+        {
+            return geometry.PlatformImpl == null ? IntersectionDetail.Empty : PlatformImpl?.FillContains(geometry.PlatformImpl);
         }
 
         /// <summary>

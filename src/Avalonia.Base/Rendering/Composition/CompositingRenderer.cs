@@ -126,6 +126,41 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     }
 
     /// <inheritdoc/>
+    public IEnumerable<Visual> HitTest(Geometry geometry, Visual? root, Func<Visual, bool>? filter)
+    {
+        using var _ = Diagnostic.PerformingHitTest();
+
+        CompositionVisual? rootVisual = null;
+        if (root != null)
+        {
+            if (root.CompositionVisual == null)
+                yield break;
+            rootVisual = root.CompositionVisual;
+        }
+
+        Func<CompositionVisual, bool>? f = null;
+        if (filter != null)
+            f = v =>
+            {
+                if (v is CompositionDrawListVisual dlv)
+                    return filter(dlv.Visual);
+                return true;
+            };
+
+        using var res = CompositionTarget.TryHitTest(geometry, rootVisual, f);
+        if (res == null)
+            yield break;
+        foreach (var v in res)
+        {
+            if (v is CompositionDrawListVisual dv)
+            {
+                if (filter == null || filter(dv.Visual))
+                    yield return dv.Visual;
+            }
+        }
+    }
+
+    /// <inheritdoc/>
     public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter)
     {
         using var _ = Diagnostic.PerformingHitTest();
@@ -138,6 +173,21 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             v => v is not CompositionDrawListVisual dlv || filter(dlv.Visual);
 
         return CompositionTarget.TryHitTestFirst(p, root.CompositionVisual, f, static v => v is CompositionDrawListVisual) is CompositionDrawListVisual dv ? dv.Visual : null;
+    }
+
+    /// <inheritdoc/>
+    public Visual? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter)
+    {
+        using var _ = Diagnostic.PerformingHitTest();
+
+        if (root.CompositionVisual == null)
+            return null;
+
+        Func<CompositionVisual, bool>? f = filter is null
+            ? null :
+            v => v is not CompositionDrawListVisual dlv || filter(dlv.Visual);
+
+        return CompositionTarget.TryHitTestFirst(geometry, root.CompositionVisual, f, static v => v is CompositionDrawListVisual) is CompositionDrawListVisual dv ? dv.Visual : null;
     }
 
     /// <inheritdoc/>
