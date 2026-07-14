@@ -628,14 +628,21 @@
     return GetNSStringAndRelease(automationPeer->GetAutomationId());
 }
 
-- (IAvnAutomationPeer* _Nonnull) automationPeer
+- (IAvnAutomationPeer* _Nullable) automationPeer
 {
     auto parent = _parent.tryGet();
     if (parent && _automationPeer == nullptr)
     {
-        _automationPeer = parent->BaseEvents->GetAutomationPeer();
-        _automationNode = new AvnAutomationNode(self);
-        _automationPeer->SetNode(_automationNode);
+        // GetAutomationPeer() returns null off the UI thread (e.g. an accessibility
+        // hit-test dispatched on a background thread), so guard against a null peer
+        // before SetNode rather than crashing. See #21777.
+        auto peer = parent->BaseEvents->GetAutomationPeer();
+        if (peer != nullptr)
+        {
+            _automationPeer = peer;
+            _automationNode = new AvnAutomationNode(self);
+            _automationPeer->SetNode(_automationNode);
+        }
     }
 
     return _automationPeer;
