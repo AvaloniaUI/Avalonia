@@ -23,5 +23,6 @@
     <CompilerVisibleProperty Include="AvaloniaUseCompiledBindingsByDefault" />
     <CompilerVisibleProperty Include="AvaloniaMainPackageVersion" />
     <CompilerVisibleProperty Include="AvaloniaPreviewerNetCoreToolPath" />
+    <CompilerVisibleProperty Include="AvaloniaResourcePaths" />
   </ItemGroup>
 </Project>

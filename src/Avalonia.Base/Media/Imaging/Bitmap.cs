@@ -147,7 +147,7 @@ namespace Avalonia.Media.Imaging
         IRef<IBitmapImpl> IBitmap.PlatformImpl => PlatformImpl;
 
         /// <summary>
-        /// Saves the bitmap to a file.
+        /// Saves the bitmap to a file, in PNG format.
         /// </summary>
         /// <param name="fileName">The filename.</param>
         /// <param name="quality">
@@ -155,23 +155,44 @@ namespace Avalonia.Media.Imaging
         /// The quality value is interpreted from 0 - 100. If quality is null the default quality 
         /// setting is applied.
         /// </param>
+        [Obsolete($"Use the overload accepting {nameof(BitmapEncoderOptions)} instead.")]
         public void Save(string fileName, int? quality = null)
+            => Save(fileName, PngBitmapEncoderOptions.Default);
+
+        /// <summary>
+        /// Saves the bitmap to a file with the specified options.
+        /// </summary>
+        /// <param name="fileName">The filename.</param>
+        /// <param name="options">
+        /// The options specifying the format and settings to use.
+        /// Typical usages include <see cref="PngBitmapEncoderOptions"/> and <see cref="JpegBitmapEncoderOptions"/>.
+        /// </param>
+        public void Save(string fileName, BitmapEncoderOptions options)
         {
-            PlatformImpl.Item.Save(fileName, quality);
+            using var stream = File.Create(fileName);
+
+            Save(stream, options);
         }
 
         /// <summary>
-        /// Saves the bitmap to a stream.
+        /// Saves the bitmap to a stream, in PNG format.
         /// </summary>
         /// <param name="stream">The stream.</param>
         /// <param name="quality">
-        /// The optional quality for compression. 
-        /// The quality value is interpreted from 0 - 100. If quality is null the default quality 
+        /// The optional quality for compression.
+        /// The quality value is interpreted from 0 - 100. If quality is null the default quality
         /// setting is applied.
         /// </param>
+        [Obsolete($"Use the overload accepting {nameof(BitmapEncoderOptions)} instead.")]
         public void Save(Stream stream, int? quality = null)
         {
-            PlatformImpl.Item.Save(stream, quality);
+            PlatformImpl.Item.Save(stream, PngBitmapEncoderOptions.Default);
+        }
+
+        /// <inheritdoc />
+        public void Save(Stream stream, BitmapEncoderOptions options)
+        {
+            PlatformImpl.Item.Save(stream, options);
         }
 
         public virtual PixelFormat? Format => (PlatformImpl.Item as IReadableBitmapImpl)?.Format;
