@@ -22,6 +22,60 @@ namespace Avalonia.Controls.UnitTests;
 
 public class NavigationPageTests
 {
+    private static NavigationPage CreateNavigationPage(IPageTransition? transition = null)
+    {
+        var nav = new NavigationPage
+        {
+            PageTransition = transition,
+            Template = CreateNavigationPageTemplate()
+        };
+        var root = new TestRoot { Child = nav };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        return nav;
+    }
+
+    private static IControlTemplate CreateNavigationPageTemplate()
+    {
+        return new FuncControlTemplate<NavigationPage>((_, ns) =>
+        {
+            var contentHost = new Panel
+            {
+                Name = "PART_ContentHost",
+                Children =
+                {
+                    new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
+                    new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
+                }
+            }.RegisterInNameScope(ns);
+
+            return new Panel
+            {
+                Children =
+                {
+                    new Border
+                    {
+                        Name = "PART_NavigationBar",
+                        Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns)
+                    }.RegisterInNameScope(ns),
+                    contentHost,
+                    new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
+                    new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
+                    new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
+                }
+            };
+        });
+    }
+
+    private sealed class ControllableTransition(Task gate) : IPageTransition
+    {
+        public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+        {
+            to?.IsVisible = true;
+            await gate;
+            from?.IsVisible = false;
+        }
+    }
+
     public class PushTests : ScopedTestBase
     {
         [Fact]
@@ -1784,6 +1838,86 @@ public class NavigationPageTests
             Assert.Null(modal.Navigation);
             Assert.False(modal.IsInNavigationPage);
         }
+
+        [Fact]
+        public async Task Pop_KeepsOutgoingPageInLogicalTree_UntilTransitionCompletes()
+        {
+            var gate = new TaskCompletionSource();
+            var nav = CreateNavigationPage();
+
+            var root = new ContentPage();
+            var top = new ContentPage();
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
+
+            nav.PageTransition = new ControllableTransition(gate.Task);
+
+            var popTask = nav.PopAsync();
+
+            // The outgoing page is still animating out, so it must remain in the logical tree.
+            Assert.Contains(top, nav.GetLogicalChildren());
+
+            gate.SetResult();
+            await popTask;
+
+            // Once the transition completes, the page is detached.
+            Assert.DoesNotContain(top, nav.GetLogicalChildren());
+            Assert.Contains(root, nav.GetLogicalChildren());
+        }
+
+        [Fact]
+        public async Task Replace_KeepsOutgoingPageInLogicalTree_UntilTransitionCompletes()
+        {
+            var gate = new TaskCompletionSource();
+            var nav = CreateNavigationPage();
+
+            var original = new ContentPage();
+            await nav.PushAsync(original);
+
+            nav.PageTransition = new ControllableTransition(gate.Task);
+
+            var replacement = new ContentPage();
+            var replaceTask = nav.ReplaceAsync(replacement);
+
+            // The replaced page is still animating out, so both pages are in the logical tree.
+            Assert.Contains(original, nav.GetLogicalChildren());
+            Assert.Contains(replacement, nav.GetLogicalChildren());
+
+            gate.SetResult();
+            await replaceTask;
+
+            Assert.DoesNotContain(original, nav.GetLogicalChildren());
+            Assert.Contains(replacement, nav.GetLogicalChildren());
+        }
+
+        [Fact]
+        public async Task PopToRoot_KeepsVisibleTopPageInLogicalTree_UntilTransitionCompletes()
+        {
+            var gate = new TaskCompletionSource();
+            var nav = CreateNavigationPage();
+
+            var root = new ContentPage();
+            var middle = new ContentPage();
+            var top = new ContentPage();
+            await nav.PushAsync(root);
+            await nav.PushAsync(middle);
+            await nav.PushAsync(top);
+
+            nav.PageTransition = new ControllableTransition(gate.Task);
+
+            var popTask = nav.PopToRootAsync();
+
+            // The hidden intermediate page is detached eagerly, but the visible top page is
+            // animating out and must stay attached until the transition completes.
+            Assert.DoesNotContain(middle, nav.GetLogicalChildren());
+            Assert.Contains(top, nav.GetLogicalChildren());
+
+            gate.SetResult();
+            await popTask;
+
+            Assert.DoesNotContain(top, nav.GetLogicalChildren());
+            Assert.Contains(root, nav.GetLogicalChildren());
+        }
     }
 
     public class PopAllModalsTests : ScopedTestBase
@@ -2440,69 +2574,6 @@ public class NavigationPageTests
             Assert.False(navigatedFromDuringTransition);
             Assert.False(navigatedToDuringTransition);
         }
-
-        private static NavigationPage CreateNavigationPage(IPageTransition? transition)
-        {
-            var nav = new NavigationPage
-            {
-                PageTransition = transition,
-                Template = NavigationPageTemplate()
-            };
-            var root = new TestRoot { Child = nav };
-            root.LayoutManager.ExecuteInitialLayoutPass();
-            return nav;
-        }
-
-        private static IControlTemplate NavigationPageTemplate()
-        {
-            return new FuncControlTemplate<NavigationPage>((parent, ns) =>
-            {
-                var contentHost = new Panel
-                {
-                    Name = "PART_ContentHost",
-                    Children =
-                    {
-                        new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
-                        new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
-                    }
-                }.RegisterInNameScope(ns);
-
-                return new Panel
-                {
-                    Children =
-                    {
-                        new Border
-                        {
-                            Name = "PART_NavigationBar",
-                            Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns)
-                        }.RegisterInNameScope(ns),
-                        contentHost,
-                        new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
-                        new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
-                        new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
-                    }
-                };
-            });
-        }
-
-        private class ControllableTransition : IPageTransition
-        {
-            private readonly Task _gate;
-
-            public ControllableTransition(Task gate)
-            {
-                _gate = gate;
-            }
-
-            public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
-            {
-                if (to != null)
-                    to.IsVisible = true;
-                await _gate;
-                if (from != null)
-                    from.IsVisible = false;
-            }
-        }
     }
 
     public class SwipeGestureTests : ScopedTestBase
@@ -2654,59 +2725,6 @@ public class NavigationPageTests
 
             Assert.False(nav.IsNavigating);
         }
-
-        private static NavigationPage CreateNavigationPage(IPageTransition? transition)
-        {
-            var nav = new NavigationPage
-            {
-                PageTransition = transition,
-                Template = new FuncControlTemplate<NavigationPage>((parent, ns) =>
-                {
-                    return new Panel
-                    {
-                        Children =
-                        {
-                            new Panel
-                            {
-                                Name = "PART_ContentHost",
-                                Children =
-                                {
-                                    new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
-                                    new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
-                                }
-                            }.RegisterInNameScope(ns),
-                            new Border { Name = "PART_NavigationBar",
-                                Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns) }.RegisterInNameScope(ns),
-                            new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
-                            new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
-                            new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
-                        }
-                    };
-                })
-            };
-            var root = new TestRoot { Child = nav };
-            root.LayoutManager.ExecuteInitialLayoutPass();
-            return nav;
-        }
-
-        private class ControllableTransition : IPageTransition
-        {
-            private readonly Task _gate;
-
-            public ControllableTransition(Task gate)
-            {
-                _gate = gate;
-            }
-
-            public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
-            {
-                if (to != null)
-                    to.IsVisible = true;
-                await _gate;
-                if (from != null)
-                    from.IsVisible = false;
-            }
-        }
     }
 
     public class VisualTreeLifecycleTests : ScopedTestBase
@@ -2714,35 +2732,7 @@ public class NavigationPageTests
         [Fact]
         public async Task Detach_And_Reattach_PreservesModalStack()
         {
-            var nav = new NavigationPage
-            {
-                Template = new FuncControlTemplate<NavigationPage>((parent, ns) =>
-                {
-                    return new Panel
-                    {
-                        Children =
-                        {
-                            new Panel
-                            {
-                                Name = "PART_ContentHost",
-                                Children =
-                                {
-                                    new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
-                                    new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
-                                }
-                            }.RegisterInNameScope(ns),
-                            new Border
-                            {
-                                Name = "PART_NavigationBar",
-                                Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns)
-                            }.RegisterInNameScope(ns),
-                            new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
-                            new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
-                            new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
-                        }
-                    };
-                })
-            };
+            var nav = new NavigationPage { Template = CreateNavigationPageTemplate() };
 
             var root = new TestRoot { Child = nav };
             root.LayoutManager.ExecuteInitialLayoutPass();
