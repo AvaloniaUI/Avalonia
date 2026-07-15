@@ -633,9 +633,6 @@
     auto parent = _parent.tryGet();
     if (parent && _automationPeer == nullptr)
     {
-        // GetAutomationPeer() returns null off the UI thread (e.g. an accessibility
-        // hit-test dispatched on a background thread), so guard against a null peer
-        // before SetNode rather than crashing. See #21777.
         auto peer = parent->BaseEvents->GetAutomationPeer();
         if (peer != nullptr)
         {
