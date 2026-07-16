@@ -232,7 +232,9 @@ namespace Avalonia.Android
 
             // UI debug metadata
             nodeInfo.ClassName = peer.GetClassName();
-            nodeInfo.UniqueId = peer.GetAutomationId();
+            var automationId = peer.GetAutomationId();
+            nodeInfo.UniqueId = automationId;
+            nodeInfo.ViewIdResourceName = automationId;
 
             // Common control state
             nodeInfo.Enabled = peer.IsEnabled();
