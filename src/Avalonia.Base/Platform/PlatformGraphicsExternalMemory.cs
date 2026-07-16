@@ -8,6 +8,7 @@ public record struct PlatformGraphicsExternalImageProperties
     public ulong MemorySize { get; set; }
     public ulong MemoryOffset { get; set; }
     public bool TopLeftOrigin { get; set; }
+    public uint ImageLayout { get; set; }
 }
 
 public enum PlatformGraphicsExternalImageFormat
