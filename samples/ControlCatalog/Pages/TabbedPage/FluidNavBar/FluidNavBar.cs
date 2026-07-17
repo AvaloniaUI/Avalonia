@@ -18,7 +18,7 @@ namespace ControlCatalog.Pages
     /// The bar background has a bezier "dip" that travels to the selected tab.
     /// Each icon is drawn progressively using SKPathMeasure for the fill animation.
     /// </summary>
-    public class FluidNavBar : Control, Avalonia.Rendering.ICustomHitTest
+    public partial class FluidNavBar : Control, Avalonia.Rendering.ICustomHitTest
     {
         internal const double NominalHeight    = 56.0;
         internal const double CircleRadius     = 25.0;
@@ -33,26 +33,6 @@ namespace ControlCatalog.Pages
         internal const double YBounceDuration  = 1.200;  // s — elastic bounce up
         internal const double FloatUpDuration  = 1.666;  // s — circle rising
         internal const double FloatDownDuration = 0.833; // s — circle falling
-
-        public static readonly StyledProperty<IList<FluidNavItem>> ItemsProperty =
-            AvaloniaProperty.Register<FluidNavBar, IList<FluidNavItem>>(
-                nameof(Items), new List<FluidNavItem>());
-
-        public static readonly StyledProperty<int> SelectedIndexProperty =
-            AvaloniaProperty.Register<FluidNavBar, int>(nameof(SelectedIndex), 0);
-
-        public static readonly StyledProperty<Color> BarColorProperty =
-            AvaloniaProperty.Register<FluidNavBar, Color>(nameof(BarColor), Colors.White);
-
-        public static readonly StyledProperty<Color> ButtonColorProperty =
-            AvaloniaProperty.Register<FluidNavBar, Color>(nameof(ButtonColor), Colors.White);
-
-        public static readonly StyledProperty<Color> ActiveIconColorProperty =
-            AvaloniaProperty.Register<FluidNavBar, Color>(nameof(ActiveIconColor), Colors.Black);
-
-        public static readonly StyledProperty<Color> InactiveIconColorProperty =
-            AvaloniaProperty.Register<FluidNavBar, Color>(
-                nameof(InactiveIconColor), Color.FromArgb(140, 120, 120, 120));
 
         private double   _xCurrent  = -1;   // -1 = not yet initialised
         private double   _lastWidth  = -1;   // tracks width changes for resize correction
@@ -74,47 +54,38 @@ namespace ControlCatalog.Pages
         private readonly Stopwatch _clock = Stopwatch.StartNew();
         private bool _animating;
 
-        public IList<FluidNavItem> Items
-        {
-            get => GetValue(ItemsProperty);
-            set => SetValue(ItemsProperty, value);
-        }
+        [StyledProperty]
+        public partial IList<FluidNavItem> Items { get; set; }
 
-        public int SelectedIndex
-        {
-            get => GetValue(SelectedIndexProperty);
-            set => SetValue(SelectedIndexProperty, value);
-        }
+        [StyledProperty]
+        public partial int SelectedIndex { get; set; }
 
-        public Color BarColor
-        {
-            get => GetValue(BarColorProperty);
-            set => SetValue(BarColorProperty, value);
-        }
+        [StyledProperty]
+        public partial Color BarColor { get; set; }
 
-        public Color ButtonColor
-        {
-            get => GetValue(ButtonColorProperty);
-            set => SetValue(ButtonColorProperty, value);
-        }
+        [StyledProperty]
+        public partial Color ButtonColor { get; set; }
 
-        public Color ActiveIconColor
-        {
-            get => GetValue(ActiveIconColorProperty);
-            set => SetValue(ActiveIconColorProperty, value);
-        }
+        [StyledProperty]
+        public partial Color ActiveIconColor { get; set; }
 
-        public Color InactiveIconColor
-        {
-            get => GetValue(InactiveIconColorProperty);
-            set => SetValue(InactiveIconColorProperty, value);
-        }
+        [StyledProperty]
+        public partial Color InactiveIconColor { get; set; }
 
         public event EventHandler<int>? SelectionChanged;
+
+        static FluidNavBar()
+        {
+            BarColorProperty.OverrideDefaultValue<FluidNavBar>(Colors.White);
+            ButtonColorProperty.OverrideDefaultValue<FluidNavBar>(Colors.White);
+            ActiveIconColorProperty.OverrideDefaultValue<FluidNavBar>(Colors.Black);
+            InactiveIconColorProperty.OverrideDefaultValue<FluidNavBar>(Color.FromArgb(140, 120, 120, 120));
+        }
 
         public FluidNavBar()
         {
             ClipToBounds = false;
+            Items = new List<FluidNavItem>();
             Height = NominalHeight;
             Cursor = new Cursor(StandardCursorType.Hand);
         }
