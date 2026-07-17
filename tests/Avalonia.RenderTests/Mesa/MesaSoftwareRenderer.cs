@@ -19,8 +19,10 @@ internal static unsafe class MesaSoftwareRenderer
     public static bool GlEnabled { get; } =
         Environment.GetEnvironmentVariable("AVALONIA_RENDER_TESTS_DISABLE_MESA_GL") != "1";
 
+    // macOS libSkiaSharp is built without Vulkan support
     public static bool VulkanEnabled { get; } =
-        Environment.GetEnvironmentVariable("AVALONIA_RENDER_TESTS_DISABLE_MESA_VULKAN") != "1";
+        !OperatingSystem.IsMacOS()
+        && Environment.GetEnvironmentVariable("AVALONIA_RENDER_TESTS_DISABLE_MESA_VULKAN") != "1";
 
     private static readonly Lazy<IntPtr> s_library = new(() =>
         NativeLibrary.Load("softmesa", typeof(MesaSoftwareRenderer).Assembly, null));
@@ -58,6 +60,7 @@ internal static unsafe class MesaSoftwareRenderer
             SupportsMultipleContexts = true,
             SupportsContextSharing = true,
             AllowPbufferOnlyConfigs = true,
+            // macOS libSkiaSharp is built with skia_gl_standard="gl" and can't consume GLES contexts
             GlVersions = OperatingSystem.IsMacOS()
                 ? new[]
                 {
