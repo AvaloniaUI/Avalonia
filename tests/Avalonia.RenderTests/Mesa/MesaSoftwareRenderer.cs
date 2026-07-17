@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Vulkan;
@@ -57,6 +58,13 @@ internal static unsafe class MesaSoftwareRenderer
             SupportsMultipleContexts = true,
             SupportsContextSharing = true,
             AllowPbufferOnlyConfigs = true,
+            GlVersions = OperatingSystem.IsMacOS()
+                ? new[]
+                {
+                    new GlVersion(GlProfileType.OpenGL, 4, 0),
+                    new GlVersion(GlProfileType.OpenGL, 3, 2)
+                }
+                : null,
             // Windows build of Mesa uses the default platform for surfaceless operation
             PlatformType = OperatingSystem.IsWindows() ? null : EGL_PLATFORM_SURFACELESS_MESA
         });
