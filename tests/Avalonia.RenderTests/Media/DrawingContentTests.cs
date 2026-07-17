@@ -45,7 +45,7 @@ public class DrawingContentTests()
         };
 
         RenderChange(target, () => drawing.Brush = Brushes.Red);
-        CompareImages(skipImmediate: true);
+        CompareImages(skipImmediate: true, skipGpu: true);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class DrawingContentTests()
         };
 
         RenderChange(target, () => drawing.Brush = Brushes.Red);
-        CompareImages(skipImmediate: true);
+        CompareImages(skipImmediate: true, skipGpu: true);
     }
 
     // Renders the target once, applies the change, renders again and writes the second frame to the

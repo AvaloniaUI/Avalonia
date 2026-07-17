@@ -48,8 +48,9 @@ internal class VulkanInstance : IVulkanInstance
         };
 
         var enabledExtensions = new HashSet<string>(options.InstanceExtensions
-            .Concat(platformOptions.RequiredInstanceExtensions)
-            .Append("VK_KHR_surface"));
+            .Concat(platformOptions.RequiredInstanceExtensions));
+        if (options.RequireSurfaceExtension)
+            enabledExtensions.Add("VK_KHR_surface");
         
         var enabledLayers = options.EnabledLayers.ToList();
 
