@@ -219,7 +219,7 @@ internal static class GeneratedPropertyShape
         return path is null || !path.EndsWith(GeneratedFileSuffix, StringComparison.Ordinal);
     }
 
-    private static bool HasMultipleGeneratorAttributes(ISymbol symbol)
+    internal static bool HasMultipleGeneratorAttributes(ISymbol symbol)
     {
         var count = 0;
         foreach (var attribute in symbol.GetAttributes())
