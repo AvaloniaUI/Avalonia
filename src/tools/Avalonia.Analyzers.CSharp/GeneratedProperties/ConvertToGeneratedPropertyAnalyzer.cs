@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -49,16 +50,30 @@ public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
             }
 
             var symbols = new PropertyTypeSymbols(styledProperty, directProperty, attachedProperty, avaloniaProperty);
-            start.RegisterOperationAction(ctx => Analyze(ctx, symbols), OperationKind.FieldInitializer);
+            start.RegisterSyntaxNodeAction(
+                ctx => Analyze(ctx, symbols),
+                SyntaxKind.FieldDeclaration);
         });
     }
 
-    private static void Analyze(OperationAnalysisContext context, PropertyTypeSymbols symbols)
+    private static void Analyze(SyntaxNodeAnalysisContext context, PropertyTypeSymbols symbols)
     {
-        // List patterns aren't available in this netstandard2.0 project (no System.Index), so
-        // check the single-field case explicitly.
-        if (context.Operation is not IFieldInitializerOperation { InitializedFields.Length: 1 } initializer ||
-            initializer.InitializedFields[0] is not
+        var fieldDeclaration = (FieldDeclarationSyntax)context.Node;
+        // public static readonly
+        if (!fieldDeclaration.Modifiers.Any(SyntaxKind.StaticKeyword) ||
+            !fieldDeclaration.Modifiers.Any(SyntaxKind.ReadOnlyKeyword))
+        {
+            return;
+        }
+
+        // Single field declaration only
+        if (fieldDeclaration.Declaration.Variables.Count != 1)
+        {
+            return;
+        }
+
+        var variable = fieldDeclaration.Declaration.Variables.Single();
+        if (context.SemanticModel.GetDeclaredSymbol(variable) is not IFieldSymbol
             {
                 IsStatic: true,
                 IsReadOnly: true,
@@ -76,33 +91,35 @@ public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
         // Technically possible to define Avalonia Property that doesn't end in `**Property`,
         // but our source generator won't handle these. 
         if (!field.Name.EndsWith(PropertySuffix, StringComparison.Ordinal) ||
-            field.Name.Length == PropertySuffix.Length ||
-            GetSingleDeclaratorLocation(field, context.CancellationToken) is not { } location)
+            field.Name.Length == PropertySuffix.Length)
         {
             return;
         }
 
         // Only accept direct assignment, skip helper calls like
         // MyProperty = CreateMyProperty()
-        if (Unwrap(initializer.Value) is not IInvocationOperation registration)
+        // Technically possible to create an avalonia property for another type, skip these.
+        if (variable.Initializer?.Value is not InvocationExpressionSyntax invocation
+            || !OwnerMatches(invocation, owner, context.SemanticModel, symbols))
         {
             return;
         }
 
-        // Technically possible to create an avalonia property for another type, skip these.
-        if (!OwnerMatches(registration, owner, symbols))
-        {
-            return;
-        }
-        
+        var location = variable.Identifier.GetLocation();
         var propertyName = field.Name.Substring(0, field.Name.Length - PropertySuffix.Length);
+
         context.ReportDiagnostic(Diagnostic.Create(
             GeneratedPropertyDescriptors.Convertible, location, propertyName, GetAttributeName(kind)));
     }
 
-    private static bool OwnerMatches(IInvocationOperation registration, INamedTypeSymbol owner, PropertyTypeSymbols symbols)
+    private static bool OwnerMatches(
+        InvocationExpressionSyntax invocation, INamedTypeSymbol owner, SemanticModel semanticModel, PropertyTypeSymbols symbols)
     {
-        var target = registration.TargetMethod;
+        var target = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+        if (target is null)
+        {
+            return false;
+        }
 
         if (target.IsStatic && SymbolEqualityComparer.Default.Equals(target.ContainingType, symbols.AvaloniaProperty))
         {
@@ -116,7 +133,7 @@ public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
                     OwnerEquals(target.TypeArguments[0], owner),
                 "RegisterAttached" when target.TypeArguments.Length == 2 =>
                     // RegisterAttached<THost, TValue>(name, ownerType, ...) — owner passed as typeof.
-                    GetOwnerTypeArgument(registration) is { } ownerType && OwnerEquals(ownerType, owner),
+                    GetOwnerTypeArgument(invocation, semanticModel) is { } ownerType && OwnerEquals(ownerType, owner),
                 _ => false
             };
         }
@@ -133,14 +150,28 @@ public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
         static bool OwnerEquals(ITypeSymbol candidate, INamedTypeSymbol owner)
             => SymbolEqualityComparer.Default.Equals(candidate, owner);
 
-        static ITypeSymbol? GetOwnerTypeArgument(IInvocationOperation registration)
+        static ITypeSymbol? GetOwnerTypeArgument(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
         {
-            foreach (var argument in registration.Arguments)
+            // The owner type can be passed positionally (RegisterAttached<THost, TValue>("Row", typeof(Helper)))
+            // or by name (ownerType: typeof(Helper)); rely on the bound operation to map arguments to parameters.
+            if (semanticModel.GetOperation(invocation) is not IInvocationOperation operation)
             {
-                if (argument.Parameter?.Name == "ownerType" && Unwrap(argument.Value) is ITypeOfOperation typeOf)
+                return null;
+            }
+
+            foreach (var argument in operation.Arguments)
+            {
+                if (argument.Parameter?.Name != "ownerType")
+                    continue;
+
+                // Unwrap the implicit conversion the operation model wraps around the typeof expression.
+                var value = argument.Value is IConversionOperation conversion ? conversion.Operand : argument.Value;
+                if (value is ITypeOfOperation typeOf)
                 {
                     return typeOf.TypeOperand;
                 }
+
+                return null;
             }
 
             return null;
@@ -179,32 +210,6 @@ public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
         GeneratedPropertyKind.Direct => "DirectProperty",
         _ => "AttachedProperty",
     };
-
-    private static Location? GetSingleDeclaratorLocation(IFieldSymbol field, System.Threading.CancellationToken cancellationToken)
-    {
-        // A single declarator per field: the generator emits one field per property, so
-        // "static readonly ... AProperty = ..., BProperty = ..." is excluded.
-        if (field.DeclaringSyntaxReferences is not { Length: 1 } references ||
-            references[0].GetSyntax(cancellationToken) is not VariableDeclaratorSyntax
-            {
-                Parent: VariableDeclarationSyntax { Variables.Count: 1 }
-            } declarator)
-        {
-            return null;
-        }
-
-        return declarator.Identifier.GetLocation();
-    }
-
-    private static IOperation Unwrap(IOperation operation)
-    {
-        while (operation is IConversionOperation { Conversion.IsImplicit: true } conversion)
-        {
-            operation = conversion.Operand;
-        }
-
-        return operation;
-    }
 
     private sealed class PropertyTypeSymbols(
         INamedTypeSymbol styledProperty,
