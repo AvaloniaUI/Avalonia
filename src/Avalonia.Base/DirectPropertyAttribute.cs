@@ -13,7 +13,7 @@ namespace Avalonia;
 /// declared on a <c>partial</c> class deriving from <see cref="AvaloniaObject"/>.
 /// </para>
 /// </remarks>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Property, Inherited = false)]
 public sealed class DirectPropertyAttribute : Attribute
 {
     /// <summary>
