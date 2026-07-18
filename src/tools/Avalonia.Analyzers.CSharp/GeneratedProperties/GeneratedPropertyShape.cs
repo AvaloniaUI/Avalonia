@@ -341,10 +341,87 @@ internal static class GeneratedPropertyShape
                     return true;
                 }
             }
+
+            // The source property may itself be source-generated - recognize it from the generator attribute instead.
+            if (HasCompatibleGeneratedSource(current, propertyName, kind, valueType))
+            {
+                return true;
+            }
         }
 
         return false;
     }
+
+    private static bool HasCompatibleGeneratedSource(
+        ITypeSymbol type,
+        string propertyName,
+        GeneratedPropertyKind kind,
+        ITypeSymbol valueType)
+    {
+        // Styled/Direct sources are partial properties named {propertyName} carrying the attribute.
+        foreach (var member in type.GetMembers(propertyName))
+        {
+            if (member is IPropertySymbol property &&
+                GetGeneratedKind(property) is { } sourceKind &&
+                IsAddOwnerCompatible(kind, sourceKind) &&
+                SymbolEqualityComparer.Default.Equals(property.Type, valueType))
+            {
+                return true;
+            }
+        }
+
+        // Attached sources are Get{propertyName} methods carrying the attached attribute.
+        foreach (var member in type.GetMembers(GetPrefix + propertyName))
+        {
+            if (member is IMethodSymbol { IsStatic: true, Parameters.Length: 1 } method &&
+                HasGeneratorAttribute(method, AttachedAttributeMetadataName) &&
+                IsAddOwnerCompatible(kind, GeneratedPropertyKind.Attached) &&
+                SymbolEqualityComparer.Default.Equals(method.ReturnType, valueType))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static GeneratedPropertyKind? GetGeneratedKind(IPropertySymbol property)
+    {
+        foreach (var attribute in property.GetAttributes())
+        {
+            switch (attribute.AttributeClass?.ToDisplayString())
+            {
+                case StyledAttributeMetadataName:
+                    return GeneratedPropertyKind.Styled;
+                case DirectAttributeMetadataName:
+                    return GeneratedPropertyKind.Direct;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool HasGeneratorAttribute(ISymbol symbol, string attributeMetadataName)
+    {
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            if (attribute.AttributeClass?.ToDisplayString() == attributeMetadataName)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsAddOwnerCompatible(GeneratedPropertyKind targetKind, GeneratedPropertyKind sourceKind)
+        => targetKind switch
+        {
+            GeneratedPropertyKind.Styled => sourceKind is GeneratedPropertyKind.Styled or GeneratedPropertyKind.Attached,
+            GeneratedPropertyKind.Direct => sourceKind is GeneratedPropertyKind.Direct,
+            GeneratedPropertyKind.Attached => sourceKind is GeneratedPropertyKind.Attached,
+            _ => false,
+        };
 
     private static bool IsCompatibleAvaloniaProperty(INamedTypeSymbol memberType, GeneratedPropertyKind kind, ITypeSymbol valueType)
     {

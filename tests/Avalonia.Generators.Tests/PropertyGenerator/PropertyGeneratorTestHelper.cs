@@ -78,10 +78,15 @@ internal static class PropertyGeneratorTestHelper
                 $"Generated compilation has errors:\n{string.Join("\n", errors)}\n\nGenerated source:\n{generatedText}");
         }
 
-        var tree = Assert.Single(result.GeneratedTrees);
+        SyntaxTree tree;
         if (expectedHintName is not null)
         {
-            Assert.EndsWith(expectedHintName, tree.FilePath.Replace('\\', '/'), StringComparison.Ordinal);
+            tree = Assert.Single(
+                result.GeneratedTrees.Where(t => t.FilePath.Replace('\\', '/').EndsWith(expectedHintName, StringComparison.Ordinal)));
+        }
+        else
+        {
+            tree = Assert.Single(result.GeneratedTrees);
         }
 
         var actual = Normalize(tree.GetText().ToString());

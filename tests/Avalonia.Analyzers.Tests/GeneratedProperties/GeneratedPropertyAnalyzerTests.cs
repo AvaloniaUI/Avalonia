@@ -160,6 +160,72 @@ public class GeneratedPropertyAnalyzerTests
         """);
 
     [Fact]
+    public Task AddOwner_From_Generated_Styled_Property_Reports_Nothing() => Verify(
+        """
+        public partial class RangeBase : AvaloniaObject
+        {
+            // Source property itself is source-generated.
+            [StyledProperty]
+            public partial double Value { get; set; }
+        }
+
+        public partial class MyControl : RangeBase
+        {
+            [StyledProperty(AddOwnerFrom = typeof(RangeBase))]
+            public new partial double Value { get; set; }
+        }
+        """);
+
+    [Fact]
+    public Task AddOwner_From_Generated_Direct_Property_Reports_Nothing() => Verify(
+        """
+        public partial class TextBase : AvaloniaObject
+        {
+            [DirectProperty]
+            public partial string? Text { get; set; }
+        }
+
+        public partial class MyControl : TextBase
+        {
+            [DirectProperty(AddOwnerFrom = typeof(TextBase))]
+            public new partial string? Text { get; set; }
+        }
+        """);
+
+    [Fact]
+    public Task AddOwner_From_Generated_Attached_Property_Reports_Nothing() => Verify(
+        """
+        public partial class BasePanel : AvaloniaObject
+        {
+            [AttachedProperty]
+            public static partial int GetRow(Visual element);
+        }
+
+        public partial class MyPanel : BasePanel
+        {
+            [AttachedProperty(AddOwnerFrom = typeof(BasePanel))]
+            public static partial int GetRow(Visual element);
+        }
+        """);
+
+    [Fact]
+    public Task AddOwner_From_Generated_Property_Type_Mismatch_Reports_AVP2004() => Verify(
+        """
+        public partial class RangeBase : AvaloniaObject
+        {
+            [StyledProperty]
+            public partial double Value { get; set; }
+        }
+
+        public partial class MyControl : RangeBase
+        {
+            // Source generated property exists but its value type is 'double', not 'int'.
+            [StyledProperty({|AVP2004:AddOwnerFrom = typeof(RangeBase)|})]
+            public new partial int Value { get; set; }
+        }
+        """);
+
+    [Fact]
     public Task Attached_Without_Get_Prefix_Reports_AVP2005() => Verify(
         """
         public partial class Grid : AvaloniaObject

@@ -152,6 +152,25 @@ public class PropertyGeneratorSnapshotTests
         """);
 
     [Fact]
+    public void Styled_AddOwnerFromGeneratedProperty() => AssertGeneratedCode("Styled_AddOwnerFromGeneratedProperty", """
+        namespace TestNs;
+
+        public partial class RangeBase : AvaloniaObject
+        {
+            // The AddOwner source is itself source-generated.
+            [StyledProperty]
+            public partial double Value { get; set; }
+        }
+
+        public partial class MyControl : RangeBase
+        {
+            [StyledProperty(AddOwnerFrom = typeof(RangeBase))]
+            public new partial double Value { get; set; }
+        }
+        """,
+        expectedHintName: "TestNs.MyControl.AvaloniaProperties.g.cs");
+
+    [Fact]
     public void Styled_NonPublicSetter() => AssertGeneratedCode("Styled_NonPublicSetter", """
         namespace TestNs;
 
