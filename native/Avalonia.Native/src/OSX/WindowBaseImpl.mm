@@ -21,6 +21,24 @@
 
 @class AutoFitContentView;
 
+
+// Activates the app, but defers until the run loop is running if it isn't yet.
+// Windows are shown (and the app activated) from OnFrameworkInitializationCompleted,
+// which runs before -[NSApplication run]. Activating that early yields a "degraded"
+// activation: the app looks frontmost but the WindowServer never does a real
+// become-active, which leaves the out-of-process file picker unable to receive
+// clicks in its file list/sidebar until a manual app switch. Deferring makes the first
+// activation a clean transition.
+static void ActivateApplication() {
+    if ([NSApp isRunning]) {
+        [NSApp activateIgnoringOtherApps:YES];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [NSApp activateIgnoringOtherApps:YES];
+        });
+    }
+}
+
 WindowBaseImpl::~WindowBaseImpl() {
     View = nullptr;
     Window = nullptr;
@@ -99,7 +117,7 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
             [Window orderFront:Window];
             [Window makeKeyAndOrderFront:Window];
             [Window makeFirstResponder:View];
-            [NSApp activateIgnoringOtherApps:YES];
+            ActivateApplication();
         } else {
             [Window orderFront:Window];
         }
@@ -177,7 +195,7 @@ HRESULT WindowBaseImpl::Activate() {
     @autoreleasepool {
         if (Window != nullptr) {
             [Window makeKeyAndOrderFront:nil];
-            [NSApp activateIgnoringOtherApps:YES];
+            ActivateApplication();
         }
     }
 
