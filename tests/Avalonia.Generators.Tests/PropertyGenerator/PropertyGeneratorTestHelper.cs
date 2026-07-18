@@ -50,8 +50,6 @@ internal static class PropertyGeneratorTestHelper
     /// <summary>
     /// Runs the generator, asserts it reports no diagnostics and the updated compilation has no
     /// errors, then compares the generated source against GeneratedCode/{sampleName}.txt.
-    /// A missing golden file is created from the actual output and the test fails, so new
-    /// snapshots are always reviewed before they pass.
     /// </summary>
     public static void AssertGeneratedCode(
         string sampleName,

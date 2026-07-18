@@ -94,12 +94,13 @@ internal static class GeneratedPropertyDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    // Hidden: this is a migration hint for tooling, not an issue for every manual property in every Avalonia consumer.
     public static readonly DiagnosticDescriptor Convertible = new(
         DiagnosticIds.GeneratedPropertyConvertible,
         "Manual Avalonia property declaration can be converted to a generated property",
         "'{0}' can be converted to a generated property using [{1}]",
         Category,
-        DiagnosticSeverity.Info,
+        DiagnosticSeverity.Hidden,
         isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor StyledNonPublicSetter = new(

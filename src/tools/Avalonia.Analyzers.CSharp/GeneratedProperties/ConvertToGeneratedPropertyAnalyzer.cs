@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Avalonia.Analyzers.GeneratedProperties;
 
 /// <summary>
-/// Flags Avalonia property declarations that could be rewritten with the [StyledProperty]/[DirectProperty]/[AttachedProperty]
+/// Flags Avalonia property declarations that could be rewritten with the [StyledProperty]/[DirectProperty]/[AttachedProperty].
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
