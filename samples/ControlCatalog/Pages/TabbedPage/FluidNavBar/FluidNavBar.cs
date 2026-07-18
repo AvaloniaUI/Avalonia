@@ -55,7 +55,7 @@ namespace ControlCatalog.Pages
         private bool _animating;
 
         [StyledProperty]
-        public partial IList<FluidNavItem> Items { get; set; }
+        public partial IReadOnlyList<FluidNavItem> Items { get; set; }
 
         [StyledProperty]
         public partial int SelectedIndex { get; set; }
@@ -76,6 +76,7 @@ namespace ControlCatalog.Pages
 
         static FluidNavBar()
         {
+            ItemsProperty.OverrideDefaultValue<FluidNavBar>([]);
             BarColorProperty.OverrideDefaultValue<FluidNavBar>(Colors.White);
             ButtonColorProperty.OverrideDefaultValue<FluidNavBar>(Colors.White);
             ActiveIconColorProperty.OverrideDefaultValue<FluidNavBar>(Colors.Black);
@@ -85,7 +86,6 @@ namespace ControlCatalog.Pages
         public FluidNavBar()
         {
             ClipToBounds = false;
-            Items = new List<FluidNavItem>();
             Height = NominalHeight;
             Cursor = new Cursor(StandardCursorType.Hand);
         }
