@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 using static Avalonia.Generators.Tests.PropertyGenerator.PropertyGeneratorTestHelper;
 
@@ -171,6 +172,32 @@ public class PropertyGeneratorSnapshotTests
             public partial string Text { get; set; } = "";
         }
         """);
+
+    // On C# 13 there is no field keyword, so direct properties get a named backing field instead.
+    // An inline initializer (= expr) is not valid here and is intentionally omitted (see Direct_Basic).
+    [Fact]
+    public void Direct_Basic_CSharp13() => AssertGeneratedCode("Direct_Basic_CSharp13", """
+        namespace TestNs;
+
+        public partial class MyControl : AvaloniaObject
+        {
+            [DirectProperty]
+            public partial string? Text { get; set; }
+        }
+        """, languageVersion: LanguageVersion.CSharp13);
+
+    [Fact]
+    public void Direct_ReadOnly_CSharp13() => AssertGeneratedCode("Direct_ReadOnly_CSharp13", """
+        namespace TestNs;
+
+        public partial class MyControl : AvaloniaObject
+        {
+            [DirectProperty]
+            public partial int SelectedIndex { get; private set; }
+
+            public void Select(int index) => SelectedIndex = index;
+        }
+        """, languageVersion: LanguageVersion.CSharp13);
 
     [Fact]
     public void Direct_RefTypeInitializer() => AssertGeneratedCode("Direct_RefTypeInitializer", """

@@ -248,13 +248,24 @@ public class GeneratedPropertyAnalyzerTests
         """);
 
     [Fact]
-    public Task Language_below_14_reports_AVP2007() => Verify(
+    public Task Language_Below_13_Reports_AVP2007() => Verify(
         """
         public partial class MyControl : AvaloniaObject
         {
-            // DirectProperty with inline initializer requires 14.0.
-            [DirectProperty]
-            public partial string? {|AVP2007:Header|} { get; set; } = "hello";
+            // Partial properties require C# 13; below that the generator can't emit.
+            [StyledProperty]
+            public partial string? {|AVP2007:Header|} { get; set; }
+        }
+        """,
+        LanguageVersion.CSharp12);
+
+    [Fact]
+    public Task CSharp13_Valid_Property_Reports_Nothing() => Verify(
+        """
+        public partial class MyControl : AvaloniaObject
+        {
+            [StyledProperty]
+            public partial string? Header { get; set; }
         }
         """,
         LanguageVersion.CSharp13);

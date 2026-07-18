@@ -57,6 +57,7 @@ internal static class PropertyGeneratorTestHelper
         string sampleName,
         [StringSyntax("csharp")] string source,
         string? expectedHintName = null,
+        LanguageVersion languageVersion = LanguageVersion.CSharp14,
         [CallerFilePath] string callerFilePath = "")
     {
         source = """
@@ -64,7 +65,8 @@ internal static class PropertyGeneratorTestHelper
                  using Avalonia.Data;
 
                  """ + source;
-        var (result, output) = RunGenerator(CreateCompilation(source));
+        var parseOptions = new CSharpParseOptions(languageVersion);
+        var (result, output) = RunGenerator(CreateCompilation(source, parseOptions), parseOptions);
 
         Assert.Empty(result.Diagnostics);
 

@@ -28,9 +28,8 @@ public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
         {
             var compilation = start.Compilation;
 
-            // The generated shape needs C# 14 partial members and the attribute types; without
-            // either the conversion cannot be suggested at all.
-            if (compilation is not CSharpCompilation { LanguageVersion: >= (LanguageVersion)1400 })
+            // The generated needs C# 13 partial properties.
+            if (compilation is not CSharpCompilation { LanguageVersion: >= LanguageVersion.CSharp13 })
             {
                 return;
             }
@@ -56,15 +55,15 @@ public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
 
     private static void Analyze(OperationAnalysisContext context, PropertyTypeSymbols symbols)
     {
-        if (context.Operation is not IFieldInitializerOperation
+        // List patterns aren't available in this netstandard2.0 project (no System.Index), so
+        // check the single-field case explicitly.
+        if (context.Operation is not IFieldInitializerOperation { InitializedFields.Length: 1 } initializer ||
+            initializer.InitializedFields[0] is not
             {
-                InitializedFields: [
-                {
-                    IsStatic: true,
-                    IsReadOnly: true,
-                    ContainingType: { IsGenericType: false } owner
-                } field]
-            } initializer)
+                IsStatic: true,
+                IsReadOnly: true,
+                ContainingType: { IsGenericType: false } owner
+            } field)
         {
             return;
         }

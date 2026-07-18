@@ -386,11 +386,28 @@ public class ConvertToGeneratedPropertyAnalyzerTests
         """);
 
     [Fact]
-    public Task CSharp13_Reports_Nothing() => Verify(
+    public Task CSharp12_Reports_Nothing() => Verify(
         """
         public class MyControl : AvaloniaObject
         {
             public static readonly StyledProperty<double> ScaleProperty =
+                AvaloniaProperty.Register<MyControl, double>(nameof(Scale));
+
+            public double Scale
+            {
+                get => GetValue(ScaleProperty);
+                set => SetValue(ScaleProperty, value);
+            }
+        }
+        """,
+        LanguageVersion.CSharp12);
+
+    [Fact]
+    public Task CSharp13_Reports_AVP2102() => Verify(
+        """
+        public class MyControl : AvaloniaObject
+        {
+            public static readonly StyledProperty<double> {|AVP2102:ScaleProperty|} =
                 AvaloniaProperty.Register<MyControl, double>(nameof(Scale));
 
             public double Scale

@@ -46,8 +46,14 @@ internal static class GeneratedPropertyShape
     private const string GetPrefix = "Get";
 
     /// <summary>
-    /// C# 14 is required for partial properties with the field keyword.
-    /// Currently used roslyn version doesn't define LanguageVersion.CSharp14.
+    /// C# 13 is required for partial properties.
+    /// </summary>
+    public static bool IsCSharp13OrLater(ParseOptions options)
+        => options is CSharpParseOptions { LanguageVersion: >= LanguageVersion.CSharp13 };
+
+    /// <summary>
+    /// C# 14 enables the field keyword.
+    /// Currently used Roslyn package version doesn't define LanguageVersion.CSharp14.
     /// </summary>
     public static bool IsCSharp14OrLater(ParseOptions options)
         => options is CSharpParseOptions { LanguageVersion: >= (LanguageVersion)1400 };

@@ -17,8 +17,11 @@ public sealed class AvaloniaPropertyIncrementalGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var languageVersionOk = context.ParseOptionsProvider
-            .Select(static (options, _) => GeneratedPropertyShape.IsCSharp14OrLater(options))
+        var emitMode = context.ParseOptionsProvider
+            .Select(static (options, _) =>
+                GeneratedPropertyShape.IsCSharp14OrLater(options) ? LanguageEmitMode.FieldKeyword
+                : GeneratedPropertyShape.IsCSharp13OrLater(options) ? LanguageEmitMode.BackingField
+                : LanguageEmitMode.Skip)
             .WithTrackingName(TrackingNames.LanguageVersionOk);
 
         var styled = context.SyntaxProvider
@@ -52,17 +55,25 @@ public sealed class AvaloniaPropertyIncrementalGenerator : IIncrementalGenerator
             .SelectMany(static (models, _) => GroupByContainingType(models.Left.Left, models.Left.Right, models.Right))
             .WithTrackingName(TrackingNames.GroupedTypes);
 
-        context.RegisterSourceOutput(grouped.Combine(languageVersionOk), static (context, pair) =>
+        context.RegisterSourceOutput(grouped.Combine(emitMode), static (context, pair) =>
         {
-            var (typeModel, languageVersionOk) = pair;
-            if (!languageVersionOk)
+            var (typeModel, emitMode) = pair;
+            if (emitMode == LanguageEmitMode.Skip)
             {
-                // C# 14 is required for the emitted shapes; the analyzer reports AVP2007.
+                // Partial properties require C# 13; below that the analyzer reports AVP2007.
                 return;
             }
 
-            context.AddSource(typeModel.Type.HintName, SourceText.From(PropertyGenEmitter.Emit(typeModel), Encoding.UTF8));
+            var source = PropertyGenEmitter.Emit(typeModel, useFieldKeyword: emitMode == LanguageEmitMode.FieldKeyword);
+            context.AddSource(typeModel.Type.HintName, SourceText.From(source, Encoding.UTF8));
         });
+    }
+
+    private enum LanguageEmitMode
+    {
+        Skip,
+        BackingField,
+        FieldKeyword,
     }
 
     private static ImmutableArray<PropertyGenTypeModel> GroupByContainingType(

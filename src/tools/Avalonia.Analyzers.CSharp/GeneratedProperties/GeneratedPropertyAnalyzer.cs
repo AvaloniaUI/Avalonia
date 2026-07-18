@@ -60,7 +60,7 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            var languageVersionOk = compilation is CSharpCompilation { LanguageVersion: >= (LanguageVersion)1400 };
+            var languageVersionOk = compilation is CSharpCompilation { LanguageVersion: >= (LanguageVersion)1300 };
 
             start.RegisterSymbolAction(
                 context => AnalyzeProperty(context, styled, direct, languageVersionOk),
@@ -186,7 +186,7 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
                 : "unknown";
             Report(context, GeneratedPropertyDescriptors.NotPartial, MemberLocation(member),
                 CodeFixProperties(GeneratedPropertyDescriptors.Properties.DefectLanguageVersion),
-                $"C# 14 or later (current language version: {version})");
+                $"C# 13 or later (current language version: {version})");
         }
 
         if (defects.HasFlag(PropertyDefects.MemberNotPartial))
