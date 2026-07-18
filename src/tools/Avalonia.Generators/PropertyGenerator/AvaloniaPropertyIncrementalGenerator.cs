@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using Avalonia.Analyzers.GeneratedProperties;
-using Avalonia.Generators.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -18,10 +17,21 @@ public sealed class AvaloniaPropertyIncrementalGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var emitMode = context.ParseOptionsProvider
-            .Select(static (options, _) =>
-                GeneratedPropertyShape.IsCSharp14OrLater(options) ? LanguageEmitMode.FieldKeyword
-                : GeneratedPropertyShape.IsCSharp13OrLater(options) ? LanguageEmitMode.BackingField
-                : LanguageEmitMode.Skip)
+            .Combine(context.AnalyzerConfigOptionsProvider)
+            .Select(static (pair, _) =>
+            {
+                var (parseOptions, configOptions) = pair;
+                var genOptions = new GeneratorOptions(configOptions.GlobalOptions);
+
+                if (!genOptions.AvaloniaPropertyGeneratorIsEnabled)
+                {
+                    return LanguageEmitMode.Skip;
+                }
+
+                return GeneratedPropertyShape.IsCSharp14OrLater(parseOptions) ? LanguageEmitMode.FieldKeyword
+                    : GeneratedPropertyShape.IsCSharp13OrLater(parseOptions) ? LanguageEmitMode.BackingField
+                    : LanguageEmitMode.Skip;
+            })
             .WithTrackingName(TrackingNames.LanguageVersionOk);
 
         var styled = context.SyntaxProvider
