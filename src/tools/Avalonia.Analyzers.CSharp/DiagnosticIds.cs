@@ -33,4 +33,5 @@ public static class DiagnosticIds
     public const string GeneratedPropertyInvalidShape = "AVP2008";
     public const string GeneratedPropertyNameSuffix = "AVP2100";
     public const string GeneratedPropertyStyledNonPublicSetter = "AVP2101";
+    public const string GeneratedPropertyConvertible = "AVP2102";
 }

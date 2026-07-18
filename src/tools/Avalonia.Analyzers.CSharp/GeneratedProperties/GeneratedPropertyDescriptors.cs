@@ -94,6 +94,14 @@ internal static class GeneratedPropertyDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    public static readonly DiagnosticDescriptor Convertible = new(
+        DiagnosticIds.GeneratedPropertyConvertible,
+        "Manual Avalonia property declaration can be converted to a generated property",
+        "'{0}' can be converted to a generated property using [{1}]",
+        Category,
+        DiagnosticSeverity.Info,
+        isEnabledByDefault: true);
+
     public static readonly DiagnosticDescriptor StyledNonPublicSetter = new(
         DiagnosticIds.GeneratedPropertyStyledNonPublicSetter,
         "Non-public setter on a styled property is not read-only",
