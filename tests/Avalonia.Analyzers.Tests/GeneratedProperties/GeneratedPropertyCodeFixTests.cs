@@ -13,11 +13,13 @@ namespace Avalonia.Analyzers.Tests.GeneratedProperties;
 
 public class GeneratedPropertyCodeFixTests
 {
-    private static Task FixAndVerify(
+    private static Task FixAndVerify<TCodeFix>(
         [StringSyntax("csharp")] string testCode,
-        [StringSyntax("csharp")] string fixedCode)
+        [StringSyntax("csharp")] string fixedCode,
+        int? fixAllIterations = null)
+        where TCodeFix : CodeFixProvider, new()
     {
-        var test = new GeneratedPropertyCodeFixTest<MakePartialCodeFixProvider>
+        var test = new GeneratedPropertyCodeFixTest<TCodeFix>
         {
             TestCode = """
                        using Avalonia;
@@ -29,13 +31,14 @@ public class GeneratedPropertyCodeFixTests
                         using Avalonia.Data;
 
                         """ + fixedCode,
+            NumberOfFixAllIterations = fixAllIterations
         };
 
         return test.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
-    public Task MakePartial_Adds_Partial_To_Member() => FixAndVerify(
+    public Task MakePartial_Adds_Partial_To_Member() => FixAndVerify<MakePartialCodeFixProvider>(
         """
         public partial class MyControl : AvaloniaObject
         {
@@ -52,7 +55,7 @@ public class GeneratedPropertyCodeFixTests
         """);
 
     [Fact]
-    public Task MakePartial_Adds_Partial_To_Containing_Types() => FixAndVerify(
+    public Task MakePartial_Adds_Partial_To_Containing_Types() => FixAndVerify<MakePartialCodeFixProvider>(
         """
         public class Outer
         {
@@ -75,7 +78,7 @@ public class GeneratedPropertyCodeFixTests
         """);
 
     [Fact]
-    public Task AddCallbackStub_Inserts_Changed_Handler() => FixAndVerify(
+    public Task AddCallbackStub_Inserts_Changed_Handler() => FixAndVerify<AddCallbackStubCodeFixProvider>(
         """
         public partial class MyControl : AvaloniaObject
         {
@@ -96,7 +99,7 @@ public class GeneratedPropertyCodeFixTests
         """);
 
     [Fact]
-    public Task AddCallbackStub_Inserts_Attached_Changed_Handler() => FixAndVerify(
+    public Task AddCallbackStub_Inserts_Attached_Changed_Handler() => FixAndVerify<AddCallbackStubCodeFixProvider>(
         """
         public partial class DockPanel : AvaloniaObject
         {
@@ -117,7 +120,7 @@ public class GeneratedPropertyCodeFixTests
         """);
 
     [Fact]
-    public Task AddCallbackStub_Inserts_Validate_And_Coerce() => FixAndVerify(
+    public Task AddCallbackStub_Inserts_Validate_And_Coerce() => FixAndVerify<AddCallbackStubCodeFixProvider>(
         """
         public partial class MyControl : AvaloniaObject
         {
@@ -139,7 +142,8 @@ public class GeneratedPropertyCodeFixTests
             {
             }
         }
-        """);
+        """,
+        fixAllIterations: 2);
 
     public class GeneratedPropertyCodeFixTest<TCodeFix> : CSharpCodeFixTest<GeneratedPropertyAnalyzer, TCodeFix, DefaultVerifier>
         where TCodeFix : CodeFixProvider, new()
