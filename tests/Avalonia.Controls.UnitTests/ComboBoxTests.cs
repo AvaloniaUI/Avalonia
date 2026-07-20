@@ -19,7 +19,7 @@ namespace Avalonia.Controls.UnitTests
     public class ComboBoxTests : ScopedTestBase
     {
         MouseTestHelper _helper = new MouseTestHelper();
-        
+
         [Fact]
         public void Clicking_On_Control_Toggles_IsDropDownOpen()
         {
@@ -197,6 +197,7 @@ namespace Avalonia.Controls.UnitTests
                         new Popup
                         {
                             Name = "PART_Popup",
+                            [!!Popup.IsOpenProperty] = parent[!!ComboBox.IsDropDownOpenProperty],
                             Child = new ScrollViewer
                             {
                                 Name = "PART_ScrollViewer",
@@ -214,6 +215,48 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
             });
+        }
+
+        [Fact]
+        public void Reopening_DropDown_Focuses_Selected_Item_After_Scrolled_To_Top()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                keyboardDevice: () => new KeyboardDevice(),
+                keyboardNavigation: () => new KeyboardNavigationHandler()));
+
+            var target = new ComboBox { Template = GetTemplate() };
+
+            for (var i = 0; i < 100; ++i)
+            {
+                var item = new ComboBoxItem { Content = $"Item {i}" };
+                target.Items.Add(item);
+            }
+
+            var selectedItem = target.Items[60] as ComboBoxItem;
+            Assert.True(selectedItem != null);
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            var scrollViewer = target.GetVisualDescendants().OfType<ScrollViewer>().First();
+            Assert.True(scrollViewer != null);
+
+            target.SelectedItem = selectedItem;
+            target.Focus();
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            scrollViewer.ScrollToHome();
+            target.IsDropDownOpen = false;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(selectedItem.IsFocused && selectedItem.IsVisible);
         }
 
         [Fact]
@@ -381,7 +424,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.ApplyTemplate();
                 target.Presenter!.ApplyTemplate();
-                
+
                 var exception = new System.InvalidCastException("failed validation");
                 var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
                 target.Bind(ComboBox.SelectedItemProperty, textObservable);
@@ -389,7 +432,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(DataValidationErrors.GetHasErrors(target));
                 Assert.Equal([exception], DataValidationErrors.GetErrors(target));
             }
-            
+
         }
 
         [Fact]
@@ -404,7 +447,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.ApplyTemplate();
                 target.Presenter!.ApplyTemplate();
-                
+
                 var exception = new System.InvalidCastException("failed validation");
                 var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
                 target.Bind(ComboBox.TextProperty, textObservable);
@@ -426,8 +469,8 @@ namespace Avalonia.Controls.UnitTests
 
                 window.KeyDown += (s, e) =>
                  {
-                     if (e.Handled == false 
-                     && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == true 
+                     if (e.Handled == false
+                     && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == true
                      && e.Key == Key.F4 )
                      {
                          e.Handled = true;
@@ -511,7 +554,7 @@ namespace Avalonia.Controls.UnitTests
             };
             var target = new ComboBox
             {
-                Items = 
+                Items =
                 {
                     new ComboBoxItem()
                     {
@@ -531,7 +574,7 @@ namespace Avalonia.Controls.UnitTests
 
             parentContent.FlowDirection = FlowDirection.RightToLeft;
             target.FlowDirection = FlowDirection.RightToLeft;
-            
+
             Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
         }
 
@@ -571,7 +614,7 @@ namespace Avalonia.Controls.UnitTests
                 var popup = target.GetVisualDescendants().OfType<Popup>().First();
                 popup.PlacementTarget = new Window();
                 popup.Open();
-                
+
                 Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
             }
         }
@@ -587,10 +630,10 @@ namespace Avalonia.Controls.UnitTests
                 SelectionBoxItemTemplate = selectionBoxItemTemplate,
                 ItemTemplate = itemTemplate,
             };
-            
+
             Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
         }
-        
+
         [Fact]
         public void SelectionBoxItemTemplate_Inherits_From_ItemTemplate_When_NotSet()
         {
@@ -600,7 +643,7 @@ namespace Avalonia.Controls.UnitTests
                 ItemsSource = new []{ "Foo" },
                 ItemTemplate = itemTemplate,
             };
-            
+
             Assert.Equal(itemTemplate, target.SelectionBoxItemTemplate);
         }
 
@@ -618,9 +661,9 @@ namespace Avalonia.Controls.UnitTests
             };
 
             Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
-            
+
             target.ItemTemplate = itemTemplate2;
-            
+
             Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
         }
 
