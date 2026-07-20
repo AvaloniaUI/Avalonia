@@ -34,6 +34,11 @@ public class AvaloniaNameIncrementalGenerator : IIncrementalGenerator
                 var (options, optionsProvider) = pair.Right;
                 var filePath = text.Path;
 
+                if (!options.AvaloniaNameGeneratorIsEnabled)
+                {
+                    return false;
+                }
+
                 if (!(filePath.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase) ||
                       filePath.EndsWith(".paml", StringComparison.OrdinalIgnoreCase) ||
                       filePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)))
