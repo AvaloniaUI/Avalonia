@@ -111,5 +111,31 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Assert.Equal("bar", target.String);
             Assert.Equal("bar", data.StringValue);
         }
+
+        [Fact]
+        public void TwoWay_Explicit_Should_Update_Target_On_Call_To_UpdateTarget()
+        {
+            var data = new ViewModel { StringValue = "foo" };
+            var (target, expression) = CreateTargetAndExpression<ViewModel, string?>(
+                o => o.StringValue,
+                mode: BindingMode.TwoWay,
+                source: data,
+                updateSourceTrigger: UpdateSourceTrigger.Explicit);
+
+            Assert.Equal("foo", target.String);
+            Assert.Equal("foo", data.StringValue);
+
+            target.String = "bar";
+
+            Assert.Equal("bar", target.String);
+            Assert.Equal("foo", data.StringValue);
+
+            // UpdateTarget forces a transfer from source to target, discarding the
+            // value set on the target.
+            expression.UpdateTarget();
+
+            Assert.Equal("foo", target.String);
+            Assert.Equal("foo", data.StringValue);
+        }
     }
 }
