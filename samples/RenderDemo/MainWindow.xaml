@@ -43,6 +43,8 @@
         </MenuItem>
         <MenuItem Header="Tests">
           <MenuItem Command="{Binding ResizeWindow}" Header="Resize window" />
+          <MenuItem x:Name="SetNotTransparencyMenuItem" Header="Set window not Transparency" Click="SetNotTransparencyMenuItem_OnClick"/>
+          <MenuItem x:Name="SetTransparencyMenuItem" Header="Set window Transparency" Click="SetTransparencyMenuItem_OnClick"/>
         </MenuItem>
       </MenuFlyout>
     </FlyoutBase.AttachedFlyout>
@@ -96,6 +98,9 @@
     </TabItem>
     <TabItem Header="3D Transformation">
       <pages:Transform3DPage />
+    </TabItem>
+    <TabItem Header="Resize Pattern">
+      <pages:ResizePatternPage />
     </TabItem>
   </controls:HamburgerMenu>
 </Window>

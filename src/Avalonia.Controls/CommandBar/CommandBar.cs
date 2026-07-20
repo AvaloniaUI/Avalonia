@@ -140,6 +140,8 @@ namespace Avalonia.Controls
         private readonly CommandBarSeparator _overflowPrimarySecondarySeparator = new();
         private readonly CompositeDisposable _secondaryCommandVisibilitySubscriptions = new();
         private bool _isDynamicUpdateInProgress;
+        private bool _isOpeningOverflowPopup;
+        private bool _hasDeferredDynamicOverflowUpdate;
         private double _constraintWidth = double.PositiveInfinity;
         private bool _openedViaKeyboard;
 
@@ -387,7 +389,7 @@ namespace Avalonia.Controls
             ApplyLabelPositionToChildren();
             UpdateOverflowButtonVisibility();
             UpdateStickyBehavior();
-            UpdateDynamicOverflow();
+            RequestDynamicOverflowUpdate();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -413,7 +415,19 @@ namespace Avalonia.Controls
                 {
                     RaiseEvent(new RoutedEventArgs(OpeningEvent));
                     if (_overflowPopup != null)
-                        _overflowPopup.IsOpen = true;
+                    {
+                        try
+                        {
+                            _isOpeningOverflowPopup = true;
+                            _overflowPopup.IsOpen = true;
+                        }
+                        finally
+                        {
+                            _isOpeningOverflowPopup = false;
+                        }
+
+                        ApplyDeferredDynamicOverflowUpdate();
+                    }
                     RaiseEvent(new RoutedEventArgs(OpenedEvent));
                 }
                 else
@@ -428,7 +442,7 @@ namespace Avalonia.Controls
             {
                 ApplyLabelPositionToChildren();
                 if (IsDynamicOverflowEnabled)
-                    UpdateDynamicOverflow();
+                    RequestDynamicOverflowUpdate();
             }
             else if (change.Property == OverflowButtonVisibilityProperty)
             {
@@ -440,7 +454,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == IsDynamicOverflowEnabledProperty)
             {
-                UpdateDynamicOverflow();
+                RequestDynamicOverflowUpdate();
             }
             else if (change.Property == PrimaryCommandsProperty)
             {
@@ -449,7 +463,7 @@ namespace Avalonia.Controls
                 if (change.NewValue is INotifyCollectionChanged newPrimary)
                     newPrimary.CollectionChanged += OnPrimaryCommandsChanged;
                 ApplyLabelPositionToChildren();
-                UpdateDynamicOverflow();
+                RequestDynamicOverflowUpdate();
             }
             else if (change.Property == SecondaryCommandsProperty)
             {
@@ -458,7 +472,7 @@ namespace Avalonia.Controls
                 if (change.NewValue is INotifyCollectionChanged newSecondary)
                     newSecondary.CollectionChanged += OnSecondaryCommandsChanged;
                 RebuildSecondaryCommandVisibilitySubscriptions();
-                UpdateDynamicOverflow();
+                RequestDynamicOverflowUpdate();
             }
         }
 
@@ -472,7 +486,7 @@ namespace Avalonia.Controls
             if (newConstraint != _constraintWidth)
             {
                 _constraintWidth = newConstraint;
-                UpdateDynamicOverflow();
+                RequestDynamicOverflowUpdate();
             }
 
             return base.MeasureOverride(availableSize);
@@ -480,7 +494,7 @@ namespace Avalonia.Controls
 
         private void CommandBar_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
-            UpdateDynamicOverflow();
+            RequestDynamicOverflowUpdate();
         }
 
         private void OnOverflowButtonClick(object? sender, Interactivity.RoutedEventArgs e)
@@ -597,12 +611,32 @@ namespace Avalonia.Controls
                         ApplyLabelPositionToElement(element);
                 }
             }
-            UpdateDynamicOverflow();
+            RequestDynamicOverflowUpdate();
         }
 
         private void OnSecondaryCommandsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             RebuildSecondaryCommandVisibilitySubscriptions();
+            RequestDynamicOverflowUpdate();
+        }
+
+        private void RequestDynamicOverflowUpdate()
+        {
+            if (_isOpeningOverflowPopup)
+            {
+                _hasDeferredDynamicOverflowUpdate = true;
+                return;
+            }
+
+            UpdateDynamicOverflow();
+        }
+
+        private void ApplyDeferredDynamicOverflowUpdate()
+        {
+            if (!_hasDeferredDynamicOverflowUpdate)
+                return;
+
+            _hasDeferredDynamicOverflowUpdate = false;
             UpdateDynamicOverflow();
         }
 
@@ -829,7 +863,7 @@ namespace Avalonia.Controls
                                 return;
                             }
 
-                            UpdateDynamicOverflow();
+                            RequestDynamicOverflowUpdate();
                         })
                         .DisposeWith(_secondaryCommandVisibilitySubscriptions);
                 }

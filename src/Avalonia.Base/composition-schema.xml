@@ -59,6 +59,7 @@
         <Property Name="LastLayoutPassTiming" Type="LayoutPassTiming" Internal="true"/>
         <Property Name="Scaling" Type="double"/>
         <Property Name="Size" Type="Size" />
+        <Property Name="TransparencyLevel" Type="CompositionTransparencyLevel" />
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>
     <KeyFrameAnimation Name="Double" Type="double"/>
@@ -80,6 +81,9 @@
         <Property Name="LineJoin" Type="Avalonia.Media.PenLineJoin" />
         <Property Name="MiterLimit" Type="double" />
         <Property Name="Thickness" Type="double" />
+    </Object>
+    <Object Name="CompositionSimpleGeometry" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">
+        <Property Name="GeometryImpl" Type="Avalonia.Platform.IGeometryImpl?" />
     </Object>
     <Object Name="CompositionSimpleBrush" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">
         <Property Name="Opacity" Type="double" />
