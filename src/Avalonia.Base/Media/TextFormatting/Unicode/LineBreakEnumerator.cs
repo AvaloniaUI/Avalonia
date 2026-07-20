@@ -24,6 +24,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             lineBreak = default;
 
+            if (_text.IsEmpty)
+            {
+                return false;
+            }
+
             if (_state.Current.EndOfText)
             {
                 return false;
