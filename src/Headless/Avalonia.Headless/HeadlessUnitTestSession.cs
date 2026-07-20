@@ -145,7 +145,16 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
             }
             finally
             {
-                application.Dispose();
+                try
+                {
+                    application.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    // Cleanup runs before the TCS is completed, so its failure must be
+                    // reported by this work item instead of escaping the consumer loop.
+                    caught = ex;
+                }
             }
 
             if (caught != null)
@@ -173,8 +182,14 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 
         return Disposable.Create(() =>
         {
-            Dispatcher.UIThread.RunJobs();
-            SynchronizationContext.SetSynchronizationContext(oldContext);
+            try
+            {
+                Dispatcher.UIThread.RunJobs();
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(oldContext);
+            }
         });
     }
 
@@ -195,12 +210,25 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 
         return Disposable.Create(() =>
         {
-            ((ToolTipService?)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
-            (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
-            Dispatcher.ResetForUnitTests();
-            scope.Dispose();
-            Dispatcher.ResetBeforeUnitTests();
-            SynchronizationContext.SetSynchronizationContext(oldContext);
+            try
+            {
+                ((ToolTipService?)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
+                (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
+                Dispatcher.ResetForUnitTests();
+            }
+            finally
+            {
+                // Cleanup jobs can throw, but the ambient state still belongs to this dispatch.
+                try
+                {
+                    scope.Dispose();
+                }
+                finally
+                {
+                    Dispatcher.ResetBeforeUnitTests();
+                    SynchronizationContext.SetSynchronizationContext(oldContext);
+                }
+            }
         });
     }
 
