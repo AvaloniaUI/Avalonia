@@ -205,6 +205,9 @@ namespace Avalonia.OpenGL.Egl
         // EGL_KHR_platform_gbm / EGL_MESA_platform_gbm
         public const int  EGL_PLATFORM_GBM_KHR = 0x31D7;
 
+        // EGL_MESA_platform_surfaceless
+        public const int  EGL_PLATFORM_SURFACELESS_MESA = 0x31DD;
+
         public const int  EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE = 0x3207;
         public const int  EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE = 0x3208;
         
