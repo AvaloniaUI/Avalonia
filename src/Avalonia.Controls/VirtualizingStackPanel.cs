@@ -1888,12 +1888,44 @@ namespace Avalonia.Controls
                 var recycled = recyclePool[recycleIndex];
                 recyclePool.RemoveAt(recycleIndex);
                 recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
+
+                // Detect whether this pooled container is being reused for a *different* item.
+                // For IVirtualizingDataTemplate the container is not cleared on recycle and the
+                // same child instance is reused, so a container reused for a new item keeps its
+                // previous content's cached layout. Making the container visible invalidates the
+                // container's own measure, but its content subtree is still IsMeasureValid at the
+                // same available size and would short-circuit re-measure — leaving the new item
+                // arranged with the previous item's size (content rendered blank / clipped, or
+                // text not re-wrapped). Force the reused subtree to re-measure in that case.
+                // When reused for the SAME item, the cached layout is still correct — skip the work.
+                var dataContextChanged = !ReferenceEquals(recycled.DataContext, item);
+
                 generator.PrepareItemContainer(recycled, item, index);
                 generator.ItemContainerPrepared(recycled, item, index);
+
+                if (dataContextChanged)
+                    InvalidateMeasureRecursive(recycled);
+
                 return recycled;
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Invalidates the measure of <paramref name="visual"/> and its entire visual subtree.
+        /// Needed when a recycled container is reused for a different item: the container's content
+        /// is not re-created (IVirtualizingDataTemplate reuses the child), so descendants would
+        /// otherwise short-circuit re-measure at the unchanged available size and keep the previous
+        /// item's layout. This forces the new item's data to be measured before the arrange pass.
+        /// </summary>
+        private static void InvalidateMeasureRecursive(Visual visual)
+        {
+            if (visual is Layoutable layoutable)
+                layoutable.InvalidateMeasure();
+
+            foreach (var child in visual.GetVisualChildren())
+                InvalidateMeasureRecursive(child);
         }
 
         private Control CreateElement(object? item, int index, object? recycleKey)
@@ -2542,10 +2574,10 @@ namespace Avalonia.Controls
                         // Create container with real item - this creates the Container + Child together
                         // PrepareContainerForItemOverride is called, which creates the Child control
                         var container = CreateElement(item, index, recycleKey);
-                        
+
                         // Pre-measure with typical available size to cache layout
                         container.Measure(availableSize);
-                        
+
                         // IMPORTANT: Do NOT clear the container!
                         // The Child control should stay attached with its template instantiated.
                         // When reused, only the data binding will update (cheap operation).

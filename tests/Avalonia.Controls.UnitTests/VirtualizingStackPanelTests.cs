@@ -2995,6 +2995,22 @@ namespace Avalonia.Controls.UnitTests
             public int MinPoolSizePerKey { get; set; } = 2;
         }
 
+        /// <summary>
+        /// Height depends on the item's data read directly from DataContext, and does NOT use a
+        /// binding — so a DataContext change does not synchronously invalidate this control's own
+        /// measure. This models content whose size settles after the initial measure (async images,
+        /// markdown, converters) and lets us probe whether a container reused for a different item
+        /// at the same width re-measures its content subtree.
+        /// </summary>
+        private class DataDrivenHeightControl : Control
+        {
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                var h = (DataContext as ItemWithHeight)?.Height ?? 10;
+                return new Size(50, h);
+            }
+        }
+
         // ===== Category A: Scrolling with Very Different Item Heights =====
 
         [Fact]
@@ -3668,6 +3684,59 @@ namespace Avalonia.Controls.UnitTests
                 // Net effect: pool is used during scroll
                 Assert.True(poolCountAfter <= poolCountBefore + 10,
                     $"Pool after scroll ({poolCountAfter}) should not grow unboundedly from ({poolCountBefore})");
+            }
+            finally
+            {
+                ContentVirtualizationDiagnostics.IsEnabled = true;
+            }
+        }
+
+        [Fact]
+        public void Reused_Container_Reflects_New_Item_Height_After_Scroll()
+        {
+            using var app = App();
+            ContentVirtualizationDiagnostics.IsEnabled = true;
+
+            try
+            {
+                // Alternating short/tall items so a recycled container is reused for an item of a
+                // different height. Height depends on the item but is not bound (no self-invalidate).
+                var items = Enumerable.Range(0, 50)
+                    .Select(i => (object)new ItemWithHeight(i, i % 2 == 0 ? 20 : 80))
+                    .ToList();
+
+                // IVirtualizingDataTemplate: on recycle the container is NOT cleared and the same
+                // child instance is reused (Build(data, existing) returns existing) — matching the
+                // app's FieldTemplateSelector.
+                var template = new FuncVirtualizingDataTemplate<object>((_, _) => new DataDrivenHeightControl())
+                {
+                    MinPoolSizePerKey = 2
+                };
+
+                var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: template);
+
+                // Scroll down and back so containers get recycled into the pool and reused for
+                // different items.
+                for (double offset = 0; offset <= 400; offset += 40)
+                {
+                    scroll.Offset = new Vector(0, offset);
+                    Layout(target);
+                }
+                for (double offset = 400; offset >= 0; offset -= 40)
+                {
+                    scroll.Offset = new Vector(0, offset);
+                    Layout(target);
+                }
+
+                // Every realized container must reflect the height of the item it currently displays,
+                // not a stale height from a previous item it was recycled from.
+                var containers = target.GetRealizedContainers()!.ToList();
+                Assert.NotEmpty(containers);
+                Assert.All(containers, c =>
+                {
+                    var expected = ((ItemWithHeight)c.DataContext!).Height;
+                    Assert.Equal(expected, c.Bounds.Height);
+                });
             }
             finally
             {
