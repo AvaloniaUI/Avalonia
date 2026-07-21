@@ -110,12 +110,6 @@ partial class ServerCompositionVisual
             if (visual._ownClipRect.HasValue)
                 _walkContext.PushClip(effectiveClip);
 
-            if (visual.ClipToBounds)
-                visual.PushClipToBounds(_canvas);
-
-            if (visual.Clip != null)
-                _canvas.PushGeometryClip(visual.Clip);
-
             return true;
         }
 
@@ -156,11 +150,17 @@ partial class ServerCompositionVisual
             if (visual.TextOptions != default)
                 _canvas.PushTextOptions(visual.TextOptions);
 
-            if (visual.OpacityMaskBrush != null)
-                _canvas.PushOpacityMask(visual.OpacityMaskBrush, visual._subTreeBounds!.Value.ToRect());
-            
             if (visual.Effect != null && _canvas is IDrawingContextImplWithEffects effects)
                 effects.PushEffect(visual._subTreeBounds!.Value.ToRect(), visual.Effect);
+
+            if (visual.ClipToBounds)
+                visual.PushClipToBounds(_canvas);
+
+            if (visual.Clip != null)
+                _canvas.PushGeometryClip(visual.Clip);
+
+            if (visual.OpacityMaskBrush != null)
+                _canvas.PushOpacityMask(visual.OpacityMaskBrush, visual._subTreeBounds!.Value.ToRect());
 
             visual.RenderCore(_publicContext, _walkContext.Clip);
             
@@ -180,11 +180,17 @@ partial class ServerCompositionVisual
             // If we've used cache, those never got pushed in PreSubgraph
             if (!_usedCache)
             {
-                if (visual.Effect != null && _canvas is IDrawingContextImplWithEffects effects)
-                    effects.PopEffect();
-
                 if (visual.OpacityMaskBrush != null)
                     _canvas.PopOpacityMask();
+
+                if (visual.Clip != null)
+                    _canvas.PopGeometryClip();
+
+                if (visual.ClipToBounds)
+                    _canvas.PopClip();
+
+                if (visual.Effect != null && _canvas is IDrawingContextImplWithEffects effects)
+                    effects.PopEffect();
 
                 if (visual.TextOptions != default)
                     _canvas.PopTextOptions();
@@ -198,12 +204,6 @@ partial class ServerCompositionVisual
             {
                 if (visual.AdornedVisual != null)
                     AdornerHelper_RenderPostGraphPushAdornerClip(visual);
-
-                if (visual.Clip != null)
-                    _canvas.PopGeometryClip();
-
-                if (visual.ClipToBounds)
-                    _canvas.PopClip();
 
                 if (visual._ownClipRect.HasValue)
                     _walkContext.PopClip();
