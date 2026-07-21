@@ -3494,6 +3494,68 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Reset_With_MidList_Insert_Realizes_Shifted_Items_At_Correct_Index()
+        {
+            // Repro for the wrong-visual-index bug: when a mid-list insert is coalesced into a
+            // single Reset (e.g. DynamicData's Bind reset-threshold turning an InsertRange into a
+            // Reset), the realized elements BEFORE the insertion point still match by DataContext
+            // while every element at/after it is now shifted to a later index. The preserve-on-reset
+            // heuristic must NOT keep the stale mapping just because a majority (the prefix) still
+            // matches — otherwise the shifted items stay pinned to the wrong containers and render
+            // at the wrong position (children appearing under a later headline).
+            using var app = App();
+            ContentVirtualizationDiagnostics.IsEnabled = true;
+
+            try
+            {
+                var originalItems = Enumerable.Range(0, 20)
+                    .Select(i => new TypeA_Item { Name = $"A{i}" }).ToList();
+                var items = new ResettingObservableCollection<object>(originalItems);
+
+                var template = new FuncVirtualizingDataTemplate<object>((item, _) =>
+                    new Canvas { Width = 100, Height = 10 });
+
+                var (target, scroll, itemsControl) = CreateTarget(
+                    items: items,
+                    itemTemplate: template);
+
+                // Items 0-9 are realized (viewport = 100px, item height = 10px, no buffer).
+                Assert.Equal(0, target.FirstRealizedIndex);
+                Assert.Equal(9, target.LastRealizedIndex);
+
+                // Insert 3 new items after index 5 and fire a SINGLE Reset. The realized prefix
+                // [0..5] still matches (6 of 10 => a bare majority), which previously tripped the
+                // "preserve realized elements" heuristic; items 6-9 are shifted down by 3.
+                var newItems = Enumerable.Range(0, 3)
+                    .Select(i => (object)new TypeA_Item { Name = $"N{i}" }).ToList();
+                var afterInsert = originalItems.Cast<object>().Take(6)
+                    .Concat(newItems)
+                    .Concat(originalItems.Cast<object>().Skip(6))
+                    .ToList();
+                items.Reset(afterInsert);
+                Layout(target);
+
+                // Every realized container must map to the item now at its index. With the bug,
+                // the containers for the old items 6-9 stay pinned at indices 6-9 (stale) and the
+                // newly-inserted items get appended after them.
+                var containersAfter = target.GetRealizedContainers()!.ToList();
+                foreach (var container in containersAfter)
+                {
+                    var idx = itemsControl.IndexFromContainer(container);
+                    if (idx >= 0 && idx < afterInsert.Count)
+                    {
+                        var dc = (container as IDataContextProvider)?.DataContext;
+                        Assert.Same(afterInsert[idx], dc);
+                    }
+                }
+            }
+            finally
+            {
+                ContentVirtualizationDiagnostics.IsEnabled = true;
+            }
+        }
+
         // ===== Category D: Non-Virtualizing Panel Safety =====
 
         [Fact]

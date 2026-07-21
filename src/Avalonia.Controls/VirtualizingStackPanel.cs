@@ -601,12 +601,15 @@ namespace Avalonia.Controls
 
                     if (_realizedElements.Count > 0)
                     {
-                        // Check if any realized items still exist in the new collection
+                        // Check whether every realized item still exists at its current index.
                         var preservedCount = 0;
+                        var realizedCount = 0;
                         for (var i = 0; i < _realizedElements.Count; i++)
                         {
                             if (_realizedElements.Elements[i] == null)
                                 continue;
+
+                            realizedCount++;
 
                             var oldIndex = _realizedElements.FirstIndex + i;
                             if (oldIndex >= 0 && oldIndex < items.Count)
@@ -622,9 +625,17 @@ namespace Avalonia.Controls
                             }
                         }
 
-                        // If most realized items still exist at same indices, this is likely
-                        // an append operation (infinite scroll), not a replacement
-                        shouldPreserveRealizedElements = preservedCount > _realizedElements.Count / 2;
+                        // Preserve realized elements ONLY when EVERY one is still valid at its
+                        // current index (the pure append / infinite-scroll case, where all
+                        // realized items keep their indices). A partial match is unsafe: when a
+                        // mid-list insert or remove is coalesced into a single Reset (e.g. by
+                        // DynamicData's Bind reset-threshold), the elements before the edit point
+                        // still match while everything at/after it has shifted. A bare-majority
+                        // test would then preserve the whole stale mapping, leaving the shifted
+                        // items pinned to the wrong containers and rendered at the wrong position.
+                        // In that case fall through to the full reset path, which re-realizes
+                        // (and reuses matching containers via RetainMatchingContainers) correctly.
+                        shouldPreserveRealizedElements = realizedCount > 0 && preservedCount == realizedCount;
 
                     }
 
