@@ -34,6 +34,8 @@
         <Property Name="AdornerIsClipped" Type="bool" Internal="true" />
         <Property Name="OpacityMaskBrush" ClientName="OpacityMaskBrushTransportField" Type="Avalonia.Media.IBrush?" Private="true"  />
         <Property Name="Effect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
+        <Property Name="BackdropEffect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
+        <Property Name="BackdropEffectCache" Type="CompositionBackdropEffectCacheMode?" Internal="true" />
         <Property Name="RenderOptions" Type="Avalonia.Media.RenderOptions" />
         <Property Name="TextOptions" Type="Avalonia.Media.TextOptions" />
         <Property Name="CacheMode" Type="CompositionCacheMode?" Internal="true" />
@@ -122,5 +124,11 @@
         <Property Name="RenderAtScale" Type="double" Animated="true" DefaultValue="1.0"/>
         <Property Name="SnapsToDevicePixels" Type="bool" Animated="true" DefaultValue="false"/>
         <Property Name="EnableClearType" Type="bool" Animated="true" DefaultValue="false"/>
+    </Object>
+    <Object Name="CompositionBackdropEffectCacheMode" Internal="true">
+    </Object>
+    <Object Name="CompositionRetainedBackdropEffectCacheMode" Internal="true" Inherits="CompositionBackdropEffectCacheMode">
+    </Object>
+    <Object Name="CompositionVolatileBackdropEffectCacheMode" Internal="true" Inherits="CompositionBackdropEffectCacheMode">
     </Object>
 </NComposition>
