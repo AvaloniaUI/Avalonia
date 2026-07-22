@@ -271,6 +271,11 @@ partial class ServerCompositionVisual
                     _canvas.PopRenderOptions();
             }
 
+            // A cached visual is always a leaf in the walk (children are skipped), so its
+            // PreSubgraph/PostSubgraph are adjacent. Reset here so the flag never leaks into a
+            // later sibling and causes its effect/mask/options pushes to be left unpopped.
+            _usedCache = false;
+
             // Pop the volatile backdrop layer opened in PreSubgraph. It wraps this visual's content, children,
             // effect, mask and cache, so it pops here — after those, before the visual's own clips/transform.
             // Runs regardless of _usedCache (the push happens before the cache draw).
