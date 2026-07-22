@@ -138,7 +138,13 @@ namespace Avalonia.Data.Core.Parsers
             else if (ParseDot(ref r))
             {
                 nodes.Add(new EmptyExpressionNode());
-                return State.End;
+                return State.AfterMember;
+            }
+            else if (ParseStreamOperator(ref r))
+            {
+                nodes.Add(new EmptyExpressionNode());
+                nodes.Add(new StreamNode());
+                return State.AfterMember;
             }
             else
             {
