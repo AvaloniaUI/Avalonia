@@ -194,6 +194,10 @@ public class ShapeTests : ScopedTestBase
         {
         }
 
+        internal override void DrawRecordingCore(Rendering.Composition.DrawingRecording recording)
+        {
+        }
+
         protected override void PopClipCore()
         {
         }

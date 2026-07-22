@@ -132,6 +132,33 @@ internal partial class RenderDataStream : IDisposable
         });
     }
 
+    public void DrawRecording(ServerCompositionRenderData server, CompositionRenderData client, Matrix transform)
+    {
+        // Both sides go into the table: the server data replays and provides
+        // render-thread bounds (and, being a server render resource, gets
+        // observed on deserialize so nested changes invalidate the outer
+        // stream), while the client data answers synchronous bounds and
+        // hit-test queries on the UI thread.
+        _writer.WritePayload(new DrawRecordingPayload
+        {
+            ServerRenderData = _resources.Intern(server),
+            ClientRenderData = _resources.Intern(client),
+            Stream = RenderDataResources.NullHandle,
+            Transform = transform
+        });
+    }
+
+    public void DrawRecording(RenderDataStream stream, Matrix transform)
+    {
+        _writer.WritePayload(new DrawRecordingPayload
+        {
+            ServerRenderData = RenderDataResources.NullHandle,
+            ClientRenderData = RenderDataResources.NullHandle,
+            Stream = _resources.Intern(stream),
+            Transform = transform
+        });
+    }
+
     public void PushClip(RoundedRect clip)
     {
         _writer.WritePayload(new PushClipPayload { Clip = clip });

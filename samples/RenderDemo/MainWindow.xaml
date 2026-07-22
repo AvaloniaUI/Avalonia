@@ -102,5 +102,11 @@
     <TabItem Header="Resize Pattern">
       <pages:ResizePatternPage />
     </TabItem>
+    <TabItem Header="DrawingRecording">
+      <pages:DrawingRecordingPage />
+    </TabItem>
+    <TabItem Header="RecordingComposition">
+      <pages:RecordingCompositionPage />
+    </TabItem>
   </controls:HamburgerMenu>
 </Window>

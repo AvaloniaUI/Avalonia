@@ -82,6 +82,26 @@ internal partial class RenderDataStream
                 Hit();
         }
 
+        public void OnDrawRecording(ServerCompositionRenderData? server, CompositionRenderData? client,
+            RenderDataStream? stream, Matrix transform)
+        {
+            if (!Live)
+                return;
+
+            var point = Current;
+            if (!transform.IsIdentity)
+            {
+                if (!transform.TryInvert(out var inverted))
+                    return;
+                point = point.Transform(inverted);
+            }
+
+            // Hit testing is a client-side query, so compositor-bound children
+            // answer from their client data.
+            if (client != null ? client.HitTest(point) : stream?.HitTest(point) == true)
+                Hit();
+        }
+
         public HitTestScope OnPushClip(RoundedRect clip)
         {
             var scope = new HitTestScope { SavedLive = Live };
