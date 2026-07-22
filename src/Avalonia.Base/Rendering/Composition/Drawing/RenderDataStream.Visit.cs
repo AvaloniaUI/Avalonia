@@ -94,6 +94,16 @@ internal partial class RenderDataStream
                         visitor.OnDrawCustom((ICustomDrawOperation?)_resources[p.Operation]);
                         break;
                     }
+                    case RenderDataOpcode.DrawRecording:
+                    {
+                        var p = reader.ReadPayload<DrawRecordingPayload>();
+                        visitor.OnDrawRecording(
+                            (ServerCompositionRenderData?)_resources[p.ServerRenderData],
+                            (CompositionRenderData?)_resources[p.ClientRenderData],
+                            (RenderDataStream?)_resources[p.Stream],
+                            p.Transform);
+                        break;
+                    }
                     case RenderDataOpcode.PushClip:
                     {
                         var p = reader.ReadPayload<PushClipPayload>();

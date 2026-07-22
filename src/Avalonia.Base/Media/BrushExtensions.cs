@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition.Drawing;
 
 namespace Avalonia.Media
 {
@@ -13,14 +14,24 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <returns>
-        /// The result of calling <see cref="IMutableBrush.ToImmutable"/> if the brush is mutable,
-        /// otherwise <paramref name="brush"/>.
+        /// The result of calling <see cref="IMutableBrush.ToImmutable"/> if the brush is mutable;
+        /// for an <see cref="ISceneBrush"/> (<see cref="VisualBrush"/>, <see cref="DrawingBrush"/>,
+        /// <see cref="DrawingRecordingBrush"/>, …) an immutable snapshot of the brush's current
+        /// content with the tile-brush properties captured at call time (a transparent brush when
+        /// the scene brush has no content); otherwise <paramref name="brush"/> itself.
         /// </returns>
         public static IImmutableBrush ToImmutable(this IBrush brush)
         {
             _ = brush ?? throw new ArgumentNullException(nameof(brush));
 
-            return (brush as IMutableBrush)?.ToImmutable() ?? (IImmutableBrush)brush;
+            return brush switch
+            {
+                ISceneBrush scene => scene.CreateContent() is { } content
+                    ? new EmbeddedSceneBrushContent(content)
+                    : (IImmutableBrush)Brushes.Transparent,
+                IMutableBrush mutable => mutable.ToImmutable(),
+                _ => (IImmutableBrush)brush
+            };
         }
 
         /// <summary>
