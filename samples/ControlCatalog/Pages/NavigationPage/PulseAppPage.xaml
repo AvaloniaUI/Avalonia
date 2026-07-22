@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PulseAppPage">
+  <DockPanel>
+    <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="300">
+      <StackPanel Margin="16" Spacing="16">
+
+        <TextBlock Text="Pulse Fitness" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Login flow with RemovePage, TabbedPage dashboard with bottom tabs, and NavigationPage push for workout detail." />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="A fitness app showcasing NavigationPage + TabbedPage working together. Login pushes a TabbedPage dashboard, then RemovePage removes login from the stack. Tapping a workout card pushes a detail page via NavigationPage." />
+
+        <Separator />
+
+        <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. Login page is the NavigationPage root" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. On login → push TabbedPage (dashboard)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. RemovePage(login) removes it from stack" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="4. Tap workout card → push detail page" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="5. Back button pops to TabbedPage" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="Key Code" FontSize="13" FontWeight="SemiBold" />
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8">
+          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     FontSize="10" TextWrapping="Wrap"
+                     Text="// After login, push dashboard&#xA;navPage.Push(tabbedPage);&#xA;&#xA;// Remove login from stack&#xA;navPage.RemovePage(loginPage);&#xA;&#xA;// Tap workout → push detail&#xA;navPage.Push(detailPage);" />
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+      <NavigationPage x:Name="NavPage" />
+    </Border>
+  </DockPanel>
+</UserControl>

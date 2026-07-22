@@ -85,7 +85,5 @@ namespace Avalonia.Media.Immutable
         
         /// <inheritdoc/>
         public RelativeScalar RadiusY { get; }
-
-        [Obsolete("Use RadiusX/RadiusY")] public double Radius => RadiusX.Scalar;
     }
 }

@@ -20,12 +20,8 @@ internal enum WindowInteractionState
     BlockedByModalWindow,
     NotResponding
 }
-#if NET8_0_OR_GREATER
+
 [GeneratedComInterface(Options = ComInterfaceOptions.ManagedObjectWrapper)]
-#else
-[ComImport()]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
 [Guid("987df77b-db06-4d77-8f8a-86a9c3bb90b9")]
 internal partial interface IWindowProvider
 {

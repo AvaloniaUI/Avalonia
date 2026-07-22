@@ -87,11 +87,7 @@ internal static class StringSplitter
         for (int i = 0; i < ranges.Count; i++)
         {
             var r = ranges[i];
-#if NET6_0_OR_GREATER
             result[i] = new string(span.Slice(r.start, r.length));
-#else
-            result[i] = span.Slice(r.start, r.length).ToString();
-#endif
         }
 
         return result;

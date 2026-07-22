@@ -203,6 +203,11 @@
                 MaxHeight="398">
           <Grid Name="ContentPanel" RowDefinitions="*,Auto">
             <Grid Name="PART_PickerContainer">
+              <Grid.Styles>
+                <Style Selector="DateTimePickerPanel > ListBoxItem">
+                  <Setter Property="Theme" Value="{StaticResource FluentDateTimePickerItem}" />
+                </Style>
+              </Grid.Styles>
               <!--Ignore col defs here, set in code-->
               <Panel Name="PART_HourHost" Grid.Column="0">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"

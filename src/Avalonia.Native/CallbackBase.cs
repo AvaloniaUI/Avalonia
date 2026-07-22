@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using Avalonia.MicroCom;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -11,7 +12,7 @@ namespace Avalonia.Native
     {
         public void RaiseException(Exception e)
         {
-            if (AvaloniaLocator.Current.GetService<IDispatcherImpl>() is DispatcherImpl dispatcherImpl)
+            if(Dispatcher.FromThread(Thread.CurrentThread) is { PlatformImpl: DispatcherImpl dispatcherImpl })
             {
                 dispatcherImpl.PropagateCallbackException(ExceptionDispatchInfo.Capture(e));
             }

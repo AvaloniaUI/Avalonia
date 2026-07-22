@@ -1341,7 +1341,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private static void Layout(Control c)
         {
-            (c.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+            c.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         public static IDisposable Start()

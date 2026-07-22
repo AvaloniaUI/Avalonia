@@ -12,15 +12,20 @@ namespace Avalonia.Controls.PullToRefresh
         private const int InitialOffsetThreshold = 1;
 
         private PullDirection _refreshPullDirection;
+        private bool _isMouseEnabled;
         private ScrollViewer? _scrollViewer;
         private RefreshInfoProvider? _refreshInfoProvider;
-        private PullGestureRecognizer? _pullGestureRecognizer;
+        private ScrollablePullGestureRecognizer? _pullGestureRecognizer;
         private InputElement? _interactionSource;
         private bool _isVisualizerInteractionSourceAttached;
 
-        public ScrollViewerIRefreshInfoProviderAdapter(PullDirection pullDirection)
+        internal InputElement? InteractionSource
+            => _interactionSource;
+
+        public ScrollViewerIRefreshInfoProviderAdapter(PullDirection pullDirection, bool isMouseEnabled)
         {
             _refreshPullDirection = pullDirection;
+            _isMouseEnabled = isMouseEnabled;
         }
 
         public RefreshInfoProvider? AdaptFromTree(Visual root, Size? refreshVIsualizerSize)
@@ -89,9 +94,21 @@ namespace Avalonia.Controls.PullToRefresh
 
             if (_refreshInfoProvider != null && _interactionSource != null)
             {
-                _interactionSource.RemoveHandler(Gestures.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
-                _interactionSource.RemoveHandler(Gestures.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
+                _interactionSource.RemoveHandler(InputElement.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
+                _interactionSource.RemoveHandler(InputElement.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
             }
+
+            // Remove the previous pull gesture recognizer from the previous interaction source,
+            // otherwise repeated Adapt() calls (e.g. when the visual tree gets re-templated)
+            // accumulate recognizers, leading to duplicate PullGesture/PullGestureEnded events.
+            if (_pullGestureRecognizer != null && _interactionSource != null)
+            {
+                _interactionSource.GestureRecognizers.Remove(_pullGestureRecognizer);
+            }
+
+            _pullGestureRecognizer = null;
+            _interactionSource = null;
+            _isVisualizerInteractionSourceAttached = false;
 
             _refreshInfoProvider = null;
             _scrollViewer = adaptee;
@@ -124,13 +141,13 @@ namespace Avalonia.Controls.PullToRefresh
 
             _refreshInfoProvider = new RefreshInfoProvider(_refreshPullDirection, refreshVIsualizerSize, ElementComposition.GetElementVisual(content));
 
-            _pullGestureRecognizer = new PullGestureRecognizer(_refreshPullDirection);
+            _pullGestureRecognizer = new ScrollablePullGestureRecognizer(_refreshPullDirection, _isMouseEnabled);
 
             if (_interactionSource != null)
             {
                 _interactionSource.GestureRecognizers.Add(_pullGestureRecognizer);
-                _interactionSource.AddHandler(Gestures.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
-                _interactionSource.AddHandler(Gestures.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
+                _interactionSource.AddHandler(InputElement.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
+                _interactionSource.AddHandler(InputElement.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
                 _isVisualizerInteractionSourceAttached = true;
             }
 
@@ -169,11 +186,11 @@ namespace Avalonia.Controls.PullToRefresh
                 visualizerComposition.ImplicitAnimations = animation;
             }
 
-            if(_scrollViewer != null)
+            if (_scrollViewer != null)
             {
                 var scrollContentComposition = ElementComposition.GetElementVisual(_scrollViewer);
 
-                if(scrollContentComposition != null)
+                if (scrollContentComposition != null)
                 {
                     var compositor = scrollContentComposition.Compositor;
 
@@ -217,8 +234,8 @@ namespace Avalonia.Controls.PullToRefresh
             if (_pullGestureRecognizer != null && _refreshInfoProvider != null)
             {
                 element?.GestureRecognizers.Add(_pullGestureRecognizer);
-                _interactionSource?.AddHandler(Gestures.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
-                _interactionSource?.AddHandler(Gestures.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
+                _interactionSource?.AddHandler(InputElement.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
+                _interactionSource?.AddHandler(InputElement.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
                 _isVisualizerInteractionSourceAttached = true;
             }
         }
@@ -259,6 +276,39 @@ namespace Avalonia.Controls.PullToRefresh
             }
 
             return false;
+        }
+
+        public void UpdatePullDirection(PullDirection pullDirection)
+        {
+            _refreshPullDirection = pullDirection;
+
+            if (_refreshInfoProvider != null)
+            {
+                _refreshInfoProvider.PullDirection = pullDirection;
+            }
+
+            if (_pullGestureRecognizer != null)
+            {
+                _pullGestureRecognizer.PullDirection = pullDirection;
+            }
+        }
+
+        public void UpdateIsMouseEnabled(bool IsMouseEnabled)
+        {
+            _isMouseEnabled = IsMouseEnabled;
+            
+            if (_pullGestureRecognizer != null)
+            {
+                _pullGestureRecognizer.IsMouseEnabled = IsMouseEnabled;
+            }
+        }
+
+        public void UpdateVisualizerSize(Size? refreshVisualizerSize)
+        {
+            if (_refreshInfoProvider != null)
+            {
+                _refreshInfoProvider.RefreshVisualizerSize = refreshVisualizerSize ?? default;
+            }
         }
 
         private void CleanUpScrollViewer()

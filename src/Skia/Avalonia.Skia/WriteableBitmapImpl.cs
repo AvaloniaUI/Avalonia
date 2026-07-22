@@ -149,24 +149,13 @@ namespace Avalonia.Skia
             }
         }
 
-        /// <inheritdoc />
-        public void Save(Stream stream, int? quality = null)
+        public void Save(Stream stream, BitmapEncoderOptions options)
         {
-            using (var image = GetSnapshot())
-            {
-                ImageSavingHelper.SaveImage(image, stream, quality);
-            }
-        }
+            using var image = GetSnapshot();
 
-        /// <inheritdoc />
-        public void Save(string fileName, int? quality = null)
-        {
-            using (var image = GetSnapshot())
-            {
-                ImageSavingHelper.SaveImage(image, fileName, quality);
-            }
+            ImageSavingHelper.SaveImage(image, stream, options);
         }
-
+        
         public PixelFormat? Format => _bitmap.ColorType.ToAvalonia();
 
         public AlphaFormat? AlphaFormat => _bitmap.AlphaType.ToAlphaFormat();
@@ -238,6 +227,8 @@ namespace Avalonia.Skia
             public Vector Dpi => _parent.Dpi;
             /// <inheritdoc />
             public PixelFormat Format => _bitmap.ColorType.ToPixelFormat();
+
+            public AlphaFormat AlphaFormat => _bitmap.AlphaType.ToAlphaFormat();
         }
     }
 }

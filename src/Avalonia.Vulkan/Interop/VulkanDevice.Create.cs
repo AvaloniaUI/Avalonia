@@ -68,8 +68,10 @@ internal unsafe partial class VulkanDevice
         var enableExtensions =
             new HashSet<string>(options.DeviceExtensions.Concat(VulkanExternalObjectsFeature.RequiredDeviceExtensions));
 
-        var enabledExtensions = enableExtensions
-            .Intersect(dev.Extensions).Append(VK_KHR_swapchain).Distinct().ToArray();
+        var filteredExtensions = enableExtensions.Intersect(dev.Extensions);
+        if (options.RequireSwapchainExtension)
+            filteredExtensions = filteredExtensions.Append(VK_KHR_swapchain);
+        var enabledExtensions = filteredExtensions.Distinct().ToArray();
 
         using var pEnabledExtensions = new Utf8BufferArray(enabledExtensions);
 
@@ -127,7 +129,7 @@ internal unsafe partial class VulkanDevice
         instance.GetPhysicalDeviceProperties(physicalDevice, out var properties);
 
         var supportedExtensions = GetDeviceExtensions(instance, physicalDevice);
-        if (!supportedExtensions.Contains(VK_KHR_swapchain))
+        if (options.RequireSwapchainExtension && !supportedExtensions.Contains(VK_KHR_swapchain))
             return null;
         
         uint familyCount = 0;

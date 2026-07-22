@@ -7,30 +7,12 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.LogicalTree;
+using ControlCatalog.Models;
 
 namespace ControlCatalog.Pages
 {
-    public partial class AutoCompleteBoxPage : UserControl
+    public partial class AutoCompleteBoxPage : ContentPage
     {
-        public class StateData
-        {
-            public string Name { get; private set; }
-            public string Abbreviation { get; private set; }
-            public string Capital { get; private set; }
-
-            public StateData(string name, string abbreviatoin, string capital)
-            {
-                Name = name;
-                Abbreviation = abbreviatoin;
-                Capital = capital;
-            }
-
-            public override string ToString()
-            {
-                return Name;
-            }
-        }
-
         private static StateData[] BuildAllStates()
         {
             return new StateData[]
@@ -120,8 +102,8 @@ namespace ControlCatalog.Pages
                 return String.Format("{0} ({1})", parts.ToArray());
             });
             var binding = new MultiBinding { Converter = converter };
-            binding.Bindings.Add(new Binding("Name"));
-            binding.Bindings.Add(new Binding("Abbreviation"));
+            binding.Bindings.Add(CompiledBinding.Create<StateData, string>(s => s.Name));
+            binding.Bindings.Add(CompiledBinding.Create<StateData, string>(s => s.Abbreviation));
 
             MultiBindingBox.ValueMemberBinding = binding;
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -28,7 +28,8 @@ using XamlX.IL.Cecil;
 namespace Avalonia.Markup.Xaml.XamlIl
 {
 #if !RUNTIME_XAML_CECIL
-    [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
+    [RequiresUnreferencedCode(XamlX.TrimmingMessages.Sre)]
+    [RequiresDynamicCode(XamlX.TrimmingMessages.Sre)]
 #endif
     internal static class AvaloniaXamlIlRuntimeCompiler
     {
@@ -41,30 +42,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
         private static XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult>? _sreEmitMappings;
         private static XamlXmlnsMappings? _sreXmlns;
         private static AssemblyBuilder? _sreAsm;
-        private static bool _sreCanSave;
-
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = XamlX.TrimmingMessages.CanBeSafelyTrimmed)]
-        public static void DumpRuntimeCompilationResults()
-        {
-            if (_sreBuilder == null)
-                return;
-            var saveMethod = _sreAsm!.GetType().GetMethods()
-                .FirstOrDefault(m => m.Name == "Save" && m.GetParameters().Length == 1);
-            if (saveMethod == null)
-                return;
-            try
-            {
-                _sreBuilder.CreateGlobalFunctions();
-                saveMethod.Invoke(_sreAsm, new Object[] {"XamlIlLoader.ildump"});
-            }
-            catch
-            {
-                //Ignore
-            }
-        }
 
         [CompilerDynamicDependencies]
-        [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
         [MemberNotNull(nameof(_sreTypeSystem))]
         [MemberNotNull(nameof(_sreBuilder))]
         [MemberNotNull(nameof(_sreMappings))]
@@ -74,7 +53,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         [MemberNotNull(nameof(_ignoresAccessChecksFromAttribute))]
         static void InitializeSre()
         {
-            // SRE backend doesn't load assemblies, unless they are already in the memory.
+            // SRE backend doesn't load assemblies unless they are already in the memory.
             // At the very least, we should make sure that assemblies necessary for `AvaloniaXamlIlWellKnownTypes` are loaded.
             // Root `Avalonia.Controls`.
             GC.KeepAlive(typeof(Avalonia.Controls.Control));
@@ -87,26 +66,10 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 _sreTypeSystem = new SreTypeSystem();
             if (_sreBuilder == null)
             {
-                _sreCanSave = !(RuntimeInformation.FrameworkDescription.StartsWith(".NET Core"));
                 var name = new AssemblyName(Guid.NewGuid().ToString("N"));
-                if (_sreCanSave)
-                {
-                    var define = GetDefineDynamicAssembly();
-                    if (define != null)
-                        _sreAsm = (AssemblyBuilder)define.Invoke(AppDomain.CurrentDomain, new object[]
-                        {
-                            name, (AssemblyBuilderAccess)3,
-                            Path.GetDirectoryName(typeof(AvaloniaXamlIlRuntimeCompiler).Assembly.GetModules()[0]
-                                .FullyQualifiedName)!
-                        })!;
-                    else
-                        _sreCanSave = false;
-                }
-                
-                if(_sreAsm == null)
-                    _sreAsm = AssemblyBuilder.DefineDynamicAssembly(name,
-                        AssemblyBuilderAccess.RunAndCollect);
-                
+
+                _sreAsm ??= AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndCollect);
+
                 _sreBuilder = _sreAsm.DefineDynamicModule("XamlIlLoader.ildump");
             }
 
@@ -122,12 +85,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
             if (_ignoresAccessChecksFromAttribute == null)
                 _ignoresAccessChecksFromAttribute = EmitIgnoresAccessCheckAttributeDefinition(_sreBuilder);
         }
-
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = XamlX.TrimmingMessages.CanBeSafelyTrimmed)]
-        static MethodInfo? GetDefineDynamicAssembly() => AppDomain.CurrentDomain.GetType().GetMethods()
-            .FirstOrDefault(m => m.Name == "DefineDynamicAssembly"
-                                 && m.GetParameters().Length == 3 &&
-                                 m.GetParameters()[2].ParameterType == typeof(string));
 
         static Type EmitIgnoresAccessCheckAttributeDefinition(ModuleBuilder builder)
         {
@@ -237,37 +194,15 @@ namespace Avalonia.Markup.Xaml.XamlIl
             return result;
         }
 
-        static object LoadSre(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration)
+        public static object LoadSre(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration)
         {
-            var success = false;
-            try
-            {
-                var rv = LoadSreCore(document, configuration);
-                success = true;
-                return rv;
-            }
-            finally
-            {
-                if(!success && _sreCanSave)
-                    DumpRuntimeCompilationResults();
-            }
+            return LoadSreCore(document, configuration);
         }
 
-        static IReadOnlyList<object> LoadGroupSre(IReadOnlyCollection<RuntimeXamlLoaderDocument> documents,
+        public static IReadOnlyList<object> LoadGroupSre(IReadOnlyCollection<RuntimeXamlLoaderDocument> documents,
             RuntimeXamlLoaderConfiguration configuration)
         {
-            var success = false;
-            try
-            {
-                var rv = LoadGroupSreCore(documents, configuration);
-                success = true;
-                return rv;
-            }
-            finally
-            {
-                if(!success &&  _sreCanSave)
-                    DumpRuntimeCompilationResults();
-            }
+            return LoadGroupSreCore(documents, configuration);
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
@@ -344,7 +279,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             {
                 EnableIlVerification = true,
                 DefaultCompileBindings = configuration.UseCompiledBindingsByDefault,
-                IsDesignMode = configuration.DesignMode
+                IsDesignMode = configuration.DesignMode,
+                CreateSourceInfo = configuration.CreateSourceInfo,
             };
 
             var parsedDocuments = new List<XamlDocumentResource>();
@@ -363,7 +299,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 }
 
                 var parsed = compiler.Parse(xaml, overrideType);
-                parsed.Document = "runtimexaml:" + parsedDocuments.Count;
+                parsed.Document = document.Document ?? ("runtimexaml" + parsedDocuments.Count);
                 compiler.Transform(parsed);
 
                 var xamlName = GetSafeUriIdentifier(document.BaseUri)

@@ -5,11 +5,12 @@ using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls.Embedding;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Automation.Peers
 {
-    public class EmbeddableControlRootAutomationPeer : ContentControlAutomationPeer, IEmbeddedRootProvider
+    public class EmbeddableControlRootAutomationPeer : ContentControlAutomationPeer, IEmbeddedRootProvider, IRootProvider
     {
         private Control? _focus;
 
@@ -24,13 +25,15 @@ namespace Avalonia.Controls.Automation.Peers
 
         public new EmbeddableControlRoot Owner => (EmbeddableControlRoot)base.Owner;
 
+        ITopLevelImpl? IRootProvider.PlatformImpl => Owner.PlatformImpl;
+
         public event EventHandler? FocusChanged;
 
         public AutomationPeer? GetFocus() => _focus is object ? GetOrCreate(_focus) : null;
 
         public AutomationPeer? GetPeerFromPoint(Point p)
         {
-            var hit = Owner.GetVisualAt(p)?.FindAncestorOfType<Control>();
+            var hit = Owner.GetVisualAt(p)?.FindAncestorOfType<Control>(includeSelf: true);
 
             if (hit is null)
                 return null;
@@ -58,8 +61,8 @@ namespace Avalonia.Controls.Automation.Peers
         {
             var oldFocus = _focus;
             var c = focus as Control;
-
-            _focus = c?.VisualRoot == Owner ? c : null;
+            
+            _focus = Owner.IsVisualAncestorOf(c) ? c : null;
 
             if (_focus != oldFocus)
             {
@@ -89,5 +92,7 @@ namespace Avalonia.Controls.Automation.Peers
             Owner.Closed -= OnClosed;
             StopTrackingFocus();
         }
+
+        private protected override Visual? GetVisualParent() => null;
     }
 }

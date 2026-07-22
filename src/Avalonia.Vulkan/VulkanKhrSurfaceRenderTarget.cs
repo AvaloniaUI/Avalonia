@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Platform;
 using Avalonia.Vulkan.Interop;
 using Avalonia.Vulkan.UnmanagedInterop;
 
@@ -26,6 +27,8 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
         Format = IsRgba ? VkFormat.VK_FORMAT_R8G8B8A8_UNORM : VkFormat.VK_FORMAT_B8G8R8A8_UNORM;
     }
 
+    public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
+    
     private void CreateImage()
     {
         _image = new VulkanImage(_context, _display.CommandBufferPool, Format, _display.Size);

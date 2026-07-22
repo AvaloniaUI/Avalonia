@@ -1,13 +1,14 @@
 using System;
 using System.IO;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.iOS
 {
     internal class CursorFactoryStub : ICursorFactory
     {
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorImplStub();
+        public ICursorImpl CreateCursor(Avalonia.Media.Imaging.Bitmap cursor, PixelPoint hotSpot) => new CursorImplStub();
         ICursorImpl ICursorFactory.GetCursor(StandardCursorType cursorType) => new CursorImplStub();
 
         private class CursorImplStub : ICursorImpl
@@ -25,17 +26,19 @@ namespace Avalonia.iOS
         public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
         public ITrayIconImpl? CreateTrayIcon() => null;
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+            => throw new NotSupportedException();
     }
     
     internal class PlatformIconLoaderStub : IPlatformIconLoader
     {
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
-            using (var stream = new MemoryStream())
-            {
-                bitmap.Save(stream);
-                return LoadIcon(stream);
-            }
+            using var stream = new MemoryStream();
+
+            bitmap.Save(stream, PngBitmapEncoderOptions.Default);
+            return LoadIcon(stream);
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)

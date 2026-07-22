@@ -55,15 +55,20 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        await EnsureUriReadPermission(androidUri);
+        // About the READ_EXTERNAL_STORAGE permission:
+        // https://developer.android.com/reference/android/Manifest.permission#READ_EXTERNAL_STORAGE
+        //  - "Starting in API level 33, this permission has no effect."
+        //  - "Also starting in API level 19, this permission is not required
+        //     to read or write files in your application-specific directories [...]"
+        // Consequently, we don't try to check for that permission here anymore.
 
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsFile)
         {
-            return null;
+            return new BclStorageFile(new System.IO.FileInfo(javaFile.AbsolutePath));
         }
 
-        return new AndroidStorageFile(_activity, androidUri);
+        return null;
     }
 
     public async Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
@@ -84,15 +89,13 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        await EnsureUriReadPermission(androidUri);
-
         var javaFile = new JavaFile(androidUriPath);
         if (javaFile.Exists() && javaFile.IsDirectory)
         {
-            return null;
+            return new BclStorageFolder(new System.IO.DirectoryInfo(javaFile.AbsolutePath));
         }
 
-        return new AndroidStorageFolder(_activity, androidUri, false);
+        return null;
     }
 
     public Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
@@ -118,16 +121,9 @@ internal class AndroidStorageProvider : IStorageProvider
             return Task.FromResult<IStorageFolder?>(null);
         }
 
-        var uri = AndroidUri.FromFile(dir);
-        if (uri is null)
-        {
-            return Task.FromResult<IStorageFolder?>(null);
-        }
-
-        // To make TryGetWellKnownFolder API easier to use, we don't check for the permissions.
-        // It will work with file picker activities, but it will fail on any direct access to the folder, like getting list of children.
-        // We pass "needsExternalFilesPermission" parameter here, so folder itself can check for permissions on any FS access. 
-        return Task.FromResult<IStorageFolder?>(new WellKnownAndroidStorageFolder(_activity, dirCode, uri, true));
+        // From Android 10(API 29), WellKnownFolders points to the app's external files directories, rather than the system's.
+        // These paths can be access directly using File apis without need to go though the ContextResolver or requesting permissions.
+        return Task.FromResult<IStorageFolder?>(new BclStorageFolder(new System.IO.DirectoryInfo(dir.AbsolutePath)));
     }
 
     public Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
@@ -167,6 +163,12 @@ internal class AndroidStorageProvider : IStorageProvider
 
         var uris = await StartActivity(pickerIntent, false);
         return uris.Select(u => new AndroidStorageFile(_activity, u)).ToArray();
+    }
+
+    public async Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options)
+    {
+        var files = await OpenFilePickerAsync(options).ConfigureAwait(false);
+        return new OpenFilePickerResult { Files = files };
     }
 
     public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
@@ -283,31 +285,5 @@ internal class AndroidStorageProvider : IStorageProvider
         }
 
         return intent;
-    }
-
-    private async Task EnsureUriReadPermission(AndroidUri androidUri)
-    {
-        bool hasPerms = false;
-        Exception? innerEx = null;
-        try
-        {
-            hasPerms = _activity.CheckUriPermission(androidUri,
-                global::Android.OS.Process.MyPid(),
-                global::Android.OS.Process.MyUid(),
-                ActivityFlags.GrantReadUriPermission)
-                == global::Android.Content.PM.Permission.Granted;
-
-            // TODO: call RequestPermission or add proper permissions API, something like in Browser File API.
-            hasPerms = hasPerms || await _activity.CheckPermission(Manifest.Permission.ReadExternalStorage);
-        }
-        catch (Exception ex)
-        {
-            innerEx = ex;
-        }
-
-        if (!hasPerms)
-        {
-            throw new InvalidOperationException("Application doesn't have READ_EXTERNAL_STORAGE permission. Make sure android manifest has this permission defined and user allowed it.", innerEx);
-        }
     }
 }

@@ -475,8 +475,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         [Theory]
         [InlineData("☝🏿", new int[] { 0 })]
-        [InlineData("☝🏿 ab", new int[] { 0, 3, 4, 5 })]
-        [InlineData("ab ☝🏿", new int[] { 0, 1, 2, 3 })]
+        [InlineData("☝🏿 ab", new int[] { 0, 3, 0, 1 })]
+        [InlineData("ab ☝🏿", new int[] { 0, 1, 2, 0 })]
         public void Should_Create_Valid_Clusters_For_Text(string text, int[] clusters)
         {
             using (Start())
@@ -876,11 +876,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(4, hit.TextPosition);
 
+                var firstRunOffset = TextTestHelper.GetStartCharIndex(firstRun.Text);
                 var currentX = 0.0;
 
                 for (var i = 0; i < firstRun.GlyphRun.GlyphInfos.Count; i++)
                 {
-                    var cluster = firstRun.GlyphRun.GlyphInfos[i].GlyphCluster;
+                    var cluster = firstRun.GlyphRun.GlyphInfos[i].GlyphCluster + firstRunOffset;
                     var advance = firstRun.GlyphRun.GlyphInfos[i].GlyphAdvance;
 
                     hit = layout.HitTestPoint(new Point(currentX, 0));
@@ -906,11 +907,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(0, hit.TextPosition);
 
+                var secondRunOffset = TextTestHelper.GetStartCharIndex(secondRun.Text);
                 currentX = firstRun.Size.Width + 0.5;
 
                 for (var i = 0; i < secondRun.GlyphRun.GlyphInfos.Count; i++)
                 {
-                    var cluster = secondRun.GlyphRun.GlyphInfos[i].GlyphCluster;
+                    var cluster = secondRun.GlyphRun.GlyphInfos[i].GlyphCluster + secondRunOffset;
                     var advance = secondRun.GlyphRun.GlyphInfos[i].GlyphAdvance;
 
                     hit = layout.HitTestPoint(new Point(currentX, 0));
@@ -1002,7 +1004,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var shapedRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
-                    var clusters = shapedRuns.SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphCluster).ToList();
+                    var runStarts = textLine
+                        .GetTextBounds(textLine.FirstTextSourceIndex, textLine.Length)
+                        .SelectMany(bounds => bounds.TextRunBounds)
+                        .Where(bounds => bounds.TextRun is ShapedTextRun)
+                        .ToDictionary(bounds => (ShapedTextRun)bounds.TextRun, bounds => bounds.TextSourceCharacterIndex);
+
+                    var clusters = shapedRuns.SelectMany(run =>
+                    {
+                        var rawClusters = run.ShapedBuffer.Select(glyph => glyph.GlyphCluster).ToList();
+
+                        if (!runStarts.TryGetValue(run, out var runStart) || rawClusters.Count == 0)
+                        {
+                            return rawClusters;
+                        }
+
+                        // Clusters can be either run-local or text-source relative depending on split history.
+                        if (rawClusters.Min() < runStart)
+                        {
+                            return rawClusters.Select(cluster => cluster + runStart);
+                        }
+
+                        return rawClusters;
+                    }).ToList();
 
                     var glyphAdvances = shapedRuns.SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphAdvance).ToList();
 
@@ -1016,7 +1040,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                         var characterHit = textLine.GetCharacterHitFromDistance(currentX);
 
-                        Assert.Equal(cluster, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+                        Assert.True(cluster == characterHit.FirstCharacterIndex + characterHit.TrailingLength,
+                            $"grapheme={i - grapheme.Length}, j={j}, cluster={cluster}, hit={characterHit.FirstCharacterIndex}+{characterHit.TrailingLength}, currentX={currentX}, textLen={text.Length}, runs={shapedRuns.Count}, clusters=[{string.Join(",", clusters)}]");
 
                         var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
 
@@ -1221,6 +1246,573 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
         
+        [Fact]
+        public void InterWordJustification_Does_Not_Stretch_Last_CJK_Glyph()
+        {
+            using (Start())
+            {
+                // Pure CJK (Han) has no inter-word spaces; UAX#14 LB31 yields a break opportunity
+                // between essentially every ideograph, so justification distributes space
+                // inter-character. Justifying to a width wider than the shaped line must widen
+                // interior glyphs (including the first) but leave the final visible glyph's advance
+                // untouched - otherwise the last ideograph is not flush to the line edge. Drives
+                // InterWordJustification directly with an explicit target width to avoid the
+                // widest-line / last-line behaviour of the full TextLayout pipeline.
+                const string text = "一二三四五";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var naturalWidth = textLine.WidthIncludingTrailingWhitespace;
+                var before = GlyphAdvances(textLine);
+
+                Assert.True(before.Count >= 2);
+
+                var targetWidth = naturalWidth + 40;
+
+                textLine.Justify(new InterWordJustification(targetWidth));
+
+                var after = GlyphAdvances(textLine);
+
+                Assert.Equal(before.Count, after.Count);
+
+                // The line is stretched to the requested width.
+                Assert.Equal(targetWidth, textLine.WidthIncludingTrailingWhitespace, 3);
+
+                // The last visible glyph keeps its original advance (no trailing overshoot).
+                Assert.Equal(before[before.Count - 1], after[after.Count - 1], 3);
+
+                // The first glyph participates in justification (the leading gap is widened).
+                AssertGreaterThan(after[0], before[0], "The first glyph should be widened");
+            }
+        }
+
+        [Fact]
+        public void Should_Justify_Wrapped_CJK_Line_To_MaxWidth()
+        {
+            using (Start())
+            {
+                // With the MaxWidth justification target (not the widest produced line), a wrapped
+                // CJK paragraph fills each justified line to the paragraph margin, without stretching
+                // the last visible glyph of the line. Compared against a Left layout of the same
+                // text/width so the assertions do not depend on the fallback font's metrics.
+                const string text = "一二三四五六七八九十一二三四五六七八九十";
+                const double maxWidth = 100;
+
+                var foreground = Brushes.Black.ToImmutable();
+
+                var left = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                    textAlignment: TextAlignment.Left, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+                var justified = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                    textAlignment: TextAlignment.Justify, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+                // A wrapped, non-last line (the last line's treatment is a separate concern).
+                Assert.True(justified.TextLines.Count >= 2);
+
+                var leftLine = left.TextLines[0];
+                var justifiedLine = justified.TextLines[0];
+
+                // The line must have slack to distribute, otherwise the test proves nothing.
+                AssertGreaterThan(maxWidth, leftLine.WidthIncludingTrailingWhitespace,
+                    "The unjustified line must be narrower than MaxWidth");
+
+                var before = GlyphAdvances(leftLine);
+                var after = GlyphAdvances(justifiedLine);
+
+                Assert.Equal(before.Count, after.Count);
+
+                // The wrapped non-last line fills to MaxWidth (not the widest produced line).
+                Assert.Equal(maxWidth, justifiedLine.WidthIncludingTrailingWhitespace, 3);
+
+                // The last visible glyph is unchanged; the first glyph is widened.
+                Assert.Equal(before[before.Count - 1], after[after.Count - 1], 3);
+                AssertGreaterThan(after[0], before[0], "The first glyph should be widened");
+            }
+        }
+
+        [Fact]
+        public void Does_Not_Justify_Last_Line_Of_Wrapped_Paragraph()
+        {
+            using (Start())
+            {
+                // The last line of a justified paragraph stays start-aligned (its natural width),
+                // while the preceding wrapped lines fill to the margin.
+                var text = new string('一', 40);
+                const double maxWidth = 80;
+
+                var foreground = Brushes.Black.ToImmutable();
+
+                var left = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                    textAlignment: TextAlignment.Left, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+                var justified = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                    textAlignment: TextAlignment.Justify, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+                var lineCount = justified.TextLines.Count;
+
+                Assert.True(lineCount >= 2);
+
+                var lastLeft = left.TextLines[lineCount - 1];
+                var lastJustified = justified.TextLines[lineCount - 1];
+
+                // Precondition: the last line is shorter than the margin, so stretching would show.
+                AssertGreaterThan(maxWidth, lastLeft.WidthIncludingTrailingWhitespace,
+                    "The last line must be shorter than MaxWidth for the test to be meaningful");
+
+                // The last line is not stretched.
+                Assert.Equal(lastLeft.WidthIncludingTrailingWhitespace,
+                    lastJustified.WidthIncludingTrailingWhitespace, 3);
+
+                // A preceding wrapped line is still justified to the margin.
+                Assert.Equal(maxWidth, justified.TextLines[0].WidthIncludingTrailingWhitespace, 3);
+            }
+        }
+
+        [Fact]
+        public void Does_Not_Justify_Line_Ending_In_Hard_Break()
+        {
+            using (Start())
+            {
+                // "一二三" ends in an explicit newline (a hard break); it stays start-aligned while
+                // the following width-wrapped, non-last line fills to the margin.
+                var text = "一二三\n" + new string('一', 40);
+                const double maxWidth = 80;
+
+                var foreground = Brushes.Black.ToImmutable();
+
+                var left = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                    textAlignment: TextAlignment.Left, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+                var justified = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                    textAlignment: TextAlignment.Justify, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+                // Line 0 ends in '\n', line 1 is a wrapped non-last line, line 2 is the last line.
+                Assert.True(justified.TextLines.Count >= 3);
+
+                var hardBreakLeft = left.TextLines[0];
+                var hardBreakJustified = justified.TextLines[0];
+
+                AssertGreaterThan(maxWidth, hardBreakLeft.WidthIncludingTrailingWhitespace,
+                    "The hard-break line must be shorter than MaxWidth for the test to be meaningful");
+
+                // The hard-break line is not stretched.
+                Assert.Equal(hardBreakLeft.WidthIncludingTrailingWhitespace,
+                    hardBreakJustified.WidthIncludingTrailingWhitespace, 3);
+
+                // The following width-wrapped, non-last line is justified to the margin.
+                Assert.Equal(maxWidth, justified.TextLines[1].WidthIncludingTrailingWhitespace, 3);
+            }
+        }
+
+        [Fact]
+        public void Justify_Does_Not_Mutate_Shared_ShapedBuffer()
+        {
+            using (Start())
+            {
+                // A TextRunCache keeps the same ShapedTextRun (and its pooled glyph storage) alive
+                // across layouts. Justification must copy-on-write rather than mutate that shared
+                // buffer in place. Simulate the cache's reference with AddRef and assert the
+                // original buffer is untouched while the line's run is replaced with a widened copy.
+                const string text = "一二三四五";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var originalRun = textLine.TextRuns.OfType<ShapedTextRun>().First();
+                var originalBuffer = originalRun.ShapedBuffer;
+                var originalFirstAdvance = originalBuffer[0].GlyphAdvance;
+
+                // Second owner (stands in for the TextRunCache) so the buffer survives the run's
+                // disposal during justification.
+                originalRun.AddRef();
+
+                textLine.Justify(new InterWordJustification(originalRun.Size.Width + 40));
+
+                // The shared buffer is not mutated...
+                Assert.Equal(originalFirstAdvance, originalBuffer[0].GlyphAdvance, 5);
+
+                // ...and the line now holds a different run whose first glyph was widened.
+                var justifiedRun = textLine.TextRuns.OfType<ShapedTextRun>().First();
+
+                Assert.NotSame(originalRun, justifiedRun);
+                AssertGreaterThan(justifiedRun.ShapedBuffer[0].GlyphAdvance, originalFirstAdvance,
+                    "The justified copy's first glyph should be widened");
+
+                originalRun.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Justify_Repoints_Indexed_Runs_At_Replacement()
+        {
+            using (Start())
+            {
+                // Draw and hit-test resolve runs through the bidi-reordered IndexedTextRun list, so
+                // after justification replaces a run its IndexedTextRun must point at the
+                // replacement. GetTextBounds walks the indexed runs; its total must match the
+                // justified line width, not the pre-justification width.
+                var text = new string('一', 40);
+                const double maxWidth = 80;
+
+                var justified = new TextLayout(text, Typeface.Default, 12.0f, Brushes.Black.ToImmutable(),
+                    textAlignment: TextAlignment.Justify, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+                Assert.True(justified.TextLines.Count >= 2);
+
+                var line = justified.TextLines[0];
+
+                var bounds = line.GetTextBounds(line.FirstTextSourceIndex, line.Length);
+
+                Assert.Equal(line.WidthIncludingTrailingWhitespace, bounds.Sum(b => b.Rectangle.Width), 2);
+                Assert.Equal(maxWidth, bounds.Sum(b => b.Rectangle.Width), 2);
+            }
+        }
+
+        [Fact]
+        public void Justify_Distributes_Across_Multiple_Runs()
+        {
+            using (Start())
+            {
+                // Two shaped runs on one line (split by a font-size change). Each must receive its
+                // own break opportunities: the pre-fix apply loop drained the whole queue against
+                // the first run, leaving later runs unjustified.
+                const string text = "一二三四五六";
+
+                var first = new GenericTextRunProperties(Typeface.Default, 20);
+                var second = new GenericTextRunProperties(Typeface.Default, 12);
+                var textSource = new SplitStyleTextSource(text, 3, first, second);
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(first));
+
+                Assert.NotNull(textLine);
+
+                var runs = textLine.TextRuns.OfType<ShapedTextRun>().ToList();
+
+                // Confirm the line really is multi-run, otherwise the test proves nothing.
+                Assert.True(runs.Count >= 2);
+
+                var beforeWidths = runs.Select(r => r.Size.Width).ToList();
+
+                textLine.Justify(new InterWordJustification(textLine.WidthIncludingTrailingWhitespace + 60));
+
+                var afterRuns = textLine.TextRuns.OfType<ShapedTextRun>().ToList();
+
+                Assert.Equal(runs.Count, afterRuns.Count);
+
+                // Every shaped run participated in justification, not just the first.
+                for (var i = 0; i < afterRuns.Count; i++)
+                {
+                    AssertGreaterThan(afterRuns[i].Size.Width, beforeWidths[i], $"Run {i} should be widened");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("aa bb   ")]     // trailing ASCII spaces
+        [InlineData("一二　　　")]    // trailing ideographic (U+3000) spaces
+        public void Justify_Does_Not_Space_Trailing_Whitespace(string text)
+        {
+            using (Start())
+            {
+                // Trailing whitespace (which sits before a wrap point or hard break) must never
+                // receive justification space; the full distributed amount lands in the visible
+                // region instead. This is guaranteed by the LineBreakEnumerator (it emits no
+                // non-required break inside trailing whitespace), so no explicit guard is needed in
+                // InterWordJustification - this test locks that invariant. Width excludes trailing
+                // whitespace, so it must grow by the entire distributed space; if trailing
+                // whitespace absorbed part of it, Width would grow less.
+                const double extra = 40;
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                // Confirm the line actually carries trailing whitespace, otherwise the test proves nothing.
+                Assert.True(textLine.TrailingWhitespaceLength >= 2);
+                AssertGreaterThan(textLine.WidthIncludingTrailingWhitespace, textLine.Width,
+                    "The line must have measurable trailing whitespace");
+
+                var widthBefore = textLine.Width;
+
+                textLine.Justify(new InterWordJustification(textLine.Width + extra));
+
+                Assert.Equal(widthBefore + extra, textLine.Width, 2);
+            }
+        }
+
+        [Fact]
+        public void Should_Justify_Wrapped_Latin_Line()
+        {
+            // The classic inter-word case. A wrapped non-last Latin line fills to the margin; the
+            // last line stays start-aligned.
+            using (Start())
+            {
+                AssertWrappedNonLastLineFillsToMaxWidth(
+                    "the quick brown fox jumps over the lazy dog and then runs away quite quickly today", 140);
+            }
+        }
+
+        // Korean Hangul justifies inter-syllable via the same code path as CJK (LB26/27 bind within
+        // a syllable, LB31 breaks between syllable blocks). A live Korean advance test is not
+        // possible here because the test harness's fallback fonts render Hangul with zero advance
+        // (no Korean font installed), so the CJK tests stand in for it.
+
+        [Fact]
+        public void Does_Not_Justify_Latin_Line_With_Trailing_Spaces_Before_Hard_Break()
+        {
+            using (Start())
+            {
+                // A line ending in trailing spaces + a hard break stays start-aligned (its trailing
+                // whitespace is not stretched), while the following wrapped lines still fill to the
+                // margin.
+                var text = "aa bb   \n" + string.Join(" ", Enumerable.Repeat("cc", 40));
+                const double maxWidth = 120;
+
+                var foreground = Brushes.Black.ToImmutable();
+
+                var left = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                    textAlignment: TextAlignment.Left, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+                var justified = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                    textAlignment: TextAlignment.Justify, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+                Assert.True(justified.TextLines.Count >= 3);
+
+                var line0Left = left.TextLines[0];
+                var line0Justified = justified.TextLines[0];
+
+                AssertGreaterThan(maxWidth, line0Left.WidthIncludingTrailingWhitespace,
+                    "The hard-break line must be shorter than MaxWidth for the test to be meaningful");
+
+                // The trailing-spaces + '\n' line is not stretched.
+                Assert.Equal(line0Left.WidthIncludingTrailingWhitespace,
+                    line0Justified.WidthIncludingTrailingWhitespace, 2);
+
+                // A following width-wrapped, non-last line fills its visible content to the margin.
+                Assert.Equal(maxWidth, justified.TextLines[1].Width, 2);
+            }
+        }
+
+        [Fact]
+        public void Justify_Distributes_Across_Latin_And_CJK()
+        {
+            using (Start())
+            {
+                // A mixed Latin+CJK line distributes space across both the inter-word gap and the
+                // inter-ideograph gaps (the line reaches the target width) without stretching the
+                // last visible glyph.
+                const string text = "ab 日本語";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var lastGlyphBefore = LastGlyphAdvance(textLine);
+
+                var target = textLine.WidthIncludingTrailingWhitespace + 40;
+
+                textLine.Justify(new InterWordJustification(target));
+
+                // Space was distributed across the mixed content (the line reaches the target)...
+                Assert.Equal(target, textLine.WidthIncludingTrailingWhitespace, 2);
+
+                // ...but the last visible glyph is not stretched.
+                Assert.Equal(lastGlyphBefore, LastGlyphAdvance(textLine), 3);
+            }
+        }
+
+        [Fact]
+        public void Justify_Arabic_Does_Not_Corrupt_Shared_Buffer()
+        {
+            using (Start())
+            {
+                // Arabic is cursive and right-to-left (ligated, not one-char-per-cluster), so
+                // justification exercises the copy-on-write path on a non-trivial run. It must run
+                // without corrupting a cache-shared buffer.
+                const string text = "مرحبا بالعالم";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.NotNull(textLine);
+
+                var originalRun = textLine.TextRuns.OfType<ShapedTextRun>().First();
+                var originalBuffer = originalRun.ShapedBuffer;
+                var originalAdvances = Enumerable.Range(0, originalBuffer.Length)
+                    .Select(i => originalBuffer[i].GlyphAdvance).ToList();
+
+                // Second owner (stands in for a TextRunCache) so the buffer survives run disposal.
+                originalRun.AddRef();
+
+                var widthBefore = textLine.WidthIncludingTrailingWhitespace;
+
+                textLine.Justify(new InterWordJustification(widthBefore + 40));
+
+                // Justification happened (the inter-word gap was widened)...
+                AssertGreaterThan(textLine.WidthIncludingTrailingWhitespace, widthBefore,
+                    "Justifying an Arabic line should widen it");
+
+                // ...and the shared buffer was not mutated in place.
+                for (var i = 0; i < originalBuffer.Length; i++)
+                {
+                    Assert.Equal(originalAdvances[i], originalBuffer[i].GlyphAdvance, 5);
+                }
+
+                originalRun.Dispose();
+            }
+        }
+
+        private static void AssertWrappedNonLastLineFillsToMaxWidth(string text, double maxWidth)
+        {
+            var foreground = Brushes.Black.ToImmutable();
+
+            var left = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                textAlignment: TextAlignment.Left, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+            var justified = new TextLayout(text, Typeface.Default, 12.0f, foreground,
+                textAlignment: TextAlignment.Justify, textWrapping: TextWrapping.Wrap, maxWidth: maxWidth);
+
+            Assert.True(justified.TextLines.Count >= 2);
+
+            var leftLine = left.TextLines[0];
+            var justifiedLine = justified.TextLines[0];
+
+            AssertGreaterThan(maxWidth, leftLine.Width,
+                "The unjustified line's visible content must be narrower than MaxWidth");
+
+            // The non-last wrapped line's visible content fills to the margin. (Width excludes any
+            // trailing whitespace, which hangs past the margin.)
+            Assert.Equal(maxWidth, justifiedLine.Width, 2);
+
+            // The last line stays start-aligned.
+            var lastLeft = left.TextLines[left.TextLines.Count - 1];
+            var lastJustified = justified.TextLines[justified.TextLines.Count - 1];
+
+            Assert.Equal(lastLeft.WidthIncludingTrailingWhitespace,
+                lastJustified.WidthIncludingTrailingWhitespace, 2);
+        }
+
+        private static double LastGlyphAdvance(TextLine line)
+        {
+            var glyphs = line.TextRuns.OfType<ShapedTextRun>().Last().GlyphRun.GlyphInfos;
+
+            return glyphs[glyphs.Count - 1].GlyphAdvance;
+        }
+
+        private sealed class SplitStyleTextSource : ITextSource
+        {
+            private readonly string _text;
+            private readonly int _splitAt;
+            private readonly GenericTextRunProperties _first;
+            private readonly GenericTextRunProperties _second;
+
+            public SplitStyleTextSource(string text, int splitAt,
+                GenericTextRunProperties first, GenericTextRunProperties second)
+            {
+                _text = text;
+                _splitAt = splitAt;
+                _first = first;
+                _second = second;
+            }
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                if (textSourceIndex >= _text.Length)
+                {
+                    return null;
+                }
+
+                if (textSourceIndex < _splitAt)
+                {
+                    return new TextCharacters(_text.AsMemory(textSourceIndex, _splitAt - textSourceIndex), _first);
+                }
+
+                return new TextCharacters(_text.AsMemory(textSourceIndex), _second);
+            }
+        }
+
+        private static List<double> GlyphAdvances(TextLine line)
+        {
+            var advances = new List<double>();
+
+            foreach (var run in line.TextRuns)
+            {
+                if (run is ShapedTextRun shaped)
+                {
+                    foreach (var glyph in shaped.GlyphRun.GlyphInfos)
+                    {
+                        advances.Add(glyph.GlyphAdvance);
+                    }
+                }
+            }
+
+            return advances;
+        }
+
+        [Fact]
+        public void Width_Excludes_Only_The_Lines_True_Trailing_Whitespace()
+        {
+            using (Start())
+            {
+                // Two runs split by a font-size change. The FIRST (interior) run also ends in a
+                // space of its own ("foo "), but that space is followed by more visible content
+                // ("bar") in the next run, so it is NOT trailing whitespace for the line as a
+                // whole - only the space at the true end of the line is. A reference line without
+                // any trailing space isolates exactly how much Width should differ.
+                var first = new GenericTextRunProperties(Typeface.Default, 20);
+                var second = new GenericTextRunProperties(Typeface.Default, 14);
+                var formatter = new TextFormatterImpl();
+
+                var reference = formatter.FormatLine(new SplitStyleTextSource("foo bar", 4, first, second), 0,
+                    double.PositiveInfinity, new GenericTextParagraphProperties(first));
+
+                var withTrailingSpace = formatter.FormatLine(new SplitStyleTextSource("foo bar ", 4, first, second), 0,
+                    double.PositiveInfinity, new GenericTextParagraphProperties(first));
+
+                Assert.NotNull(reference);
+                Assert.NotNull(withTrailingSpace);
+
+                // Confirm both lines are genuinely multi-run, and the reference truly has no
+                // trailing whitespace, otherwise the comparison proves nothing.
+                Assert.True(reference.TextRuns.OfType<ShapedTextRun>().Count() >= 2);
+                Assert.Equal(0, reference.TrailingWhitespaceLength);
+
+                // Only the one added trailing space is excluded - not that space AND "foo "'s own
+                // interior trailing space too.
+                Assert.Equal(1, withTrailingSpace.TrailingWhitespaceLength);
+                Assert.Equal(reference.Width, withTrailingSpace.Width, 3);
+            }
+        }
+
         private static void AssertGreaterThan(double x, double y, string message) => Assert.True(x > y, $"{message}. {x} is not > {y}");
 
         private static IDisposable Start()

@@ -35,7 +35,7 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_MAX_PBUFFER_PIXELS = 0x302B;
 //        public const int  EGL_MAX_PBUFFER_WIDTH = 0x302C;
 //        public const int  EGL_NATIVE_RENDERABLE = 0x302D;
-//        public const int  EGL_NATIVE_VISUAL_ID = 0x302E;
+        public const int  EGL_NATIVE_VISUAL_ID = 0x302E;
 //        public const int  EGL_NATIVE_VISUAL_TYPE = 0x302F;
         public const int  EGL_NONE = 0x3038;
 //        public const int  EGL_NON_CONFORMANT_CONFIG = 0x3051;
@@ -125,17 +125,17 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_MULTISAMPLE_RESOLVE = 0x3099;
 //        public const int  EGL_MULTISAMPLE_RESOLVE_DEFAULT = 0x309A;
 //        public const int  EGL_MULTISAMPLE_RESOLVE_BOX = 0x309B;
-//        public const int  EGL_OPENGL_API = 0x30A2;
-//        public const int  EGL_OPENGL_BIT = 0x0008;
+        public const int  EGL_OPENGL_API = 0x30A2;
+        public const int  EGL_OPENGL_BIT = 0x0008;
 //        public const int  EGL_SWAP_BEHAVIOR_PRESERVED_BIT = 0x0400;
         public const int  EGL_CONTEXT_MAJOR_VERSION = 0x3098;
         public const int  EGL_CONTEXT_MINOR_VERSION = 0x30FB;
-//        public const int  EGL_CONTEXT_OPENGL_PROFILE_MASK = 0x30FD;
+        public const int  EGL_CONTEXT_OPENGL_PROFILE_MASK = 0x30FD;
 //        public const int  EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY = 0x31BD;
 //        public const int  EGL_NO_RESET_NOTIFICATION = 0x31BE;
 //        public const int  EGL_LOSE_CONTEXT_ON_RESET = 0x31BF;
-//        public const int  EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT = 0x00000001;
-//        public const int  EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT = 0x00000002;
+        public const int  EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT = 0x00000001;
+        public const int  EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT = 0x00000002;
 //        public const int  EGL_CONTEXT_OPENGL_DEBUG = 0x31B0;
 //        public const int  EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE = 0x31B1;
 //        public const int  EGL_CONTEXT_OPENGL_ROBUST_ACCESS = 0x31B2;
@@ -170,9 +170,43 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Y = 0x30B6;
 //        public const int  EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Z = 0x30B7;
 //        public const int  EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Z = 0x30B8;
-//        public const int  EGL_IMAGE_PRESERVED = 0x30D2;
-//        public const int  EGL_NO_IMAGE = 0;
+        public const int  EGL_IMAGE_PRESERVED = 0x30D2;
+        public const int  EGL_NO_IMAGE = 0;
 
+        // EGL_KHR_image_base
+        public const int  EGL_IMAGE_PRESERVED_KHR = 0x30D2;
+
+        // EGL_EXT_image_dma_buf_import
+        public const int  EGL_LINUX_DMA_BUF_EXT = 0x3270;
+        public const int  EGL_LINUX_DRM_FOURCC_EXT = 0x3271;
+        public const int  EGL_DMA_BUF_PLANE0_FD_EXT = 0x3272;
+        public const int  EGL_DMA_BUF_PLANE0_OFFSET_EXT = 0x3273;
+        public const int  EGL_DMA_BUF_PLANE0_PITCH_EXT = 0x3274;
+        public const int  EGL_DMA_BUF_PLANE1_FD_EXT = 0x3275;
+        public const int  EGL_DMA_BUF_PLANE1_OFFSET_EXT = 0x3276;
+        public const int  EGL_DMA_BUF_PLANE1_PITCH_EXT = 0x3277;
+        public const int  EGL_DMA_BUF_PLANE2_FD_EXT = 0x3278;
+        public const int  EGL_DMA_BUF_PLANE2_OFFSET_EXT = 0x3279;
+        public const int  EGL_DMA_BUF_PLANE2_PITCH_EXT = 0x327A;
+
+        // EGL_EXT_image_dma_buf_import_modifiers
+        public const int  EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT = 0x3443;
+        public const int  EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT = 0x3444;
+        public const int  EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT = 0x3445;
+        public const int  EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT = 0x3446;
+        public const int  EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT = 0x3447;
+        public const int  EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT = 0x3448;
+        public const int  EGL_DMA_BUF_PLANE3_FD_EXT = 0x3440;
+        public const int  EGL_DMA_BUF_PLANE3_OFFSET_EXT = 0x3441;
+        public const int  EGL_DMA_BUF_PLANE3_PITCH_EXT = 0x3442;
+        public const int  EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT = 0x3449;
+        public const int  EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT = 0x344A;
+
+        // EGL_KHR_platform_gbm / EGL_MESA_platform_gbm
+        public const int  EGL_PLATFORM_GBM_KHR = 0x31D7;
+
+        // EGL_MESA_platform_surfaceless
+        public const int  EGL_PLATFORM_SURFACELESS_MESA = 0x31DD;
 
         public const int  EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE = 0x3207;
         public const int  EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE = 0x3208;
@@ -199,6 +233,9 @@ namespace Avalonia.OpenGL.Egl
 //
         // EXT_platform_device
         public const int EGL_PLATFORM_DEVICE_EXT = 0x313F;
+
+        // KHR_platform_x11 / EXT_platform_x11
+        public const int EGL_PLATFORM_X11_EXT = 0x31D5;
 
 
         //EXT_device_query

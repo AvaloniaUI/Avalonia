@@ -31,7 +31,9 @@ namespace IntegrationTestApp
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+#if DEBUG
                 .WithDeveloperTools()
+#endif
                 .AfterSetup(builder =>
                 {
                     NativeTextBox.Factory = 

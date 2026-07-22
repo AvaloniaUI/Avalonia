@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Rendering;
@@ -23,7 +23,6 @@ namespace Avalonia.Controls
     /// The control class extends <see cref="InputElement"/> and adds the following features:
     ///
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
-    /// - <see cref="ContextRequestedEvent"/> and other context menu related members.
     /// </remarks>
     public class Control : InputElement, IDataTemplateHost, IVisualBrushInitialize, ISetterValue
     {
@@ -38,7 +37,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<object?> TagProperty =
             AvaloniaProperty.Register<Control, object?>(nameof(Tag));
-        
+
         /// <summary>
         /// Defines the <see cref="ContextMenu"/> property.
         /// </summary>
@@ -59,14 +58,6 @@ namespace Avalonia.Controls
                 "RequestBringIntoView",
                 RoutingStrategies.Bubble);
 
-        /// <summary>
-        /// Provides event data for the <see cref="ContextRequested"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<ContextRequestedEventArgs> ContextRequestedEvent =
-            RoutedEvent.Register<Control, ContextRequestedEventArgs>(
-                nameof(ContextRequested),
-                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        
         /// <summary>
         /// Defines the <see cref="Loaded"/> event.
         /// </summary>
@@ -161,15 +152,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(TagProperty);
             set => SetValue(TagProperty, value);
-        }
-
-        /// <summary>
-        /// Occurs when the user has completed a context input gesture, such as a right-click.
-        /// </summary>
-        public event EventHandler<ContextRequestedEventArgs>? ContextRequested
-        {
-            add => AddHandler(ContextRequestedEvent, value);
-            remove => RemoveHandler(ContextRequestedEvent, value);
         }
 
         /// <summary>
@@ -389,20 +371,6 @@ namespace Avalonia.Controls
             ScheduleOnLoadedCore();
         }
 
-        protected override void OnHolding(HoldingRoutedEventArgs e)
-        {
-            base.OnHolding(e);
-
-            if (e.Source == this && !e.Handled && e.HoldingState == HoldingState.Started)
-            {
-                // Trigger ContentRequest when hold has started
-                var contextEvent = e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs();
-                RaiseEvent(contextEvent);
-
-                e.Handled = contextEvent.Handled;
-            }
-        }
-
         /// <inheritdoc/>
         protected sealed override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
@@ -412,7 +380,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
 
@@ -446,7 +414,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             base.OnLostFocus(e);
 
@@ -509,7 +477,7 @@ namespace Avalonia.Controls
             if (e.Source == this
                 && !e.Handled)
             {
-                var keymap = TopLevel.GetTopLevel(this)?.PlatformSettings?.HotkeyConfiguration.OpenContextMenu;
+                var keymap = this.GetPlatformSettings()?.HotkeyConfiguration.OpenContextMenu;
 
                 if (keymap is null)
                 {
@@ -564,7 +532,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         /// <inheritdoc />
         protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
         {

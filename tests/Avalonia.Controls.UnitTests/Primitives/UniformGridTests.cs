@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.UnitTests;
-using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives

@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Metadata;
 
 namespace Avalonia.Input.Raw
@@ -12,21 +11,6 @@ namespace Avalonia.Input.Raw
     [PrivateApi]
     public class RawKeyEventArgs : RawInputEventArgs
     {
-        [Obsolete("Use the overload that takes a physical key and key symbol instead.")]
-        public RawKeyEventArgs(
-            IKeyboardDevice device,
-            ulong timestamp,
-            IInputRoot root,
-            RawKeyEventType type,
-            Key key,
-            RawInputModifiers modifiers)
-            : this(device, timestamp, root, type, key, modifiers, PhysicalKey.None, KeyDeviceType.Keyboard, null)
-        {
-            Key = key;
-            Type = type;
-            Modifiers = modifiers;
-        }
-
         public RawKeyEventArgs(
             IInputDevice device,
             ulong timestamp,
@@ -35,24 +19,13 @@ namespace Avalonia.Input.Raw
             Key key,
             RawInputModifiers modifiers,
             PhysicalKey physicalKey,
-            string? keySymbol)
-            : this(device, timestamp, root, type, key, modifiers, physicalKey, KeyDeviceType.Keyboard, keySymbol) { }
-
-        public RawKeyEventArgs(
-            IInputDevice device,
-            ulong timestamp,
-            IInputRoot root,
-            RawKeyEventType type,
-            Key key,
-            RawInputModifiers modifiers,
-            PhysicalKey physicalKey,
-            KeyDeviceType keyDeviceType,
-            string? keySymbol)
+            string? keySymbol,
+            KeyDeviceType keyDeviceType = KeyDeviceType.Keyboard)
             : base(device, timestamp, root)
         {
+            Type = type;
             Key = key;
             Modifiers = modifiers;
-            Type = type;
             PhysicalKey = physicalKey;
             KeySymbol = keySymbol;
             KeyDeviceType = keyDeviceType;

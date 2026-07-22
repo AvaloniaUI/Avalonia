@@ -8,11 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.24.24.95"/>
+    <PackageReference Include="GtkSharp"/>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj"/>
+    <ProjectReference Include="../../src/HarfBuzz/Avalonia.HarfBuzz/Avalonia.HarfBuzz.csproj"/>
+
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj"/>
   </ItemGroup>
 

@@ -107,8 +107,15 @@ namespace Avalonia.Media.TextFormatting
             if (this is GenericTextRunProperties other && other.Typeface == typeface)
                 return this;
 
-            return new GenericTextRunProperties(typeface, FontFeatures, FontRenderingEmSize, 
-                TextDecorations, ForegroundBrush, BackgroundBrush, BaselineAlignment);
+            return new GenericTextRunProperties(
+                typeface,
+                FontRenderingEmSize,
+                TextDecorations,
+                ForegroundBrush,
+                BackgroundBrush,
+                BaselineAlignment,
+                CultureInfo,
+                FontFeatures);
         }
     }
 }

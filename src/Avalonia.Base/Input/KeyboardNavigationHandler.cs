@@ -10,13 +10,12 @@ namespace Avalonia.Input
     /// <summary>
     /// Handles keyboard navigation for a window.
     /// </summary>
-    [Unstable]
-    public sealed class KeyboardNavigationHandler : IKeyboardNavigationHandler
+    internal sealed class KeyboardNavigationHandler : IKeyboardNavigationHandler
     {
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot? _owner;
+        private InputElement? _owner;
         
         /// <summary>
         /// Sets the owner of the keyboard navigation handler.
@@ -26,7 +25,7 @@ namespace Avalonia.Input
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
         [PrivateApi]
-        public void SetOwner(IInputRoot owner)
+        public void SetOwner(InputElement owner)
         {
             if (_owner != null)
             {
@@ -56,7 +55,7 @@ namespace Avalonia.Input
 
         private static IInputElement? GetNextPrivate(
             IInputElement? element,
-            IInputRoot? owner,
+            InputElement? owner,
             NavigationDirection direction,
             KeyDeviceType? keyDeviceType)
         {

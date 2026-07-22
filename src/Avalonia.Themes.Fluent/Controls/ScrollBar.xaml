@@ -18,6 +18,32 @@
     </Border>
   </Design.PreviewWith>
 
+  <MenuFlyout x:Key="VerticalScrollBarContextFlyout">
+    <MenuItem Header="{DynamicResource StringScrollBarScrollHere}" Command="{Binding $parent[ScrollBar].ScrollHere}" AutomationProperties.AutomationId="ScrollHere" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarTop}" Command="{Binding $parent[ScrollBar].ScrollToHome}" AutomationProperties.AutomationId="Top" />
+    <MenuItem Header="{DynamicResource StringScrollBarBottom}" Command="{Binding $parent[ScrollBar].ScrollToEnd}" AutomationProperties.AutomationId="Bottom" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarPageUp}" Command="{Binding $parent[ScrollBar].PageUp}" AutomationProperties.AutomationId="PageUp" />
+    <MenuItem Header="{DynamicResource StringScrollBarPageDown}" Command="{Binding $parent[ScrollBar].PageDown}" AutomationProperties.AutomationId="PageDown" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollUp}" Command="{Binding $parent[ScrollBar].LineUp}" AutomationProperties.AutomationId="ScrollUp" />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollDown}" Command="{Binding $parent[ScrollBar].LineDown}" AutomationProperties.AutomationId="ScrollDown" />
+  </MenuFlyout>
+
+  <MenuFlyout x:Key="HorizontalScrollBarContextFlyout">
+    <MenuItem Header="{DynamicResource StringScrollBarScrollHere}" Command="{Binding $parent[ScrollBar].ScrollHere}" AutomationProperties.AutomationId="ScrollHere" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarLeftEdge}" Command="{Binding $parent[ScrollBar].ScrollToHome}" AutomationProperties.AutomationId="LeftEdge" />
+    <MenuItem Header="{DynamicResource StringScrollBarRightEdge}" Command="{Binding $parent[ScrollBar].ScrollToEnd}" AutomationProperties.AutomationId="RightEdge" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarPageLeft}" Command="{Binding $parent[ScrollBar].PageLeft}" AutomationProperties.AutomationId="PageLeft" />
+    <MenuItem Header="{DynamicResource StringScrollBarPageRight}" Command="{Binding $parent[ScrollBar].PageRight}" AutomationProperties.AutomationId="PageRight" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollLeft}" Command="{Binding $parent[ScrollBar].LineLeft}" AutomationProperties.AutomationId="ScrollLeft" />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollRight}" Command="{Binding $parent[ScrollBar].LineRight}" AutomationProperties.AutomationId="ScrollRight" />
+  </MenuFlyout>
+
   <ControlTheme x:Key="FluentScrollBarThumb" TargetType="Thumb">
     <Setter Property="Background" Value="{DynamicResource ScrollBarPanningThumbBackground}"/>
     <Setter Property="Template">
@@ -111,6 +137,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ScrollBarBorderBrush}" />
 
     <Style Selector="^:vertical">
+      <Setter Property="ContextFlyout" Value="{StaticResource VerticalScrollBarContextFlyout}" />
       <Setter Property="Template">
         <ControlTemplate>
           <Grid x:Name="Root">
@@ -194,6 +221,7 @@
     </Style>
 
     <Style Selector="^:horizontal">
+      <Setter Property="ContextFlyout" Value="{StaticResource HorizontalScrollBarContextFlyout}" />
       <Setter Property="Template">
         <ControlTemplate>
           <Grid x:Name="Root">

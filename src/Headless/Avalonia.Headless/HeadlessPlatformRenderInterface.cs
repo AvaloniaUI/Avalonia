@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 
 namespace Avalonia.Headless
 {
@@ -55,12 +56,14 @@ namespace Avalonia.Headless
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) 
             => new HeadlessGeometryStub(g1.Bounds.Union(g2.Bounds));
 
-        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
-        public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling) => 
-            new HeadlessBitmapStub(pixelSize, new Vector(96 * scaling, 96 * scaling));
+        public IRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces) => new HeadlessRenderTarget();
+        public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, Vector scaling,
+            bool enableTextAntialiasing) => 
+            new HeadlessBitmapStub(pixelSize, scaling * 96);
 
         public bool IsLost => false;
         public IReadOnlyDictionary<Type, object> PublicFeatures { get; } = new Dictionary<Type, object>();
+        public PixelSize? MaxOffscreenRenderTargetPixelSize => null;
         public object? TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
@@ -374,7 +377,7 @@ namespace Avalonia.Headless
             }
         }
 
-        private class HeadlessBitmapStub : IBitmapImpl, IDrawingContextLayerImpl, IWriteableBitmapImpl
+        private class HeadlessBitmapStub : IBitmapImpl, IDrawingContextLayerImpl, IWriteableBitmapImpl, IRenderTargetBitmapImpl
         {
             public Size Size { get; }
 
@@ -398,10 +401,17 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(bool _)
+            public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
             {
                 return new HeadlessDrawingContextStub();
             }
+
+            public IDrawingContextImpl CreateDrawingContext()
+            {
+                return new HeadlessDrawingContextStub();
+            }
+
+            public RenderTargetProperties Properties => default;
 
             public bool IsCorrupted => false;
 
@@ -414,27 +424,20 @@ namespace Avalonia.Headless
 
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
-            public PixelFormat? Format { get; }
-            public AlphaFormat? AlphaFormat { get; }
+            public PixelFormat? Format => PixelFormat.Rgba8888;
+            public AlphaFormat? AlphaFormat => Platform.AlphaFormat.Premul;
             public int Version { get; set; }
 
-            public void Save(string fileName, int? quality = null)
+            public void Save(Stream stream, BitmapEncoderOptions options)
             {
-
             }
-
-            public void Save(Stream stream, int? quality = null)
-            {
-
-            }
-
 
             public ILockedFramebuffer Lock()
             {
                 Version++;
                 var mem = Marshal.AllocHGlobal(PixelSize.Width * PixelSize.Height * 4);
                 return new LockedFramebuffer(mem, PixelSize, PixelSize.Width * 4, Dpi, PixelFormat.Rgba8888,
-                    () => Marshal.FreeHGlobal(mem));
+                    Platform.AlphaFormat.Premul, () => Marshal.FreeHGlobal(mem));
             }
         }
 
@@ -580,17 +583,24 @@ namespace Avalonia.Headless
 
         private class HeadlessRenderTarget : IRenderTarget
         {
+            public RenderTargetProperties Properties => default;
+
             public void Dispose()
             {
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(bool _)
+            public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
             {
                 return new HeadlessDrawingContextStub();
             }
 
-            public bool IsCorrupted => false;
+            public IDrawingContextImpl CreateDrawingContext(IRenderTarget.RenderTargetSceneInfo sceneInfo,
+                out RenderTargetDrawingContextProperties properties)
+            {
+                properties = default;
+                return new HeadlessDrawingContextStub();
+            }
         }
 
         public void Dispose()

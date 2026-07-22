@@ -1,0 +1,187 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageCustomTabBarPage">
+
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="300">
+      <StackPanel Margin="16" Spacing="16">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <!-- Design Tokens -->
+        <TextBlock Text="Brand Colours" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+            <Border Width="16" Height="16" CornerRadius="8" Background="#3010B981"
+                    BorderBrush="#059669" BorderThickness="1" Margin="0,0,8,0" />
+            <TextBlock Grid.Column="1" Text="Selected tint: #10B981 @ 19%"
+                       FontSize="12" VerticalAlignment="Center" />
+          </Grid>
+          <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+            <Border Width="16" Height="16" CornerRadius="8" Background="#059669" Margin="0,0,8,0" />
+            <TextBlock Grid.Column="1" Text="Selected fg: #059669 (Emerald 600)"
+                       FontSize="12" VerticalAlignment="Center" />
+          </Grid>
+          <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+            <Border Width="16" Height="16" CornerRadius="8" Background="#306366F1" Margin="0,0,8,0" />
+            <TextBlock Grid.Column="1" Text="Request tint: #6366F1 @ 19%"
+                       FontSize="12" VerticalAlignment="Center" />
+          </Grid>
+          <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+            <Border Width="16" Height="16" CornerRadius="8" Background="#30F59E0B" Margin="0,0,8,0" />
+            <TextBlock Grid.Column="1" Text="Top Up tint: #F59E0B @ 19%"
+                       FontSize="12" VerticalAlignment="Center" />
+          </Grid>
+        </StackPanel>
+
+        <TextBlock Text="System-adaptive" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Tab bar background, border, unselected tab foreground, page titles, and secondary text all resolve from the active system theme, no hardcoded dark values." />
+
+        <Separator />
+
+        <!-- Technique -->
+        <TextBlock Text="How It Works" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="Achieved with resource overrides and styles only, no custom template needed."
+                   TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
+        <StackPanel Spacing="6">
+          <TextBlock Text="1. Hide underline (PipeThickness=0)"
+                     TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+          <TextBlock Text="2. Style TabControl with CornerRadius, system Border, and center alignment for the floating pill"
+                     TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+          <TextBlock Text="3. Style TabItem with large CornerRadius for the ellipse selection shape"
+                     TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+          <TextBlock Text="4. BackgroundSelected uses a semi-transparent green tint, visible in light and dark"
+                     TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+          <TextBlock Text="5. Unselected foreground left at system default, adapts automatically"
+                     TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+        </StackPanel>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True"
+            Margin="16">
+      <TabbedPage x:Name="TabbedPageControl"
+                  TabPlacement="Bottom">
+        <TabbedPage.Resources>
+          <ResourceDictionary>
+            <!-- Hide the underline pipe indicator -->
+            <x:Double x:Key="TabbedPageTabItemHeaderPipeThickness">0</x:Double>
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderSelectedPipeFill" Color="Transparent" />
+
+            <!-- Tab strip: floating pill with rounded border -->
+            <CornerRadius x:Key="TabbedPageTabStripCornerRadius">28</CornerRadius>
+            <SolidColorBrush x:Key="TabbedPageTabStripBorderBrush" Color="{DynamicResource SystemBaseMediumLowColor}" />
+            <Thickness x:Key="TabbedPageTabStripBorderThickness">1</Thickness>
+            <Thickness x:Key="TabbedPageTabStripMargin">12,0,12,16</Thickness>
+            <Thickness x:Key="TabbedPageTabStripPadding">4,4</Thickness>
+
+            <!-- Tab item: ellipse shape -->
+            <CornerRadius x:Key="TabbedPageTabItemHeaderCornerRadius">22</CornerRadius>
+            <Thickness x:Key="TabbedPageTabItemHeaderPadding">0,6</Thickness>
+            <Thickness x:Key="TabbedPageTabItemHeaderMargin">1,0</Thickness>
+            <x:Double x:Key="TabbedPageTabItemHeaderMinHeight">0</x:Double>
+
+            <!-- Tab sizing -->
+            <x:Double x:Key="TabbedPageTabItemHeaderFontSize">12</x:Double>
+            <FontWeight x:Key="TabbedPageTabItemHeaderThemeFontWeight">Medium</FontWeight>
+
+            <!-- Selected: green, brand colour, readable on any background -->
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelected"            Color="#3010B981" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPointerOver" Color="#3D10B981" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPressed"     Color="#2010B981" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelected"            Color="#059669" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelectedPointerOver" Color="#10B981" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelectedPressed"     Color="#059669" />
+
+            <!-- Unselected: system-adaptive, default theme handles it -->
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselected"          Color="Transparent" />
+          </ResourceDictionary>
+        </TabbedPage.Resources>
+
+        <TabbedPage.Styles>
+          <!-- Tab strip background (adaptive light/dark) -->
+          <Style Selector="TabControl">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
+          </Style>
+
+          <!-- Tab strip border: center and cap width so it floats as a pill -->
+          <Style Selector="TabControl /template/ Border#PART_TabStrip">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="MaxWidth"            Value="360" />
+          </Style>
+
+          <!-- Tab item: uniform width -->
+          <Style Selector="TabControl TabItem">
+            <Setter Property="Width" Value="64" />
+          </Style>
+        </TabbedPage.Styles>
+
+        <ContentPage x:Name="HomePage" Header="Home">
+          <StackPanel Margin="16" Spacing="14" VerticalAlignment="Center">
+            <!-- Balance card: 19% green tint, visible in both light and dark -->
+            <Border Background="#3010B981" CornerRadius="18" Padding="20,16"
+                    HorizontalAlignment="Center">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Total Balance" FontSize="11" TextAlignment="Center"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                <TextBlock Text="$12,450.00" FontSize="30" FontWeight="Bold"
+                           Foreground="#059669" TextAlignment="Center" />
+              </StackPanel>
+            </Border>
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+              <Border Background="#3010B981" CornerRadius="12" Padding="14,10">
+                <TextBlock Text="Send"    Foreground="#059669" FontSize="12" FontWeight="SemiBold" />
+              </Border>
+              <Border Background="#306366F1" CornerRadius="12" Padding="14,10">
+                <TextBlock Text="Request" Foreground="#6366F1" FontSize="12" FontWeight="SemiBold" />
+              </Border>
+              <Border Background="#30F59E0B" CornerRadius="12" Padding="14,10">
+                <TextBlock Text="Top Up"  Foreground="#D97706" FontSize="12" FontWeight="SemiBold" />
+              </Border>
+            </StackPanel>
+          </StackPanel>
+        </ContentPage>
+
+        <ContentPage x:Name="WalletPage" Header="Wallet">
+          <StackPanel Margin="16" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Wallet" FontSize="22" FontWeight="Bold" TextAlignment="Center" />
+            <TextBlock Text="Manage your cards and accounts" FontSize="12"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                       TextWrapping="Wrap" TextAlignment="Center" />
+          </StackPanel>
+        </ContentPage>
+
+        <ContentPage x:Name="SendPage" Header="Send">
+          <StackPanel Margin="16" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Send Money" FontSize="22" FontWeight="Bold" TextAlignment="Center" />
+            <TextBlock Text="Transfer funds to friends and family" FontSize="12"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                       TextWrapping="Wrap" TextAlignment="Center" />
+          </StackPanel>
+        </ContentPage>
+
+        <ContentPage x:Name="ActivityPage" Header="Activity">
+          <StackPanel Margin="16" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Activity" FontSize="22" FontWeight="Bold" TextAlignment="Center" />
+            <TextBlock Text="Recent transactions and history" FontSize="12"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                       TextWrapping="Wrap" TextAlignment="Center" />
+          </StackPanel>
+        </ContentPage>
+
+        <ContentPage x:Name="ProfilePage" Header="Profile">
+          <StackPanel Margin="16" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Profile" FontSize="22" FontWeight="Bold" TextAlignment="Center" />
+            <TextBlock Text="Your account settings" FontSize="12"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                       TextWrapping="Wrap" TextAlignment="Center" />
+          </StackPanel>
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+
+  </DockPanel>
+</UserControl>

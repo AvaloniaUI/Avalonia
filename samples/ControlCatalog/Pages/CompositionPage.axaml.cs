@@ -14,7 +14,7 @@ using Math = System.Math;
 
 namespace ControlCatalog.Pages;
 
-public partial class CompositionPage : UserControl
+public partial class CompositionPage : TabbedPage
 {
     private CompositionCustomVisual? _customVisual;
     private CompositionSolidColorVisual? _solidVisual;

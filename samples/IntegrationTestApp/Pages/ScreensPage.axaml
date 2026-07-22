@@ -3,17 +3,22 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             AttachedToVisualTree="OnAttachedToVisualTree" DetachedFromVisualTree="OnDetachedFromVisualTree"
              x:Class="IntegrationTestApp.Pages.ScreensPage">
   <StackPanel Spacing="4">
     <Button Name="ScreenRefresh"
             Content="Refresh"
             Click="ScreenRefresh_Click"/>
-    <TextBox Name="ScreenName" Watermark="DisplayName" UseFloatingWatermark="true" />
-    <TextBox Name="ScreenHandle" Watermark="Handle" UseFloatingWatermark="true" />
-    <TextBox Name="ScreenScaling" Watermark="Scaling" UseFloatingWatermark="true" />
-    <TextBox Name="ScreenBounds" Watermark="Bounds" UseFloatingWatermark="true" />
-    <TextBox Name="ScreenWorkArea" Watermark="WorkArea" UseFloatingWatermark="true" />
-    <TextBox Name="ScreenOrientation" Watermark="Orientation" UseFloatingWatermark="true" />
-    <TextBox Name="ScreenSameReference" Watermark="Is same reference" UseFloatingWatermark="true" />
+    <Button Name="UpdateViewOnly"
+            Content="Update View Only"
+            Click="UpdateViewOnly_OnClick"/>
+    <TextBox Name="ScreenName" PlaceholderText="DisplayName" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenHandle" PlaceholderText="Handle" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenScaling" PlaceholderText="Scaling" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenBounds" PlaceholderText="Bounds" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenWorkArea" PlaceholderText="WorkArea" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenOrientation" PlaceholderText="Orientation" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenSameReference" PlaceholderText="Is same reference" UseFloatingPlaceholder="true" />
+    <TextBox Name="ScreenOnChangedCounter" PlaceholderText="Screens.Changed Counter" UseFloatingPlaceholder="True" />
   </StackPanel>
 </UserControl>

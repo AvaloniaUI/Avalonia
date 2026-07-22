@@ -3,7 +3,7 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ButtonsPage : UserControl
+    public partial class ButtonsPage : ContentPage
     {
         private int repeatButtonClickCount = 0;
 

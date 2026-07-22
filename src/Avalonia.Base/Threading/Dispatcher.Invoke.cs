@@ -649,7 +649,8 @@ public partial class Dispatcher
         {
             try
             {
-                action(arg);
+                using (AvaloniaSynchronizationContext.Ensure(this, (DispatcherPriority)priority))
+                    action(arg);
             }
             catch (Exception ex) when (ExceptionFilter(ex))
             {
@@ -737,9 +738,6 @@ public partial class Dispatcher
     /// </exception>
     public static DispatcherPriorityAwaitable Yield(DispatcherPriority priority)
     {
-        // TODO12: Update to use Dispatcher.CurrentDispatcher once multi-dispatcher support is merged
-        var current = UIThread;
-        current.VerifyAccess();
-        return UIThread.Resume(priority);
+        return CurrentDispatcher.Resume(priority);
     }
 }

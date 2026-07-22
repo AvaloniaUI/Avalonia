@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using Avalonia.Compatibility;
-using Avalonia.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform.Interop;
+using Avalonia.Reactive;
 
 namespace Avalonia.Native.Interop
 {
@@ -26,7 +24,7 @@ namespace Avalonia.Native.Interop.Impl
 
         private void UpdateTitle(string? title)
         {
-            if (OperatingSystemEx.IsMacOS())
+            if (OperatingSystem.IsMacOS())
             {
                 // macOS does not process access key markers, so remove them.
                 title = AccessText.RemoveAccessKeyMarker(title);
@@ -43,7 +41,7 @@ namespace Avalonia.Native.Interop.Impl
         private void UpdateIsVisible(bool isVisible) => SetIsVisible(isVisible.AsComBool());
         private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked.AsComBool());
 
-        private void UpdateToggleType(NativeMenuItemToggleType toggleType)
+        private void UpdateToggleType(MenuItemToggleType toggleType)
         {
             SetToggleType((AvnMenuItemToggleType)toggleType);
         }
@@ -58,7 +56,7 @@ namespace Avalonia.Native.Interop.Impl
             {
                 using(var ms = new MemoryStream())
                 {
-                    icon.Save(ms);
+                    icon.Save(ms, PngBitmapEncoderOptions.Default);
 
                     var imageData = ms.ToArray();
 

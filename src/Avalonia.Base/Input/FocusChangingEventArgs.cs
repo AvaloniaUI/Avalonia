@@ -12,7 +12,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Provides data for focus changing.
         /// </summary>
-        internal FocusChangingEventArgs(RoutedEvent routedEvent) : base(routedEvent)
+        public FocusChangingEventArgs(RoutedEvent? routedEvent) : base(routedEvent)
         {
         }
 

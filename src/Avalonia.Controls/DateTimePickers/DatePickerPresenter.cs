@@ -457,39 +457,46 @@ namespace Avalonia.Controls
                 }
             }
 
-            ConfigureSpacer(items._firstSpacer, columnIndex > 1);
-            ConfigureSpacer(items._secondSpacer, columnIndex > 2);
+            ConfigureSpacer(items._firstSpacer, columnIndex > 1, 1);
+            ConfigureSpacer(items._secondSpacer, columnIndex > 2, 3);
+            return;
 
-            static void ConfigureSpacer(Control? spacer, bool visible)
+            static void ConfigureSpacer(Control? spacer, bool visible, int column)
             {
                 if (spacer == null)
                     return;
-
                 // ternary conditional operator is used to make sure grid cells will be validated
-                Grid.SetColumn(spacer, visible ? 1 : 0);
+                Grid.SetColumn(spacer, visible ? column : 0);
                 spacer.IsVisible = visible;
-
             }
         }
 
         private void SetInitialFocus(TemplateItems items)
         {
-            int monthCol = MonthVisible ? Grid.GetColumn(items._monthHost) : int.MaxValue;
-            int dayCol = DayVisible ? Grid.GetColumn(items._dayHost) : int.MaxValue;
-            int yearCol = YearVisible ? Grid.GetColumn(items._yearHost) : int.MaxValue;
+            ReadOnlySpan<(bool visible, Panel host, DateTimePickerPanel selector)> candidates =
+            [
+                (MonthVisible, items._monthHost, items._monthSelector),
+                (DayVisible, items._dayHost, items._daySelector),
+                (YearVisible, items._yearHost, items._yearSelector),
+            ];
 
-            if (monthCol < dayCol && monthCol < yearCol)
+            DateTimePickerPanel? leftmost = null;
+            var minCol = int.MaxValue;
+
+            foreach (var (visible, host, selector) in candidates)
             {
-                items._monthSelector.Focus(NavigationMethod.Pointer);
+                if (!visible)
+                    continue;
+
+                var col = Grid.GetColumn(host);
+                if (col < minCol)
+                {
+                    minCol = col;
+                    leftmost = selector;
+                }
             }
-            else if (dayCol < monthCol && dayCol < yearCol)
-            {
-                items._monthSelector.Focus(NavigationMethod.Pointer);
-            }
-            else if (yearCol < monthCol && yearCol < dayCol)
-            {
-                items._yearSelector.Focus(NavigationMethod.Pointer);
-            }
+
+            leftmost?.Focus(NavigationMethod.Pointer);
         }
 
         private void OnDismissButtonClicked(object? sender, RoutedEventArgs e)

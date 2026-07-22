@@ -103,6 +103,9 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glFinish")]
         public partial void Finish();
 
+        [GetProcAddress("glReadPixels")]
+        public partial void ReadPixels(int x, int y, int width, int height, int format, int type, IntPtr data);
+
         [GetProcAddress("glGenFramebuffers")]
         public partial void GenFramebuffers(int count, int* res);
 
@@ -343,6 +346,8 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glUniform1f")]
         public partial void Uniform1f(int location, float falue);
 
+        [GetProcAddress("glUniform1i")]
+        public partial void Uniform1i(int location, int value);
 
         [GetProcAddress("glUniformMatrix4fv")]
         public partial void UniformMatrix4fv(int location, int count, bool transpose, void* value);
@@ -386,12 +391,26 @@ namespace Avalonia.OpenGL
         [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
         public partial void GenVertexArrays(int n, int* rv);
 
+        [GetProcAddress("glReadBuffer", true)]
+        public partial void ReadBuffer(int buffer);
+        
+        [GetProcAddress("glDrawBuffer", true)]
+        public partial void DrawBuffer(int buffer);
+        
+        [GetProcAddress("glWriteBuffer", true)]
+        public partial void WriteBuffer(int buffer);
+
         public int GenVertexArray()
         {
             int rv = 0;
             GenVertexArrays(1, &rv);
             return rv;
         }
+
+        // GL_OES_EGL_image
+        [GetProcAddress(true)]
+        [GlExtensionEntryPoint("glEGLImageTargetTexture2DOES", "GL_OES_EGL_image")]
+        public partial void EGLImageTargetTexture2DOES(int target, IntPtr image);
 
         public static GlInterface FromNativeUtf8GetProcAddress(GlVersion version, Func<IntPtr, IntPtr> getProcAddress)
         {

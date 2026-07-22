@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PipsPagerCustomColorsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Custom Colors" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Override pip indicator colors using resource keys." />
+        <Separator />
+        <TextBlock Text="Resource Keys" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="11" TextWrapping="Wrap" Text="PipsPagerSelectionIndicatorForeground" />
+        <TextBlock FontSize="11" TextWrapping="Wrap" Text="PipsPagerSelectionIndicatorForegroundSelected" />
+        <TextBlock FontSize="11" TextWrapping="Wrap" Text="PipsPagerSelectionIndicatorForegroundPointerOver" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <StackPanel Spacing="24" Margin="24">
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="Orange / Blue" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="5" MaxVisiblePips="5">
+          <PipsPager.Resources>
+            <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="Orange" />
+            <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="Blue" />
+            <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="Gold" />
+          </PipsPager.Resources>
+        </PipsPager>
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="Green / Red" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="5" MaxVisiblePips="5">
+          <PipsPager.Resources>
+            <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#81C784" />
+            <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#E53935" />
+            <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#A5D6A7" />
+          </PipsPager.Resources>
+        </PipsPager>
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="Purple / Teal" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="5" MaxVisiblePips="5">
+          <PipsPager.Resources>
+            <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#CE93D8" />
+            <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#00897B" />
+            <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#BA68C8" />
+          </PipsPager.Resources>
+        </PipsPager>
+      </StackPanel>
+
+    </StackPanel>
+  </DockPanel>
+</UserControl>

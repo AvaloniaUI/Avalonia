@@ -2,18 +2,18 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Vulkan;
 using Avalonia.Platform;
-using Avalonia.Rendering;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Vulkan;
 
-internal class VulkanSkiaGpu : ISkiaGpuWithPlatformGraphicsContext
+internal class VulkanSkiaGpu : ISkiaGpu
 {
     private readonly VulkanSkiaExternalObjectsFeature? _externalObjects;
     public IVulkanPlatformGraphicsContext Vulkan { get; private set; }
     public GRContext GrContext { get; private set; }
 
-    public VulkanSkiaGpu(IVulkanPlatformGraphicsContext vulkan, long? maxResourceBytes)
+    public VulkanSkiaGpu(IVulkanPlatformGraphicsContext vulkan, long? maxResourceBytes, bool? useStencilBuffers)
     {
         Vulkan = vulkan;
         var device = vulkan.Device;
@@ -48,7 +48,9 @@ internal class VulkanSkiaGpu : ISkiaGpuWithPlatformGraphicsContext
                 GetProcedureAddress = GetProcAddressWrapper
             };
 
-            GrContext = GRContext.CreateVulkan(ctx) ??
+            var avoidStencilBuffers = useStencilBuffers == false;
+            
+            GrContext = GRContext.CreateVulkan(ctx, new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers }) ??
                          throw new VulkanException("Unable to create GrContext from IVulkanDevice");
             
             if (maxResourceBytes.HasValue)
@@ -61,6 +63,19 @@ internal class VulkanSkiaGpu : ISkiaGpuWithPlatformGraphicsContext
     
     public void Dispose()
     {
+        if (Vulkan.IsLost)
+        {
+            GrContext.AbandonContext();
+            GrContext.Dispose();
+        }
+        else
+            // Releasing resources does vkQueueWaitIdle and destroys API objects,
+            // both of which require external synchronization, i. e. the device lock
+            using (Vulkan.EnsureCurrent())
+            {
+                GrContext.AbandonContext(true);
+                GrContext.Dispose();
+            }
         Vulkan.Dispose();
     }
 
@@ -78,10 +93,26 @@ internal class VulkanSkiaGpu : ISkiaGpuWithPlatformGraphicsContext
     public IDisposable EnsureCurrent() => Vulkan.EnsureCurrent();
     
     
-    public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<object> surfaces)
+    public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
     {
         var target = Vulkan.CreateRenderTarget(surfaces);
         return new VulkanSkiaRenderTarget(this, target);
+    }
+
+    public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+    {
+        var factory = Vulkan.TryGetFeature<IVulkanKhrSurfacePlatformSurfaceFactory>();
+        foreach (var surface in surfaces)
+        {
+            if (surface is IVulkanKhrSurfacePlatformSurface
+                || surface is IVulkanRenderTargetPlatformSurface
+                || (factory?.CanRenderToSurface(Vulkan, surface) == true))
+            {
+                return surface.IsReady;
+            }
+        }
+
+        return false;
     }
 
     

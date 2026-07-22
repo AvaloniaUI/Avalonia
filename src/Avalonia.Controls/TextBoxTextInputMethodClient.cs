@@ -133,6 +133,7 @@ namespace Avalonia.Controls
 
             if (oldPresenter != null)
             {
+                oldPresenter.CurrentImClient = null;
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
 
                 oldPresenter.CaretBoundsChanged -= (s, e) => RaiseCursorRectangleChanged();
@@ -142,6 +143,8 @@ namespace Avalonia.Controls
 
             if (_presenter != null)
             {
+
+                _presenter.CurrentImClient = this;
                 _presenter.CaretBoundsChanged += (s, e) => RaiseCursorRectangleChanged();
             }
 
@@ -181,11 +184,7 @@ namespace Avalonia.Controls
             {
                 if (run.Length > 0)
                 {
-#if NET6_0_OR_GREATER
                     builder.Append(run.Text.Span);
-#else
-                    builder.Append(run.Text.Span.ToArray());
-#endif
                 }
             }
 

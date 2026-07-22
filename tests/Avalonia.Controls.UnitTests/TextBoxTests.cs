@@ -42,25 +42,25 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "5678"
                 };
-                
+
                 var sp = new StackPanel();
                 sp.Children.Add(target1);
                 sp.Children.Add(target2);
 
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
-                
+
                 var root = new TestRoot() { Child = sp };
 
                 target1.SelectionStart = 0;
                 target1.SelectionEnd = 3;
-                
+
                 target1.Focus();
                 Assert.False(target2.IsFocused);
                 Assert.True(target1.IsFocused);
 
                 target2.Focus();
-                
+
                 Assert.Equal("123", target1.SelectedText);
             }
         }
@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests
                         }
                     }
                 };
-                              
+
 
                 target1.ApplyTemplate();
 
@@ -165,16 +165,16 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 target.ApplyTemplate();
-                
+
                 target.Measure(Size.Infinity);
-                
+
                 target.CaretIndex = 3;
                 RaiseKeyEvent(target, Key.Right, 0);
 
                 Assert.Equal(4, target.CaretIndex);
             }
         }
-        
+
         [Fact]
         public void Control_Backspace_Should_Set_Caret_Position_To_The_Start_Of_The_Deletion()
         {
@@ -194,11 +194,11 @@ namespace Avalonia.Controls.UnitTests
                 // (First Second |Third)
                 RaiseKeyEvent(target, Key.Back, KeyModifiers.Control);
                 // (First |Third)
-                
+
                 Assert.Equal(6, target.CaretIndex);
             }
         }
-        
+
         [Fact]
         public void Control_Backspace_Should_Remove_The_Double_Whitespace_If_Caret_Index_Was_At_The_End_Of_A_Word()
         {
@@ -213,7 +213,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 target.ApplyTemplate();
-                
+
                 // (First Second| Third)
                 RaiseKeyEvent(target, Key.Back, KeyModifiers.Control);
                 // (First| Third)
@@ -236,11 +236,11 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 target.ApplyTemplate();
-                
+
                 // (First Second| Third)
                 RaiseKeyEvent(target, Key.Back, KeyModifiers.Control);
                 // (First| Third)
-                
+
                 target.Undo();
                 // (First Second| Third)
 
@@ -258,7 +258,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "1234"
                 };
-                
+
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
@@ -314,7 +314,7 @@ namespace Avalonia.Controls.UnitTests
                     SelectionStart = 5,
                     SelectionEnd = 5
                 };
-                
+
                 textBox.ApplyTemplate();
 
                 // (First| Second Third Fourth)
@@ -356,7 +356,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "First Second Third Fourth",
                     CaretIndex = 19,
                 };
-                
+
                 textBox.ApplyTemplate();
 
                 // (First Second Third |Fourth)
@@ -400,7 +400,7 @@ namespace Avalonia.Controls.UnitTests
 
                 textBox.SelectionStart = 2;
                 textBox.SelectionEnd = 2;
-                
+
                 Assert.Equal(2, textBox.CaretIndex);
             }
         }
@@ -443,7 +443,7 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = false,
                     Text = "1234"
                 };
-                
+
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
@@ -462,7 +462,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     AcceptsReturn = true
                 };
-                
+
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
@@ -482,7 +482,7 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     NewLine = "Test"
                 };
-                
+
                 target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
@@ -523,7 +523,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
-                
+
                 target.ApplyTemplate();
 
                 target.SelectionStart = 0;
@@ -547,7 +547,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
-                
+
                 target.ApplyTemplate();
 
                 target.SelectionStart = 8;
@@ -592,7 +592,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
-                
+
                 target.ApplyTemplate();
 
                 Assert.True(target.SelectedText == "");
@@ -614,7 +614,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123"
                 };
-                
+
                 target.ApplyTemplate();
 
                 target.SelectedText = "AA";
@@ -679,7 +679,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(true);
             }
         }
-        
+
         [Theory]
         [InlineData(Key.Up)]
         [InlineData(Key.Down)]
@@ -725,7 +725,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
-                
+
                 var root = new TestRoot { Child = sp };
 
                 var gfcount = 0;
@@ -746,7 +746,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(1, lfcount);
             }
         }
-        
+
         [Fact]
         public void TextBox_CaretIndex_Persists_When_Focus_Lost()
         {
@@ -768,7 +768,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
-                
+
                 var root = new TestRoot { Child = sp };
 
                 target2.Focus();
@@ -777,11 +777,11 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(target2.IsFocused);
 
                 target1.Focus();
-                
+
                 Assert.Equal(2, target2.CaretIndex);
             }
         }
-        
+
         [Fact]
         public void TextBox_Reveal_Password_Reset_When_Lost_Focus()
         {
@@ -804,14 +804,14 @@ namespace Avalonia.Controls.UnitTests
 
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
-                
+
                 var root = new TestRoot { Child = sp };
 
                 target1.Focus();
                 target1.RevealPassword = true;
-                
+
                 target2.Focus();
-                
+
                 Assert.False(target1.RevealPassword);
             }
         }
@@ -833,7 +833,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Null(target.Text);
             }
         }
-        
+
         [Theory]
         [InlineData("abc", "d", 3, 0, 0, false, "abc")]
         [InlineData("abc", "dd", 4, 3, 3, false, "abcd")]
@@ -870,7 +870,7 @@ namespace Avalonia.Controls.UnitTests
                 topLevel.LayoutManager.ExecuteInitialLayoutPass();
 
                 target.Measure(Size.Infinity);
-                
+
                 if (fromClipboard)
                 {
                     await topLevel.Clipboard!.SetTextAsync(textInput);
@@ -882,7 +882,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     RaiseTextEvent(target, textInput);
                 }
-                
+
                 Assert.Equal(expected, target.Text);
             }
         }
@@ -1246,7 +1246,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal((minLines * target.LineHeight) + textPresenterMargin.Top + textPresenterMargin.Bottom, scrollViewer.MinHeight);
             }
         }
-        
+
         [Theory]
         [InlineData(null, 1)]
         [InlineData("", 1)]
@@ -1285,7 +1285,7 @@ namespace Avalonia.Controls.UnitTests
             var b = new TextBox();
             Assert.Equal(-1, b.GetLineCount());
         }
-        
+
         [Fact]
         public void LineCount_Is_Correct_After_Text_Change()
         {
@@ -1309,7 +1309,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.ApplyTemplate();
                 target.Measure(Size.Infinity);
-                
+
                 Assert.Equal(1, target.GetLineCount());
 
                 target.Text = "Hello\r\nWorld";
@@ -1483,6 +1483,151 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Command_States_Update_When_ReadOnly_And_PasswordChar_Change()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                tb.Measure(Size.Infinity);
+
+                Assert.True(tb.CanCopy);
+                Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.IsReadOnly = true;
+
+                Assert.True(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.False(tb.CanPaste);
+
+                tb.PasswordChar = '*';
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.False(tb.CanPaste);
+
+                tb.IsReadOnly = false;
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.PasswordChar = default;
+
+                Assert.True(tb.CanCopy);
+                Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        [Fact]
+        public void Command_States_Update_When_RevealPassword_Changes()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    PasswordChar = '*',
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                tb.Measure(Size.Infinity);
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = true;
+
+                Assert.True(tb.CanCopy);
+                Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = false;
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        [Fact]
+        public void ReadOnly_Editing_Hotkeys_Do_Not_Modify_Text_Or_Undo_State()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    AcceptsReturn = true,
+                    AcceptsTab = true,
+                };
+
+                tb.Measure(Size.Infinity);
+
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+
+                Assert.Equal("ABCDEF", tb.Text);
+
+                tb.Undo();
+
+                Assert.Equal("ABC", tb.Text);
+                Assert.True(tb.CanUndo);
+                Assert.True(tb.CanRedo);
+
+                tb.IsReadOnly = true;
+                tb.CaretIndex = tb.Text!.Length;
+                tb.SelectionStart = 0;
+                tb.SelectionEnd = tb.Text.Length;
+
+                var originalText = tb.Text;
+                var originalCaretIndex = tb.CaretIndex;
+                var originalSelectionStart = tb.SelectionStart;
+                var originalSelectionEnd = tb.SelectionEnd;
+                var originalCanUndo = tb.CanUndo;
+                var originalCanRedo = tb.CanRedo;
+
+                var cutRaised = 0;
+                var pasteRaised = 0;
+                tb.CuttingToClipboard += (_, _) => cutRaised++;
+                tb.PastingFromClipboard += (_, _) => pasteRaised++;
+
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Application.Current!.PlatformSettings!.HotkeyConfiguration.Cut, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Application.Current.PlatformSettings.HotkeyConfiguration.Paste, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Application.Current.PlatformSettings.HotkeyConfiguration.Undo, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Application.Current.PlatformSettings.HotkeyConfiguration.Redo, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Back, KeyModifiers.None, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Back, KeyModifiers.Control, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Delete, KeyModifiers.None, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Delete, KeyModifiers.Control, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Enter, KeyModifiers.None, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Tab, KeyModifiers.None, handled: true);
+                AssertReadOnlyHotkeyLeavesStateUntouched(tb, Key.Space, KeyModifiers.None, handled: false);
+
+                Assert.Equal(originalText, tb.Text);
+                Assert.Equal(originalCaretIndex, tb.CaretIndex);
+                Assert.Equal(originalSelectionStart, tb.SelectionStart);
+                Assert.Equal(originalSelectionEnd, tb.SelectionEnd);
+                Assert.Equal(originalCanUndo, tb.CanUndo);
+                Assert.Equal(originalCanRedo, tb.CanRedo);
+                Assert.Equal(0, cutRaised);
+                Assert.Equal(0, pasteRaised);
+            }
+        }
+
+        [Fact]
         public void UndoLimit_Count_Is_Respected()
         {
             using (UnitTestApplication.Start(Services))
@@ -1505,7 +1650,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal("ABCDEF123", tb.Text);
 
                 // Undo will take us back one step
-                tb.Undo();                
+                tb.Undo();
                 Assert.Equal("ABCDEF", tb.Text);
 
                 // Undo again
@@ -1537,11 +1682,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(2,4)]
-        [InlineData(0,4)]
-        [InlineData(2,6)]
-        [InlineData(0,6)]
-        [InlineData(3,4)]
+        [InlineData(2, 4)]
+        [InlineData(0, 4)]
+        [InlineData(2, 6)]
+        [InlineData(0, 6)]
+        [InlineData(3, 4)]
         public void When_Selection_From_Left_To_Right_Pressing_Right_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1566,11 +1711,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(2,4)]
-        [InlineData(0,4)]
-        [InlineData(2,6)]
-        [InlineData(0,6)]
-        [InlineData(3,4)]
+        [InlineData(2, 4)]
+        [InlineData(0, 4)]
+        [InlineData(2, 6)]
+        [InlineData(0, 6)]
+        [InlineData(3, 4)]
         public void When_Selection_From_Left_To_Right_Pressing_Left_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1595,11 +1740,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(4,2)]
-        [InlineData(4,0)]
-        [InlineData(6,2)]
-        [InlineData(6,0)]
-        [InlineData(4,3)]
+        [InlineData(4, 2)]
+        [InlineData(4, 0)]
+        [InlineData(6, 2)]
+        [InlineData(6, 0)]
+        [InlineData(4, 3)]
         public void When_Selection_From_Right_To_Left_Pressing_Right_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1624,11 +1769,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(4,2)]
-        [InlineData(4,0)]
-        [InlineData(6,2)]
-        [InlineData(6,0)]
-        [InlineData(4,3)]
+        [InlineData(4, 2)]
+        [InlineData(4, 0)]
+        [InlineData(6, 2)]
+        [InlineData(6, 0)]
+        [InlineData(4, 3)]
         public void When_Selection_From_Right_To_Left_Pressing_Left_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1707,11 +1852,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(2,4)]
-        [InlineData(0,4)]
-        [InlineData(2,6)]
-        [InlineData(0,6)]
-        [InlineData(3,4)]
+        [InlineData(2, 4)]
+        [InlineData(0, 4)]
+        [InlineData(2, 6)]
+        [InlineData(0, 6)]
+        [InlineData(3, 4)]
         public void When_Selection_From_Left_To_Right_Pressing_Up_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1736,11 +1881,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(4,2)]
-        [InlineData(4,0)]
-        [InlineData(6,2)]
-        [InlineData(6,0)]
-        [InlineData(4,3)]
+        [InlineData(4, 2)]
+        [InlineData(4, 0)]
+        [InlineData(6, 2)]
+        [InlineData(6, 0)]
+        [InlineData(4, 3)]
         public void When_Selection_From_Right_To_Left_Pressing_Up_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1792,11 +1937,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(2,4)]
-        [InlineData(0,4)]
-        [InlineData(2,6)]
-        [InlineData(0,6)]
-        [InlineData(3,4)]
+        [InlineData(2, 4)]
+        [InlineData(0, 4)]
+        [InlineData(2, 6)]
+        [InlineData(0, 6)]
+        [InlineData(3, 4)]
         public void When_Selection_From_Left_To_Right_Pressing_Down_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1821,11 +1966,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(4,2)]
-        [InlineData(4,0)]
-        [InlineData(6,2)]
-        [InlineData(6,0)]
-        [InlineData(4,3)]
+        [InlineData(4, 2)]
+        [InlineData(4, 0)]
+        [InlineData(6, 2)]
+        [InlineData(6, 0)]
+        [InlineData(4, 3)]
         public void When_Selection_From_Right_To_Left_Pressing_Down_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -2050,7 +2195,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.NotNull(client);
             Assert.Equal(string.Empty, client.SurroundingText);
         }
-  
+
         [Fact]
         public void Backspace_Should_Delete_Last_Character_In_Line_And_Keep_Caret_On_Same_Line()
         {
@@ -2122,7 +2267,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(target1.IsFocused);
 
-                Assert.Equal("1234", target1.SelectedText);            
+                Assert.Equal("1234", target1.SelectedText);
 
                 target2.Focus();
 
@@ -2149,6 +2294,61 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("FirstSecond", target.Text);
         }
 
+        [Fact]
+        public void PlaceholderForeground_Can_Be_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    PlaceholderText = "Enter text",
+                    PlaceholderForeground = Brushes.Red
+                };
+
+                target.ApplyTemplate();
+
+                Assert.Equal(Brushes.Red, target.PlaceholderForeground);
+            }
+        }
+
+        [Fact]
+        public void PlaceholderForeground_Defaults_To_Null()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    PlaceholderText = "Enter text"
+                };
+
+                target.ApplyTemplate();
+
+                Assert.Null(target.PlaceholderForeground);
+            }
+        }
+
+        [Fact]
+        public void PlaceholderForeground_Can_Be_Set_To_Null()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    PlaceholderText = "Enter text",
+                    PlaceholderForeground = Brushes.Blue
+                };
+
+                target.ApplyTemplate();
+
+                target.PlaceholderForeground = null;
+
+                Assert.Null(target.PlaceholderForeground);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
@@ -2160,7 +2360,7 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             renderInterface: new HeadlessPlatformRenderInterface(),
-            textShaperImpl: new HarfBuzzTextShaper(), 
+            textShaperImpl: new HarfBuzzTextShaper(),
             fontManagerImpl: new TestFontManager(),
             assetLoader: new StandardAssetLoader());
 
@@ -2192,14 +2392,52 @@ namespace Avalonia.Controls.UnitTests
             }.RegisterInNameScope(scope));
         }
 
-        private static void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
+        private static void AssertReadOnlyHotkeyLeavesStateUntouched(
+            TextBox textBox,
+            IReadOnlyList<KeyGesture> gestures,
+            bool handled)
         {
-            textBox.RaiseEvent(new KeyEventArgs
+            Assert.NotEmpty(gestures);
+            var gesture = gestures[0];
+            AssertReadOnlyHotkeyLeavesStateUntouched(textBox, gesture.Key, gesture.KeyModifiers, handled);
+        }
+
+        private static void AssertReadOnlyHotkeyLeavesStateUntouched(
+            TextBox textBox,
+            Key key,
+            KeyModifiers inputModifiers,
+            bool handled)
+        {
+            var originalText = textBox.Text;
+            var originalCaretIndex = textBox.CaretIndex;
+            var originalSelectionStart = textBox.SelectionStart;
+            var originalSelectionEnd = textBox.SelectionEnd;
+            var originalCanUndo = textBox.CanUndo;
+            var originalCanRedo = textBox.CanRedo;
+
+            var args = RaiseKeyEvent(textBox, key, inputModifiers);
+
+            Assert.Equal(handled, args.Handled);
+            Assert.Equal(originalText, textBox.Text);
+            Assert.Equal(originalCaretIndex, textBox.CaretIndex);
+            Assert.Equal(originalSelectionStart, textBox.SelectionStart);
+            Assert.Equal(originalSelectionEnd, textBox.SelectionEnd);
+            Assert.Equal(originalCanUndo, textBox.CanUndo);
+            Assert.Equal(originalCanRedo, textBox.CanRedo);
+        }
+
+        private static KeyEventArgs RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
+        {
+            var args = new KeyEventArgs
             {
                 RoutedEvent = InputElement.KeyDownEvent,
                 KeyModifiers = inputModifiers,
                 Key = key
-            });
+            };
+
+            textBox.RaiseEvent(args);
+
+            return args;
         }
 
         private static void RaiseTextEvent(TextBox textBox, string text)
@@ -2229,17 +2467,8 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class TestTopLevel : TopLevel
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
         {
-            private readonly ILayoutManager _layoutManager;
-
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
-                : base(impl)
-            {
-                _layoutManager = layoutManager ?? new LayoutManager(this);
-            }
-
-            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
 
         private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()

@@ -12,13 +12,9 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Initializes a new instance of the <see cref="SceneInvalidatedEventArgs"/> class.
         /// </summary>
-        /// <param name="root">The render root that has been updated.</param>
         /// <param name="dirtyRect">The updated area.</param>
-        public SceneInvalidatedEventArgs(
-            IRenderRoot root,
-            Rect dirtyRect)
+        public SceneInvalidatedEventArgs(Rect dirtyRect)
         {
-            RenderRoot = root;
             DirtyRect = dirtyRect;
         }
 
@@ -27,9 +23,5 @@ namespace Avalonia.Rendering
         /// </summary>
         public Rect DirtyRect { get; }
 
-        /// <summary>
-        /// Gets the render root that has been invalidated.
-        /// </summary>
-        public IRenderRoot RenderRoot { get; }
     }
 }

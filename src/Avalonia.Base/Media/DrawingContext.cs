@@ -90,8 +90,19 @@ namespace Avalonia.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry)
         {
-            if ((brush != null || PenIsVisible(pen)) && geometry.PlatformImpl != null)
-                DrawGeometryCore(brush, pen, geometry.PlatformImpl);
+            if (brush != null || PenIsVisible(pen))
+                DrawGeometryCore(brush, pen, geometry);
+        }
+
+        /// <summary>
+        /// Draws a mutable geometry. Implementations that support compositor-aware resources can keep a reference to
+        /// the <see cref="Geometry"/> so that subsequent changes to it are propagated without re-recording.
+        /// The default implementation simply forwards the geometry's current <see cref="Geometry.PlatformImpl"/>.
+        /// </summary>
+        protected virtual void DrawGeometryCore(IBrush? brush, IPen? pen, Geometry geometry)
+        {
+            if (geometry.PlatformImpl is { } geometryImpl)
+                DrawGeometryCore(brush, pen, geometryImpl);
         }
         
         /// <summary>
@@ -285,7 +296,8 @@ namespace Avalonia.Media
                 GeometryClip,
                 OpacityMask,
                 RenderOptions,
-                TextOptions
+                TextOptions,
+                Effect
             }
 
             public RestoreState(DrawingContext context, PushedStateType type)
@@ -314,6 +326,8 @@ namespace Avalonia.Media
                     _context.PopRenderOptionsCore();
                 else if (_type == PushedStateType.TextOptions)
                     _context.PopTextOptionsCore();
+                else if (_type == PushedStateType.Effect)
+                    _context.PopEffectCore();
             }
         }
 
@@ -432,17 +446,35 @@ namespace Avalonia.Media
             _states.Push(new RestoreState(this, RestoreState.PushedStateType.TextOptions));
             return new PushedState(this);
         }
+
+        /// <summary>
+        /// Pushes an effect.
+        /// </summary>
+        /// <param name="effect">The effect.</param>
+        /// <param name="bounds">
+        /// The content bounds of the area the effect is applied to (pre-inflation).
+        /// The drawing context will internally inflate these by the effect's output padding
+        /// to ensure the full effect output (e.g. blur/shadow) is not clipped.
+        /// </param>
+        /// <returns>A disposable used to undo the effect.</returns>
+        public PushedState PushEffect(IEffect effect, Rect bounds)
+        {
+            PushEffectCore(effect, bounds);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.Effect));
+            return new PushedState(this);
+        }
+
         protected abstract void PushTextOptionsCore(TextOptions textOptions);
 
-        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
-        public PushedState PushPreTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
-        public PushedState PushPostTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
-        public PushedState PushTransformContainer() => PushTransform(Matrix.Identity);
-        
-        
         protected abstract void PushTransformCore(Matrix matrix);
+
+        /// <summary>
+        /// Pushes an effect.
+        /// </summary>
+        /// <param name="effect">The effect.</param>
+        /// <param name="bounds">The bounds of the effect.</param>
+        protected abstract void PushEffectCore(IEffect effect, Rect bounds);
 
         protected abstract void PopClipCore();
         protected abstract void PopGeometryClipCore();
@@ -451,6 +483,11 @@ namespace Avalonia.Media
         protected abstract void PopTransformCore();
         protected abstract void PopRenderOptionsCore();
         protected abstract void PopTextOptionsCore();
+
+        /// <summary>
+        /// Pops an effect.
+        /// </summary>
+        protected abstract void PopEffectCore();
         
         private static bool PenIsVisible(IPen? pen)
         {

@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32.Interoperability\Avalonia.Win32.Interoperability.csproj" />
     <ProjectReference Include="..\..\ControlCatalog\ControlCatalog.csproj" />

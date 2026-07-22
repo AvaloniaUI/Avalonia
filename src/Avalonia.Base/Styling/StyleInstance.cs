@@ -75,7 +75,8 @@ namespace Avalonia.Styling
                 {
                     if (animation is IPropertyAnimation propertyAnimation)
                     {
-                        _animationApplyDisposables.Add(propertyAnimation.Apply(animatable, null, _animationTrigger));
+                        _animationApplyDisposables.Add(propertyAnimation.Apply(animatable, null, _animationTrigger,
+                            onComplete: null, isManuallyStarted: false));
                     }
                     else if (animation is ICompositionAnimation compositionAnimation && animatable is Visual visual)
                     {

@@ -1,4 +1,4 @@
-﻿using Avalonia.Compatibility;
+﻿using System;
 using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;
@@ -76,13 +76,13 @@ public abstract class OnPlatformExtensionBase<TReturn, TOn> : IAddChild<TOn>
         // IsOSPlatform might work better with trimming in the future, so it should be re-visited after .NET 8/9.
         return option switch
         {
-            "WINDOWS" => OperatingSystemEx.IsWindows(),
-            "OSX" => OperatingSystemEx.IsMacOS(),
-            "LINUX" => OperatingSystemEx.IsLinux(),
-            "ANDROID" => OperatingSystemEx.IsAndroid(),
-            "IOS" => OperatingSystemEx.IsIOS(),
-            "BROWSER" => OperatingSystemEx.IsBrowser(),
-            _ => OperatingSystemEx.IsOSPlatform(option)
+            "WINDOWS" => OperatingSystem.IsWindows(),
+            "OSX" => OperatingSystem.IsMacOS(),
+            "LINUX" => OperatingSystem.IsLinux(),
+            "ANDROID" => OperatingSystem.IsAndroid(),
+            "IOS" => OperatingSystem.IsIOS(),
+            "BROWSER" => OperatingSystem.IsBrowser(),
+            _ => OperatingSystem.IsOSPlatform(option)
         };
     }
 }

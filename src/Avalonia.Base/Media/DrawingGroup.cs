@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -21,6 +22,12 @@ namespace Avalonia.Media
         public static readonly StyledProperty<IBrush?> OpacityMaskProperty =
             AvaloniaProperty.Register<DrawingGroup, IBrush?>(nameof(OpacityMask));
 
+        /// <summary>
+        /// Defines the <see cref="Effect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEffect?> EffectProperty =
+            AvaloniaProperty.Register<DrawingGroup, IEffect?>(nameof(Effect));
+
         public static readonly DirectProperty<DrawingGroup, DrawingCollection> ChildrenProperty =
             AvaloniaProperty.RegisterDirect<DrawingGroup, DrawingCollection>(
                 nameof(Children),
@@ -28,6 +35,9 @@ namespace Avalonia.Media
                 (o, v) => o.Children = v);
 
         private DrawingCollection _children = new DrawingCollection();
+
+        public DrawingGroup()
+            => _children.CollectionChanged += ChildrenCollectionChanged;
 
         public double Opacity
         {
@@ -53,8 +63,18 @@ namespace Avalonia.Media
             set => SetValue(OpacityMaskProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the effect to apply to the drawing group.
+        /// </summary>
+        public IEffect? Effect
+        {
+            get => GetValue(EffectProperty);
+            set => SetValue(EffectProperty, value);
+        }
+
         internal RenderOptions? RenderOptions { get; set; }
         internal TextOptions? TextOptions { get; set; }
+        internal Rect? EffectBounds { get; set; }
 
         /// <summary>
         /// Gets or sets the collection that contains the child geometries.
@@ -65,21 +85,68 @@ namespace Avalonia.Media
             get => _children;
             set
             {
+                if (ReferenceEquals(_children, value))
+                    return;
+
+                _children.CollectionChanged -= ChildrenCollectionChanged;
+                foreach (var child in _children)
+                    child.Invalidated -= ChildInvalidated;
+
                 SetAndRaise(ChildrenProperty, ref _children, value);
+
+                _children.CollectionChanged += ChildrenCollectionChanged;
+                foreach (var child in _children)
+                    child.Invalidated += ChildInvalidated;
             }
         }
 
         public DrawingContext Open() => new DrawingGroupDrawingContext(this);
 
+        private void ChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+                throw new NotSupportedException();
+
+            if (e.OldItems is not null)
+            {
+                foreach (Drawing child in e.OldItems)
+                    child.Invalidated -= ChildInvalidated;
+            }
+
+            if (e.NewItems is not null)
+            {
+                foreach (Drawing child in e.NewItems)
+                    child.Invalidated += ChildInvalidated;
+            }
+
+            RaiseInvalidated();
+        }
+
+        private void ChildInvalidated(object? sender, EventArgs e)
+            => RaiseInvalidated();
+
         internal override void DrawCore(DrawingContext context)
         {
-            var bounds = GetBounds();
+            // Compute local bounds from children only when EffectBounds is not explicitly set.
+            // EffectBounds stores content bounds (pre-inflation); PushEffectCore handles inflation.
+            var contentBounds = EffectBounds ?? new Rect();
+            if (EffectBounds is null)
+            {
+                foreach (var drawing in Children)
+                    contentBounds = contentBounds.Union(drawing.GetBounds());
+            }
+
+            var effectBounds = Effect != null
+                ? contentBounds.Inflate(Effect.GetEffectOutputPadding())
+                : contentBounds;
+
             using (context.PushTransform(Transform?.Value ?? Matrix.Identity))
             using (context.PushOpacity(Opacity))
             using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
-            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
+            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, effectBounds) : default)
             using (RenderOptions != null ? context.PushRenderOptions(RenderOptions.Value) : default)
             using (TextOptions != null ? context.PushTextOptions(TextOptions.Value) : default)
+            using (Effect != null ? context.PushEffect(Effect, contentBounds) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -96,6 +163,10 @@ namespace Avalonia.Media
             {
                 rect = rect.Union(drawing.GetBounds());
             }
+
+            // Note: Effect is intentionally not reflected here. GetBounds returns content/geometric
+            // bounds only, matching WPF behavior. Effects render additively outside the content
+            // bounds and must not shift the coordinate origin (e.g. when used inside DrawingImage).
 
             if (Transform != null)
             {
@@ -336,6 +407,17 @@ namespace Avalonia.Media
                 drawingGroup.TextOptions = textOptions;
             }
 
+            /// <inheritdoc />
+            protected override void PushEffectCore(IEffect effect, Rect bounds)
+            {
+                // Instantiate a new drawing group and set it as the _currentDrawingGroup
+                var drawingGroup = PushNewDrawingGroup();
+
+                // Set the effect on the new DrawingGroup
+                drawingGroup.Effect = effect;
+                drawingGroup.EffectBounds = bounds;
+            }
+
             protected override void PopClipCore() => Pop();
 
             protected override void PopGeometryClipCore() => Pop();
@@ -349,6 +431,9 @@ namespace Avalonia.Media
             protected override void PopRenderOptionsCore() => Pop();
 
             protected override void PopTextOptionsCore() => Pop();
+
+            /// <inheritdoc />
+            protected override void PopEffectCore() => Pop();
 
             /// <summary>
             /// Creates a new DrawingGroup for a Push* call by setting the

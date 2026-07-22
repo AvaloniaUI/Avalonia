@@ -1,0 +1,97 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CarouselTransitionsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Navigation" FontWeight="SemiBold" FontSize="13" />
+
+        <Button x:Name="PreviousButton"
+                Content="Previous"
+                HorizontalAlignment="Stretch" />
+        <Button x:Name="NextButton"
+                Content="Next"
+                HorizontalAlignment="Stretch" />
+
+        <Separator />
+
+        <TextBlock Text="Transition" FontWeight="SemiBold" FontSize="13" />
+        <ComboBox x:Name="TransitionCombo"
+                  HorizontalAlignment="Stretch"
+                  SelectedIndex="1">
+          <ComboBoxItem>None</ComboBoxItem>
+          <ComboBoxItem>Page Slide</ComboBoxItem>
+          <ComboBoxItem>Cross Fade</ComboBoxItem>
+          <ComboBoxItem>Rotate 3D</ComboBoxItem>
+          <ComboBoxItem>Card Stack</ComboBoxItem>
+          <ComboBoxItem>Wave Reveal</ComboBoxItem>
+          <ComboBoxItem>Composite (Slide + Fade)</ComboBoxItem>
+        </ComboBox>
+
+        <TextBlock Text="Orientation" FontWeight="SemiBold" FontSize="13" />
+        <ComboBox x:Name="OrientationCombo"
+                  HorizontalAlignment="Stretch"
+                  SelectedIndex="0">
+          <ComboBoxItem>Horizontal</ComboBoxItem>
+          <ComboBoxItem>Vertical</ComboBoxItem>
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock x:Name="StatusText"
+                   Text="Transition: Page Slide"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <Carousel x:Name="DemoCarousel" Height="300">
+        <Carousel.PageTransition>
+          <PageSlide Duration="0.25" Orientation="Horizontal" />
+        </Carousel.PageTransition>
+
+        <Border Margin="14,12" CornerRadius="12" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/delicate-arch-896885_640.jpg" Stretch="UniformToFill" />
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 1: Delicate Arch" Foreground="White"
+                         HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Border>
+          </Grid>
+        </Border>
+
+        <Border Margin="14,12" CornerRadius="12" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/hirsch-899118_640.jpg" Stretch="UniformToFill" />
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 2: Hirsch" Foreground="White"
+                         HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Border>
+          </Grid>
+        </Border>
+
+        <Border Margin="14,12" CornerRadius="12" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/maple-leaf-888807_640.jpg" Stretch="UniformToFill" />
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 3: Maple Leaf" Foreground="White"
+                         HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Border>
+          </Grid>
+        </Border>
+      </Carousel>
+    </Border>
+  </DockPanel>
+</UserControl>

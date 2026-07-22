@@ -63,10 +63,6 @@ namespace Avalonia.Platform
         /// </remarks>
         public double Scaling { get; protected set; } = 1;
 
-        /// <inheritdoc cref="Scaling"/>
-        [Obsolete("Use the Scaling property instead.", true), EditorBrowsable(EditorBrowsableState.Never)]
-        public double PixelDensity => Scaling;
-
         /// <summary>
         /// Gets the overall pixel-size and position of the screen.
         /// </summary>
@@ -88,10 +84,6 @@ namespace Avalonia.Platform
         /// Gets a value indicating whether the screen is the primary one.
         /// </summary>
         public bool IsPrimary { get; protected set; }
-
-        /// <inheritdoc cref="IsPrimary"/>
-        [Obsolete("Use the IsPrimary property instead.", true), EditorBrowsable(EditorBrowsableState.Never)]
-        public bool Primary => IsPrimary;
 
         private protected Screen() { }
 

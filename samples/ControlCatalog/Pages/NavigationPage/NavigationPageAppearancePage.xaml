@@ -1,0 +1,149 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageAppearancePage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock Text="Visibility" FontWeight="SemiBold" FontSize="13" />
+
+        <CheckBox x:Name="HasNavBarCheck"
+                  Content="Has Navigation Bar"
+                  IsChecked="True"
+                  IsCheckedChanged="OnHasNavBarChanged" />
+        <CheckBox x:Name="HasShadowCheck"
+                  Content="Has Shadow"
+                  IsCheckedChanged="OnHasShadowChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Bar Background" FontWeight="SemiBold" FontSize="14" />
+        <ComboBox x:Name="BarBgCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnBarBgChanged">
+          <ComboBoxItem Content="Default" />
+          <ComboBoxItem Content="DodgerBlue" />
+          <ComboBoxItem Content="DarkSlateGray" />
+          <ComboBoxItem Content="Indigo" />
+          <ComboBoxItem Content="Crimson" />
+          <ComboBoxItem Content="Transparent" />
+          <ComboBoxItem Content="Semi-transparent dark" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Bar Foreground" FontWeight="SemiBold" FontSize="14" />
+        <ComboBox x:Name="BarFgCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnBarFgChanged">
+          <ComboBoxItem Content="Default" />
+          <ComboBoxItem Content="White" />
+          <ComboBoxItem Content="Black" />
+          <ComboBoxItem Content="Yellow" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Bar Height" FontWeight="SemiBold" FontSize="14" />
+        <DockPanel>
+          <TextBlock x:Name="BarHeightLabel"
+                     DockPanel.Dock="Right"
+                     Text="48"
+                     FontSize="12"
+                     Opacity="0.6"
+                     VerticalAlignment="Center"
+                     Width="28"
+                     TextAlignment="Right" />
+          <Slider x:Name="BarHeightSlider"
+                  Minimum="30"
+                  Maximum="80"
+                  Value="48"
+                  TickFrequency="1"
+                  IsSnapToTickEnabled="True"
+                  ValueChanged="OnBarHeightChanged" />
+        </DockPanel>
+
+        <Separator />
+
+        <TextBlock Text="Per-Page Bar Height" FontWeight="SemiBold" FontSize="14" />
+        <ComboBox x:Name="PerPageBarHeightCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnPerPageBarHeightChanged">
+          <ComboBoxItem Content="Inherit global" />
+          <ComboBoxItem Content="Small (32px)" />
+          <ComboBoxItem Content="Large (72px)" />
+        </ComboBox>
+        <TextBlock Text="Overrides bar height on the current page only. Push a detail page to see it change per page."
+                   FontSize="11"
+                   Opacity="0.6"
+                   TextWrapping="Wrap" />
+
+        <Separator />
+
+        <TextBlock Text="Title Style" FontWeight="SemiBold" FontSize="14" />
+        <ComboBox x:Name="TitleStyleCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnTitleStyleChanged">
+          <ComboBoxItem Content="Default (string)" />
+          <ComboBoxItem Content="Bold + Large" />
+          <ComboBoxItem Content="Title + Subtitle" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Bar Layout Behavior" FontWeight="SemiBold" FontSize="14" />
+        <ComboBox x:Name="BarLayoutCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnBarLayoutChanged">
+          <ComboBoxItem Content="Inset (default)" />
+          <ComboBoxItem Content="Overlay" />
+        </ComboBox>
+        <TextBlock Text="Overlay: content extends behind the bar. Combine with Transparent background to see it."
+                   FontSize="11"
+                   Opacity="0.6"
+                   TextWrapping="Wrap" />
+
+        <Separator />
+
+        <TextBlock Text="Back Button Style" FontWeight="SemiBold" FontSize="14" />
+        <ComboBox x:Name="BackButtonStyleCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnBackButtonStyleChanged">
+          <ComboBoxItem Content="Default icon" />
+          <ComboBoxItem Content="Text: ← Back" />
+          <ComboBoxItem Content="Text: Cancel" />
+        </ComboBox>
+        <TextBlock Text="Push a detail page to see the styled back button."
+                   FontSize="11"
+                   Opacity="0.6"
+                   TextWrapping="Wrap" />
+
+        <Separator />
+
+        <Button Content="Push Page"
+                HorizontalAlignment="Stretch"
+                Click="OnPush" />
+        <Button Content="Pop"
+                HorizontalAlignment="Stretch"
+                Click="OnPop" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>

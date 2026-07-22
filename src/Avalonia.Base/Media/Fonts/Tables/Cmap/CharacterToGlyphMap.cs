@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Avalonia.Media.Fonts.Tables.Cmap
 {
@@ -16,9 +14,10 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
     public readonly struct CharacterToGlyphMap
 #pragma warning restore CA1815 // Override equals not needed for readonly struct
     {
-        private readonly CmapFormat _format;
         private readonly CmapFormat4Table? _format4;
-        private readonly CmapFormat12Table? _format12;
+        private readonly CmapFormat12Or13Table? _format12Or13;
+
+        internal CmapFormat Format { get; }
 
         /// <summary>
         /// Initializes a new instance of the CharacterToGlyphMap class using the specified Format 4 cmap table.
@@ -27,21 +26,21 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal CharacterToGlyphMap(CmapFormat4Table table)
         {
-            _format = CmapFormat.Format4;
+            Format = CmapFormat.Format4;
             _format4 = table;
-            _format12 = null;
+            _format12Or13 = null;
         }
 
         /// <summary>
         /// Initializes a new instance of the CharacterToGlyphMap class using the specified Format 12 character-to-glyph
         /// mapping table.
         /// </summary>
-        /// <param name="table">The Format 12 cmap table that defines the mapping from Unicode code points to glyph indices. Cannot be null.</param>
+        /// <param name="table">The Format 12 or 13 cmap table that defines the mapping from Unicode code points to glyph indices. Cannot be null.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal CharacterToGlyphMap(CmapFormat12Table table)
+        internal CharacterToGlyphMap(CmapFormat12Or13Table table)
         {
-            _format = CmapFormat.Format12;
-            _format12 = table;
+            Format = table.Format;
+            _format12Or13 = table;
             _format4 = null;
         }
 
@@ -65,10 +64,10 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort GetGlyph(int codePoint)
         {
-            return _format switch
+            return Format switch
             {
                 CmapFormat.Format4 => _format4!.GetGlyph(codePoint),
-                CmapFormat.Format12 => _format12!.GetGlyph(codePoint),
+                CmapFormat.Format12 or CmapFormat.Format13 => _format12Or13!.GetGlyph(codePoint),
                 _ => 0
             };
         }
@@ -81,10 +80,10 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsGlyph(int codePoint)
         {
-            return _format switch
+            return Format switch
             {
                 CmapFormat.Format4 => _format4!.ContainsGlyph(codePoint),
-                CmapFormat.Format12 => _format12!.ContainsGlyph(codePoint),
+                CmapFormat.Format12 or CmapFormat.Format13 => _format12Or13!.ContainsGlyph(codePoint),
                 _ => false
             };
         }
@@ -102,20 +101,20 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GetGlyphs(ReadOnlySpan<int> codePoints, Span<ushort> glyphIds)
         {
-            switch (_format)
+            switch (Format)
             {
                 case CmapFormat.Format4:
                     _format4!.GetGlyphs(codePoints, glyphIds);
                     return;
                 case CmapFormat.Format12:
-                    _format12!.GetGlyphs(codePoints, glyphIds);
+                case CmapFormat.Format13:
+                    _format12Or13!.GetGlyphs(codePoints, glyphIds);
                     return;
                 default:
                     glyphIds.Clear();
                     return;
             }
         }
-        
 
         /// <summary>
         /// Attempts to retrieve the glyph identifier corresponding to the specified Unicode code point.
@@ -127,10 +126,10 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         [MethodImpl(MethodImplOptions.AggressiveInlining)] 
         public bool TryGetGlyph(int codePoint, out ushort glyphId) 
         { 
-            switch (_format) 
+            switch (Format)
             { 
                 case CmapFormat.Format4: return _format4!.TryGetGlyph(codePoint, out glyphId); 
-                case CmapFormat.Format12: return _format12!.TryGetGlyph(codePoint, out glyphId);
+                case CmapFormat.Format12 or CmapFormat.Format13: return _format12Or13!.TryGetGlyph(codePoint, out glyphId);
                 default: glyphId = 0; return false; 
             } 
         }
@@ -142,7 +141,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         [MethodImpl(MethodImplOptions.AggressiveInlining)] 
         public CodepointRangeEnumerator GetMappedRanges() 
         { 
-            return new CodepointRangeEnumerator(_format, _format4, _format12);
+            return new CodepointRangeEnumerator(Format, _format4, _format12Or13);
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Avalonia.Input
     /// Defines the interface for classes that handle keyboard navigation for a window.
     /// </summary>
     [Unstable]
-    public interface IKeyboardNavigationHandler
+    internal interface IKeyboardNavigationHandler
     {
         /// <summary>
         /// Sets the owner of the keyboard navigation handler.
@@ -16,7 +16,7 @@ namespace Avalonia.Input
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
         [PrivateApi]
-        void SetOwner(IInputRoot owner);
+        void SetOwner(InputElement owner);
 
         /// <summary>
         /// Moves the focus in the specified direction.

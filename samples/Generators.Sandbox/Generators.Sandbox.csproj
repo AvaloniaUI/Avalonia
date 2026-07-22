@@ -7,9 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaXaml Include="**\*.xaml"/>
-    <!-- Note this AdditionalFiles directive. -->
-    <AdditionalFiles Include="**\*.xaml" SourceItemGroup="AvaloniaXaml" />
+    <AvaloniaXaml Include="**\*.xaml" />
+
+    <AvaloniaResource Include="Assets\*" />
+    <!-- Test Strings.xaml as a resource only, not a compiled XAML -->
+    <AvaloniaXaml Remove="Assets\Strings.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets"/>

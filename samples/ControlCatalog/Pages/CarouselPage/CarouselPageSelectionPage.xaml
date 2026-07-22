@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CarouselPageSelectionPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Jump to Page" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="6">
+          <Button Content="Go to Page 1" Click="OnGoTo0" HorizontalAlignment="Stretch" />
+          <Button Content="Go to Page 2" Click="OnGoTo1" HorizontalAlignment="Stretch" />
+          <Button Content="Go to Page 3" Click="OnGoTo2" HorizontalAlignment="Stretch" />
+          <Button Content="Go to Page 4" Click="OnGoTo3" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="Navigate" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="6">
+          <Button Content="First" Click="OnFirst" HorizontalAlignment="Stretch" />
+          <Button Content="Previous" Click="OnPrevious" HorizontalAlignment="Stretch" />
+          <Button Content="Next" Click="OnNext" HorizontalAlignment="Stretch" />
+          <Button Content="Last" Click="OnLast" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock x:Name="StatusText" Text="—" Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+      <CarouselPage x:Name="DemoCarousel"
+                    SelectionChanged="OnSelectionChanged">
+        <ContentPage Header="Onboarding" Background="#BBDEFB">
+          <StackPanel Margin="24" Spacing="8"
+                      HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Step 1 of 4" FontSize="14" Opacity="0.6"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Onboarding" FontSize="28" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Set SelectedIndex to jump directly to any page."
+                       TextWrapping="Wrap" Opacity="0.7" TextAlignment="Center" MaxWidth="260" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage Header="Features" Background="#C8E6C9">
+          <StackPanel Margin="24" Spacing="8"
+                      HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Step 2 of 4" FontSize="14" Opacity="0.6"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Features" FontSize="28" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Supports scroll, transition, swipe gesture and keyboard navigation."
+                       TextWrapping="Wrap" Opacity="0.7" TextAlignment="Center" MaxWidth="260" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage Header="Customize" Background="#FFE0B2">
+          <StackPanel Margin="24" Spacing="8"
+                      HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Step 3 of 4" FontSize="14" Opacity="0.6"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Customize" FontSize="28" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Override the ItemsPanel, add any Avalonia Page as a child."
+                       TextWrapping="Wrap" Opacity="0.7" TextAlignment="Center" MaxWidth="260" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage Header="Ready" Background="#E1BEE7">
+          <StackPanel Margin="24" Spacing="8"
+                      HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Step 4 of 4" FontSize="14" Opacity="0.6"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Ready!" FontSize="28" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="You are all set. Use SelectionChanged to react to navigation."
+                       TextWrapping="Wrap" Opacity="0.7" TextAlignment="Center" MaxWidth="260" />
+          </StackPanel>
+        </ContentPage>
+      </CarouselPage>
+    </Border>
+  </DockPanel>
+</UserControl>

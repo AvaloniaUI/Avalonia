@@ -1,8 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
              xmlns:system="clr-namespace:System;assembly=System.Runtime"
              x:Class="ControlCatalog.Pages.NotificationsPage"
+             Header="Notifications"
              x:DataType="viewModels:NotificationViewModel">
   <DockPanel>
     <TextBlock DockPanel.Dock="Top"
@@ -16,13 +17,9 @@
     <TextBlock DockPanel.Dock="Top"
                Margin="2" Classes="h2" TextWrapping="Wrap">XAML only notification manager.</TextBlock>
     <Button DockPanel.Dock="Top"
-            Content="Show XAML only Notification" Command="{Binding #ControlNotifications.Show}">
-      <Button.CommandParameter>
-        <Notification Title="Title" Message="Message" OnClick="NotificationOnClick" />
-      </Button.CommandParameter>
-    </Button>
+            Content="Show XAML only Notification" Click="ShowNotification" />
     <Border Padding="10" BorderBrush="{DynamicResource SystemAccentColor}">
       <WindowNotificationManager x:Name="ControlNotifications" />
     </Border>
   </DockPanel>
-</UserControl>
+</ContentPage>

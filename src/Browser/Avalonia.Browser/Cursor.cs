@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.Browser
@@ -76,10 +77,10 @@ namespace Avalonia.Browser
 
     internal class CssCursorFactory : ICursorFactory
     {
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public ICursorImpl CreateCursor(Avalonia.Media.Imaging.Bitmap cursor, PixelPoint hotSpot)
         {
             using var imageStream = new MemoryStream();
-            cursor.Save(imageStream);
+            cursor.Save(imageStream, PngBitmapEncoderOptions.Default);
 
             //not memory optimized because CryptoStream with ToBase64Transform is not supported in the browser.
             var base64String = Convert.ToBase64String(imageStream.ToArray());

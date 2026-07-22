@@ -38,7 +38,7 @@ internal class WindowActivationTrackingHelper : IDisposable
         
         if (Mode == X11Globals.WindowActivationTrackingMode._NET_WM_STATE_FOCUSED)
             OnNetWmStateChanged(XLib.XGetWindowPropertyAsIntPtrArray(_platform.Display, _window.Handle.Handle,
-                _platform.Info.Atoms._NET_WM_STATE, _platform.Info.Atoms.XA_ATOM) ?? []);
+                _platform.Info.Atoms._NET_WM_STATE, _platform.Info.Atoms.ATOM) ?? []);
     }
 
     private void OnWindowActivationTrackingModeChanged() =>
@@ -70,7 +70,7 @@ internal class WindowActivationTrackingHelper : IDisposable
         {
             var value = XLib.XGetWindowPropertyAsIntPtrArray(_platform.Display, _platform.Info.RootWindow,
                 _platform.Info.Atoms._NET_ACTIVE_WINDOW,
-                (IntPtr)_platform.Info.Atoms.XA_WINDOW);
+                (IntPtr)_platform.Info.Atoms.WINDOW);
             if (value == null || value.Length == 0)
                 SetActive(false);
             else

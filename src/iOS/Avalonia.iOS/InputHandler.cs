@@ -181,7 +181,7 @@ internal sealed class InputHandler
                     UIPressPhase.Stationary => RawKeyEventType.KeyDown,
                     UIPressPhase.Ended => RawKeyEventType.KeyUp,
                     _ => RawKeyEventType.KeyUp
-                }, key, modifier, physicalKey, keyDeviceType, characters);
+                }, key, modifier, physicalKey, characters, keyDeviceType);
 
             _tl.Input?.Invoke(ev);
             handled |= ev.Handled;
@@ -229,7 +229,7 @@ internal sealed class InputHandler
         {
             // Don't pass PhysicalKey, as physically it's just a touch gesture.
             var ev = new RawKeyEventArgs(KeyboardDevice.Instance!, timestamp, Root,
-                RawKeyEventType.KeyDown, key, RawInputModifiers.None, PhysicalKey.None, KeyDeviceType.Remote, null);
+                RawKeyEventType.KeyDown, key, RawInputModifiers.None, PhysicalKey.None, null, KeyDeviceType.Remote);
             _tl.Input?.Invoke(ev);
             var handled = ev.Handled;
 
@@ -308,7 +308,7 @@ internal sealed class InputHandler
         
         _tl.Input?.Invoke(new RawMouseWheelEventArgs(
             _mouseDevice, 
-            (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()), 
+            (ulong)Environment.TickCount64, 
             Root,
             _cachedScrollLocation ?? new Point(0, 0),
             new Vector(deltaX, deltaY),
@@ -372,7 +372,7 @@ internal sealed class InputHandler
         // until the inertia stops.
         _tl.Input?.Invoke(new RawMouseWheelEventArgs(
             _mouseDevice, 
-            (ulong)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()), 
+            (ulong)Environment.TickCount64, 
             Root,
             _cachedScrollLocation.Value,
             new Vector(_momentumVelocityX, _momentumVelocityY),

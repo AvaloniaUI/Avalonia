@@ -12,7 +12,13 @@ namespace Avalonia.iOS
         event EventHandler<ActivatedEventArgs> Deactivated;
     }
 
-    public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate, IAvaloniaAppDelegate
+    internal interface IAvaloniaAppInternalDelegate
+    {
+        bool ContinueUserActivity(NSUserActivity userActivity);
+        bool OpenUrl(NSUrl url);
+    }
+
+    public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate, IAvaloniaAppDelegate, IAvaloniaAppInternalDelegate
         where TApp : Application, new()
     {
         private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
@@ -82,6 +88,9 @@ namespace Avalonia.iOS
 
         [Export("application:openURL:options:")]
         public bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
+            => ((IAvaloniaAppInternalDelegate)this).OpenUrl(url);
+
+        bool IAvaloniaAppInternalDelegate.OpenUrl(NSUrl url)
         {
             if (Uri.TryCreate(url.ToString(), UriKind.Absolute, out var uri))
             {
@@ -93,7 +102,7 @@ namespace Avalonia.iOS
                 else
 #endif
                 {
-                    _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));   
+                    _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
                 }
                 return true;
             }
@@ -104,7 +113,13 @@ namespace Avalonia.iOS
         [Export("application:continueUserActivity:restorationHandler:")]
         public bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
         {
-            if (userActivity.ActivityType == NSUserActivityType.BrowsingWeb && Uri.TryCreate(userActivity.WebPageUrl?.ToString(), UriKind.RelativeOrAbsolute, out var uri))
+            return ((IAvaloniaAppInternalDelegate)this).ContinueUserActivity(userActivity);
+        }
+
+        bool IAvaloniaAppInternalDelegate.ContinueUserActivity(NSUserActivity userActivity)
+        {
+            if (userActivity.ActivityType == NSUserActivityType.BrowsingWeb &&
+                Uri.TryCreate(userActivity.WebPageUrl?.ToString(), UriKind.RelativeOrAbsolute, out var uri))
             {
                 // Activation using a univeral link or web browser-to-native app Handoff
                 _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));

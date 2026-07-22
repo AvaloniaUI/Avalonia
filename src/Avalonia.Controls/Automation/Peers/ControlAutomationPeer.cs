@@ -132,6 +132,12 @@ namespace Avalonia.Automation.Peers
                 result = ToolTip.GetTip(Owner) as string;
             }
 
+            // Windows uses HelpText for placeholder text; macOS uses a separate property.
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                result = GetPlaceholderTextCore();
+            }
+
             return result;
         }
         protected override AutomationLandmarkType? GetLandmarkTypeCore() => AutomationProperties.GetLandmarkType(Owner);
@@ -141,12 +147,19 @@ namespace Avalonia.Automation.Peers
             EnsureConnected();
             return _parent;
         }
-
-        protected override AutomationPeer? GetVisualRootCore()
+        
+        private protected override AutomationPeer? GetVisualRootCore()
         {
-            if (Owner.GetVisualRoot() is Control c)
+            if (Owner?.PresentationSource?.InputRoot?.FocusRoot is Control c)
                 return CreatePeerForElement(c);
             return null;
+        }
+
+        private protected override Rect? ToScreenCore(Rect rect)
+        {
+            if (Owner?.PresentationSource?.RootVisual is not { } root)
+                return null;
+            return new PixelRect(root.PointToScreen(rect.TopLeft), root.PointToScreen(rect.BottomRight)).ToRect(1);
         }
 
         /// <summary>
@@ -199,6 +212,8 @@ namespace Avalonia.Automation.Peers
         protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
         protected override Rect GetBoundingRectangleCore() => GetBounds(Owner);
         protected override string GetClassNameCore() => Owner.GetType().Name;
+        protected override string? GetItemStatusCore() => AutomationProperties.GetItemStatus(Owner);
+        protected override string? GetItemTypeCore() => AutomationProperties.GetItemType(Owner);
         protected override bool HasKeyboardFocusCore() => Owner.IsFocused;
         protected override bool IsContentElementCore() => true;
         protected override bool IsControlElementCore() => true;
@@ -211,6 +226,11 @@ namespace Avalonia.Automation.Peers
             return AutomationProperties.GetControlTypeOverride(Owner) ?? GetAutomationControlTypeCore();
         }
 
+        protected override string GetClassNameOverrideCore()
+        {
+            return AutomationProperties.GetClassNameOverride(Owner) ?? GetClassNameCore();
+        }
+
         protected override bool IsContentElementOverrideCore()
         {
             var view = AutomationProperties.GetAccessibilityView(Owner);
@@ -219,6 +239,8 @@ namespace Avalonia.Automation.Peers
 
         protected override bool IsControlElementOverrideCore()
         {
+            if (AutomationProperties.GetIsControlElementOverride(Owner) is { } isControlElement)
+                return isControlElement;
             var view = AutomationProperties.GetAccessibilityView(Owner);
             return view == AccessibilityView.Default ? IsControlElementCore() : view >= AccessibilityView.Control;
         }
@@ -260,11 +282,13 @@ namespace Avalonia.Automation.Peers
 
         private void VisualChildrenChanged(object? sender, EventArgs e) => InvalidateChildren();
 
+        private protected virtual Visual? GetVisualParent() => Owner.GetVisualParent();
+
         private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == Visual.IsVisibleProperty)
             {
-                var parent = Owner.GetVisualParent();
+                var parent = GetVisualParent();
                 if (parent is Control c)
                     (GetOrCreate(c) as ControlAutomationPeer)?.InvalidateChildren();
             }
@@ -281,6 +305,20 @@ namespace Avalonia.Automation.Peers
             {
                 InvalidateParent();
             }
+            else if (e.Property == AutomationProperties.ItemStatusProperty)
+            {
+                RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.ItemStatusProperty,
+                    e.OldValue,
+                    e.NewValue);
+            }
+            else if (e.Property == AutomationProperties.AutomationIdProperty)
+            {
+                RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.AutomationIdProperty,
+                    null,
+                    GetAutomationId());
+            }
         }
 
 
@@ -288,7 +326,7 @@ namespace Avalonia.Automation.Peers
         {
             if (!_parentValid)
             {
-                var parent = Owner.GetVisualParent();
+                var parent = GetVisualParent();
 
                 while (parent is object)
                 {
@@ -296,6 +334,11 @@ namespace Avalonia.Automation.Peers
                     {
                         var parentPeer = GetOrCreate(c);
                         parentPeer.GetChildren();
+                        if (parentPeer is ControlAutomationPeer controlPeer)
+                        {
+                            parent = controlPeer.GetVisualParent();
+                            continue;
+                        }
                     }
 
                     parent = parent.GetVisualParent();

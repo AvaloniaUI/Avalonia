@@ -406,7 +406,8 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// </summary>
     /// <param name="value">The new value, or <see cref="UnchangedValue"/>.</param>
     /// <param name="error">The new binding or data validation error.</param>
-    private protected void PublishValue(object? value, BindingError? error = null)
+    /// <param name="forceUpdate">If true, forces the value to be published even if it hasn't changed.</param>
+    private protected void PublishValue(object? value, BindingError? error = null, bool forceUpdate = false)
     {
         Debug.Assert(value is not BindingNotification);
         Debug.Assert(value != BindingOperations.DoNothing);
@@ -424,7 +425,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
             value = null;
         }
 
-        var hasValueChanged = value != UnchangedValue && !TypeUtilities.IdentityEquals(value, GetValue(), TargetType);
+        var hasValueChanged = forceUpdate || (value != UnchangedValue && !TypeUtilities.IdentityEquals(value, GetValue(), TargetType));
         var hasErrorChanged = error is not null || _error is not null;
 
         if (hasValueChanged)

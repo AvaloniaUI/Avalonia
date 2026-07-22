@@ -1,6 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq.Expressions;
 using Avalonia.Collections;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.UnitTests;
 using Xunit;
@@ -16,7 +20,7 @@ namespace Avalonia.LeakTests
             {
                 var list = new AvaloniaList<string> { "foo", "bar" };
                 var source = new { Foo = list };
-                var target = BindingExpression.Create(source, o => o.Foo);
+                var target = CreateBindingExpression(source, o => o.Foo);
 
                 target.ToObservable().Subscribe(_ => { });
                 return new WeakReference(list);
@@ -37,7 +41,7 @@ namespace Avalonia.LeakTests
             {
                 var list = new AvaloniaList<string> { "foo", "bar" };
                 var source = new { Foo = list };
-                var target = BindingExpression.Create(source, o => o.Foo, enableDataValidation: true);
+                var target = CreateBindingExpression(source, o => o.Foo, enableDataValidation: true);
 
                 target.ToObservable().Subscribe(_ => { });
                 return new WeakReference(list);
@@ -58,7 +62,7 @@ namespace Avalonia.LeakTests
             {
                 var indexer = new NonIntegerIndexer();
                 var source = new { Foo = indexer };
-                var target = BindingExpression.Create(source, o => o.Foo);
+                var target = CreateBindingExpression(source, o => o.Foo);
 
                 target.ToObservable().Subscribe(_ => { });
                 return new WeakReference(indexer);
@@ -79,7 +83,7 @@ namespace Avalonia.LeakTests
             {
                 var methodBound = new MethodBound();
                 var source = new { Foo = methodBound };
-                var target = BindingExpression.Create(source, o => (Action)o.Foo.A);
+                var target = CreateBindingExpression(source, o => (Action)o.Foo.A);
                 target.ToObservable().Subscribe(_ => { });
                 return new WeakReference(methodBound);
             }
@@ -90,6 +94,34 @@ namespace Avalonia.LeakTests
             GC.Collect();
 
             Assert.False(weakSource.IsAlive);
+        }
+
+        private static BindingExpression CreateBindingExpression<TIn, TOut>(
+            TIn source,
+            Expression<Func<TIn, TOut>> expression,
+            IValueConverter? converter = null,
+            CultureInfo? converterCulture = null,
+            object? converterParameter = null,
+            bool enableDataValidation = false,
+            Optional<object?> fallbackValue = default,
+            BindingMode mode = BindingMode.OneWay,
+            BindingPriority priority = BindingPriority.LocalValue,
+            object? targetNullValue = null,
+            bool allowReflection = true)
+            where TIn : class?
+        {
+            return BindingExpressionExtensions.CreateBindingExpression(
+                        source,
+                        expression,
+                        converter,
+                        converterCulture,
+                        converterParameter,
+                        enableDataValidation,
+                        fallbackValue,
+                        mode,
+                        priority,
+                        targetNullValue,
+                        allowReflection);
         }
 
         private class MethodBound

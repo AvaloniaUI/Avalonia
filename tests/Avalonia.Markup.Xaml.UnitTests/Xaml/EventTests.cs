@@ -26,14 +26,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Attached_Event_Is_Assigned()
         {
-            var xaml = @"<Button xmlns='https://github.com/avaloniaui' Gestures.Tapped='OnTapped'/>";
+            var xaml = @"<Button xmlns='https://github.com/avaloniaui' InputElement.Tapped='OnTapped'/>";
             var target = new MyButton();
 
             AvaloniaRuntimeXamlLoader.Load(xaml, rootInstance: target);
 
             target.RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = Gestures.TappedEvent,
+                RoutedEvent = InputElement.TappedEvent,
             });
 
             Assert.True(target.WasTapped);
@@ -51,7 +51,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.NotNull(target);
 
-            target.RaiseEvent(new TappedEventArgs(Gestures.DoubleTappedEvent, null!));
+            target.RaiseEvent(new TappedEventArgs(InputElement.DoubleTappedEvent, null!));
 
             Assert.True(host.WasTapped);
         }

@@ -5,6 +5,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
 using SixLabors.ImageSharp;
 using Xunit;
+using Avalonia.Input;
 using Avalonia.Platform;
 using System.Threading.Tasks;
 using System;
@@ -13,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -22,74 +23,133 @@ using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
 using Avalonia.Harfbuzz;
+using Avalonia.OpenGL.Egl;
 using Avalonia.Skia;
 
 namespace Avalonia.Skia.RenderTests;
 
 static class TestRenderHelper
 {
-    private static readonly TestDispatcherImpl s_dispatcherImpl =
-        new TestDispatcherImpl();
-
     static TestRenderHelper()
     {
         SkiaPlatform.Initialize();
-        AvaloniaLocator.CurrentMutable
-            .Bind<IDispatcherImpl>()
-            .ToConstant(s_dispatcherImpl);
-        
         AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(new StandardAssetLoader());
         AvaloniaLocator.CurrentMutable.Bind<ITextShaperImpl>().ToConstant(new HarfBuzzTextShaper());
+        AvaloniaLocator.CurrentMutable.Bind<ICursorFactory>().ToConstant(new NullCursorFactory());
+    }
+
+    private sealed class NullCursorFactory : ICursorFactory
+    {
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new NullCursor();
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot) => new NullCursor();
+
+        private sealed class NullCursor : ICursorImpl
+        {
+            public void Dispose() { }
+        }
     }
     
     
     public static Task RenderToFile(Control target, string path, bool immediate, double dpi = 96)
     {
-        var dir = Path.GetDirectoryName(path);
-        Assert.NotNull(dir);
-
-        if (!Directory.Exists(dir)) 
-            Directory.CreateDirectory(dir);
-        
-        var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-        var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
-        var size = new Size(target.Width, target.Height);
-        var dpiVector = new Vector(dpi, dpi);
-
         if (immediate)
         {
+            EnsureOutputDirectory(path);
+
+            var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
+            var size = new Size(target.Width, target.Height);
+            var dpiVector = new Vector(dpi, dpi);
+
             using (RenderTargetBitmap bitmap = new RenderTargetBitmap(pixelSize, dpiVector))
             {
                 target.Measure(size);
                 target.Arrange(new Rect(size));
                 bitmap.Render(target);
-                bitmap.Save(path);
+                bitmap.Save(path, PngBitmapEncoderOptions.Default);
             }
+
+            return Task.CompletedTask;
         }
-        else
+
+        return RenderCompositedToFile(target, path, null, dpi);
+    }
+
+    public static Task RenderCompositedToFile(Control target, string path, IPlatformGraphics? gpu, double dpi = 96)
+    {
+        EnsureOutputDirectory(path);
+
+        var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+        var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
+        var dpiVector = new Vector(dpi, dpi);
+        var scaling = dpi / 96;
+
+        var timer = new ManualRenderTimer();
+
+        var compositor = new Compositor(RenderLoop.FromTimer(timer), gpu, true,
+            new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
+        // GPU readback surfaces produce RGBA
+        var pixelFormat = gpu == null ? factory.DefaultPixelFormat : PixelFormats.Rgba8888;
+        using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, pixelFormat,
+                   factory.DefaultAlphaFormat))
         {
-            var timer = new ManualRenderTimer();
-
-            var compositor = new Compositor(new RenderLoop(timer), null, true,
-                new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
-            using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat,
-                       factory.DefaultAlphaFormat))
+            try
             {
-                var root = new TestRenderRoot(dpiVector.X / 96, null!);
-                using (var renderer = new CompositingRenderer(root, compositor,
-                           () => new[] { new BitmapFramebufferSurface(writableBitmap) }))
+                IPlatformRenderSurface surface = gpu switch
                 {
-                    root.Initialize(renderer, target);
-                    renderer.Start();
-                    Dispatcher.UIThread.RunJobs();
-                    renderer.Paint(new Rect(root.Bounds.Size), false);
+                    null => new BitmapFramebufferSurface(writableBitmap),
+                    EglPlatformGraphics => new FboReadbackGlPlatformSurface(writableBitmap, scaling),
+                    _ => new VulkanReadbackPlatformSurface(writableBitmap, scaling)
+                };
+                var root = new TestRenderRoot(scaling, null!);
+                try
+                {
+                    using (var renderer = new CompositingRenderer(root, compositor, () => new[] { surface }))
+                    {
+                        root.Initialize(renderer, target);
+                        renderer.Start();
+                        Dispatcher.UIThread.RunJobs();
+                        renderer.Paint(new Rect(root.Bounds.Size), false);
+                    }
                 }
-
-                writableBitmap.Save(path);
+                finally
+                {
+                    // Detach the control, so it can be rendered again with a different root
+                    root.Child = null;
+                }
             }
+            finally
+            {
+                if (gpu != null)
+                    DisposeGpuBackendContext(compositor, gpu);
+            }
+
+            using var fileStream = File.Create(path);
+            writableBitmap.Save(fileStream, PngBitmapEncoderOptions.Default);
         }
 
         return Task.CompletedTask;
+    }
+
+    // Compositors are created per render, so their backend contexts (GRContext etc.) have to be
+    // disposed deterministically instead of piling up until finalization
+    private static void DisposeGpuBackendContext(Compositor compositor, IPlatformGraphics gpu)
+    {
+        var renderInterface = compositor.Server.RenderInterface;
+        using (renderInterface.EnsureCurrent())
+            // TODO: Technically it should be disposing the GPU context as well,
+            // but need to re-check wayland code if it's safe to do
+            compositor.Server.ResetAllGpuResources();
+        if (!gpu.UsesSharedContext)
+            renderInterface.GpuContext?.Dispose();
+    }
+
+    private static void EnsureOutputDirectory(string path)
+    {
+        var dir = Path.GetDirectoryName(path);
+        Assert.NotNull(dir);
+
+        if (!Directory.Exists(dir))
+            Directory.CreateDirectory(dir);
     }
 
     class BitmapFramebufferSurface : IFramebufferPlatformSurface
@@ -110,13 +170,14 @@ static class TestRenderHelper
 
     public static void BeginTest()
     {
-        s_dispatcherImpl.MainThread = Thread.CurrentThread;
+        Dispatcher.ResetBeforeUnitTests();
     }
 
     public static void EndTest()
     {
         if (Dispatcher.UIThread.CheckAccess()) 
             Dispatcher.UIThread.RunJobs();
+        Dispatcher.ResetForUnitTests();
     }
     
     public static string GetTestsDirectory()
@@ -130,28 +191,6 @@ static class TestRenderHelper
 
         Assert.NotNull(path);
         return path;
-    }
-    
-    private class TestDispatcherImpl : IDispatcherImpl
-    {
-        public bool CurrentThreadIsLoopThread => MainThread?.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
-
-        public Thread? MainThread { get; set; }
-
-        public event Action? Signaled { add { } remove { } }
-        public event Action? Timer { add { } remove { } }
-
-        public void Signal()
-        {
-            // No-op
-        }
-
-        public long Now => 0;
-
-        public void UpdateTimer(long? dueTimeInMs)
-        {
-            // No-op
-        }
     }
 
     public static void AssertCompareImages(string actualPath, string expectedPath)

@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Templates;
 using Avalonia.Automation.Peers;
 using Avalonia.VisualTree;
 using Avalonia.Reactive;
@@ -85,6 +86,8 @@ namespace Avalonia.Controls.Primitives
         private bool _isExpanded;
         private CompositeDisposable? _ownerSubscriptions;
         private ScrollViewer? _owner;
+        private bool _isDragging;
+        private Point _lastRightClickPosition;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -92,6 +95,7 @@ namespace Avalonia.Controls.Primitives
         static ScrollBar()
         {
             Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
+            Thumb.DragStartedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragStart(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
 
             FocusableProperty.OverrideMetadata<ScrollBar>(new(false));
@@ -103,6 +107,7 @@ namespace Avalonia.Controls.Primitives
         public ScrollBar()
         {
             UpdatePseudoClasses(Orientation);
+            ContextRequested += OnContextRequested;
         }
 
         /// <summary>
@@ -325,7 +330,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerExited(e);
 
-            if (AllowAutoHide)
+            if (AllowAutoHide && !_isDragging)
             {
                 CollapseAfterDelay();
             }
@@ -491,8 +496,21 @@ namespace Avalonia.Controls.Primitives
         {
             OnScroll(ScrollEventType.ThumbTrack);
         }
+
+        private void OnThumbDragStart(VectorEventArgs e)
+        {
+            _isDragging = true;
+        }
+
         private void OnThumbDragComplete(VectorEventArgs e)
         {
+            _isDragging = false;
+
+            if (AllowAutoHide && !IsPointerOver)
+            {
+                CollapseAfterDelay();
+            }
+
             OnScroll(ScrollEventType.EndScroll);
         }
 
@@ -506,5 +524,113 @@ namespace Avalonia.Controls.Primitives
             PseudoClasses.Set(":vertical", o == Orientation.Vertical);
             PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
         }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                _lastRightClickPosition = e.GetPosition(this);
+            }
+        }
+
+        private void OnContextRequested(object? sender, ContextRequestedEventArgs e)
+        {
+            if (e.PointerType is PointerType.Touch or PointerType.Pen)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            if (e.TryGetPosition(this, out var position))
+            {
+                _lastRightClickPosition = position;
+            }
+        }
+
+        /// <summary>
+        /// Scrolls to the location at which the context menu was most recently requested.
+        /// </summary>
+        public void ScrollHere()
+        {
+            if (Track is not { } track)
+            {
+                return;
+            }
+
+            var trackLength = Orientation == Orientation.Vertical ? track.Bounds.Height : track.Bounds.Width;
+            var thumbLength = Orientation == Orientation.Vertical ? track.Thumb?.Bounds.Height ?? 0 : track.Thumb?.Bounds.Width ?? 0;
+            var clickPosition = Orientation == Orientation.Vertical ? _lastRightClickPosition.Y : _lastRightClickPosition.X;
+
+            if (trackLength > thumbLength)
+            {
+                var ratio = clickPosition / trackLength;
+                var range = Maximum - Minimum;
+                var value = Minimum + (ratio * range);
+                SetCurrentValue(ValueProperty, Math.Max(Minimum, Math.Min(Maximum, value)));
+                OnScroll(ScrollEventType.ThumbTrack);
+            }
+        }
+
+        /// <summary>
+        /// Scrolls to the top (or left edge) of the scrollbar by setting <see cref="RangeBase.Value"/> to <see cref="RangeBase.Minimum"/>.
+        /// </summary>
+        public void ScrollToHome()
+        {
+            SetCurrentValue(ValueProperty, Minimum);
+            OnScroll(ScrollEventType.LargeDecrement);
+        }
+
+        /// <summary>
+        /// Scrolls to the bottom (or right edge) of the scrollbar by setting <see cref="RangeBase.Value"/> to <see cref="RangeBase.Maximum"/>.
+        /// </summary>
+        public void ScrollToEnd()
+        {
+            SetCurrentValue(ValueProperty, Maximum);
+            OnScroll(ScrollEventType.LargeIncrement);
+        }
+
+        /// <summary>
+        /// Scrolls up by one <see cref="RangeBase.LargeChange"/> (a page) on a vertical scrollbar.
+        /// </summary>
+        public void PageUp() => LargeDecrement();
+
+        /// <summary>
+        /// Scrolls down by one <see cref="RangeBase.LargeChange"/> (a page) on a vertical scrollbar.
+        /// </summary>
+        public void PageDown() => LargeIncrement();
+
+        /// <summary>
+        /// Scrolls left by one <see cref="RangeBase.LargeChange"/> (a page) on a horizontal scrollbar.
+        /// </summary>
+        public void PageLeft() => LargeDecrement();
+
+        /// <summary>
+        /// Scrolls right by one <see cref="RangeBase.LargeChange"/> (a page) on a horizontal scrollbar.
+        /// </summary>
+        public void PageRight() => LargeIncrement();
+
+        /// <summary>
+        /// Scrolls up by one <see cref="RangeBase.SmallChange"/> on a vertical scrollbar.
+        /// </summary>
+        public void LineUp() => SmallDecrement();
+
+        /// <summary>
+        /// Scrolls down by one <see cref="RangeBase.SmallChange"/> on a vertical scrollbar.
+        /// </summary>
+        public void LineDown() => SmallIncrement();
+
+        /// <summary>
+        /// Scrolls left by one <see cref="RangeBase.SmallChange"/> on a horizontal scrollbar.
+        /// </summary>
+        public void LineLeft() => SmallDecrement();
+
+        /// <summary>
+        /// Scrolls right by one <see cref="RangeBase.SmallChange"/> on a horizontal scrollbar.
+        /// </summary>
+        public void LineRight() => SmallIncrement();
+
+        private Track? Track => this.GetTemplateDescendants().OfType<Track>().FirstOrDefault();
     }
 }

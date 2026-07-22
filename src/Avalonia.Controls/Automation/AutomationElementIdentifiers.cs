@@ -32,6 +32,12 @@ namespace Avalonia.Automation
         public static AutomationProperty HelpTextProperty { get; } = new AutomationProperty();
 
         /// <summary>
+        /// Identifies the itemStatus automation property. The class name property value is returned
+        /// by the <see cref="AutomationPeer.GetItemStatus"/> method.
+        /// </summary>
+        public static AutomationProperty ItemStatusProperty { get; } = new AutomationProperty();
+
+        /// <summary>
         /// Identifies the landmark type automation property. The class name property value is returned
         /// by the <see cref="AutomationPeer.GetLandmarkType"/> method.
         /// </summary>
@@ -42,5 +48,11 @@ namespace Avalonia.Automation
         /// by the <see cref="AutomationPeer.GetHeadingLevel"/> method.
         /// </summary>
         public static AutomationProperty HeadingLevelProperty { get; } = new AutomationProperty();
+
+        /// <summary>
+        /// Identifies the automation ID property. The automation ID property value is returned
+        /// by the <see cref="AutomationPeer.GetAutomationId"/> method.
+        /// </summary>
+        public static AutomationProperty AutomationIdProperty { get; } = new AutomationProperty();
     }
 }

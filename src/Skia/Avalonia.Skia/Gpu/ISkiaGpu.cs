@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -9,14 +9,24 @@ namespace Avalonia.Skia
     /// <summary>
     /// Custom Skia gpu instance.
     /// </summary>
-    public interface ISkiaGpu : IPlatformGraphicsContext
+    internal interface ISkiaGpu : IPlatformGraphicsContext
     {
+        /// <summary>
+        /// Gets the platform graphics context.
+        /// </summary>
+        IPlatformGraphicsContext? PlatformGraphicsContext { get; }
+
         /// <summary>
         /// Attempts to create custom render target from given surfaces.
         /// </summary>
         /// <param name="surfaces">Surfaces.</param>
         /// <returns>Created render target or <see langword="null"/> if it fails.</returns>
-        ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces);
+        ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces);
+
+        /// <summary>
+        /// Checks if a render target can be created for the given surfaces and the preferred surface is ready.
+        /// </summary>
+        bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces);
 
         /// <summary>
         /// Creates an offscreen render target surface
@@ -24,13 +34,11 @@ namespace Avalonia.Skia
         /// <param name="size">size in pixels.</param>
         /// <param name="session">An optional custom render session.</param>
         ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session);
-    }
 
-    //TODO12: Merge into ISkiaGpu
-    [Unstable]
-    public interface ISkiaGpuWithPlatformGraphicsContext : ISkiaGpu
-    {
-        IPlatformGraphicsContext? PlatformGraphicsContext { get; }
+        /// <summary>
+        /// Tries to get a <see cref="GRContext"/>.
+        /// </summary>
+        /// <returns>A <see cref="GRContext"/>.</returns>
         IScopedResource<GRContext>? TryGetGrContext();
     }
     
