@@ -330,6 +330,21 @@ HRESULT WindowBaseImpl::BeginMoveDrag() {
         auto lastEvent = [View lastMouseDownEvent];
 
         if (lastEvent == nullptr) {
+            // A press that begins inside an embedded native view (for example a webview hosted
+            // through NativeControlHost) is consumed by that view and never delivered to the
+            // Avalonia view, so no mouse-down is recorded; fall back to the event the
+            // application is tracking right now, provided it is a left-button press or drag
+            // that belongs to this window.
+            auto currentEvent = [NSApp currentEvent];
+
+            if (currentEvent != nullptr && [currentEvent window] == Window &&
+                ([currentEvent type] == NSEventTypeLeftMouseDown ||
+                 [currentEvent type] == NSEventTypeLeftMouseDragged)) {
+                lastEvent = currentEvent;
+            }
+        }
+
+        if (lastEvent == nullptr) {
             return S_OK;
         }
 
