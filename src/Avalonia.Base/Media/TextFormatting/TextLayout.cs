@@ -603,7 +603,7 @@ namespace Avalonia.Media.TextFormatting
 
                     //Fulfill max height constraint
                     if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight)
-                        && Height + textLine.Height > MaxHeight)
+                        && MathUtilities.GreaterThan(Height + textLine.Height, MaxHeight))
                     {
                         if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
                         {
