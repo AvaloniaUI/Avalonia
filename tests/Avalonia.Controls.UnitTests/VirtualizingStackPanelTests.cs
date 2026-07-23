@@ -444,6 +444,8 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
 
             Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
+            Assert.True(focused.IsKeyboardFocusWithin);
+            Assert.Equal(0, focused.Opacity);
         }
 
         [Theory]
@@ -486,10 +488,13 @@ namespace Avalonia.Controls.UnitTests
             scroll.Offset = new Vector(0, 200);
             Layout(target);
 
+            Assert.Equal(0, focused.Opacity);
+
             scroll.Offset = new Vector(0, 0);
             Layout(target);
 
             Assert.Same(focused, target.GetRealizedElements().First());
+            Assert.Equal(1, focused.Opacity);
         }
 
         [Theory]
