@@ -190,7 +190,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
-                SetTextCurrentValue(MaskProvider.ToDisplayString());
+                SetTextFromInternalSynchronization(MaskProvider.ToDisplayString());
             }
             base.OnGotFocus(e);
         }
@@ -241,7 +241,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                SetTextCurrentValue(MaskProvider.ToDisplayString());
+                SetTextFromEdit(MaskProvider.ToDisplayString());
                 e.Handled = true;
                 return;
             }
@@ -291,7 +291,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave && MaskProvider != null)
             {
-                SetTextCurrentValue(MaskProvider.ToString(!HidePromptOnLeave, true));
+                SetTextFromInternalSynchronization(MaskProvider.ToString(!HidePromptOnLeave, true));
             }
             base.OnLostFocus(e);
         }
@@ -306,7 +306,7 @@ namespace Avalonia.Controls
                 {
                     MaskProvider.Set(Text);
                 }
-                RefreshText(MaskProvider, 0);
+                RefreshText(MaskProvider, 0, isEdit: false);
             }
             if (change.Property == MaskProperty)
             {
@@ -426,11 +426,18 @@ namespace Avalonia.Controls
             return startPosition;
         }
 
-        private void RefreshText(MaskedTextProvider? provider, int position)
+        private void RefreshText(MaskedTextProvider? provider, int position, bool isEdit = true)
         {
             if (provider != null)
             {
-                SetTextCurrentValue(provider.ToDisplayString());
+                if (isEdit)
+                {
+                    SetTextFromEdit(provider.ToDisplayString());
+                }
+                else
+                {
+                    SetTextFromInternalSynchronization(provider.ToDisplayString());
+                }
                 SetCurrentValue(CaretIndexProperty, position);
             }
         }

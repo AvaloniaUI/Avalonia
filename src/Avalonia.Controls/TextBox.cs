@@ -362,12 +362,19 @@ namespace Avalonia.Controls
             public override int GetHashCode() => Text?.GetHashCode() ?? 0;
         }
 
+        private enum TextMutationKind
+        {
+            ExternalReplacement,
+            Edit,
+            InternalSynchronization,
+        }
+
         private TextPresenter? _presenter;
         private ScrollViewer? _scrollViewer;
         private readonly TextBoxTextInputMethodClient _imClient = new();
         private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
-        private bool _isTextChangeFromTextBox;
+        private TextMutationKind _textMutationKind;
         private bool _needsUndoRedoBaseline;
         private bool _needsUndoRedoSnapshotAfterTextChange;
         private bool _canCut;
@@ -646,22 +653,26 @@ namespace Avalonia.Controls
         {
             if (!_isUndoingRedoing)
             {
-                // TextBox-initiated edits belong to the current document's undo history. All other
-                // updates establish a new document baseline, including bindings and direct property sets.
-                if (_isTextChangeFromTextBox)
+                switch (_textMutationKind)
                 {
-                    SnapshotUndoRedo();
+                    case TextMutationKind.Edit:
+                        SnapshotUndoRedo();
 
-                    if (!_undoRedoHelper.CanUndo &&
-                        !string.Equals(Text, value, StringComparison.Ordinal))
-                    {
-                        _needsUndoRedoSnapshotAfterTextChange = true;
-                    }
-                }
-                else
-                {
-                    ClearUndoRedo();
-                    _needsUndoRedoBaseline = true;
+                        if (!_undoRedoHelper.CanUndo &&
+                            !string.Equals(Text, value, StringComparison.Ordinal))
+                        {
+                            _needsUndoRedoSnapshotAfterTextChange = true;
+                        }
+                        break;
+
+                    case TextMutationKind.InternalSynchronization:
+                        break;
+
+                    case TextMutationKind.ExternalReplacement:
+                    default:
+                        ClearUndoRedo();
+                        _needsUndoRedoBaseline = true;
+                        break;
                 }
             }
 
@@ -1221,7 +1232,7 @@ namespace Avalonia.Controls
 
                 var text = StringBuilderCache.GetStringAndRelease(textBuilder);
 
-                SetTextCurrentValue(text);
+                SetTextFromEdit(text);
 
                 ClearSelection();
 
@@ -1626,7 +1637,7 @@ namespace Avalonia.Controls
                                     sb.Append(text);
                                     sb.Remove(start, end - start);
 
-                                    SetTextCurrentValue(StringBuilderCache.GetStringAndRelease(sb));
+                                    SetTextFromEdit(StringBuilderCache.GetStringAndRelease(sb));
 
                                     SetCurrentValue(CaretIndexProperty, start);
 
@@ -1665,7 +1676,7 @@ namespace Avalonia.Controls
                                     sb.Append(text);
                                     sb.Remove(start, end - start);
 
-                                    SetTextCurrentValue(StringBuilderCache.GetStringAndRelease(sb));
+                                    SetTextFromEdit(StringBuilderCache.GetStringAndRelease(sb));
                                 }
                             }
 
@@ -2154,7 +2165,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Clears the text in the TextBox
         /// </summary>
-        public void Clear() => SetTextCurrentValue(string.Empty);
+        public void Clear() => SetTextFromEdit(string.Empty);
 
         private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting, bool moveCaretPosition)
         {
@@ -2411,7 +2422,7 @@ namespace Avalonia.Controls
                 textBuilder.Append(text);
                 textBuilder.Remove(start, end - start);
 
-                SetTextCurrentValue(StringBuilderCache.GetStringAndRelease(textBuilder));
+                SetTextFromEdit(StringBuilderCache.GetStringAndRelease(textBuilder));
 
                 _presenter?.MoveCaretToTextPosition(start);
 
@@ -2449,20 +2460,24 @@ namespace Avalonia.Controls
             return text.Substring(start, end - start);
         }
 
-        internal void SetTextCurrentValue(string? value)
+        internal void SetTextFromEdit(string? value) => SetTextCore(value, TextMutationKind.Edit);
+
+        internal void SetTextFromInternalSynchronization(string? value) =>
+            SetTextCore(value, TextMutationKind.InternalSynchronization);
+
+        private void SetTextCore(string? value, TextMutationKind mutationKind)
         {
-            var wasTextChangeFromTextBox = _isTextChangeFromTextBox;
-            _isTextChangeFromTextBox = true;
+            // Stays set through the synchronous TwoWay source echo so it isn't mistaken for an external replacement.
+            var previousMutationKind = _textMutationKind;
+            _textMutationKind = mutationKind;
 
             try
             {
-                // Keep the flag set through synchronous TwoWay source notifications so the source
-                // echo is not mistaken for a replacement from outside this control.
                 SetCurrentValue(TextProperty, value);
             }
             finally
             {
-                _isTextChangeFromTextBox = wasTextChangeFromTextBox;
+                _textMutationKind = previousMutationKind;
             }
         }
 
