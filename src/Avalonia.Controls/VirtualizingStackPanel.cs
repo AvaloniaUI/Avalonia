@@ -78,6 +78,8 @@ namespace Avalonia.Controls
         private Dictionary<object, Stack<Control>>? _recyclePool;
         private Control? _focusedElement;
         private int _focusedIndex = -1;
+        private double _focusedElementOpacity = 1;
+        private bool _focusedElementIsHitTestVisible = true;
         private Control? _realizingElement;
         private int _realizingIndex = -1;
         private double _bufferFactor; 
@@ -971,7 +973,7 @@ namespace Avalonia.Controls
             Debug.Assert(ItemContainerGenerator is not null);
 
             if ((GetRealizedElement(index) ??
-                 GetRealizedElement(index, ref _focusedIndex, ref _focusedElement) ??
+                 GetFocusedElement(index) ??
                  GetRealizedElement(index, ref _scrollToIndex, ref _scrollToElement)) is { } realized)
                 return realized;
 
@@ -992,6 +994,20 @@ namespace Avalonia.Controls
         private Control? GetRealizedElement(int index)
         {
             return _realizedElements?.GetElement(index);
+        }
+
+        private Control? GetFocusedElement(int index)
+        {
+            if (_focusedIndex != index)
+                return null;
+
+            Debug.Assert(_focusedElement is not null);
+
+            var result = _focusedElement;
+            RestoreFocusedElementOpacity();
+            _focusedIndex = -1;
+            _focusedElement = null;
+            return result;
         }
         
         private static Control? GetRealizedElement(
@@ -1088,6 +1104,13 @@ namespace Avalonia.Controls
             }
             else if (KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) == element)
             {
+                // Keep the container attached so it can retain keyboard focus, but prevent an
+                // estimated off-viewport position from rendering or receiving input in the
+                // visible viewport.
+                _focusedElementOpacity = element.Opacity;
+                _focusedElementIsHitTestVisible = element.IsHitTestVisible;
+                element.SetCurrentValue(Visual.OpacityProperty, 0);
+                element.SetCurrentValue(InputElement.IsHitTestVisibleProperty, false);
                 _focusedElement = element;
                 _focusedIndex = index;
             }
@@ -1130,10 +1153,25 @@ namespace Avalonia.Controls
         {
             if (_focusedElement != null)
             {
+                RestoreFocusedElementOpacity();
                 RecycleElementOnItemRemoved(_focusedElement);
             }
             _focusedElement = null;
             _focusedIndex = -1;
+        }
+
+        private void RestoreFocusedElementOpacity()
+        {
+            if (_focusedElement is not null)
+            {
+                _focusedElement.SetCurrentValue(Visual.OpacityProperty, _focusedElementOpacity);
+                _focusedElement.SetCurrentValue(
+                    InputElement.IsHitTestVisibleProperty,
+                    _focusedElementIsHitTestVisible);
+            }
+
+            _focusedElementOpacity = 1;
+            _focusedElementIsHitTestVisible = true;
         }
         
         private void RecycleScrollToElement()
@@ -1336,6 +1374,7 @@ namespace Avalonia.Controls
                 e.GetOldValue<IInputElement?>() == _focusedElement)
             {
                 // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
+                RestoreFocusedElementOpacity();
                 RecycleElement(_focusedElement, _focusedIndex);
                 _focusedElement = null;
                 _focusedIndex = -1;

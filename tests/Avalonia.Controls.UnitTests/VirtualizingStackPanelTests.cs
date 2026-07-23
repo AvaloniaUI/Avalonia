@@ -446,6 +446,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
             Assert.True(focused.IsKeyboardFocusWithin);
             Assert.Equal(0, focused.Opacity);
+            Assert.False(focused.IsHitTestVisible);
         }
 
         [Theory]
@@ -478,23 +479,33 @@ namespace Avalonia.Controls.UnitTests
         public void Scrolling_Back_To_Focused_Element_Uses_Correct_Element(double bufferFactor)
         {
             using var app = App();
-            var (target, scroll, itemsControl) = CreateTarget(bufferFactor: bufferFactor);
+            var styles = new[]
+            {
+                new Style(x => x.OfType<ContentPresenter>())
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0.5) },
+                },
+            };
+            var (target, scroll, itemsControl) = CreateTarget(styles: styles, bufferFactor: bufferFactor);
 
             var focused = target.GetRealizedElements().First()!;
             focused.Focusable = true;
             focused.Focus();
             Assert.True(focused.IsKeyboardFocusWithin);
+            Assert.Equal(0.5, focused.Opacity);
 
             scroll.Offset = new Vector(0, 200);
             Layout(target);
 
             Assert.Equal(0, focused.Opacity);
+            Assert.False(focused.IsHitTestVisible);
 
             scroll.Offset = new Vector(0, 0);
             Layout(target);
 
             Assert.Same(focused, target.GetRealizedElements().First());
-            Assert.Equal(1, focused.Opacity);
+            Assert.Equal(0.5, focused.Opacity);
+            Assert.True(focused.IsHitTestVisible);
         }
 
         [Theory]
