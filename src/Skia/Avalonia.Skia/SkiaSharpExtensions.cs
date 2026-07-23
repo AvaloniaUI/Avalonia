@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -336,6 +337,36 @@ namespace Avalonia.Skia
         public static SKPath? Clone(this SKPath? src)
         {
             return src != null ? new SKPath(src) : null;
+        }
+
+        // A surface is created on every rendering session, so these are not allocated per frame.
+        private static readonly SKColorSpace s_srgb = SKColorSpace.CreateSrgb();
+
+        private static readonly SKColorSpace s_displayP3 =
+            SKColorSpace.CreateRgb(SKColorSpaceTransferFn.Srgb, SKColorSpaceXyz.DisplayP3);
+
+        // Null leaves the surface untagged, which is how content was presented before color
+        // management was added.
+        internal static SKColorSpace? ToSKColorSpace(this PresentationColorSpace colorSpace)
+        {
+            return colorSpace switch
+            {
+                PresentationColorSpace.Unspecified => null,
+                PresentationColorSpace.Srgb => s_srgb,
+                PresentationColorSpace.DisplayP3 => s_displayP3,
+                // WideGamut only says what the application wants. A render target always reports the
+                // concrete color space it applied, so getting it here means a backend forgot to
+                // resolve the request.
+                PresentationColorSpace.WideGamut => throw new ArgumentException(
+                    $"{nameof(PresentationColorSpace.WideGamut)} is a request, a render target has to report " +
+                    "the color space it really applied.", nameof(colorSpace)),
+                _ => throw new ArgumentOutOfRangeException(nameof(colorSpace), colorSpace, null)
+            };
+        }
+
+        internal static SKColorSpace? GetPresentationColorSpace(this IPlatformRenderSurfaceRenderTarget target)
+        {
+            return (target as IColorManagedRenderTarget)?.ColorSpace.ToSKColorSpace();
         }
     }
 }
