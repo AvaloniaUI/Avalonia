@@ -45,7 +45,7 @@ public:
                            
     virtual HRESULT CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget** ret) override;
                                                   
-    virtual HRESULT CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget** ret) override;
+    virtual HRESULT CreateMetalRenderTarget(IAvnMetalDevice* device, AvnColorSpace colorSpace, IAvnMetalRenderTarget** ret) override;
                            
     virtual HRESULT CreateGlRenderTarget(IAvnGlContext* context, IAvnGlSurfaceRenderTarget** ret) override;
 
