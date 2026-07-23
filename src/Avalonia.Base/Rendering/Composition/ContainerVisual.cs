@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition.HitTesting;
 
 namespace Avalonia.Rendering.Composition
 {
@@ -53,7 +54,8 @@ namespace Avalonia.Rendering.Composition
             _hitTestChildren?.Clear();
         }
 
-        internal bool TryQueryHitTestChildren(Point point, PooledList<CompositionVisual> results)
+        internal bool TryQueryHitTestChildren<THitTester, T>(T input, PooledList<CompositionVisual> results)
+            where THitTester : struct, ICompositionHitTester<T>
         {
             if (Children.Count < HitTestAabbTreeThreshold)
             {
@@ -63,25 +65,17 @@ namespace Avalonia.Rendering.Composition
 
             _hitTestChildren ??= new CompositionHitTestAabbTree(Children);
 
-            _hitTestChildren.Query(point, results, Server.Compositor.Readback.ReadRevision);
+            _hitTestChildren.Query<THitTester, T>(input, results, Server.Compositor.Readback.ReadRevision);
             return true;
         }
 
-        internal bool TryQueryHitTestChildren(Geometry geometry, PooledList<CompositionVisual> results)
-        {
-            if (Children.Count < HitTestAabbTreeThreshold)
-            {
-                _hitTestChildren = null;
-                return false;
-            }
-
-            _hitTestChildren ??= new CompositionHitTestAabbTree(Children);
-
-            _hitTestChildren.Query(geometry.Bounds, results, Server.Compositor.Readback.ReadRevision);
-            return true;
-        }
-
-        internal bool TryQueryFirstHitTestChild(CompositionTarget target, Point point, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter, out CompositionVisual? hit)
+        internal bool TryQueryFirstHitTestChild<THitTester, T>(
+            CompositionTarget target,
+            T input,
+            Func<CompositionVisual, bool>? filter,
+            Func<CompositionVisual, bool>? resultFilter,
+            out CompositionVisual? hit)
+            where THitTester : struct, ICompositionHitTester<T>
         {
             if (Children.Count < HitTestAabbTreeThreshold)
             {
@@ -92,22 +86,7 @@ namespace Avalonia.Rendering.Composition
 
             _hitTestChildren ??= new CompositionHitTestAabbTree(Children);
 
-            hit = _hitTestChildren.QueryFirst(target, point, filter, resultFilter, Server.Compositor.Readback.ReadRevision);
-            return true;
-        }
-
-        internal bool TryQueryFirstHitTestChild(CompositionTarget target, Geometry geometry, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter, out CompositionVisual? hit)
-        {
-            if (Children.Count < HitTestAabbTreeThreshold)
-            {
-                _hitTestChildren = null;
-                hit = null;
-                return false;
-            }
-
-            _hitTestChildren ??= new CompositionHitTestAabbTree(Children);
-
-            hit = _hitTestChildren.QueryFirst(target, geometry, filter, resultFilter, Server.Compositor.Readback.ReadRevision);
+            hit = _hitTestChildren.QueryFirst<THitTester, T>(target, input, filter, resultFilter, Server.Compositor.Readback.ReadRevision);
             return true;
         }
 
