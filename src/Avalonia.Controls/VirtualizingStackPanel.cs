@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -78,8 +79,8 @@ namespace Avalonia.Controls
         private Dictionary<object, Stack<Control>>? _recyclePool;
         private Control? _focusedElement;
         private int _focusedIndex = -1;
-        private double _focusedElementOpacity = 1;
-        private bool _focusedElementIsHitTestVisible = true;
+        private IDisposable? _focusedElementOpacityOverride;
+        private IDisposable? _focusedElementHitTestOverride;
         private Control? _realizingElement;
         private int _realizingIndex = -1;
         private double _bufferFactor; 
@@ -1004,7 +1005,7 @@ namespace Avalonia.Controls
             Debug.Assert(_focusedElement is not null);
 
             var result = _focusedElement;
-            RestoreFocusedElementOpacity();
+            ClearFocusedElementSuppression();
             _focusedIndex = -1;
             _focusedElement = null;
             return result;
@@ -1107,12 +1108,16 @@ namespace Avalonia.Controls
                 // Keep the container attached so it can retain keyboard focus, but prevent an
                 // estimated off-viewport position from rendering or receiving input in the
                 // visible viewport.
-                _focusedElementOpacity = element.Opacity;
-                _focusedElementIsHitTestVisible = element.IsHitTestVisible;
-                element.SetCurrentValue(Visual.OpacityProperty, 0);
-                element.SetCurrentValue(InputElement.IsHitTestVisibleProperty, false);
                 _focusedElement = element;
                 _focusedIndex = index;
+                _focusedElementOpacityOverride = element.SetValue(
+                    Visual.OpacityProperty,
+                    0,
+                    BindingPriority.Animation);
+                _focusedElementHitTestOverride = element.SetValue(
+                    InputElement.IsHitTestVisibleProperty,
+                    false,
+                    BindingPriority.Animation);
             }
             else
             {
@@ -1153,25 +1158,19 @@ namespace Avalonia.Controls
         {
             if (_focusedElement != null)
             {
-                RestoreFocusedElementOpacity();
+                ClearFocusedElementSuppression();
                 RecycleElementOnItemRemoved(_focusedElement);
             }
             _focusedElement = null;
             _focusedIndex = -1;
         }
 
-        private void RestoreFocusedElementOpacity()
+        private void ClearFocusedElementSuppression()
         {
-            if (_focusedElement is not null)
-            {
-                _focusedElement.SetCurrentValue(Visual.OpacityProperty, _focusedElementOpacity);
-                _focusedElement.SetCurrentValue(
-                    InputElement.IsHitTestVisibleProperty,
-                    _focusedElementIsHitTestVisible);
-            }
-
-            _focusedElementOpacity = 1;
-            _focusedElementIsHitTestVisible = true;
+            _focusedElementOpacityOverride?.Dispose();
+            _focusedElementOpacityOverride = null;
+            _focusedElementHitTestOverride?.Dispose();
+            _focusedElementHitTestOverride = null;
         }
         
         private void RecycleScrollToElement()
@@ -1374,7 +1373,7 @@ namespace Avalonia.Controls
                 e.GetOldValue<IInputElement?>() == _focusedElement)
             {
                 // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
-                RestoreFocusedElementOpacity();
+                ClearFocusedElementSuppression();
                 RecycleElement(_focusedElement, _focusedIndex);
                 _focusedElement = null;
                 _focusedIndex = -1;

@@ -479,14 +479,18 @@ namespace Avalonia.Controls.UnitTests
         public void Scrolling_Back_To_Focused_Element_Uses_Correct_Element(double bufferFactor)
         {
             using var app = App();
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithOpacity(x, 0.5)).ToList();
             var styles = new[]
             {
                 new Style(x => x.OfType<ContentPresenter>())
                 {
-                    Setters = { new Setter(Visual.OpacityProperty, 0.5) },
+                    Setters = { new Setter(Visual.OpacityProperty, new Binding("Opacity")) },
                 },
             };
-            var (target, scroll, itemsControl) = CreateTarget(styles: styles, bufferFactor: bufferFactor);
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                styles: styles,
+                bufferFactor: bufferFactor);
 
             var focused = target.GetRealizedElements().First()!;
             focused.Focusable = true;
@@ -500,11 +504,12 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(0, focused.Opacity);
             Assert.False(focused.IsHitTestVisible);
 
+            items[0].Opacity = 0.75;
             scroll.Offset = new Vector(0, 0);
             Layout(target);
 
             Assert.Same(focused, target.GetRealizedElements().First());
-            Assert.Equal(0.5, focused.Opacity);
+            Assert.Equal(0.75, focused.Opacity);
             Assert.True(focused.IsHitTestVisible);
         }
 
@@ -2555,6 +2560,25 @@ namespace Avalonia.Controls.UnitTests
             {
                 get => _width;
                 set => SetField(ref _width, value);
+            }
+        }
+
+        private class ItemWithOpacity : NotifyingBase
+        {
+            private double _opacity;
+
+            public ItemWithOpacity(int index, double opacity)
+            {
+                Caption = $"Item {index}";
+                Opacity = opacity;
+            }
+
+            public string Caption { get; set; }
+
+            public double Opacity
+            {
+                get => _opacity;
+                set => SetField(ref _opacity, value);
             }
         }
 
