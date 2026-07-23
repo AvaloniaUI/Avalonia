@@ -1213,6 +1213,50 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Shared_Size_Group_Shrinks_When_Content_Is_Hidden()
+        {
+            var grids = new[]
+            {
+                CreateGrid(("A", GridLength.Auto)),
+                CreateGrid(("A", GridLength.Auto)),
+            };
+            var content = new Border
+            {
+                Width = 50,
+                IsVisible = false,
+            };
+            grids[1].Children.Add(content);
+
+            var scope = new StackPanel
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children =
+                {
+                    grids[0],
+                    grids[1],
+                },
+            };
+            var root = new TestRoot(scope);
+            void ExecuteSharedSizeLayoutPass()
+            {
+                // Shared groups validate after layout and apply any resulting invalidation on the next pass.
+                root.LayoutManager.ExecuteLayoutPass();
+                root.LayoutManager.ExecuteLayoutPass();
+            }
+
+            root.ExecuteInitialLayoutPass();
+            Assert.All(grids, grid => Assert.Equal(0, grid.ColumnDefinitions[0].ActualWidth));
+
+            content.IsVisible = true;
+            ExecuteSharedSizeLayoutPass();
+            Assert.All(grids, grid => Assert.Equal(50, grid.ColumnDefinitions[0].ActualWidth));
+
+            content.IsVisible = false;
+            ExecuteSharedSizeLayoutPass();
+            Assert.All(grids, grid => Assert.Equal(0, grid.ColumnDefinitions[0].ActualWidth));
+        }
+
+        [Fact]
         public void Collection_Changes_Are_Tracked()
         {
             var grid = CreateGrid(
