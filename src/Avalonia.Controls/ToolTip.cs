@@ -81,6 +81,10 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<bool> ServiceEnabledProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("ServiceEnabled", defaultValue: true, inherits: true);
 
+        /// <inheritdoc cref="Popup.ShouldUseOverlayLayer"/>
+        public static readonly AttachedProperty<bool> ShouldUseOverlayLayerProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("ShouldUseOverlayLayer");
+
         /// <summary>
         /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
@@ -301,6 +305,14 @@ namespace Avalonia.Controls
         public static void SetServiceEnabled(Control element, bool value) => 
             element.SetValue(ServiceEnabledProperty, value);
 
+        /// <inheritdoc cref="Popup.ShouldUseOverlayLayer"/>
+        public static bool GetShouldUseOverlayLayer(Control element) =>
+            element.GetValue(ShouldUseOverlayLayerProperty);
+
+        /// <inheritdoc cref="Popup.ShouldUseOverlayLayer"/>
+        public static void SetShouldUseOverlayLayer(Control element, bool value) =>
+            element.SetValue(ShouldUseOverlayLayerProperty, value);
+
         /// <summary>
         /// Adds a handler for the <see cref="ToolTipOpeningEvent"/> attached event.
         /// </summary>
@@ -421,7 +433,8 @@ namespace Avalonia.Controls
                 _popup.Bind(Popup.HorizontalOffsetProperty, control.GetBindingObservable(HorizontalOffsetProperty)),
                 _popup.Bind(Popup.VerticalOffsetProperty, control.GetBindingObservable(VerticalOffsetProperty)),
                 _popup.Bind(Popup.PlacementProperty, control.GetBindingObservable(PlacementProperty)),
-                _popup.Bind(Popup.CustomPopupPlacementCallbackProperty, control.GetBindingObservable(CustomPopupPlacementCallbackProperty))
+                _popup.Bind(Popup.CustomPopupPlacementCallbackProperty, control.GetBindingObservable(CustomPopupPlacementCallbackProperty)),
+                _popup.Bind(Popup.ShouldUseOverlayLayerProperty, control.GetBindingObservable(ShouldUseOverlayLayerProperty))
             });
 
             _popup.PlacementTarget = control;
