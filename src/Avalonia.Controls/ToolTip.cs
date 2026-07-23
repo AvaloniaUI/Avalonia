@@ -305,11 +305,24 @@ namespace Avalonia.Controls
         public static void SetServiceEnabled(Control element, bool value) => 
             element.SetValue(ServiceEnabledProperty, value);
 
-        /// <inheritdoc cref="Popup.ShouldUseOverlayLayer"/>
+        /// <summary>
+        /// Gets whether the tooltip popup for <paramref name="element"/> is shown in the overlay layer.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <remarks>
+        /// See <see cref="Popup.ShouldUseOverlayLayer"/> for details.
+        /// </remarks>
         public static bool GetShouldUseOverlayLayer(Control element) =>
             element.GetValue(ShouldUseOverlayLayerProperty);
 
-        /// <inheritdoc cref="Popup.ShouldUseOverlayLayer"/>
+        /// <summary>
+        /// Sets whether the tooltip popup for <paramref name="element"/> is shown in the overlay layer.
+        /// </summary>
+        /// <param name="element">The control to set the property on.</param>
+        /// <param name="value">Whether to show the tooltip popup in the overlay layer.</param>
+        /// <remarks>
+        /// See <see cref="Popup.ShouldUseOverlayLayer"/> for details.
+        /// </remarks>
         public static void SetShouldUseOverlayLayer(Control element, bool value) =>
             element.SetValue(ShouldUseOverlayLayerProperty, value);
 
