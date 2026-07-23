@@ -626,7 +626,7 @@ namespace Avalonia.Controls
                 //  accumulate min size of all participating definitions
                 for (int i = 0, count = _registry.Count; i < count; ++i)
                 {
-                    sharedMinSize = Math.Max(sharedMinSize, _registry[i].MinSize);
+                    sharedMinSize = Math.Max(sharedMinSize, _registry[i]._minSize);
                 }
 
                 bool sharedMinSizeChanged = !MathUtilities.AreClose(_minSize, sharedMinSize);
