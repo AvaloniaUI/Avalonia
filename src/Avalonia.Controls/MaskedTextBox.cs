@@ -190,7 +190,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
-                SetCurrentValue(TextProperty, MaskProvider.ToDisplayString());
+                SetTextCurrentValue(MaskProvider.ToDisplayString());
             }
             base.OnGotFocus(e);
         }
@@ -241,7 +241,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                SetCurrentValue(TextProperty, MaskProvider.ToDisplayString());
+                SetTextCurrentValue(MaskProvider.ToDisplayString());
                 e.Handled = true;
                 return;
             }
@@ -291,7 +291,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave && MaskProvider != null)
             {
-                SetCurrentValue(TextProperty, MaskProvider.ToString(!HidePromptOnLeave, true));
+                SetTextCurrentValue(MaskProvider.ToString(!HidePromptOnLeave, true));
             }
             base.OnLostFocus(e);
         }
@@ -430,7 +430,7 @@ namespace Avalonia.Controls
         {
             if (provider != null)
             {
-                SetCurrentValue(TextProperty, provider.ToDisplayString());
+                SetTextCurrentValue(provider.ToDisplayString());
                 SetCurrentValue(CaretIndexProperty, position);
             }
         }

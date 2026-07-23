@@ -367,6 +367,9 @@ namespace Avalonia.Controls
         private readonly TextBoxTextInputMethodClient _imClient = new();
         private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
+        private bool _isTextChangeFromTextBox;
+        private bool _needsUndoRedoBaseline;
+        private bool _needsUndoRedoSnapshotAfterTextChange;
         private bool _canCut;
         private bool _canCopy;
         private bool _canPaste;
@@ -641,16 +644,25 @@ namespace Avalonia.Controls
         /// </remarks>
         protected virtual string? CoerceText(string? value)
         {
-            // Before #9490, snapshot here was done AFTER text change - this doesn't make sense
-            // since initial state would never be no text and you'd always have to make a text
-            // change before undo would be available
-            // The undo/redo stacks were also cleared at this point, which also doesn't make sense
-            // as it is still valid to want to undo a programmatic text set
-            // So we snapshot text now BEFORE the change so we can always revert
-            // Also don't need to check IsUndoEnabled here, that's done in SnapshotUndoRedo
             if (!_isUndoingRedoing)
             {
-                SnapshotUndoRedo();
+                // TextBox-initiated edits belong to the current document's undo history. All other
+                // updates establish a new document baseline, including bindings and direct property sets.
+                if (_isTextChangeFromTextBox)
+                {
+                    SnapshotUndoRedo();
+
+                    if (!_undoRedoHelper.CanUndo &&
+                        !string.Equals(Text, value, StringComparison.Ordinal))
+                    {
+                        _needsUndoRedoSnapshotAfterTextChange = true;
+                    }
+                }
+                else
+                {
+                    ClearUndoRedo();
+                    _needsUndoRedoBaseline = true;
+                }
             }
 
             return value;
@@ -878,9 +890,7 @@ namespace Avalonia.Controls
             // from docs at
             // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
             // "Setting UndoLimit clears the undo queue."
-            _undoRedoHelper.Clear();
-            _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
-            _hasDoneSnapshotOnce = false;
+            ClearUndoRedo();
         }
 
         /// <summary>
@@ -1032,6 +1042,13 @@ namespace Avalonia.Controls
 
             if (change.Property == TextProperty)
             {
+                if (_needsUndoRedoBaseline || _needsUndoRedoSnapshotAfterTextChange)
+                {
+                    _needsUndoRedoBaseline = false;
+                    _needsUndoRedoSnapshotAfterTextChange = false;
+                    SnapshotUndoRedo();
+                }
+
                 CoerceValue(CaretIndexProperty);
                 CoerceValue(SelectionStartProperty);
                 CoerceValue(SelectionEndProperty);
@@ -1078,9 +1095,7 @@ namespace Avalonia.Controls
                 // "Setting this property to false clears the undo stack.
                 // Therefore, if you disable undo and then re-enable it, undo commands still do not work
                 // because the undo stack was emptied when you disabled undo."
-                _undoRedoHelper.Clear();
-                _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
-                _hasDoneSnapshotOnce = false;
+                ClearUndoRedo();
             }
         }
 
@@ -1206,7 +1221,7 @@ namespace Avalonia.Controls
 
                 var text = StringBuilderCache.GetStringAndRelease(textBuilder);
 
-                SetCurrentValue(TextProperty, text);
+                SetTextCurrentValue(text);
 
                 ClearSelection();
 
@@ -1611,7 +1626,7 @@ namespace Avalonia.Controls
                                     sb.Append(text);
                                     sb.Remove(start, end - start);
 
-                                    SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
+                                    SetTextCurrentValue(StringBuilderCache.GetStringAndRelease(sb));
 
                                     SetCurrentValue(CaretIndexProperty, start);
 
@@ -1650,7 +1665,7 @@ namespace Avalonia.Controls
                                     sb.Append(text);
                                     sb.Remove(start, end - start);
 
-                                    SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
+                                    SetTextCurrentValue(StringBuilderCache.GetStringAndRelease(sb));
                                 }
                             }
 
@@ -2139,7 +2154,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Clears the text in the TextBox
         /// </summary>
-        public void Clear() => SetCurrentValue(TextProperty, string.Empty);
+        public void Clear() => SetTextCurrentValue(string.Empty);
 
         private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting, bool moveCaretPosition)
         {
@@ -2396,7 +2411,7 @@ namespace Avalonia.Controls
                 textBuilder.Append(text);
                 textBuilder.Remove(start, end - start);
 
-                SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(textBuilder));
+                SetTextCurrentValue(StringBuilderCache.GetStringAndRelease(textBuilder));
 
                 _presenter?.MoveCaretToTextPosition(start);
 
@@ -2432,6 +2447,23 @@ namespace Avalonia.Controls
             }
 
             return text.Substring(start, end - start);
+        }
+
+        internal void SetTextCurrentValue(string? value)
+        {
+            var wasTextChangeFromTextBox = _isTextChangeFromTextBox;
+            _isTextChangeFromTextBox = true;
+
+            try
+            {
+                // Keep the flag set through synchronous TwoWay source notifications so the source
+                // echo is not mistaken for a replacement from outside this control.
+                SetCurrentValue(TextProperty, value);
+            }
+            finally
+            {
+                _isTextChangeFromTextBox = wasTextChangeFromTextBox;
+            }
         }
 
         /// <summary>
@@ -2559,6 +2591,13 @@ namespace Avalonia.Controls
                     _hasDoneSnapshotOnce = true;
                 }
             }
+        }
+
+        private void ClearUndoRedo()
+        {
+            _undoRedoHelper.Clear();
+            _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
+            _hasDoneSnapshotOnce = false;
         }
 
         /// <summary>
