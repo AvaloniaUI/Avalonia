@@ -1348,6 +1348,51 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             public override int Length { get; }
         }
 
+        /// <summary>
+        /// Regression test for https://github.com/AvaloniaUI/Avalonia/issues/21685.
+        /// TextFormatterImpl.FormatLine with paragraphWidth=0 and TextWrapping.Wrap performs
+        /// emergency grapheme-level breaks (one per call). The catastrophic-allocation fix lives
+        /// in TextLayout, which redirects zero-width to infinity before calling the formatter.
+        /// With WrapWithOverflow a single word is allowed to overflow so the whole run is returned.
+        /// </summary>
+        [Theory]
+        [InlineData(TextWrapping.Wrap, true)]
+        [InlineData(TextWrapping.WrapWithOverflow, false)]
+        public void FormatLine_WithZeroWidth_PerformsEmergencyBreak(TextWrapping wrapping, bool expectsBreak)
+        {
+            using (Start())
+            {
+                // "abc" is a single word — Wrap will emergency-break after the first grapheme,
+                // WrapWithOverflow allows the whole word to overflow onto one line.
+                const string text = "abc";
+
+                var defaultProperties =
+                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: wrapping);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, 0, paragraphProperties);
+
+                Assert.NotNull(textLine);
+                Assert.True(textLine.Length > 0);
+
+                if (expectsBreak)
+                {
+                    // Wrap mode: emergency break advances exactly one grapheme, not the whole string.
+                    Assert.True(textLine.Length < text.Length);
+                }
+                else
+                {
+                    // WrapWithOverflow: single word overflows onto one line.
+                    Assert.Equal(text.Length, textLine.Length);
+                }
+            }
+        }
+
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
