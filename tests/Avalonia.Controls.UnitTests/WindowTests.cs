@@ -1642,6 +1642,83 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void IsVisible_Setter_Should_Affect_Measurements_Inside_WindowDrawnDecorationsContent()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            windowImpl.Setup(x => x.NeedsManagedDecorations).Returns(true);
+            windowImpl.Setup(x => x.RequestedDrawnDecorations).Returns(PlatformRequestedDrawnDecoration.TitleBar);
+
+            var window = new Window(windowImpl.Object);
+
+            var stackPanel = new StackPanel
+            {
+                Width = 32,
+                Spacing = 2,
+                Children =
+                {
+                    new Control { Height = 32 },
+                    new Control
+                    {
+                        Height = 32,
+                        Classes = { "hidden-by-style" }
+                    },
+                }
+            };
+
+            var contentControl = new ContentControl
+            {
+                Content = new Control
+                {
+                    Height = 32,
+                    Width = 32,
+                    Classes = { "hidden-by-style" }
+                }
+            };
+
+            var content = new WindowDrawnDecorationsContent
+            {
+                Overlay = new ContentControl
+                {
+                    Content = new Panel
+                    {
+                        Children = { stackPanel, contentControl }
+                    }
+                }
+            };
+
+            var template = new WindowDrawnDecorationsTemplate
+            {
+                Content = (IServiceProvider? _) => new TemplateResult<WindowDrawnDecorationsContent>(content, new NameScope())
+            };
+
+            var theme = new ControlTheme(typeof(WindowDrawnDecorations))
+            {
+                Setters =
+                {
+                    new Setter(WindowDrawnDecorations.TemplateProperty, template)
+                }
+            };
+
+            var style = new Style(x => x.Is<WindowDrawnDecorations>().Template().OfType<Control>().Class("hidden-by-style"))
+            {
+                Setters =
+                {
+                    new Setter(Visual.IsVisibleProperty, false)
+                }
+            };
+
+            window.WindowDecorationsTheme = theme;
+            window.Styles.Add(style);
+            window.Show();
+            window.Measure(Size.Infinity);
+
+            Assert.Equal(new Size(), contentControl.DesiredSize);
+            Assert.Equal(new Size(32, 32), stackPanel.DesiredSize);
+        }
+
         private class TopmostWindow : Window
         {
             static TopmostWindow()

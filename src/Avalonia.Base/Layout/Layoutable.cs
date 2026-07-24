@@ -545,6 +545,8 @@ namespace Avalonia.Layout
         {
             if (IsVisible)
             {
+                ApplyStyling();
+                if (!IsVisible) return new Size();
                 var margin = Margin;
                 var useLayoutRounding = UseLayoutRounding;
                 var scale = 1.0;
@@ -555,7 +557,6 @@ namespace Avalonia.Layout
                     margin = LayoutHelper.RoundLayoutThickness(margin, scale);
                 }
 
-                ApplyStyling();
                 ApplyTemplate();
 
                 var minMax = new MinMax(this);
