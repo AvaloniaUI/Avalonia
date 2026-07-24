@@ -30,11 +30,14 @@ namespace Avalonia.FreeDesktop
 
         private async Task TryGetInitialValuesAsync()
         {
-            _themeVariant = await TryGetThemeVariantAsync();
-            _accentColor = await TryGetAccentColorAsync();
-            _lastColorValues = BuildPlatformColorValues();
-            if (_lastColorValues is not null)
-                Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
+            if (_settings is { } settings)
+            {
+                _themeVariant = await TryGetThemeVariantAsync(settings);
+                _accentColor = await TryGetAccentColorAsync(settings);
+                _lastColorValues = BuildPlatformColorValues();
+                if (_lastColorValues is not null)
+                    Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
+            }
         }
 
         internal void OnRequestDefaultThemeVariant()
@@ -42,17 +45,17 @@ namespace Avalonia.FreeDesktop
             _ = TryGetInitialValuesAsync();
         }
 
-        private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
+        private static async Task<PlatformThemeVariant?> TryGetThemeVariantAsync(Settings settings)
         {
             try
             {
-                var version = await _settings!.GetVersionAsync();
+                var version = await settings.GetVersionAsync();
                 VariantValue value;
                 if (version >= 2)
-                    value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
+                    value = await settings.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
                     // Unpack nested Variant
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetVariantValue();
+                    value = (await settings.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetVariantValue();
                 return ToColorScheme(value.GetUInt32());
             }
             catch (DBusExceptionBase)
@@ -61,16 +64,16 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private async Task<Color?> TryGetAccentColorAsync()
+        private static async Task<Color?> TryGetAccentColorAsync(Settings settings)
         {
             try
             {
-                var version = await _settings!.GetVersionAsync();
+                var version = await settings.GetVersionAsync();
                 VariantValue value;
                 if (version >= 2)
-                    value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "accent-color");
+                    value = await settings.ReadOneAsync("org.freedesktop.appearance", "accent-color");
                 else
-                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color");
+                    value = await settings.ReadAsync("org.freedesktop.appearance", "accent-color");
                 return ToAccentColor(value);
             }
             catch (DBusExceptionBase)
