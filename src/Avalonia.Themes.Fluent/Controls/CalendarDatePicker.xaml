@@ -14,7 +14,7 @@
   <ControlTheme x:Key="FluentCalendarDatePickerButton" TargetType="Button">
     <Setter Property="TextElement.Foreground" Value="{DynamicResource CalendarDatePickerCalendarGlyphForeground}" />
     <Setter Property="Margin" Value="2,0,4,0" />
-    <Setter Property="Width" Value="20" />
+    <Setter Property="Width" Value="{DynamicResource CalendarDatePickerDropDownButtonWidth}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Height="24"
@@ -72,7 +72,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="Padding" Value="4" />
+    <Setter Property="Padding" Value="{DynamicResource CalendarDatePickerPadding}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>

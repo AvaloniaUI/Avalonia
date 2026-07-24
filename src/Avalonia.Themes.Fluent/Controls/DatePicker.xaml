@@ -75,7 +75,7 @@
     <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrush}"/>
-    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource DatePickerBorderThickness}"/>
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -145,8 +145,8 @@
 
   <!--WinUI: DatePickerFlyoutPresenter-->
   <ControlTheme x:Key="{x:Type DatePickerPresenter}" TargetType="DatePickerPresenter">
-    <Setter Property="Width" Value="296" />
-    <Setter Property="MinWidth" Value="296" />
+    <Setter Property="Width" Value="{DynamicResource DatePickerPresenterWidth}" />
+    <Setter Property="MinWidth" Value="{DynamicResource DatePickerPresenterWidth}" />
     <Setter Property="MaxHeight" Value="398" />
     <Setter Property="Background" Value="{DynamicResource DatePickerFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerFlyoutPresenterBorderBrush}" />

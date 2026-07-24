@@ -185,8 +185,8 @@
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type TimePickerPresenter}" TargetType="TimePickerPresenter">
-    <Setter Property="Width" Value="242" />
-    <Setter Property="MinWidth" Value="242" />
+    <Setter Property="Width" Value="{DynamicResource TimePickerPresenterWidth}" />
+    <Setter Property="MinWidth" Value="{DynamicResource TimePickerPresenterWidth}" />
     <Setter Property="MaxHeight" Value="398" />
     <Setter Property="Background" Value="{DynamicResource TimePickerFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerFlyoutPresenterBorderBrush}" />

@@ -279,8 +279,8 @@
       <Setter Property="Margin" Value="0"/>
       <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}"/>
       <Setter Property="BorderThickness" Value="0"/>
-      <Setter Property="Width" Value="240"/>
-      <Setter Property="Padding" Value="0,20"/>
+      <Setter Property="Width" Value="{DynamicResource ManagedFileChooserQuickLinksWidth}"/>
+      <Setter Property="Padding" Value="{DynamicResource ManagedFileChooserQuickLinksPadding}"/>
       <Setter Property="Template">
         <ControlTemplate>
           <Border Name="border" BoxShadow="inset -6 0 3 -3 #20000000" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
@@ -294,8 +294,8 @@
       </Setter>
       <Setter Property="ItemContainerTheme">
         <ControlTheme TargetType="ListBoxItem">
-          <Setter Property="Height" Value="32"/>
-          <Setter Property="Padding" Value="30,6"/>
+          <Setter Property="Height" Value="{DynamicResource ManagedFileChooserQuickLinksItemHeight}"/>
+          <Setter Property="Padding" Value="{DynamicResource ManagedFileChooserQuickLinksItemPadding}"/>
           <Setter Property="Template">
             <ControlTemplate>
               <Border x:Name="LayoutRoot" CornerRadius="2" Margin="10,0">
@@ -327,11 +327,11 @@
     </Style>
 
     <Style Selector="^ /template/ DockPanel#NavBar Button, ^ /template/ DockPanel#NavBar TextBox">
-      <Setter Property="Height" Value="30"/>
+      <Setter Property="Height" Value="{DynamicResource ManagedFileChooserNavBarControlHeight}"/>
     </Style>
     <Style Selector="^ /template/ DockPanel#NavBar Button">
       <Setter Property="VerticalAlignment" Value="Stretch"/>
-      <Setter Property="Width" Value="40"/>
+      <Setter Property="Width" Value="{DynamicResource ManagedFileChooserNavBarButtonWidth}"/>
       <Setter Property="BorderThickness" Value="0"/>
     </Style>
     <Style Selector="^ /template/ DockPanel#NavBar Button:not(:pointerover):not(:pressed)">
@@ -346,7 +346,7 @@
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type dialogs:ManagedFileChooserOverwritePrompt}" TargetType="dialogs:ManagedFileChooserOverwritePrompt">
-    <Setter Property="MinWidth" Value="270" />
+    <Setter Property="MinWidth" Value="{DynamicResource ManagedFileChooserOverwritePromptMinWidth}" />
     <Setter Property="MaxWidth" Value="400" />
     <Setter Property="Template">
       <ControlTemplate>
