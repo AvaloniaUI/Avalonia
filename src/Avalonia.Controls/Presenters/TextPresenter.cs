@@ -106,6 +106,7 @@ namespace Avalonia.Controls.Presenters
         private Point _navigationPosition;
         private Point? _previousOffset;
         private TextSelectorLayer? _layer;
+        private IReadOnlyList<ValueSpan<TextRunProperties>>? _textStyleOverrides;
 
         static TextPresenter()
         {
@@ -561,12 +562,16 @@ namespace Avalonia.Controls.Presenters
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
-            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = _textStyleOverrides;
 
             var foreground = Foreground;
 
             if (!string.IsNullOrEmpty(preeditText))
             {
+                // Text style override ranges are based on Text, which does not include preeditText.
+                // Keep the composition underline accurate instead of shifting existing overrides.
+                textStyleOverrides = null;
+
                 var preeditHighlight = new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
                         new GenericTextRunProperties(
                             typeface,
@@ -575,24 +580,22 @@ namespace Avalonia.Controls.Presenters
                             foreground,
                             fontFeatures: FontFeatures));
 
-                textStyleOverrides = new[]
-                {
-                    preeditHighlight
-                };
+                textStyleOverrides = AddTextStyleOverride(textStyleOverrides, preeditHighlight);
             }
             else
             {
                 if (ShowSelectionHighlight && length > 0 && SelectionForegroundBrush != null)
                 {
-                    textStyleOverrides = new[]
-                    {
+                    textStyleOverrides = AddSelectionTextStyleOverride(
+                        textStyleOverrides,
+                        start,
+                        length,
                         new ValueSpan<TextRunProperties>(start, length,
                         new GenericTextRunProperties(
                             typeface,
                             FontSize,
                             foregroundBrush: SelectionForegroundBrush,
-                            fontFeatures: FontFeatures))
-                    };
+                            fontFeatures: FontFeatures)));
                 }
             }
 
@@ -607,6 +610,166 @@ namespace Avalonia.Controls.Presenters
             }
 
             return result;
+        }
+
+        internal void SetTextStyleOverrides(IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides)
+        {
+            if (AreTextStyleOverridesEqual(_textStyleOverrides, textStyleOverrides))
+            {
+                return;
+            }
+
+            _textStyleOverrides = textStyleOverrides;
+            InvalidateTextLayout();
+        }
+
+        private static IReadOnlyList<ValueSpan<TextRunProperties>> AddTextStyleOverride(
+            IReadOnlyList<ValueSpan<TextRunProperties>>? existing,
+            ValueSpan<TextRunProperties> value)
+        {
+            if (existing is null || existing.Count == 0)
+            {
+                return new[] { value };
+            }
+
+            var result = new ValueSpan<TextRunProperties>[existing.Count + 1];
+
+            for (var i = 0; i < existing.Count; i++)
+            {
+                result[i] = existing[i];
+            }
+
+            result[^1] = value;
+
+            return result;
+        }
+
+        private static IReadOnlyList<ValueSpan<TextRunProperties>> AddSelectionTextStyleOverride(
+            IReadOnlyList<ValueSpan<TextRunProperties>>? existing,
+            int start,
+            int length,
+            ValueSpan<TextRunProperties> value)
+        {
+            if (existing is null || existing.Count == 0)
+            {
+                return new[] { value };
+            }
+
+            var end = start + length;
+            var cursor = start;
+            var result = new List<ValueSpan<TextRunProperties>>(existing.Count + 2);
+
+            for (var i = 0; i < existing.Count; i++)
+            {
+                var span = existing[i];
+                var spanStart = span.Start;
+                var spanEnd = span.Start + span.Length;
+
+                if (spanEnd <= start || spanStart >= end)
+                {
+                    if (spanStart >= end && cursor < end)
+                    {
+                        AddTextStyleOverride(result, cursor, end - cursor, value.Value);
+                        cursor = end;
+                    }
+
+                    AddTextStyleOverride(result, spanStart, span.Length, span.Value);
+                    continue;
+                }
+
+                if (spanStart < start)
+                {
+                    AddTextStyleOverride(result, spanStart, start - spanStart, span.Value);
+                }
+
+                if (spanStart > cursor)
+                {
+                    var gapEnd = Math.Min(spanStart, end);
+                    AddTextStyleOverride(result, cursor, gapEnd - cursor, value.Value);
+                    cursor = gapEnd;
+                }
+
+                var overlapStart = Math.Max(spanStart, start);
+                var overlapEnd = Math.Min(spanEnd, end);
+                AddTextStyleOverride(
+                    result,
+                    overlapStart,
+                    overlapEnd - overlapStart,
+                    span.Value.WithForegroundBrush(value.Value.ForegroundBrush));
+                cursor = Math.Max(cursor, overlapEnd);
+
+                if (spanEnd > end)
+                {
+                    AddTextStyleOverride(result, end, spanEnd - end, span.Value);
+                }
+            }
+
+            if (cursor < end)
+            {
+                AddTextStyleOverride(result, cursor, end - cursor, value.Value);
+            }
+
+            return result;
+        }
+
+        private static void AddTextStyleOverride(
+            List<ValueSpan<TextRunProperties>> result,
+            int start,
+            int length,
+            TextRunProperties value)
+        {
+            if (length <= 0)
+            {
+                return;
+            }
+
+            if (result.Count > 0)
+            {
+                var last = result[result.Count - 1];
+
+                if (last.Start + last.Length == start && Equals(last.Value, value))
+                {
+                    result[result.Count - 1] = new ValueSpan<TextRunProperties>(last.Start, last.Length + length, value);
+                    return;
+                }
+            }
+
+            result.Add(new ValueSpan<TextRunProperties>(start, length, value));
+        }
+
+        private static bool AreTextStyleOverridesEqual(
+            IReadOnlyList<ValueSpan<TextRunProperties>>? left,
+            IReadOnlyList<ValueSpan<TextRunProperties>>? right)
+        {
+            if (ReferenceEquals(left, right))
+            {
+                return true;
+            }
+
+            if (left is null || left.Count == 0)
+            {
+                return right is null || right.Count == 0;
+            }
+
+            if (right is null || right.Count != left.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < left.Count; i++)
+            {
+                var leftSpan = left[i];
+                var rightSpan = right[i];
+
+                if (leftSpan.Start != rightSpan.Start ||
+                    leftSpan.Length != rightSpan.Length ||
+                    !Equals(leftSpan.Value, rightSpan.Value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static string? GetCombinedText(string? text, int caretIndex, string? preeditText)

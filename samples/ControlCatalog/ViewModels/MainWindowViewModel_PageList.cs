@@ -130,18 +130,16 @@ namespace ControlCatalog.ViewModels
                         }
                     }
                 }
+
+                if (_currentItem != null)
+                {
+                    var newIndex = Pages.IndexOf(_currentItem);
+                    SelectedPageIndex = newIndex;
+                }
             }
             finally
             {
                 _ignoreListChange = false;
-                if (_currentItem != null)
-                {
-                    var newIndex = Pages.IndexOf(_currentItem);
-                    if (newIndex != -1)
-                    {
-                        SelectedPageIndex = newIndex;
-                    }
-                }
             }
         }
 
@@ -181,9 +179,8 @@ namespace ControlCatalog.ViewModels
             get { return _query; }
             set
             {
-                RaiseAndSetIfChanged(ref _query, value);
-
-                Filter(value);
+                if (RaiseAndSetIfChanged(ref _query, value))
+                    Filter(value);
             }
         }
 

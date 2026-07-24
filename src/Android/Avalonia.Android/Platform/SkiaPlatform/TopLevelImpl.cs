@@ -33,6 +33,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<AvaloniaView> _textInputMethod;
+        private readonly AndroidSpellCheckProvider _spellCheckProvider;
         private readonly INativeControlHostImpl _nativeControlHost;
         private readonly IStorageProvider? _storageProvider;
         private readonly AndroidSystemNavigationManagerImpl _systemNavigationManager;
@@ -53,6 +54,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             _view = new SurfaceViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<AvaloniaView>(avaloniaView);
+            _spellCheckProvider = new AndroidSpellCheckProvider(context);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _pointerHelper = new AndroidMotionEventsHelper(this);
             _clipboard = new Clipboard(new ClipboardImpl(
@@ -343,6 +345,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (featureType == typeof(ITextInputMethodImpl))
             {
                 return _textInputMethod;
+            }
+
+            if (featureType == typeof(ISpellCheckProvider))
+            {
+                return _spellCheckProvider;
             }
 
             if (featureType == typeof(ISystemNavigationManagerImpl))

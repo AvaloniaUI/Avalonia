@@ -10,6 +10,7 @@
   <x:String x:Key="StringTimePickerMinuteText">minute</x:String>
   <x:String x:Key="StringTimePickerSecondText">second</x:String>
   <!-- TextBox/SelectableTextBox flyout -->
+  <x:String x:Key="StringTextFlyoutSpellingText">Spelling</x:String>
   <x:String x:Key="StringTextFlyoutCutText">Cut</x:String>
   <x:String x:Key="StringTextFlyoutCopyText">Copy</x:String>
   <x:String x:Key="StringTextFlyoutPasteText">Paste</x:String>
@@ -39,4 +40,3 @@
   <x:String x:Key="StringScrollBarScrollLeft">Scroll Left</x:String>
   <x:String x:Key="StringScrollBarScrollRight">Scroll Right</x:String>
 </ResourceDictionary>
-

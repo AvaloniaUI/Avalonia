@@ -78,6 +78,7 @@
               </internal:ChildFitter>
               <TextBox x:Name="Location"
                        Margin="0,0,5,0"
+                       TextInputOptions.IsSpellCheckEnabled="False"
                        Text="{Binding Location}">
                 <TextBox.KeyBindings>
                   <KeyBinding Command="{Binding EnterPressed}"
@@ -114,6 +115,7 @@
 
             <TextBox DockPanel.Dock="Bottom"
                      IsVisible="{Binding !SelectingFolder}"
+                     TextInputOptions.IsSpellCheckEnabled="False"
                      Text="{Binding FileName}"
                      PlaceholderText="{DynamicResource StringManagedFileChooserFileNamePlaceholder}" />
 

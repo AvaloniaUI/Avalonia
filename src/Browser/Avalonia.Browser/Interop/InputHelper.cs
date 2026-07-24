@@ -108,6 +108,9 @@ internal static partial class InputHelper
     [JSImport("InputHelper.setSurroundingText", AvaloniaModule.MainModuleName)]
     public static partial void SetSurroundingText(JSObject htmlElement, string text, int start, int end);
 
+    [JSImport("InputHelper.setSpellCheck", AvaloniaModule.MainModuleName)]
+    public static partial void SetSpellCheck(JSObject htmlElement, bool enabled);
+
     [JSImport("InputHelper.setBounds", AvaloniaModule.MainModuleName)]
     public static partial void SetBounds(JSObject htmlElement, int x, int y, int width, int height, int caret);
 

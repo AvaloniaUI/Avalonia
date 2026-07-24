@@ -579,6 +579,10 @@ export class InputHelper {
         inputElement.style.width = `${inputElement.scrollWidth}px`;
     }
 
+    public static setSpellCheck(inputElement: HTMLInputElement, enabled: boolean) {
+        inputElement.spellcheck = enabled;
+    }
+
     private static getModifiers(args: KeyboardEvent | PointerEvent | WheelEvent | DragEvent): number {
         let modifiers = RawInputModifiers.None;
 

@@ -161,6 +161,7 @@ namespace Avalonia.iOS
             private readonly IStorageProvider? _storageProvider;
             private readonly IClipboard? _clipboard;
             private readonly IInputPane? _inputPane;
+            private readonly ISpellCheckProvider? _spellCheckProvider;
             private readonly IOSPlatformFeedback _feedback;
             private IDisposable? _paddingInsets;
 
@@ -176,10 +177,12 @@ namespace Avalonia.iOS
                 _storageProvider = null;
                 _clipboard = null;
                 _inputPane = null;
+                _spellCheckProvider = null;
 #else
                 _storageProvider = new Storage.IOSStorageProvider(view);
                 _clipboard = new Input.Platform.Clipboard(new Clipboard.ClipboardImpl(UIPasteboard.General));
                 _inputPane = UIKitInputPane.Instance;
+                _spellCheckProvider = new IOSSpellCheckProvider();
 #endif
                 _feedback = new IOSPlatformFeedback(view);
                 _insetsManager = new InsetsManager();
@@ -310,6 +313,11 @@ namespace Avalonia.iOS
                 if (featureType == typeof(IInputPane))
                 {
                     return _inputPane;
+                }
+
+                if (featureType == typeof(ISpellCheckProvider))
+                {
+                    return _spellCheckProvider;
                 }
 
                 if (featureType == typeof(ILauncher))
