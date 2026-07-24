@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
@@ -15,6 +18,7 @@ namespace RenderDemo.Pages
 {
     public class HitTestingPage : UserControl
     {
+        private const int RegionSize = 80;
         private const int GroupColumns = 8;
         private const int GroupRows = 5;
         private const int CellsPerGroupSide = 10;
@@ -44,6 +48,9 @@ namespace RenderDemo.Pages
         private bool _animationsStarted;
         private Cell? _lastHitCell;
         private Cell? _lastClickedCell;
+        private bool _regionSelection;
+        private Ellipse _region;
+        private List<Cell> _regionHits = new List<Cell>();
 
         public HitTestingPage()
         {
@@ -54,6 +61,9 @@ namespace RenderDemo.Pages
                 Background = Brushes.Transparent
             };
 
+            _scene.PointerMoved += Scene_PointerMoved;
+            _scene.PointerPressed += Scene_PointerPressed;
+
             _stats = new TextBlock
             {
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
@@ -63,6 +73,31 @@ namespace RenderDemo.Pages
                 Background = new SolidColorBrush(Color.FromArgb(220, 255, 255, 255)),
                 Foreground = Brushes.Black,
                 IsHitTestVisible = false
+            };
+
+            var regionSelection = new CheckBox()
+            {
+                Content = "Region Selection"
+            };
+
+            _region = new Ellipse()
+            {
+                Width = RegionSize * 2,
+                Height = RegionSize,
+                Fill = Brushes.Transparent,
+                StrokeThickness = 2,
+                Stroke = Brushes.Green,
+                IsVisible = false,
+                IsHitTestVisible = false
+            };
+
+            regionSelection.IsCheckedChanged += (s, e) =>
+            {
+                _regionSelection = !_regionSelection;
+
+                _region.IsVisible = _regionSelection;
+
+                ClearRegionHighlights();
             };
 
             var numberOfHitTests = new NumericUpDown
@@ -92,7 +127,8 @@ namespace RenderDemo.Pages
                 Children =
                 {
                     new TextBlock { Text = "Hit tests per update:" },
-                    numberOfHitTests
+                    numberOfHitTests,
+                    regionSelection
                 }
             };
 
@@ -117,6 +153,57 @@ namespace RenderDemo.Pages
             Content = root;
             BuildScene();
             ResetState();
+        }
+
+        private void ClearRegionHighlights()
+        {
+            _lastClickedCell?.ClearHighlight();
+            _lastClickedCell = null;
+            foreach (var cell in _regionHits)
+            {
+                cell.ClearHighlight();
+            }
+            _regionHits.Clear();
+        }
+
+        private void Scene_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if(_regionSelection)
+            {
+                var bounds = _region.Bounds;
+
+                ClearRegionHighlights();
+
+                var geometry = new EllipseGeometry(bounds);
+
+                var cells = _scene.GetVisualsAt(geometry);
+
+                if (cells == null)
+                    return;
+
+                foreach (var cell in cells)
+                {
+                    if(cell is Cell c)
+                    {
+                        c.IsLatestClick = true;
+                        c.UpdateHighlight();
+                        _regionHits.Add(c);
+                    }
+                }
+            }
+        }
+
+        private void Scene_PointerMoved(object? sender, PointerEventArgs e)
+        {
+            if(_regionSelection)
+            {
+                var point = e.GetPosition(_scene);
+
+                var rect = new Rect(point, new Size()).Inflate(new Thickness(_region.Bounds.Width / 2, _region.Bounds.Height / 2));
+
+                Canvas.SetLeft(_region, rect.X);
+                Canvas.SetTop(_region, rect.Y);
+            }
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -177,6 +264,8 @@ namespace RenderDemo.Pages
                     }
                 }
             }
+
+            _scene.Children.Add(_region);
         }
 
         private void OnCompositionUpdate()
@@ -337,7 +426,7 @@ namespace RenderDemo.Pages
 
         private void OnCellPointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            if (sender is not Cell cell)
+            if (sender is not Cell cell || _regionSelection)
                 return;
 
             SetLastClickedCell(cell);

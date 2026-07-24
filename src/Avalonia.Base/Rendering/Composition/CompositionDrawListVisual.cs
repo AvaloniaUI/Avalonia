@@ -1,3 +1,5 @@
+using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -64,5 +66,18 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         }
 
         return DrawList?.HitTest(pt) ?? false;
+    }
+
+    internal override IntersectionDetail HitTest(Geometry geometry)
+    {
+        var custom = Visual as ICustomHitTest;
+        if (DrawList == null && custom == null)
+            return IntersectionDetail.Empty;
+        if (custom != null)
+        {
+            return custom.HitTest(geometry);
+        }
+
+        return DrawList?.HitTest(geometry) ?? IntersectionDetail.Empty;
     }
 }

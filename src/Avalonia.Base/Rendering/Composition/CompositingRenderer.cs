@@ -7,6 +7,7 @@ using Avalonia.Diagnostics;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Rendering.Composition.HitTesting;
 using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition;
@@ -92,6 +93,13 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
     /// <inheritdoc/>
     public IEnumerable<Visual> HitTest(Point p, Visual? root, Func<Visual, bool>? filter)
+        => HitTest<PointCompositionHitTester, Point>(p, root, filter);
+
+    public IEnumerable<Visual> HitTest(Geometry geometry, Visual? root, Func<Visual, bool>? filter)
+        => HitTest<GeometryCompositionHitTester, Geometry>(geometry, root, filter);
+
+    private IEnumerable<Visual> HitTest<THitTester, T>(T input, Visual? root, Func<Visual, bool>? filter)
+        where THitTester : struct, ICompositionHitTester<T>
     {
         using var _ = Diagnostic.PerformingHitTest();
 
@@ -102,7 +110,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 yield break;
             rootVisual = root.CompositionVisual;
         }
-        
+
         Func<CompositionVisual, bool>? f = null;
         if (filter != null)
             f = v =>
@@ -112,7 +120,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
                 return true;
             };
 
-        using var res = CompositionTarget.TryHitTest(p, rootVisual, f);
+        using var res = CompositionTarget.TryHitTest<THitTester, T>(input, rootVisual, f);
         if(res == null)
             yield break;
         foreach(var v in res)
@@ -127,6 +135,14 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
     /// <inheritdoc/>
     public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter)
+        => HitTestFirst<PointCompositionHitTester, Point>(p, root, filter);
+
+    /// <inheritdoc/>
+    public Visual? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter)
+        => HitTestFirst<GeometryCompositionHitTester, Geometry>(geometry, root, filter);
+
+    private Visual? HitTestFirst<THitTester, T>(T input, Visual root, Func<Visual, bool>? filter)
+        where THitTester : struct, ICompositionHitTester<T>
     {
         using var _ = Diagnostic.PerformingHitTest();
 
@@ -137,7 +153,8 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             ? null :
             v => v is not CompositionDrawListVisual dlv || filter(dlv.Visual);
 
-        return CompositionTarget.TryHitTestFirst(p, root.CompositionVisual, f, static v => v is CompositionDrawListVisual) is CompositionDrawListVisual dv ? dv.Visual : null;
+        return CompositionTarget.TryHitTestFirst<THitTester, T>(input, root.CompositionVisual, f, static v => v is CompositionDrawListVisual)
+            is CompositionDrawListVisual dv ? dv.Visual : null;
     }
 
     /// <inheritdoc/>

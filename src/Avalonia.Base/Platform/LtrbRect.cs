@@ -95,6 +95,8 @@ public struct LtrbRect
         return (rect.Left < Right) && (Left < rect.Right) && (rect.Top < Bottom) && (Top < rect.Bottom);
     }
 
+    internal bool Overlaps(LtrbRect rect) => Intersects(rect) || Contains(rect) || rect.Contains(this);
+
     internal Rect ToRect() => new(Left, Top, Right - Left, Bottom - Top);
 
     internal LtrbRect Inflate(Thickness thickness)

@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
@@ -320,6 +319,19 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
+        /// Gets the first visual in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <returns>The visual intersecting the requested geometry.</returns>
+        public static Visual? GetVisualAt(this Visual visual, Geometry geometry)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            return visual.GetVisualAt(geometry, x => x.IsVisible);
+        }
+
+        /// <summary>
         /// Gets the first visual in the visual tree whose bounds contain a point.
         /// </summary>
         /// <param name="visual">The root visual to test.</param>
@@ -343,6 +355,29 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
+        /// Gets the first visual in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visual intersecting the requested geometry.</returns>
+        public static Visual? GetVisualAt(this Visual visual, Geometry geometry, Func<Visual, bool> filter)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            var source = visual.GetPresentationSource();
+            if (source is null)
+            {
+                return null;
+            }
+
+            return source.HitTester.HitTestFirst(geometry, visual, filter);
+        }
+
+        /// <summary>
         /// Enumerates the visible visuals in the visual tree whose bounds contain a point.
         /// </summary>
         /// <param name="visual">The root visual to test.</param>
@@ -355,6 +390,21 @@ namespace Avalonia.VisualTree
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             return visual.GetVisualsAt(p, x => x.IsVisible);
+        }
+
+        /// <summary>
+        /// Enumerates the visible visuals in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <returns>The visuals intersecting the requested geometry.</returns>
+        public static IEnumerable<Visual> GetVisualsAt(
+            this Visual visual,
+            Geometry geometry)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            return visual.GetVisualsAt(geometry, x => x.IsVisible);
         }
 
         /// <summary>
@@ -382,6 +432,33 @@ namespace Avalonia.VisualTree
             }
 
             return source.HitTester.HitTest(p, visual, filter);
+        }
+
+        /// <summary>
+        /// Enumerates the visible visuals in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visuals intersecting the requested geometry.</returns>
+        public static IEnumerable<Visual> GetVisualsAt(
+            this Visual visual,
+            Geometry geometry,
+            Func<Visual, bool> filter)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            var source = visual.GetPresentationSource();
+
+            if (source is null)
+            {
+                return Array.Empty<Visual>();
+            }
+
+            return source.HitTester.HitTest(geometry, visual, filter);
         }
 
         /// <summary>
