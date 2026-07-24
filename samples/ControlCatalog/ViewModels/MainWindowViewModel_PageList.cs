@@ -64,6 +64,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("Label",() => new LabelsPage(), Icons.Tag),
             new PageItem("LayoutTransformControl",() => new LayoutTransformControlPage(), Icons.Transform),
             new PageItem("ListBox",() => new ListBoxPage(), Icons.List),
+            new PageItem("ListBox - Complex Virtualization",() => new ComplexVirtualizationPage(), Icons.List),
             new PageItem("Menu",() => new MenuPage(), Icons.Menu),
             new PageItem("NavigationPage",() => new NavigationDemoPage(), Icons.Navigation),
             new PageItem("Notifications",() => new NotificationsPage(), Icons.Bell),

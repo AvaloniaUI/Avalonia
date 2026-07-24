@@ -15,6 +15,7 @@ namespace ControlCatalog.ViewModels
         private bool _alwaysSelected;
         private bool _autoScrollToSelectedItem = true;
         private bool _wrapSelection;
+        private bool _enableVirtualization;
         private int _counter;
         private IObservable<SelectionMode> _selectionMode;
 
@@ -96,6 +97,12 @@ namespace ControlCatalog.ViewModels
         {
             get => _wrapSelection;
             set => this.RaiseAndSetIfChanged(ref _wrapSelection, value);
+        }
+
+        public bool EnableVirtualization
+        {
+            get => _enableVirtualization;
+            set => this.RaiseAndSetIfChanged(ref _enableVirtualization, value);
         }
 
         public MiniCommand AddItemCommand { get; }
