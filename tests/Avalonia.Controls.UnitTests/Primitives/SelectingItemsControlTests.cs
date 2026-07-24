@@ -2035,6 +2035,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // https://github.com/xunit/xunit/issues/2222
             => ThreadRunHelper.RunOnDedicatedThread(() =>
             {
+                using var _ = UnitTestApplication.Start();
                 var target = new TestSelector
                 {
                     Template = Template(),
