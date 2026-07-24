@@ -271,6 +271,13 @@ namespace Avalonia.Rendering.Composition.Expressions
                 {"Transform", (Vector2 a, Matrix3x2 b) => Vector2.Transform(a, b)},
                 {"Transform", (Vector3 a, Matrix4x4 b) => Vector3.Transform(a, b)},
 
+                {"RelativeUnit.Absolute", () => RelativeUnit.Absolute},
+                {"RelativeUnit.Relative", () => RelativeUnit.Relative},
+                {"RelativePoint", (float x, float y, RelativeUnit unit) => new RelativePoint(x, y, unit)},
+                {"RelativePoint", (double x, double y, RelativeUnit unit) => new RelativePoint(x, y, unit)},
+                {"RelativeScalar", (float value, RelativeUnit unit) => new RelativeScalar(value, unit)},
+                {"RelativeScalar", (double value, RelativeUnit unit) => new RelativeScalar(value, unit)},
+
                 {"Vector2", (float a, float b) => new Vector(a, b)},
                 {"Vector2", (double a, double b) => new Vector(a, b)},
                 {"Vector3", (float a, float b, float c) => new Vector3D(a, b, c)},
