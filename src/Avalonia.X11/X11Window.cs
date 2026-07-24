@@ -1089,6 +1089,11 @@ namespace Avalonia.X11
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
 
+            if (featureType == typeof(IPlatformClipboardManagerImpl))
+            {
+                return AvaloniaLocator.Current.GetRequiredService<IPlatformClipboardManagerImpl>();
+            }
+
             if (featureType == typeof(ILauncher))
             {
                 return new BclLauncher();

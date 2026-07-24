@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
@@ -322,6 +323,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PastingFromClipboard"/> event.
         /// </summary>
+        /// <remarks>
+        /// The event is raised with <see cref="PastingFromClipboardEventArgs"/>.
+        /// </remarks>
+        // TODO13: retype to RoutedEvent<PastingFromClipboardEventArgs>.
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(PastingFromClipboard), RoutingStrategies.Bubble);
@@ -375,6 +380,7 @@ namespace Avalonia.Controls
         private bool _canRedo;
 
         private int _wordSelectionStart = -1;
+        private (int Start, int End) _selectionAtPointerPress;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
         private int _currentClickCount;
@@ -936,6 +942,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when content is being pasted from the clipboard
         /// </summary>
+        /// <remarks>
+        /// The event is raised with <see cref="PastingFromClipboardEventArgs"/>.
+        /// </remarks>
+        // TODO13: retype to EventHandler<PastingFromClipboardEventArgs>.
         public event EventHandler<RoutedEventArgs>? PastingFromClipboard
         {
             add => AddHandler(PastingFromClipboardEvent, value);
@@ -1322,31 +1332,31 @@ namespace Avalonia.Controls
         /// </summary>
         public async void Paste()
         {
-            var eventArgs = new RoutedEventArgs(PastingFromClipboardEvent);
+            await PasteCoreAsync(TopLevel.GetTopLevel(this)?.Clipboard);
+        }
+
+        private async Task PasteCoreAsync(IClipboard? clipboard)
+        {
+            var eventArgs = new PastingFromClipboardEventArgs(PastingFromClipboardEvent, clipboard);
             RaiseEvent(eventArgs);
-            if (eventArgs.Handled)
+            if (eventArgs.Handled || clipboard is null)
             {
                 return;
             }
 
             string? text = null;
 
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-
-            if (clipboard != null)
+            try
             {
-                try
-                {
-                    text = await clipboard.TryGetTextAsync();
-                }
-                catch (TimeoutException)
-                {
-                    // Silently ignore.
-                }
-                catch (UnauthorizedAccessException uex)
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
-                }
+                text = await clipboard.TryGetTextAsync();
+            }
+            catch (TimeoutException)
+            {
+                // Silently ignore.
+            }
+            catch (UnauthorizedAccessException uex)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
             }
 
             if (string.IsNullOrEmpty(text))
@@ -1804,6 +1814,7 @@ namespace Avalonia.Controls
             _isInTouchMode = false;
             _isInTouchSelectionMode = false;
             _isDoubleTapped = e.ClickCount == 2;
+            _selectionAtPointerPress = GetNormalizedSelection();
             if (text != null && clickInfo.Pointer?.Captured is not Border)
             {
                 if (e.Pointer.Type == PointerType.Mouse && clickInfo.Properties.IsLeftButtonPressed)
@@ -2098,10 +2109,43 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                 }
             }
+
+            if (e.InitialPressMouseButton == MouseButton.Middle)
+            {
+                // Middle-click pastes the primary selection at the click position on platforms supporting it.
+                if (!IsReadOnly && TopLevel.GetTopLevel(this)?.PrimarySelection is { } primarySelection)
+                {
+                    _presenter.MoveCaretToPoint(e.GetPosition(_presenter));
+
+                    var caretIndex = _presenter.CaretIndex;
+                    SetCurrentValue(CaretIndexProperty, caretIndex);
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+
+                    PasteFrom(primarySelection);
+                    e.Handled = true;
+                }
+            }
+            else if (e.InitialPressMouseButton == MouseButton.Left)
+            {
+                var selection = GetNormalizedSelection();
+                if (!IsPasswordBox && selection.Start != selection.End && selection != _selectionAtPointerPress)
+                {
+                    // The pointer gesture changed the selection, publish it to the primary selection.
+                    PrimarySelectionHelper.PublishText(this, GetSelection);
+                }
+            }
+
             _isInTouchSelectionMode = false;
             _isInTouchCaretMode = false;
             _hasTouchSelection = false;
         }
+
+        private (int Start, int End) GetNormalizedSelection()
+            => (Math.Min(SelectionStart, SelectionEnd), Math.Max(SelectionStart, SelectionEnd));
+
+        private async void PasteFrom(IClipboard clipboard)
+            => await PasteCoreAsync(clipboard);
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {
