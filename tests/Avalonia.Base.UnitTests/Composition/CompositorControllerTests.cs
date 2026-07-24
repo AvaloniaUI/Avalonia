@@ -16,7 +16,7 @@ public class CompositorControllerTests
     public void Controller_Compositor_Shares_Server_And_Commits_Via_Posted_Job()
     {
         using var s = new CompositorTestServices();
-        var controller = new CompositorController(s.Compositor, Dispatcher.UIThread);
+        var controller = s.Compositor.CreateCompositorController(Dispatcher.UIThread);
         Assert.Same(s.Compositor.Server, controller.Compositor.Server);
 
         var batch = controller.Compositor.RequestCompositionBatchCommitAsync();
@@ -29,7 +29,7 @@ public class CompositorControllerTests
     public void Manual_Commit_Submits_Synchronously_And_Scheduled_Job_Becomes_Noop()
     {
         using var s = new CompositorTestServices();
-        var controller = new CompositorController(s.Compositor, Dispatcher.UIThread);
+        var controller = s.Compositor.CreateCompositorController(Dispatcher.UIThread);
         var compositor = controller.Compositor;
         var commitCount = 0;
         compositor.AfterCommit += () => commitCount++;
@@ -52,7 +52,7 @@ public class CompositorControllerTests
     public void Manual_Commit_Of_Empty_Batch_Provides_A_Render_Thread_Fence()
     {
         using var s = new CompositorTestServices();
-        var controller = new CompositorController(s.Compositor, Dispatcher.UIThread);
+        var controller = s.Compositor.CreateCompositorController(Dispatcher.UIThread);
 
         var batch = controller.Commit();
         Assert.False(batch.Processed.IsCompleted);
@@ -64,7 +64,7 @@ public class CompositorControllerTests
     public void Commit_Requested_While_A_Batch_Is_In_Flight_Is_Deferred_Until_It_Is_Processed()
     {
         using var s = new CompositorTestServices();
-        var controller = new CompositorController(s.Compositor, Dispatcher.UIThread);
+        var controller = s.Compositor.CreateCompositorController(Dispatcher.UIThread);
         var compositor = controller.Compositor;
         var commitCount = 0;
         compositor.AfterCommit += () => commitCount++;
@@ -102,7 +102,7 @@ public class CompositorControllerTests
             try
             {
                 var dispatcher = Dispatcher.CurrentDispatcher;
-                var controller = new CompositorController(s.Compositor, dispatcher);
+                var controller = s.Compositor.CreateCompositorController(dispatcher);
                 batch = controller.Compositor.RequestCompositionBatchCommitAsync();
                 dispatcher.InvokeShutdown();
             }
@@ -125,7 +125,7 @@ public class CompositorControllerTests
     public void Proxy_Surface_Shares_Server_Object_And_Belongs_To_Target_Compositor()
     {
         using var s = new CompositorTestServices();
-        var controller = new CompositorController(s.Compositor, Dispatcher.UIThread);
+        var controller = s.Compositor.CreateCompositorController(Dispatcher.UIThread);
         var surface = s.Compositor.CreateDrawingSurface();
 
         var proxy = surface.CreateProxyForCompositor(controller.Compositor);
@@ -141,7 +141,7 @@ public class CompositorControllerTests
     public void Proxy_Creation_Validates_Surface_State_And_Server_Affinity()
     {
         using var s = new CompositorTestServices();
-        var controller = new CompositorController(s.Compositor, Dispatcher.UIThread);
+        var controller = s.Compositor.CreateCompositorController(Dispatcher.UIThread);
         var surface = s.Compositor.CreateDrawingSurface();
 
         Assert.Throws<InvalidOperationException>(() => surface.CreateProxyForCompositor(s.Compositor));
@@ -160,7 +160,7 @@ public class CompositorControllerTests
     public void Imported_Objects_From_A_Different_Compositor_Are_Rejected()
     {
         using var s = new CompositorTestServices();
-        var controller = new CompositorController(s.Compositor, Dispatcher.UIThread);
+        var controller = s.Compositor.CreateCompositorController(Dispatcher.UIThread);
         var surface = s.Compositor.CreateDrawingSurface();
         var proxy = surface.CreateProxyForCompositor(controller.Compositor);
 
