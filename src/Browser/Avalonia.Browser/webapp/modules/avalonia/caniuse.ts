@@ -3,6 +3,10 @@ export class Caniuse {
         return "showSaveFilePicker" in globalThis;
     }
 
+    public static supportsEditContext(): boolean {
+        return 'EditContext' in globalThis;
+    }
+
     public static isMobile(): boolean {
         const userAgentData = (globalThis.navigator as any)?.userAgentData;
         if (userAgentData) {
