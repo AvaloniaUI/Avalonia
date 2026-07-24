@@ -2409,7 +2409,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Same(window.PrimarySelection, pastingArgs.Clipboard);
 
                 // The pasted-over selection was not changed by the gesture, so it must not be published.
-                Assert.Equal("abc", await window.PrimarySelection.TryGetTextAsync());
+                Assert.Equal("abc", await window.PrimarySelection!.TryGetTextAsync());
             }
         }
 
