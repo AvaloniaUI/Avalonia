@@ -2197,6 +2197,46 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void InputMethodClient_SurroundingText_Uses_Full_Document_For_Multiline_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "one\ntwo",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+
+            Assert.Equal("one\ntwo", client.SurroundingText);
+            Assert.Equal(new TextSelection(5, 5), client.Selection);
+        }
+
+        [Fact]
+        public void InputMethodClient_Selection_Setter_Uses_Document_Offsets_For_Multiline_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "one\ntwo",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            client.Selection = new TextSelection(0, 3);
+
+            Assert.Equal(0, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+            Assert.Equal("one", textBox.SelectedText);
+        }
+
+        [Fact]
         public void Backspace_Should_Delete_Last_Character_In_Line_And_Keep_Caret_On_Same_Line()
         {
             using var _ = UnitTestApplication.Start(Services);
@@ -2363,6 +2403,18 @@ namespace Avalonia.Controls.UnitTests
             textShaperImpl: new HarfBuzzTextShaper(),
             fontManagerImpl: new TestFontManager(),
             assetLoader: new StandardAssetLoader());
+
+        private static TextInputMethodClient GetInputMethodClient(TextBox textBox)
+        {
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            Assert.NotNull(eventArgs.Client);
+            return eventArgs.Client;
+        }
 
         internal static IControlTemplate CreateTemplate()
         {
