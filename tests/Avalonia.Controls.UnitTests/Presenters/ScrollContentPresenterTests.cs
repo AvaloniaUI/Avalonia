@@ -85,7 +85,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Size(100, 100), target.DesiredSize);
+            Assert.Equal(new Size(80, 80), target.DesiredSize);
         }
 
         [Fact]
@@ -147,6 +147,42 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
 
             Assert.Equal(new Size(100, double.PositiveInfinity), child.AvailableSize);
+        }
+
+        [Fact]
+        public void Measure_Should_Honor_Horizontal_Padding_If_CannotScrollHorizontally()
+        {
+            var child = new TestControl();
+            var target = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = false,
+                CanVerticallyScroll = true,
+                Padding = new Thickness(10, 0, 15, 0),
+                Content = child,
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+
+            Assert.Equal(new Size(75, double.PositiveInfinity), child.AvailableSize);
+        }
+
+        [Fact]
+        public void Measure_Should_Honor_Vertical_Padding_If_CannotScrollVertically()
+        {
+            var child = new TestControl();
+            var target = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = false,
+                Padding = new Thickness(0, 10, 0, 15),
+                Content = child,
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+
+            Assert.Equal(new Size(double.PositiveInfinity, 75), child.AvailableSize);
         }
 
         [Fact]
