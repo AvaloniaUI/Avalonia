@@ -75,7 +75,7 @@ public partial class Dispatcher
     {
         if (_controlledImpl == null)
             throw new PlatformNotSupportedException();
-        var frame = new DispatcherFrame();
+        var frame = new DispatcherFrame(this, true);
         cancellationToken.Register(() => frame.Continue = false);
         PushFrame(frame);
     }

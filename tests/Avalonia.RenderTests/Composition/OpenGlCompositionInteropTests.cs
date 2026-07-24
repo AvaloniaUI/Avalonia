@@ -1,5 +1,6 @@
 #if AVALONIA_SKIA
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -329,6 +330,125 @@ public class OpenGlCompositionInteropTests : TestBase
         Assert.False(texture.IsReadyForDraw);
         Assert.Throws<ObjectDisposedException>(() => texture.BeginDraw());
         surface.Dispose();
+    }
+
+    [Fact]
+    public void Worker_Thread_Renders_Through_Proxy_Surface()
+    {
+        if (!MesaSoftwareRenderer.GlEnabled)
+            return;
+        var host = new Border { Width = 100, Height = 100, Background = Brushes.Black };
+        using var scaffolding = new CompositorScaffolding(host, MesaSoftwareRenderer.Gl, new PixelSize(100, 100));
+        var surface = scaffolding.Compositor.CreateDrawingSurface();
+        AttachSurfaceVisual(scaffolding, host, surface, new Size(100, 100));
+
+        using var controllerCreated = new SemaphoreSlim(0);
+        using var proxyCreated = new SemaphoreSlim(0);
+        using var redPresented = new SemaphoreSlim(0);
+        using var originalDisposed = new SemaphoreSlim(0);
+        using var bluePresented = new SemaphoreSlim(0);
+        using var cleanupApproved = new SemaphoreSlim(0);
+        using var workerDone = new SemaphoreSlim(0);
+        CompositorController? controller = null;
+        CompositionDrawingSurface? proxy = null;
+        Exception? workerException = null;
+
+        var timeout = TimeSpan.FromSeconds(30);
+        var worker = new Thread(() =>
+        {
+            try
+            {
+                var dispatcher = Dispatcher.CurrentDispatcher;
+                // Awaits below have to resume on this thread, normally this is provided by the dispatcher loop
+                SynchronizationContext.SetSynchronizationContext(
+                    new AvaloniaSynchronizationContext(dispatcher, DispatcherPriority.Normal));
+                controller = new CompositorController(scaffolding.Compositor, dispatcher);
+                controllerCreated.Release();
+                Assert.True(proxyCreated.Wait(timeout));
+
+                void PumpUntil(Task task)
+                {
+                    for (var c = 0; c < 10000 && !task.IsCompleted; c++)
+                    {
+                        dispatcher.RunJobs();
+                        Thread.Sleep(1);
+                    }
+                    Assert.True(task.IsCompleted, "The task hasn't been completed after pumping the worker loop");
+                    task.GetAwaiter().GetResult();
+                }
+
+                var contextTask = controller.Compositor.TryCreateCompatibleGlContextAsync().AsTask();
+                PumpUntil(contextTask);
+                var context = contextTask.Result;
+                Assert.NotNull(context);
+
+                var texture = context.CreateTexture(proxy!, new PixelSize(100, 100));
+                ClearTexture(context, texture, 1, 0, 0, 1, out var present);
+                PumpUntil(present);
+                redPresented.Release();
+
+                Assert.True(originalDisposed.Wait(timeout));
+                // The original surface is disposed, but the proxy must keep the server-side surface alive
+                ClearTexture(context, texture, 0, 0, 1, 1, out present);
+                PumpUntil(present);
+                bluePresented.Release();
+
+                Assert.True(cleanupApproved.Wait(timeout));
+                PumpUntil(texture.DisposeAsync().AsTask());
+                proxy!.Dispose();
+                PumpUntil(context.DisposeAsync().AsTask());
+                // Deterministically submit the batch with the proxy dispose job
+                PumpUntil(controller.Commit().Processed);
+            }
+            catch (Exception e)
+            {
+                Volatile.Write(ref workerException, e);
+            }
+            finally
+            {
+                workerDone.Release();
+            }
+        }) { IsBackground = true };
+
+        void WaitWhilePumping(SemaphoreSlim semaphore)
+        {
+            for (var c = 0; c < 10000; c++)
+            {
+                if (semaphore.Wait(0))
+                    return;
+                if (Volatile.Read(ref workerException) != null)
+                    break;
+                scaffolding.Pump();
+                Thread.Sleep(1);
+            }
+            // Let the worker wind down before the scaffolding is torn down under it
+            worker.Join(TimeSpan.FromSeconds(5));
+            Assert.Fail($"Timed out waiting for the worker thread, worker exception: {Volatile.Read(ref workerException)}");
+        }
+
+        worker.Start();
+        Assert.True(controllerCreated.Wait(timeout));
+        proxy = surface.CreateProxyForCompositor(controller!.Compositor);
+        proxyCreated.Release();
+
+        WaitWhilePumping(redPresented);
+        Assert.Equal(((byte)255, (byte)0, (byte)0, (byte)255), scaffolding.GetPixel(50, 50));
+
+        surface.Dispose();
+        scaffolding.Pump();
+        originalDisposed.Release();
+
+        WaitWhilePumping(bluePresented);
+        Assert.Equal(((byte)0, (byte)0, (byte)255, (byte)255), scaffolding.GetPixel(50, 50));
+        cleanupApproved.Release();
+
+        WaitWhilePumping(workerDone);
+        worker.Join();
+        Assert.Null(workerException);
+
+        // With the last reference disposed the server-side surface content is released
+        scaffolding.Pump();
+        Assert.Equal(((byte)0, (byte)0, (byte)0, (byte)255), scaffolding.GetPixel(50, 50));
     }
 
     private class ClearColorGlControl : OpenGlControlBase

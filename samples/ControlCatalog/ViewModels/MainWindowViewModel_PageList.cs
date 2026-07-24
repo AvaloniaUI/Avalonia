@@ -89,6 +89,7 @@ partial class MainWindowViewModel
             s.Add<OpenGlPage>("OpenGL", Icons.Cube3D, "Embed custom OpenGL rendering");
             s.Add<OpenGlLeasePage>("OpenGL Lease", Icons.Cube3D, "Low-level access to the OpenGL context");
             s.Add<OpenGlInteropPage>("OpenGL Interop", Icons.Cube3D, "Compositor and OpenGL interop");
+            s.Add<OpenGlOffThreadPage>("OpenGL Off-Thread", Icons.Cube3D, "OpenGL rendering from a non-UI thread");
             s.Add<TransitioningContentControlPage>("TransitioningContentControl", Icons.Transition, "Animate between content changes");
         }),
         Section("Status & Feedback", Icons.Chat, s =>

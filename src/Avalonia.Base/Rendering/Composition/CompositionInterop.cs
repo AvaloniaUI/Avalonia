@@ -63,7 +63,7 @@ internal class CompositionInterop : ICompositionGpuInterop
 
 abstract class CompositionGpuImportedObjectBase : ICompositionGpuImportedObject
 {
-    protected Compositor Compositor { get; }
+    internal Compositor Compositor { get; }
     public IPlatformRenderInterfaceContext Context { get; }
     public IExternalObjectsRenderInterfaceContextFeature Feature { get; }
 

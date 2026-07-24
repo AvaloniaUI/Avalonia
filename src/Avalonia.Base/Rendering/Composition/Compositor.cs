@@ -78,6 +78,29 @@ namespace Avalonia.Rendering.Composition
         }
 
         /// <summary>
+        /// Creates a compositor attached to the same server-side compositor as <paramref name="shareServerWith"/>,
+        /// but bound to a different dispatcher and driven by a different scheduler
+        /// </summary>
+        internal Compositor(Compositor shareServerWith, ICompositorScheduler scheduler, Dispatcher dispatcher)
+        {
+            Loop = shareServerWith.Loop;
+            // Rendering the server compositor inline on a synchronous commit is a UI-thread-only mechanism,
+            // any synchronous wait on this compositor has to block on the batch instead
+            UseUiThreadForSynchronousCommits = false;
+            Dispatcher = dispatcher;
+            // The server compositor returns batch buffers to the pools it was created with,
+            // so batches from all compositors must be produced from those same pools
+            _batchMemoryPool = shareServerWith._batchMemoryPool;
+            _batchObjectPool = shareServerWith._batchObjectPool;
+            _server = shareServerWith._server;
+            _triggerCommitRequested = () => scheduler.CommitRequested(this);
+
+            DefaultEasing = shareServerWith.DefaultEasing;
+        }
+
+        internal bool HasPendingCommit => _nextCommit != null;
+
+        /// <summary>
         /// Requests pending changes in the composition objects to be serialized and sent to the render thread
         /// </summary>
         /// <returns>A task that completes when sent changes are applied on the render thread</returns>
@@ -228,6 +251,7 @@ namespace Avalonia.Rendering.Composition
 
         internal void DisposeOnNextBatch(SimpleServerObject obj)
         {
+            Dispatcher.VerifyAccess();
             if (obj is IDisposable disposable && _disposeOnNextBatch.Add(disposable))
                 RequestCommitAsync();
         }
@@ -280,7 +304,9 @@ namespace Avalonia.Rendering.Composition
         {
             if (Server.AT_TryGetCachedRenderInterfaceFeatures() is { } rv)
                 return new(rv);
-            if (!Loop.RunsInBackground)
+            // When the render loop is driven by the UI thread, the render interface can only be
+            // safely accessed inline from that thread
+            if (!Loop.RunsInBackground && Dispatcher.UIThread.CheckAccess())
                 return new(Server.RT_GetRenderInterfaceFeatures());
             return new(InvokeServerJobAsync(Server.RT_GetRenderInterfaceFeatures));
         }
