@@ -788,7 +788,15 @@ namespace Avalonia.Win32
             }, DispatcherPriority.Send);
         }
 
-        public void BeginMoveDrag() => Dispatcher.UIThread.Post(BeginMoveDragCore, DispatcherPriority.Send);
+        public void BeginMoveDrag() => Dispatcher.UIThread.Post(() =>
+        {
+            // The initiating press was handled by hosted native content, which may hold the mouse
+            // capture on this thread (WebView2's in-process input window does) — the interactive
+            // move loop never receives the input stream while it does. The event-args overload
+            // receives this release implicitly through e.Pointer.Capture(null).
+            ReleaseCapture();
+            BeginMoveDragCore();
+        }, DispatcherPriority.Send);
 
         private void BeginMoveDragCore()
         {
