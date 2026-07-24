@@ -26,6 +26,7 @@
     <Setter Property="OpenPaneLength" Value="{DynamicResource SplitViewOpenPaneThemeLength}" />
     <Setter Property="CompactPaneLength" Value="{DynamicResource SplitViewCompactPaneThemeLength}" />
     <Setter Property="PaneBackground" Value="{DynamicResource SystemControlPageBackgroundChromeLowBrush}" />
+    <Setter Property="IsSwipeToOpenEnabled" Value="{OnFormFactor Default={x:False}, Mobile={x:True}}" />
 
     <Style Selector="^:left">
       <Setter Property="Template">
