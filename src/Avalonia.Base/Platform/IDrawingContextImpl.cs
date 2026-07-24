@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Utilities;
 using Avalonia.Metadata;
@@ -219,6 +220,53 @@ namespace Avalonia.Platform
         void PopEffect();
     }
 
+    [PrivateApi]
+    public interface IDrawingContextImplWithBackdropSupport : IDrawingContextImpl
+    {
+        /// <summary>
+        /// Whether the context can currently serve as a backdrop source. A backend may implement this
+        /// interface yet still not support backdrops at runtime (e.g. a surface-less recording context).
+        /// </summary>
+        bool SupportsBackdrop { get; }
+
+        /// <summary>
+        /// Whether sampling the backdrop right now would read the correct pixels. False while an intermediate
+        /// save-layer (an ancestor Effect/OpacityMask, the root save-layer clip, or an opacity save-layer) is
+        /// active: drawing is redirected to an offscreen but the backend still samples its root surface, which
+        /// no longer holds the content behind the backdrop. Distinct from <see cref="SupportsBackdrop"/>, the
+        /// target-level capability probe.
+        /// </summary>
+        bool IsBackdropSamplingSafe { get; }
+
+        /// <summary>
+        /// Creates an opaque retained-backdrop cache sized to <paramref name="size"/> device pixels, to be
+        /// passed back to <see cref="DrawRetainedBackdropEffect"/>. The caller owns and disposes it.
+        /// </summary>
+        IDrawingContextBackdropCacheImpl CreateBackdropCache(PixelSize size);
+
+        /// <summary>
+        /// Volatile backdrop: opens an intermediate layer over <paramref name="bounds"/> initialised with the
+        /// current canvas contents (through any nested layers) filtered by <paramref name="effect"/>. The
+        /// visual's own content and children draw on top; <see cref="PopBackdropLayer"/> composites it back.
+        /// Must be the outermost push for the visual and be paired with a matching <see cref="PopBackdropLayer"/>.
+        /// </summary>
+        void PushBackdropLayer(Rect bounds, IEffect effect);
+
+        /// <summary>
+        /// Composites and pops the layer opened by <see cref="PushBackdropLayer"/>.
+        /// </summary>
+        void PopBackdropLayer();
+
+        /// <summary>
+        /// Retained backdrop: refreshes <paramref name="cache"/> from the live target over
+        /// <paramref name="dirtyRects"/> (device-space pixels), then draws the cache through
+        /// <paramref name="effect"/> at <paramref name="destRect"/>. The cache must be one created by this
+        /// context via <see cref="CreateBackdropCache"/>. An empty dirty list skips the refresh.
+        /// </summary>
+        void DrawRetainedBackdropEffect(IDrawingContextBackdropCacheImpl cache, IReadOnlyList<PixelRect> dirtyRects,
+            IEffect effect, Rect destRect);
+    }
+
     public static class DrawingContextImplExtensions
     {
         /// <summary>
@@ -226,6 +274,15 @@ namespace Avalonia.Platform
         /// </summary>
         public static T? GetFeature<T>(this IDrawingContextImpl context) where T : class =>
             (T?)context.GetFeature(typeof(T));
+    }
+
+    /// <summary>
+    /// Opaque handle to a retained-backdrop cache owned by an <see cref="IDrawingContextImplWithBackdropSupport"/>.
+    /// The compositor tracks its size itself, so no members are exposed beyond disposal.
+    /// </summary>
+    [PrivateApi]
+    public interface IDrawingContextBackdropCacheImpl : IDisposable
+    {
     }
 
     public interface IDrawingContextLayerImpl : IBitmapImpl

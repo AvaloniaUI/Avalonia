@@ -31,6 +31,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("Acrylic", () => new AcrylicPage(), Icons.Blur),
             new PageItem("AdornerLayer", () => new AdornerLayerPage(), Icons.Sparkle),
             new PageItem("AutoCompleteBox",() => new AutoCompleteBoxPage(), Icons.TextInput),
+            new PageItem("BackdropEffect",() => new BackdropEffectPage(), Icons.Blur),
             new PageItem("Border",() => new BorderPage(), Icons.Border),
             new PageItem("BitmapCache",() => new BitmapCachePage(), Icons.Lightning),
             new PageItem("Buttons",() => new ButtonsPage(), Icons.CursorClick),

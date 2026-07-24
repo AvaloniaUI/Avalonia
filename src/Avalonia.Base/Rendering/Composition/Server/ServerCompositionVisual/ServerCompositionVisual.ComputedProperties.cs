@@ -118,7 +118,7 @@ partial class ServerCompositionVisual
         
         _delayPropagateIsDirtyForRender =
             _delayPropagateHasExtraDirtyRects =
-                _delayPropagateIsDirtyForRender = false;
+                _delayPropagateNeedsBoundsUpdate = false;
         
         _enqueuedForOwnPropertiesRecompute = false;
         if (_ownBoundsDirty)
