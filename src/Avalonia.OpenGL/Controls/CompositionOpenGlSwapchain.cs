@@ -1,162 +1,108 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.OpenGL.Controls;
 
-internal class CompositionOpenGlSwapchain : SwapchainBase<IGlSwapchainImage>
+internal sealed class CompositionOpenGlSwapchain : IAsyncDisposable
 {
-    private readonly IGlContext _context;
-    private readonly IGlContextExternalObjectsFeature? _externalObjectsFeature;
-    private readonly IOpenGlTextureSharingRenderInterfaceContextFeature? _sharingFeature;
-
-    public CompositionOpenGlSwapchain(IGlContext context, ICompositionGpuInterop interop, CompositionDrawingSurface target,
-        IOpenGlTextureSharingRenderInterfaceContextFeature sharingFeature
-        ) : base(interop, target)
-    {
-        _context = context;
-        _sharingFeature = sharingFeature;
-    }
-    
-    public CompositionOpenGlSwapchain(IGlContext context, ICompositionGpuInterop interop, CompositionDrawingSurface target,
-        IGlContextExternalObjectsFeature? externalObjectsFeature) : base(interop, target)
-    {
-        _context = context;
-        _externalObjectsFeature = externalObjectsFeature;
-    }
-    
-    
-
-    protected override IGlSwapchainImage CreateImage(PixelSize size)
-    {
-        if (_sharingFeature != null)
-            return new CompositionOpenGlSwapChainImage(_context, _sharingFeature, size, Interop, Target);
-        return new DxgiMutexOpenGlSwapChainImage(Interop, Target, _externalObjectsFeature!, size);
-    }
-
-    public IDisposable BeginDraw(PixelSize size, out IGlTexture texture)
-    {
-        var rv = BeginDrawCore(size, out var tex);
-        texture = tex;
-        return rv;
-    }
-}
-
-internal interface IGlTexture
-{
-    int TextureId { get; }
-    int InternalFormat { get; }
-    PixelSize Size { get; }
-}
-
-
-interface IGlSwapchainImage : ISwapchainImage, IGlTexture
-{
-    
-}
-internal class DxgiMutexOpenGlSwapChainImage : IGlSwapchainImage
-{
-    private readonly ICompositionGpuInterop _interop;
+    private readonly ICompositionGlContext _context;
     private readonly CompositionDrawingSurface _surface;
-    private readonly IGlExportableExternalImageTexture _texture;
-    private Task? _lastPresent;
-    private ICompositionImportedGpuImage? _imported;
+    private readonly List<Entry> _entries = new();
 
-    public DxgiMutexOpenGlSwapChainImage(ICompositionGpuInterop interop, CompositionDrawingSurface surface,
-        IGlContextExternalObjectsFeature externalObjects, PixelSize size)
+    internal class Entry
     {
-        _interop = interop;
+        public required ICompositionGlTexture Texture { get; init; }
+        public Task? LastPresent { get; set; }
+    }
+
+    public CompositionOpenGlSwapchain(ICompositionGlContext context, CompositionDrawingSurface surface)
+    {
+        _context = context;
         _surface = surface;
-        _texture = externalObjects.CreateImage(KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureGlobalSharedHandle,
-            size, PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm);
     }
-    public async ValueTask DisposeAsync()
+
+    private Entry? CleanupAndFindNextEntry(PixelSize size)
     {
-        // The texture is already sent to the compositor, so we need to wait for its attempts to use the texture
-        // before destroying it
-        if (_imported != null)
+        Entry? firstFound = null;
+        var foundMultiple = false;
+
+        for (var c = _entries.Count - 1; c > -1; c--)
         {
-            // No need to wait for import / LastPresent since calls are serialized on the compositor side anyway
-            try
+            var entry = _entries[c];
+            var ready = entry.Texture.IsReadyForDraw;
+            var matches = entry.Texture.Size == size;
+            var broken = entry.LastPresent is { IsCompleted: true, Status: not TaskStatus.RanToCompletion };
+            if (broken || (!matches && ready))
             {
-                await _imported.DisposeAsync();
+                entry.Texture.DisposeAsync();
+                _entries.RemoveAt(c);
             }
-            catch
+
+            if (matches && ready)
             {
-                // Ignore
-            }
-        }
-        _texture.Dispose();
-    }
-
-    public int TextureId => _texture.TextureId;
-    public int InternalFormat => _texture.InternalFormat;
-    public PixelSize Size => new(_texture.Properties.Width, _texture.Properties.Height);
-    public Task? LastPresent => _lastPresent;
-    public void BeginDraw() => _texture.AcquireKeyedMutex(0);
-
-    public void Present()
-    {
-        _texture.ReleaseKeyedMutex(1);
-        _imported ??= _interop.ImportImage(_texture.GetHandle(), _texture.Properties);
-        _lastPresent = _surface.UpdateWithKeyedMutexAsync(_imported, 1, 0);
-    }
-}
-
-internal class CompositionOpenGlSwapChainImage : IGlSwapchainImage
-{
-    private readonly ICompositionGpuInterop _interop;
-    private readonly CompositionDrawingSurface _target;
-    private readonly ICompositionImportableOpenGlSharedTexture _texture;
-    private ICompositionImportedGpuImage? _imported;
-
-    public CompositionOpenGlSwapChainImage(
-        IGlContext context,
-        IOpenGlTextureSharingRenderInterfaceContextFeature sharingFeature,
-        PixelSize size,
-        ICompositionGpuInterop interop,
-        CompositionDrawingSurface target)
-    {
-        _interop = interop;
-        _target = target;
-        _texture = sharingFeature.CreateSharedTextureForComposition(context, size);
-    }
-
-    
-    public async ValueTask DisposeAsync()
-    {
-        // The texture is already sent to the compositor, so we need to wait for its attempts to use the texture
-        // before destroying it
-        if (_imported != null)
-        {
-            // No need to wait for import / LastPresent since calls are serialized on the compositor side anyway
-            try
-            {
-                await _imported.DisposeAsync();
-            }
-            catch
-            {
-                // Ignore
+                if (firstFound == null)
+                    firstFound = entry;
+                else
+                    foundMultiple = true;
             }
         }
 
-        _texture.Dispose();
+        // We are making sure that there was at least one texture of the same size in flight
+        // Otherwise we might encounter UI thread lockups
+        return foundMultiple ? firstFound : null;
     }
 
-    public int TextureId => _texture.TextureId;
-    public int InternalFormat => _texture.InternalFormat;
-    public PixelSize Size => _texture.Size;
-    public Task? LastPresent { get; private set; }
-    public void BeginDraw()
+    public Lease BeginDraw(PixelSize size, out CompositionGlTextureInfo texture)
     {
-        // No-op for texture sharing
+        var entry = CleanupAndFindNextEntry(size);
+        if (entry == null)
+        {
+            entry = new Entry { Texture = _context.CreateTexture(_surface, size) };
+            _entries.Add(entry);
+        }
+
+        var lease = entry.Texture.BeginDraw();
+        texture = lease.Texture;
+        return new Lease(entry, lease);
     }
 
-    public void Present()
+    /// <summary>
+    /// Presents the frame on <see cref="Dispose"/>, unless it was discarded via <see cref="Discard"/>.
+    /// </summary>
+    public sealed class Lease : IDisposable
     {
-        _imported ??= _interop.ImportImage(_texture);
-        LastPresent = _target.UpdateAsync(_imported);
+        private readonly Entry _entry;
+        private ICompositionGlTextureLease? _lease;
+
+        internal Lease(Entry entry, ICompositionGlTextureLease lease)
+        {
+            _entry = entry;
+            _lease = lease;
+        }
+
+        public void Discard()
+        {
+            var lease = _lease;
+            _lease = null;
+            lease?.Dispose();
+        }
+
+        public void Dispose()
+        {
+            var lease = _lease;
+            _lease = null;
+            if (lease != null)
+                _entry.LastPresent = lease.PresentAsync();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Snapshot, since awaiting the disposal can pump the dispatcher
+        foreach (var entry in _entries.ToArray())
+            await entry.Texture.DisposeAsync();
+        _entries.Clear();
     }
 }
