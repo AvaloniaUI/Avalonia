@@ -29,6 +29,7 @@ HRESULT AvnTextInputMethod::SetClient(IAvnTextInputMethodClient *client) {
 }
 
 void AvnTextInputMethod::Reset() {
+    [_inputMethodDelegate resetInputMethod];
 }
 
 void AvnTextInputMethod::SetSurroundingText(char* text, int start, int end) {

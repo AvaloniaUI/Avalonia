@@ -375,7 +375,15 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
             [self becomeFirstResponder];
         }
     }
-       
+
+    if([self hasMarkedText] &&
+       (type == LeftButtonDown || type == RightButtonDown || type == MiddleButtonDown ||
+        type == XButton1Down || type == XButton2Down) &&
+       [self inputContext] != nil)
+    {
+        [[self inputContext] handleEvent:event];
+    }
+
     auto parent = _parent.tryGet();
     if(parent != nullptr)
     {
@@ -1033,6 +1041,20 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (void) setSelection:(int)start :(int)end{
     _selectedRange = NSMakeRange(start, end - start);
+}
+
+- (void) resetInputMethod{
+    auto parent = _parent.tryGet();
+
+    if(parent != nullptr && parent->InputMethod->IsActive()){
+        parent->InputMethod->Client->SetPreeditText(nullptr);
+    }
+
+    _markedRange = NSMakeRange(_selectedRange.location, 0);
+
+    if([self inputContext]) {
+        [[self inputContext] discardMarkedText];
+    }
 }
 
 - (void) setCursorRect:(AvnRect)rect{
