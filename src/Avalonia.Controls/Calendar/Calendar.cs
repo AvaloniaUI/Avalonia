@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -6,6 +6,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -351,6 +352,57 @@ namespace Avalonia.Controls
         {
             get => GetValue(HeaderBackgroundProperty);
             set => SetValue(HeaderBackgroundProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="IsWeekNumberVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsWeekNumberVisibleProperty =
+            AvaloniaProperty.Register<Calendar, bool>(nameof(IsWeekNumberVisible));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether week numbers are shown in the month view.
+        /// </summary>
+        public bool IsWeekNumberVisible
+        {
+            get => GetValue(IsWeekNumberVisibleProperty);
+            set => SetValue(IsWeekNumberVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="WeekNumberRule"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CalendarWeekNumberRule> WeekNumberRuleProperty =
+            AvaloniaProperty.Register<Calendar, CalendarWeekNumberRule>(
+                nameof(WeekNumberRule),
+                defaultValue: (CalendarWeekNumberRule)DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule);
+
+        /// <summary>
+        /// Gets or sets the rule used to determine the first week of the year for week number display.
+        /// The default is taken from the current culture. Use <see cref="CalendarWeekNumberRule.Iso"/>
+        /// for ISO 8601 week numbering.
+        /// </summary>
+        public CalendarWeekNumberRule WeekNumberRule
+        {
+            get => GetValue(WeekNumberRuleProperty);
+            set => SetValue(WeekNumberRuleProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="WeekNumberHeader"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object?> WeekNumberHeaderProperty =
+            AvaloniaProperty.Register<Calendar, object?>(nameof(WeekNumberHeader), "#");
+
+        /// <summary>
+        /// Gets or sets the content displayed in the week-number column header cell.
+        /// Set this to a localized string such as <c>"CW"</c>, <c>"KW"</c>, or <c>"Wk"</c>
+        /// to give users context for the week-number column. Defaults to <c>"#"</c>.
+        /// </summary>
+        public object? WeekNumberHeader
+        {
+            get => GetValue(WeekNumberHeaderProperty);
+            set => SetValue(WeekNumberHeaderProperty, value);
         }
 
         public static readonly StyledProperty<CalendarMode> DisplayModeProperty =
@@ -2209,6 +2261,9 @@ namespace Avalonia.Controls
             DisplayDateProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateChanged(e));
             DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateStartChanged(e));
             DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateEndChanged(e));
+            IsWeekNumberVisibleProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
+            WeekNumberRuleProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
+            WeekNumberHeaderProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
             KeyDownEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyDown(e));
             KeyUpEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyUp(e));
         }
