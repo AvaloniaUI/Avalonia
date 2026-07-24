@@ -1407,6 +1407,73 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Binding_Source_Change_Clears_Undo_History()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "initial" };
+                var textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    DataContext = source,
+                };
+
+                textBox.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Bar))
+                {
+                    Mode = BindingMode.TwoWay,
+                });
+                textBox.Measure(Size.Infinity);
+                textBox.CaretIndex = textBox.Text!.Length;
+
+                RaiseTextEvent(textBox, " edit");
+                RaiseKeyEvent(textBox, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(textBox, " more");
+
+                Assert.Equal("initial edit more", source.Bar);
+                Assert.True(textBox.CanUndo);
+
+                source.Bar = "replacement";
+
+                Assert.Equal("replacement", textBox.Text);
+                Assert.False(textBox.CanUndo);
+                Assert.False(textBox.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void TwoWay_Binding_Source_Echo_Does_Not_Clear_Undo_History()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "initial" };
+                var textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    DataContext = source,
+                };
+
+                textBox.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Bar))
+                {
+                    Mode = BindingMode.TwoWay,
+                });
+                textBox.Measure(Size.Infinity);
+                textBox.CaretIndex = textBox.Text!.Length;
+
+                RaiseTextEvent(textBox, " edit");
+                RaiseKeyEvent(textBox, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(textBox, " more");
+
+                Assert.Equal("initial edit more", source.Bar);
+                Assert.True(textBox.CanUndo);
+
+                textBox.Undo();
+
+                Assert.Equal("initial edit", textBox.Text);
+                Assert.Equal("initial edit", source.Bar);
+            }
+        }
+
+        [Fact]
         public void Setting_UndoLimit_Clears_Undo_Redo()
         {
             using (UnitTestApplication.Start(Services))

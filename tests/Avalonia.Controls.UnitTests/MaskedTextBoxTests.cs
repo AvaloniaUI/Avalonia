@@ -921,6 +921,127 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Focusing_And_Unfocusing_Does_Not_Create_Undo_Operation()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000",
+                    HidePromptOnLeave = true,
+                    Text = "123"
+                };
+
+                var other = new MaskedTextBox { Template = CreateTemplate() };
+
+                var sp = new StackPanel();
+                sp.Children.Add(target);
+                sp.Children.Add(other);
+
+                target.ApplyTemplate();
+                other.ApplyTemplate();
+
+                var root = new TestRoot() { Child = sp };
+
+                target.Focus();
+                other.Focus();
+
+                Assert.False(target.CanUndo);
+            }
+        }
+
+        [Fact]
+        public void Masked_Edit_Remains_Undoable()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000",
+                    Text = "123"
+                };
+
+                target.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target };
+
+                target.Focus();
+                target.CaretIndex = 3;
+
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.None);
+
+                Assert.Equal("12_", target.Text);
+                Assert.True(target.CanUndo);
+
+                target.Undo();
+
+                Assert.Equal("123", target.Text);
+            }
+        }
+
+        [Fact]
+        public void External_Replacement_After_Masked_Edit_Clears_Undo_History()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000",
+                    Text = "123"
+                };
+
+                target.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target };
+
+                target.Focus();
+                target.CaretIndex = 3;
+
+                RaiseKeyEvent(target, Key.Back, KeyModifiers.None);
+
+                Assert.True(target.CanUndo);
+
+                target.Text = "456";
+
+                Assert.False(target.CanUndo);
+                Assert.False(target.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void Clear_And_SelectedText_Replacement_Remain_Undoable()
+        {
+            using (Start(FocusServices))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "000",
+                    Text = "123"
+                };
+
+                target.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target };
+
+                target.Focus();
+
+                target.Clear();
+                Assert.True(target.CanUndo);
+
+                target.Undo();
+                target.SelectionStart = 0;
+                target.SelectionEnd = 1;
+                target.SelectedText = "9";
+
+                Assert.True(target.CanUndo);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
