@@ -270,6 +270,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Returns min size, never taking into account shared state.
+        /// </summary>
+        /// <remarks>
+        /// This is the definition's own intrinsic contribution to its group. It is the counterpart
+        /// of <see cref="SetMinSize"/>: code that saves and restores a min size across a measure
+        /// must round-trip this value, because feeding the group minimum back into
+        /// <see cref="_minSize"/> would make the group unable to shrink.
+        /// </remarks>
+        internal double RawMinSize => _minSize;
+
+        /// <summary>
         /// Offset.
         /// </summary>
         internal double FinalOffset
