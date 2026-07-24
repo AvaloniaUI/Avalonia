@@ -8,8 +8,6 @@ using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
-using Avalonia.Platform;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -17,8 +15,11 @@ namespace Avalonia.Controls
     /// Displays <see cref="Content"/> according to an <see cref="IDataTemplate"/>.
     /// </summary>
     [TemplatePart("PART_ContentPresenter", typeof(ContentPresenter))]
+    [PseudoClasses(pcEmpty)]
     public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost
     {
+        private const string pcEmpty = ":empty";
+
         /// <summary>
         /// Defines the <see cref="Content"/> property.
         /// </summary>
@@ -59,6 +60,11 @@ namespace Avalonia.Controls
                 [~VerticalContentAlignmentProperty] = new TemplateBinding(VerticalContentAlignmentProperty),
                 [~HorizontalContentAlignmentProperty] = new TemplateBinding(HorizontalContentAlignmentProperty)
             }.RegisterInNameScope(ns)));
+        }
+
+        public ContentControl()
+        {
+            UpdatePseudoClasses();
         }
 
         /// <summary>
@@ -116,7 +122,7 @@ namespace Avalonia.Controls
         {
             return RegisterContentPresenter(presenter);
         }
-        
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -153,6 +159,13 @@ namespace Avalonia.Controls
             {
                 LogicalChildren.Add(newChild);
             }
+
+            UpdatePseudoClasses();
+        }
+
+        private void UpdatePseudoClasses()
+        {
+            PseudoClasses.Set(pcEmpty, Content is null);
         }
 
         internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
