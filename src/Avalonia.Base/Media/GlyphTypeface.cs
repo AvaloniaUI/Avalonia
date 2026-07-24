@@ -5,6 +5,7 @@ using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
+using Avalonia.Media.Fonts.Tables.Glyf;
 using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Name;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -25,6 +26,8 @@ namespace Avalonia.Media
         private static readonly IReadOnlyDictionary<CultureInfo, string> s_emptyStringDictionary =
             new Dictionary<CultureInfo, string>(0);
 
+        private static readonly IPlatformRenderInterface _renderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+
         private bool _isDisposed;
 
         private readonly NameTable? _nameTable;
@@ -34,6 +37,9 @@ namespace Avalonia.Media
         private readonly VerticalHeaderTable _vhTable;
         private readonly HorizontalMetricsTable? _hmTable;
         private readonly VerticalMetricsTable? _vmTable;
+
+        private readonly GlyfTable? _glyfTable;
+
         private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
         private readonly bool _hasVerticalMetrics;
@@ -145,6 +151,12 @@ namespace Avalonia.Media
             }
 
             HeadTable.TryLoad(this, out var headTable);
+
+            if (headTable is not null)
+            {
+                // Load glyf table once and cache for reuse by GetGlyphOutline
+                GlyfTable.TryLoad(this, headTable, maxpTable, out _glyfTable);
+            }
 
             IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
                            _cmapTable.Format == CmapFormat.Format13;
@@ -702,6 +714,53 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Attempts to retrieve the vertical advance height for the specified glyph.
+        /// </summary>
+        /// <remarks>Returns false if vertical metrics are not available (the font has no
+        /// <c>vmtx</c> table — the common case for Latin fonts) or if the specified glyph
+        /// is not present in the metrics table.</remarks>
+        /// <param name="glyphId">The identifier of the glyph for which to obtain the vertical advance height.</param>
+        /// <param name="advance">When this method returns, contains the vertical advance height of the glyph if found; otherwise, zero. This
+        /// parameter is passed uninitialized.</param>
+        /// <returns>true if the vertical advance height was successfully retrieved; otherwise, false.</returns>
+        public bool TryGetVerticalGlyphAdvance(ushort glyphId, out ushort advance)
+        {
+            advance = default;
+
+            if (!_hasVerticalMetrics || _vmTable is null)
+            {
+                return false;
+            }
+
+            if (!_vmTable.TryGetAdvance(glyphId, out advance))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve vertical advance heights for multiple glyphs in a single operation.
+        /// </summary>
+        /// <remarks>This method is significantly more efficient than calling <see cref="TryGetVerticalGlyphAdvance"/>
+        /// multiple times as it minimizes memory access overhead and exploits data locality. This is the preferred method
+        /// for batch vertical-layout scenarios (CJK, Mongolian). Returns false if vertical metrics
+        /// are not available.</remarks>
+        /// <param name="glyphIds">Read-only span of glyph identifiers for which to retrieve advance heights.</param>
+        /// <param name="advances">Output span to write the advance heights. Must be at least as long as <paramref name="glyphIds"/>.</param>
+        /// <returns>true if vertical metrics are available and all advances were successfully retrieved; otherwise, false.</returns>
+        public bool TryGetVerticalGlyphAdvances(ReadOnlySpan<ushort> glyphIds, Span<ushort> advances)
+        {
+            if (!_hasVerticalMetrics || _vmTable is null)
+            {
+                return false;
+            }
+
+            return _vmTable.TryGetAdvances(glyphIds, advances);
+        }
+
+        /// <summary>
         /// Attempts to retrieve the metrics for the specified glyph.
         /// </summary>
         /// <remarks>This method returns metrics only if horizontal or vertical metrics are available for
@@ -731,17 +790,31 @@ namespace Avalonia.Media
                 hasVertical = _vmTable.TryGetMetrics(glyph, out vMetric);
             }
 
-            if (!hasHorizontal && !hasVertical)
+            short xMin = 0, yMin = 0, xMax = 0, yMax = 0;
+            var hasBounds = _glyfTable != null
+                && _glyfTable.TryGetGlyphBounds(glyph, out xMin, out yMin, out xMax, out yMax);
+
+            if (!hasHorizontal && !hasVertical && !hasBounds)
             {
                 return false;
             }
 
+            // Funnel the raw header values through GlyphBounds so the ink extent is computed
+            // (and clamped to non-negative) the same way as the batch path below — a malformed
+            // header with xMax < xMin must not wrap when narrowed to the ushort Width/Height.
+            var box = new GlyphBounds(xMin, yMin, xMax, yMax);
+
             metrics = new GlyphMetrics
             {
-                XBearing = hMetric.LeftSideBearing,
-                YBearing = vMetric.TopSideBearing,
-                Width = hMetric.AdvanceWidth,
-                Height = vMetric.AdvanceHeight
+                // Bounding box (ink extent) from the glyf header; side bearings fall back
+                // to hmtx/vmtx when the glyph has no outline data.
+                XBearing = hasBounds ? box.XMin : (hasHorizontal ? hMetric.LeftSideBearing : (short)0),
+                YBearing = hasBounds ? box.YMax : (hasVertical ? vMetric.TopSideBearing : (short)0),
+                Width = hasBounds ? (ushort)box.Width : (ushort)0,
+                Height = hasBounds ? (ushort)box.Height : (ushort)0,
+                // Advances come from the metrics tables.
+                AdvanceWidth = hasHorizontal ? hMetric.AdvanceWidth : (ushort)0,
+                AdvanceHeight = hasVertical ? vMetric.AdvanceHeight : (ushort)0,
             };
 
             return true;
@@ -769,14 +842,18 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Use stackalloc for temporary buffers to avoid heap allocations
-            Span<HorizontalGlyphMetric> hMetrics = glyphIds.Length <= 256
-                ? stackalloc HorizontalGlyphMetric[glyphIds.Length]
-                : new HorizontalGlyphMetric[glyphIds.Length];
+            // Size each temporary buffer to zero (a free, empty stackalloc) when its source
+            // table is absent, so a font without hmtx / vmtx never pays for a buffer that is
+            // never read. Only a present-but-large (> 256) source falls back to the heap.
+            var hCount = _hasHorizontalMetrics && _hmTable != null ? glyphIds.Length : 0;
+            Span<HorizontalGlyphMetric> hMetrics = hCount <= 256
+                ? stackalloc HorizontalGlyphMetric[hCount]
+                : new HorizontalGlyphMetric[hCount];
 
-            Span<VerticalGlyphMetric> vMetrics = glyphIds.Length <= 256
-                ? stackalloc VerticalGlyphMetric[glyphIds.Length]
-                : new VerticalGlyphMetric[glyphIds.Length];
+            var vCount = _hasVerticalMetrics && _vmTable != null ? glyphIds.Length : 0;
+            Span<VerticalGlyphMetric> vMetrics = vCount <= 256
+                ? stackalloc VerticalGlyphMetric[vCount]
+                : new VerticalGlyphMetric[vCount];
 
             bool hasHorizontal = false;
             bool hasVertical = false;
@@ -798,19 +875,129 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Combine horizontal and vertical metrics
+            // Read all bounding boxes in one batch (spans fetched once), then combine. When
+            // the font has no glyf table, bearings fall back to hmtx/vmtx and the box is zero.
+            var hasGlyf = _glyfTable != null;
+
+            // No glyf table (CFF / CFF2) → no ink bounds to read; keep the buffer empty so
+            // those fonts don't allocate a per-glyph bounds array that is never used.
+            var boundsCount = hasGlyf ? glyphIds.Length : 0;
+            Span<GlyphBounds> bounds = boundsCount <= 256
+                ? stackalloc GlyphBounds[boundsCount]
+                : new GlyphBounds[boundsCount];
+
+            if (hasGlyf)
+            {
+                _glyfTable!.GetGlyphBounds(glyphIds, bounds);
+            }
+
             for (int i = 0; i < glyphIds.Length; i++)
             {
-                metrics[i] = new GlyphMetrics
+                if (hasGlyf)
                 {
-                    XBearing = hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0,
-                    YBearing = hasVertical ? vMetrics[i].TopSideBearing : (short)0,
-                    Width = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
-                    Height = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0
-                };
+                    var b = bounds[i];
+
+                    metrics[i] = new GlyphMetrics
+                    {
+                        XBearing = b.XMin,
+                        YBearing = b.YMax,
+                        Width = (ushort)b.Width,
+                        Height = (ushort)b.Height,
+                        AdvanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
+                        AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0,
+                    };
+                }
+                else
+                {
+                    metrics[i] = new GlyphMetrics
+                    {
+                        XBearing = hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0,
+                        YBearing = hasVertical ? vMetrics[i].TopSideBearing : (short)0,
+                        Width = 0,
+                        Height = 0,
+                        AdvanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
+                        AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0,
+                    };
+                }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Reads ink bounding boxes for a batch of glyphs from the font's <c>glyf</c> table.
+        /// </summary>
+        /// <remarks>
+        /// Allocation-free hot path for glyph ink-bounds computation: the <c>glyf</c> and
+        /// <c>loca</c> spans are fetched once for the whole batch. Use this rather than
+        /// <see cref="TryGetGlyphMetrics(ReadOnlySpan{ushort}, Span{GlyphMetrics})"/> when
+        /// only bounds are needed and advances are already known (e.g. from shaping).
+        /// </remarks>
+        /// <param name="glyphIds">Glyph identifiers to read.</param>
+        /// <param name="bounds">Output; must be at least as long as <paramref name="glyphIds"/>.
+        /// Out-of-range, empty, or malformed glyphs are written as the default (zero) box.</param>
+        /// <returns><c>true</c> if the font has a <c>glyf</c> table; otherwise <c>false</c>.</returns>
+        internal bool TryGetGlyphBounds(ReadOnlySpan<ushort> glyphIds, Span<GlyphBounds> bounds)
+        {
+            if (bounds.Length < glyphIds.Length)
+            {
+                throw new ArgumentException("Output span must be at least as long as input span", nameof(bounds));
+            }
+
+            if (_glyfTable is null)
+            {
+                return false;
+            }
+
+            _glyfTable.GetGlyphBounds(glyphIds, bounds);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Retrieves the vector outline geometry for the specified glyph, in font design-unit space.
+        /// </summary>
+        /// <remarks>
+        /// Returns <c>null</c> when the glyph ID is out of range, the font has no <c>glyf</c> table
+        /// (e.g. CFF / CFF2), or the glyph data cannot be parsed (malformed font, cyclic composite,
+        /// depth limit exceeded). The outline is in font design units (Y-up): apply the
+        /// <c>emSize / DesignEmHeight</c> scale, the Y-flip, and the glyph position yourself — via
+        /// <c>IGeometryImpl.WithTransform</c> or a drawing-context transform. Variable-font axis
+        /// configuration is taken from the typeface instance itself.
+        /// </remarks>
+        /// <param name="glyphId">The identifier of the glyph to retrieve.</param>
+        /// <returns>
+        /// An immutable <see cref="IGeometryImpl"/> outline — safe to cache and share, and drawable
+        /// via the <c>DrawGeometry</c> overload that takes an <see cref="IGeometryImpl"/> — or
+        /// <c>null</c> when no outline is available. Returned as the lightweight platform geometry
+        /// rather than a <see cref="Geometry"/> (<see cref="AvaloniaObject"/>) so it can be cached
+        /// and used on the hot path; do not mutate it.
+        /// </returns>
+        public IGeometryImpl? GetGlyphOutline(ushort glyphId)
+        {
+            if (glyphId >= GlyphCount)
+            {
+                return null;
+            }
+
+            if (_glyfTable is null)
+            {
+                return null;
+            }
+
+            var geometry = _renderInterface.CreateStreamGeometry();
+
+            using (var ctx = geometry.Open())
+            {
+                // Build the outline in font design-unit space (identity transform); callers apply
+                // the scale / position. Wrapped so the shared, cacheable result is immutable.
+                if (_glyfTable.TryBuildGlyphGeometry((int)glyphId, Matrix.Identity, ctx))
+                {
+                    return new ImmutableGeometryImpl(geometry);
+                }
+            }
+
+            return null;
         }
 
         public void Dispose()
