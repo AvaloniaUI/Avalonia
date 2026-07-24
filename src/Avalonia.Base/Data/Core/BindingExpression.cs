@@ -155,6 +155,21 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
     public object? TargetNullValue => _uncommon?._targetNullValue ?? AvaloniaProperty.UnsetValue;
     public UpdateSourceTrigger UpdateSourceTrigger => _uncommon?._updateSourceTrigger ?? UpdateSourceTrigger.PropertyChanged;
 
+    protected override bool HasPublishedValue()
+    {
+        if (TargetProperty?.IsDirect == false)
+            return GetValue() != AvaloniaProperty.UnsetValue;
+
+        return true;
+    }
+
+    protected override object? GetPublishedValue()
+    {
+        // A styled-property BindingExpression returning UnsetValue should stop participating in
+        // value precedence. Direct properties have no lower-priority value to reveal.
+        return TargetProperty is { IsDirect: true } ? GetValueOrDefault() : GetValue();
+    }
+
     public override void UpdateSource()
     {
         if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
