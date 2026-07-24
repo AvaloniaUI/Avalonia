@@ -4,6 +4,7 @@ using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
+using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -40,4 +41,15 @@ public partial class Compositor
     public CompositionSurfaceVisual CreateSurfaceVisual() => new(this, new ServerCompositionSurfaceVisual(_server));
 
     public CompositionDrawingSurface CreateDrawingSurface() => new(this);
+
+    /// <summary>
+    /// Creates a compositor attached to the same server-side compositor as this one, but bound to a
+    /// different dispatcher and driven by the returned <see cref="CompositorController"/> instead of
+    /// the framework's scheduler
+    /// </summary>
+    /// <param name="dispatcher">
+    /// The dispatcher the new compositor is bound to, the dispatcher of the current thread by default
+    /// </param>
+    public CompositorController CreateCompositorController(Dispatcher? dispatcher = null) =>
+        new(this, dispatcher ?? Dispatcher.CurrentDispatcher);
 }
