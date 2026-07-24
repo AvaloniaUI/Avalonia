@@ -968,6 +968,13 @@ namespace Avalonia.Win32.Interop
         }
 
         [Flags]
+        public enum TrackPopupMenuFlags : uint
+        {
+            TPM_RIGHTBUTTON = 0x0002,
+            TPM_RETURNCMD = 0x0100,
+        }
+
+        [Flags]
         public enum PointerFlags
         {
             POINTER_FLAG_NONE = 0x00000000,
@@ -1398,8 +1405,15 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint TrackPopupMenu(IntPtr hMenu, TrackPopupMenuFlags uFlags, int x, int y, int nReserved,
+            IntPtr hWnd, IntPtr prcRect);
+
         [DllImport("user32.dll")]
         public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetMenuDefaultItem(IntPtr hMenu, uint uItem, bool fByPos);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
