@@ -5,6 +5,7 @@ using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
+using Avalonia.Media.Fonts.Tables.Glyf;
 using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Name;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -25,6 +26,8 @@ namespace Avalonia.Media
         private static readonly IReadOnlyDictionary<CultureInfo, string> s_emptyStringDictionary =
             new Dictionary<CultureInfo, string>(0);
 
+        private static readonly IPlatformRenderInterface _renderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+
         private bool _isDisposed;
 
         private readonly NameTable? _nameTable;
@@ -34,6 +37,9 @@ namespace Avalonia.Media
         private readonly VerticalHeaderTable _vhTable;
         private readonly HorizontalMetricsTable? _hmTable;
         private readonly VerticalMetricsTable? _vmTable;
+
+        private readonly GlyfTable? _glyfTable;
+
         private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
         private readonly bool _hasVerticalMetrics;
@@ -145,6 +151,12 @@ namespace Avalonia.Media
             }
 
             HeadTable.TryLoad(this, out var headTable);
+
+            if (headTable is not null)
+            {
+                // Load glyf table once and cache for reuse by GetGlyphOutline
+                GlyfTable.TryLoad(this, headTable, maxpTable, out _glyfTable);
+            }
 
             IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
                            _cmapTable.Format == CmapFormat.Format13;
@@ -769,14 +781,18 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Use stackalloc for temporary buffers to avoid heap allocations
-            Span<HorizontalGlyphMetric> hMetrics = glyphIds.Length <= 256
-                ? stackalloc HorizontalGlyphMetric[glyphIds.Length]
-                : new HorizontalGlyphMetric[glyphIds.Length];
+            // Size each temporary buffer to zero (a free, empty stackalloc) when its source
+            // table is absent, so a font without hmtx / vmtx never pays for a buffer that is
+            // never read. Only a present-but-large (> 256) source falls back to the heap.
+            var hCount = _hasHorizontalMetrics && _hmTable != null ? glyphIds.Length : 0;
+            Span<HorizontalGlyphMetric> hMetrics = hCount <= 256
+                ? stackalloc HorizontalGlyphMetric[hCount]
+                : new HorizontalGlyphMetric[hCount];
 
-            Span<VerticalGlyphMetric> vMetrics = glyphIds.Length <= 256
-                ? stackalloc VerticalGlyphMetric[glyphIds.Length]
-                : new VerticalGlyphMetric[glyphIds.Length];
+            var vCount = _hasVerticalMetrics && _vmTable != null ? glyphIds.Length : 0;
+            Span<VerticalGlyphMetric> vMetrics = vCount <= 256
+                ? stackalloc VerticalGlyphMetric[vCount]
+                : new VerticalGlyphMetric[vCount];
 
             bool hasHorizontal = false;
             bool hasVertical = false;
@@ -811,6 +827,52 @@ namespace Avalonia.Media
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Retrieves the vector outline geometry for the specified glyph, in font design-unit space.
+        /// </summary>
+        /// <remarks>
+        /// Returns <c>null</c> when the glyph ID is out of range, the font has no <c>glyf</c> table
+        /// (e.g. CFF / CFF2), or the glyph data cannot be parsed (malformed font, cyclic composite,
+        /// depth limit exceeded). The outline is in font design units (Y-up): apply the
+        /// <c>emSize / DesignEmHeight</c> scale, the Y-flip, and the glyph position yourself — via
+        /// <c>IGeometryImpl.WithTransform</c> or a drawing-context transform. Variable-font axis
+        /// configuration is taken from the typeface instance itself.
+        /// </remarks>
+        /// <param name="glyphId">The identifier of the glyph to retrieve.</param>
+        /// <returns>
+        /// An immutable <see cref="IGeometryImpl"/> outline — safe to cache and share, and drawable
+        /// via the <c>DrawGeometry</c> overload that takes an <see cref="IGeometryImpl"/> — or
+        /// <c>null</c> when no outline is available. Returned as the lightweight platform geometry
+        /// rather than a <see cref="Geometry"/> (<see cref="AvaloniaObject"/>) so it can be cached
+        /// and used on the hot path; do not mutate it.
+        /// </returns>
+        public IGeometryImpl? GetGlyphOutline(ushort glyphId)
+        {
+            if (glyphId >= GlyphCount)
+            {
+                return null;
+            }
+
+            if (_glyfTable is null)
+            {
+                return null;
+            }
+
+            var geometry = _renderInterface.CreateStreamGeometry();
+
+            using (var ctx = geometry.Open())
+            {
+                // Build the outline in font design-unit space (identity transform); callers apply
+                // the scale / position. Wrapped so the shared, cacheable result is immutable.
+                if (_glyfTable.TryBuildGlyphGeometry((int)glyphId, Matrix.Identity, ctx))
+                {
+                    return new ImmutableGeometryImpl(geometry);
+                }
+            }
+
+            return null;
         }
 
         public void Dispose()
