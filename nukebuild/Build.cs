@@ -43,6 +43,9 @@ partial class Build : NukeBuild
     [NuGetPackage("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
     Tool IlRepackTool;
 
+    [NuGetPackage("CycloneDX", "CycloneDX.dll", Framework = "net10.0")]
+    Tool CycloneDxTool;
+
     protected override void OnBuildInitialized()
     {
         Parameters = new BuildParameters(this, ScheduledTargets.Contains(BuildToNuGetCache));
@@ -315,7 +318,9 @@ partial class Build : NukeBuild
         });
 
     Target ZipFiles => _ => _
-        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package)
+        // CreateSbom embeds the SBOM into each .nupkg in NugetRoot, so it must run before we zip
+        // that directory - otherwise the zipped NuGet artifacts would omit the embedded SBOM.
+        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package, CreateSbom)
         .Executes(() =>
         {
             var data = Parameters;
@@ -345,6 +350,20 @@ partial class Build : NukeBuild
             RefAssemblyGenerator.GenerateRefAsmsInPackage(
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.nupkg",
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.snupkg");
+        });
+
+    Target CreateSbom => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(() =>
+        {
+            SbomGenerator.Generate(
+                CycloneDxTool,
+                RootDirectory,
+                Parameters.NugetRoot,
+                Parameters.NugetIntermediateRoot,
+                RootDirectory / "nukebuild" / "numerge.json",
+                Parameters.SbomRoot,
+                Parameters.Version);
         });
 
     Target DownloadApiBaselinePackages => _ => _
@@ -416,12 +435,14 @@ partial class Build : NukeBuild
 
     Target CiAzureOSX => _ => _
         .DependsOn(Package)
-        .DependsOn(ZipFiles);
+        .DependsOn(ZipFiles)
+        .DependsOn(CreateSbom);
 
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(VerifyXamlCompilation)
-        .DependsOn(ZipFiles);
+        .DependsOn(ZipFiles)
+        .DependsOn(CreateSbom);
 
     Target BuildToNuGetCache => _ => _
         .DependsOn(CreateNugetPackages)
@@ -435,12 +456,10 @@ partial class Build : NukeBuild
             
             foreach (var path in Parameters.NugetRoot.GlobFiles("*.nupkg"))
             {
+                var packageId = SbomGenerator.ReadPackageId(path);
+
                 using var f = File.Open(path.ToString(), FileMode.Open, FileAccess.Read);
                 using var zip = new ZipArchive(f, ZipArchiveMode.Read);
-                var nuspecEntry = zip.Entries.First(e => e.FullName.EndsWith(".nuspec") && e.FullName == e.Name);
-                var packageId = XDocument.Load(nuspecEntry.Open()).Document.Root
-                    .Elements().First(x => x.Name.LocalName == "metadata")
-                    .Elements().First(x => x.Name.LocalName == "id").Value;
 
                 var packagePath = Path.Combine(
                     globalPackagesFolder,

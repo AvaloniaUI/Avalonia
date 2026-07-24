@@ -428,16 +428,9 @@ namespace Avalonia.Headless
             public AlphaFormat? AlphaFormat => Platform.AlphaFormat.Premul;
             public int Version { get; set; }
 
-            public void Save(string fileName, int? quality = null)
+            public void Save(Stream stream, BitmapEncoderOptions options)
             {
-
             }
-
-            public void Save(Stream stream, int? quality = null)
-            {
-
-            }
-
 
             public ILockedFramebuffer Lock()
             {

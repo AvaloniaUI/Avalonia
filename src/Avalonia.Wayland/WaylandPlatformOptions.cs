@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.OpenGL;
@@ -72,4 +73,21 @@ public class WaylandPlatformOptions
     /// decides based on compositor and driver capabilities.
     /// </summary>
     public bool? UseDmabufSwapchain { get; set; }
+
+    /// <summary>
+    /// If this option is set to true, a GMainLoop and GSource based dispatcher implementation will be used for the
+    /// UI thread instead of the default managed one.
+    /// Use this if you need to use GLib-based libraries on the main thread.
+    /// </summary>
+    public bool UseGLibMainLoop { get; set; }
+
+    /// <summary>
+    /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame
+    /// and rethrowing an exception. However, if there is no Avalonia-controlled run loop frame,
+    /// there is no way to report such exceptions, since allowing those to escape native->managed call boundary
+    /// will likely brick GLib machinery since it's not aware of managed Exceptions.
+    /// This property allows to inspect such exceptions before they will be ignored.
+    /// Only used when <see cref="UseGLibMainLoop"/> is enabled.
+    /// </summary>
+    public Action<Exception>? ExternalGLibMainLoopExceptionLogger { get; set; }
 }

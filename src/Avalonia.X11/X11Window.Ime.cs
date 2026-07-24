@@ -116,7 +116,7 @@ namespace Avalonia.X11
         {
             var physicalKey = X11KeyTransform.PhysicalKeyFromScanCode(ev.KeyEvent.keycode);
             var (x11Key, key, symbol) = LookupKey(ref ev.KeyEvent, physicalKey);
-            var modifiers = TranslateModifiers(ev.KeyEvent.state);
+            var modifiers = ev.KeyEvent.state.ToRawInputModifiers();
             var timestamp = (ulong)ev.KeyEvent.time.ToInt64();
 
             var args = ev.type == XEventName.KeyPress ?

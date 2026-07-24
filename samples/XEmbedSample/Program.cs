@@ -17,6 +17,7 @@ class Program
         HarfbuzzWorkaround.Apply();
         AppBuilder.Configure<App>()
             .UseSkia()
+            .UseHarfBuzz()
             .With(new X11PlatformOptions()
             {
                 UseGLibMainLoop = true,

@@ -81,6 +81,10 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<bool> ServiceEnabledProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("ServiceEnabled", defaultValue: true, inherits: true);
 
+        /// <inheritdoc cref="Popup.ShouldUseOverlayLayer"/>
+        public static readonly AttachedProperty<bool> ShouldUseOverlayLayerProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("ShouldUseOverlayLayer");
+
         /// <summary>
         /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
@@ -302,6 +306,27 @@ namespace Avalonia.Controls
             element.SetValue(ServiceEnabledProperty, value);
 
         /// <summary>
+        /// Gets whether the tooltip popup for <paramref name="element"/> is shown in the overlay layer.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <remarks>
+        /// See <see cref="Popup.ShouldUseOverlayLayer"/> for details.
+        /// </remarks>
+        public static bool GetShouldUseOverlayLayer(Control element) =>
+            element.GetValue(ShouldUseOverlayLayerProperty);
+
+        /// <summary>
+        /// Sets whether the tooltip popup for <paramref name="element"/> is shown in the overlay layer.
+        /// </summary>
+        /// <param name="element">The control to set the property on.</param>
+        /// <param name="value">Whether to show the tooltip popup in the overlay layer.</param>
+        /// <remarks>
+        /// See <see cref="Popup.ShouldUseOverlayLayer"/> for details.
+        /// </remarks>
+        public static void SetShouldUseOverlayLayer(Control element, bool value) =>
+            element.SetValue(ShouldUseOverlayLayerProperty, value);
+
+        /// <summary>
         /// Adds a handler for the <see cref="ToolTipOpeningEvent"/> attached event.
         /// </summary>
         /// <param name="element"><see cref="Control"/> that listens to this event.</param>
@@ -421,7 +446,8 @@ namespace Avalonia.Controls
                 _popup.Bind(Popup.HorizontalOffsetProperty, control.GetBindingObservable(HorizontalOffsetProperty)),
                 _popup.Bind(Popup.VerticalOffsetProperty, control.GetBindingObservable(VerticalOffsetProperty)),
                 _popup.Bind(Popup.PlacementProperty, control.GetBindingObservable(PlacementProperty)),
-                _popup.Bind(Popup.CustomPopupPlacementCallbackProperty, control.GetBindingObservable(CustomPopupPlacementCallbackProperty))
+                _popup.Bind(Popup.CustomPopupPlacementCallbackProperty, control.GetBindingObservable(CustomPopupPlacementCallbackProperty)),
+                _popup.Bind(Popup.ShouldUseOverlayLayerProperty, control.GetBindingObservable(ShouldUseOverlayLayerProperty))
             });
 
             _popup.PlacementTarget = control;

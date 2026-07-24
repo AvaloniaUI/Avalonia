@@ -39,15 +39,21 @@
                       Condition="'$(ApplicationIcon)' != ''" />
   </ItemGroup>
 
-  <!-- Include AvaloniaXaml and AvaloniaResource as a Roslyn-visible additional files -->
-  <!-- This is necessary to use these files in source generators and other Roslyn-based extension -->
   <Target Name="_InjectAvaloniaAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
+    <!-- Include AvaloniaXaml and AvaloniaResource (XAML only) as a Roslyn-visible additional files. -->
+    <!-- This is necessary to use these files in source generators and other Roslyn-based extension. -->
+    <!-- AdditionalFiles ensures that each file has Compilation available for them. -->
     <ItemGroup>
       <AdditionalFiles Include="@(AvaloniaXaml)" SourceItemGroup="AvaloniaXaml" />
-      <_AvaloniaResourceOnly Include="@(AvaloniaResource)"
-                             Exclude="@(AvaloniaXaml)" />
-      <AdditionalFiles Include="@(_AvaloniaResourceOnly)" SourceItemGroup="AvaloniaResource" />
+      <_AvaloniaResourceXamlOnly Include="@(AvaloniaResource)"
+                                 Condition="'%(Extension)' == '.xaml' OR '%(Extension)' == '.axaml'"
+                                 Exclude="@(AvaloniaXaml)" />
+      <AdditionalFiles Include="@(_AvaloniaResourceXamlOnly)" SourceItemGroup="AvaloniaResource" />
     </ItemGroup>
+    <!-- Unfortunatelly, we can't include binary files as AdditionalFiles, so for general use avalonia resources we add AvaloniaResourcePaths instead -->
+    <PropertyGroup>
+      <AvaloniaResourcePaths>@(AvaloniaResource->'%(FullPath)', ',')</AvaloniaResourcePaths>
+    </PropertyGroup>
   </Target>
 
   <UsingTask TaskName="GenerateAvaloniaResourcesTask"
