@@ -11,6 +11,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using Avalonia.Layout;
 using Moq;
 using Xunit;
 
@@ -465,6 +466,55 @@ namespace Avalonia.Controls.UnitTests
                 contentPanel.Children.AddRange(new Control[] { acceptButton, hourSelector, minuteSelector, secondHost, secondSelector, periodHost, periodSelector, pickerContainer, secondSpacer, thirdSpacer });
                 return contentPanel;
             });
+        }
+
+        [Theory]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Top)]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Center)]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Bottom)]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Stretch)]
+        public void VerticalContentAlignment_RoundTrips(Avalonia.Layout.VerticalAlignment value)
+        {
+            var timePicker = new TimePicker { VerticalContentAlignment = value };
+            Assert.Equal(value, timePicker.VerticalContentAlignment);
+        }
+
+        [Fact]
+        public void VerticalContentAlignment_Default_Is_Stretch()
+        {
+            var timePicker = new TimePicker();
+            Assert.Equal(Avalonia.Layout.VerticalAlignment.Stretch, timePicker.VerticalContentAlignment);
+        }
+
+        [Fact]
+        public void VerticalContentAlignment_Should_Propagate_To_Internal_Grid()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var picker = new TimePicker { VerticalContentAlignment = VerticalAlignment.Bottom };
+
+                picker.Template = new Avalonia.Controls.Templates.FuncControlTemplate<TimePicker>((parent, scope) =>
+                {
+                    var grid = new Grid { Name = "PART_FlyoutButtonContentGrid" };
+                    
+                    grid.Bind(Grid.VerticalAlignmentProperty, new Avalonia.Data.Binding("VerticalContentAlignment") 
+                    { 
+                        RelativeSource = new Avalonia.Data.RelativeSource(Avalonia.Data.RelativeSourceMode.TemplatedParent) 
+                    });
+                    return grid;
+                });
+
+                var root = new Avalonia.UnitTests.TestRoot { Child = picker };
+                root.Measure(new Avalonia.Size(100, 100));
+                root.Arrange(new Avalonia.Rect(0, 0, 100, 100));
+
+                var internalGrid = picker.GetVisualDescendants()
+                                        .OfType<Grid>()
+                                        .FirstOrDefault(g => g.Name == "PART_FlyoutButtonContentGrid");
+
+                Assert.NotNull(internalGrid);
+                Assert.Equal(VerticalAlignment.Bottom, internalGrid.VerticalAlignment);
+            }
         }
     }
 }
