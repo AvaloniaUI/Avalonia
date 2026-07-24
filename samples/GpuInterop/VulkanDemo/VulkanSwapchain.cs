@@ -87,9 +87,7 @@ class VulkanSwapchainImage : ISwapchainImage
         var buffer = _vk.Pool.CreateCommandBuffer();
         buffer.BeginRecording();
 
-        _image.TransitionLayout(buffer.InternalHandle, 
-            ImageLayout.Undefined, AccessFlags.None,
-            ImageLayout.ColorAttachmentOptimal, AccessFlags.ColorAttachmentReadBit);
+        _image.TransitionLayout(buffer.InternalHandle, ImageLayout.ColorAttachmentOptimal, AccessFlags.ColorAttachmentReadBit);
 
         if(_image.IsDirectXBacked)
             buffer.Submit(null,null,null, null, new VulkanCommandBufferPool.VulkanCommandBuffer.KeyedMutexSubmitInfo
@@ -179,7 +177,8 @@ class VulkanSwapchainImage : ISwapchainImage
                 Format = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? PlatformGraphicsExternalImageFormat.B8G8R8A8UNorm : PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm,
                 Width = Size.Width,
                 Height = Size.Height,
-                MemorySize = _image.MemorySize
+                MemorySize = _image.MemorySize,
+                ImageLayout = PlatformGraphicsExternalImageLayout.TransferSrcOptimal
             });
         if (_importedTimelineSemaphore != null)
         {
