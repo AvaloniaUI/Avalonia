@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <!-- Function-pointer thunks + vtable patching in FrameClockHelper. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Example-only glue: it demonstrates how a GtkSharp app drives the embedding lib, but we do NOT ship it on
+         NuGet (real consumers write their own toolkit glue against the public Avalonia.Wayland.Embedding API). -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Avalonia.Wayland.Embedding\Avalonia.Wayland.Embedding.csproj" />
+    <PackageReference Include="GtkSharp" />
+  </ItemGroup>
+</Project>
