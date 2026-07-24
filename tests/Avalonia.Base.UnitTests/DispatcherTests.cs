@@ -152,6 +152,38 @@ public partial class DispatcherTests
     }
 
     [Fact]
+    public void DispatcherRepeatsBackgroundProcessingRequestToTheNewImplementation()
+    {
+        var actions = new List<string>();
+
+        // Requests background processing from the pre-initialization implementation
+        _uiThread.Post(() => actions.Add("Background"), DispatcherPriority.Background);
+
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl();
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        Assert.True(impl.AskedForBackgroundProcessing);
+        impl.FireBackgroundProcessing();
+        Assert.Equal(new[] { "Background" }, actions);
+    }
+
+    [Fact]
+    public void DispatcherRepeatsSignalToTheNewImplementation()
+    {
+        var actions = new List<string>();
+
+        // Signals the pre-initialization implementation
+        _uiThread.Post(() => actions.Add("Render"), DispatcherPriority.Render);
+
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl();
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        Assert.True(impl.AskedForSignal);
+        impl.ExecuteSignal();
+        Assert.Equal(new[] { "Render" }, actions);
+    }
+
+    [Fact]
     public void DispatcherStopsItemProcessingWhenInteractivityDeadlineIsReached()
     {
         var impl = new SimpleDispatcherImpl();

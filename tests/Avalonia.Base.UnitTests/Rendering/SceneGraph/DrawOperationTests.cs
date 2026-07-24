@@ -120,7 +120,12 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         {
             var ctx = new TestContext(_services);
             using (ctx.Context.PushTransform(new Matrix()))
-                ctx.Context.DrawGeometry(Brushes.Black, null, Mock.Of<IGeometryImpl>());
+            {
+                var geometry = new Mock<IGeometryImpl>();
+                geometry.Setup(g => g.GeometryImpl).Returns(geometry.Object);
+                ctx.Context.DrawGeometry(Brushes.Black, null, geometry.Object);
+            }
+
             Assert.False(ctx.Context.GetRenderResults()!.HitTest(default));
         }
 
@@ -405,6 +410,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         public void Geometry_Node_HitTest_Uses_FillContains_When_Brush_Set()
         {
             var geomMock = new Mock<IGeometryImpl>();
+            geomMock.Setup(g => g.GeometryImpl).Returns(geomMock.Object);
             geomMock.Setup(g => g.FillContains(new Point(5, 5))).Returns(true);
             geomMock.Setup(g => g.FillContains(new Point(50, 50))).Returns(false);
 
@@ -421,6 +427,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         {
             var pen = new ImmutablePen(Brushes.Black, 1);
             var geomMock = new Mock<IGeometryImpl>();
+            geomMock.Setup(g => g.GeometryImpl).Returns(geomMock.Object);
             geomMock.Setup(g => g.StrokeContains(pen, new Point(5, 5))).Returns(true);
             geomMock.Setup(g => g.StrokeContains(pen, new Point(50, 50))).Returns(false);
 

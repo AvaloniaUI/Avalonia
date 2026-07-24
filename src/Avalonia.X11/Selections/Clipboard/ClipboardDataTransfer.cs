@@ -1,7 +1,7 @@
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 
-namespace Avalonia.X11.Clipboard;
+namespace Avalonia.X11.Selections.Clipboard;
 
 /// <summary>
 /// Implementation of <see cref="IAsyncDataTransfer"/> for the X11 clipboard.
@@ -19,16 +19,12 @@ internal sealed class ClipboardDataTransfer(
     IAsyncDataTransferItem[] items)
     : PlatformAsyncDataTransfer
 {
-    private readonly ClipboardDataReader _reader = reader;
-    private readonly DataFormat[] _formats = formats;
-    private readonly IAsyncDataTransferItem[] _items = items;
-
     protected override DataFormat[] ProvideFormats()
-        => _formats;
+        => formats;
 
     protected override IAsyncDataTransferItem[] ProvideItems()
-        => _items;
+        => items;
 
     public override void Dispose()
-        => _reader.Dispose();
+        => reader.Dispose();
 }

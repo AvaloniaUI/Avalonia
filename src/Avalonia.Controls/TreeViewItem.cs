@@ -6,9 +6,7 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -45,13 +43,13 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<TreeViewItem, int> LevelProperty =
             AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
                 nameof(Level), o => o.Level);
-        
+
         /// <summary>
         /// Defines the <see cref="Expanded"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ExpandedEvent =
             RoutedEvent.Register<TreeViewItem, RoutedEventArgs>(nameof(Expanded), RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
-        
+
         /// <summary>
         /// Defines the <see cref="Collapsed"/> event.
         /// </summary>
@@ -67,6 +65,7 @@ namespace Avalonia.Controls
         private int _level;
         private bool _templateApplied;
         private bool _deferredBringIntoViewFlag;
+        private bool _itemsPanelPointerPressed;
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeViewItem"/> class.
@@ -116,7 +115,7 @@ namespace Avalonia.Controls
             get => _level;
             private set => SetAndRaise(LevelProperty, ref _level, value);
         }
-        
+
         /// <summary>
         /// Occurs after the <see cref="TreeViewItem"/> has expanded to show its children.
         /// </summary>
@@ -125,7 +124,7 @@ namespace Avalonia.Controls
             add => AddHandler(ExpandedEvent, value);
             remove => RemoveHandler(ExpandedEvent, value);
         }
-        
+
         /// <summary>
         /// Occurs after the <see cref="TreeViewItem"/> has collapsed to hide its children.
         /// </summary>
@@ -167,9 +166,9 @@ namespace Avalonia.Controls
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
-            
+
             _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
-            
+
             Level = CalculateDistanceFromLogicalParent<TreeView>(this) - 1;
 
             if (ItemTemplate == null && _treeView?.ItemTemplate != null)
@@ -313,14 +312,34 @@ namespace Avalonia.Controls
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            TreeViewOwner?.UpdateSelectionFromEvent(this, e);
+
+            _itemsPanelPointerPressed = IsItemsPanelEvent(e);
+
+            // Don't select if the pointer was pressed over the items panel
+            if (!_itemsPanelPointerPressed)
+            {
+                TreeViewOwner?.UpdateSelectionFromEvent(this, e);
+            }
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
-            TreeViewOwner?.UpdateSelectionFromEvent(this, e);
+
+            // Don't select if the gesture either started on the items panel, or ended on it
+            if (!_itemsPanelPointerPressed && !IsItemsPanelEvent(e))
+            {
+                TreeViewOwner?.UpdateSelectionFromEvent(this, e);
+            }
+
+            _itemsPanelPointerPressed = false;
         }
+
+        /// <summary>
+        /// Due to Avalonia's implicit pointer capture, the items panel receives no events if swiped onto. So we need to 
+        /// perform our own hit test to reliably determine whether the mouse event occurred over it.
+        /// </summary>
+        private bool IsItemsPanelEvent(PointerEventArgs e) => ItemsPanelRoot?.InputHitTest(e.GetPosition(ItemsPanelRoot)) != null;
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

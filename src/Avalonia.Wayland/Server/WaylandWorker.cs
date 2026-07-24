@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Logging;
@@ -113,12 +114,26 @@ partial class WaylandWorker
         return tcs.Task;
     }
 
-    void Run(WaylandPlatformOptions options, WaylandConnection connection)
+    void Run(WaylandPlatformOptions options, WaylandConnection connection,
+        TaskCompletionSource<ExceptionDispatchInfo?>? initTcs)
     {
         var reconnectsDisabled = options.EnableReconnects == false || options.DisplayFd.HasValue;
         while (true)
         {
-            RunConnection(connection, options);
+            try
+            {
+                RunConnection(connection, options, initTcs);
+            }
+            catch (Exception e) when (initTcs?.Task.IsCompleted == false)
+            {
+                // Globals init failed on the initial connection: report to the waiting caller
+                // and exit without entering the reconnect loop
+                initTcs.TrySetResult(ExceptionDispatchInfo.Capture(e));
+                connection.Dispose();
+                _wakeupFd.Dispose();
+                return;
+            }
+            initTcs = null;
             foreach (var obj in _persistentObjects.ToList())
                 obj.OnDisconnected();
             Compositor.Server.ResetAllGpuResources();
@@ -160,11 +175,15 @@ partial class WaylandWorker
         }
     }
     
-    void RunConnection(WaylandConnection connection, WaylandPlatformOptions options)
+    void RunConnection(WaylandConnection connection, WaylandPlatformOptions options,
+        TaskCompletionSource<ExceptionDispatchInfo?>? initTcs = null)
     {
         _thread = Thread.CurrentThread;
         _connection = connection;
         _globals = new WaylandGlobals(_connection, this, options, _outputsSink);
+        // Globals are fully constructed (required globals bound, sanity checks passed),
+        // the display is deemed usable
+        initTcs?.TrySetResult(null);
 
         foreach (var obj in _persistentObjects)
             ConnectPersistentObject(obj);
@@ -229,8 +248,11 @@ partial class WaylandWorker
         }
     }
     
-    public static WaylandConnection? Probe(WaylandPlatformOptions options)
+    public static WaylandConnection? Probe(WaylandPlatformOptions options) => Probe(options, out _);
+
+    public static WaylandConnection? Probe(WaylandPlatformOptions options, out ExceptionDispatchInfo? error)
     {
+        error = null;
         try
         {
             var conn = options.DisplayFd is { } fd
@@ -243,30 +265,38 @@ partial class WaylandWorker
         catch(Exception e)
         {
             Logger.TryGet(LogEventLevel.Error, "Wayland")?.Log(null, "Failed to connect to Wayland display: " + e);
+            error = ExceptionDispatchInfo.Capture(e);
             return null;
         }
     }
 
+    /// <summary>
+    /// Starts the worker on a probed connection. When <paramref name="initTcs"/> is provided, it completes
+    /// with <c>null</c> once the initial <see cref="WaylandGlobals"/> construction succeeds, or with the
+    /// captured failure, in which case the worker thread exits without reconnecting.
+    /// </summary>
     public void Start(WaylandPlatformOptions options, WaylandConnection probedConnection,
-        WaylandOutputsSinkProxy? outputsSink = null)
+        WaylandOutputsSinkProxy? outputsSink = null,
+        TaskCompletionSource<ExceptionDispatchInfo?>? initTcs = null)
     {
         _outputsSink = outputsSink;
-        StartCore(options, probedConnection, null);
+        StartCore(options, probedConnection, null, initTcs);
     }
-    
+
     public void Start(WaylandPlatformOptions options, WlDisplay foreignDisplay,
         WaylandOutputsSinkProxy? outputsSink = null)
     {
         _outputsSink = outputsSink;
-        StartCore(options, null, foreignDisplay);
+        StartCore(options, null, foreignDisplay, null);
     }
-    
-    void StartCore(WaylandPlatformOptions options, WaylandConnection? probedConnection, WlDisplay? foreignDisplay)
+
+    void StartCore(WaylandPlatformOptions options, WaylandConnection? probedConnection, WlDisplay? foreignDisplay,
+        TaskCompletionSource<ExceptionDispatchInfo?>? initTcs)
     {
         new Thread(() =>
         {
             if(probedConnection!=null)
-                Run(options, probedConnection);
+                Run(options, probedConnection, initTcs);
             else if (foreignDisplay != null)
             {
                 RunConnection(new WaylandConnection(foreignDisplay), options);
