@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TextBoxSelectionPage">
+  <ScrollViewer>
+    <StackPanel Orientation="Vertical" Spacing="12" Margin="24,16,24,24">
+      <WrapPanel Margin="-8,0">
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBox Width="240"
+                   Text="Left aligned text"
+                   TextAlignment="Left"
+                   AcceptsTab="True" />
+
+          <TextBox Width="240"
+                   Text="Center aligned text"
+                   TextAlignment="Center" />
+
+          <TextBox Width="240"
+                   Text="Right aligned text"
+                   TextAlignment="Right" />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBox Width="240"
+                   Text="Custom selection brush"
+                   SelectionStart="5"
+                   SelectionEnd="22"
+                   SelectionBrush="Green"
+                   SelectionForegroundBrush="Yellow"
+                   ClearSelectionOnLostFocus="False"/>
+
+          <TextBox Width="240"
+                   Text="Custom caret brush"
+                   CaretBrush="DarkOrange"/>
+        </StackPanel>
+      </WrapPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

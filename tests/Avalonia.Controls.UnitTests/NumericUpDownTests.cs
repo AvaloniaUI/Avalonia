@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Input.TextInput;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
@@ -101,7 +102,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(value.ToString(newNumberFormat), control.Text);
             });
         }
-        
+
         private class TestNumericUpDownValueConverter(string format) : IValueConverter
         {
             public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -113,10 +114,10 @@ namespace Avalonia.Controls.UnitTests
                 var match = numberPattern.Matches(input).FirstOrDefault();
                 if (match == null)
                     return 0m;
-                
+
                 return decimal.Parse(match.Value, CultureInfo.InvariantCulture);
             }
-            
+
             public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 if (value is not decimal inputNumber)
@@ -124,7 +125,7 @@ namespace Avalonia.Controls.UnitTests
                 return inputNumber.ToString(format, CultureInfo.InvariantCulture);
             }
         }
-        
+
         [Fact]
         public void TextConverter_Is_Applied_Immediately()
         {
@@ -133,18 +134,60 @@ namespace Avalonia.Controls.UnitTests
                 const decimal value = 10.11m;
                 var initialConverter = new TestNumericUpDownValueConverter("C2");
                 var newConverter = new TestNumericUpDownValueConverter("P2");
-                
+
                 // Establish and verify initial conditions.
                 control.Value = value;
                 control.TextConverter = initialConverter;
                 var oldText = control.Text ?? string.Empty;
                 Assert.Equal("¤10.11", oldText);
-                
+
                 // Check that NumberFormat is applied.
                 control.TextConverter = newConverter;
                 var newText = control.Text ?? string.Empty;
                 Assert.Equal("1,011.00 %", newText);
             });
+        }
+
+        [Fact]
+        public void Spell_Check_Option_Is_Inherited_By_Inner_TextBox()
+        {
+            RunTest((control, textbox) =>
+            {
+                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textbox));
+            });
+        }
+
+        [Fact]
+        public void Spell_Check_Can_Be_Explicitly_Enabled_For_Inner_TextBox()
+        {
+            RunTest((control, textbox) =>
+            {
+                TextInputOptions.SetIsSpellCheckEnabled(control, true);
+
+                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textbox));
+            });
+        }
+
+        [Fact]
+        public void Spell_Check_Option_Can_Be_Enabled_From_Parent_Scope()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var root = new Panel();
+                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+
+                var control = CreateControl();
+                root.Children.Add(control);
+
+                var textBox = GetTextBox(control);
+                var window = new Window { Content = root };
+                window.ApplyStyling();
+                window.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+            }
         }
 
         public static IEnumerable<object?[]> Increment_Decrement_TestData()
@@ -212,6 +255,9 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_TextBox"
                     }.RegisterInNameScope(scope);
+                textBox.Bind(
+                    TextInputOptions.IsSpellCheckEnabledProperty,
+                    control.GetBindingObservable(TextInputOptions.IsSpellCheckEnabledProperty));
                 return new ButtonSpinner
                     {
                         Name = "PART_Spinner",

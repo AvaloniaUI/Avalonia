@@ -4,6 +4,7 @@
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <Import Project="../../build/TrimmingEnable.props" />

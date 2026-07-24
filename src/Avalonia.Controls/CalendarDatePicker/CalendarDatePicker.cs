@@ -13,6 +13,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
@@ -80,6 +81,7 @@ namespace Avalonia.Controls
         static CalendarDatePicker()
         {
             FocusableProperty.OverrideDefaultValue<CalendarDatePicker>(true);
+            TextInputOptions.IsSpellCheckEnabledProperty.OverrideDefaultValue<CalendarDatePicker>(false);
         }
 
         /// <summary>

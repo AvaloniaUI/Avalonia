@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TextBoxContentTypesPage">
+  <ScrollViewer>
+    <StackPanel Orientation="Vertical" Spacing="12" Margin="24,16,24,24">
+      <WrapPanel Margin="-8,0">
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBox Width="240"
+                   PlaceholderText="Numeric"
+                   TextInputOptions.ContentType="Number" />
+
+          <TextBox Width="240"
+                   PlaceholderText="Password"
+                   Classes="revealPasswordButton"
+                   TextInputOptions.ContentType="Password"
+                   UseFloatingPlaceholder="True"
+                   PasswordChar="*"
+                   Text="Password" />
+
+          <TextBox Width="240"
+                   PlaceholderText="Search"
+                   TextInputOptions.ContentType="Search" />
+
+          <TextBox Width="240"
+                   PlaceholderText="Suggestions are hidden"
+                   TextInputOptions.ShowSuggestions="False" />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBox Width="240"
+                   PlaceholderText="Return key: Search"
+                   TextInputOptions.ReturnKeyType="Search" />
+
+          <TextBox Width="240"
+                   PlaceholderText="Auto capitalization"
+                   TextInputOptions.AutoCapitalization="True" />
+
+          <TextBox Width="240"
+                   Text="Sensitive text"
+                   TextInputOptions.IsSensitive="True" />
+        </StackPanel>
+      </WrapPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

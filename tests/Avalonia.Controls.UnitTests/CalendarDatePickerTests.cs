@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -195,6 +196,49 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Spell_Check_Option_Is_Inherited_By_Inner_TextBox()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var datePicker = CreateControl();
+                var textBox = GetTextBox(datePicker);
+
+                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Can_Be_Explicitly_Enabled_For_Inner_TextBox()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var datePicker = CreateControl();
+                var textBox = GetTextBox(datePicker);
+
+                TextInputOptions.SetIsSpellCheckEnabled(datePicker, true);
+
+                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Option_Can_Be_Enabled_From_Parent_Scope()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var root = new Panel();
+                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+
+                var datePicker = CreateControl();
+                root.Children.Add(datePicker);
+
+                var textBox = GetTextBox(datePicker);
+
+                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+            }
+        }
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
@@ -219,6 +263,9 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_TextBox"
                     }.RegisterInNameScope(scope);
+                textBox.Bind(
+                    TextInputOptions.IsSpellCheckEnabledProperty,
+                    control.GetBindingObservable(TextInputOptions.IsSpellCheckEnabledProperty));
                 var button =
                     new Button
                     {

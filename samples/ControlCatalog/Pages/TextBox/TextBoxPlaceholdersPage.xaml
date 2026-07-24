@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TextBoxPlaceholdersPage">
+  <ScrollViewer>
+    <StackPanel Orientation="Vertical" Spacing="12" Margin="24,16,24,24">
+      <WrapPanel Margin="-8,0">
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBox Width="260"
+                   PlaceholderText="Floating Placeholder"
+                   UseFloatingPlaceholder="True"
+                   Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+
+          <TextBox Width="260"
+                   PlaceholderText="Custom Placeholder Color"
+                   PlaceholderForeground="Red"/>
+
+          <TextBox Width="260"
+                   PlaceholderText="Floating Placeholder Color"
+                   UseFloatingPlaceholder="True"
+                   PlaceholderForeground="Purple"/>
+        </StackPanel>
+      </WrapPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

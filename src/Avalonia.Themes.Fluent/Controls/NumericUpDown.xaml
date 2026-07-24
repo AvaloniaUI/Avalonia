@@ -84,6 +84,7 @@
                      Foreground="{TemplateBinding Foreground}"
                      PlaceholderText="{TemplateBinding PlaceholderText}"
                      PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                     TextInputOptions.IsSpellCheckEnabled="{TemplateBinding (TextInputOptions.IsSpellCheckEnabled)}"
                      IsReadOnly="{TemplateBinding IsReadOnly}"
                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"

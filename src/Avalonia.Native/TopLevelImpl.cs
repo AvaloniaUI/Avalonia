@@ -70,6 +70,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
     private readonly IKeyboardDevice? _keyboard;
     private readonly ICursorFactory? _cursorFactory;
+    private readonly ISpellCheckProvider? _spellCheckProvider;
 
     protected readonly IAvaloniaNativeFactory Factory;
 
@@ -90,6 +91,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _mouse = Avalonia.Input.MouseDevice.Primary;
         _pen = new PenDevice();
         _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
+        _spellCheckProvider = OperatingSystem.IsMacOS() ? new MacOSSpellCheckProvider() : null;
     }
 
     internal virtual void Init(MacOSTopLevelHandle handle)
@@ -363,6 +365,11 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         if (featureType == typeof(IClipboard))
         {
             return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+        }
+
+        if (featureType == typeof(ISpellCheckProvider))
+        {
+            return _spellCheckProvider;
         }
 
         if (featureType == typeof(IScreenImpl))

@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:data="using:Avalonia.Data"
+             x:Class="ControlCatalog.Pages.TextBoxBasicInputPage">
+  <ScrollViewer>
+    <StackPanel Orientation="Vertical" Spacing="12" Margin="24,16,24,24">
+      <WrapPanel Margin="-8,0">
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="220"
+                   FontFamily="Comic Sans MS"
+                   Foreground="Blue">
+            <TextBox.ContextFlyout>
+              <Flyout>
+                <TextBlock>Custom context flyout</TextBlock>
+              </Flyout>
+            </TextBox.ContextFlyout>
+          </TextBox>
+
+          <TextBox Width="220"
+                   PlaceholderText="ReadOnly"
+                   IsReadOnly="True"
+                   Text="This is read only"/>
+
+          <TextBox Width="220" Text="Validation Error">
+            <DataValidationErrors.Error>
+              <data:DataValidationException>
+                <x:Arguments>
+                  <x:String>This field contains a validation error.</x:String>
+                </x:Arguments>
+              </data:DataValidationException>
+            </DataValidationErrors.Error>
+          </TextBox>
+
+          <TextBox Classes="clearButton"
+                   Text="Clear Content"
+                   Width="220"
+                   FontWeight="Normal"
+                   FontStyle="Normal"
+                   PlaceholderText="Placeholder"
+                   FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+        </StackPanel>
+      </WrapPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

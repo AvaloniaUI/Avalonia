@@ -14,6 +14,8 @@ public class TextInputOptions
             Lowercase = GetLowercase(avaloniaObject),
             Uppercase = GetUppercase(avaloniaObject),
             ShowSuggestions = GetShowSuggestions(avaloniaObject),
+            IsSpellCheckEnabled = GetIsSpellCheckEnabled(avaloniaObject),
+            SpellCheckProvider = GetSpellCheckProvider(avaloniaObject),
         };
 
         return result;
@@ -287,4 +289,96 @@ public class TextInputOptions
     /// Show virtual keyboard suggestions
     /// </summary>
     public bool? ShowSuggestions { get; set; }
+
+    /// <summary>
+    /// Defines the <see cref="IsSpellCheckEnabled"/> property.
+    /// </summary>
+    public static readonly AttachedProperty<bool?> IsSpellCheckEnabledProperty =
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, bool?>(
+            "IsSpellCheckEnabled",
+            inherits: true);
+
+    /// <summary>
+    /// Sets the value of the attached <see cref="IsSpellCheckEnabledProperty"/> on a control.
+    /// </summary>
+    /// <param name="avaloniaObject">The control.</param>
+    /// <param name="value">The property value to set.</param>
+    public static void SetIsSpellCheckEnabled(StyledElement avaloniaObject, bool? value)
+    {
+        avaloniaObject.SetValue(IsSpellCheckEnabledProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the value of the attached <see cref="IsSpellCheckEnabledProperty"/>.
+    /// </summary>
+    /// <param name="avaloniaObject">The target.</param>
+    /// <returns>true if spell checking is enabled; false if disabled; null to use the platform default.</returns>
+    public static bool? GetIsSpellCheckEnabled(StyledElement avaloniaObject)
+    {
+        return avaloniaObject.GetValue(IsSpellCheckEnabledProperty);
+    }
+
+    /// <summary>
+    /// Gets or sets whether spell checking is enabled. A null value uses the platform/control default.
+    /// </summary>
+    public bool? IsSpellCheckEnabled { get; set; }
+
+    internal bool CanUseSpellCheck(bool hasPasswordChar = false)
+    {
+        if (IsSpellCheckEnabled == false ||
+            IsSensitive ||
+            hasPasswordChar ||
+            ContentType is TextInputContentType.Digits
+                or TextInputContentType.Number
+                or TextInputContentType.Password
+                or TextInputContentType.Pin)
+        {
+            return false;
+        }
+
+        if (IsSpellCheckEnabled == true)
+        {
+            return true;
+        }
+
+        return ContentType is TextInputContentType.Normal
+            or TextInputContentType.Alpha
+            or TextInputContentType.Name
+            or TextInputContentType.Search
+            or TextInputContentType.Social;
+    }
+
+    /// <summary>
+    /// Defines the <see cref="SpellCheckProvider"/> property.
+    /// </summary>
+    public static readonly AttachedProperty<ISpellCheckProvider?> SpellCheckProviderProperty =
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, ISpellCheckProvider?>(
+            "SpellCheckProvider",
+            inherits: true);
+
+    /// <summary>
+    /// Sets the spell-checking provider to use for a control and its descendants.
+    /// </summary>
+    /// <param name="avaloniaObject">The control or parent scope.</param>
+    /// <param name="value">The provider to use, or null to use the platform default.</param>
+    public static void SetSpellCheckProvider(StyledElement avaloniaObject, ISpellCheckProvider? value)
+    {
+        avaloniaObject.SetValue(SpellCheckProviderProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the spell-checking provider to use for a control.
+    /// </summary>
+    /// <param name="avaloniaObject">The target.</param>
+    /// <returns>The inherited provider to use, or null to use the platform default.</returns>
+    public static ISpellCheckProvider? GetSpellCheckProvider(StyledElement avaloniaObject)
+    {
+        return avaloniaObject.GetValue(SpellCheckProviderProperty);
+    }
+
+    /// <summary>
+    /// Gets or sets the spell-checking provider. This value is inherited by descendants.
+    /// A null value uses the platform default.
+    /// </summary>
+    public ISpellCheckProvider? SpellCheckProvider { get; set; }
 }

@@ -40,6 +40,7 @@
                      TextWrapping="NoWrap"
                      PlaceholderText="{TemplateBinding PlaceholderText}"
                      PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                     TextInputOptions.IsSpellCheckEnabled="{TemplateBinding (TextInputOptions.IsSpellCheckEnabled)}"
                      InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
                      InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"/>
           </ButtonSpinner>
