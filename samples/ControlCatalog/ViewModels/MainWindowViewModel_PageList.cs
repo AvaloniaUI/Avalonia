@@ -71,6 +71,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("OpenGL",() => new OpenGlPage(), Icons.Cube3D),
             new PageItem("OpenGL Lease",() => new OpenGlLeasePage(), Icons.Cube3D),
             new PageItem("OpenGL Interop",() => new OpenGlInteropPage(), Icons.Cube3D),
+            new PageItem("OpenGL Off-Thread",() => new OpenGlOffThreadPage(), Icons.Cube3D),
             new PageItem("PipsPager",() => new PipsPagerPage(), Icons.HorizontalDots),
             new PageItem("Platform Information",() => new PlatformInfoPage(), Icons.Info),
             new PageItem("Pointers",() => new PointersPage(), Icons.Cursor),
