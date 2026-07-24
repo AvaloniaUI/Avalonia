@@ -120,13 +120,32 @@ namespace Avalonia.Rendering.Composition
                 var pending = _pendingBatch;
                 if (pending != null)
                     pending.Processed.ContinueWith(
-                        _ => Dispatcher.Post(_triggerCommitRequested, DispatcherPriority.Send),
+                        _ => PostDeferredTriggerCommitRequested(),
                         CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 else
                     _triggerCommitRequested();
             }
 
             return _nextCommit;
+        }
+
+        private DispatcherOperation? _deferredTriggerCommitRequestedOperation;
+        private Action? _deferredTriggerCommitRequested;
+
+        private void PostDeferredTriggerCommitRequested()
+        {
+            // Keep at most one trigger operation in the dispatcher queue, so batches committed
+            // while the dispatcher isn't pumped don't accumulate stale operations
+            if (_deferredTriggerCommitRequestedOperation is { Status: DispatcherOperationStatus.Pending })
+                return;
+            _deferredTriggerCommitRequested ??= () =>
+            {
+                // The batch could have been committed while this operation was in the queue
+                if (HasPendingCommit)
+                    _triggerCommitRequested();
+            };
+            _deferredTriggerCommitRequestedOperation =
+                Dispatcher.InvokeAsync(_deferredTriggerCommitRequested, DispatcherPriority.Send);
         }
 
         internal CompositionBatch Commit()

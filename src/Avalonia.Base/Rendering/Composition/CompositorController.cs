@@ -9,6 +9,7 @@ namespace Avalonia.Rendering.Composition;
 /// existing compositor, but is bound to a different dispatcher and is not driven by the framework's scheduler.
 /// </summary>
 /// <remarks>
+/// Created via <see cref="Rendering.Composition.Compositor.CreateCompositorController"/>.
 /// The controlled compositor is intended for feeding composition surfaces from non-UI threads,
 /// see <see cref="CompositionDrawingSurface.CreateProxyForCompositor"/>.
 /// Batches are committed either explicitly via <see cref="Commit"/> or by a job posted to the compositor's
@@ -31,16 +32,8 @@ public sealed class CompositorController : ICompositorScheduler
     private bool _commitJobScheduled;
     private readonly Action _commitJob;
 
-    /// <summary>
-    /// Creates a compositor attached to the same render thread as <paramref name="shareServerWith"/>
-    /// </summary>
-    /// <param name="shareServerWith">The compositor to share the server-side state with</param>
-    /// <param name="dispatcher">
-    /// The dispatcher the new compositor is bound to, the dispatcher of the current thread by default
-    /// </param>
-    public CompositorController(Compositor shareServerWith, Dispatcher? dispatcher = null)
+    internal CompositorController(Compositor shareServerWith, Dispatcher dispatcher)
     {
-        dispatcher ??= Dispatcher.CurrentDispatcher;
         _commitJob = ExecuteScheduledCommit;
         Compositor = new Compositor(shareServerWith, this, dispatcher);
         // Flush pending batches so already requested server-side jobs and disposals aren't lost.

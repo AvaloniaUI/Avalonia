@@ -187,7 +187,7 @@ public partial class OpenGlOffThreadPage : ContentPage
 
         private async Task RunAsync()
         {
-            var controller = new CompositorController(_uiCompositor);
+            var controller = _uiCompositor.CreateCompositorController();
             var compositor = controller.Compositor;
 
             var proxy = await Dispatcher.UIThread.InvokeAsync(() => _createProxy(compositor));

@@ -362,7 +362,7 @@ public class OpenGlCompositionInteropTests : TestBase
                 // Awaits below have to resume on this thread, normally this is provided by the dispatcher loop
                 SynchronizationContext.SetSynchronizationContext(
                     new AvaloniaSynchronizationContext(dispatcher, DispatcherPriority.Normal));
-                controller = new CompositorController(scaffolding.Compositor, dispatcher);
+                controller = scaffolding.Compositor.CreateCompositorController(dispatcher);
                 controllerCreated.Release();
                 Assert.True(proxyCreated.Wait(timeout));
 
