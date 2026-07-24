@@ -1213,6 +1213,103 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Shared_Size_Group_Shrinks_When_Content_Is_Hidden()
+        {
+            var grids = new[]
+            {
+                CreateGrid(("A", GridLength.Auto)),
+                CreateGrid(("A", GridLength.Auto)),
+            };
+            var content = new Border
+            {
+                Width = 50,
+                IsVisible = false,
+            };
+            grids[1].Children.Add(content);
+
+            var scope = new StackPanel
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children =
+                {
+                    grids[0],
+                    grids[1],
+                },
+            };
+            var root = new TestRoot(scope);
+            void ExecuteSharedSizeLayoutPass()
+            {
+                // Shared groups validate after layout and apply any resulting invalidation on the next pass.
+                root.LayoutManager.ExecuteLayoutPass();
+                root.LayoutManager.ExecuteLayoutPass();
+            }
+
+            root.ExecuteInitialLayoutPass();
+            Assert.All(grids, grid => Assert.Equal(0, grid.ColumnDefinitions[0].ActualWidth));
+
+            content.IsVisible = true;
+            ExecuteSharedSizeLayoutPass();
+            Assert.All(grids, grid => Assert.Equal(50, grid.ColumnDefinitions[0].ActualWidth));
+
+            content.IsVisible = false;
+            ExecuteSharedSizeLayoutPass();
+            Assert.All(grids, grid => Assert.Equal(0, grid.ColumnDefinitions[0].ActualWidth));
+        }
+
+        [Fact]
+        public void Shared_Size_Group_Shrinks_When_Participant_Uses_Cyclic_Measure_Path()
+        {
+            // A grid mixing an auto-column/star-row cell with a star-column/auto-row cell cannot
+            // resolve stars in either direction up front, so Grid measures it through its cyclic
+            // dependency path. That path saves definition min sizes before the repeated measure and
+            // restores them afterwards. Saving the effective min size folds the group minimum into
+            // the definition's own contribution, which then reclassifies it as a long pole - and
+            // long poles are deliberately never remeasured, so the group stays pinned open.
+            var cyclicGrid = CreateGrid(("A", GridLength.Auto), (null, new GridLength(1, GridUnitType.Star)));
+            cyclicGrid.Height = 100;  // star rows collapse to auto under an infinite constraint.
+            cyclicGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            cyclicGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            var autoColumnStarRowChild = new Border { Width = 10, Height = 10 };
+            Grid.SetColumn(autoColumnStarRowChild, 0);
+            Grid.SetRow(autoColumnStarRowChild, 1);
+
+            var starColumnAutoRowChild = new Border { Width = 10, Height = 10 };
+            Grid.SetColumn(starColumnAutoRowChild, 1);
+            Grid.SetRow(starColumnAutoRowChild, 0);
+
+            cyclicGrid.Children.Add(autoColumnStarRowChild);
+            cyclicGrid.Children.Add(starColumnAutoRowChild);
+
+            var plainGrid = CreateGrid(("A", GridLength.Auto), (null, new GridLength(1, GridUnitType.Star)));
+            var wideContent = new Border { Width = 50, Height = 10 };
+            plainGrid.Children.Add(wideContent);
+
+            var scope = new StackPanel
+            {
+                [Grid.IsSharedSizeScopeProperty] = true,
+                Children = { cyclicGrid, plainGrid },
+            };
+            var root = new TestRoot(scope);
+            void ExecuteSharedSizeLayoutPass()
+            {
+                // Shared groups validate after layout and apply any resulting invalidation on the next pass.
+                root.LayoutManager.ExecuteLayoutPass();
+                root.LayoutManager.ExecuteLayoutPass();
+            }
+
+            root.ExecuteInitialLayoutPass();
+            ExecuteSharedSizeLayoutPass();
+            Assert.Equal(50, cyclicGrid.ColumnDefinitions[0].ActualWidth);
+            Assert.Equal(50, plainGrid.ColumnDefinitions[0].ActualWidth);
+
+            wideContent.IsVisible = false;
+            ExecuteSharedSizeLayoutPass();
+            Assert.Equal(10, cyclicGrid.ColumnDefinitions[0].ActualWidth);
+            Assert.Equal(10, plainGrid.ColumnDefinitions[0].ActualWidth);
+        }
+
+        [Fact]
         public void Collection_Changes_Are_Tracked()
         {
             var grid = CreateGrid(
