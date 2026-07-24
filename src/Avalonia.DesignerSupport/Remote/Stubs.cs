@@ -107,6 +107,10 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void BeginMoveDrag()
+        {
+        }
+
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
         }

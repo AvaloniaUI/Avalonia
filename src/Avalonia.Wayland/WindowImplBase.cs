@@ -39,6 +39,13 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     
     internal IReadOnlyList<object> CurrentOutputIds { get; set; } = Array.Empty<object>();
 
+    /// <summary>
+    /// The platform cookie of the most recent pointer or touch press delivered to this surface.
+    /// Consumed by the parameterless BeginMoveDrag, whose initiating press is handled by hosted
+    /// native content and therefore has no Avalonia event to read a cookie from.
+    /// </summary>
+    internal object? LatestPressCookie { get; private protected set; }
+
     protected WindowBaseImpl(WaylandWorkerClient client)
     {
         Client = client;

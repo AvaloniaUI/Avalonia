@@ -102,6 +102,11 @@ namespace Avalonia.Native
             Native?.BeginMoveDrag();
         }
 
+        public void BeginMoveDrag()
+        {
+            Native?.BeginMoveDrag();
+        }
+
         public Size MaxAutoSizeHint => this.TryGetFeature<IScreenImpl>()!.AllScreens
             .Select(s => s.Bounds.Size.ToSize(1))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();

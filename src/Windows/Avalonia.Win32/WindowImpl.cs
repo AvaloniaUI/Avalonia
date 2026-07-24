@@ -779,18 +779,25 @@ namespace Avalonia.Win32
             {
                 if (e.Pointer.IsPrimary)
                 {
-                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
-                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
-                    // message or not, so they are not interesting
-
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
+                    BeginMoveDragCore();
                 }
                 else
                 {
                     throw new InvalidOperationException("BeginMoveDrag Failed");
                 }
             }, DispatcherPriority.Send);
+        }
+
+        public void BeginMoveDrag() => Dispatcher.UIThread.Post(BeginMoveDragCore, DispatcherPriority.Send);
+
+        private void BeginMoveDragCore()
+        {
+            // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+            // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+            // message or not, so they are not interesting
+
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)

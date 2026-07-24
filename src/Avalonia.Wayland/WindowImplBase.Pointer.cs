@@ -35,6 +35,8 @@ partial class WindowBaseImpl
         void IWSurfaceEventSink.OnPointerButton(ulong timestamp, uint serial, RawPointerEventType type,
             RawInputModifiers modifiers, Point position, object? platformCookie)
         {
+            if (platformCookie != null)
+                Parent.LatestPressCookie = platformCookie;
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawPointerEventArgs(Mouse, timestamp, InputRoot,
@@ -52,6 +54,8 @@ partial class WindowBaseImpl
 
         void IWSurfaceEventSink.OnTouchDown(ulong timestamp, int touchId, Point position, object? platformCookie)
         {
+            if (platformCookie != null)
+                Parent.LatestPressCookie = platformCookie;
             if (InputRoot is null)
                 return;
             ScheduleInput(new RawTouchEventArgs(Touch, timestamp, InputRoot,

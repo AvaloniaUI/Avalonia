@@ -317,6 +317,14 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
         _surfaceProxy?.Move(cookie, WaylandDispatchPriority.Oob);
     }
 
+    public void BeginMoveDrag()
+    {
+        // No Avalonia event exists for the initiating press (it was handled by hosted native
+        // content), so consume the serial of the latest press delivered to this surface —
+        // the same serial an event-carried cookie would hold for that press.
+        _surfaceProxy?.Move(LatestPressCookie, WaylandDispatchPriority.Oob);
+    }
+
     public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
     {
         var resizeEdge = edge switch

@@ -551,6 +551,14 @@ namespace Avalonia.Controls
         public void BeginMoveDrag(PointerPressedEventArgs e) => PlatformImpl?.BeginMoveDrag(e);
 
         /// <summary>
+        /// Starts moving a window using the platform's current input state, without an originating
+        /// Avalonia pointer event. Intended for presses handled by hosted native content (for example
+        /// a WebView), which never enter Avalonia's input pipeline. Should be called while the
+        /// primary pointer button is held down.
+        /// </summary>
+        public void BeginMoveDrag() => PlatformImpl?.BeginMoveDrag();
+
+        /// <summary>
         /// Starts resizing a window. This function is used if an application has window resizing controls. 
         /// Should be called from left mouse button press event handler
         /// </summary>

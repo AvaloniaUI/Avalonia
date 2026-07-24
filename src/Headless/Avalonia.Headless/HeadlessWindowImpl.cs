@@ -420,7 +420,12 @@ namespace Avalonia.Headless
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
-            
+
+        }
+
+        public void BeginMoveDrag()
+        {
+
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)

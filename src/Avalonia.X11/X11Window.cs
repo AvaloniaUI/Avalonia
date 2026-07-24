@@ -1409,18 +1409,27 @@ namespace Avalonia.X11
 
         private void BeginMoveResize(NetWmMoveResize side, PointerPressedEventArgs e)
         {
+            BeginMoveResizeCore(side);
+            e.Pointer.Capture(null);
+        }
+
+        private void BeginMoveResizeCore(NetWmMoveResize side)
+        {
             var pos = GetCursorPos(_x11);
             XUngrabPointer(_x11.Display, new IntPtr(0));
             SendNetWMMessage (_x11.Atoms._NET_WM_MOVERESIZE, (IntPtr) pos.x, (IntPtr) pos.y,
                 (IntPtr) side,
                 (IntPtr) 1, (IntPtr)1); // left button
-                
-            e.Pointer.Capture(null);
         }
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             BeginMoveResize(NetWmMoveResize._NET_WM_MOVERESIZE_MOVE, e);
+        }
+
+        public void BeginMoveDrag()
+        {
+            BeginMoveResizeCore(NetWmMoveResize._NET_WM_MOVERESIZE_MOVE);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
