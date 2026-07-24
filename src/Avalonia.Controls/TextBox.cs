@@ -2110,7 +2110,10 @@ namespace Avalonia.Controls
 
         internal static int CoerceCaretIndex(AvaloniaObject sender, int value)
         {
-            var text = sender.GetValue(TextProperty); // method also used by TextPresenter and SelectableTextBlock
+            // method also used by TextPresenter and SelectableTextBlock
+            var text = sender is SelectableTextBlock textBlock
+                ? textBlock.HasComplexContent ? sender.GetValue(SelectableTextBlock.InlinesProperty)?.Text : sender.GetValue(TextProperty)
+                : sender.GetValue(TextProperty);
 
             if (text == null)
             {
