@@ -102,6 +102,23 @@ partial class AvaloniaView
         {
             get
             {
+                var hintLocales = _view._options?.HintLocales;
+
+                if (hintLocales?.Count > 0)
+                {
+                    foreach (var locale in hintLocales)
+                    {
+                        foreach (var inputMode in UITextInputMode.ActiveInputModes)
+                        {
+                            var lang = inputMode.PrimaryLanguage;
+                            if (lang != null && lang.StartsWith(locale, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return inputMode;
+                            }
+                        }
+                    }
+                }
+
                 UITextInputMode? mode = null;
 #if !TVOS
 #pragma warning disable CA1422

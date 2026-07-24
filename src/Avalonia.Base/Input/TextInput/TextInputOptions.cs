@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Avalonia.Input.TextInput;
 
 public class TextInputOptions
@@ -14,6 +16,7 @@ public class TextInputOptions
             Lowercase = GetLowercase(avaloniaObject),
             Uppercase = GetUppercase(avaloniaObject),
             ShowSuggestions = GetShowSuggestions(avaloniaObject),
+            HintLocales = GetHintLocales(avaloniaObject),
         };
 
         return result;
@@ -287,4 +290,37 @@ public class TextInputOptions
     /// Show virtual keyboard suggestions
     /// </summary>
     public bool? ShowSuggestions { get; set; }
+
+    /// <summary>
+    /// Defines the <see cref="HintLocales"/> property.
+    /// </summary>
+    public static readonly AttachedProperty<IList<string>?> HintLocalesProperty =
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, IList<string>?>(
+            "HintLocales",
+            inherits: true);
+
+    /// <summary>
+    /// Sets the value of the attached <see cref="HintLocalesProperty"/> on a control.
+    /// </summary>
+    /// <param name="avaloniaObject">The control.</param>
+    /// <param name="value">The property value to set.</param>
+    public static void SetHintLocales(StyledElement avaloniaObject, IList<string>? value)
+    {
+        avaloniaObject.SetValue(HintLocalesProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the value of the attached <see cref="HintLocalesProperty"/>.
+    /// </summary>
+    /// <param name="avaloniaObject">The target.</param>
+    /// <returns>BCP47 locale values</returns>
+    public static IList<string>? GetHintLocales(StyledElement avaloniaObject)
+    {
+        return avaloniaObject.GetValue(HintLocalesProperty);
+    }
+
+    /// <summary>
+    /// Hint locales using BCP47 values
+    /// </summary>
+    public IList<string>? HintLocales { get; set; }
 }

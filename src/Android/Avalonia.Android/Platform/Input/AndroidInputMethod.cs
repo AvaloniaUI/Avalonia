@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Android.Content;
+using Android.OS;
 using Android.Runtime;
 using Android.Text;
 using Android.Views;
@@ -205,6 +207,9 @@ namespace Avalonia.Android.Platform.Input
                 };
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
+
+                if (options.HintLocales?.Count > 0)
+                    outAttrs.HintLocales = new LocaleList(options.HintLocales.Select(Java.Util.Locale.ForLanguageTag).ToArray());
 
                 return _inputConnection;
             });
