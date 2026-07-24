@@ -198,6 +198,12 @@ namespace Avalonia.Controls
             set
             {
                 if (_extData == null) { _extData = new ExtendedData(); }
+                //  release the outgoing definitions, otherwise they stay registered with their
+                //  shared size group and keep contributing to its minimum.
+                if (_extData.ColumnDefinitions is { } oldDefinitions && !ReferenceEquals(oldDefinitions, value))
+                {
+                    oldDefinitions.Parent = null;
+                }
                 _extData.ColumnDefinitions = value;
                 _extData.ColumnDefinitions.Parent = this;
                 InvalidateMeasure();
@@ -220,6 +226,12 @@ namespace Avalonia.Controls
             set
             {
                 if (_extData == null) { _extData = new ExtendedData(); }
+                //  release the outgoing definitions, otherwise they stay registered with their
+                //  shared size group and keep contributing to its minimum.
+                if (_extData.RowDefinitions is { } oldDefinitions && !ReferenceEquals(oldDefinitions, value))
+                {
+                    oldDefinitions.Parent = null;
+                }
                 _extData.RowDefinitions = value;
                 _extData.RowDefinitions.Parent = this;
                 InvalidateMeasure();

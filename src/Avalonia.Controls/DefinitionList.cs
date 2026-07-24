@@ -25,6 +25,23 @@ namespace Avalonia.Controls
 
         private void SetParent(Grid? value)
         {
+            if (_parent == value)
+            {
+                return;
+            }
+
+            //  Definitions already in the collection when the grid claims it never pass through
+            //  OnCollectionChanged, so they have to be joined to (and detached from) the parent tree
+            //  here. Assigning Parent alone is not enough: OnEnterParentTree also establishes the
+            //  property inheritance link the definition needs to see its shared size scope.
+            if (_parent is not null)
+            {
+                foreach (T definition in this)
+                {
+                    definition.OnExitParentTree();
+                }
+            }
+
             _parent = value;
 
             var idx = 0;
@@ -33,6 +50,11 @@ namespace Avalonia.Controls
             {
                 definition.Parent = value;
                 definition.Index = idx++;
+
+                if (value is not null)
+                {
+                    definition.OnEnterParentTree();
+                }
             }
         }
 
