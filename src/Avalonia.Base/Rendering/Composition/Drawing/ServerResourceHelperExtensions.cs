@@ -19,6 +19,8 @@ static class ServerResourceHelperExtensions
             return immutable;
         if (brush is ICompositionRenderResource<IBrush> resource)
             return resource.GetForCompositor(compositor);
+        if (brush is CompositionBrush compositionBrush)
+            return compositionBrush.Server;
         ThrowNotCompatible(brush);
         return null;
     }
