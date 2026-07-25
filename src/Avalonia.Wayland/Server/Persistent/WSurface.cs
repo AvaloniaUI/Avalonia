@@ -821,6 +821,11 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
         var hadPrevious = _positioner.HasValue;
         _positioner = positioner;
 
+        // The popup child's margin (Deflate) must be carved out of the surface's window geometry
+        // so the compositor positions and constrains against the child content.
+        if (positioner.Deflate != default)
+            SetShadowExtents(positioner.Deflate);
+
         if (!hadPrevious)
         {
             // First positioner — attempt to attach now (may still defer
@@ -915,9 +920,12 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
 
         var positioner = Globals.XdgWmBase.CreatePositioner();
 
-        // Size: protocol requires positive integers.
-        var width = Math.Max(1, (int)Math.Ceiling(p.Size.Width));
-        var height = Math.Max(1, (int)Math.Ceiling(p.Size.Height));
+        // Size corresponds to the popup's window geometry (see the
+        // xdg_positioner.set_size contract), which excludes the child margin.
+        // The protocol requires positive integers.
+        var geometrySize = p.Size.Deflate(p.Deflate);
+        var width = Math.Max(1, (int)Math.Ceiling(geometrySize.Width));
+        var height = Math.Max(1, (int)Math.Ceiling(geometrySize.Height));
         positioner.SetSize(width, height);
 
         // The anchor rect is given in the parent's *buffer-relative* logical
