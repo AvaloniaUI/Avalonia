@@ -1155,7 +1155,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var window = PreparedWindow(placementTarget);
             window.Show();
             popup.Open();
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             Point GetPopupPosition()
             {
@@ -1166,6 +1166,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 else
                 {
                     var impl = Assert.IsAssignableFrom<PopupRoot>(popup.Host).PlatformImpl;
+                    Assert.NotNull(impl);
                     return impl.Position.ToPoint(impl.RenderScaling);
                 }
             }
@@ -1180,7 +1181,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // to keep the child's bounds stable. Thus the popup as a whole should have moved upwards and to the left.
             var expected = initialPosition - new Point(ChildMarginLength, ChildMarginLength);
             
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.Equal(expected, GetPopupPosition());
         }
 
