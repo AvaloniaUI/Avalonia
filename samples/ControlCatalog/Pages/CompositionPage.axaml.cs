@@ -315,7 +315,7 @@ public partial class CompositionPage : TabbedPage
     
     private void ButtonThreadSleep(object? sender, RoutedEventArgs e)
     {
-        Thread.Sleep(10000);
+        Thread.Sleep(5000);
     }
 
     private void ButtonStartCustomVisual(object? sender, RoutedEventArgs e)

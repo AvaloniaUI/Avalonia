@@ -3,7 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:pages="using:ControlCatalog.Pages">
-    <ContentPage Header="Implicit animations">
+    <ContentPage Header="Implicit">
         <StackPanel>
             <Grid Margin="0,0,40,0" ColumnDefinitions="*,10,40">
                 <ItemsControl x:Name="Items">
@@ -47,7 +47,7 @@
             </Grid>
         </StackPanel>
     </ContentPage>
-    <ContentPage Header="Animation">
+    <ContentPage Header="Animations">
         <DockPanel>
             <Button
                 Margin="10"
@@ -74,7 +74,7 @@
             <Control x:Name="CustomVisualHost" />
         </DockPanel>
     </ContentPage>
-    <ContentPage Header="Composition brush">
+    <ContentPage Header="Brushes">
         <ScrollViewer>
             <StackPanel>
                 <StackPanel.Styles>
