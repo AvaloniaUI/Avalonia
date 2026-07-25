@@ -33,6 +33,13 @@ namespace Avalonia.Rendering.Composition.Server
         private bool _fullRedrawRequested;
         private bool _disposed;
         private readonly HashSet<ServerCompositionVisual> _attachedVisuals = new();
+        private readonly BackdropVolatilePass _backdropVolatilePass = new();
+
+        /// <summary>
+        /// Backdrop registry: the set of registered backdrop visuals rooted on this target. Their per-frame
+        /// AABB records are recomputed in <see cref="Update"/> before the update walk.
+        /// </summary>
+        internal HashSet<ServerCompositionVisual> BackdropVisuals { get; } = new();
         public IDirtyRectTracker DirtyRects { get; }
 
         public long Id { get; }
@@ -128,8 +135,20 @@ namespace Avalonia.Rendering.Composition.Server
                 var collector = DebugEvents != null
                     ? new DebugEventsDirtyRectCollectorProxy(DirtyRects, DebugEvents)
                     : (IDirtyRectCollector)DirtyRects;
-                
+
+                // Recompute the backdrop registry before the walk. This runs after the compositor-global
+                // passes (adorner update included), so ancestor transforms are settled. It never adds damage
+                // rects: on a host or AABB change it marks the backdrop dirty-for-render and the walk emits
+                // old ∪ new at the visual's own DFS position.
+                foreach (var backdrop in BackdropVisuals)
+                    backdrop.RecomputeBackdropRegistration(Scaling);
+
                 Root.UpdateRoot(collector, transform, new LtrbRect(0, 0, PixelSize.Width, PixelSize.Height));
+
+                // Post-walk volatile pass: expand volatile backdrops the region touches and propagate the
+                // resulting damage. Root-host additions go through the same collector the walk used (keeps them
+                // observable); cache-host additions go through each cache's own collector.
+                _backdropVolatilePass.Run(this, collector, Scaling);
 
                 _updateRequested = false;
 
@@ -216,7 +235,15 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 return;
             }
-            
+
+            // Backdrops sample the target surface. When the target context can't self-read (surface-less
+            // GPU/PDF contexts) force an intermediate layer — a surface-backed offscreen we CAN snapshot.
+            // Surface-backed targets (incl. the CPU raster framebuffer) self-read directly, so no layer is
+            // forced and partial-repaint behaviour is preserved (the erase-trick tests rely on this).
+            if (BackdropVisuals.Count > 0
+                && renderTargetContext is not IDrawingContextImplWithBackdropSupport { SupportsBackdrop: true })
+                needLayer = true;
+
             using (renderTargetContext)
             using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
             {
@@ -247,6 +274,9 @@ namespace Avalonia.Rendering.Composition.Server
                 {
                     DirtyRects.Initialize(renderBounds);
                     DirtyRects.AddRect(renderBounds);
+                    // A target-level full redraw bypasses the walk's capture, so every retained backdrop in the
+                    // root host must re-ingest its whole input.
+                    InvalidateRetainedBackdrops(null);
                 }
 
                 if (!DirtyRects.IsEmpty)
@@ -356,6 +386,32 @@ namespace Avalonia.Rendering.Composition.Server
         {
             if (_attachedVisuals.Remove(visual) && IsEnabled)
                 visual.Deactivate();
+        }
+
+        internal void RegisterBackdrop(ServerCompositionVisual visual) => BackdropVisuals.Add(visual);
+
+        internal void UnregisterBackdrop(ServerCompositionVisual visual)
+        {
+            BackdropVisuals.Remove(visual);
+            // Dispose the retained store (freeing its native layer) and clear the slot so unregistering leaks nothing.
+            // Runs during deserialization (context not current), so make it current for the GPU disposal.
+            visual.BackdropState?.DisposeRetainedStateWithContext();
+            visual.BackdropState = null;
+        }
+
+        /// <summary>
+        /// Fully invalidates the pending input of every retained backdrop whose layer host is
+        /// <paramref name="host"/> (null = the root host). Used by the full-redraw bypass paths that skip the
+        /// normal per-visual capture in the update walk.
+        /// </summary>
+        internal void InvalidateRetainedBackdrops(ServerCompositionVisualCache? host)
+        {
+            foreach (var visual in BackdropVisuals)
+            {
+                var record = visual.BackdropState;
+                if (record is { IsRetained: true } && ReferenceEquals(record.Host, host))
+                    record.MarkRetainedInputFull();
+            }
         }
 
         public void RequestFullRedraw() => _redrawRequested = true;

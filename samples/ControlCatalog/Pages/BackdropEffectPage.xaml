@@ -1,0 +1,49 @@
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.BackdropEffectPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DesignHeight="800"
+             Header="BackdropEffect"
+             d:DesignWidth="400"
+             mc:Ignorable="d">
+  <StackPanel Spacing="20">
+    <TextBlock TextWrapping="Wrap"
+               Text="Visual.BackdropEffect applies an effect to the content rendered behind a control's subtree. Here a BlurEffect produces a frosted-glass panel that samples and blurs the live content underneath it." />
+
+    <Border CornerRadius="8" ClipToBounds="True" Height="320" MaxWidth="660">
+      <Panel>
+        <!-- Busy backdrop content so the blur is clearly visible. -->
+        <Panel>
+          <Panel.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+              <GradientStop Color="#FF3A7BD5" Offset="0" />
+              <GradientStop Color="#FF00D2FF" Offset="1" />
+            </LinearGradientBrush>
+          </Panel.Background>
+          <Ellipse Width="160" Height="160" Fill="#FFFF5F6D"
+                   HorizontalAlignment="Left" VerticalAlignment="Top" Margin="24" />
+          <Ellipse Width="200" Height="200" Fill="#FFFFC371"
+                   HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="24" />
+          <TextBlock Text="Live content" FontSize="42" FontWeight="Bold" Foreground="White"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Panel>
+        <ProgressBar HorizontalAlignment="Stretch" VerticalAlignment="Center" x:Name="Progress" IsIndeterminate="True"/>
+
+        <!-- Frosted overlay: BackdropEffect blurs everything drawn behind this Border. -->
+        <Border Width="360" Height="150"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                CornerRadius="16" Background="#30FFFFFF"
+                BorderBrush="#50FFFFFF" BorderThickness="1"
+                BackdropEffectCache="Retained">
+          <Border.BackdropEffect>
+            <BlurEffect Radius="18" />
+          </Border.BackdropEffect>
+          <TextBlock Text="Backdrop blur" FontSize="20" Foreground="White"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+      </Panel>
+    </Border>
+    <CheckBox IsChecked="{Binding #Progress.IsVisible}">Animate background</CheckBox>
+  </StackPanel>
+</ContentPage>
