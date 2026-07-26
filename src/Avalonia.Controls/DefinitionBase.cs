@@ -60,6 +60,10 @@ namespace Avalonia.Controls
             }
 
             Parent?.InvalidateMeasure();
+
+            //  while this link survives the definition still reads the grid's inherited
+            //  PrivateSharedSizeScope, and the grid holds it as an inheritance child.
+            InheritanceParent = null;
         }
 
         /// <summary>
