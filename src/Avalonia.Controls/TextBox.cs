@@ -431,6 +431,7 @@ namespace Avalonia.Controls
             _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
             _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
             _hasDoneSnapshotOnce = false;
+            UpdateCommandStates();
             UpdatePseudoclasses();
         }
 

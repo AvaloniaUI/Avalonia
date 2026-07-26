@@ -1550,6 +1550,19 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Empty_TextBox_Initializes_Clipboard_Command_States()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox();
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        [Fact]
         public void Command_States_Update_When_ReadOnly_And_PasswordChar_Change()
         {
             using (UnitTestApplication.Start(Services))
