@@ -99,6 +99,61 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Active_Window_Should_Be_Deactivated_When_Impl_Signals_Close()
+        {
+            var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.SetupProperty(x => x.Activated);
+            windowImpl.SetupProperty(x => x.Closed);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TestWindowBase(windowImpl.Object);
+                var deactivated = 0;
+                target.Deactivated += (s, e) => deactivated++;
+
+                target.Show();
+                windowImpl.Object.Activated!();
+                Assert.True(target.IsActive);
+
+                // Some backends (e.g. X11) never deliver a deactivation notification on close.
+                windowImpl.Object.Closed!();
+
+                Assert.False(target.IsActive);
+                Assert.Equal(1, deactivated);
+            }
+        }
+
+        [Fact]
+        public void Inactive_Window_Should_Not_Raise_Deactivated_When_Impl_Signals_Close()
+        {
+            var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.SetupProperty(x => x.Deactivated);
+            windowImpl.SetupProperty(x => x.Closed);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TestWindowBase(windowImpl.Object);
+                var deactivated = 0;
+                target.Deactivated += (s, e) => deactivated++;
+
+                target.Show();
+                Assert.False(target.IsActive);
+
+                // Backends that deactivate before closing must not produce a duplicate event.
+                windowImpl.Object.Closed!();
+
+                Assert.False(target.IsActive);
+                Assert.Equal(0, deactivated);
+            }
+        }
+
+        [Fact]
         public void IsVisible_Should_Be_False_Atfer_Impl_Signals_Close()
         {
             var windowImpl = new Mock<IPopupImpl>();
