@@ -158,6 +158,10 @@ internal class RenderDataDrawingContext : DrawingContext
                 ThrowIfRestrictedSceneContent(snapshot, brush);
                 return snapshot;
             }
+            case CompositionBrush:
+                throw new InvalidOperationException(
+                    brush.GetType() + " is compositor-bound and cannot be captured by an immutable " +
+                    "DrawingRecording. Use DrawingRecording.Create(Compositor, Action<DrawingContext>) instead.");
             default:
                 throw new InvalidOperationException(
                     brush.GetType() + " cannot be captured by an immutable DrawingRecording. Use an immutable brush.");
