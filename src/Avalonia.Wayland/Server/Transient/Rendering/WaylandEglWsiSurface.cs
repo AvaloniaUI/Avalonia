@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
@@ -53,7 +54,10 @@ internal sealed class WaylandEglWsiSurface : EglGlPlatformSurfaceBase, IPlatform
             if (!_surface.State.IsReady)
                 throw new RenderTargetNotReadyException();
 
-            EnsureWindow(sceneInfo.Size);
+            var size = sceneInfo.Size;
+            size = new PixelSize(Math.Max(1, size.Width), Math.Max(1, size.Height));
+
+            EnsureWindow(size);
 
             // OnBeforeNewBufferAttached must run *immediately* before the
             // implicit commit performed by eglSwapBuffers; the base class
@@ -62,7 +66,7 @@ internal sealed class WaylandEglWsiSurface : EglGlPlatformSurfaceBase, IPlatform
             // SwapInterval(0) is set inside beforeSwap (so it runs with our
             // surface current); GTK re-asserts it every frame defensively
             // and we follow suit — some drivers reset it on resize.
-            var session = BeginDraw(_eglSurface!, sceneInfo.Size, sceneInfo.Scaling,
+            var session = BeginDraw(_eglSurface!, size, sceneInfo.Scaling,
                 beforeSwap: () =>
                 {
                     var display = Context.Display;
@@ -75,7 +79,7 @@ internal sealed class WaylandEglWsiSurface : EglGlPlatformSurfaceBase, IPlatform
             if (session.Context.Version.Type == GlProfileType.OpenGL)
             {
                 var gl = session.Context.GlInterface;
-                gl.Viewport(0, 0, sceneInfo.Size.Width, sceneInfo.Size.Height);
+                gl.Viewport(0, 0, size.Width, size.Height);
                 if (gl.IsReadBufferAvailable)
                     gl.ReadBuffer(GL_BACK);
                 if (gl.IsWriteBufferAvailable)
@@ -102,13 +106,15 @@ internal sealed class WaylandEglWsiSurface : EglGlPlatformSurfaceBase, IPlatform
 
         private void EnsureWindow(PixelSize size)
         {
+            Debug.Assert(size.Width > 0 && size.Height > 0);
+
             if (_eglWindow != IntPtr.Zero && _currentSize == size)
                 return;
 
             if (_eglWindow == IntPtr.Zero)
             {
                 _eglWindow = WaylandEglNativeMethods.wl_egl_window_create(
-                    _surface.WlSurface!.Handle, Math.Max(1, size.Width), Math.Max(1, size.Height));
+                    _surface.WlSurface!.Handle, size.Width, size.Height);
                 if (_eglWindow == IntPtr.Zero)
                     throw new OpenGlException("wl_egl_window_create failed");
 
@@ -125,8 +131,7 @@ internal sealed class WaylandEglWsiSurface : EglGlPlatformSurfaceBase, IPlatform
             }
             else
             {
-                WaylandEglNativeMethods.wl_egl_window_resize(_eglWindow,
-                    Math.Max(1, size.Width), Math.Max(1, size.Height), 0, 0);
+                WaylandEglNativeMethods.wl_egl_window_resize(_eglWindow, size.Width, size.Height, 0, 0);
             }
 
             _currentSize = size;

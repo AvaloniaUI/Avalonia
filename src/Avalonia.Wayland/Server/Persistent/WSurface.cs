@@ -520,6 +520,12 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
             surfaceHeight = (bufferPixelSize.Height + intScale - 1) / intScale;
         }
 
+        if (surfaceWidth <= 0 || surfaceHeight <= 0)
+        {
+            LastWindowGeometry = null;
+            return;
+        }
+
         var left = Math.Clamp((int)shadowExtents.Left, 0, surfaceWidth - 1);
         var top = Math.Clamp((int)shadowExtents.Top, 0, surfaceHeight - 1);
         var right = Math.Clamp(
