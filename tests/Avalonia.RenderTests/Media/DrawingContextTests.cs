@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
 #pragma warning disable CS0649
@@ -27,6 +28,37 @@ public class DrawingContextTests : TestBase
         
         await RenderToFile(target);
         CompareImages(skipImmediate: true);
+    }
+
+    [Fact]
+    public async Task Should_Render_DrawingGroup_With_Effect()
+    {
+        var group = new DrawingGroup();
+        using (var context = group.Open())
+        {
+            context.DrawRectangle(Brushes.White, null, new Rect(0, 0, 100, 100));
+            using (context.PushEffect(new DropShadowEffect { BlurRadius = 10, Color = Colors.Black, Opacity = 1 }, new Rect(0, 0, 100, 100)))
+            {
+                context.DrawRectangle(Brushes.Red, null, new Rect(20, 20, 60, 60));
+            }
+        }
+
+        var target = new Border
+        {
+            Width = 100,
+            Height = 100,
+            Background = Brushes.White,
+            Child = new Image { 
+                Source = new DrawingImage { Drawing = group }, 
+                Stretch = Stretch.None, 
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                ClipToBounds = false
+            }
+        };
+
+        await RenderToFile(target);
+        CompareImages();
     }
 
     internal class RenderControl : Control

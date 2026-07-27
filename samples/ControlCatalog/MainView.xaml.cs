@@ -12,7 +12,7 @@ namespace ControlCatalog
 {
     public partial class MainView : DrawerPage
     {
-        private Action? _disposeTransparencySetters;
+        private readonly TransparentStyles _transparentStyles = new();
 
         public MainView()
         {
@@ -24,6 +24,8 @@ namespace ControlCatalog
 
         private const double WideBreakpoint = 1008;
         private const double NarrowBreakpoint = 640;
+
+        protected override Type StyleKeyOverride => typeof(MainView);
 
         private void MainView_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
@@ -120,21 +122,21 @@ namespace ControlCatalog
 
         private void TransparencyLevels_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            _disposeTransparencySetters?.Invoke();
-
             if (TopLevel.GetTopLevel(this) is { } topLevel && e.AddedItems.Count > 0 && e.AddedItems[0] is WindowTransparencyLevel transparencyLevel)
             {
                 topLevel.TransparencyLevelHint = [transparencyLevel];
 
                 if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
-                    topLevel.ActualTransparencyLevel == transparencyLevel)
+                    transparencyLevel != WindowTransparencyLevel.None)
                 {
-                    var transparentBrush = new ImmutableSolidColorBrush(Colors.White, 0);
-                    var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
-                    _disposeTransparencySetters =
-                        (Action)topLevel.SetValue(BackgroundProperty, transparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
-                        SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
-                        SetValue(DrawerPage.DrawerBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose;
+                    topLevel.Background = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
+                    if (!topLevel.Styles.Contains(_transparentStyles))
+                        topLevel.Styles.Add(_transparentStyles);
+                }
+                else
+                {
+                    topLevel.Background = null;
+                    topLevel.Styles.Remove(_transparentStyles);
                 }
             }
         }

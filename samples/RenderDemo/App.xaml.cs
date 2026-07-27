@@ -31,7 +31,9 @@ namespace RenderDemo
                    OverlayPopups = true,
                })
                 .UsePlatformDetect()
-                .WithDeveloperTools()
+#if DEBUG
+               .WithDeveloperTools()
+#endif
                 .LogToTrace();
     }
 }

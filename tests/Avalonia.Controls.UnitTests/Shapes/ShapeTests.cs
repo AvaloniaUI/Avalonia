@@ -181,8 +181,12 @@ public class ShapeTests : ScopedTestBase
         protected override void PushRenderOptionsCore(RenderOptions renderOptions)
         {
         }
-
-          protected override void PushTextOptionsCore(TextOptions textOptions)
+        
+        protected override void PushTextOptionsCore(TextOptions textOptions)
+        {
+        }
+        
+        protected override void PushEffectCore(IEffect effect, Rect bounds)
         {
         }
 
@@ -213,8 +217,12 @@ public class ShapeTests : ScopedTestBase
         protected override void PopRenderOptionsCore()
         {
         }
-
+        
         protected override void PopTextOptionsCore()
+        {
+        }
+        
+        protected override void PopEffectCore()
         {
         }
 

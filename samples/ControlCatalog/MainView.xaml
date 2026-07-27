@@ -25,6 +25,9 @@
     <ResourceDictionary>
       <x:Double x:Key="TabbedPageTabItemHeaderFontSize">20</x:Double>
       <Thickness x:Key="TabbedPageTabStripPadding">10</Thickness>
+      <ControlTheme x:Key="{x:Type local:MainView}"
+                    TargetType="local:MainView"
+                    BasedOn="{StaticResource {x:Type DrawerPage}}" />
     </ResourceDictionary>
   </DrawerPage.Resources>
   <DrawerPage.Styles>
@@ -90,7 +93,8 @@
                 Header="Settings"
                 Margin="0"
                 BorderThickness="0"
-                ExpandDirection="Up">
+                ExpandDirection="Up"
+                x:Name="SettingsExpander">
         <StackPanel Width="152" Spacing="8">
           <ComboBox x:Name="Decorations"
                     HorizontalAlignment="Stretch"

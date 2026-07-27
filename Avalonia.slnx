@@ -22,6 +22,7 @@
     <Project Path="src/Avalonia.FreeDesktop/Avalonia.FreeDesktop.csproj" />
     <Project Path="src/Avalonia.X11/Avalonia.X11.csproj" />
     <Project Path="src/Linux/Avalonia.LinuxFramebuffer/Avalonia.LinuxFramebuffer.csproj" />
+    <Project Path="src/Avalonia.Wayland/Avalonia.Wayland.csproj" />
   </Folder>
   <Folder Name="/Markup/">
     <Project Path="src/Markup/Avalonia.Markup.Xaml.Loader/Avalonia.Markup.Xaml.Loader.csproj" />
@@ -65,6 +66,10 @@
     <Project Path="samples/ControlCatalog.MacCatalyst/ControlCatalog.MacCatalyst.csproj" />
     <Project Path="samples/ControlCatalog.tvOS/ControlCatalog.tvOS.csproj" />
     <Project Path="samples/ControlCatalog/ControlCatalog.csproj" />
+    <Project Path="samples/ControlGallery.WinUI/ControlGallery.WinUI.csproj">
+      <Platform Project="x64" />
+      <Deploy />
+    </Project>
     <Project Path="samples/Generators.Sandbox/Generators.Sandbox.csproj" />
     <Project Path="samples/GpuInterop/GpuInterop.csproj" />
     <Project Path="samples/IntegrationTestApp/IntegrationTestApp.csproj" />
@@ -84,6 +89,10 @@
     <Project Path="samples/SingleProjectSandbox/SingleProjectSandbox.csproj" />
     <Project Path="samples/TextTestApp/TextTestApp.csproj" />
     <Project Path="samples/VirtualizationDemo/VirtualizationDemo.csproj" />
+    <Project Path="samples/WinUIEmbedSample/WinUIEmbedSample.csproj">
+      <Platform Project="x64" />
+      <Deploy />
+    </Project>
     <Project Path="samples/XEmbedSample/XEmbedSample.csproj" />
   </Folder>
   <Folder Name="/Samples/Interop/">
@@ -148,6 +157,7 @@
     <Project Path="tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj" />
     <Project Path="tests/Avalonia.Skia.UnitTests/Avalonia.Skia.UnitTests.csproj" />
     <Project Path="tests/Avalonia.UnitTests/Avalonia.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Wayland.UnitTests/Avalonia.Wayland.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Tests/TestFiles/" />
   <Folder Name="/Tests/TestFiles/BuildTasks/">
@@ -178,6 +188,7 @@
     <Project Path="src/Windows/Avalonia.Win32.Automation/Avalonia.Win32.Automation.csproj" />
     <Project Path="src/Windows/Avalonia.Win32.Interoperability/Avalonia.Win32.Interoperability.csproj" />
     <Project Path="src/Windows/Avalonia.Win32/Avalonia.Win32.csproj" />
+    <Project Path="src/Windows/Avalonia.WinUI/Avalonia.WinUI.csproj" />
   </Folder>
   <Project Path="nukebuild/_build.csproj">
     <Build Project="false" />

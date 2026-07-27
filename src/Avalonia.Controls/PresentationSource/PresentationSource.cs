@@ -77,6 +77,12 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     public void Dispose()
     {
+        if (PlatformImpl is { } platformImpl)
+        {
+            platformImpl.Input = null;
+            platformImpl.ScalingChanged -= HandleScalingChanged;
+        }
+
         _layoutDiagnosticBridge?.Dispose();
         _layoutDiagnosticBridge = null;
         LayoutManager.Dispose();
@@ -84,12 +90,11 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         // We need to wait for the renderer to complete any in-flight operations
         Renderer.Dispose();
 
-        PlatformImpl?.ScalingChanged -= HandleScalingChanged;
         PlatformImpl = null;
         _pointerOverPreProcessor?.OnCompleted();
         _pointerOverPreProcessorSubscription?.Dispose();
-        if (((IInputRoot)this).PointerOverElement is AvaloniaObject pointerOverElement)
-            pointerOverElement.PropertyChanged -= PointerOverElement_PropertyChanged;
+        if (((IInputRoot)this).CursorElement is AvaloniaObject cursorElement)
+            cursorElement.PropertyChanged -= CursorElement_PropertyChanged;
     }
     
     /// <summary>
