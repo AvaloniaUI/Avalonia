@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
@@ -212,23 +213,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             }
                             else if (GetAllDefinedMethods(targetType)
                                          .Where(p => p.Name == propName.PropertyName)
-                                         .OrderByDescending(m => m.Parameters.Count)
                                          .ToArray()
                                      is { Length: > 0 } methodCandidates)
                             {
-                                var objType = context.Configuration.WellKnownTypes.Object;
-                                var candidate = methodCandidates
-                                    .FirstOrDefault(m => m.Parameters.Count == 0
-                                                         || (m.Parameters.Count == 1 &&
-                                                             m.Parameters[0].Equals(objType)));
-                                if (candidate is null)
-                                {
-                                    throw new XamlX.XamlTransformException(
-                                        $"Unable to resolve method of name '{propName.PropertyName}' on type '{targetType}'." +
-                                        $"Expected method with no parameters or a single object overload.",
-                                        lineInfo);
-                                }
-            
+                                var candidate = GetBestCommandMethod(methodCandidates, propName.PropertyName, targetType);
                                 nodes.Add(new XamlIlClrMethodPathElementNode(candidate, context.Configuration.WellKnownTypes.Delegate, propName.AcceptsNull));
                             }
                             else
@@ -452,6 +440,60 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         yield return currentType;
                     }
                 }
+            }
+
+            // Priority:
+            //  1. One parameter method
+            //    1a. Object parameter (amongst several overloads)
+            //    1b. Single method with one parameter
+            //  2. Zero parameters method
+            IXamlMethod GetBestCommandMethod(IXamlMethod[] candidates, string name, IXamlType targetType)
+            {
+                Debug.Assert(candidates.Length > 0);
+
+                IXamlMethod? zeroParamCandidate = null;
+                IXamlMethod? oneParamCandidate = null;
+
+                foreach (var candidate in candidates)
+                {
+                    Debug.Assert(candidate.Name == name);
+
+                    switch (candidate.Parameters.Count)
+                    {
+                        case 0:
+                            zeroParamCandidate ??= candidate;
+                            break;
+
+                        case 1:
+                            // Object parameter always wins
+                            if (candidate.Parameters[0].Is("System", "Object"))
+                                return candidate;
+
+                            if (oneParamCandidate is not null)
+                            {
+                                var parameterTypes = candidates
+                                    .Where(m => m.Parameters.Count == 1)
+                                    .Select(m => $"'{m.Parameters[0].FullName}'")
+                                    .OrderBy(s => s, StringComparer.Ordinal)
+                                    .ToArray();
+
+                                throw new XamlTransformException(
+                                    $"Unable to resolve method of name '{name}' on type '{targetType}'. " +
+                                    $"Found {parameterTypes.Length} overloads accepting one parameter: {string.Join(", ", parameterTypes)}. " +
+                                    "Expected either a single overload with one parameter, or an overload accepting System.Object.",
+                                    lineInfo);
+                            }
+
+                            oneParamCandidate = candidate;
+                            break;
+                    }
+                }
+
+                return oneParamCandidate ?? zeroParamCandidate ?? throw new XamlTransformException(
+                    $"Unable to resolve method of name '{name}' on type '{targetType}'. " +
+                    $"Found {candidates.Length} overloads accepting more than one parameter. " +
+                    $"Expected a method with zero or one parameter.",
+                    lineInfo);
             }
         }
 
