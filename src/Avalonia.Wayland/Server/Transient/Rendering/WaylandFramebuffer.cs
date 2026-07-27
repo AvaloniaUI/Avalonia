@@ -72,10 +72,21 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
                         if (!State.IsReady)
                             return;
 
-                        using var pool = _p._surface.Globals!.WlShm.CreatePool(fd, bufferLen);
-                        var listener = new BufferListener();
-                        var buffer = pool.CreateBuffer(0, size.Width, size.Height, stride,
-                            WlShm.FormatEnum.Argb8888, listener);
+                        var pool = _p._surface.Globals!.WlShm.CreatePool(fd, bufferLen);
+                        WlBuffer buffer;
+                        try
+                        {
+                            var listener = new BufferListener();
+                            buffer = pool.CreateBuffer(0, size.Width, size.Height, stride,
+                                WlShm.FormatEnum.Argb8888, listener);
+                        }
+                        finally
+                        {
+                            // NWayland's Dispose only destroys the local proxy;
+                            // the generated method is required to marshal the
+                            // Wayland destructor request to the compositor.
+                            pool.Destroy();
+                        }
                         
                         // Stage per-frame state (frame callback +
                         // ack_configure + geometry + viewport/scale +
