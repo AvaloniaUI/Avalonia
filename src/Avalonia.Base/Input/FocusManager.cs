@@ -665,7 +665,7 @@ namespace Avalonia.Input
                     if (IsValidTabStopSearchCandidate(parent) && parent is InputElement p && KeyboardNavigation.GetTabNavigation(p) == KeyboardNavigationMode.Once)
                     {
                         current = parent;
-                        parent = FocusHelpers.GetFocusParent(focused);
+                        parent = FocusHelpers.GetFocusParent(current);
                         if (parent == null)
                             break;
                     }
@@ -765,7 +765,7 @@ namespace Avalonia.Input
                         else
                         {
                             current = parent;
-                            parent = FocusHelpers.GetFocusParent(focused);
+                            parent = FocusHelpers.GetFocusParent(current);
                             if (parent == null)
                                 break;
                         }
@@ -803,7 +803,7 @@ namespace Avalonia.Input
                             else
                             {
                                 current = parent;
-                                parent = FocusHelpers.GetFocusParent(focused);
+                                parent = FocusHelpers.GetFocusParent(current);
                                 if (parent == null)
                                     break;
                             }

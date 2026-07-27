@@ -913,6 +913,87 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Can_Get_Next_Element_Out_Of_Container_With_TabNavigation_Once()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var inside = new Button { Focusable = true, Content = "inside" };
+                var after = new Button { Focusable = true, Content = "after" };
+
+                // The focused element has to sit at least one level below the Once container:
+                // GetFocusParent(focused) must resolve to something *deeper* than that container,
+                // otherwise the reset below happens to land on the correct node and the walk
+                // terminates by accident.
+                var once = new StackPanel
+                {
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
+                    Children =
+                    {
+                        new StackPanel { Children = { inside } }
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children = { once, after }
+                    }
+                };
+
+                var focusManager = FocusManager.GetFocusManager(inside);
+                Assert.NotNull(focusManager);
+                inside.Focus();
+
+                // Before the fix this call never returned: on every Once hit the parent walk was
+                // reset to the focused element's parent, so it oscillated between the same two
+                // nodes forever and burned 100% CPU on the UI thread.
+                var next = focusManager.FindNextElement(NavigationDirection.Next);
+
+                Assert.Equal(after, next);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Previous_Element_Out_Of_Container_With_TabNavigation_Once()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var before = new Button { Name = "before", Focusable = true, Content = "before" };
+                var inside = new Button { Name = "inside", Focusable = true, Content = "inside" };
+
+                // Same shape as the Next case. The Once container itself must stay unfocusable,
+                // otherwise GetPreviousTabStop returns it before reaching the faulty branch.
+                var once = new StackPanel
+                {
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
+                    Children =
+                    {
+                        new StackPanel { Children = { inside } }
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children = { before, once }
+                    }
+                };
+
+                var focusManager = FocusManager.GetFocusManager(inside);
+                Assert.NotNull(focusManager);
+                inside.Focus();
+
+                // Before the fix this call never returned either. Which element *should* come
+                // back here is a separate question - the Once container's cycle fallback
+                // currently hands back the focused element itself - so this test only locks
+                // down that the parent walk terminates at all.
+                var previous = focusManager.FindNextElement(NavigationDirection.Previous);
+
+                Assert.NotNull(previous);
+            }
+        }
+
+        [Fact]
         public void Can_Get_Next_Element_With_FocusedElement_Option()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
