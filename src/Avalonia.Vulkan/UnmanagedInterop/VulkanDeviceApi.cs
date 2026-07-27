@@ -103,6 +103,32 @@ internal unsafe partial class VulkanDeviceApi
     public partial void DestroyImageView(VkDevice device, VkImageView imageView, IntPtr pAllocator);
     
 
+    [GetProcAddress("vkCreateBuffer")]
+    public partial VkResult CreateBuffer(VkDevice device, ref VkBufferCreateInfo pCreateInfo, IntPtr pAllocator,
+        out VkBuffer pBuffer);
+
+    [GetProcAddress("vkDestroyBuffer")]
+    public partial void DestroyBuffer(VkDevice device, VkBuffer buffer, IntPtr pAllocator);
+
+    [GetProcAddress("vkGetBufferMemoryRequirements")]
+    public partial void GetBufferMemoryRequirements(VkDevice device, VkBuffer buffer,
+        out VkMemoryRequirements pMemoryRequirements);
+
+    [GetProcAddress("vkBindBufferMemory")]
+    public partial VkResult BindBufferMemory(VkDevice device, VkBuffer buffer, VkDeviceMemory memory,
+        VkDeviceSize memoryOffset);
+
+    [GetProcAddress("vkMapMemory")]
+    public partial VkResult MapMemory(VkDevice device, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size,
+        uint32_t flags, out IntPtr ppData);
+
+    [GetProcAddress("vkUnmapMemory")]
+    public partial void UnmapMemory(VkDevice device, VkDeviceMemory memory);
+
+    [GetProcAddress("vkCmdCopyImageToBuffer")]
+    public partial void CmdCopyImageToBuffer(VkCommandBuffer commandBuffer, VkImage srcImage,
+        VkImageLayout srcImageLayout, VkBuffer dstBuffer, uint32_t regionCount, VkBufferImageCopy* pRegions);
+
     [GetProcAddress("vkCmdPipelineBarrier")]
     public partial void CmdPipelineBarrier(VkCommandBuffer commandBuffer,
         VkPipelineStageFlags srcStageMask,
@@ -115,14 +141,14 @@ internal unsafe partial class VulkanDeviceApi
         uint32_t imageMemoryBarrierCount,
         VkImageMemoryBarrier* pImageMemoryBarriers);
     
-    [GetProcAddress("vkCreateSwapchainKHR")]
+    [GetProcAddress("vkCreateSwapchainKHR", true)]
     public partial VkResult CreateSwapchainKHR(VkDevice device, ref VkSwapchainCreateInfoKHR pCreateInfo,
         IntPtr pAllocator, out VkSwapchainKHR pSwapchain);
-    
-    [GetProcAddress("vkDestroySwapchainKHR")]
+
+    [GetProcAddress("vkDestroySwapchainKHR", true)]
     public partial void DestroySwapchainKHR(VkDevice device, VkSwapchainKHR swapchain, IntPtr pAllocator);
 
-    [GetProcAddress("vkGetSwapchainImagesKHR")]
+    [GetProcAddress("vkGetSwapchainImagesKHR", true)]
     public partial VkResult GetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain, ref uint32_t pSwapchainImageCount,
         VkImage* pSwapchainImages);
 
@@ -132,7 +158,7 @@ internal unsafe partial class VulkanDeviceApi
     [GetProcAddress("vkQueueWaitIdle")]
     public partial VkResult QueueWaitIdle(VkQueue queue);
 
-    [GetProcAddress("vkAcquireNextImageKHR")]
+    [GetProcAddress("vkAcquireNextImageKHR", true)]
     public partial VkResult AcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout,
         VkSemaphore semaphore, VkFence fence, out uint32_t pImageIndex);
 
@@ -140,7 +166,7 @@ internal unsafe partial class VulkanDeviceApi
     public partial void CmdBlitImage(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout,
         VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, VkImageBlit* pRegions, VkFilter filter);
 
-    [GetProcAddress("vkQueuePresentKHR")]
+    [GetProcAddress("vkQueuePresentKHR", true)]
     public partial VkResult vkQueuePresentKHR(VkQueue queue, ref VkPresentInfoKHR pPresentInfo);
 
     [GetProcAddress("vkImportSemaphoreFdKHR", true)]
