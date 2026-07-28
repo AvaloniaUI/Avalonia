@@ -1285,6 +1285,29 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void BoolPropertyGetterUsesCachedBoxes()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Tag='{CompiledBinding BoolProperty}' Name='textBlock' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                window.DataContext = new TestDataContext { BoolProperty = true };
+                Assert.Same(BooleanBoxes.True, textBlock.Tag);
+
+                window.DataContext = new TestDataContext { BoolProperty = false };
+                Assert.Same(BooleanBoxes.False, textBlock.Tag);
+            }
+        }
+
+        [Fact]
         public void ThrowsOnInvalidBindingPathOnCompiledBindingEnabledViaDirective()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
