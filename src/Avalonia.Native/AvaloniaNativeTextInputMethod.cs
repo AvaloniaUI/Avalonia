@@ -130,11 +130,15 @@ namespace Avalonia.Native
         private class AvnTextInputMethodClient : NativeCallbackBase, IAvnTextInputMethodClient
         {
             private readonly TextInputMethodClient _client;
+            private readonly IStructuredTextInput? _structured;
 
             public AvnTextInputMethodClient(TextInputMethodClient client)
             {
                 _client = client;
+                _structured = client as IStructuredTextInput;
             }
+
+            public int IsStructured() => _structured is null ? 0 : 1;
 
             public void SetPreeditText(string preeditText)
             {
@@ -150,6 +154,129 @@ namespace Avalonia.Native
                 {
                     _client.Selection = new TextSelection(start, end);
                 }
+            }
+
+            public void SetCompositionText(string? text, int cursorOffset)
+            {
+                if (_structured is null)
+                {
+                    // Legacy client: the composition stays outside the document.
+                    if (_client.SupportsPreedit)
+                    {
+                        _client.SetPreeditText(text, cursorOffset < 0 ? null : cursorOffset);
+                    }
+
+                    return;
+                }
+
+                _structured.SetCompositionText(text, cursorOffset < 0 ? 0 : cursorOffset);
+            }
+
+            public void CommitComposition()
+            {
+                if (_structured is null)
+                {
+                    if (_client.SupportsPreedit)
+                    {
+                        _client.SetPreeditText(null, null);
+                    }
+
+                    return;
+                }
+
+                _structured.CommitComposition();
+            }
+
+            public unsafe void GetCompositionRange(int* start, int* end)
+            {
+                *start = -1;
+                *end = -1;
+
+                if (_structured?.CompositionRange is not { } range)
+                {
+                    return;
+                }
+
+                *start = range.Start.Offset;
+                *end = range.End.Offset;
+            }
+
+            public int GetCharacterIndexFromPoint(AvnPoint point)
+            {
+                if (_structured is null || !TryToTextView(point, out var local))
+                {
+                    return -1;
+                }
+
+                return _structured.GetClosestPosition(local)?.Offset ?? -1;
+            }
+
+            public int GetCharacterIndexFromPointWithinRange(AvnPoint point, int start, int end)
+            {
+                if (_structured is null || !TryToTextView(point, out var local))
+                {
+                    return -1;
+                }
+
+                // Returns null when the point is outside the range, which is exactly the containment
+                // answer the plain nearest-index query cannot give.
+                var range = _structured.RangeAt(start, Math.Max(0, end - start));
+
+                return _structured.GetClosestPosition(local, range)?.Offset ?? -1;
+            }
+
+            public unsafe void GetFirstRectForRange(int start, int end, AvnRect* rect)
+            {
+                *rect = default;
+
+                if (_structured is null)
+                {
+                    return;
+                }
+
+                var visual = _client.TextViewVisual;
+
+                if (visual?.VisualRoot is not Visual root)
+                {
+                    return;
+                }
+
+                var transform = visual.TransformToVisual(root);
+
+                if (transform == null)
+                {
+                    return;
+                }
+
+                var local = _structured.GetFirstRectForRange(_structured.RangeAt(start, Math.Max(0, end - start)));
+
+                *rect = local.TransformToAABB(transform.Value).ToAvnRect();
+            }
+
+            /// <summary>
+            /// Maps a point from the top level space the native side works in to the text view's space.
+            /// </summary>
+            private bool TryToTextView(AvnPoint point, out Point local)
+            {
+                local = default;
+
+                var visual = _client.TextViewVisual;
+
+                if (visual?.VisualRoot is not Visual root)
+                {
+                    return false;
+                }
+
+                var transform = root.TransformToVisual(visual);
+
+                if (transform == null)
+                {
+                    return false;
+                }
+
+                local = point.ToAvaloniaPoint().Transform(transform.Value);
+
+                return true;
             }
         }
     }
