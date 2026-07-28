@@ -93,8 +93,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     Load(property.Getter!, getter.Generator, !property.Getter!.IsStatic);
                     
                     getter.Generator.EmitCall(property.Getter);
-                    if (property.Getter.ReturnType.IsValueType)
-                        getter.Generator.Box(property.Getter.ReturnType);
+                    var returnType = property.Getter.ReturnType;
+                    if (returnType.Equals(context.Configuration.WellKnownTypes.Boolean))
+                    {
+                        // Getters run on every binding read; boxing each bool caused large
+                        // allocation volume (#21065), so reuse the two cached boxes instead.
+                        var whenTrue = getter.Generator.DefineLabel();
+                        getter.Generator
+                            .Brtrue(whenTrue)
+                            .Ldsfld(types.BooleanBoxesFalse)
+                            .Ret()
+                            .MarkLabel(whenTrue)
+                            .Ldsfld(types.BooleanBoxesTrue);
+                    }
+                    else if (returnType.IsValueType)
+                        getter.Generator.Box(returnType);
                     getter.Generator.Ret();
                 }
 
