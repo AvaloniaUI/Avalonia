@@ -928,7 +928,11 @@ namespace Avalonia.Input
                         }
                         else
                         {
-                            if (compareIndexResult < 0 || (((foundCurrent || currentPassed) || compareCurrentForPreviousElement) && compareIndexResult == 0))
+                            // A candidate with an equal tab index is "previous" only while the walk has not
+                            // passed the focused element yet; candidates from a nested container scan
+                            // (compareCurrentForPreviousElement) already enforced the ordering themselves.
+                            // Matches WinUI: (((!bFoundCurrent && !bCurrentPassed) || bCurrentCompare) && ...)
+                            if (compareIndexResult < 0 || (((!foundCurrent && !currentPassed) || compareCurrentForPreviousElement) && compareIndexResult == 0))
                             {
                                 if (newTabStop != null)
                                 {

@@ -983,13 +983,47 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.NotNull(focusManager);
                 inside.Focus();
 
-                // Before the fix this call never returned either. Which element *should* come
-                // back here is a separate question - the Once container's cycle fallback
-                // currently hands back the focused element itself - so this test only locks
-                // down that the parent walk terminates at all.
+                // Before the fixes this call never returned. The walk must leave the Once
+                // container and land on the element preceding it.
                 var previous = focusManager.FindNextElement(NavigationDirection.Previous);
 
-                Assert.NotNull(previous);
+                Assert.Equal(before, previous);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Previous_Element()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3,
+                        target4
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+                target3.Focus();
+
+                // Must return the closest preceding sibling: not target1 (which merely comes
+                // first) and not target4 (which comes after the focused element).
+                var previous = focusManager.FindNextElement(NavigationDirection.Previous);
+
+                Assert.Equal(target2, previous);
             }
         }
 
