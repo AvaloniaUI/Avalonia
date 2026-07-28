@@ -1,6 +1,5 @@
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
-using Avalonia.Automation;
 
 namespace Avalonia.Win32.Automation.Interop;
 
@@ -10,5 +9,5 @@ internal partial interface IExpandCollapseProvider
 {
     void Expand();
     void Collapse();
-    ExpandCollapseState GetExpandCollapseState();
+    int GetExpandCollapseState();
 }

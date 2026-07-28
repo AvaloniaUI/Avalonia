@@ -12,6 +12,7 @@
         CanResize="{Binding CanResize}"
         CanMinimize="{Binding CanMinimize}"
         CanMaximize="{Binding CanMaximize}"
+        Win32Properties.WindowCornerPreference="{Binding Win32WindowCornerPreference}"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}"
         x:DataType="vm:MainWindowViewModel">
   <NativeMenu.Menu>

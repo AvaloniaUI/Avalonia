@@ -48,24 +48,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
             if (executeMethod.Parameters.Count != 0)
             {
-                Debug.Assert(executeMethod.Parameters.Count == 1);
-                if (executeMethod.Parameters[0] != context.Configuration.WellKnownTypes.Object)
-                {
-                    var convertedValue = gen.DefineLocal(context.Configuration.WellKnownTypes.Object);
-                    gen.Ldtype(executeMethod.Parameters[0])
-                        .Ldarg(1)
-                        .EmitCall(context.Configuration.WellKnownTypes.CultureInfo.GetMethod(m => m.Name == "get_CurrentCulture"))
-                        .Ldloca(convertedValue)
-                        .EmitCall(
-                            context.GetAvaloniaTypes().TypeUtilities.GetMethod(m => m.Name == "TryConvert"),
-                            swallowResult: true)
-                        .Ldloc(convertedValue)
-                        .Unbox_Any(executeMethod.Parameters[0]);
-                }
-                else
-                {
-                    gen.Ldarg(1);
-                }
+                Debug.Assert(executeMethod.Parameters.Count == 1
+                             && executeMethod.Parameters[0] == context.Configuration.WellKnownTypes.Object);
+                gen.Ldarg(1);
             }
             gen.EmitCall(executeMethod, swallowResult: true);
             gen.Ret();

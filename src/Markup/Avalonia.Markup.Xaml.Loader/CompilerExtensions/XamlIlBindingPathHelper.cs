@@ -210,9 +210,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             {
                                 nodes.Add(new XamlIlClrPropertyPathElementNode(clrProperty, propName.AcceptsNull));
                             }
-                            else if (GetAllDefinedMethods(targetType).FirstOrDefault(m => m.Name == propName.PropertyName) is IXamlMethod method)
+                            else if (GetAllDefinedMethods(targetType)
+                                         .Where(p => p.Name == propName.PropertyName)
+                                         .OrderByDescending(m => m.Parameters.Count)
+                                         .ToArray()
+                                     is { Length: > 0 } methodCandidates)
                             {
-                                nodes.Add(new XamlIlClrMethodPathElementNode(method, context.Configuration.WellKnownTypes.Delegate, propName.AcceptsNull));
+                                var objType = context.Configuration.WellKnownTypes.Object;
+                                var candidate = methodCandidates
+                                    .FirstOrDefault(m => m.Parameters.Count == 0
+                                                         || (m.Parameters.Count == 1 &&
+                                                             m.Parameters[0].Equals(objType)));
+                                if (candidate is null)
+                                {
+                                    throw new XamlX.XamlTransformException(
+                                        $"Unable to resolve method of name '{propName.PropertyName}' on type '{targetType}'." +
+                                        $"Expected method with no parameters or a single object overload.",
+                                        lineInfo);
+                                }
+            
+                                nodes.Add(new XamlIlClrMethodPathElementNode(candidate, context.Configuration.WellKnownTypes.Delegate, propName.AcceptsNull));
                             }
                             else
                             {

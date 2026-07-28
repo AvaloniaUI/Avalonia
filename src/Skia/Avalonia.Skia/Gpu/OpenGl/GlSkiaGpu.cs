@@ -21,7 +21,7 @@ namespace Avalonia.Skia
         private bool? _canCreateSurfaces;
         private readonly IExternalObjectsRenderInterfaceContextFeature? _externalObjectsFeature;
 
-        public GlSkiaGpu(IGlContext context, long? maxResourceBytes)
+        public GlSkiaGpu(IGlContext context, long? maxResourceBytes, bool? useStencilBuffers)
         {
             _glContext = context;
             using (_glContext.EnsureCurrent())
@@ -40,7 +40,8 @@ namespace Avalonia.Skia
                 
                 using(iface)
                 {
-                    _grContext = GRContext.CreateGl(iface, new GRContextOptions { AvoidStencilBuffers = true });
+                    var avoidStencilBuffers = useStencilBuffers == false;
+                    _grContext = GRContext.CreateGl(iface, new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers });
                     if (maxResourceBytes.HasValue)
                     {
                         _grContext.SetResourceCacheLimit(maxResourceBytes.Value);
