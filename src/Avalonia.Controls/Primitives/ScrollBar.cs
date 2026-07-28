@@ -579,7 +579,7 @@ namespace Avalonia.Controls.Primitives
         public void ScrollToHome()
         {
             SetCurrentValue(ValueProperty, Minimum);
-            OnScroll(ScrollEventType.SmallDecrement);
+            OnScroll(ScrollEventType.LargeDecrement);
         }
 
         /// <summary>
@@ -588,7 +588,7 @@ namespace Avalonia.Controls.Primitives
         public void ScrollToEnd()
         {
             SetCurrentValue(ValueProperty, Maximum);
-            OnScroll(ScrollEventType.SmallIncrement);
+            OnScroll(ScrollEventType.LargeIncrement);
         }
 
         /// <summary>
