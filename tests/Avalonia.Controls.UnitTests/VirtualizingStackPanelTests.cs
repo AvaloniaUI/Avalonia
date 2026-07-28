@@ -444,9 +444,6 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
 
             Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
-            Assert.True(focused.IsKeyboardFocusWithin);
-            Assert.Equal(0, focused.Opacity);
-            Assert.False(focused.IsHitTestVisible);
         }
 
         [Theory]
@@ -479,38 +476,54 @@ namespace Avalonia.Controls.UnitTests
         public void Scrolling_Back_To_Focused_Element_Uses_Correct_Element(double bufferFactor)
         {
             using var app = App();
-            var items = Enumerable.Range(0, 100).Select(x => new ItemWithOpacity(x, 0.5)).ToList();
-            var styles = new[]
-            {
-                new Style(x => x.OfType<ContentPresenter>())
-                {
-                    Setters = { new Setter(Visual.OpacityProperty, new Binding("Opacity")) },
-                },
-            };
+            var (target, scroll, itemsControl) = CreateTarget(bufferFactor: bufferFactor);
+
+            var focused = target.GetRealizedElements().First()!;
+            focused.Focusable = true;
+            focused.Focus();
+            Assert.True(focused.IsKeyboardFocusWithin);
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            Assert.Same(focused, target.GetRealizedElements().First());
+        }
+
+        [Theory]
+        [InlineData(0d)]
+        [InlineData(0.5d)]
+        public void Focused_Element_Outside_Realized_Range_Is_Not_Arranged_In_Viewport(double bufferFactor)
+        {
+            using var app = App();
+
+            // Item 0 is much taller than the others, so the average-based position estimated for
+            // it once it has left the realized range lands inside the viewport (#17935).
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, x == 0 ? 100 : 10));
             var (target, scroll, itemsControl) = CreateTarget(
                 items: items,
-                styles: styles,
+                itemTemplate: CanvasWithHeightTemplate,
                 bufferFactor: bufferFactor);
 
             var focused = target.GetRealizedElements().First()!;
             focused.Focusable = true;
             focused.Focus();
             Assert.True(focused.IsKeyboardFocusWithin);
-            Assert.Equal(0.5, focused.Opacity);
 
-            scroll.Offset = new Vector(0, 200);
+            scroll.Offset = new Vector(0, 160);
             Layout(target);
 
-            Assert.Equal(0, focused.Opacity);
-            Assert.False(focused.IsHitTestVisible);
+            var viewport = new Rect(scroll.Offset.X, scroll.Offset.Y, scroll.Viewport.Width, scroll.Viewport.Height);
+            Assert.True(focused.IsKeyboardFocusWithin);
+            Assert.False(focused.Bounds.Intersects(viewport));
 
-            items[0].Opacity = 0.75;
             scroll.Offset = new Vector(0, 0);
             Layout(target);
 
             Assert.Same(focused, target.GetRealizedElements().First());
-            Assert.Equal(0.75, focused.Opacity);
-            Assert.True(focused.IsHitTestVisible);
+            Assert.Equal(new Rect(0, 0, 100, 100), focused.Bounds);
         }
 
         [Theory]
@@ -2560,25 +2573,6 @@ namespace Avalonia.Controls.UnitTests
             {
                 get => _width;
                 set => SetField(ref _width, value);
-            }
-        }
-
-        private class ItemWithOpacity : NotifyingBase
-        {
-            private double _opacity;
-
-            public ItemWithOpacity(int index, double opacity)
-            {
-                Caption = $"Item {index}";
-                Opacity = opacity;
-            }
-
-            public string Caption { get; set; }
-
-            public double Opacity
-            {
-                get => _opacity;
-                set => SetField(ref _opacity, value);
             }
         }
 

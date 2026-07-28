@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -79,8 +78,6 @@ namespace Avalonia.Controls
         private Dictionary<object, Stack<Control>>? _recyclePool;
         private Control? _focusedElement;
         private int _focusedIndex = -1;
-        private IDisposable? _focusedElementOpacityOverride;
-        private IDisposable? _focusedElementHitTestOverride;
         private Control? _realizingElement;
         private int _realizingIndex = -1;
         private double _bufferFactor; 
@@ -289,10 +286,28 @@ namespace Avalonia.Controls
                 // Ensure that the focused element is in the correct position.
                 if (_focusedElement is not null && _focusedIndex >= 0)
                 {
+                    var realizedEndU = u;
+                    var sizeU = orientation == Orientation.Horizontal ?
+                        _focusedElement.DesiredSize.Width :
+                        _focusedElement.DesiredSize.Height;
+
                     u = GetOrEstimateElementU(_focusedIndex);
+
+                    // The focused element's position is estimated as it's outside the realized
+                    // range. A bad estimate must not place it over the realized elements in the
+                    // viewport: an element before the realized range always ends at or before its
+                    // start, and one after it always starts at or after its end.
+                    if (_realizedElements.Count > 0 && !double.IsNaN(_realizedElements.StartU))
+                    {
+                        if (_focusedIndex < _realizedElements.FirstIndex)
+                            u = Math.Min(u, _realizedElements.StartU - sizeU);
+                        else if (_focusedIndex > _realizedElements.LastIndex)
+                            u = Math.Max(u, realizedEndU);
+                    }
+
                     var rect = orientation == Orientation.Horizontal ?
-                        new Rect(u, 0, _focusedElement.DesiredSize.Width, finalSize.Height) :
-                        new Rect(0, u, finalSize.Width, _focusedElement.DesiredSize.Height);
+                        new Rect(u, 0, sizeU, finalSize.Height) :
+                        new Rect(0, u, finalSize.Width, sizeU);
 
                     _focusedElement.Arrange(rect);
                 }
@@ -974,7 +989,7 @@ namespace Avalonia.Controls
             Debug.Assert(ItemContainerGenerator is not null);
 
             if ((GetRealizedElement(index) ??
-                 GetFocusedElement(index) ??
+                 GetRealizedElement(index, ref _focusedIndex, ref _focusedElement) ??
                  GetRealizedElement(index, ref _scrollToIndex, ref _scrollToElement)) is { } realized)
                 return realized;
 
@@ -995,20 +1010,6 @@ namespace Avalonia.Controls
         private Control? GetRealizedElement(int index)
         {
             return _realizedElements?.GetElement(index);
-        }
-
-        private Control? GetFocusedElement(int index)
-        {
-            if (_focusedIndex != index)
-                return null;
-
-            Debug.Assert(_focusedElement is not null);
-
-            var result = _focusedElement;
-            ClearFocusedElementSuppression();
-            _focusedIndex = -1;
-            _focusedElement = null;
-            return result;
         }
         
         private static Control? GetRealizedElement(
@@ -1105,19 +1106,8 @@ namespace Avalonia.Controls
             }
             else if (KeyboardNavigation.GetTabOnceActiveElement(ItemsControl) == element)
             {
-                // Keep the container attached so it can retain keyboard focus, but prevent an
-                // estimated off-viewport position from rendering or receiving input in the
-                // visible viewport.
                 _focusedElement = element;
                 _focusedIndex = index;
-                _focusedElementOpacityOverride = element.SetValue(
-                    Visual.OpacityProperty,
-                    0,
-                    BindingPriority.Animation);
-                _focusedElementHitTestOverride = element.SetValue(
-                    InputElement.IsHitTestVisibleProperty,
-                    false,
-                    BindingPriority.Animation);
             }
             else
             {
@@ -1158,19 +1148,10 @@ namespace Avalonia.Controls
         {
             if (_focusedElement != null)
             {
-                ClearFocusedElementSuppression();
                 RecycleElementOnItemRemoved(_focusedElement);
             }
             _focusedElement = null;
             _focusedIndex = -1;
-        }
-
-        private void ClearFocusedElementSuppression()
-        {
-            _focusedElementOpacityOverride?.Dispose();
-            _focusedElementOpacityOverride = null;
-            _focusedElementHitTestOverride?.Dispose();
-            _focusedElementHitTestOverride = null;
         }
         
         private void RecycleScrollToElement()
@@ -1373,7 +1354,6 @@ namespace Avalonia.Controls
                 e.GetOldValue<IInputElement?>() == _focusedElement)
             {
                 // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
-                ClearFocusedElementSuppression();
                 RecycleElement(_focusedElement, _focusedIndex);
                 _focusedElement = null;
                 _focusedIndex = -1;
