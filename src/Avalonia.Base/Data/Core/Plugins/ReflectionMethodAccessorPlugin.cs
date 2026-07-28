@@ -81,6 +81,7 @@ namespace Avalonia.Data.Core.Plugins
 
             MethodInfo? zeroParamCandidate = null;
             MethodInfo? oneParamCandidate = null;
+            var oneParamCandidateCount = 0;
 
             foreach (var candidate in candidates)
             {
@@ -93,28 +94,30 @@ namespace Avalonia.Data.Core.Plugins
                         break;
 
                     case 1:
+                        ++oneParamCandidateCount;
+
                         // Object parameter always wins
                         if (parameters[0].ParameterType == typeof(object))
                             return new MethodLookupResult(candidate, null);
 
-                        if (oneParamCandidate is not null)
-                        {
-                            var parameterTypes = candidates
-                                .Where(m => m.GetParameters().Length == 1)
-                                .Select(m => $"'{m.GetParameters()[0].ParameterType.FullName}'")
-                                .OrderBy(s => s, StringComparer.Ordinal)
-                                .ToArray();
-
-                            return new MethodLookupResult(
-                                null,
-                                $"Unable to resolve method of name '{methodName}' on type '{type.FullName}'. " +
-                                $"Found {parameterTypes.Length} overloads accepting one parameter: {string.Join(", ", parameterTypes)}. " +
-                                "Expected either a single overload with one parameter, or an overload accepting System.Object.");
-                        }
-
                         oneParamCandidate = candidate;
                         break;
                 }
+            }
+
+            if (oneParamCandidateCount > 1)
+            {
+                var parameterTypes = candidates
+                    .Where(m => m.GetParameters().Length == 1)
+                    .Select(m => $"'{m.GetParameters()[0].ParameterType.FullName}'")
+                    .OrderBy(s => s, StringComparer.Ordinal)
+                    .ToArray();
+
+                return new MethodLookupResult(
+                    null,
+                    $"Unable to resolve method of name '{methodName}' on type '{type.FullName}'. " +
+                    $"Found {parameterTypes.Length} overloads accepting one parameter: {string.Join(", ", parameterTypes)}. " +
+                    "Expected either a single overload with one parameter, or an overload accepting System.Object.");
             }
 
             if ((oneParamCandidate ?? zeroParamCandidate) is { } found)

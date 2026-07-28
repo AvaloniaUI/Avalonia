@@ -453,6 +453,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 IXamlMethod? zeroParamCandidate = null;
                 IXamlMethod? oneParamCandidate = null;
+                var oneParamCandidateCount = 0;
 
                 foreach (var candidate in candidates)
                 {
@@ -465,28 +466,30 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             break;
 
                         case 1:
+                            ++oneParamCandidateCount;
+
                             // Object parameter always wins
                             if (candidate.Parameters[0].Is("System", "Object"))
                                 return candidate;
 
-                            if (oneParamCandidate is not null)
-                            {
-                                var parameterTypes = candidates
-                                    .Where(m => m.Parameters.Count == 1)
-                                    .Select(m => $"'{m.Parameters[0].FullName}'")
-                                    .OrderBy(s => s, StringComparer.Ordinal)
-                                    .ToArray();
-
-                                throw new XamlTransformException(
-                                    $"Unable to resolve method of name '{name}' on type '{targetType}'. " +
-                                    $"Found {parameterTypes.Length} overloads accepting one parameter: {string.Join(", ", parameterTypes)}. " +
-                                    "Expected either a single overload with one parameter, or an overload accepting System.Object.",
-                                    lineInfo);
-                            }
-
-                            oneParamCandidate = candidate;
+                            oneParamCandidate ??= candidate;
                             break;
                     }
+                }
+
+                if (oneParamCandidateCount > 1)
+                {
+                    var parameterTypes = candidates
+                        .Where(m => m.Parameters.Count == 1)
+                        .Select(m => $"'{m.Parameters[0].FullName}'")
+                        .OrderBy(s => s, StringComparer.Ordinal)
+                        .ToArray();
+
+                    throw new XamlTransformException(
+                        $"Unable to resolve method of name '{name}' on type '{targetType}'. " +
+                        $"Found {parameterTypes.Length} overloads accepting one parameter: {string.Join(", ", parameterTypes)}. " +
+                        "Expected either a single overload with one parameter, or an overload accepting System.Object.",
+                        lineInfo);
                 }
 
                 return oneParamCandidate ?? zeroParamCandidate ?? throw new XamlTransformException(

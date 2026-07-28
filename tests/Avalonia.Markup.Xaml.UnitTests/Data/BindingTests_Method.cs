@@ -314,6 +314,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             public void MethodWithOverloads() => Value = "Called MethodWithOverloads without parameter";
             public void MethodWithOverloads(int i) => Value = $"Called MethodWithOverloads with Int32 {i}";
+            public void MethodWithOverloads(string i) => Value = $"Called MethodWithOverloads with String {i}";
             public void MethodWithOverloads(object i) => Value = $"Called MethodWithOverloads with Object {i}";
 
             public void MethodWithOverloads2() => Value = "Called MethodWithOverloads2 without parameter";
