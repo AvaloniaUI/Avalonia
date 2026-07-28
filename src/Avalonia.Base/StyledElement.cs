@@ -14,6 +14,7 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.PropertyStore;
 using Avalonia.Styling;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -81,7 +82,7 @@ namespace Avalonia
         private string? _name;
         private Classes? _classes;
         private ILogicalRoot? _logicalRoot;
-        private AvaloniaList<ILogical>? _logicalChildren;
+        private SafeEnumerableAvaloniaList<ILogical>? _logicalChildren;
         private IResourceDictionary? _resources;
         private Styles? _styles;
         private bool _stylesApplied;
@@ -259,15 +260,15 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the styled element's logical children.
+        /// Gets the styled element's logical children, strongly-typed, to avoid interface calls and enumerator boxing.
         /// </summary>
-        protected internal IAvaloniaList<ILogical> LogicalChildren
+        internal SafeEnumerableAvaloniaList<ILogical> TypedLogicalChildren
         {
             get
             {
                 if (_logicalChildren == null)
                 {
-                    var list = new AvaloniaList<ILogical>
+                    var list = new SafeEnumerableAvaloniaList<ILogical>
                     {
                         ResetBehavior = ResetBehavior.Remove,
                         Validator = this
@@ -279,6 +280,11 @@ namespace Avalonia
                 return _logicalChildren;
             }
         }
+
+        /// <summary>
+        /// Gets the styled element's logical children.
+        /// </summary>
+        protected internal IAvaloniaList<ILogical> LogicalChildren => TypedLogicalChildren;
 
         /// <summary>
         /// Gets the <see cref="Classes"/> collection in a form that allows adding and removing
@@ -320,7 +326,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the styled element's logical children.
         /// </summary>
-        IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
+        IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => TypedLogicalChildren;
 
         /// <inheritdoc/>
         bool IResourceNode.HasResources => (_resources?.HasResources ?? false) ||
@@ -541,17 +547,10 @@ namespace Avalonia
         /// <param name="e">The change token.</param>
         internal virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
-            if (_logicalChildren is object)
+            if (_logicalChildren is not null)
             {
-                var count = _logicalChildren.Count;
-
-                if (count > 0)
-                {
-                    for (var i = 0; i < count; ++i)
-                    {
-                        _logicalChildren[i].NotifyResourcesChanged(e);
-                    }
-                }
+                foreach (var child in _logicalChildren)
+                    child.NotifyResourcesChanged(e);
             }
         }
 
@@ -712,12 +711,9 @@ namespace Avalonia
                     element._dataContextUpdating = true;
                     element.OnDataContextBeginUpdate();
 
-                    var logicalChildren = element.LogicalChildren;
-                    var logicalChildrenCount = logicalChildren.Count;
-
-                    for (var i = 0; i < logicalChildrenCount; i++)
+                    foreach (var child in element.TypedLogicalChildren)
                     {
-                        if (element.LogicalChildren[i] is StyledElement s &&
+                        if (child is StyledElement s &&
                             s.InheritanceParent == element &&
                             !s.IsSet(DataContextProperty))
                         {
@@ -871,12 +867,9 @@ namespace Avalonia
                 AttachedToLogicalTree?.Invoke(this, e);
             }
 
-            var logicalChildren = LogicalChildren;
-            var logicalChildrenCount = logicalChildren.Count;
-
-            for (var i = 0; i < logicalChildrenCount; i++)
+            foreach (var logicalChild in TypedLogicalChildren)
             {
-                if (logicalChildren[i] is StyledElement child && child._logicalRoot != e.Root) // child may already have been attached within an event handler
+                if (logicalChild is StyledElement child && child._logicalRoot != e.Root) // child may already have been attached within an event handler
                 {
                     child.OnAttachedToLogicalTreeCore(e);
                 }
@@ -892,12 +885,9 @@ namespace Avalonia
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                var logicalChildren = LogicalChildren;
-                var logicalChildrenCount = logicalChildren.Count;
-
-                for (var i = 0; i < logicalChildrenCount; i++)
+                foreach (var logicalChild in TypedLogicalChildren)
                 {
-                    if (logicalChildren[i] is StyledElement child)
+                    if (logicalChild is StyledElement child)
                     {
                         child.OnDetachedFromLogicalTreeCore(e);
                     }
@@ -959,12 +949,8 @@ namespace Avalonia
 
             if (_logicalChildren is not null)
             {
-                var childCount = _logicalChildren.Count;
-
-                for (var i = 0; i < childCount; ++i)
-                {
-                    (_logicalChildren[i] as StyledElement)?.DetachStyles(styles);
-                }
+                foreach (var child in _logicalChildren)
+                    (child as StyledElement)?.DetachStyles(styles);
             }
         }
 
