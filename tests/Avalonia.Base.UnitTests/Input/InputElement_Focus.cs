@@ -1028,6 +1028,42 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Previous_Wraps_To_Last_Element_In_Cycle_Container()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var cycle = new StackPanel
+                {
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = cycle
+                };
+
+                var focusManager = FocusManager.GetFocusManager(target1);
+                Assert.NotNull(focusManager);
+                target1.Focus();
+
+                // Wrapping backwards inside a Cycle scope must land on the last focusable
+                // element, mirroring the forward wrap (last -> first). It used to take the
+                // FIRST element - the focused element itself - making Previous a no-op.
+                var previous = focusManager.FindNextElement(NavigationDirection.Previous);
+
+                Assert.Equal(target3, previous);
+            }
+        }
+
+        [Fact]
         public void Can_Get_Next_Element_With_FocusedElement_Option()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))

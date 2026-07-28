@@ -752,7 +752,10 @@ namespace Avalonia.Input
                 {
                     if (IsValidTabStopSearchCandidate(current) && current is InputElement c && KeyboardNavigation.GetTabNavigation(c) == KeyboardNavigationMode.Cycle)
                     {
-                        newTabStop = GetFirstFocusableElement(current, current);
+                        // Wrapping backwards inside a Cycle scope lands on the LAST focusable
+                        // element, mirroring the forward wrap (last -> first).
+                        // Matches WinUI: GetLastFocusableElement(pCurrent, pCurrent).
+                        newTabStop = GetLastFocusableElement(current, current);
                         break;
                     }
 
