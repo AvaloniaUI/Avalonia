@@ -98,4 +98,31 @@ namespace Avalonia.Rendering.Composition.Animations
         
         public static BooleanInterpolator Instance { get; } = new BooleanInterpolator();
     }
+
+    class RelativePointInterpolator : IInterpolator<Avalonia.RelativePoint>
+    {
+        public Avalonia.RelativePoint Interpolate(Avalonia.RelativePoint @from, Avalonia.RelativePoint to, float progress)
+        {
+            if (@from.Unit != to.Unit)
+                return progress >= 0.5f ? to : @from;
+
+            var x = DoubleInterpolator.Instance.Interpolate(@from.Point.X, to.Point.X, progress);
+            var y = DoubleInterpolator.Instance.Interpolate(@from.Point.Y, to.Point.Y, progress);
+            return new Avalonia.RelativePoint(x, y, @from.Unit);
+        }
+
+        public static RelativePointInterpolator Instance { get; } = new();
+    }
+
+    class RelativeScalarInterpolator : IInterpolator<Avalonia.RelativeScalar>
+    {
+        public Avalonia.RelativeScalar Interpolate(Avalonia.RelativeScalar @from, Avalonia.RelativeScalar to, float progress)
+        {
+            if (@from.Unit != to.Unit)
+                return progress >= 0.5f ? to : @from;
+            return new RelativeScalar(@from.Scalar + (to.Scalar - @from.Scalar) * progress, from.Unit);
+        }
+
+        public static RelativeScalarInterpolator Instance { get; } = new();
+    }
 }
