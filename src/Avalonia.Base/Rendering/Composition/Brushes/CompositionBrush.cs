@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -42,10 +43,47 @@ partial class CompositionConicGradientBrush : IConicGradientBrush
 
 public abstract partial class CompositionGradientBrush : CompositionBrush, IGradientBrush
 {
+    private List<IGradientStop> _gradientStops = [];
+    private GradientSpreadMethod _spreadMethod;
+
     internal new ServerCompositionGradientBrush Server { get; }
-    public List<IGradientStop> GradientStops { get; set; } = [];
+
+    /// <summary>
+    /// The gradient stops. Mutations of the list itself are not tracked - assign
+    /// the property to ship in-place edits made after a commit. Stops created via
+    /// <see cref="Compositor.CreateGradientStop(double, Media.Color)"/> stay live
+    /// on the server and animate individually; other stops are snapshotted at
+    /// serialization time.
+    /// </summary>
+    public List<IGradientStop> GradientStops
+    {
+        get => _gradientStops;
+        set
+        {
+            if (ReferenceEquals(_gradientStops, value))
+                return;
+            _gradientStops = value;
+            RegisterForSerialization();
+        }
+    }
+
     IReadOnlyList<IGradientStop> IGradientBrush.GradientStops => GradientStops;
-    public GradientSpreadMethod SpreadMethod { get; set; }
+
+    /// <summary>
+    /// How the gradient repeats outside the stop range.
+    /// </summary>
+    public GradientSpreadMethod SpreadMethod
+    {
+        get => _spreadMethod;
+        set
+        {
+            if (_spreadMethod == value)
+                return;
+            _spreadMethod = value;
+            RegisterForSerialization();
+        }
+    }
+
     partial void OnRootChanged();
     partial void OnRootChanging();
 
@@ -63,7 +101,10 @@ public abstract partial class CompositionGradientBrush : CompositionBrush, IGrad
             if (stop is CompositionGradientStop comp)
                 writer.WriteObject(comp.Server);
             else
-                writer.WriteObject(stop);
+                // A mutable UI-thread stop must not cross to the render thread
+                // by reference; ship its current values instead.
+                writer.WriteObject(stop as ImmutableGradientStop
+                    ?? new ImmutableGradientStop(stop.Offset, stop.Color));
         }
     }
 }
