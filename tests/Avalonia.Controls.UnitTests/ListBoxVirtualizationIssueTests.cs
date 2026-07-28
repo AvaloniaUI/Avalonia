@@ -36,6 +36,62 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
         }
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Removing_Virtualized_Selected_Item_With_AlwaysSelected_Removes_Correct_Item(bool autoScrollToSelectedItem)
+    {
+        // Issue #16169: with SelectionMode=AlwaysSelected, the selected item's container is the
+        // TabOnceActiveElement, so the panel retains it when it is virtualized away. Removing the
+        // item then left the retained container mapped to index 0, so the wrong item visually
+        // disappeared and the removed item stayed shown and selected.
+        using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+        {
+            var items = new ObservableCollection<int>(Enumerable.Range(0, 100));
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemsSource = items,
+                ItemTemplate = new FuncDataTemplate<int>((_, _) => new TextBlock { Height = 50 }),
+                ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
+                SelectionMode = SelectionMode.AlwaysSelected,
+                AutoScrollToSelectedItem = autoScrollToSelectedItem,
+            };
+
+            Prepare(target);
+            target.UpdateLayout();
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(0, target.SelectedItem);
+
+            // Scroll to the end so that the selected item's container is virtualized away.
+            target.ScrollIntoView(99);
+            target.UpdateLayout();
+
+            items.RemoveAt(0);
+            target.UpdateLayout();
+
+            // Selection must have moved to the next item.
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(1, target.SelectedItem);
+
+            // Scroll back to the start: the removed item must be gone and the new first item
+            // must be shown and selected.
+            target.ScrollIntoView(0);
+            target.UpdateLayout();
+
+            var firstContainer = Assert.IsType<ListBoxItem>(target.ContainerFromIndex(0));
+            Assert.Equal(1, firstContainer.Content);
+            Assert.True(firstContainer.IsSelected);
+
+            // Every realized container must display the item at its own index.
+            foreach (var container in target.GetRealizedContainers().Cast<ListBoxItem>())
+            {
+                Assert.Equal(items[target.IndexFromContainer(container)], container.Content);
+            }
+        }
+    }
+
     [Fact]
     public void Replaced_ItemsSource_Should_Not_Show_Old_Selected_Item_When_Scrolled_Back()
     {
