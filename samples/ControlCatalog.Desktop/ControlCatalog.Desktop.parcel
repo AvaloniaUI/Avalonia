@@ -1,0 +1,64 @@
+{
+    "GeneralSettings": {
+        "NetProjectPath": "ControlCatalog.Desktop.csproj",
+        "ApplicationName": "Avalonia Control Catalog",
+        "Version": "12.2.999",
+        "PackageName": "ControlCatalog",
+        "AssemblyName": {
+            "$type": "msbuild",
+            "property": "AssemblyName"
+        }
+    },
+    "LinuxSettings": {
+        "Maintainer": "Avalonia Team",
+        "CreateBinSymlink": "True"
+    },
+    "Win32Settings": {
+        "InstallerIcon": "../ControlCatalog/Assets/Icon.png",
+        "Company": "AvaloniaUI",
+        "IncludeUninstaller": "True",
+        "SigningType": "AzureTrustedSigning",
+        "TrustedSigningEndpoint": "https://weu.codesigning.azure.net/",
+        "TrustedSigningCertificateProfileName": "AvaloniaPublicTrust",
+        "TrustedSigningCodeSigningAccountName": "AvaloniaUI"
+    },
+    "MacOsSettings": {
+        "CreateBundle": true,
+        "BundleIdentifier": "com.AvaloniaUI.ControlCatalog",
+        "TeamId": "9D486DVKN8",
+        "BundleCategory": "DeveloperTools",
+        "AppIcon": "../ControlCatalog/Assets/Icon.png",
+        "BundleResourcePatterns": [
+            "*.mp4"
+        ],
+        "PkgSigningCredentialsType": "P12Certificate",
+        "PkgSigningP12Certificate": {
+            "$type": "env",
+            "name": "APPLE_P12_PKG_CERT"
+        },
+        "PkgSigningP12Password": {
+            "$type": "env",
+            "name": "APPLE_P12_PKG_CERT_PASS"
+        },
+        "SigningCredentialsType": "P12Certificate",
+        "SigningP12Certificate": {
+            "$type": "env",
+            "name": "APPLE_P12_CERT"
+        },
+        "SigningP12Password": {
+            "$type": "env",
+            "name": "APPLE_P12_CERT_PASS"
+        },
+        "NotaryCredentialsType": "AppleAccount",
+        "NotaryAppleId": "maxkatz6@outlook.com",
+        "NotaryAppPassword": {
+            "$type": "env",
+            "name": "APPLE_APP_PASS"
+        }
+    },
+    "PublishSettings": {
+        "PublishSingleFile": "True",
+        "PublishTrimmed": "True",
+        "ExtraBuildProperties": {}
+    }
+}
