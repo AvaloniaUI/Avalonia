@@ -1,4 +1,6 @@
 ﻿using System;
+using Avalonia.Layout;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -116,6 +118,13 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                maxWidth = LayoutHelper.RoundLayoutValue(maxWidth, scale);
+                maxHeight = LayoutHelper.RoundLayoutValue(maxHeight, scale);
+            }
+
             var totalWidth = maxWidth * _columns + ColumnSpacing * (_columns - 1);
             var totalHeight = maxHeight * _rows + RowSpacing * (_rows - 1);
 
@@ -135,6 +144,14 @@ namespace Avalonia.Controls.Primitives
 
             var width = Math.Max((finalSize.Width - (_columns - 1) * columnSpacing) / _columns, 0);
             var height = Math.Max((finalSize.Height - (_rows - 1) * rowSpacing) / _rows, 0);
+
+            // If layout rounding is enabled, round the per-cell unit size to integral device units.
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                width = LayoutHelper.RoundLayoutValue(width, scale);
+                height = LayoutHelper.RoundLayoutValue(height, scale);
+            }
 
             foreach (var child in Children)
             {

@@ -13,7 +13,6 @@
 WindowImpl::WindowImpl(IAvnWindowEvents *events) : TopLevelImpl(events), WindowBaseImpl(events, false) {
     _isEnabled = true;
     _isClientAreaExtended = false;
-    _extendClientHints = AvnDefaultChrome;
     _fullScreenActive = false;
     _canResize = true;
     _canMinimize = true;
@@ -101,11 +100,14 @@ void WindowImpl::ZOrderChildWindows()
 {
     for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
     {
-        auto window = (*iterator)->Window;
+        auto child = (*iterator).tryGet();
+        if (!child) continue;
+        
+        auto window = child->Window;
         
         // #9565: Only bring window to front if it's on the currently active space
         if ([window isOnActiveSpace]) {
-            (*iterator)->BringToFront();
+            child->BringToFront();
         }
     }
 }
@@ -114,7 +116,8 @@ bool WindowImpl::CanBecomeKeyWindow()
 {
     for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
     {
-        if((*iterator)->IsModal())
+        auto child = (*iterator).tryGet();
+        if(child && child->IsModal())
         {
             return false;
         }
@@ -153,20 +156,11 @@ void WindowImpl::WindowStateChanged() {
             if (_isClientAreaExtended) {
                 if (_lastWindowState == FullScreen) {
                     // we exited fs.
-                    if (_extendClientHints & AvnOSXThickTitleBar) {
-                        Window.toolbar = [NSToolbar new];
-                        Window.toolbar.showsBaselineSeparator = false;
-                    }
-
                     [Window setTitlebarAppearsTransparent:true];
 
                     [StandardContainer setFrameSize:StandardContainer.frame.size];
                 } else if (state == FullScreen) {
                     // we entered fs.
-                    if (_extendClientHints & AvnOSXThickTitleBar) {
-                        Window.toolbar = nullptr;
-                    }
-
                     [Window setTitlebarAppearsTransparent:false];
 
                     [StandardContainer setFrameSize:StandardContainer.frame.size];
@@ -239,6 +233,10 @@ HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
         }
 
         UpdateAppearance();
+
+        if (_isClientAreaExtended) {
+            [StandardContainer ShowTitleBar:_decorations == SystemDecorationsFull];
+        }
 
         switch (_decorations) {
             case SystemDecorationsNone:
@@ -391,20 +389,9 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
 
                 [Window setTitlebarAppearsTransparent:true];
 
-                auto wantsTitleBar = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+                [StandardContainer ShowTitleBar:_decorations == SystemDecorationsFull];
 
-                if (wantsTitleBar) {
-                    [StandardContainer ShowTitleBar:true];
-                } else {
-                    [StandardContainer ShowTitleBar:false];
-                }
-
-                if (_extendClientHints & AvnOSXThickTitleBar) {
-                    Window.toolbar = [NSToolbar new];
-                    Window.toolbar.showsBaselineSeparator = false;
-                } else {
-                    Window.toolbar = nullptr;
-                }
+                Window.toolbar = nullptr;
             } else {
                 Window.titleVisibility = NSWindowTitleVisible;
                 Window.toolbar = nullptr;
@@ -416,17 +403,6 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
             UpdateAppearance();
         }
 
-        return S_OK;
-    }
-}
-
-HRESULT WindowImpl::SetExtendClientAreaHints(AvnExtendClientAreaChromeHints hints) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        _extendClientHints = hints;
-
-        SetExtendClientArea(_isClientAreaExtended);
         return S_OK;
     }
 }
@@ -591,6 +567,10 @@ NSWindowStyleMask WindowImpl::CalculateStyleMask() {
 
         case SystemDecorationsBorderOnly:
             s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
+            
+            if (_canResize && _isEnabled) {
+                s = s | NSWindowStyleMaskResizable;
+            }
             break;
 
         case SystemDecorationsFull:
@@ -619,9 +599,7 @@ void WindowImpl::UpdateAppearance() {
         return;
     }
 
-    bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-    bool hasTrafficLights = (_decorations == SystemDecorationsFull) &&
-        (_isClientAreaExtended ? wantsChrome : true);
+    bool hasTrafficLights = (_decorations == SystemDecorationsFull);
     
     NSButton* closeButton = [Window standardWindowButton:NSWindowCloseButton];
     NSButton* miniaturizeButton = [Window standardWindowButton:NSWindowMiniaturizeButton];

@@ -47,7 +47,7 @@ namespace Avalonia.Media.Imaging
         public void Render(Visual visual)
         {
             using (var ctx = CreateDrawingContext())
-                ImmediateRenderer.Render(visual, ctx);
+                ImmediateRenderer.Render(ctx, visual);
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Avalonia.Media.Imaging
         /// <returns>The drawing context.</returns>
         public DrawingContext CreateDrawingContext(bool clear)
         {
-            var platform = PlatformImpl.Item.CreateDrawingContext(true);
+            var platform = PlatformImpl.Item.CreateDrawingContext();
             if(clear)
                 platform.Clear(Colors.Transparent);
             return new PlatformDrawingContext(platform);

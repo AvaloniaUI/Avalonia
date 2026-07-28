@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Linq;
 using Avalonia.Controls;
@@ -57,7 +55,7 @@ namespace Avalonia.Native
                 .OrderBy(x => x.Scaling)
                 .First(m => m.Bounds.Contains(Position));
 
-            Resize(new Size(monitor!.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
+            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
         }
 
         public void Activate()
@@ -70,8 +68,16 @@ namespace Avalonia.Native
             Native?.Resize(clientSize.Width, clientSize.Height, (AvnPlatformResizeReason)reason);
         }
         
-        public override void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public override void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
+            var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+
+            if (themeVariant is null && settings is NativePlatformSettings typedSettings)
+            {
+                typedSettings.OnColorValuesChanged();
+            }
+
+            themeVariant ??= settings?.GetColorValues().ThemeVariant ?? PlatformThemeVariant.Light;
             Native?.SetFrameThemeVariant((AvnPlatformThemeVariant)themeVariant);
         }
 

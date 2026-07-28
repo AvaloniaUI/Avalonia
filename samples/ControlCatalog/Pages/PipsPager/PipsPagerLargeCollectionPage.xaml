@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PipsPagerLargeCollectionPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Large Collections" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Use MaxVisiblePips to limit visible indicators when the page count is large. The pips scroll automatically to keep the selected pip visible." />
+        <Separator />
+        <TextBlock Text="Properties" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="NumberOfPages: Total page count" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="MaxVisiblePips: Visible indicator limit" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="SelectedPageIndex: Current selection" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <StackPanel Spacing="24" Margin="24">
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="50 Pages, MaxVisiblePips=7" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager Name="LargePager"
+                   NumberOfPages="50"
+                   MaxVisiblePips="7"
+                   SelectedPageIndex="25" />
+        <TextBlock HorizontalAlignment="Left" FontSize="12">
+          <Run Text="Selected: " FontWeight="SemiBold" />
+          <Run Text="{Binding #LargePager.SelectedPageIndex}" />
+          <Run Text=" / " />
+          <Run Text="{Binding #LargePager.NumberOfPages}" />
+        </TextBlock>
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="20 Pages, MaxVisiblePips=5" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="20"
+                   MaxVisiblePips="5" />
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="100 Pages, MaxVisiblePips=9" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="100"
+                   MaxVisiblePips="9" />
+      </StackPanel>
+
+    </StackPanel>
+  </DockPanel>
+</UserControl>

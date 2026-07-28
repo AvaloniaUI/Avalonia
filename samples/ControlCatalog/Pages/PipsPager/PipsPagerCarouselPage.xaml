@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PipsPagerCarouselPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Carousel Integration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Bind SelectedPageIndex to a Carousel's SelectedIndex for two-way synchronized page navigation." />
+        <Separator />
+        <TextBlock Text="Binding" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" TextWrapping="Wrap"
+                   Text="SelectedIndex='{Binding #Pager.SelectedPageIndex, Mode=TwoWay}'" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Grid RowDefinitions="*,Auto" Margin="24">
+      <Carousel Name="GalleryCarousel"
+                SelectedIndex="{Binding #GalleryPager.SelectedPageIndex, Mode=TwoWay}">
+        <Carousel.Items>
+          <Border Background="#E3F2FD" CornerRadius="8">
+            <TextBlock Text="Page 1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="30" Opacity="0.6" />
+          </Border>
+          <Border Background="#C8E6C9" CornerRadius="8">
+            <TextBlock Text="Page 2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="30" Opacity="0.6" />
+          </Border>
+          <Border Background="#FFE0B2" CornerRadius="8">
+            <TextBlock Text="Page 3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="30" Opacity="0.6" />
+          </Border>
+          <Border Background="#E1BEE7" CornerRadius="8">
+            <TextBlock Text="Page 4" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="30" Opacity="0.6" />
+          </Border>
+          <Border Background="#FFCDD2" CornerRadius="8">
+            <TextBlock Text="Page 5" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="30" Opacity="0.6" />
+          </Border>
+        </Carousel.Items>
+      </Carousel>
+
+      <PipsPager Name="GalleryPager"
+                 Grid.Row="1"
+                 NumberOfPages="5"
+                 HorizontalAlignment="Center"
+                 Margin="0,12,0,0" />
+    </Grid>
+  </DockPanel>
+</UserControl>

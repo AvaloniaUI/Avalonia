@@ -10,7 +10,7 @@ A bug fix will ideally be accompanied by tests. There are a few types of tests:
 
 - Unit tests are for issues that aren't related to platform features. These tests are located in the `tests` directly, categorised by the assembly which they're testing.
 - Integration tests are for issues that are related to platform features (for example fixing a bug with Window resizing). These tests are located in the `tests/Avalonia.IntegrationTests.Appium` directory. Integration tests should be run on Windows and macOS. See the readme in that directory for more information
-- Render tests are for issues with rendering. These tests are located in `tests/Avalonia.RenderTests` with separate project files for Skia and Direct2D. The Direct2D backend is currently mostly unmaintained so render tests that just run on Skia are acceptable
+- Render tests are for issues with rendering. These tests are located in `tests/Avalonia.RenderTests` and are imported in the `Avalonia.Skia.RenderTests` project.
 
 It's not always feasible to accompany a bug fix with a test, but doing so will speed up the review process.
 

@@ -1,11 +1,14 @@
-﻿<UserControl x:Class="ControlCatalog.Pages.ClipboardPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.ClipboardPage"
              xmlns="https://github.com/avaloniaui"
+             Header="Clipboard"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Example of ClipboardPage capabilities</TextBlock>
 
     <Button Click="CopyText" Content="Copy text to clipboard" />
     <Button Click="PasteText" Content="Paste text from clipboard" />
+    <Button Click="CopyImage" Content="Copy image to clipboard" />
+    <Button Click="PasteImage" Content="Paste image from clipboard" />
     <Button Click="CopyFiles" Content="Copy files to clipboard" />
     <Button Click="PasteFiles" Content="Paste files from clipboard" />
     <Button Click="CopyBinaryData" Content="Copy bytes to clipboard" />
@@ -19,6 +22,10 @@
     <TextBox x:Name="ClipboardContent"
              MinHeight="100"
              AcceptsReturn="True"
-             Watermark="Text to copy of file names per line" />
+             PlaceholderText="Text to copy of file names per line" />
+    <Viewbox Width="420" Height="360">
+      <Image x:Name="ClipboardImage"
+      />
+    </Viewbox>
   </StackPanel>
-</UserControl>
+</ContentPage>

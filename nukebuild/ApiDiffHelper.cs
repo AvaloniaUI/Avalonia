@@ -304,21 +304,39 @@ public static class ApiDiffHelper
             {
                 using var packageReader = new PackageArchiveReader(currentArchive);
                 packageId = packageReader.NuspecReader.GetId();
+
+                baselineFolderPath = outputFolderPath / "baseline" / packageId;
+                Directory.CreateDirectory(baselineFolderPath);
+
                 currentFolderPath = outputFolderPath / "current" / packageId;
+                Directory.CreateDirectory(currentFolderPath);
+
                 currentFolderNames = ExtractDiffableAssembliesFromPackage(currentArchive, currentFolderPath);
             }
 
-            // Download baseline package
-            memoryStream.Position = 0L;
-            memoryStream.SetLength(0L);
-            await DownloadBaselinePackageAsync(memoryStream, downloadContext, packageId, baselineVersion);
-            memoryStream.Position = 0L;
+            var packageExists = await downloadContext.FindPackageByIdResource.DoesPackageExistAsync(
+                packageId,
+                baselineVersion,
+                downloadContext.CacheContext,
+                NullLogger.Instance,
+                CancellationToken.None);
 
-            // Extract baseline package
-            using (var baselineArchive = new ZipArchive(memoryStream, ZipArchiveMode.Read, leaveOpen: true))
+            if (packageExists)
             {
-                baselineFolderPath = outputFolderPath / "baseline" / packageId;
+                // Download baseline package
+                memoryStream.Position = 0L;
+                memoryStream.SetLength(0L);
+                await DownloadBaselinePackageAsync(memoryStream, downloadContext, packageId, baselineVersion);
+                memoryStream.Position = 0L;
+
+                // Extract baseline package
+                using var baselineArchive = new ZipArchive(memoryStream, ZipArchiveMode.Read, leaveOpen: true);
                 baselineFolderNames = ExtractDiffableAssembliesFromPackage(baselineArchive, baselineFolderPath);
+            }
+            else
+            {
+                Information("Baseline package {Id} {Version} does not exist. Assuming new package.", packageId, baselineVersion);
+                baselineFolderNames = [];
             }
 
             if (currentFolderNames.Count == 0 && baselineFolderNames.Count == 0)
@@ -326,36 +344,55 @@ public static class ApiDiffHelper
 
             var frameworkDiffs = new List<FrameworkDiffInfo>();
 
-            // Handle frameworks that exist only in the current package.
-            foreach (var framework in currentFolderNames.Keys.Except(baselineFolderNames.Keys))
-            {
-                var folderName = currentFolderNames[framework];
-                Directory.CreateDirectory(baselineFolderPath / folderName);
-                baselineFolderNames.Add(framework, folderName);
-            }
-
-            // Handle frameworks that exist only for the baseline package.
-            foreach (var framework in baselineFolderNames.Keys.Except(currentFolderNames.Keys))
-            {
-                var folderName = baselineFolderNames[framework];
-                Directory.CreateDirectory(currentFolderPath / folderName);
-                currentFolderNames.Add(framework, folderName);
-            }
-
+            // Match frameworks
             foreach (var (framework, currentFolderName) in currentFolderNames)
             {
-                var baselineFolderName = baselineFolderNames[framework];
+                if (!baselineFolderNames.TryGetValue(framework, out var baselineFolderName))
+                    baselineFolderName = currentFolderName;
 
-                frameworkDiffs.Add(new FrameworkDiffInfo(
+                var frameworkDiff = new FrameworkDiffInfo(
                     framework,
                     baselineFolderPath / FolderLib / baselineFolderName,
-                    currentFolderPath / FolderLib / currentFolderName));
+                    currentFolderPath / FolderLib / currentFolderName);
+
+                EnsureAssemblies(frameworkDiff);
+
+                frameworkDiffs.Add(frameworkDiff);
             }
 
             packageDiffs.Add(new PackageDiffInfo(packageId, [..frameworkDiffs]));
         }
 
         return new GlobalDiffInfo(baselineVersion, currentVersion, packageDiffs.DrainToImmutable());
+
+        // Ensure that both sides of a framework diff have matching assemblies.
+        // For any missing, generate an empty assembly to diff against.
+        // (The API diff tool supports added and removed assemblies in theory but actually throws if one side doesn't have any.)
+        static void EnsureAssemblies(FrameworkDiffInfo frameworkDiff)
+        {
+            Directory.CreateDirectory(frameworkDiff.BaselineFolderPath);
+            Directory.CreateDirectory(frameworkDiff.CurrentFolderPath);
+
+            var baselineFileNames = GetFileNames(frameworkDiff.BaselineFolderPath);
+            var currentFileNames = GetFileNames(frameworkDiff.CurrentFolderPath);
+
+            GenerateMissingAssemblies(currentFileNames.Except(baselineFileNames), frameworkDiff.BaselineFolderPath);
+            GenerateMissingAssemblies(baselineFileNames.Except(currentFileNames), frameworkDiff.CurrentFolderPath);
+
+            static string[] GetFileNames(string folderPath)
+                => Directory.EnumerateFiles(folderPath, "*.dll").Select(Path.GetFileName)!.ToArray<string>();
+
+            void GenerateMissingAssemblies(IEnumerable<string> missingFileNames, string folderPath)
+            {
+                foreach (var missingFileName in missingFileNames)
+                {
+                    GenerateEmptyAssembly(
+                        Path.GetFileNameWithoutExtension(missingFileName),
+                        frameworkDiff.Framework.GetShortFolderName(),
+                        Path.Join(folderPath, missingFileName));
+                }
+            }
+        }
     }
 
     static async Task<NuGetDownloadContext> CreateNuGetDownloadContextAsync()
@@ -465,6 +502,44 @@ public static class ApiDiffHelper
             => value.HasPlatform && value.PlatformVersion != FrameworkConstants.EmptyVersion ?
                 new NuGetFramework(value.Framework, value.Version, value.Platform, FrameworkConstants.EmptyVersion) :
                 value;
+    }
+
+    static void GenerateEmptyAssembly(string name, string framework, string outputFilePath)
+    {
+        var projectContents =
+            $"""
+             <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{framework}</TargetFramework>
+                <Configuration>Release</Configuration>
+                <DebugType>None</DebugType>
+              </PropertyGroup>
+             </Project>
+             """;
+
+        var tempDirPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var projectFilePath = Path.Join(tempDirPath, $"{name}.csproj");
+
+        Directory.CreateDirectory(tempDirPath);
+
+        try
+        {
+            File.WriteAllText(projectFilePath, projectContents);
+
+            using var process = ProcessTasks.StartProcess(
+                "dotnet",
+                $"build \"{projectFilePath}\" --output \"{tempDirPath}\"",
+                tempDirPath);
+
+            process.AssertZeroExitCode();
+
+            File.Copy(Path.Join(tempDirPath, $"{name}.dll"), outputFilePath);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirPath))
+                Directory.Delete(tempDirPath, true);
+        }
     }
 
     public sealed class GlobalDiffInfo(

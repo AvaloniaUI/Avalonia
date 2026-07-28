@@ -9,7 +9,9 @@ namespace Avalonia.Media
     /// </summary>
     public struct BoxShadows
     {
-        private static readonly char[] s_Separators = new[] { ',' };
+        private const char Separator = ',';
+        private const char OpeningParenthesis = '(';
+        private const char ClosingParenthesis = ')';
 
         private readonly BoxShadow _first;
         private readonly BoxShadow[]? _list;
@@ -120,7 +122,9 @@ namespace Avalonia.Media
         /// <returns>A new <see cref="BoxShadows"/> collection.</returns>
         public static BoxShadows Parse(string s)
         {
-            var sp = s.Split(s_Separators, StringSplitOptions.RemoveEmptyEntries);
+            var sp = StringSplitter.SplitRespectingBrackets(
+                s, Separator, OpeningParenthesis, ClosingParenthesis,
+                StringSplitOptions.RemoveEmptyEntries);
             if (sp.Length == 0
                 || (sp.Length == 1 &&
                     (string.IsNullOrWhiteSpace(sp[0])
@@ -236,7 +240,7 @@ namespace Avalonia.Media
         /// <returns>
         /// <c>true</c> if the two <see cref="BoxShadows"/> collections are equal; otherwise, <c>false</c>.
         /// </returns>
-        public static bool operator ==(BoxShadows left, BoxShadows right) => 
+        public static bool operator ==(BoxShadows left, BoxShadows right) =>
             left.Equals(right);
 
         /// <summary>

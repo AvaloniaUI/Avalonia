@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 
 #nullable enable
 
@@ -264,6 +265,21 @@ namespace Avalonia.Animation
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// For unit tests only!
+        /// </summary>
+        internal TransitionInstance? TryGetTransitionInstance<TValue>(Transition<TValue> transition)
+        {
+            if (_transitionState is not null && _transitionState.TryGetValue(transition, out var transitionState))
+            {
+                var valueEntry = transitionState.Instance as BindingEntryBase<TValue, TValue>;
+                var transitionObservable = valueEntry?.Source as TransitionObservableBase<TValue>;
+                return transitionObservable?.Progress as TransitionInstance;
+            }
+
+            return null;
         }
 
         private class TransitionState

@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button Name='button' Content='{Binding Foo, RelativeSource={RelativeSource DataContext}}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 button.DataContext = new { Foo = "foo" };
                 window.ApplyTemplate();
@@ -40,7 +40,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button Name='button' Content='{Binding Name, RelativeSource={RelativeSource Self}}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
 
@@ -64,10 +64,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 Assert.Equal("border2", button.Content);
             }
@@ -89,7 +89,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
 
@@ -113,8 +113,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
-                var button = window.FindControl<Button>("button");
+                var contentControl = window.GetControl<ContentControl>("contentControl");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
                 
@@ -138,10 +138,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 Assert.Equal("border1", button.Content);
             }
@@ -163,9 +163,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </ContentControl>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var contentControl1 = window.FindControl<ContentControl>("contentControl1");
-                var contentControl2 = window.FindControl<ContentControl>("contentControl2");
-                var button = window.FindControl<Button>("button");
+                var contentControl1 = window.GetControl<ContentControl>("contentControl1");
+                var contentControl2 = window.GetControl<ContentControl>("contentControl2");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
 
@@ -189,7 +189,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
 
@@ -213,7 +213,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
 
@@ -237,7 +237,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
 
@@ -258,10 +258,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   <Button Name='button' Content='{Binding Title, RelativeSource={RelativeSource AncestorType=local:TestWindow}}'/>
 </local:TestWindow>";
                 var window = (TestWindow)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 Assert.Equal("title", button.Content);
             }
@@ -283,7 +283,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
 
@@ -308,7 +308,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
 

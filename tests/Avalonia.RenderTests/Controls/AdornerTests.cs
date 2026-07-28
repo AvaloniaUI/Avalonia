@@ -6,11 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests;
-#else
-namespace Avalonia.Direct2D1.RenderTests.Controls;
-#endif
 
 public class AdornerTests : TestBase
 {
@@ -39,7 +35,11 @@ public class AdornerTests : TestBase
         adorned.AttachedToVisualTree += delegate
         {
             AdornerLayer.SetAdornedElement(adorner, adorned);
-            AdornerLayer.GetAdornerLayer(adorned)!.Children.Add(adorner);
+            // The tree gets attached once per composited render, but the adorner stays
+            // in the layer after detach
+            var layer = AdornerLayer.GetAdornerLayer(adorned)!;
+            if (!layer.Children.Contains(adorner))
+                layer.Children.Add(adorner);
         };
         
         tree.Measure(size);

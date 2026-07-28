@@ -13,7 +13,7 @@ public class BatchStreamTests
     {
         var data = new BatchStreamData();
         var memPool = new BatchStreamMemoryPool(false, 100, _ => { });
-        var objPool = new BatchStreamObjectPool<object>(false, 10, _ => { });
+        var objPool = new BatchStreamObjectPool<object?>(false, 10, _ => { });
 
         var guids = new List<Guid>();
         var objects = new List<object>();

@@ -7,6 +7,7 @@ namespace Avalonia.Android.Platform;
 internal static class AndroidDataFormatHelper
 {
     private const string AppPrefix = "application/avn-fmt.";
+    private const string MimeTypeImagePng = "image/png";
 
     public static DataFormat MimeTypeToDataFormat(string mimeType)
     {
@@ -15,6 +16,9 @@ internal static class AndroidDataFormatHelper
 
         if (mimeType == ClipDescription.MimetypeTextUrilist)
             return DataFormat.File;
+
+        if (mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            return DataFormat.Bitmap;
 
         if (mimeType.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
             return DataFormat.FromSystemName<string>(mimeType, AppPrefix);
@@ -29,6 +33,9 @@ internal static class AndroidDataFormatHelper
 
         if (DataFormat.File.Equals(format))
             return ClipDescription.MimetypeTextUrilist;
+
+        if (DataFormat.Bitmap.Equals(format))
+            return MimeTypeImagePng;
 
         return format.ToSystemName(AppPrefix);
     }

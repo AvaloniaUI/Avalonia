@@ -1,5 +1,6 @@
-<UserControl x:Class="ControlCatalog.Pages.TextBlockPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.TextBlockPage"
              xmlns="https://github.com/avaloniaui"
+             Header="TextBlock"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StackPanel>
     <TextBlock Classes="h2">A control that can display text</TextBlock>
@@ -137,4 +138,4 @@
       </Border>
     </WrapPanel>
   </StackPanel>
-</UserControl>
+</ContentPage>

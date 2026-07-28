@@ -21,7 +21,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     <Button Name='button' Command='{Binding Method}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
                 var vm = new ViewModel();
 
                 button.DataContext = vm;
@@ -45,7 +45,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     <Button Name='button' Command='{Binding Method1}' CommandParameter='5'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
                 var vm = new ViewModel();
 
                 button.DataContext = vm;
@@ -69,7 +69,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     <TextBlock Name='textBlock' Text='{Binding Method}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
                 var vm = new ViewModel();
 
                 textBlock.DataContext = vm;
@@ -83,7 +83,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         [Theory]
         [InlineData(null, "Not called")]
         [InlineData("A", "Do A")]
-        public void Binding_Method_With_Parameter_To_Command_CanExecute(object commandParameter, string result)
+        public void Binding_Method_With_Parameter_To_Command_CanExecute(object? commandParameter, string result)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -94,7 +94,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     <Button Name='button' Command='{Binding Do}' CommandParameter='{Binding Parameter, Mode=OneTime}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
                 var vm = new ViewModel()
                 {
                     Parameter = commandParameter
@@ -121,7 +121,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     <Button Name='button' Command='{Binding Do}' CommandParameter='{Binding Parameter, Mode=OneWay}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
                 var vm = new ViewModel()
                 {
                     Parameter = null,
@@ -135,7 +135,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
                 Assert.Equal(button.IsEffectivelyEnabled, false);
 
                 vm.Parameter = true;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 Assert.Equal(button.IsEffectivelyEnabled, true);
             }
@@ -153,7 +153,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     <Button Name='button' Command='{Binding Method3}' CommandParameter='5'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
                 var vm = new ViewModel();
 
                 button.DataContext = vm;
@@ -168,9 +168,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
-            WeakReference<ViewModel> MakeRef()
+            WeakReference<ViewModel?> MakeRef()
             {
-                var weakVm = new WeakReference<ViewModel>(null);
+                var weakVm = new WeakReference<ViewModel?>(null);
                 {
                     var vm = new ViewModel()
                     {
@@ -189,7 +189,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
                 }
                 return weakVm;
             }
-            bool IsAlive(WeakReference<ViewModel> @ref)
+            bool IsAlive(WeakReference<ViewModel?> @ref)
             {
                 return @ref.TryGetTarget(out var instance)
                     && instance is null == false;
@@ -219,7 +219,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
         private class ViewModel : INotifyPropertyChanged
         {
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
             public string Method() => Value = "Called";
             public string Method1(object i) => Value = $"Called {i}";
@@ -228,8 +228,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             public string Method3(object obj) => Value = $"Called Method with parameter of object type. Argument value is {obj}";
             public string Value { get; private set; } = "Not called";
 
-            object _parameter;
-            public object Parameter
+            private object? _parameter;
+            public object? Parameter
             {
                 get => _parameter;
                 set

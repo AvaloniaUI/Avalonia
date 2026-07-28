@@ -1,27 +1,18 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Dialogs;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
-using Avalonia.Platform.Storage.FileIO;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-#nullable enable
 
 namespace ControlCatalog.Pages
 {
-    public partial class DialogsPage : UserControl
+    public partial class DialogsPage : ContentPage
     {
         public DialogsPage()
         {
@@ -37,6 +28,8 @@ namespace ControlCatalog.Pages
             var openedFileContent = OpenedFileContent;
             var openMultiple = OpenMultiple;
             var currentFolderBox = CurrentFolderBox;
+            var useSuggestedFilter = UseSuggestedFilter;
+            var suggestedFilterSelector = SuggestedFilterSelector;
 
             currentFolderBox.TextChanged += async (sender, args) =>
             {
@@ -68,15 +61,7 @@ namespace ControlCatalog.Pages
             };
 
 
-            List<FileDialogFilter> GetFilters()
-            {
-                return GetFileTypes()?.Select(f => new FileDialogFilter
-                {
-                    Name = f.Name, Extensions = f.Patterns!.ToList()
-                }).ToList() ?? new List<FileDialogFilter>();
-            }
-
-            List<FilePickerFileType>? GetFileTypes()
+            List<FilePickerFileType>? BuildFileTypes()
             {
                 var selectedItem = (FilterSelector.SelectedItem as ComboBoxItem)?.Content
                     ?? "None";
@@ -115,81 +100,63 @@ namespace ControlCatalog.Pages
                 };
             }
 
-            OpenFile.Click += async delegate
+            List<FilePickerFileType>? GetFileTypes()
             {
-                // Almost guaranteed to exist
-                var uri = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName;
-                var initialFileName = uri == null ? null : System.IO.Path.GetFileName(uri);
-                var initialDirectory = uri == null ? null : System.IO.Path.GetDirectoryName(uri);
+                var types = BuildFileTypes();
+                UpdateSuggestedFilterSelector(types);
+                return types;
+            }
 
-                var result = await new OpenFileDialog()
-                {
-                    Title = "Open file",
-                    Filters = GetFilters(),
-                    Directory = initialDirectory,
-                    InitialFileName = initialFileName
-                }.ShowAsync(GetWindow());
-                results.ItemsSource = result;
-                resultsVisible.IsVisible = result?.Any() == true;
-            };
-            OpenMultipleFiles.Click += async delegate
+            void UpdateSuggestedFilterSelector(IReadOnlyList<FilePickerFileType>? types)
             {
-                var result = await new OpenFileDialog()
+                var previouslySelected = (suggestedFilterSelector.SelectedItem as ComboBoxItem)?.Tag as FilePickerFileType;
+                suggestedFilterSelector.Items.Clear();
+                suggestedFilterSelector.Items.Add(new ComboBoxItem { Content = "First filter", Tag = null });
+
+                var desiredIndex = 0;
+                if (types is { Count: > 0 })
                 {
-                    Title = "Open multiple files",
-                    Filters = GetFilters(),
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                    AllowMultiple = true
-                }.ShowAsync(GetWindow());
-                results.ItemsSource = result;
-                resultsVisible.IsVisible = result?.Any() == true;
-            };
-            SaveFile.Click += async delegate
-            {
-                var filters = GetFilters();
-                var result = await new SaveFileDialog()
-                {
-                    Title = "Save file",
-                    Filters = filters,
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                    DefaultExtension = filters?.Any() == true ? "txt" : null,
-                    InitialFileName = "test.txt"
-                }.ShowAsync(GetWindow());
-                results.ItemsSource = new[] { result };
-                resultsVisible.IsVisible = result != null;
-            };
-            SelectFolder.Click += async delegate
-            {
-                var result = await new OpenFolderDialog()
-                {
-                    Title = "Select folder",
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                }.ShowAsync(GetWindow());
-                if (string.IsNullOrEmpty(result))
-                {
-                    resultsVisible.IsVisible = false;
+                    for (var i = 0; i < types.Count; i++)
+                    {
+                        var type = types[i];
+                        var item = new ComboBoxItem { Content = type.Name, Tag = type };
+                        suggestedFilterSelector.Items.Add(item);
+
+                        if (previouslySelected is not null && ReferenceEquals(previouslySelected, type))
+                        {
+                            desiredIndex = i + 1;
+                        }
+                    }
                 }
-                else
-                {
-                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result!));
-                    results.ItemsSource = new[] { result };
-                    resultsVisible.IsVisible = true;
-                }
-            };
-            OpenBoth.Click += async delegate
+
+                suggestedFilterSelector.SelectedIndex = desiredIndex;
+            }
+
+            FilePickerFileType? GetSuggestedFileType(IReadOnlyList<FilePickerFileType>? types)
             {
-                var result = await new OpenFileDialog()
+                if (useSuggestedFilter.IsChecked == true && types is { Count: > 0 })
                 {
-                    Title = "Select both",
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                    AllowMultiple = true
-                }.ShowManagedAsync(GetWindow(), new ManagedFileDialogOptions
-                {
-                    AllowDirectorySelection = true
-                });
-                results.ItemsSource = result;
-                resultsVisible.IsVisible = result?.Any() == true;
-            };
+                    if (suggestedFilterSelector.SelectedItem is ComboBoxItem { Tag: FilePickerFileType selectedType }
+                        && types.Any(t => ReferenceEquals(t, selectedType)))
+                    {
+                        return selectedType;
+                    }
+
+                    return types.FirstOrDefault();
+                }
+
+                return null;
+            }
+
+            void UpdateSuggestedFilterSelectorState() =>
+                suggestedFilterSelector.IsEnabled = useSuggestedFilter.IsChecked == true;
+
+            useSuggestedFilter.IsCheckedChanged += (_, _) => UpdateSuggestedFilterSelectorState();
+            UpdateSuggestedFilterSelectorState();
+
+            FilterSelector.SelectionChanged += (_, _) => UpdateSuggestedFilterSelector(BuildFileTypes());
+            UpdateSuggestedFilterSelector(BuildFileTypes());
+
             DecoratedWindow.Click += delegate
             {
                 new DecoratedWindow().Show();
@@ -229,10 +196,12 @@ namespace ControlCatalog.Pages
 
             OpenFilePicker.Click += async delegate
             {
+                var fileTypes = GetFileTypes();
                 var result = await GetStorageProvider().OpenFilePickerAsync(new FilePickerOpenOptions()
                 {
                     Title = "Open file",
-                    FileTypeFilter = GetFileTypes(),
+                    FileTypeFilter = fileTypes,
+                    SuggestedFileType = GetSuggestedFileType(fileTypes),
                     SuggestedFileName = "FileName",
                     SuggestedStartLocation = lastSelectedDirectory,
                     AllowMultiple = openMultiple.IsChecked == true
@@ -243,10 +212,12 @@ namespace ControlCatalog.Pages
             SaveFilePicker.Click += async delegate
             {
                 var fileTypes = GetFileTypes();
+                var suggestedType = GetSuggestedFileType(fileTypes);
                 var file = await GetStorageProvider().SaveFilePickerAsync(new FilePickerSaveOptions()
                 {
                     Title = "Save file",
                     FileTypeChoices = fileTypes,
+                    SuggestedFileType = suggestedType,
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
                     ShowOverwritePrompt = true
@@ -257,13 +228,8 @@ namespace ControlCatalog.Pages
                     try
                     {
                         // Sync disposal of StreamWriter is not supported on WASM
-#if NET6_0_OR_GREATER
                         await using var stream = await file.OpenWriteAsync();
                         await using var writer = new System.IO.StreamWriter(stream);
-#else
-                        using var stream = await file.OpenWriteAsync();
-                        using var writer = new System.IO.StreamWriter(stream);
-#endif
                         await writer.WriteLineAsync(openedFileContent.Text);
 
                         SetFolder(await file.GetParentAsync());
@@ -278,10 +244,12 @@ namespace ControlCatalog.Pages
             };
             SaveFilePickerWithResult.Click += async delegate
             {
+                var saveFileTypes = new[] { FilePickerFileTypes.Json, FilePickerFileTypes.Xml };
                 var result = await GetStorageProvider().SaveFilePickerWithResultAsync(new FilePickerSaveOptions()
                 {
                     Title = "Save file",
-                    FileTypeChoices = [FilePickerFileTypes.Json, FilePickerFileTypes.Xml],
+                    FileTypeChoices = saveFileTypes,
+                    SuggestedFileType = GetSuggestedFileType(saveFileTypes),
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
                     ShowOverwritePrompt = true
@@ -292,13 +260,8 @@ namespace ControlCatalog.Pages
                     if (result.File is { } file)
                     {
                         // Sync disposal of StreamWriter is not supported on WASM
-#if NET6_0_OR_GREATER
                         await using var stream = await file.OpenWriteAsync();
                         await using var writer = new System.IO.StreamWriter(stream);
-#else
-                        using var stream = await file.OpenWriteAsync();
-                        using var writer = new System.IO.StreamWriter(stream);
-#endif
                         if (result.SelectedFileType == FilePickerFileTypes.Xml)
                         {
                             await writer.WriteLineAsync("<sample>Test</sample>");
@@ -458,11 +421,7 @@ namespace ControlCatalog.Pages
 
         internal static async Task<string> ReadTextFromFile(IStorageFile file, int length)
         {
-#if NET6_0_OR_GREATER
             await using var stream = await file.OpenReadAsync();
-#else
-            using var stream = await file.OpenReadAsync();
-#endif
             using var reader = new System.IO.StreamReader(stream);
 
             // 4GB file test, shouldn't load more than 10000 chars into a memory.

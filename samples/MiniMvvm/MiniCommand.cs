@@ -58,10 +58,10 @@ namespace MiniMvvm
     {
         public static MiniCommand Create(Action cb) => new MiniCommand<object>(_ => cb());
         public static MiniCommand Create<TArg>(Action<TArg> cb) => new MiniCommand<TArg>(cb);
-        public static MiniCommand CreateFromTask(Func<Task> cb) => new MiniCommand<object>(_ => cb());
+        public static MiniCommand CreateFromTask(Func<Task> cb) => new MiniCommand<object?>(_ => cb());
         
-        public abstract bool CanExecute(object parameter);
-        public abstract void Execute(object parameter);
-        public abstract event EventHandler CanExecuteChanged;
+        public abstract bool CanExecute(object? parameter);
+        public abstract void Execute(object? parameter);
+        public abstract event EventHandler? CanExecuteChanged;
     }
 }

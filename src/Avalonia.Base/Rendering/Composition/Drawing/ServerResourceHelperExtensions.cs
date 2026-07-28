@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
@@ -18,6 +19,8 @@ static class ServerResourceHelperExtensions
             return immutable;
         if (brush is ICompositionRenderResource<IBrush> resource)
             return resource.GetForCompositor(compositor);
+        if (brush is CompositionBrush compositionBrush)
+            return compositionBrush.Server;
         ThrowNotCompatible(brush);
         return null;
     }
@@ -51,5 +54,17 @@ static class ServerResourceHelperExtensions
         if (transform is ICompositionRenderResource<ITransform> resource)
             resource.GetForCompositor(compositor);
         return new ImmutableTransform(transform.Value);
+    }
+
+    public static IRenderDataGeometry? GetServer(this Geometry? geometry, Compositor? compositor)
+    {
+        if (geometry == null)
+            return null;
+        if (compositor == null)
+            return geometry.PlatformImpl;
+        if (geometry is ICompositionRenderResource<ServerCompositionSimpleGeometry> resource)
+            return resource.GetForCompositor(compositor);
+        ThrowNotCompatible(geometry);
+        return null;
     }
 }

@@ -3,24 +3,24 @@
 
 class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorFactory>
 {
-    Cursor* arrowCursor = new Cursor([NSCursor arrowCursor]);
-    Cursor* crossCursor = new Cursor([NSCursor crosshairCursor]);
-    Cursor* resizeUpCursor = new Cursor([NSCursor resizeUpCursor]);
-    Cursor* resizeDownCursor = new Cursor([NSCursor resizeDownCursor]);
-    Cursor* resizeUpDownCursor = new Cursor([NSCursor resizeUpDownCursor]);
-    Cursor* dragCopyCursor = new Cursor([NSCursor dragCopyCursor]);
-    Cursor* openHandCursor = new Cursor([NSCursor openHandCursor]);
-    Cursor* dragLinkCursor = new Cursor([NSCursor dragLinkCursor]);
-    Cursor* pointingHandCursor = new Cursor([NSCursor pointingHandCursor]);
-    Cursor* contextualMenuCursor = new Cursor([NSCursor contextualMenuCursor]);
-    Cursor* IBeamCursor = new Cursor([NSCursor IBeamCursor]);
-    Cursor* resizeLeftCursor = new Cursor([NSCursor resizeLeftCursor]);
-    Cursor* resizeRightCursor = new Cursor([NSCursor resizeRightCursor]);
-    Cursor* resizeWestEastCursor = new Cursor([NSCursor resizeLeftRightCursor]);
-    Cursor* operationNotAllowedCursor = new Cursor([NSCursor operationNotAllowedCursor]);
-    Cursor* noCursor = new Cursor([NSCursor arrowCursor], true);
+    ComPtr<Cursor> arrowCursor = comnew<Cursor>([NSCursor arrowCursor]);
+    ComPtr<Cursor> crossCursor = comnew<Cursor>([NSCursor crosshairCursor]);
+    ComPtr<Cursor> resizeUpCursor = comnew<Cursor>([NSCursor resizeUpCursor]);
+    ComPtr<Cursor> resizeDownCursor = comnew<Cursor>([NSCursor resizeDownCursor]);
+    ComPtr<Cursor> resizeUpDownCursor = comnew<Cursor>([NSCursor resizeUpDownCursor]);
+    ComPtr<Cursor> dragCopyCursor = comnew<Cursor>([NSCursor dragCopyCursor]);
+    ComPtr<Cursor> openHandCursor = comnew<Cursor>([NSCursor openHandCursor]);
+    ComPtr<Cursor> dragLinkCursor = comnew<Cursor>([NSCursor dragLinkCursor]);
+    ComPtr<Cursor> pointingHandCursor = comnew<Cursor>([NSCursor pointingHandCursor]);
+    ComPtr<Cursor> contextualMenuCursor = comnew<Cursor>([NSCursor contextualMenuCursor]);
+    ComPtr<Cursor> IBeamCursor = comnew<Cursor>([NSCursor IBeamCursor]);
+    ComPtr<Cursor> resizeLeftCursor = comnew<Cursor>([NSCursor resizeLeftCursor]);
+    ComPtr<Cursor> resizeRightCursor = comnew<Cursor>([NSCursor resizeRightCursor]);
+    ComPtr<Cursor> resizeWestEastCursor = comnew<Cursor>([NSCursor resizeLeftRightCursor]);
+    ComPtr<Cursor> operationNotAllowedCursor = comnew<Cursor>([NSCursor operationNotAllowedCursor]);
+    ComPtr<Cursor> noCursor = comnew<Cursor>([NSCursor arrowCursor], true);
 
-    std::map<AvnStandardCursorType, Cursor*> s_cursorMap =
+    std::map<AvnStandardCursorType, ComPtr<Cursor>> s_cursorMap =
     {
         { CursorArrow, arrowCursor },
         { CursorAppStarting, arrowCursor },

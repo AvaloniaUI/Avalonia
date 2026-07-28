@@ -220,11 +220,10 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// The binding expression is already instantiated on an AvaloniaObject.
     /// </exception>
     /// <remarks>
-    /// This method is mostly here for backwards compatibility with <see cref="InstancedBinding"/>
-    /// and unit testing and we may want to remove it in future. In particular its usefulness in
-    /// terms of unit testing is limited in that it preserves the semantics of binding expressions
-    /// as expected by unit tests, not necessarily the semantics that will be used when the
-    /// expression is used as an <see cref="IValueEntry"/> instantiated in a
+    /// This method is mostly here for unit testing and we may want to remove it in future. In
+    /// particular its usefulness is limited in that it preserves the semantics of binding
+    /// expressions as expected by unit tests, not necessarily the semantics that will be used
+    /// when the expression is used as an <see cref="IValueEntry"/> instantiated in a
     /// <see cref="ValueStore"/>. Unit tests should be migrated to not test the behaviour of
     /// binding expressions through an observable, and instead test the behaviour of the binding
     /// when applied to an <see cref="AvaloniaObject"/>.
@@ -407,7 +406,8 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// </summary>
     /// <param name="value">The new value, or <see cref="UnchangedValue"/>.</param>
     /// <param name="error">The new binding or data validation error.</param>
-    private protected void PublishValue(object? value, BindingError? error = null)
+    /// <param name="forceUpdate">If true, forces the value to be published even if it hasn't changed.</param>
+    private protected void PublishValue(object? value, BindingError? error = null, bool forceUpdate = false)
     {
         Debug.Assert(value is not BindingNotification);
         Debug.Assert(value != BindingOperations.DoNothing);
@@ -425,7 +425,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
             value = null;
         }
 
-        var hasValueChanged = value != UnchangedValue && !TypeUtilities.IdentityEquals(value, GetValue(), TargetType);
+        var hasValueChanged = forceUpdate || (value != UnchangedValue && !TypeUtilities.IdentityEquals(value, GetValue(), TargetType));
         var hasErrorChanged = error is not null || _error is not null;
 
         if (hasValueChanged)

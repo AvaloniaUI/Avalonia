@@ -71,10 +71,10 @@ namespace Avalonia.Media.Imaging
             
             return new LockedFramebuffer(_pixelFormatMemory.Address, _pixelFormatMemory.Size,
                 _pixelFormatMemory.RowBytes,
-                Dpi, _pixelFormatMemory.Format, () =>
+                Dpi, _pixelFormatMemory.Format, _pixelFormatMemory.AlphaFormat, () =>
                 {
                     using var inner = ((IWriteableBitmapImpl)PlatformImpl.Item).Lock();
-                    _pixelFormatMemory.CopyToRgba(Platform.AlphaFormat.Unpremul, inner.Address, inner.RowBytes);
+                    _pixelFormatMemory.CopyToRgba(inner.AlphaFormat, inner.Address, inner.RowBytes);
                 });
         }
 

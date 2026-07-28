@@ -61,16 +61,11 @@ internal partial class ServerCompositor
             IDrawingContextLayerImpl? target = null;
             try
             {
-                target = RenderInterface.Value.CreateOffscreenRenderTarget(pixelSize, scaling);
-                using (var canvas = target.CreateDrawingContext(false))
+                target = RenderInterface.Value.CreateOffscreenRenderTarget(pixelSize, new(scaling, scaling), true);
+                using (var canvas = target.CreateDrawingContext())
                 {
-                    var proxy = new CompositorDrawingContextProxy(canvas)
-                    {
-                        PostTransform = invertRootTransform * scaleTransform,
-                        Transform = Matrix.Identity
-                    };
-                    var ctx = new ServerVisualRenderContext(proxy, null, true, renderChildren);
-                    visual.Render(ctx, null);
+                    canvas.Transform = scaleTransform;
+                    visual.Render(canvas, LtrbRect.Infinite, null, renderChildren);
                 }
 
                 if (target is IDrawingContextLayerWithRenderContextAffinityImpl affined
@@ -87,5 +82,18 @@ internal partial class ServerCompositor
                 target?.Dispose();
             }
         }
+    }
+
+    public void ResetAllGpuResources()
+    {
+        foreach (var target in _activeTargets)
+            target.ResetRenderTarget();
+        RenderInterface.Reset();
+    }
+    
+    public void InvalidateAllCompositionTargets()
+    {
+        foreach (var target in _activeTargets)
+            target.RequestFullRedraw();
     }
 }

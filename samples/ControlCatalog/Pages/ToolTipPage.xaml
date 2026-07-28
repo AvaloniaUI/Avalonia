@@ -1,5 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="ToolTip"
              x:Class="ControlCatalog.Pages.ToolTipPage">
     <StackPanel Orientation="Vertical"
                 Spacing="4">
@@ -10,7 +11,7 @@
                      HorizontalAlignment="Center">
             <ToggleSwitch Margin="5" 
                           HorizontalAlignment="Center"
-                          IsChecked="{Binding Path=(ToolTip.ServiceEnabled), RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          IsChecked="{Binding Path=(ToolTip.ServiceEnabled), RelativeSource={RelativeSource AncestorType=ContentPage}}"
                           Content="Enable ToolTip service" />
             <ToggleSwitch Margin="5"
                           IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"
@@ -91,4 +92,4 @@
           </Border>
         </UniformGrid>
     </StackPanel>
-</UserControl>
+</ContentPage>

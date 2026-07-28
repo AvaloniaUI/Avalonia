@@ -51,7 +51,7 @@ public partial class WindowPage : UserControl
 
         ShowWindowSize.Text = string.Empty;
         window.ExtendClientAreaToDecorationsHint = ShowWindowExtendClientAreaToDecorationsHint.IsChecked ?? false;
-        window.SystemDecorations = (SystemDecorations)ShowWindowSystemDecorations.SelectedIndex;
+        window.WindowDecorations = (WindowDecorations)ShowWindowSystemDecorations.SelectedIndex;
         window.WindowState = (WindowState)ShowWindowState.SelectedIndex;
 
         switch (ShowWindowMode.SelectedIndex)
@@ -87,7 +87,7 @@ public partial class WindowPage : UserControl
         {
             Title = "Transparent Window",
             Name = "TransparentWindow",
-            SystemDecorations = SystemDecorations.None,
+            WindowDecorations = WindowDecorations.None,
             Background = Brushes.Transparent,
             TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -136,6 +136,7 @@ public partial class WindowPage : UserControl
             Width = 200,
             Height = 200,
             Background = Brushes.Green,
+            WindowDecorations = WindowDecorations.None,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Content = new Border
             {
@@ -145,7 +146,7 @@ public partial class WindowPage : UserControl
             }
         };
 
-        backgroundWindow.PointerPressed += (_, _) => backgroundWindow.Close();
+        popup.PointerPressed += (_, _) => backgroundWindow.Close();
         backgroundWindow.Show(Window);
 
         popup.Open();

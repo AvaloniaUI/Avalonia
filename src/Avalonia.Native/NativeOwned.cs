@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Runtime.ExceptionServices;
 using Avalonia.Threading;

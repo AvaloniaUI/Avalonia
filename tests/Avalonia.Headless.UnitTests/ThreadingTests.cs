@@ -10,7 +10,7 @@ namespace Avalonia.Headless.UnitTests;
 public class ThreadingTests
 {
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [AvaloniaFact]
 #endif
@@ -31,20 +31,20 @@ public class ThreadingTests
     }
     
 #if NUNIT
-    [AvaloniaTheory, Timeout(10000), TestCase(1), TestCase(10), TestCase(100)]
+    [AvaloniaTheory, TestCase(1), TestCase(10), TestCase(100)]
 #elif XUNIT
-    [AvaloniaTheory(Timeout = 10000), InlineData(1), InlineData(10), InlineData(100)]
+    [AvaloniaTheory, InlineData(1), InlineData(10), InlineData(100)]
 #endif
     public async Task DispatcherTimer_Works_On_The_Same_Thread(int interval)
     {
-        Assert.NotNull(SynchronizationContext.Current);
+        AssertHelper.NotNull(SynchronizationContext.Current);
         ValidateTestContext();
         var currentThread = Thread.CurrentThread;
 
         await Task.Delay(100);
 
         ValidateTestContext();
-        Assert.True(currentThread == Thread.CurrentThread);
+        AssertHelper.Same(currentThread, Thread.CurrentThread);
 
         var tcs = new TaskCompletionSource();
 
@@ -53,7 +53,7 @@ public class ThreadingTests
             try
             {
                 ValidateTestContext();
-                Assert.True(currentThread == Thread.CurrentThread);
+                AssertHelper.Same(currentThread, Thread.CurrentThread);
                 tcs.SetResult();
             }
             catch (Exception ex)
@@ -70,7 +70,7 @@ public class ThreadingTests
 #if NUNIT
         var testName = TestContext.CurrentContext.Test.Name;
         // Test.Name also includes parameters.
-        Assert.AreEqual(testName.Split('(').First(), runningMethodName); 
+        AssertHelper.Equal(testName.Split('(').First(), runningMethodName);
 #endif
     }
 }

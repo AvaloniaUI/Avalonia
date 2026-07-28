@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 
 namespace Avalonia.Input.Platform;
@@ -133,11 +134,20 @@ public static class ClipboardExtensions
     /// <summary>
     /// Returns a list of files, if available, from the clipboard.
     /// </summary>
-    /// <param name="clipboard">The data transfer instance.</param>
+    /// <param name="clipboard">The clipboard instance.</param>
     /// <returns>An array of <see cref="IStorageItem"/> (files or folders), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static Task<IStorageItem[]?> TryGetFilesAsync(this IClipboard clipboard)
         => clipboard.TryGetValuesAsync(DataFormat.File);
+
+    /// <summary>
+    /// Returns a bitmap, if available, from the clipboard.
+    /// </summary>
+    /// <param name="clipboard">The clipboard instance.</param>
+    /// <returns>A <see cref="Bitmap"/>, or null if the format isn't available.</returns>
+    /// <seealso cref="DataFormat.Bitmap"/>.
+    public static Task<Bitmap?> TryGetBitmapAsync(this IClipboard clipboard)
+        => clipboard.TryGetValueAsync(DataFormat.Bitmap);
 
     /// <summary>
     /// Places a text on the clipboard.
@@ -186,4 +196,20 @@ public static class ClipboardExtensions
     /// <seealso cref="DataFormat.File"/>
     public static Task SetFilesAsync(this IClipboard clipboard, IEnumerable<IStorageItem>? files)
         => clipboard.SetValuesAsync(DataFormat.File, files);
+
+    /// <summary>
+    /// Places a bitmap on the clipboard.
+    /// </summary>
+    /// <param name="clipboard">The clipboard instance.</param>
+    /// <param name="bitmap">The bitmap to place on the clipboard.</param>
+    /// <remarks>
+    /// <para>By calling this method, the clipboard will get cleared of any possible previous data.</para>
+    /// <para>
+    /// If <paramref name="bitmap"/> is null, nothing will get placed on the clipboard and this method
+    /// will be equivalent to <see cref="IClipboard.ClearAsync"/>.
+    /// </para>
+    /// </remarks>
+    /// <seealso cref="DataFormat.Bitmap"/>
+    public static Task SetBitmapAsync(this IClipboard clipboard, Bitmap? bitmap)
+        => clipboard.SetValueAsync(DataFormat.Bitmap, bitmap);
 }

@@ -111,7 +111,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
             items.RemoveAt(0);
 
             Assert.Equal(0, target.SelectedIndex);
@@ -138,7 +138,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class ResetOnAdd : List<string>, INotifyCollectionChanged
         {
-            public event NotifyCollectionChangedEventHandler CollectionChanged;
+            public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
             public new void Add(string item)
             {

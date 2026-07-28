@@ -8,8 +8,20 @@ using Avalonia.Input.Raw;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
-    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView
+    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl
     {
+        private static readonly string[] s_asciiStringCache = InitAsciiStringCache();
+
+        private static string[] InitAsciiStringCache()
+        {
+            var cache = new string[128];
+            for (int i = 0; i < 128; i++)
+            {
+                cache[i] = ((char)i).ToString();
+            }
+            return cache;
+        }
+
         private readonly TView _view;
 
         public bool HandleEvents { get; set; }
@@ -65,8 +77,8 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                           AndroidKeyboardDevice.ConvertKey(e.KeyCode),
                           GetModifierKeys(e),
                           physicalKey,
-                          keyDeviceType,
-                          keySymbol);
+                          keySymbol,
+                          keyDeviceType);
 
             _view.Input?.Invoke(rawKeyEvent);
 
@@ -79,7 +91,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                   AndroidKeyboardDevice.Instance!,
                   Convert.ToUInt64(e.EventTime),
                   inputRoot,
-                  unicodeTextInput ?? Convert.ToChar(e.UnicodeChar).ToString()
+                  unicodeTextInput ?? CharToString(e.UnicodeChar)
                   );
                 _view.Input?.Invoke(rawTextEvent);
 
@@ -107,6 +119,15 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return rv;
         }
 
+        private static string CharToString(int unicodeChar)
+        {
+            if (unicodeChar >= 0 && unicodeChar < s_asciiStringCache.Length)
+            {
+                return s_asciiStringCache[unicodeChar];
+            }
+            return char.ConvertFromUtf32(unicodeChar);
+        }
+
         private static string? GetKeySymbol(int unicodeChar, PhysicalKey physicalKey)
         {
             // Handle a very limited set of control characters so that we're consistent with other platforms
@@ -126,7 +147,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                     if (unicodeChar <= 0x7F)
                     {
                         var asciiChar = (char)unicodeChar;
-                        return KeySymbolHelper.IsAllowedAsciiKeySymbol(asciiChar) ? asciiChar.ToString() : null;
+                        return KeySymbolHelper.IsAllowedAsciiKeySymbol(asciiChar) ? s_asciiStringCache[asciiChar] : null;
                     }
                     return char.ConvertFromUtf32(unicodeChar);
             }

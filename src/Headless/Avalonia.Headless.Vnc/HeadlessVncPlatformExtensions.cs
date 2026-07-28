@@ -26,7 +26,7 @@ namespace Avalonia
         /// <returns></returns>
         public static int StartWithHeadlessVncPlatform(
             this AppBuilder builder,
-            string host, int port,
+            string? host, int port,
             string[] args,
             ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
         {
@@ -46,7 +46,7 @@ namespace Avalonia
         /// <exception cref="InvalidOperationException"></exception>
         public static int StartWithHeadlessVncPlatform(
             this AppBuilder builder,
-            string host, int port,
+            string? host, int port,
             string? password,
             string[] args,
             ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)

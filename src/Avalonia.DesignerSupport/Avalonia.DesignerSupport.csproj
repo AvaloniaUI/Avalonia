@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <!-- WARNING! The designer support version number needs to be frozen 
          To allow projects that implement designer functionality to still
          work with newer versions of Avalonia. This version number only
@@ -10,6 +10,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NugetPackageName>Avalonia</NugetPackageName>
+    <WebAppDir>$(MSBuildThisFileDirectory)Remote/HtmlTransport/webapp</WebAppDir>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Remote\HtmlTransport\webapp\build\**\*.gz" />
@@ -19,4 +20,15 @@
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
   </ItemGroup>
+
+  <Target Name="BunInstall" Inputs="$(WebAppDir)\package.json" Outputs="$(WebAppDir)\node_modules\.install-stamp">
+    <!-- We use bun packages as .NET tool, to avoid preinstalled node.js dependency -->
+    <Exec Command="dnx Bun.Unofficial.Tool --yes -- install" WorkingDirectory="$(WebAppDir)" />
+    <!-- Write the stamp file, so incremental builds work -->
+    <Touch Files="$(WebAppDir)\node_modules\.install-stamp" AlwaysCreate="true" />
+  </Target>
+  <Target Name="BunRunBuild" DependsOnTargets="BunInstall" BeforeTargets="DispatchToInnerBuilds">
+    <Exec Command="dnx Bun.Unofficial.Tool build.js" WorkingDirectory="$(WebAppDir)" />
+  </Target>
+
 </Project>

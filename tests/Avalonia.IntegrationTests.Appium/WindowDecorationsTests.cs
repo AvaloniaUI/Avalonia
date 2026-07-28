@@ -5,7 +5,7 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium;
 
 [Collection("WindowDecorations")]
-public class WindowDecorationsTests : TestBase, IDisposable
+public class WindowDecorationsTests : TestBase
 {
     public WindowDecorationsTests(DefaultAppFixture fixture)
         : base(fixture, "Window Decorations")
@@ -19,21 +19,14 @@ public class WindowDecorationsTests : TestBase, IDisposable
         var original = window.Size;
 
         // Step 1: keep extend client area to false, but adjust some value that should not have any effect.
-        SetParameters(false, false, false, false, 10);
+        SetParameters(false, 10);
         ApplyToCurrentWindow();
         Assert.Equal(original, window.Size);
 
-        // Step 2: enable and disable extended system chrome. 
-        SetParameters(true, true, false, false, 20);
+        // Step 2: enable and disable extended client area. 
+        SetParameters(true, 20);
         ApplyToCurrentWindow();
-        SetParameters(false, false, false, false, 20);
-        ApplyToCurrentWindow();
-        Assert.Equal(original, window.Size);
-
-        // Step 3: enable and disable extended client chrome. 
-        SetParameters(true, false, true, false, 30);
-        ApplyToCurrentWindow();
-        SetParameters(false, false, true, false, 20);
+        SetParameters(false, 20);
         ApplyToCurrentWindow();
         Assert.Equal(original, window.Size);
     }
@@ -41,10 +34,10 @@ public class WindowDecorationsTests : TestBase, IDisposable
     [Fact]
     public void Can_Restore_To_Non_Extended_State()
     {
-        SetParameters(true, true, false, false, 20);
+        SetParameters(true, 20);
         ApplyToCurrentWindow();
 
-        SetParameters(false, false, false, false, 1000);
+        SetParameters(false, 1000);
         ApplyToCurrentWindow();
 
         var currentWindow = Session.GetCurrentSingleWindow();
@@ -63,7 +56,7 @@ public class WindowDecorationsTests : TestBase, IDisposable
     [InlineData(50)]
     public void Should_Apply_Client_Chrome(int titleBarHeight)
     {
-        SetParameters(true, false, true, false, titleBarHeight);
+        SetParameters(true, titleBarHeight);
 
         ApplyToCurrentWindow();
 
@@ -82,13 +75,13 @@ public class WindowDecorationsTests : TestBase, IDisposable
         }
     }
 
-    [Theory]
+    [PlatformTheory(TestPlatforms.MacOS)]
     [InlineData(-1)]
     [InlineData(25)]
     [InlineData(50)]
     public void Should_Apply_System_Chrome(int titleBarHeight)
     {
-        SetParameters(true, true, false, false, titleBarHeight);
+        SetParameters(true, titleBarHeight);
 
         ApplyToCurrentWindow();
 
@@ -113,7 +106,7 @@ public class WindowDecorationsTests : TestBase, IDisposable
     [InlineData(50)]
     public void Should_Apply_Client_Chrome_On_New_Window(int titleBarHeight)
     {
-        SetParameters(true, false, true, false, titleBarHeight);
+        SetParameters(true, titleBarHeight);
 
         using (ApplyOnNewWindow())
         {
@@ -127,13 +120,13 @@ public class WindowDecorationsTests : TestBase, IDisposable
         }
     }
 
-    [PlatformTheory(TestPlatforms.MacOS)] // fix me, for some reason Windows doesn't return TitleBar system chrome for a child window. 
+    [PlatformTheory(TestPlatforms.MacOS)]
     [InlineData(-1)]
     [InlineData(25)]
     [InlineData(50)]
     public void Should_Apply_System_Chrome_On_New_Window(int titleBarHeight)
     {
-        SetParameters(true, true, false, false, titleBarHeight);
+        SetParameters(true, titleBarHeight);
 
         using (ApplyOnNewWindow())
         {
@@ -191,25 +184,13 @@ public class WindowDecorationsTests : TestBase, IDisposable
 
     private void SetParameters(
         bool extendClientArea,
-        bool forceSystemChrome,
-        bool preferSystemChrome,
-        bool macOsThickSystemChrome,
         int titleBarHeight)
     {
         var extendClientAreaCheckBox = Session.FindElementByAccessibilityId("WindowExtendClientAreaToDecorationsHint");
-        var forceSystemChromeCheckBox = Session.FindElementByAccessibilityId("WindowForceSystemChrome");
-        var preferSystemChromeCheckBox = Session.FindElementByAccessibilityId("WindowPreferSystemChrome");
-        var macOsThickSystemChromeCheckBox = Session.FindElementByAccessibilityId("WindowMacThickSystemChrome");
         var titleBarHeightBox = Session.FindElementByAccessibilityId("WindowTitleBarHeightHint");
 
         if (extendClientAreaCheckBox.GetIsChecked() != extendClientArea)
             extendClientAreaCheckBox.Click();
-        if (forceSystemChromeCheckBox.GetIsChecked() != forceSystemChrome)
-            forceSystemChromeCheckBox.Click();
-        if (preferSystemChromeCheckBox.GetIsChecked() != preferSystemChrome)
-            preferSystemChromeCheckBox.Click();
-        if (macOsThickSystemChromeCheckBox.GetIsChecked() != macOsThickSystemChrome)
-            macOsThickSystemChromeCheckBox.Click();
 
         titleBarHeightBox.Click();
         titleBarHeightBox.Clear();
@@ -229,9 +210,10 @@ public class WindowDecorationsTests : TestBase, IDisposable
         return showNewWindowDecorations.OpenWindowWithClick();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        SetParameters(false, false, false, false, -1);
+        SetParameters(false, -1);
         ApplyToCurrentWindow();
+        base.Dispose();
     }
 }

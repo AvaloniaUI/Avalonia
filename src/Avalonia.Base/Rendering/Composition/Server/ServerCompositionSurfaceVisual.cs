@@ -19,7 +19,7 @@ internal partial class ServerCompositionSurfaceVisual
     }
 
 
-    private void OnSurfaceInvalidated() => ValuesInvalidated();
+    private void OnSurfaceInvalidated() => InvalidateContent();
 
     protected override void OnAttachedToRoot(ServerCompositionTarget target)
     {

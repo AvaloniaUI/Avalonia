@@ -12,7 +12,7 @@ public class App : Application
     {
         var view = new Views.SignUpView
         {
-            ViewModel = new SignUpViewModel()
+            DataContext = new SignUpViewModel()
         };
         view.Show();
         base.OnFrameworkInitializationCompleted();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Markup.Parsers;
 using Avalonia.Styling;
@@ -97,7 +98,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
             catch (Exception e)
             {
-                throw new XamlParseException("Unable to parse query: " + e.Message, node);
+                throw new XamlParseException("Unable to parse query: " + e, node);
             }
 
             var query = Create(parsed);
@@ -134,9 +135,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         
         protected abstract void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen);
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         protected void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, Func<IXamlMethod, bool> method)
         {
-            var queries = context.Configuration.TypeSystem.GetType("Avalonia.Styling.StyleQueries");
+            var queries = context.GetAvaloniaTypes().StyleQueries;
             var found = queries.FindMethod(m => m.IsStatic && m.Parameters.Count > 0 && method(m));
             if(found == null)
                 throw new XamlTypeSystemException(
@@ -172,7 +174,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             var name = Concrete ? "OfType" : "Is";
             codeGen.Ldtype(TargetType);
             EmitCall(context, codeGen,
-                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].FullName == "System.Type");
+                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].Equals(context.Configuration.WellKnownTypes.Type));
         }
     }
     
@@ -199,7 +201,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             codeGen.Ldstr(String);
             var name = _type.ToString();
             EmitCall(context, codeGen,
-                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].FullName == "System.String");
+                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].Equals(context.Configuration.WellKnownTypes.String));
         }
     }
 
@@ -307,6 +309,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             if (_queries.Count == 0)
@@ -317,11 +320,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return;
             }
 
-            if (context.Configuration.TypeSystem.FindType("System.Collections.Generic.List`1") is not { } type)
-                return;
 
-            IXamlType listType = type.MakeGenericType(base.Type.GetClrType());
-            var add = listType.FindMethod("Add", context.Configuration.WellKnownTypes.Void, false, Type.GetClrType());
+            var typeArgument = Type.GetClrType();
+            var listType = context.Configuration.WellKnownTypes.ListOfT.MakeGenericType(typeArgument);
+            var add = listType.FindMethod("Add", context.Configuration.WellKnownTypes.Void, false, typeArgument);
             if (add == null)
                 return;
 
@@ -335,7 +337,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             foreach (var s in _queries)
             {
                 codeGen.Dup();
-                context.Emit(s, codeGen, Type.GetClrType());
+                context.Emit(s, codeGen, typeArgument);
                 codeGen.EmitCall(add, true);
             }
 
@@ -385,6 +387,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             if (_queries.Count == 0)
@@ -395,11 +398,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return;
             }
 
-            if (context.Configuration.TypeSystem.FindType("System.Collections.Generic.List`1") is not { } type)
-                return;
-
-            IXamlType listType = type.MakeGenericType(base.Type.GetClrType());
-            var add = listType.FindMethod("Add", context.Configuration.WellKnownTypes.Void, false, Type.GetClrType());
+            var typeArgument = Type.GetClrType();
+            var listType = context.Configuration.WellKnownTypes.ListOfT.MakeGenericType(typeArgument);
+            var add = listType.FindMethod("Add", context.Configuration.WellKnownTypes.Void, false, typeArgument);
             if (add == null)
                 return;
 
@@ -413,7 +414,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             foreach (var s in _queries)
             {
                 codeGen.Dup();
-                context.Emit(s, codeGen, Type.GetClrType());
+                context.Emit(s, codeGen, typeArgument);
                 codeGen.EmitCall(add, true);
             }
 

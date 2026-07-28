@@ -25,6 +25,10 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         get => _drawList;
         set
         {
+            // Nothing to do
+            if (value == null && _drawList == null)
+                return;
+            
             _drawList?.Dispose();
             _drawList = value;
             _drawListChanged = true;
@@ -46,6 +50,7 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
     internal CompositionDrawListVisual(Compositor compositor, ServerCompositionDrawListVisual server, Visual visual) : base(compositor, server)
     {
         Visual = visual;
+        CustomHitTestCountInSubTree = visual is ICustomHitTest ? 1 : 0;
     }
 
     internal override bool HitTest(Point pt)

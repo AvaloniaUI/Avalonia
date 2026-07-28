@@ -27,7 +27,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     <TextBlock Name='textBlock' Text='{Binding}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.DataContext = "foo";
                 window.ApplyTemplate();
@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     <TextBlock Name='textBlock' Text='{Binding}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.ApplyTemplate();
 
@@ -71,14 +71,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Data;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <TextBox Name='textBox' Text='Foo' Watermark='Bar'>
+    <TextBox Name='textBox' Text='Foo' PlaceholderText='Bar'>
         <TextBox.Template>
             <ControlTemplate>
                 <TextPresenter Name='PART_TextPresenter'>
                     <TextPresenter.Text>
                         <MultiBinding Converter='{x:Static local:ConcatConverter.Instance}'>
                             <Binding RelativeSource='{RelativeSource TemplatedParent}' Path='Text'/>
-                            <Binding RelativeSource='{RelativeSource TemplatedParent}' Path='Watermark'/>
+                            <Binding RelativeSource='{RelativeSource TemplatedParent}' Path='PlaceholderText'/>
                         </MultiBinding>
                     </TextPresenter.Text>
                 </TextPresenter>
@@ -87,7 +87,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     </TextBox>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBox = window.FindControl<TextBox>("textBox");
+                var textBox = window.GetControl<TextBox>("textBox");
 
                 window.ApplyTemplate();
                 textBox.ApplyTemplate();
@@ -109,7 +109,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     <Border Background='{Binding HexString}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var border = (Border)window.Content;
+                var border = (Border)window.Content!;
                 window.DataContext = new { HexString = "#ff0000" };
 
                 window.ApplyTemplate();
@@ -124,7 +124,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
     {
         public static ConcatConverter Instance { get; } = new ConcatConverter();
 
-        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             return string.Join(",", values);
         }

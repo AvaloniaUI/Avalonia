@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Rendering;
 using CoreAnimation;
 using Foundation;
@@ -11,7 +10,7 @@ namespace Avalonia.iOS
 {
     class DisplayLinkTimer : IRenderTimer
     {
-        public event Action<TimeSpan>? Tick;
+        private volatile Action<TimeSpan>? _tick;
         private Stopwatch _st = Stopwatch.StartNew();
 
         public DisplayLinkTimer()
@@ -31,9 +30,16 @@ namespace Avalonia.iOS
         
         public bool RunsInBackground => true;
 
+        // TODO: start/stop on RenderLoop request
+        public Action<TimeSpan>? Tick
+        {
+            get => _tick;
+            set => _tick = value;
+        }
+
         private void OnLinkTick()
         {
-            Tick?.Invoke(_st.Elapsed);
+            _tick?.Invoke(_st.Elapsed);
         }
     }
 }

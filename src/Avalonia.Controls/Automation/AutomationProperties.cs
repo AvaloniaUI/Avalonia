@@ -94,6 +94,29 @@ namespace Avalonia.Automation
                 typeof(AutomationProperties));
 
         /// <summary>
+        /// Defines the AutomationProperties.ClassNameOverride attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetClassName"/>.
+        /// </remarks>
+        public static readonly AttachedProperty<string?> ClassNameOverrideProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, string?>(
+                "ClassNameOverride",
+                typeof(AutomationProperties));
+
+        /// <summary>
+        /// Defines the AutomationProperties.IsControlElementOverride attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for
+        /// <see cref="AutomationPeer.IsControlElement"/>.
+        /// </remarks>
+        public static readonly AttachedProperty<bool?> IsControlElementOverrideProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, bool?>(
+                "IsControlElementOverride",
+                typeof(AutomationProperties));
+
+        /// <summary>
         /// Defines the AutomationProperties.HelpText attached property.
         /// </summary>
         /// <remarks>
@@ -102,6 +125,17 @@ namespace Avalonia.Automation
         public static readonly AttachedProperty<string?> HelpTextProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, string?>(
                 "HelpText",
+                typeof(AutomationProperties));
+
+        /// <summary>
+        /// Defines the AutomationProperties.LandmarkType attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetLandmarkType"/>
+        /// </remarks>
+        public static readonly AttachedProperty<AutomationLandmarkType?> LandmarkTypeProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, AutomationLandmarkType?>(
+                "LandmarkType",
                 typeof(AutomationProperties));
 
         /// <summary>
@@ -200,7 +234,7 @@ namespace Avalonia.Automation
         /// Defines the AutomationProperties.LiveSetting attached property.
         /// </summary>
         /// <remarks>
-        /// This property currently has no effect.
+        /// This property affects the default value for <see cref="AutomationPeer.GetLiveSetting"/> and controls whether live region changed events are emitted.
         /// </remarks>
         public static readonly AttachedProperty<AutomationLiveSetting> LiveSettingProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, AutomationLiveSetting>(
@@ -342,6 +376,42 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
+        /// Helper for setting the value of the <see cref="ClassNameOverrideProperty"/> on a StyledElement. 
+        /// </summary>
+        public static void SetClassNameOverride(StyledElement element, string? value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(ClassNameOverrideProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="ClassNameOverrideProperty"/> on a StyledElement.
+        /// </summary>
+        public static string? GetClassNameOverride(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(ClassNameOverrideProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the value of the <see cref="IsControlElementOverrideProperty"/> on a StyledElement. 
+        /// </summary>
+        public static void SetIsControlElementOverride(StyledElement element, bool? value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(IsControlElementOverrideProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="IsControlElementOverrideProperty"/> on a StyledElement.
+        /// </summary>
+        public static bool? GetIsControlElementOverride(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(IsControlElementOverrideProperty);
+        }
+
+        /// <summary>
         /// Helper for setting the value of the <see cref="HelpTextProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetHelpText(StyledElement element, string? value)
@@ -360,6 +430,24 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
+        /// Helper for setting the value of the <see cref="LandmarkTypeProperty"/> on a StyledElement.
+        /// </summary>
+        public static void SetLandmarkType(StyledElement element, AutomationLandmarkType? value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(LandmarkTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="LandmarkTypeProperty"/> on a StyledElement.
+        /// </summary>
+        public static AutomationLandmarkType? GetLandmarkType(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(LandmarkTypeProperty);
+        }
+
+        /// <summary>
         /// Helper for setting the value of the <see cref="HeadingLevelProperty"/> on a StyledElement.
         /// </summary>
         public static void SetHeadingLevel(StyledElement element, int value)
@@ -371,7 +459,6 @@ namespace Avalonia.Automation
         /// <summary>
         /// Helper for reading the value of the <see cref="HeadingLevelProperty"/> on a StyledElement.
         /// </summary>
-        /// <returns></returns>
         public static int GetHeadingLevel(StyledElement element)
         {
             _ = element ?? throw new ArgumentNullException(nameof(element));

@@ -6,6 +6,12 @@ export interface PreviewerFrame {
     dpiY: number;
 }
 
+declare global {
+    interface Window {
+        avaloniaPreviewerSecurityCookie: string;
+    }
+}
+
 export class PreviewerServerConnection {
     private nextFrame = {
         width: 0,

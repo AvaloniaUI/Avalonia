@@ -54,6 +54,6 @@ internal static class VulkanMemoryHelper
             0,
             null,
             1,
-            barrier);
+            in barrier);
     }
 }

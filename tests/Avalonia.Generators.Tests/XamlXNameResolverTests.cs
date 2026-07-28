@@ -6,9 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Generators.Common;
 using Avalonia.Generators.Common.Domain;
 using Avalonia.Generators.Compiler;
-using Avalonia.ReactiveUI;
 using Avalonia.Generators.Tests.Views;
-using Microsoft.CodeAnalysis;
 using Xunit;
 
 namespace Avalonia.Generators.Tests;
@@ -56,11 +54,11 @@ public class XamlXNameResolverTests
 
         Assert.NotEmpty(controls);
         Assert.Equal(3, controls.Count);
-        Assert.Equal("ClrNamespaceRoutedViewHost", controls[0].Name);
-        Assert.Equal("UriRoutedViewHost", controls[1].Name);
+        Assert.Equal("ClrNamespaceColorPicker", controls[0].Name);
+        Assert.Equal("UriColorPicker", controls[1].Name);
         Assert.Equal("UserNameTextBox", controls[2].Name);
-        Assert.Contains(typeof(RoutedViewHost).FullName!, controls[0].TypeName);
-        Assert.Contains(typeof(RoutedViewHost).FullName!, controls[1].TypeName);
+        Assert.Contains(typeof(ColorPicker).FullName!, controls[0].TypeName);
+        Assert.Contains(typeof(ColorPicker).FullName!, controls[1].TypeName);
         Assert.Contains("Controls.CustomTextBox", controls[2].TypeName);
     }
 

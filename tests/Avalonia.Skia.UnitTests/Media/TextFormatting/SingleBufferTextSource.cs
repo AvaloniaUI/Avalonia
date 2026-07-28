@@ -16,7 +16,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             _addEndOfParagraph = addEndOfParagraph;
         }
 
-        public TextRun GetTextRun(int textSourceIndex)
+        public TextRun? GetTextRun(int textSourceIndex)
         {
             if (textSourceIndex >= _text.Length)
             {

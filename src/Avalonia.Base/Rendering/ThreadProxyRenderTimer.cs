@@ -12,8 +12,9 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
     private readonly Stopwatch _stopwatch;
     private readonly Thread _timerThread;
     private readonly AutoResetEvent _autoResetEvent;
-    private Action<TimeSpan>? _tick;
-    private int _subscriberCount;
+    private readonly object _lock = new();
+    private volatile Action<TimeSpan>? _tick;
+    private volatile bool _active;
     private bool _registered;
 
     public ThreadProxyRenderTimer(IRenderTimer inner, int maxStackSize = 1 * 1024 * 1024)
@@ -24,33 +25,54 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
         _timerThread = new Thread(RenderTimerThreadFunc, maxStackSize) { Name = "RenderTimerLoop", IsBackground = true };
     }
 
-    public event Action<TimeSpan> Tick
+    public Action<TimeSpan>? Tick
     {
-        add
+        get => _tick;
+        set
         {
-            _tick += value;
-
-            if (!_registered)
+            lock (_lock)
             {
-                _registered = true;
-                _timerThread.Start();
-            }
-
-            if (_subscriberCount++ == 0)
-            {
-                _inner.Tick += InnerTick;
+                if (value != null)
+                {
+                    _tick = value;
+                    _active = true;
+                    EnsureStarted();
+                    _inner.Tick = InnerTick;
+                }
+                else
+                {
+                    // Don't set _inner.Tick = null here — may be on the wrong thread.
+                    // InnerTick will detect _active=false and clear _inner.Tick on the correct thread.
+                    _active = false;
+                    _tick = null;
+                }
             }
         }
+    }
 
-        remove
+    public bool RunsInBackground => true;
+
+    private void EnsureStarted()
+    {
+        if (!_registered)
         {
-            if (--_subscriberCount == 0)
-            {
-                _inner.Tick -= InnerTick;
-            }
-
-            _tick -= value;
+            _registered = true;
+            _stopwatch.Start();
+            _timerThread.Start();
         }
+    }
+
+    private void InnerTick(TimeSpan obj)
+    {
+        lock (_lock)
+        {
+            if (!_active)
+            {
+                _inner.Tick = null;
+                return;
+            }
+        }
+        _autoResetEvent.Set();
     }
 
     private void RenderTimerThreadFunc()
@@ -60,11 +82,4 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
             _tick?.Invoke(_stopwatch.Elapsed);
         }
     }
-    
-    private void InnerTick(TimeSpan obj)
-    {
-        _autoResetEvent.Set();
-    }
-
-    public bool RunsInBackground => true;
 }

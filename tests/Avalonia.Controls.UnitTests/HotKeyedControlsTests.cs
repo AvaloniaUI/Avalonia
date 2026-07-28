@@ -16,17 +16,17 @@ namespace Avalonia.Controls.UnitTests
         {
             private readonly Action _action;
             public DelegateCommand(Action action) => _action = action;
-            public event EventHandler CanExecuteChanged { add { } remove { } }
-            public bool CanExecute(object parameter) => true;
-            public void Execute(object parameter) => _action();
+            public event EventHandler? CanExecuteChanged { add { } remove { } }
+            public bool CanExecute(object? parameter) => true;
+            public void Execute(object? parameter) => _action();
         }
         
-        public static readonly StyledProperty<KeyGesture> HotKeyProperty =
+        public static readonly StyledProperty<KeyGesture?> HotKeyProperty =
             HotKeyManager.HotKeyProperty.AddOwner<HotKeyedTextBox>();
 
-        private KeyGesture _hotkey;
+        private KeyGesture? _hotkey;
 
-        public KeyGesture HotKey
+        public KeyGesture? HotKey
         {
             get => GetValue(HotKeyProperty);
             set => SetValue(HotKeyProperty, value);
@@ -61,7 +61,7 @@ namespace Avalonia.Controls.UnitTests
 
         public ICommand Command => _command;
 
-        public object CommandParameter => null;
+        public object? CommandParameter => null;
 
         private readonly DelegateCommand _command;
 
@@ -73,7 +73,7 @@ namespace Avalonia.Controls.UnitTests
 
     public class HotKeyedControlsTests : ScopedTestBase
     {
-        private static Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object? content = null)
         {
             var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             var windowImpl = Mock.Get(platform.CreateWindow());
@@ -110,7 +110,7 @@ namespace Avalonia.Controls.UnitTests
                 new RawKeyEventArgs(
                     keyboardDevice,
                     0,
-                    root,
+                    root.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.F,
                     RawInputModifiers.Control,
@@ -118,6 +118,37 @@ namespace Avalonia.Controls.UnitTests
                     "f"));
             
             Assert.True(hotKeyedTextBox.IsFocused);
+        }
+        
+        [Fact]
+        public void Hidden_Button_HotKey_Should_Not_Swallow_Input()
+        {
+            using var _ = CreateServicesWithFocus();
+            
+            var keyboardDevice = new KeyboardDevice();
+            var root = PreparedWindow();
+            var panel = new StackPanel { IsVisible = false };
+            var button = new Button { HotKey = KeyGesture.Parse("Escape") };
+    
+            bool buttonClicked = false;
+            button.Click += (s, e) => buttonClicked = true;
+
+            panel.Children.Add(button);
+            root.Content = panel;
+            root.Show();
+
+            keyboardDevice.ProcessRawEvent(
+                new RawKeyEventArgs(
+                    keyboardDevice,
+                    0,
+                    root.InputRoot,
+                    RawKeyEventType.KeyDown,
+                    Key.Escape,
+                    RawInputModifiers.None,
+                    PhysicalKey.Escape,
+                    ""));
+    
+            Assert.False(buttonClicked);
         }
     }
 }

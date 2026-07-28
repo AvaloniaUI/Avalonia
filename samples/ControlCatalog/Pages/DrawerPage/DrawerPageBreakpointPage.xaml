@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.DrawerPageBreakpointPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="240">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="DrawerBreakpointLength" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="When set, the drawer automatically switches layout based on the available size (width for Left/Right, height for Top/Bottom)." />
+
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8">
+          <StackPanel Spacing="4">
+            <Grid ColumnDefinitions="18,*">
+              <PathIcon Grid.Column="0" Width="12" Height="12" Opacity="0.7" VerticalAlignment="Top" Margin="0,1,0,0"
+                        Data="M19,11H7.83L12.42,6.41L11,5L4,12L11,19L12.41,17.59L7.83,13H19V11Z" />
+              <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap"
+                         Text="Below breakpoint → Overlay (hamburger button, drawer closes)" />
+            </Grid>
+            <Grid ColumnDefinitions="18,*">
+              <PathIcon Grid.Column="0" Width="12" Height="12" Opacity="0.7" VerticalAlignment="Top" Margin="0,1,0,0"
+                        Data="M5,13H16.17L11.58,17.59L13,19L20,12L13,5L11.59,6.41L16.17,11H5V13Z" />
+              <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap"
+                         Text="Above breakpoint → configured layout, drawer opens automatically" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <TextBlock Text="Breakpoint value" FontSize="12" Opacity="0.7" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Slider x:Name="BreakpointSlider" Minimum="100" Maximum="900" Value="500"
+                  Width="150" ValueChanged="OnBreakpointChanged" />
+          <TextBlock x:Name="BreakpointText" Text="500" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="Layout above breakpoint" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="The DrawerLayoutBehavior used when width exceeds the breakpoint." />
+        <ComboBox x:Name="LayoutCombo" SelectedIndex="0"
+                  SelectionChanged="OnLayoutChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Split" />
+          <ComboBoxItem Content="CompactInline" />
+          <ComboBoxItem Content="CompactOverlay" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock x:Name="WidthText" Text="Width: —" Opacity="0.7" />
+        <TextBlock x:Name="ModeText" Text="Mode: Overlay" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock TextWrapping="Wrap" FontSize="11" Opacity="0.6"
+                   Text="Resize the window to see the layout switch automatically." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <DrawerPage x:Name="DemoDrawer"
+                  DrawerLayoutBehavior="Split"
+                  DrawerBreakpointLength="500"
+                  DrawerLength="200">
+        <DrawerPage.Drawer>
+          <StackPanel Margin="8" Spacing="4">
+            <Button HorizontalAlignment="Stretch" Background="Transparent"
+                    Click="OnMenuItemClick" Tag="Home">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Width="16" Height="16"
+                          Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
+                <TextBlock Text="Home" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+            <Button HorizontalAlignment="Stretch" Background="Transparent"
+                    Click="OnMenuItemClick" Tag="Profile">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Width="16" Height="16"
+                          Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
+                <TextBlock Text="Profile" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+            <Button HorizontalAlignment="Stretch" Background="Transparent"
+                    Click="OnMenuItemClick" Tag="Settings">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Width="16" Height="16"
+                          Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+                <TextBlock Text="Settings" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </DrawerPage.Drawer>
+        <DrawerPage.Content>
+          <ContentPage x:Name="DetailPage" Header="Home">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+              <TextBlock x:Name="DetailTitleText" Text="Home" FontSize="24" FontWeight="Bold"
+                         HorizontalAlignment="Center" />
+              <TextBlock Text="Select an item from the drawer." FontSize="13" Opacity="0.7"
+                         TextWrapping="Wrap" TextAlignment="Center" MaxWidth="260" />
+            </StackPanel>
+          </ContentPage>
+        </DrawerPage.Content>
+      </DrawerPage>
+    </Border>
+  </DockPanel>
+</UserControl>

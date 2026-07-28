@@ -1,0 +1,205 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CurvedHeaderHomeScrollView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Spacer for dome header + avatar overlap: 130 (flat) + 32 (dome) + 36 (avatar/2) + 16 = 214px -->
+      <Border Height="214"/>
+
+      <!-- Featured section -->
+      <Grid ColumnDefinitions="*,Auto" Margin="16,16,16,12">
+        <TextBlock Text="Featured" FontSize="18" FontWeight="Bold" Foreground="#111827"/>
+        <TextBlock Grid.Column="1" Text="View All" FontSize="13" FontWeight="SemiBold"
+                   Foreground="#137fec" VerticalAlignment="Center"/>
+      </Grid>
+      <Border Margin="16,0" CornerRadius="16" ClipToBounds="True">
+        <Panel>
+          <Border Height="200">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/featured.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <Border>
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,30%" EndPoint="0%,100%">
+                <GradientStop Color="#00000000" Offset="0"/>
+                <GradientStop Color="#A0000000" Offset="1"/>
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                      Margin="16,0,16,16" Spacing="4">
+            <Border CornerRadius="999" Background="#137fec" Padding="10,3"
+                    HorizontalAlignment="Center">
+              <TextBlock Text="NEW" FontSize="10" FontWeight="SemiBold" Foreground="White"/>
+            </Border>
+            <TextBlock Text="Summer Collection 2025" FontSize="18" FontWeight="Bold"
+                       Foreground="White" TextAlignment="Center"/>
+            <TextBlock Text="Discover the latest trends in outdoor fashion."
+                       FontSize="13" Foreground="#D2FFFFFF"
+                       Margin="0,0,0,6" TextAlignment="Center"/>
+            <Button x:Name="ShopNowButton"
+                    Content="Shop Now →"
+                    Background="#3CFFFFFF"
+                    Foreground="White"
+                    BorderBrush="#78FFFFFF" BorderThickness="1"
+                    CornerRadius="8" Height="40"
+                    Padding="24,0"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Click="OnShopNowClick"/>
+          </StackPanel>
+        </Panel>
+      </Border>
+
+      <!-- Recommended for you -->
+      <StackPanel Spacing="2" Margin="16,20,16,12">
+        <TextBlock Text="Recommended for you" FontSize="18" FontWeight="Bold" Foreground="#111827"/>
+        <TextBlock Text="Curated items based on your style" FontSize="13" Foreground="#64748b"/>
+      </StackPanel>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled"
+                    Padding="0,0,0,8">
+        <StackPanel Orientation="Horizontal" Spacing="12" Margin="16,0">
+
+          <!-- Modern Living -->
+          <Button Padding="0" Background="Transparent" CornerRadius="12" Click="OnProductClick">
+            <Border Width="148" CornerRadius="12" Background="White" ClipToBounds="True">
+              <StackPanel Spacing="0">
+                <Border Height="115">
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/product1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <StackPanel Margin="10,8,10,12" Spacing="2">
+                  <TextBlock Text="Modern Living" FontSize="13" FontWeight="SemiBold" Foreground="#111827"/>
+                  <TextBlock Text="Interior Design" FontSize="11" Foreground="#64748b"/>
+                  <TextBlock Text="$120.00" FontSize="13" FontWeight="Bold" Foreground="#137fec" Margin="0,4,0,0"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </Button>
+
+          <!-- Workspace Zen -->
+          <Button Padding="0" Background="Transparent" CornerRadius="12" Click="OnProductClick">
+            <Border Width="148" CornerRadius="12" Background="White" ClipToBounds="True">
+              <StackPanel Spacing="0">
+                <Border Height="115">
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/product2.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <StackPanel Margin="10,8,10,12" Spacing="2">
+                  <TextBlock Text="Workspace Zen" FontSize="13" FontWeight="SemiBold" Foreground="#111827"/>
+                  <TextBlock Text="Productivity" FontSize="11" Foreground="#64748b"/>
+                  <TextBlock Text="$85.50" FontSize="13" FontWeight="Bold" Foreground="#137fec" Margin="0,4,0,0"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </Button>
+
+          <!-- Cozy Vibes -->
+          <Button Padding="0" Background="Transparent" CornerRadius="12" Click="OnProductClick">
+            <Border Width="148" CornerRadius="12" Background="White" ClipToBounds="True">
+              <StackPanel Spacing="0">
+                <Border Height="115">
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/product3.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <StackPanel Margin="10,8,10,12" Spacing="2">
+                  <TextBlock Text="Cozy Vibes" FontSize="13" FontWeight="SemiBold" Foreground="#111827"/>
+                  <TextBlock Text="Home Decor" FontSize="11" Foreground="#64748b"/>
+                  <TextBlock Text="$45.00" FontSize="13" FontWeight="Bold" Foreground="#137fec" Margin="0,4,0,0"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </Button>
+
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Recent Updates -->
+      <TextBlock Text="Recent Updates" FontSize="18" FontWeight="Bold" Foreground="#111827"
+                 Margin="16,20,16,12"/>
+      <StackPanel Spacing="10" Margin="16,0">
+
+        <!-- Order Shipped -->
+        <Border CornerRadius="12" Background="White" Padding="14">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="52" Height="52" CornerRadius="10" ClipToBounds="True"
+                    Margin="0,0,12,0" VerticalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/update1.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+              <TextBlock Text="Order #2458 Shipped" FontSize="14" FontWeight="SemiBold" Foreground="#111827"/>
+              <TextBlock Text="Your package is on its way." FontSize="12" Foreground="#64748b"/>
+              <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,4,0,0">
+                <Ellipse Width="7" Height="7" Fill="#22C55E" VerticalAlignment="Center"/>
+                <TextBlock Text="In Transit" FontSize="11" FontWeight="SemiBold" Foreground="#64748b" VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="›" FontSize="22" Foreground="#64748b" VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- Price Drop -->
+        <Border CornerRadius="12" Background="White" Padding="14">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="52" Height="52" CornerRadius="10" ClipToBounds="True"
+                    Margin="0,0,12,0" VerticalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/update2.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+              <TextBlock Text="Price Drop Alert" FontSize="14" FontWeight="SemiBold" Foreground="#111827"/>
+              <TextBlock Text="The chair you liked is 20% off." FontSize="12" Foreground="#64748b"/>
+              <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,4,0,0">
+                <Ellipse Width="7" Height="7" Fill="#137fec" VerticalAlignment="Center"/>
+                <TextBlock Text="Just Now" FontSize="11" FontWeight="SemiBold" Foreground="#64748b" VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="›" FontSize="22" Foreground="#64748b" VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- New Store -->
+        <Border CornerRadius="12" Background="White" Padding="14">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="52" Height="52" CornerRadius="10" ClipToBounds="True"
+                    Margin="0,0,12,0" VerticalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/CurvedHeader/update3.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+              <TextBlock Text="New Store Opening" FontSize="14" FontWeight="SemiBold" Foreground="#111827"/>
+              <TextBlock Text="Visit our new downtown location." FontSize="12" Foreground="#64748b"/>
+              <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,4,0,0">
+                <Ellipse Width="7" Height="7" Fill="#93C5FD" VerticalAlignment="Center"/>
+                <TextBlock Text="Events" FontSize="11" FontWeight="SemiBold" Foreground="#64748b" VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="›" FontSize="22" Foreground="#64748b" VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+      </StackPanel>
+
+      <Border Height="24"/>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -80,7 +80,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
             public void Add(string s) => _inner.Add(s);
 
-            public event NotifyCollectionChangedEventHandler CollectionChanged
+            public event NotifyCollectionChangedEventHandler? CollectionChanged
             {
                 add => _inner.CollectionChanged += value;
                 remove => _inner.CollectionChanged -= value;

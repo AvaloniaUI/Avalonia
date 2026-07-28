@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Internal;
 
@@ -61,17 +61,29 @@ namespace Avalonia.X11
             _cursors = new Dictionary<StandardCursorType, IntPtr>();
         }
 
+        // We don't have a "DragNo" standard cursor type, but Xcursor provides one
+        public IntPtr DragNoDropCursorHandle
+        {
+            get
+            {
+                if (field == 0)
+                    field = LoadDragNoDropCursor();
+                return field;
+            }
+        }
+
         public ICursorImpl GetCursor(StandardCursorType cursorType)
         {
-            IntPtr handle;
-            if (cursorType == StandardCursorType.None)
-                handle = _nullCursor;
-            else
-                handle = GetCursorHandleCached(cursorType);
+            var handle = GetCursorHandle(cursorType);
             return new CursorImpl(handle);
         }
 
-        public unsafe ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public IntPtr GetCursorHandle(StandardCursorType cursorType)
+        {
+            return cursorType == StandardCursorType.None ? _nullCursor : GetCursorHandleCached(cursorType);
+        }
+
+        public unsafe ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
         {
             return new XImageCursor(_display, cursor, hotSpot);
         }
@@ -84,13 +96,22 @@ namespace Avalonia.X11
             return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);
         }
 
-        private unsafe class XImageCursor : CursorImpl, IFramebufferPlatformSurface, IPlatformHandle
+        private IntPtr LoadDragNoDropCursor()
+        {
+            var handle = XLib.XcursorLibraryLoadCursor(_display, "dnd-no-drop");
+
+            if (handle == 0)
+                handle = GetCursorHandleCached(StandardCursorType.No);
+            return handle;
+        }
+
+        private unsafe class XImageCursor : CursorImpl, IPlatformHandle
         {
             private readonly IntPtr _display;
             private readonly PixelSize _pixelSize;
             private readonly UnmanagedBlob _blob;
 
-            public XImageCursor(IntPtr display, IBitmapImpl bitmap, PixelPoint hotSpot)
+            public XImageCursor(IntPtr display, Bitmap bitmap, PixelPoint hotSpot)
             {
                 var size = Marshal.SizeOf<XcursorImage>() +
                     (bitmap.PixelSize.Width * bitmap.PixelSize.Height * 4);
@@ -108,15 +129,12 @@ namespace Avalonia.X11
                 image->xhot = hotSpot.X;
                 image->yhot = hotSpot.Y;
                 image->pixels = (IntPtr)(image + 1);
-               
-                using (var cpuContext = platformRenderInterface.CreateBackendContext(null))
-                using (var renderTarget = cpuContext.CreateRenderTarget(new[] { this }))
-                using (var ctx = renderTarget.CreateDrawingContext(true))
-                {
-                    var r = new Rect(_pixelSize.ToSize(1)); 
-                    ctx.DrawBitmap(bitmap, 1, r, r);
-                }
 
+                bitmap.CopyPixels(new LockedFramebuffer(
+                    _blob.Address + Marshal.SizeOf<XcursorImage>(),
+                    _pixelSize, _pixelSize.Width * 4,
+                    new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul, null));
+                
                 Handle = XLib.XcursorImageLoadCursor(display, _blob.Address);
             }
 
@@ -127,25 +145,16 @@ namespace Avalonia.X11
                 XLib.XFreeCursor(_display, Handle);
                 _blob.Dispose();
             }
-
-            public ILockedFramebuffer Lock()
-            {
-                return new LockedFramebuffer(
-                    _blob.Address + Marshal.SizeOf<XcursorImage>(),
-                    _pixelSize, _pixelSize.Width * 4,
-                    new Vector(96, 96), PixelFormat.Bgra8888, null);
-            }
-            
-            public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
         }
         
         private nint GetCursorHandleCached(StandardCursorType type)
         {
             if (!_cursors.TryGetValue(type, out var handle))
             {
-                if(s_libraryCursors.TryGetValue(type, out var cursorName))
+                if (s_libraryCursors.TryGetValue(type, out var cursorName))
                     handle = XLib.XcursorLibraryLoadCursor(_display, cursorName);
-                else if(s_mapping.TryGetValue(type, out var cursorShape))
+
+                if (handle == 0 && s_mapping.TryGetValue(type, out var cursorShape))
                     handle = XLib.XCreateFontCursor(_display, cursorShape);
 
                 if (handle == IntPtr.Zero)

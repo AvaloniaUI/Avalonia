@@ -29,12 +29,4 @@ namespace Avalonia.Controls
         /// </remarks>
         void NotifyHostedResourcesChanged(ResourcesChangedEventArgs e);
     }
-
-    // TODO12: merge with IResourceHost
-    internal interface IResourceHost2 : IResourceHost
-    {
-        event EventHandler<ResourcesChangedToken> ResourcesChanged2;
-
-        void NotifyHostedResourcesChanged(ResourcesChangedToken token);
-    }
 }

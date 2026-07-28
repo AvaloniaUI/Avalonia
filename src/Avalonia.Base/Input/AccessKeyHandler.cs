@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
@@ -31,6 +32,12 @@ namespace Avalonia.Input
                 typeof(AccessKeyHandler));
 
         /// <summary>
+        /// Defines the ShowAccessKey attached property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> ShowAccessKeyProperty =
+            AvaloniaProperty.RegisterAttached<AccessKeyHandler, Visual, bool>("ShowAccessKey", inherits: true);
+        
+        /// <summary>
         /// The registered access keys.
         /// </summary>
         private readonly List<AccessKeyRegistration> _registrations = [];
@@ -40,7 +47,7 @@ namespace Avalonia.Input
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot? _owner;
+        private InputElement? _owner;
 
         /// <summary>
         /// Whether access keys are currently being shown;
@@ -96,7 +103,7 @@ namespace Avalonia.Input
         /// <remarks>
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
-        public void SetOwner(IInputRoot owner)
+        public void SetOwner(InputElement owner)
         {
             if (_owner != null)
             {
@@ -113,7 +120,7 @@ namespace Avalonia.Input
             OnSetOwner(owner);
         }
 
-        protected virtual void OnSetOwner(IInputRoot owner)
+        protected virtual void OnSetOwner(InputElement owner)
         {
         }
 
@@ -122,9 +129,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="accessKey">The access key.</param>
         /// <param name="element">The input element.</param>
-        public void Register(char accessKey, IInputElement element)
+        public void Register(string accessKey, IInputElement element)
         {
-            var key = NormalizeKey(accessKey.ToString());
+            ArgumentException.ThrowIfNullOrEmpty(accessKey);
+
+            var key = NormalizeKey(accessKey);
             
             // remove dead elements with matching key
             for (var i = _registrations.Count - 1; i >= 0; i--)
@@ -157,6 +166,9 @@ namespace Avalonia.Input
             }
         }
 
+        static void SetShowAccessKeys(AvaloniaObject target, bool value) =>
+            target.SetValue(ShowAccessKeyProperty, value);
+        
         /// <summary>
         /// Called when a key is pressed in the owner window.
         /// </summary>
@@ -186,7 +198,7 @@ namespace Avalonia.Input
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
-                    _owner!.ShowAccessKeys = _showingAccessKeys = isFocusWithinOwner;
+                    SetShowAccessKeys(_owner!, _showingAccessKeys = isFocusWithinOwner);
                 }
                 else
                 {
@@ -224,7 +236,7 @@ namespace Avalonia.Input
                 MainMenu?.IsOpen != true)
                 return;
 
-            e.Handled = ProcessKey(e.Key.ToString(), e.Source as IInputElement);
+            e.Handled = ProcessKey(e.KeySymbol, e.Source as IInputElement);
         }
 
 
@@ -263,7 +275,7 @@ namespace Avalonia.Input
         {
             if (_showingAccessKeys)
             {
-                _owner!.ShowAccessKeys = false;
+                SetShowAccessKeys(_owner!, false);
             }
         }
 
@@ -273,12 +285,12 @@ namespace Avalonia.Input
         private void CloseMenu()
         {
             MainMenu!.Close();
-            _owner!.ShowAccessKeys = _showingAccessKeys = false;
+            SetShowAccessKeys(_owner!, _showingAccessKeys = false);
         }
 
         private void MainMenuClosed(object? sender, EventArgs e)
         {
-            _owner!.ShowAccessKeys = false;
+            SetShowAccessKeys(_owner!, false);
         }
 
         /// <summary>
@@ -287,8 +299,11 @@ namespace Avalonia.Input
         /// <param name="key">The access key to process.</param>
         /// <param name="element">The element to get the targets which are in scope.</param>
         /// <returns>If there matches <c>true</c>, otherwise <c>false</c>.</returns>
-        protected bool ProcessKey(string key, IInputElement? element)
+        protected bool ProcessKey(string? key, IInputElement? element)
         {
+            if (string.IsNullOrEmpty(key))
+                return false;
+
             key = NormalizeKey(key);
             var senderInfo = GetTargetForElement(element, key);
             // Find the possible targets matching the access key
@@ -439,7 +454,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="owner">The owner to check.</param>
         /// <returns>If focused element is decendant of owner <c>true</c>, otherwise <c>false</c>. </returns>
-        private static bool IsFocusWithinOwner(IInputRoot owner)
+        private static bool IsFocusWithinOwner(IInputElement owner)
         {
             var focusedElement = KeyboardDevice.Instance?.FocusedElement;
             if (focusedElement is not InputElement inputElement)
@@ -504,19 +519,10 @@ namespace Avalonia.Input
     internal class AccessKeyPressedEventArgs : RoutedEventArgs
     {
         /// <summary>
-        /// The constructor for AccessKeyPressed event args
-        /// </summary>
-        public AccessKeyPressedEventArgs()
-        {
-            RoutedEvent = AccessKeyHandler.AccessKeyPressedEvent;
-            Key = null;
-        }
-
-        /// <summary>
         /// Constructor for AccessKeyPressed event args
         /// </summary>
         /// <param name="key"></param>
-        public AccessKeyPressedEventArgs(string key) : this()
+        public AccessKeyPressedEventArgs(string key)
         {
             RoutedEvent = AccessKeyHandler.AccessKeyPressedEvent;
             Key = key;

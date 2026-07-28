@@ -7,11 +7,7 @@ using System.Text;
 using Xunit;
 using System.Threading.Tasks;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests
-#endif
 {
     public class OpacityMaskTests : TestBase
     {
@@ -37,6 +33,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 },
                 Width = 76,
                 Height = 76,
+                Background = Brushes.Transparent,
                 Children =
                 {
                     new Path
@@ -74,6 +71,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 RenderTransform = new RotateTransform(90),
                 Width = 76,
                 Height = 76,
+                Background = Brushes.Transparent,
                 Children =
                 {
                     new Path

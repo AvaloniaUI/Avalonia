@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageFirstLookPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Tab Management" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="6">
+          <Button Content="Add Tab" Click="OnAddTab" HorizontalAlignment="Stretch" />
+          <Button Content="Remove Latest Tab" Click="OnRemoveTab" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="Tab Placement" FontWeight="SemiBold" FontSize="13" />
+        <ComboBox x:Name="PlacementCombo" SelectedIndex="0"
+                  SelectionChanged="OnPlacementChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Top" />
+          <ComboBoxItem Content="Bottom" />
+          <ComboBoxItem Content="Left" />
+          <ComboBoxItem Content="Right" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock x:Name="StatusText"
+                   Text="3 tabs | Selected: Home (0)"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs"
+                  TabPlacement="Top"
+                  SelectionChanged="OnSelectionChanged">
+        <ContentPage Header="Home">
+          <StackPanel Margin="16" Spacing="8">
+            <TextBlock Text="Home Tab" FontSize="24" FontWeight="Bold" />
+            <TextBlock Text="Welcome to the Home tab. This is a TabbedPage sample."
+                       TextWrapping="Wrap" />
+            <TextBlock Text="Use the panel on the right to add or remove tabs dynamically."
+                       TextWrapping="Wrap" Opacity="0.7" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage Header="Search">
+          <StackPanel Margin="16" Spacing="8">
+            <TextBlock Text="Search Tab" FontSize="24" FontWeight="Bold" />
+            <TextBox PlaceholderText="Type to search..." />
+            <TextBlock Text="Search results will appear here." Opacity="0.7" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage Header="Settings">
+          <StackPanel Margin="16" Spacing="8">
+            <TextBlock Text="Settings Tab" FontSize="24" FontWeight="Bold" />
+            <CheckBox Content="Enable notifications" />
+            <CheckBox Content="Dark mode" />
+            <CheckBox Content="Auto-save" IsChecked="True" />
+          </StackPanel>
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </DockPanel>
+</UserControl>

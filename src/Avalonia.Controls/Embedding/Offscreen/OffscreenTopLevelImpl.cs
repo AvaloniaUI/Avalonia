@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Controls.Embedding.Offscreen
@@ -27,7 +28,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public OffscreenTopLevelImplBase()
             => Compositor = new Compositor(null);
 
-        public abstract IEnumerable<object> Surfaces { get; }
+        public abstract IPlatformRenderSurface[] Surfaces { get; }
 
         public virtual double DesktopScaling => _scaling;
 
@@ -62,7 +63,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
 

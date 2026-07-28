@@ -1,17 +1,18 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests
-#endif
 {   
     public class Win32Fact : FactAttribute
     {
-        public Win32Fact(string message)
+        public Win32Fact(
+            string message,
+            [CallerFilePath] string? sourceFilePath = null,
+            [CallerLineNumber] int sourceLineNumber = -1)
+            : base(sourceFilePath, sourceLineNumber)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 Skip = message;
@@ -20,7 +21,11 @@ namespace Avalonia.Direct2D1.RenderTests
 
     public class Win32Theory : TheoryAttribute
     {
-        public Win32Theory(string message)
+        public Win32Theory(
+            string message,
+            [CallerFilePath] string? sourceFilePath = null,
+            [CallerLineNumber] int sourceLineNumber = -1)
+            : base(sourceFilePath, sourceLineNumber)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 Skip = message;

@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -35,7 +38,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 var target = CreateTarget(new Window());
 
-                Assert.True(((ILogical)target.Presenter).IsAttachedToLogicalTree);
+                Assert.True(((ILogical)target.Presenter!).IsAttachedToLogicalTree);
             }
         }
 
@@ -53,11 +56,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Popup.Open();
+                target.Popup!.Open();
 
-                Assert.Equal(target.Popup, ((IStyleHost)target.Popup.Host).StylingParent);
+                Assert.Equal(target.Popup, ((IStyleHost)target.Popup.Host!).StylingParent);
             }
         }
 
@@ -74,10 +77,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 window.ApplyTemplate();
                 target.Open();
 
-               
-                Assert.Single(((Visual)target.Host).GetVisualChildren());
 
-                var templatedChild = ((Visual)target.Host).GetVisualChildren().Single();
+                var host = Assert.IsAssignableFrom<Visual>(target.Host);
+                Assert.Single(host.GetVisualChildren());
+
+                var templatedChild = host.GetVisualChildren().Single();
                 
                 Assert.IsType<LayoutTransformControl>(templatedChild);
 
@@ -93,13 +97,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.IsType<ContentPresenter>(contentPresenter);
                 
                 
-                Assert.Equal((PopupRoot)target.Host, ((Control)templatedChild).TemplatedParent);
-                Assert.Equal((PopupRoot)target.Host, ((Control)contentPresenter).TemplatedParent);
+                Assert.Equal((PopupRoot)host, ((Control)templatedChild).TemplatedParent);
+                Assert.Equal((PopupRoot)host, ((Control)contentPresenter).TemplatedParent);
             }
         }
         
         [Fact]
-        public void PopupRoot_Should_Have_Null_VisualParent()
+        public void PopupRoot_Should_Have_TopLevelHost_VisualParent()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -107,7 +111,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.Open();
 
-                Assert.Null(((Visual)target.Host).GetVisualParent());
+                Assert.IsType<TopLevelHost>(((Visual)target.Host!).GetVisualParent());
             }
         }
         
@@ -180,9 +184,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Popup.Open();
+                target.Popup!.Open();
                 target.PopupContent = null;
             }
         }
@@ -194,7 +198,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 var child = new ChildControl();
                 var window = new Window();
-                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl);
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl!);
                 popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1200, 1000));
                 var target = CreateTarget(window, popupImpl.Object);
                 
@@ -251,7 +255,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var window = new Window();
-                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl);
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl!);
 
                 var child = new Canvas
                 {
@@ -280,7 +284,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var window = new Window();
-                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl);
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl!);
 
                 var target = CreateTarget(window, popupImpl.Object);
                 target.MinWidth = 400;
@@ -296,7 +300,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 Assert.Equal(new Rect(0, 0, 400, 800), target.Bounds);
                 Assert.Equal(new Size(400, 800), target.ClientSize);
-                Assert.Equal(new Size(400, 800), target.PlatformImpl.ClientSize);
+                Assert.Equal(new Size(400, 800), target.PlatformImpl!.ClientSize);
             }
         }
 
@@ -307,7 +311,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var window = new Window();
-                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl);
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl!);
                 var positioner = new Mock<IPopupPositioner>();
                 popupImpl.Setup(x => x.PopupPositioner).Returns(positioner.Object);
 
@@ -330,9 +334,54 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        private static PopupRoot CreateTarget(TopLevel popupParent, IPopupImpl impl = null)
+        [Fact]
+        public void Popup_Anchor_Rect_Should_Account_For_Decoration_Inset()
         {
-            impl ??= popupParent.PlatformImpl.CreatePopup();
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                windowImpl.Setup(x => x.NeedsManagedDecorations).Returns(true);
+                windowImpl.Setup(x => x.RequestedDrawnDecorations).Returns(
+                    PlatformRequestedDrawnDecoration.TitleBar | PlatformRequestedDrawnDecoration.Border);
+
+                var placementTarget = new Panel
+                {
+                    Width = 10,
+                    Height = 10,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+
+                var window = new Window(windowImpl.Object)
+                {
+                    SizeToContent = SizeToContent.Manual,
+                    Content = placementTarget,
+                };
+                window.Show();
+
+                var inset = window.TopLevelHost.DecorationInset;
+                Assert.True(inset.Top > 0, "Expected non-zero decoration inset top (title bar)");
+
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
+                var target = CreateTarget(window, popupImpl.Object);
+                target.Width = 10;
+                target.Height = 10;
+
+                ((IPopupHost)target).ConfigurePosition(
+                    new PopupPositionRequest(placementTarget, PlacementMode.Bottom));
+                target.Show();
+
+                // The popup should be placed below the placement target.
+                var popupScreenPos = popupImpl.Object.Position;
+                Assert.True(popupScreenPos.Y >= (int)(inset.Top + placementTarget.Bounds.Height),
+                    $"Popup Y ({popupScreenPos.Y}) should be >= inset.Top ({inset.Top}) + target height ({placementTarget.Bounds.Height}). " +
+                    $"If this fails, CalculateAnchorRect is not accounting for the decoration offset.");
+            }
+        }
+
+        private static PopupRoot CreateTarget(TopLevel popupParent, IPopupImpl? impl = null)
+        {
+            impl ??= popupParent.PlatformImpl!.CreatePopup()!;
 
             var result = new PopupRoot(popupParent, impl)
             {
@@ -351,8 +400,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TemplatedControlWithPopup : Avalonia.Controls.Primitives.TemplatedControl
         {
-            public static readonly StyledProperty<Control> PopupContentProperty =
-                AvaloniaProperty.Register<TemplatedControlWithPopup, Control>(nameof(PopupContent));
+            public static readonly StyledProperty<Control?> PopupContentProperty =
+                AvaloniaProperty.Register<TemplatedControlWithPopup, Control?>(nameof(PopupContent));
 
             public TemplatedControlWithPopup()
             {
@@ -364,9 +413,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     });
             }
 
-            public Popup Popup { get; private set; }
+            public Popup? Popup { get; private set; }
 
-            public Control PopupContent
+            public Control? PopupContent
             {
                 get => GetValue(PopupContentProperty);
                 set => SetValue(PopupContentProperty, value);

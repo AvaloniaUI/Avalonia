@@ -1,0 +1,255 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.EcoTrackerHomeView">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Hero Card wrapped in a clickable Button -->
+      <Button Padding="0"
+              Background="Transparent"
+              BorderThickness="0"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Stretch"
+              Margin="16,20,16,0"
+              Click="OnHeroClick">
+        <Border CornerRadius="16" ClipToBounds="True">
+          <Panel>
+
+            <!-- Gradient background -->
+            <Border>
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                  <GradientStop Color="#2E7D32" Offset="0"/>
+                  <GradientStop Color="#1B5E20" Offset="1"/>
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+
+            <!-- Decorative circle top-right -->
+            <Border Width="140" Height="140"
+                    CornerRadius="70"
+                    Background="#14FFFFFF"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,-40,-40,0"/>
+
+            <!-- Content grid -->
+            <Grid ColumnDefinitions="*,Auto" Margin="20">
+
+              <!-- Left: stats + text -->
+              <StackPanel Spacing="4" VerticalAlignment="Center">
+                <TextBlock Text="TREES SAVED"
+                           FontSize="10" FontWeight="Bold"
+                           Foreground="#A5D6A7"/>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <TextBlock Text="15"
+                             FontSize="48" FontWeight="Black"
+                             Foreground="White"/>
+                  <StackPanel VerticalAlignment="Bottom" Margin="0,0,0,10">
+                    <TextBlock Text="/20"
+                               FontSize="16" FontWeight="Medium"
+                               Foreground="#A5D6A7"/>
+                  </StackPanel>
+                </StackPanel>
+                <TextBlock Text="Keep going! 5 more to reach your goal"
+                           FontSize="12" Foreground="#A5D6A7"/>
+              </StackPanel>
+
+              <!-- Right: ring with leaf icon -->
+              <Panel Width="72" Height="72"
+                     Grid.Column="1"
+                     VerticalAlignment="Center">
+                <Border Width="72" Height="72"
+                        CornerRadius="36"
+                        BorderBrush="#3CA5D6A7"
+                        BorderThickness="5"/>
+                <PathIcon Width="32" Height="32"
+                          Data="M12 3C9 6 6 9 6 13C6 17.4 8.7 21 12 22C15.3 21 18 17.4 18 13C18 9 15 6 12 3Z"
+                          Foreground="#4CAF50"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"/>
+              </Panel>
+
+            </Grid>
+          </Panel>
+        </Border>
+      </Button>
+
+      <!-- Weekly Impact section -->
+      <StackPanel Margin="16,20,16,0" Spacing="10">
+        <TextBlock Text="WEEKLY IMPACT"
+                   FontSize="11" FontWeight="Bold"
+                   Foreground="#90A4AE"
+                   LetterSpacing="1.5"/>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+
+          <!-- Water Saved card -->
+          <Border CornerRadius="12" Background="White"
+                  Padding="14,12" HorizontalAlignment="Stretch">
+            <Grid ColumnDefinitions="Auto,*">
+              <Border Width="40" Height="40" CornerRadius="10"
+                      Background="#192196F3"
+                      VerticalAlignment="Center">
+                <PathIcon Width="20" Height="20"
+                          Data="M12,20A6,6 0 0,1 6,14C6,10 12,3.25 12,3.25C12,3.25 18,10 18,14A6,6 0 0,1 12,20Z"
+                          Foreground="#2196F3"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"/>
+              </Border>
+              <StackPanel Grid.Column="1" Margin="10,0,0,0"
+                          VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="Water Saved"
+                           FontSize="11" FontWeight="Medium"
+                           Foreground="#90A4AE"/>
+                <TextBlock Text="120 L"
+                           FontSize="18" FontWeight="Bold"
+                           Foreground="#2196F3"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- Carbon Reduced card -->
+          <Border CornerRadius="12" Background="White"
+                  Padding="14,12" HorizontalAlignment="Stretch">
+            <Grid ColumnDefinitions="Auto,*">
+              <Border Width="40" Height="40" CornerRadius="10"
+                      Background="#194CAF50"
+                      VerticalAlignment="Center">
+                <PathIcon Width="20" Height="20"
+                          Data="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"
+                          Foreground="#4CAF50"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"/>
+              </Border>
+              <StackPanel Grid.Column="1" Margin="10,0,0,0"
+                          VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="Carbon Reduced"
+                           FontSize="11" FontWeight="Medium"
+                           Foreground="#90A4AE"/>
+                <TextBlock Text="15 kg"
+                           FontSize="18" FontWeight="Bold"
+                           Foreground="#4CAF50"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+
+        </StackPanel>
+      </StackPanel>
+
+      <!-- Daily Tasks section -->
+      <StackPanel Margin="16,20,16,16" Spacing="10">
+
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Text="DAILY TASKS"
+                     FontSize="11" FontWeight="Bold"
+                     Foreground="#90A4AE"/>
+          <TextBlock Grid.Column="1"
+                     Text="3 of 5 completed"
+                     FontSize="11"
+                     Foreground="#4CAF50"/>
+        </Grid>
+
+        <!-- Task 1: completed -->
+        <Border CornerRadius="10" Background="White" Padding="12,10">
+          <Grid ColumnDefinitions="Auto,*">
+            <Border Width="24" Height="24" CornerRadius="6"
+                    Background="#4CAF50"
+                    VerticalAlignment="Center">
+              <PathIcon Width="14" Height="14"
+                        Data="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"
+                        Foreground="White"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Grid.Column="1"
+                       Text="Use reusable water bottle"
+                       FontSize="14"
+                       Foreground="#90A4AE"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"
+                       TextDecorations="Strikethrough"/>
+          </Grid>
+        </Border>
+
+        <!-- Task 2: completed -->
+        <Border CornerRadius="10" Background="White" Padding="12,10">
+          <Grid ColumnDefinitions="Auto,*">
+            <Border Width="24" Height="24" CornerRadius="6"
+                    Background="#4CAF50"
+                    VerticalAlignment="Center">
+              <PathIcon Width="14" Height="14"
+                        Data="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"
+                        Foreground="White"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Grid.Column="1"
+                       Text="Walk or bike to work"
+                       FontSize="14"
+                       Foreground="#90A4AE"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"
+                       TextDecorations="Strikethrough"/>
+          </Grid>
+        </Border>
+
+        <!-- Task 3: completed -->
+        <Border CornerRadius="10" Background="White" Padding="12,10">
+          <Grid ColumnDefinitions="Auto,*">
+            <Border Width="24" Height="24" CornerRadius="6"
+                    Background="#4CAF50"
+                    VerticalAlignment="Center">
+              <PathIcon Width="14" Height="14"
+                        Data="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"
+                        Foreground="White"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Grid.Column="1"
+                       Text="Meatless meal"
+                       FontSize="14"
+                       Foreground="#90A4AE"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"
+                       TextDecorations="Strikethrough"/>
+          </Grid>
+        </Border>
+
+        <!-- Task 4: not completed -->
+        <Border CornerRadius="10" Background="White" Padding="12,10">
+          <Grid ColumnDefinitions="Auto,*">
+            <Border Width="24" Height="24" CornerRadius="6"
+                    Background="#E0E0E0"
+                    VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="1"
+                       Text="30-min shorter shower"
+                       FontSize="14"
+                       Foreground="#1A2E1C"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- Task 5: not completed -->
+        <Border CornerRadius="10" Background="White" Padding="12,10">
+          <Grid ColumnDefinitions="Auto,*">
+            <Border Width="24" Height="24" CornerRadius="6"
+                    Background="#E0E0E0"
+                    VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="1"
+                       Text="Sort recycling"
+                       FontSize="14"
+                       Foreground="#1A2E1C"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

@@ -1,4 +1,5 @@
-﻿using Avalonia.Platform.Storage;
+﻿using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 
 namespace Avalonia.Input;
 
@@ -40,7 +41,7 @@ public static class DataTransferItemExtensions
     /// <summary>
     /// Returns a text, if available, from a <see cref="IDataTransferItem"/> instance.
     /// </summary>
-    /// <param name="dataTransferItem">The data transfer instance.</param>
+    /// <param name="dataTransferItem">The <see cref="IDataTransferItem"/> instance.</param>
     /// <returns>A string, or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.Text"/>.
     public static string? TryGetText(this IDataTransferItem dataTransferItem)
@@ -49,9 +50,18 @@ public static class DataTransferItemExtensions
     /// <summary>
     /// Returns a file, if available, from a <see cref="IDataTransferItem"/> instance.
     /// </summary>
-    /// <param name="dataTransferItem">The data transfer instance.</param>
+    /// <param name="dataTransferItem">The <see cref="IDataTransferItem"/> instance.</param>
     /// <returns>An <see cref="IStorageItem"/> (file or folder), or null if the format isn't available.</returns>
     /// <seealso cref="DataFormat.File"/>.
     public static IStorageItem? TryGetFile(this IDataTransferItem dataTransferItem)
         => dataTransferItem.TryGetValue(DataFormat.File);
+
+    /// <summary>
+    /// Returns a bitmap, if available, from a <see cref="IDataTransferItem"/> instance.
+    /// </summary>
+    /// <param name="dataTransferItem">The <see cref="IDataTransferItem"/> instance.</param>
+    /// <returns>A <see cref="Bitmap"/>, or null if the format isn't available.</returns>
+    /// <seealso cref="DataFormat.Bitmap"/>.
+    public static Bitmap? TryGetBitmap(this IDataTransferItem dataTransferItem)
+        => dataTransferItem.TryGetValue(DataFormat.Bitmap);
 }

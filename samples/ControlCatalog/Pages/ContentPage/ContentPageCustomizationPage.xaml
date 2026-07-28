@@ -1,0 +1,106 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ContentPageCustomizationPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Background" FontWeight="SemiBold" />
+        <ComboBox x:Name="BackgroundCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnBackgroundChanged">
+          <ComboBoxItem Content="Default" />
+          <ComboBoxItem Content="Light Blue" />
+          <ComboBoxItem Content="Light Green" />
+          <ComboBoxItem Content="Light Purple" />
+          <ComboBoxItem Content="Warm White" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Horizontal Content Alignment" FontWeight="SemiBold" />
+        <ComboBox x:Name="HAlignCombo"
+                  SelectedIndex="3"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnHAlignChanged">
+          <ComboBoxItem Content="Left" />
+          <ComboBoxItem Content="Center" />
+          <ComboBoxItem Content="Right" />
+          <ComboBoxItem Content="Stretch" />
+        </ComboBox>
+
+        <TextBlock Text="Vertical Content Alignment" FontWeight="SemiBold" />
+        <ComboBox x:Name="VAlignCombo"
+                  SelectedIndex="3"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnVAlignChanged">
+          <ComboBoxItem Content="Top" />
+          <ComboBoxItem Content="Center" />
+          <ComboBoxItem Content="Bottom" />
+          <ComboBoxItem Content="Stretch" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Padding" FontWeight="SemiBold" />
+        <Slider x:Name="PaddingSlider"
+                Minimum="0"
+                Maximum="48"
+                Value="0"
+                TickFrequency="8"
+                IsSnapToTickEnabled="True"
+                ValueChanged="OnPaddingChanged" />
+        <TextBlock x:Name="PaddingLabel"
+                   Text="0 px"
+                   HorizontalAlignment="Center"
+                   Opacity="0.7" />
+
+        <Separator />
+
+        <TextBlock Text="About" FontWeight="SemiBold" />
+        <TextBlock Text="• HorizontalContentAlignment / VerticalContentAlignment position the content inside the page area."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock Text="• Padding adds space between the page border and its content presenter."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock Text="• Background accepts any Avalonia brush, including gradients."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <ContentPage x:Name="SamplePage"
+                   Header="Customization"
+                   HorizontalContentAlignment="Stretch"
+                   VerticalContentAlignment="Stretch">
+        <Border Background="#E0E0E0"
+                CornerRadius="8"
+                Padding="24"
+                Width="180"
+                Height="100">
+          <StackPanel Spacing="4"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
+            <TextBlock Text="Content Area"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Adjust alignment and padding"
+                       FontSize="12"
+                       Opacity="0.6"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center" />
+          </StackPanel>
+        </Border>
+      </ContentPage>
+    </Border>
+  </DockPanel>
+</UserControl>

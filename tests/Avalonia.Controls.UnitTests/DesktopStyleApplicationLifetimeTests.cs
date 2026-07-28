@@ -28,7 +28,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Set_ExitCode_After_Shutdown()
         {
-            using (UnitTestApplication.Start(new TestServices(dispatcherImpl: new ManagedDispatcherImpl(null))))
+            using (UnitTestApplication.Start(new TestServices()))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())    
             {
                 lifetime.SetupCore(Array.Empty<string>());
@@ -300,9 +300,9 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
             windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(screens.Object);
             
             var services = TestServices.StyledWindow.With(
@@ -317,7 +317,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Show();
                 Assert.Equal(1, lifetime.Windows.Count);
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 Assert.Empty(lifetime.Windows);
             }
@@ -326,7 +326,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Allow_Canceling_Shutdown_Via_ShutdownRequested_Event()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(dispatcherImpl: new ManagedDispatcherImpl(null))))
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With()))
             using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
@@ -443,7 +443,7 @@ namespace Avalonia.Controls.UnitTests
                 lifetime.Exit += (_, _) => Assert.Fail("lifetime.Exit was called.");
                 Dispatcher.UIThread.ShutdownStarted += UiThreadOnShutdownStarted;
 
-                static void UiThreadOnShutdownStarted(object sender, EventArgs e)
+                static void UiThreadOnShutdownStarted(object? sender, EventArgs e)
                 {
                     Assert.Fail("Dispatcher.UIThread.ShutdownStarted was called.");
                 }
@@ -475,7 +475,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Shutdown_NotCancellable_By_Preventing_Window_Close()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow.With(dispatcherImpl: CreateDispatcherWithInstantMainLoop())))
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With()))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.SetupCore(Array.Empty<string>());

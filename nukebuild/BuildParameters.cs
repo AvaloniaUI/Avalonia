@@ -21,9 +21,6 @@ public partial class Build
     [Parameter(Name = "force-nuget-version")]
     public string? ForceNugetVersion { get; set; }
 
-    [Parameter(Name = "skip-previewer")]
-    public bool SkipPreviewer { get; set; }
-
     [Parameter(Name = "force-api-baseline")]
     public string? ForceApiValidationBaseline { get; set; }
 
@@ -37,7 +34,6 @@ public partial class Build
     {
         public string Configuration { get; }
         public bool SkipTests { get; }
-        public bool SkipPreviewer {get;}
         public string MainRepo { get; }
         public string MasterBranch { get; }
         public string? RepositoryName { get; }
@@ -64,6 +60,7 @@ public partial class Build
         public AbsolutePath ArtifactsDir { get; }
         public AbsolutePath NugetIntermediateRoot { get; }
         public AbsolutePath NugetRoot { get; }
+        public AbsolutePath SbomRoot { get; }
         public AbsolutePath ZipRoot { get; }
         public AbsolutePath TestResultsRoot { get; }
         public string DirSuffix { get; }
@@ -81,7 +78,6 @@ public partial class Build
             // ARGUMENTS
             Configuration = b.Configuration ?? "Release";
             SkipTests = b.SkipTests;
-            SkipPreviewer = b.SkipPreviewer;
 
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
@@ -144,6 +140,7 @@ public partial class Build
             ArtifactsDir = RootDirectory / "artifacts";
             NugetRoot = ArtifactsDir / "nuget";
             NugetIntermediateRoot = RootDirectory / "build-intermediate" / "nuget";
+            SbomRoot = ArtifactsDir / "sbom";
             ZipRoot = ArtifactsDir / "zip";
             TestResultsRoot = ArtifactsDir / "test-results";
             BuildDirs = RootDirectory.GlobDirectories("**/bin")

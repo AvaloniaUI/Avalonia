@@ -2,7 +2,7 @@
 
 namespace ControlCatalog.Pages
 {
-    public partial class ContainerQueryPage : UserControl
+    public partial class ContainerQueryPage : ContentPage
     {
         public ContainerQueryPage()
         {

@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <av:ImportTypes>Types.xml</av:ImportTypes>
+  <!--
+      org.a11y.atspi.Text:
+      @short_description: An interface implemented by objects which place
+      textual information onscreen.
+    -->
+  <interface name="org.a11y.atspi.Text">
+
+    <!--
+        Version: The version of this interface.
+
+        This property is incremented by one every time a new method, signal, or property
+        is added to this interface.
+    -->
+    <property name="version" type="u" access="read"/>
+
+    <!--
+        CharacterCount: The total number of characters in a text object.
+        This may differ from the number of bytes that would be returned
+        if the text is fetched in cases where characters are expressed
+        using multiple bytes.
+    -->
+    <property name="CharacterCount" type="i" access="read"/>
+
+    <!--
+        CaretOffset: The current character offset of the text caret in a
+        text object.
+    -->
+    <property name="CaretOffset" type="i" access="read"/>
+
+    <!--
+        GetStringAtOffset:
+	
+        @offset: The character offset for which the text is being requested.
+
+        @granularity: The text granularity. Can be one of the following:
+        - 0 (ATSPI_TEXT_GRANULARITY_CHAR): Granularity is defined by the
+          boundaries between characters (including non-printing characters)
+        - 1 (ATSPI_TEXT_GRANULARITY_WORD): Granularity is defined by the
+          boundaries of a word, starting at the beginning of the current
+          word and finishing at the beginning of the following one, if present.
+        - 2 (ATSPI_TEXT_GRANULARITY_SENTENCE): Granularity is defined by the
+          boundaries of a sentence, starting at the beginning of the current
+          sentence and finishing at the beginning of the following one,
+          if present.
+        - 3 (ATSPI_TEXT_GRANULARITY_LINE): Granularity is defined by the
+          boundaries of a line, starting at the beginning of the current
+          line and finishing at the beginning of the following one, if present.
+        - 4 (ATSPI_TEXT_GRANULARITY_PARAGRAPH): Granularity is defined by
+          the boundaries of a paragraph, starting at the beginning of the
+          current paragraph and finishing at the beginning of the following one, if present.
+
+        @startOffset: The starting character offset of the string being
+        returned.
+
+        @endOffset: The ending character offset of the string being
+        returned.
+
+        Gets a portion of the text exposed through a text object according
+        to a given @offset and a specific @granularity, along with the
+        start and end offsets defining the boundaries of such a portion
+        of text.
+
+        If @granularity is ATSPI_TEXT_GRANULARITY_CHAR the character at the
+        offset is returned.
+
+        If @granularity is ATSPI_TEXT_GRANULARITY_WORD the returned string
+        is from the word start at or before the offset to the word start after
+        the offset.
+
+        The returned string will contain the word at the offset if the offset
+        is inside a word and will contain the word before the offset if the
+        offset is not inside a word.
+
+        If @granularity is ATSPI_TEXT_GRANULARITY_SENTENCE the returned string
+        is from the sentence start at or before the offset to the sentence
+        start after the offset.
+
+        The returned string will contain the sentence at the offset if the offset
+        is inside a sentence and will contain the sentence before the offset
+        if the offset is not inside a sentence.
+
+        If @granularity is ATSPI_TEXT_GRANULARITY_LINE the returned string
+        is from the line start at or before the offset to the line
+        start after the offset.
+
+        If @granularity is ATSPI_TEXT_GRANULARITY_PARAGRAPH the returned strin
+        is from the start of the paragraph at or before the offset to the start
+        of the following paragraph after the offset.
+    -->
+    <method name="GetStringAtOffset">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="in" name="granularity" type="u"/>
+      <arg direction="out" name="text" type="s"/>
+      <arg direction="out" name="startOffset" type="i"/>
+      <arg direction="out" name="endOffset" type="i"/>
+    </method>
+
+    <!--
+        GetText:
+
+        @startOffset: a integer indicating the start of the desired text
+        range.
+
+        @endOffset: a integer indicating the first character past the desired
+        range.
+
+        Gets a range of text from a text object.  The number of bytes in
+        the returned string may exceed either endOffset or
+        start_offset, since UTF-8 is a variable-width encoding.
+
+        Returns: a text string containing characters from @startOffset
+        to @endOffset-1, inclusive, encoded as UTF-8.
+    -->
+    <method name="GetText">
+      <arg direction="in" name="startOffset" type="i"/>
+      <arg direction="in" name="endOffset" type="i"/>
+      <arg direction="out" type="s"/>
+    </method>
+
+    <!--
+        SetCaretOffset:
+
+        @offset: the offset to which the text caret is to be moved.
+
+        Moves the text caret to a given position.
+
+        Returns: true if successful, false otherwise.
+    -->
+    <method name="SetCaretOffset">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        GetTextBeforeOffset:
+
+        @offset: a integer indicating the offset from which the delimiter
+        search is based.
+
+        @type: Indicates whether the desired text string is a word, sentence,
+        line, or attribute run. See GetTextAtOffset for more information.
+
+        @startOffset: (out) The beginning character offset of the returned
+        string.
+
+        @endOffset: (out) The ending character offset of the returned
+        string.
+
+        Gets delimited text from a text object which precedes a given text
+        offset.
+
+        Returns: a UTF-8 string representing the delimited text, both of
+        whose delimiting boundaries are before the current offset, or an
+        empty string if no such text exists.
+
+        Deprecated: Please use GetStringAtOffset instead.
+    -->
+    <method name="GetTextBeforeOffset">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="in" name="type" type="u"/>
+      <arg direction="out" name="text" type="s"/>
+      <arg direction="out" name="startOffset" type="i"/>
+      <arg direction="out" name="endOffset" type="i"/>
+    </method>
+
+    <!--
+        GetTextAtOffset:
+
+        @offset: a integer indicating the offset from which the delimiter
+        search is based.
+
+        @type: Indicates whether the desired text string is a word, sentence,
+        line, or attribute run. Should have one of the following values:
+
+        0 (ATSPI_TEXT_BOUNDARY_CHAR): The text instance is bounded by this
+        character only. Start and end offsets differ by one, by definition,
+        for this value.
+
+        1 (ATSPI_TEXT_BOUNDARY_WORD_START): Boundary condition is start of
+        a word; i.e. range is from start of one word to the start of another
+        word.
+
+        2 (ATSPI_TEXT_BOUNDARY_WORD_END): Boundary condition is the end of
+        a word; i.e. range is from the end of one word to the end of another.
+        Some locales may not distinguish between words and characters or
+        glyphs. In particular, those locales which use wholly or partially
+        ideographic character sets. In these cases, characters may be
+        returned in lieu of multi-character substrings.
+
+        3 (ATSPI_TEXT_BOUNDARY_SENTENCE_START: Boundary condition is start
+        of a sentence, as determined by the application. Some locales or
+        character sets may not include explicit sentence delimiters, so this
+        boundary type can not always be honored. Some locales will return lines
+        of text instead of grammatical sentences.
+
+        4 (ATSPI_TEXT_BOUNDARY_SENTENCE_END): Boundary condition is end of
+        a sentence, as determined by the application, including the
+        sentence-delimiting character, for instance '.' Some locales or
+        character sets may not include explicit sentence delimiters, so
+        this boundary type can not always be honored. Some locales will
+        return lines of text instead of grammatical sentences.
+
+        5 (ATSPI_TEXT_BOUNDARY_LINE_START): Boundary condition is the start
+        of a line; i.e. range is from start of one line to the start of
+        another.  This generally means that an end-of-line character will
+        appear at the end of the range.
+
+        6 (ATSPI_TEXT_BOUNDARY_LINE_END): Boundary condition is the end of
+        a line; i.e. range is from start of one line to the start of another.
+        This generally means that an end-of-line character will be the
+        first character of the range.
+
+        @startOffset: (out) The beginning character offset of the returned
+        string.
+
+        @endOffset: (out) The ending character offset of the returned
+        string.
+
+        Gets delimited text from a text object which includes a given text
+        offset.
+
+        Returns: a UTF-8 string representing the delimited text, whose
+        delimiting boundaries bracket the current offset, or an empty string
+        if no such text exists.
+
+        Deprecated: Please use GetStringAtOffset instead.
+    -->
+    <method name="GetTextAtOffset">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="in" name="type" type="u"/>
+      <arg direction="out" name="text" type="s"/>
+      <arg direction="out" name="startOffset" type="i"/>
+      <arg direction="out" name="endOffset" type="i"/>
+    </method>
+
+    <!--
+        GetTextAfterOffset:
+
+        @offset: a integer indicating the offset from which the delimiter
+        search is based.
+
+        @type: Indicates whether the desired text string is a word, sentence,
+        line, or attribute run. See GetTextAtOffset for more information.
+
+        @startOffset: (out) The beginning character offset of the returned
+        string.
+
+        @endOffset: (out) The ending character offset of the returned
+        string.
+
+        Gets delimited text from a text object which follows a given text
+        offset.
+
+        Returns: a UTF-8 string representing the delimited text, both of
+        whose delimiting boundaries are after or inclusive of the current
+        offset, or an empty string if no such text exists.
+
+        Deprecated: Please use GetStringAtOffset instead.
+    -->
+    <method name="GetTextAfterOffset">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="in" name="type" type="u"/>
+      <arg direction="out" name="text" type="s"/>
+      <arg direction="out" name="startOffset" type="i"/>
+      <arg direction="out" name="endOffset" type="i"/>
+    </method>
+
+    <!--
+        GecharacterAtOffset:
+
+        @offset: an integer indicating the text offset where the desired
+        character is located.
+
+        Gets the character at a given offset for a text object.
+
+        Returns: an integer  representing the UCS-4 unicode code point of
+        the given character, or 0xFFFFFFFF if the character in question
+        cannot be represented in the UCS-4 encoding.
+    -->
+    <method name="GetCharacterAtOffset">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="out" type="i"/>
+    </method>
+
+    <!--
+        GetAttributeValue:
+
+        @offset: The character offset at which to query the attribute.
+        @attributeName: The attribute to query.
+
+        Gets the value of a named attribute at a given offset.
+
+        Returns: the value of a given attribute at the given offset, or an
+        empty string if not present.
+    -->
+    <method name="GetAttributeValue">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="in" name="attributeName" type="s"/>
+      <arg direction="out" type="s"/>
+    </method>
+
+    <!--
+        GetAttributes:
+
+        @offset: an integer indicating the offset from which the attribute
+        search is based.
+
+        @startOffset: (out): an integer pointer indicating the start of
+        the desired text range.
+
+        @endOffset: (out): an integer pointer indicating the first character
+        past the desired range.
+
+        Gets the attributes applied to a range of text from a text object.
+        The text attributes correspond to CSS attributes where possible.
+
+        Returns: a dictionary of attribute name/value pairs representing
+        the attributes at the given offset, encoded as UTF-8.
+    -->
+    <method name="GetAttributes">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="out" name="attributes" type="a{ss}">
+        <av:TypeDefinition>
+          <av:Dictionary Type="AtSpiAttributeSet"/>
+        </av:TypeDefinition>
+      </arg>
+      <arg direction="out" name="startOffset" type="i"/>
+      <arg direction="out" name="endOffset" type="i"/>
+    </method>
+
+    <!--
+        GetDefaultAttributes:
+
+        Gets the default attributes applied to a text object. The text
+        attributes correspond to CSS attributes where possible. The
+        combination of this attribute set and the attributes reported by
+        GetAttributes describes the entire set of text attributes over a
+        range.
+
+        Returns: A dictionary of key/value pairs containing the default
+        attributes applied to a text object, (exclusive of explicitly-set
+        attributes), encoded as UTF-8.
+    -->
+    <method name="GetDefaultAttributes">
+      <arg direction="out" type="a{ss}">
+        <av:TypeDefinition>
+          <av:Dictionary Type="AtSpiAttributeSet"/>
+        </av:TypeDefinition>
+      </arg>
+    </method>
+
+    <!--
+        GetCharacterExtents:
+
+        @offset: an integer indicating the offset of the text character for
+        whom boundary information is requested.
+
+        @coordType: Specifies the coordinate system to use for the return value.
+        See the org.a11y.Atspi.Component documentation for a description
+        of the values that can be specified.
+
+        Gets a bounding box containing the glyph representing
+        the character at a particular text offset.
+        The returned values are meaningful only if the Text has both
+        STATE_VISIBLE and STATE_SHOWING.
+    -->
+    <method name="GetCharacterExtents">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="in" name="coordType" type="u"/>
+      <arg direction="out" name="x" type="i"/>
+      <arg direction="out" name="y" type="i"/>
+      <arg direction="out" name="width" type="i"/>
+      <arg direction="out" name="height" type="i"/>
+    </method>
+
+    <!--
+        GetOffsetAtPoint:
+
+        @x: the x coordinate of the point to be queried.
+
+        @y: the y coordinate of the point to be queried.
+
+        @coordType: Specifies the coordinate system to use for the return value.
+        See the org.a11y.Atspi.Component documentation for a description
+        of the values that can be specified.
+
+        Gets the character offset into the text at a given point.
+
+        Returns: the offset (as an integer) at the point (@x, @y)
+        in the specified coordinate system.
+    -->
+    <method name="GetOffsetAtPoint">
+      <arg direction="in" name="x" type="i"/>
+      <arg direction="in" name="y" type="i"/>
+      <arg direction="in" name="coordType" type="u"/>
+      <arg direction="out" type="i"/>
+    </method>
+
+    <!--
+        GetNSelections:
+
+        Gets the number of active non-contiguous selections for a text
+        object.
+
+        Returns: an integer indicating the current number of non-contiguous
+        text selections active within a text object.
+    -->
+    <method name="GetNSelections">
+      <arg direction="out" type="i"/>
+    </method>
+
+    <!--
+        GetSelection:
+
+        @selectionNum: an integer indicating which selection to query.
+
+        @startOffset: (out): The starting character offset of the given
+        selection.
+
+        @endOffset: (out): The ending character offset of the given
+        selection.
+
+        Gets the bounds of the @selectionNum-th active text selection for
+        a Text object.
+    -->
+    <method name="GetSelection">
+      <arg direction="in" name="selectionNum" type="i"/>
+      <arg direction="out" name="startOffset" type="i"/>
+      <arg direction="out" name="endOffset" type="i"/>
+    </method>
+
+    <!--
+        AddSelection:
+
+        @startOffset: the starting character offset of the desired new
+        selection.
+
+        @endOffset: the offset of the first character after the new
+        selection.
+
+        Selects some text (adds a text selection) in a text object.
+
+        Returns: true if successful, false otherwise.
+    -->
+    <method name="AddSelection">
+      <arg direction="in" name="startOffset" type="i"/>
+      <arg direction="in" name="endOffset" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        RemoveSelection:
+
+        @selectionNum: a integer indicating which text selection to remove.
+
+        De-selects a text selection.
+ *
+        Returns: true if successful, false otherwise.
+    -->
+    <method name="RemoveSelection">
+      <arg direction="in" name="selectionNum" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        SetSelection:
+
+        @selectionNum: a zero-offset index indicating which text selection
+        to modify.
+
+        @startOffset: an integer indicating the new starting offset for the
+        selection.
+
+        @endOffset: an integer indicating the desired new offset of the
+        first character after the selection.
+
+        Changes the bounds of an existing text selection.
+
+        Returns: true if successful, false otherwise.
+    -->
+    <method name="SetSelection">
+      <arg direction="in" name="selectionNum" type="i"/>
+      <arg direction="in" name="startOffset" type="i"/>
+      <arg direction="in" name="endOffset" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        GetRangeExtents:
+
+        @startOffset: an integer indicating the offset of the first text
+        character for whom boundary information is requested.
+
+        @endOffset: a integer indicating the offset of the text character
+        after the last character for whom boundary information is requested.
+
+        @coordType: Specifies the coordinate system to use for the return value.
+        See the org.a11y.Atspi.Component documentation for a description
+        of the values that can be specified.
+
+        Gets the bounding box for text within a range in a text object.
+        The returned values are meaningful only if the Text has both
+        STATE_VISIBLE and STATE_SHOWING.
+    -->
+    <method name="GetRangeExtents">
+      <arg direction="in" name="startOffset" type="i"/>
+      <arg direction="in" name="endOffset" type="i"/>
+      <arg direction="in" name="coordType" type="u"/>
+      <arg direction="out" name="x" type="i"/>
+      <arg direction="out" name="y" type="i"/>
+      <arg direction="out" name="width" type="i"/>
+      <arg direction="out" name="height" type="i"/>
+    </method>
+
+    <!--
+        GetBoundedRanges:
+
+        @x: the 'starting' x coordinate of the bounding box.
+
+        @y: the 'starting' y coordinate of the bounding box.
+
+        @width: the x extent of the bounding box.
+
+        @height: the y extent of the bounding box.
+
+        @coordType: Specifies the coordinate system that should be used to
+        interpret @x and @y.  See the org.a11y.Atspi.Component documentation
+        for a description of the values that can be specified.
+
+        @xClipType: Indicates how to treat characters that intersect the
+        bounding box's x extents.
+
+        @yClipType: Indicates how to treat characters that intersect the
+        bounding box's y extents.
+
+        @xClipType and yClipType can have the following values:
+        - 0 (ATSPI_TEXT_CLIP_NONE): No characters/glyphs are omitted.
+        - 1 (ATSPI_TEXT_CLIP_MIN): Characters/glyphs clipped by the minimum
+          coordinate are omitted.
+        - 2 (ATSPI_TEXT_CLIP_MAX): Characters/glyphs which intersect the
+          maximum coordinate are omitted.
+        - 3 (ATSPI_TEXT_CLIP_BOTH): Only glyphs falling entirely within the
+          region bounded by min and max are retained.
+
+        Gets the ranges of text from an Text object which lie within the
+        bounds defined by (@x, @y) and (@x+@width, @y+@height).
+
+        Returns an array of structures with the following elements:
+        - The starting character offset of the range.
+        - The ending character offset of the range.
+        - The contents of the range.
+        - A variant. Currently unused (if this specification is revisited,
+          then this should probably be removed).
+    -->
+    <method name="GetBoundedRanges">
+      <arg direction="in" name="x" type="i"/>
+      <arg direction="in" name="y" type="i"/>
+      <arg direction="in" name="width" type="i"/>
+      <arg direction="in" name="height" type="i"/>
+      <arg direction="in" name="coordType" type="u"/>
+      <arg direction="in" name="xClipType" type="u"/>
+      <arg direction="in" name="yClipType" type="u"/>
+      <arg direction="out" type="a(iisv)">
+        <av:TypeDefinition>
+          <av:List>
+            <av:Struct Type="AtSpiTextRange"/>
+          </av:List>
+        </av:TypeDefinition>
+      </arg>
+    </method>
+
+    <!--
+        GetAttributeRun:
+
+        @offset: an integer indicating the offset from which the attribute
+        search is based.
+
+        @includeDefaults: a #bool that, when set as false, indicates the
+        call should only return those attributes which are explicitly set
+        on the current attribute run, omitting any attributes which are
+        inherited from the default values.
+
+        Gets a set of attributes applied to a range of text from a text
+        object, optionally including its 'default' attributes.
+
+        Returns a dictionary of key/value pairs specifying the
+        attributes.
+    -->
+    <method name="GetAttributeRun">
+      <arg direction="in" name="offset" type="i"/>
+      <arg direction="in" name="includeDefaults" type="b"/>
+      <arg direction="out" name="attributes" type="a{ss}">
+        <av:TypeDefinition>
+          <av:Dictionary Type="AtSpiAttributeSet"/>
+        </av:TypeDefinition>
+      </arg>
+      <arg direction="out" name="startOffset" type="i"/>
+      <arg direction="out" name="endOffset" type="i"/>
+    </method>
+
+    <!--
+        GetDefaultAttributeSet:
+
+        Returns the default attributes for the text object.
+    -->
+    <method name="GetDefaultAttributeSet">
+      <arg direction="out" type="a{ss}">
+        <av:TypeDefinition>
+          <av:Dictionary Type="AtSpiAttributeSet"/>
+        </av:TypeDefinition>
+      </arg>
+    </method>
+
+    <!--
+        ScrollSubstringTo:
+
+        @startOffset: a integer indicating the start of the desired text
+        range.
+
+        @endOffset: a integer indicating the first character past the
+       desired range.
+
+        @type: Indicates where the object should be placed on the screen,
+        as follows:
+        - 0 (ATSPI_SCROLL_TOP_LEFT): Scroll the object to the top left corner
+          of the window.
+        - 1 (ATSPI_SCROLL_BOTTOM_RIGHT): Scroll the object to the bottom right
+          corner of the window.
+        - 2 (ATSPI_SCROLL_TOP_EDGE): Scroll the object to the top edge of
+          the window.
+        - 3 (ATSPI_SCROLL_BOTTOM_EDGE): Scroll the object to the bottom edge
+          of the window.
+        - 4 (ATSPI_SCROLL_LEFT_EDGE: Scroll the object to the left edge of the
+          window.
+        - 5 (ATSPI_SCROLL_RIGHT_EDGE): Scroll the object to the right edge of
+          the window.
+        - 6 (ATSPI_SCROLL_ANYWHERE): Scroll the object to application-dependent
+          position on the window.
+
+        Scrolls whatever container of the Text text range so it becomes
+        visible on the screen.
+
+        Returns: true if successful, false otherwise.
+    -->
+    <method name="ScrollSubstringTo">
+      <arg direction="in" name="startOffset" type="i"/>
+      <arg direction="in" name="endOffset" type="i"/>
+      <arg direction="in" name="type" type="u"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        ScrollSubstringToPoint:
+
+        @startOffset: an integer indicating the start of the desired text
+        range.
+
+        @endOffset: an integer indicating the first character past the
+        desired range.
+
+        @coordType: a CoordType indicating whether the coordinates are relative to
+        the screen, to the window, or to the parent object. See the
+        documentation for org.a11y.Atspi.Component for a description of
+        the allowed values.
+
+        @x: the x coordinate of the point to reach
+
+        @y: the y coordinate of the point to reach
+
+        Scrolls whatever container of the text range so it becomes
+        visible on the screen at a given position.
+
+        Returns: true if successful, false otherwise.
+    -->
+    <method name="ScrollSubstringToPoint">
+      <arg direction="in" name="startOffset" type="i"/>
+      <arg direction="in" name="endOffset" type="i"/>
+      <arg direction="in" name="coordType" type="u"/>
+      <arg direction="in" name="x" type="i"/>
+      <arg direction="in" name="y" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+  </interface>
+</node>

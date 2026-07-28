@@ -1,8 +1,10 @@
-﻿using System.Runtime.InteropServices.JavaScript;
+﻿using System.IO;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Storage;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 
 namespace Avalonia.Browser;
@@ -13,8 +15,17 @@ internal static class BrowserDataTransferHelper
     {
         var formatStrings = InputHelper.GetReadableDataItemFormats(readableDataItem);
         var formats = new DataFormat[formatStrings.Length];
+        var hasSupportedImage = false;
         for (var i = 0; i < formatStrings.Length; ++i)
-            formats[i] = BrowserDataFormatHelper.ToDataFormat(formatStrings[i]);
+        {
+            var formatString = formatStrings[i];
+            hasSupportedImage = formatString is "image/png";
+            formats[i] = BrowserDataFormatHelper.ToDataFormat(formatString);
+        }
+
+        if (hasSupportedImage)
+            formats = [..formats, DataFormat.Bitmap];
+
         return formats;
     }
 
@@ -45,6 +56,17 @@ internal static class BrowserDataTransferHelper
                 byte[] bytes => Encoding.UTF8.GetString(bytes),
                 _ => null
             };
+        }
+
+        if (DataFormat.Bitmap.Equals(format))
+        {
+            if (data is byte[] bytes)
+            {
+                using var stream = new MemoryStream(bytes);
+                return new Bitmap(stream);
+            }
+
+            return null;
         }
 
         if (format is DataFormat<byte[]>)

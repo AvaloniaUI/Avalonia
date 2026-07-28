@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="WinUIEmbedSample.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="using:Avalonia.WinUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="WinUI + Avalonia side by side">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: native WinUI controls -->
+        <Border Grid.Column="0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            <ScrollViewer Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="WinUI"
+                               FontSize="22"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,4" />
+                  
+                    <Button x:Name="WinUiButton"
+                            Content="WinUI button"
+                            HorizontalAlignment="Stretch"
+                            Click="WinUiButton_Click" />
+                    <TextBlock x:Name="WinUiClickCount" Text="Clicked 0 times" />
+
+                    <Slider x:Name="WinUiSlider"
+                            Minimum="0"
+                            Maximum="100"
+                            Value="25"
+                            ValueChanged="WinUiSlider_ValueChanged" />
+                    <TextBlock x:Name="WinUiSliderValue" Text="Slider: 25" />
+
+                    <TextBox PlaceholderText="Type something…"
+                             Text="Hello from WinUI" />
+
+                    <ToggleSwitch Header="ToggleSwitch" IsOn="True" />
+
+                    <TextBlock Text="Drag source (native WinUI baseline)"
+                               FontWeight="SemiBold"
+                               Margin="0,16,0,0" />
+                    <TextBlock Text="Drag the box below — payload: 'Hello from WinUI'. Drop into Notepad, this TextBox, or the Avalonia drop target. Use this to compare against the Avalonia drag source."
+                               TextWrapping="Wrap"
+                               Opacity="0.7"
+                               FontSize="12" />
+                    <Border x:Name="WinUiDragSource"
+                            CanDrag="True"
+                            Height="40"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="8"
+                            DragStarting="WinUiDragSource_DragStarting"
+                            BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                            Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+                        <TextBlock Text="Drag me (native WinUI)"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <TextBlock Text="Theme" Margin="0,8,0,0" />
+                    <ComboBox x:Name="WinUiThemeCombo"
+                              SelectedIndex="2"
+                              HorizontalAlignment="Stretch"
+                              SelectionChanged="WinUiThemeCombo_SelectionChanged">
+                        <x:String>Light</x:String>
+                        <x:String>Dark</x:String>
+                        <x:String>System</x:String>
+                    </ComboBox>
+
+                    <TextBlock Text="Automation diagnostics"
+                               FontWeight="SemiBold"
+                               Margin="0,16,0,0" />
+                    <TextBlock Text="Verifies the WinUI automation peer over the Avalonia content. Click Probe peer at different lifecycle points to confirm reachability; the scale readout updates live."
+                               TextWrapping="Wrap"
+                               Opacity="0.7"
+                               FontSize="12" />
+                    <Button x:Name="ProbePeerButton"
+                            Content="Probe peer + log children"
+                            HorizontalAlignment="Stretch"
+                            Click="ProbePeerButton_Click" />
+                    <Button x:Name="ProbeDeepButton"
+                            Content="Probe deep (walk full tree)"
+                            HorizontalAlignment="Stretch"
+                            Click="ProbeDeepButton_Click" />
+                    <Button x:Name="ProbeWorkerButton"
+                            Content="Probe deep on worker thread"
+                            HorizontalAlignment="Stretch"
+                            Click="ProbeWorkerButton_Click" />
+                    <TextBlock x:Name="ScaleReadout"
+                               Text="Scales: (waiting for Loaded)"
+                               FontFamily="Consolas"
+                               FontSize="12"
+                               TextWrapping="Wrap" />
+                    <TextBox x:Name="DiagnosticsLog"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             FontFamily="Consolas"
+                             FontSize="11"
+                             Height="160"
+                             Text="" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Right: Avalonia content embedded via AvaloniaSwapChainPanel -->
+        <avalonia:AvaloniaSwapChainPanel Grid.Column="1" x:Name="AvaloniaPanel" />
+    </Grid>
+</Window>

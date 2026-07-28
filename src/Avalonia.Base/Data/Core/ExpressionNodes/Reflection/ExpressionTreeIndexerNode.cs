@@ -16,6 +16,7 @@ internal sealed class ExpressionTreeIndexerNode : CollectionNodeBase, ISettableN
     private readonly Delegate _getDelegate;
     private readonly Delegate _firstArgumentDelegate;
 
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
     public ExpressionTreeIndexerNode(IndexExpression expression)
     {
         var valueParameter = Expression.Parameter(expression.Type);

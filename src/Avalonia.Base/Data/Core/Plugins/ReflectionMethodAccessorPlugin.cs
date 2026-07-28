@@ -7,6 +7,7 @@ using System.Reflection;
 namespace Avalonia.Data.Core.Plugins
 {
     [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
     internal class ReflectionMethodAccessorPlugin : IPropertyAccessorPlugin
     {
         private readonly Dictionary<(Type, string), MethodInfo?> _methodLookup =
@@ -81,6 +82,7 @@ namespace Avalonia.Data.Core.Plugins
             return found;
         }
 
+        [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
         private sealed class Accessor : PropertyAccessorBase
         {
             public Accessor(WeakReference<object?> reference, MethodInfo method)

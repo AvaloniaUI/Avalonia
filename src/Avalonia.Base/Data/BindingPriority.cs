@@ -46,9 +46,6 @@ namespace Avalonia.Data
         /// <summary>
         /// The value is uninitialized.
         /// </summary>
-        Unset = int.MaxValue,
-
-        [Obsolete("Use Template priority"), EditorBrowsable(EditorBrowsableState.Never)]
-        TemplatedParent = Template,
+        Unset = int.MaxValue
     }
 }

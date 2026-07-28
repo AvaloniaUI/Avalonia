@@ -6,6 +6,7 @@ using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding.Offscreen;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 
@@ -19,7 +20,6 @@ namespace Avalonia.DesignerSupport
         public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath, double renderScaling)
         {
             Window window;
-            Control control;
             using (PlatformManager.DesignerMode())
             {
                 var loader = AvaloniaLocator.Current.GetRequiredService<AvaloniaXamlLoader.IRuntimeXamlLoader>();
@@ -45,60 +45,9 @@ namespace Avalonia.DesignerSupport
                     DesignMode = true,
                     UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue) && parsedValue
                 });
-                var style = loaded as IStyle;
-                var resources = loaded as ResourceDictionary;
-                if (style != null)
-                {
-                    var substitute = Design.GetPreviewWith((AvaloniaObject)style);
-                    if (substitute != null)
-                    {
-                        substitute.Styles.Add(style);
-                        control = substitute;
-                    }
-                    else
-                        control = new StackPanel
-                        {
-                            Children =
-                            {
-                                new TextBlock {Text = "Styles can't be previewed without Design.PreviewWith. Add"},
-                                new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
-                                new TextBlock {Text = "</Design.PreviewWith>"},
-                                new TextBlock {Text = "before setters in your first Style"}
-                            }
-                        };
-                }
-                else if (resources != null)
-                {
-                    var substitute = Design.GetPreviewWith(resources);
-                    if (substitute != null)
-                    {
-                        substitute.Resources.MergedDictionaries.Add(resources);
-                        control = substitute;
-                    }
-                    else
-                        control = new StackPanel
-                        {
-                            Children =
-                            {
-                                new TextBlock {Text = "ResourceDictionaries can't be previewed without Design.PreviewWith. Add"},
-                                new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
-                                new TextBlock {Text = "</Design.PreviewWith>"},
-                                new TextBlock {Text = "in your resource dictionary"}
-                            }
-                        };
-                }
-                else if (loaded is Application)
-                    control = new TextBlock { Text = "This file cannot be previewed in design view" };
-                else
-                    control = (Control)loaded;
 
-                window = control as Window;
-                if (window == null)
-                {
-                    window = new Window() { Content = (Control)control };
-                }
+                var control = Design.CreatePreviewWithControl(loaded);
+                window = control as Window ?? new Window { Content = control };
 
                 if (window.PlatformImpl is OffscreenTopLevelImplBase offscreenImpl)
                     offscreenImpl.RenderScaling = renderScaling;

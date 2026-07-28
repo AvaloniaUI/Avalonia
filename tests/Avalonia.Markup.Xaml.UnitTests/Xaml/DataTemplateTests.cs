@@ -28,11 +28,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <ContentControl Name='target' Content='Foo'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
 
                 Assert.Null(target.Presenter.Child);
             }
@@ -55,11 +55,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <ContentControl Name='target' Content='Foo'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
 
                 Assert.IsType<Canvas>(target.Presenter.Child);
             }
@@ -83,15 +83,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </ItemsControl>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var itemsControl = window.FindControl<ItemsControl>("itemsControl");
+                var itemsControl = window.GetControl<ItemsControl>("itemsControl");
 
                 window.DataContext = new[] { "item1", "item2" };
 
                 window.ApplyTemplate();
                 itemsControl.ApplyTemplate();
-                itemsControl.Presenter.ApplyTemplate();
+                itemsControl.Presenter!.ApplyTemplate();
 
-                Assert.Equal(2, itemsControl.Presenter.Panel.Children.Count);
+                Assert.Equal(2, itemsControl.Presenter.Panel!.Children.Count);
             }
         }
 
@@ -112,12 +112,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <ContentControl Name='target' Content='Foo'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
                 var template = (DataTemplate)window.DataTemplates.First();
                 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
                 
                 Assert.Equal(typeof(string), template.DataType);
                 Assert.IsType<Canvas>(target.Presenter.Child);
@@ -141,11 +141,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <ContentControl Name='target' Content='Foo'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
 
                 Assert.IsType<Canvas>(target.Presenter.Child);
             }
@@ -171,13 +171,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </ContentControl>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
                 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
 
-                var dataTemplate = (CustomDataTemplate)target.ContentTemplate;
+                var dataTemplate = (CustomDataTemplate)target.ContentTemplate!;
                 Assert.Null(dataTemplate.FancyDataType);
             }
         }
@@ -198,7 +198,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <ContentControl Name='target' Content='{Binding Child}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<ContentControl>("target");
+                var target = window.GetControl<ContentControl>("target");
 
                 var viewModel = new TestViewModel
                 {
@@ -217,9 +217,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();
-                target.Presenter.UpdateChild();
+                target.Presenter!.UpdateChild();
 
-                var canvas = (Canvas)target.Presenter.Child;
+                var canvas = (Canvas)target.Presenter.Child!;
                 Assert.Same(viewModel, target.DataContext);
                 Assert.Same(viewModel.Child, target.Presenter.DataContext);
                 Assert.Same(viewModel.Child.Child, canvas.DataContext);

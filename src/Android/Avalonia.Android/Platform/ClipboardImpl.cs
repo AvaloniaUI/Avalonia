@@ -39,6 +39,7 @@ namespace Avalonia.Android.Platform
                 return;
 
             var mimeTypes = dataTransfer.Formats
+                .Where(f => f.Kind != DataFormatKind.InProcess)
                 .Select(AndroidDataFormatHelper.DataFormatToMimeType)
                 .ToArray();
 
@@ -80,12 +81,15 @@ namespace Avalonia.Android.Platform
             // Create the item from the first format returning a supported value.
             foreach (var dataFormat in item.Formats)
             {
+                if (dataFormat.Kind == DataFormatKind.InProcess)
+                    continue;
+
                 hasFormats = true;
 
                 if (DataFormat.Text.Equals(dataFormat))
                 {
                     var text = await item.TryGetValueAsync(DataFormat.Text);
-                    return new ClipData.Item(text, string.Empty);
+                    return new ClipData.Item(text);
                 }
 
                 if (DataFormat.File.Equals(dataFormat))

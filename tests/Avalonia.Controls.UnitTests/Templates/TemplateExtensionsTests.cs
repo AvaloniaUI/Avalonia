@@ -38,7 +38,7 @@ namespace Avalonia.Controls.Templates.UnitTests
             border3.Child = border4;
             border4.Child = border5;
 
-            var result = target.GetTemplateChildren().Select(x => x.Name).ToArray();
+            var result = target.GetTemplateDescendants().Select(x => x.Name).ToArray();
 
             Assert.Equal(new[] { "border1", "inner", "border4" }, result);
         }

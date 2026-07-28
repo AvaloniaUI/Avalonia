@@ -5,7 +5,7 @@
     <ProvisioningType>manual</ProvisioningType>
     <TargetFramework>$(AvsCurrentMacCatalystTargetFramework)</TargetFramework>
     <!-- Used to support Desktop Mode Idiom, min supported version is 13.1, which supports iPad scaling. -->
-    <SupportedOSPlatformVersion>14.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     <UseInterpreter>true</UseInterpreter>
   </PropertyGroup>
   

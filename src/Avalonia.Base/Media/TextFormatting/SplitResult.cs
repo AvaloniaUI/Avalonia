@@ -4,7 +4,7 @@
     public readonly struct SplitResult<T>
 #pragma warning restore CA1815 // Override equals and operator equals on value types
     {
-        public SplitResult(T first, T? second)
+        public SplitResult(T? first, T? second)
         {
             First = first;
 
@@ -17,7 +17,7 @@
         /// <value>
         /// The first part.
         /// </value>
-        public T First { get; }
+        public T? First { get; }
 
         /// <summary>
         /// Gets the second part.
@@ -32,7 +32,7 @@
         /// </summary>
         /// <param name="first">On return, contains the first part.</param>
         /// <param name="second">On return, contains the second part.</param>
-        public void Deconstruct(out T first, out T? second)
+        public void Deconstruct(out T? first, out T? second)
         {
             first = First;
             second = Second;

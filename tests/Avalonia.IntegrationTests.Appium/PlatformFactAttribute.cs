@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xunit;
 
@@ -16,30 +17,21 @@ namespace Avalonia
 
     internal class PlatformFactAttribute : FactAttribute
     {
-        private readonly string? _reason;
-        private string? _skip;
-
-        public PlatformFactAttribute(TestPlatforms platforms, string? reason = null)
+        public PlatformFactAttribute(
+            TestPlatforms platforms,
+            string? reason = null,
+            [CallerFilePath] string? sourceFilePath = null,
+            [CallerLineNumber] int sourceLineNumber = -1)
+            : base(sourceFilePath, sourceLineNumber)
         {
-            _reason = reason;
             Platforms = platforms;
+            if (!IsSupported())
+                Skip = $"Ignored on {RuntimeInformation.OSDescription}" +
+                        (reason is not null ? $" reason: '{reason}'" : "");
+
         }
 
         public TestPlatforms Platforms { get; }
-
-        public override string? Skip
-        {
-            get
-            {
-                if (_skip is not null)
-                    return _skip;
-                if (!IsSupported())
-                    return $"Ignored on {RuntimeInformation.OSDescription}" +
-                           (_reason is not null ? $" reason: '{_reason}'" : "");
-                return null;
-            }
-            set => _skip = value;
-        }
 
         private bool IsSupported()
         {

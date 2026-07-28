@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -153,14 +151,14 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
         _native.Dispose();
     }
 
-    public async Task<IReadOnlyList<IStorageFile>> OpenFileDialog(TopLevelImpl? topLevel, FilePickerOpenOptions options)
+    public async Task<(IReadOnlyList<IStorageFile> files, FilePickerFileType? selectedType)> OpenFileDialog(TopLevelImpl? topLevel, FilePickerOpenOptions options)
     {
-        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter, null);
+        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter, null, options.SuggestedFileType);
         var suggestedDirectory = options.SuggestedStartLocation?.Path.AbsoluteUri ?? string.Empty;
 
-        var (items, _) = await OpenDialogAsync(events =>
+        var (items, selectedFilterIndex) = await OpenDialogAsync(events =>
         {
-            _native.OpenFileDialog((IAvnWindow?)topLevel?.Native,
+            _native.OpenFileDialog(topLevel?.Native,
                 events,
                 options.AllowMultiple.AsComBool(),
                 options.Title ?? string.Empty,
@@ -169,17 +167,20 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
                 fileTypes);
         }).ConfigureAwait(false);
 
-        return items.OfType<IStorageFile>().ToArray();
+        var files = items.OfType<IStorageFile>().ToArray();
+        var selectedType = TryGetSelectedFileType(options.FileTypeFilter, selectedFilterIndex);
+
+        return (files, selectedType);
     }
 
     public async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFileDialog(TopLevelImpl? topLevel, FilePickerSaveOptions options)
     {
-        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices, options.DefaultExtension);
+        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices, options.DefaultExtension, options.SuggestedFileType);
         var suggestedDirectory = options.SuggestedStartLocation?.Path.AbsoluteUri ?? string.Empty;
 
         var (items, selectedFilterIndex) = await OpenDialogAsync(events =>
         {
-            _native.SaveFileDialog((IAvnWindow?)topLevel?.Native,
+            _native.SaveFileDialog(topLevel?.Native,
                 events,
                 options.Title ?? string.Empty,
                 suggestedDirectory,
@@ -188,11 +189,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
         }, create: true).ConfigureAwait(false);
 
         var file = items.OfType<IStorageFile>().FirstOrDefault();
-        FilePickerFileType? selectedType = null;
-        if (selectedFilterIndex is { } index && index >= 0 && options.FileTypeChoices is { Count: > 0 } choices && index < choices.Count)
-        {
-            selectedType = choices[index];
-        }
+        var selectedType = TryGetSelectedFileType(options.FileTypeChoices, selectedFilterIndex);
 
         return (file, selectedType);
     }
@@ -203,7 +200,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
         var (items, _) = await OpenDialogAsync(events =>
         {
-            _native.SelectFolderDialog((IAvnWindow?)topLevel?.Native,
+            _native.SelectFolderDialog(topLevel?.Native,
                 events,
                 options.AllowMultiple.AsComBool(),
                 options.Title ?? "",
@@ -235,17 +232,33 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
         return Uri.TryCreate(resultString?.String, UriKind.Absolute, out var resultUri) ? resultUri : null;
     }
 
+    private static FilePickerFileType? TryGetSelectedFileType(
+        IReadOnlyList<FilePickerFileType>? fileTypes, int? nullableIndex)
+        => fileTypes is not null && nullableIndex is { } index && index >= 0 && index < fileTypes.Count ?
+            fileTypes[index] :
+            null;
+
     internal class FilePickerFileTypesWrapper(
         IReadOnlyList<FilePickerFileType>? types,
-        string? defaultExtension)
+        string? defaultExtension,
+        FilePickerFileType? suggestedType)
         : NativeCallbackBase, IAvnFilePickerFileTypes
     {
         private readonly List<IDisposable> _disposables = new();
 
         public int Count => types?.Count ?? 0;
 
-        public int IsDefaultType(int index) => (defaultExtension is not null &&
-            types![index].TryGetExtensions()?.Any(defaultExtension.EndsWith) == true).AsComBool();
+        public int IsDefaultType(int index)
+        {
+            if (types is null)
+                return false.AsComBool();
+
+            if (suggestedType is not null && ReferenceEquals(types[index], suggestedType))
+                return true.AsComBool();
+
+            return (defaultExtension is not null &&
+                    types[index].TryGetExtensions()?.Any(defaultExtension.EndsWith) == true).AsComBool();
+        }
 
         public int IsAnyType(int index) =>
             (types![index].Patterns?.Contains("*.*") == true || types[index].MimeTypes?.Contains("*.*") == true)
