@@ -80,8 +80,7 @@ namespace Avalonia.Data.Core.Plugins
                 return default;
 
             MethodInfo? zeroParamCandidate = null;
-            MethodInfo? oneParamCandidate = null;
-            var oneParamCandidateCount = 0;
+            Dictionary<Type, MethodInfo>? oneParamCandidates = null;
 
             foreach (var candidate in candidates)
             {
@@ -90,26 +89,30 @@ namespace Avalonia.Data.Core.Plugins
                 switch (parameters.Length)
                 {
                     case 0:
-                        zeroParamCandidate ??= candidate;
+                        zeroParamCandidate = GetMostDerived(zeroParamCandidate, candidate);
                         break;
 
                     case 1:
-                        ++oneParamCandidateCount;
-
-                        // Object parameter always wins
-                        if (parameters[0].ParameterType == typeof(object))
-                            return new MethodLookupResult(candidate, null);
-
-                        oneParamCandidate = candidate;
+                        // Reflection can return several methods with the same parameter type when one hides another:
+                        // only keep the most derived one, so that overridden or hidden methods are handled properly.
+                        var parameterType = parameters[0].ParameterType;
+                        oneParamCandidates ??= new Dictionary<Type, MethodInfo>();
+                        oneParamCandidates[parameterType] = GetMostDerived(oneParamCandidates.GetValueOrDefault(parameterType), candidate);
                         break;
                 }
             }
 
-            if (oneParamCandidateCount > 1)
+            if (oneParamCandidates is not null)
             {
-                var parameterTypes = candidates
-                    .Where(m => m.GetParameters().Length == 1)
-                    .Select(m => $"'{m.GetParameters()[0].ParameterType.FullName}'")
+                // Object parameter always wins
+                if (oneParamCandidates.TryGetValue(typeof(object), out var objectParamCandidate))
+                    return new MethodLookupResult(objectParamCandidate, null);
+
+                if (oneParamCandidates.Count == 1)
+                    return new MethodLookupResult(oneParamCandidates.Values.First(), null);
+
+                var parameterTypes = oneParamCandidates.Keys
+                    .Select(t => $"'{t.FullName}'")
                     .OrderBy(s => s, StringComparer.Ordinal)
                     .ToArray();
 
@@ -120,7 +123,7 @@ namespace Avalonia.Data.Core.Plugins
                     "Expected either a single overload with one parameter, or an overload accepting System.Object.");
             }
 
-            if ((oneParamCandidate ?? zeroParamCandidate) is { } found)
+            if (zeroParamCandidate is { } found)
                 return new MethodLookupResult(found, null);
 
             return new MethodLookupResult(
@@ -128,6 +131,18 @@ namespace Avalonia.Data.Core.Plugins
                 $"Unable to resolve method of name '{methodName}' on type '{type.FullName}'. " +
                 $"Found {candidates.Count} overloads accepting more than one parameter. " +
                 "Expected a method with zero or one parameter.");
+        }
+
+        private static MethodInfo GetMostDerived(MethodInfo? existing, MethodInfo candidate)
+        {
+            if (existing is null)
+                return candidate;
+
+            return existing.DeclaringType is { } existingType &&
+                   candidate.DeclaringType is { } candidateType &&
+                   existingType != candidateType && existingType.IsAssignableFrom(candidateType) ?
+                candidate :
+                existing;
         }
 
         private readonly struct MethodLookupResult(MethodInfo? method, string? error)

@@ -36,9 +36,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         }
 
         [Theory]
+        [InlineData("ObjectMethod", "<x:String>hello</x:String>", "Called ObjectMethod with hello")]
         [InlineData("StringMethod", "<x:String>hello</x:String>", "Called StringMethod with hello")]
         [InlineData("Int32Method", "<x:Int32>42</x:Int32>", "Called Int32Method with 42")]
         [InlineData("Int32Method", "<x:String>42</x:String>", "Called Int32Method with 42")]
+        [InlineData("VirtualObjectMethod", "<x:String>hello</x:String>", "Called VirtualObjectMethod with hello")]
+        [InlineData("VirtualStringMethod", "<x:String>hello</x:String>", "Called VirtualStringMethod with hello")]
+        [InlineData("VirtualStringMethod", "<x:Null />", "Called VirtualStringMethod with ")]
+        [InlineData("VirtualInt32Method", "<x:Int32>42</x:Int32>", "Called VirtualInt32Method with 42")]
+        [InlineData("MethodWithNewSlot", "<x:Int32>42</x:Int32>", "Called MethodWithNewSlot with 42")]
         public void Binding_Method_With_Parameter_To_Command_Uses_Single_Parameter_Overload(
             string methodName,
             string xamlParameter,
@@ -302,11 +308,24 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             });
         }
 
-        private class ViewModel : INotifyPropertyChanged
+        private class ViewModelBase
+        {
+            public virtual void VirtualObjectMethod(object? i) { }
+
+            public virtual void VirtualInt32Method(int i) { }
+
+            public virtual void VirtualStringMethod(string i) { }
+
+            public void MethodWithNewSlot(int i) { }
+        }
+
+        private class ViewModel : ViewModelBase, INotifyPropertyChanged
         {
             public event PropertyChangedEventHandler? PropertyChanged;
 
             public void Method() => Value = "Called";
+
+            public void ObjectMethod(object i) => Value = $"Called ObjectMethod with {i}";
 
             public void Int32Method(int i) => Value = $"Called Int32Method with {i}";
 
@@ -327,6 +346,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             public void MethodWithOverloads4(int a, int b) => throw new InvalidOperationException("MethodWithOverloads4 should not be called");
             public void MethodWithOverloads4(string a, string b) => throw new InvalidOperationException("MethodWithOverloads4 should not be called");
+
+            public override void VirtualObjectMethod(object? i)
+                => Value = $"Called VirtualObjectMethod with {i}";
+
+            public override void VirtualInt32Method(int i)
+                => Value = $"Called VirtualInt32Method with {i}";
+
+            public override void VirtualStringMethod(string i)
+                => Value = $"Called VirtualStringMethod with {i}";
+
+            public new void MethodWithNewSlot(int i)
+                => Value = $"Called MethodWithNewSlot with {i}";
 
             public string Value { get; private set; } = "Not called";
 

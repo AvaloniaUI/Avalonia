@@ -452,8 +452,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 Debug.Assert(candidates.Length > 0);
 
                 IXamlMethod? zeroParamCandidate = null;
-                IXamlMethod? oneParamCandidate = null;
-                var oneParamCandidateCount = 0;
+                HashSet<IXamlMethod>? oneParamCandidates = null;
 
                 foreach (var candidate in candidates)
                 {
@@ -466,21 +465,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             break;
 
                         case 1:
-                            ++oneParamCandidateCount;
-
                             // Object parameter always wins
                             if (candidate.Parameters[0].Is("System", "Object"))
                                 return candidate;
 
-                            oneParamCandidate ??= candidate;
+                            // Our candidates are ordered with the most derived class first:
+                            // By adding the first candidate for a given parameter type, we automatically handle overridden or hidden methods.
+                            oneParamCandidates ??= new HashSet<IXamlMethod>(SingleParameterTypeXamlTypeComparer.Instance);
+                            oneParamCandidates.Add(candidate);
                             break;
                     }
                 }
 
-                if (oneParamCandidateCount > 1)
+                if (oneParamCandidates is not null)
                 {
-                    var parameterTypes = candidates
-                        .Where(m => m.Parameters.Count == 1)
+                    Debug.Assert(oneParamCandidates.Count > 0);
+
+                    if (oneParamCandidates.Count == 1)
+                        return oneParamCandidates.First();
+
+                    var parameterTypes = oneParamCandidates
                         .Select(m => $"'{m.Parameters[0].FullName}'")
                         .OrderBy(s => s, StringComparer.Ordinal)
                         .ToArray();
@@ -492,7 +496,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         lineInfo);
                 }
 
-                return oneParamCandidate ?? zeroParamCandidate ?? throw new XamlTransformException(
+                return zeroParamCandidate ?? throw new XamlTransformException(
                     $"Unable to resolve method of name '{name}' on type '{targetType}'. " +
                     $"Found {candidates.Length} overloads accepting more than one parameter. " +
                     $"Expected a method with zero or one parameter.",
@@ -1107,6 +1111,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         Elements[i] = (IXamlIlBindingPathElementNode)ast.Visit(visitor);
                     }
                 }
+            }
+        }
+
+        private sealed class SingleParameterTypeXamlTypeComparer : IEqualityComparer<IXamlMethod>
+        {
+            public static SingleParameterTypeXamlTypeComparer Instance { get; } = new();
+
+            public bool Equals(IXamlMethod x, IXamlMethod y)
+            {
+                Debug.Assert(x.Parameters.Count == 1);
+                Debug.Assert(y.Parameters.Count == 1);
+
+                return x.Parameters[0].Equals(y.Parameters[0]);
+            }
+
+            public int GetHashCode(IXamlMethod obj)
+            {
+                Debug.Assert(obj.Parameters.Count == 1);
+
+                return obj.Parameters[0].GetHashCode();
             }
         }
     }
