@@ -5,7 +5,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
@@ -153,6 +152,7 @@ namespace Avalonia.Controls.Primitives
         private bool _hasScrolledToSelectedItem;
         private BindingEvaluator<object?>? _selectedValueBindingEvaluator;
         private bool _isSelectionChangeActive;
+        private int _unverifiedSelectedIndex = -1;
 
         public SelectingItemsControl()
         {
@@ -466,7 +466,7 @@ namespace Avalonia.Controls.Primitives
 
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
-                SelectedIndex = GetFirstVisibleAndEnabledIndex();
+                SelectedIndex = ChooseFirstVisibleAndEnabledIndex();
             }
         }
 
@@ -545,13 +545,16 @@ namespace Avalonia.Controls.Primitives
             if (Selection.AnchorIndex == index)
                 KeyboardNavigation.SetTabOnceActiveElement(this, container);
 
-            if (AlwaysSelected && SelectedIndex == -1 && container is { IsVisible: true, IsEnabled: true })
+            if (AlwaysSelected)
             {
-                SelectedIndex = index;
-            }
-            else if (AlwaysSelected && index == SelectedIndex && (!container.IsVisible || !container.IsEnabled))
-            {
-                MoveSelectionToFirstVisibleAndEnabledItem();
+                if (SelectedIndex == -1 && container is { IsVisible: true, IsEnabled: true })
+                {
+                    SelectedIndex = index;
+                }
+                else if (index == SelectedIndex && (!container.IsVisible || !container.IsEnabled))
+                {
+                    MoveSelectionToFirstVisibleAndEnabledItem();
+                }
             }
         }
 
@@ -1049,6 +1052,8 @@ namespace Avalonia.Controls.Primitives
             _selectedItemsBeforeReset = null;
 
             RaiseSelectionChanged(e.DeselectedItems, e.SelectedItems);
+
+            VerifySelectedIndex();
         }
 
         /// <summary>
@@ -1068,7 +1073,7 @@ namespace Avalonia.Controls.Primitives
 
             if (AlwaysSelected && ItemsView.Count > 0)
             {
-                SelectedIndex = GetFirstVisibleAndEnabledIndex();
+                SelectedIndex = ChooseFirstVisibleAndEnabledIndex();
             }
         }
 
@@ -1292,9 +1297,16 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Finds the first visible and enabled index in the ItemsSource.
         /// </summary>
+        /// <param name="verified">
+        /// On return, true if the returned index was checked against a realized container or against
+        /// an item which is its own container; false if no container was realized for it and the item
+        /// had to be accepted without knowing its visibility and enabled state.
+        /// </param>
         /// <returns>the index of the first visible and enabled item, or -1 if none found</returns>
-        private int GetFirstVisibleAndEnabledIndex()
+        private int GetFirstVisibleAndEnabledIndex(out bool verified)
         {
+            verified = true;
+
             var count = ItemCount;
             if (count == 0)
                 return -1;
@@ -1318,11 +1330,54 @@ namespace Avalonia.Controls.Primitives
                 }
                 else if (item is not null)
                 {
+                    // The container isn't realized so its visibility/enabled state is unknown.
+                    verified = false;
                     return i;
                 }
             }
 
             return -1;
+        }
+
+        private int ChooseFirstVisibleAndEnabledIndex()
+        {
+            var index = GetFirstVisibleAndEnabledIndex(out var verified);
+            _unverifiedSelectedIndex = verified ? -1 : index;
+            return index;
+        }
+
+        /// <summary>
+        /// Re-checks a selection which <see cref="ChooseFirstVisibleAndEnabledIndex"/> had to make before the container
+        /// of the selected item was realized.
+        /// </summary>
+        private void VerifySelectedIndex()
+        {
+            if (_unverifiedSelectedIndex == -1)
+                return;
+
+            if (!AlwaysSelected)
+            {
+                _unverifiedSelectedIndex = -1;
+                return;
+            }
+
+            // The selection has moved elsewhere in the meantime.
+            if (_unverifiedSelectedIndex != SelectedIndex)
+            {
+                _unverifiedSelectedIndex = -1;
+                return;
+            }
+
+            // Still not realized: ContainerForItemPreparedOverride will check it.
+            if (ContainerFromIndex(_unverifiedSelectedIndex) is not { } container)
+                return;
+
+            _unverifiedSelectedIndex = -1;
+
+            if (!container.IsVisible || !container.IsEnabled)
+            {
+                MoveSelectionToFirstVisibleAndEnabledItem();
+            }
         }
 
         /// <summary>
@@ -1403,7 +1458,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_updateState is null && AlwaysSelected && model.Count == 0)
             {
-                model.SelectedIndex = GetFirstVisibleAndEnabledIndex();
+                model.SelectedIndex = ChooseFirstVisibleAndEnabledIndex();
             }
 
             UpdateContainerSelection();
@@ -1510,7 +1565,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
                 {
-                    SelectedIndex = GetFirstVisibleAndEnabledIndex();
+                    SelectedIndex = ChooseFirstVisibleAndEnabledIndex();
                 }
             }
         }
