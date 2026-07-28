@@ -67,7 +67,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                Assert.Equal(button.Tag, button.GetTemplateChildren().OfType<Grid>().First().ColumnDefinitions[0].Width);
+                Assert.Equal(button.Tag, button.GetTemplateDescendants().OfType<Grid>().First().ColumnDefinitions[0].Width);
             }
         }
     }

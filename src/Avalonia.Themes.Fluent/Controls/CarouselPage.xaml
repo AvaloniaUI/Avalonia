@@ -14,7 +14,7 @@
   </Design.PreviewWith>
 
   <ControlTheme x:Key="{x:Type CarouselPage}" TargetType="CarouselPage">
-    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SystemControlPageBackgroundAltHighBrush}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Carousel Name="PART_Carousel"

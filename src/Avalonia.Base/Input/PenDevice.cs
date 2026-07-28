@@ -68,7 +68,7 @@ namespace Avalonia.Input
                     case RawPointerEventType.MiddleButtonDown:
                     case RawPointerEventType.XButton1Down:
                     case RawPointerEventType.XButton2Down:
-                        e.Handled = PenDown(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
+                        e.Handled = PenDown(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor, e.PlatformInputEventCookie);
                         break;
                     case RawPointerEventType.LeftButtonUp:
                     case RawPointerEventType.RightButtonUp:
@@ -98,13 +98,13 @@ namespace Avalonia.Input
 
         private bool PenDown(Pointer pointer, ulong timestamp,
             IInputRoot root, Point p, PointerPointProperties properties,
-            KeyModifiers inputModifiers, IInputElement? hitTest)
+            KeyModifiers inputModifiers, IInputElement? hitTest, object? platformInputEventCookie)
         {
             var source = pointer.Captured ?? hitTest;
 
             if (source != null)
             {
-                pointer.Capture(source);
+                pointer.Capture(source, CaptureSource.Implicit);
                 var settings = (source as Interactive)?.GetPlatformSettings();
                 if (settings is not null)
                 {
@@ -123,7 +123,7 @@ namespace Avalonia.Input
                 }
 
                 _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
-                var e = new PointerPressedEventArgs(source, pointer, root.RootElement, p, timestamp, properties, inputModifiers, _clickCount);
+                var e = new PointerPressedEventArgs(source, pointer, root.RootElement, p, timestamp, properties, inputModifiers, _clickCount, platformInputEventCookie);
                 source.RaiseEvent(e);
                 return e.Handled;
             }
@@ -173,7 +173,7 @@ namespace Avalonia.Input
                 }
                 finally
                 {
-                    pointer.Capture(null);
+                    pointer.Capture(null, CaptureSource.Implicit);
                     pointer.CaptureGestureRecognizer(null);
                     pointer.IsGestureRecognitionSkipped = false;
                     _lastMouseDownButton = default;

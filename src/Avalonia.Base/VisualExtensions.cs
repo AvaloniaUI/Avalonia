@@ -14,12 +14,13 @@ namespace Avalonia
         /// <param name="visual">The visual.</param>
         /// <param name="point">The point in screen coordinates.</param>
         /// <returns>The point in client coordinates.</returns>
+        /// <exception cref="ArgumentException">Thown when <paramref name="visual"/> does not belong to a visual tree.</exception>
         public static Point PointToClient(this Visual visual, PixelPoint point)
         {
             var source = visual.PresentationSource;
             var root = source?.RootVisual ??
-                       throw new ArgumentException("Control does not belong to a visual tree.", nameof(visual));
-            var rootPoint = source.PointToClient(point);
+                       throw new ArgumentException("Visual does not belong to a visual tree.", nameof(visual));
+            var rootPoint = source.PointToClient(point) ?? default;
             return root.TranslatePoint(rootPoint, visual)!.Value;
         }
 
@@ -29,13 +30,14 @@ namespace Avalonia
         /// <param name="visual">The visual.</param>
         /// <param name="point">The point in client coordinates.</param>
         /// <returns>The point in screen coordinates.</returns>
+        /// <exception cref="ArgumentException">Thown when <paramref name="visual"/> does not belong to a visual tree.</exception>
         public static PixelPoint PointToScreen(this Visual visual, Point point)
         {
             var source = visual.PresentationSource;
             var root = source?.RootVisual ??
-                       throw new ArgumentException("Control does not belong to a visual tree.", nameof(visual));
+                       throw new ArgumentException("Visual does not belong to a visual tree.", nameof(visual));
             var p = visual.TranslatePoint(point, root);
-            return source.PointToScreen(p!.Value);
+            return source.PointToScreen(p!.Value) ?? default;
         }
 
         /// <summary>

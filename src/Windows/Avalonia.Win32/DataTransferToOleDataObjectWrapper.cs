@@ -193,6 +193,9 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
 
         foreach (var dataFormat in DataTransfer.Formats)
         {
+            if (dataFormat.Kind == DataFormatKind.InProcess)
+                continue;
+
             if (DataFormat.Bitmap.Equals(dataFormat))
             {
                 // We add extra formats for bitmaps

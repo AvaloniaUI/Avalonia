@@ -82,14 +82,16 @@ public:
             if(ppv == nullptr)
                 return E_POINTER;
 
-            NSError* error;
+            *ppv = nullptr;
+
+            NSError* error = nil;
             auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
             auto bookmarkData = [fileUri bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
             if (bookmarkData)
             {
                 *ppv = CreateByteArray((void*)bookmarkData.bytes, (int)bookmarkData.length);
             }
-            if (error != nil)
+            else if (error != nil && err != nullptr)
             {
                 *err = CreateAvnString([error localizedDescription]);
             }
@@ -162,6 +164,17 @@ public:
         }
         
         return nullptr;
+    }
+    
+    static int GetSelectedFilterIndex(NSSavePanel* _Nonnull panel)
+    {
+        if (panel.accessoryView != nil)
+        {
+            auto popup = [panel.accessoryView viewWithTag:kFileTypePopupTag];
+            if ([popup isKindOfClass:[NSPopUpButton class]])
+                return (int)[(NSPopUpButton*)popup indexOfSelectedItem];
+        }
+        return -1;
     }
 
     virtual void SelectFolderDialog (IAvnTopLevel* parentTopLevel,
@@ -268,30 +281,32 @@ public:
             auto parentWindow = GetEffectiveNSWindow(parentTopLevel);
             
             auto handler = ^(NSModalResponse result) {
+                auto selectedIndex = GetSelectedFilterIndex(panel);
+
                 if(result == NSFileHandlingPanelOKButton)
                 {
                     auto urls = [panel URLs];
-                    
+
                     if(urls.count > 0)
                     {
                         auto uriStrings = CreateAvnStringArray(urls);
-                        ownedEvents->OnCompleted(uriStrings);
+                        ownedEvents->OnCompletedWithFilter(uriStrings, selectedIndex);
 
                         [panel orderOut:panel];
-                        
+
                         if (parentWindow != nullptr)
                         {
                             [parentWindow makeKeyAndOrderFront:parentWindow];
                         }
-                        
+
                         return;
                     }
                 }
-                
-                ownedEvents->OnCompleted(nullptr);
-                
+
+                ownedEvents->OnCompletedWithFilter(nullptr, selectedIndex);
+
             };
-            
+
             if (parentWindow != nullptr)
             {
                 [panel beginSheetModalForWindow:parentWindow completionHandler:handler];
@@ -302,7 +317,7 @@ public:
             }
         }
     }
-    
+
     virtual void SaveFileDialog (IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  const char* title,
@@ -338,15 +353,7 @@ public:
             auto parentWindow = GetEffectiveNSWindow(parentTopLevel);
             
             auto handler = ^(NSModalResponse result) {
-                int selectedIndex = -1;
-                if (panel.accessoryView != nil)
-                {
-                    auto popup = [panel.accessoryView viewWithTag:kFileTypePopupTag];
-                    if ([popup isKindOfClass:[NSPopUpButton class]])
-                    {
-                        selectedIndex = (int)[(NSPopUpButton*)popup indexOfSelectedItem];
-                    }
-                }
+                auto selectedIndex = GetSelectedFilterIndex(panel);
 
                 if(result == NSFileHandlingPanelOKButton)
                 {
@@ -398,7 +405,7 @@ public:
         }
         
         auto filePathUri = [fileUri filePathURL];
-        if (fileUri == nil)
+        if (filePathUri == nil)
         {
             *ret = nullptr;
             return S_OK;

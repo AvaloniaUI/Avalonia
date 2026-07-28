@@ -17,6 +17,13 @@ public readonly struct PlatformRenderTargetState
     public bool IsReady { get; init; }
     
     /// <summary>
+    /// Indicates that the render target is currently not ready but will wake up the render loop
+    /// when it becomes ready (e.g. waiting for a compositor frame callback).
+    /// When true, the compositor should not keep polling for readiness.
+    /// </summary>
+    public bool WillWakeUpRenderLoopWhenReady { get; init; }
+    
+    /// <summary>
     /// Indicates if the render target is no longer usable and needs to be recreated
     /// </summary>
     public bool IsCorrupted { get; init; }
@@ -31,6 +38,12 @@ public readonly struct PlatformRenderTargetState
     public static PlatformRenderTargetState Corrupted => new() { IsCorrupted = true, IsReady = true};
 
     public static PlatformRenderTargetState Disposed => new() { IsCorrupted = true};
+
+    public static PlatformRenderTargetState NotReadyWillWakeupRenderLoop => new PlatformRenderTargetState()
+    {
+        WillWakeUpRenderLoopWhenReady = true
+    };
+
 }
 
 [PrivateApi]

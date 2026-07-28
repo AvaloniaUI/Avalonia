@@ -154,10 +154,6 @@ public class DispatcherTimer
                 throw new ArgumentOutOfRangeException(nameof(value),
                     "TimeSpan period must be greater than or equal to zero.");
 
-            if (value.TotalMilliseconds > Int32.MaxValue)
-                throw new ArgumentOutOfRangeException(nameof(value),
-                    "TimeSpan period must be less than or equal to Int32.MaxValue.");
-
             lock (_instanceLock)
             {
                 _interval = value;

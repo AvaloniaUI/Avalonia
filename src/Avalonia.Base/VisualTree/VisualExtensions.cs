@@ -334,21 +334,12 @@ namespace Avalonia.VisualTree
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             var source = visual.GetPresentationSource();
-            var root = source?.RootVisual;
-
-            if (source is null || root is null)
+            if (source is null)
             {
                 return null;
             }
 
-            var rootPoint = visual.TranslatePoint(p, (Visual)root);
-
-            if (rootPoint.HasValue)
-            {
-                return source.HitTester.HitTestFirst(rootPoint.Value, visual, filter);
-            }
-
-            return null;
+            return source.HitTester.HitTestFirst(p, visual, filter);
         }
 
         /// <summary>

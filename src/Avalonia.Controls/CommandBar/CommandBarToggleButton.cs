@@ -7,12 +7,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class CommandBarToggleButton : ToggleButton, ICommandBarElement
     {
-        static CommandBarToggleButton()
-        {
-            ForegroundProperty.Changed.AddClassHandler<CommandBarToggleButton>((x, _) => x.UpdateIconForeground());
-            IconProperty.Changed.AddClassHandler<CommandBarToggleButton>((x, _) => x.UpdateIconForeground());
-        }
-
         /// <summary>
         /// Defines the <see cref="Label"/> property.
         /// </summary>
@@ -103,19 +97,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsInOverflowProperty);
             set => SetValue(IsInOverflowProperty, value);
-        }
-
-        private void UpdateIconForeground()
-        {
-            if (Icon is IconElement icon)
-            {
-                var fg = Foreground;
-
-                if (fg != null)
-                    icon.SetValue(ForegroundProperty, fg);
-                else
-                    icon.ClearValue(ForegroundProperty);
-            }
         }
     }
 }

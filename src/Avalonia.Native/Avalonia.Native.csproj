@@ -7,7 +7,7 @@
     <IsPackable Condition="'$(ForcePackAvaloniaNative)' == 'True'">True</IsPackable>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <UseMicroComGeneratorMSBuild>true</UseMicroComGeneratorMSBuild>
+    <UseMicroComGeneratorRoslyn>true</UseMicroComGeneratorRoslyn>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(PackAvaloniaNative)' == 'true'">
@@ -22,7 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-    <MicroComIdl Include="avn.idl" CSharpInteropPath="Interop.Generated.cs" />
+    <MicroComIdl Include="avn.idl" />
   </ItemGroup>
 
   <Import Project="..\..\build\MicroCOM.props" />

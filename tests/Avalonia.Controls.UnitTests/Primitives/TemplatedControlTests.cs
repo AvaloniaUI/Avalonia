@@ -204,7 +204,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
 
-            foreach (Control child in target.GetTemplateChildren())
+            foreach (var child in target.GetTemplateDescendants().OfType<Control>())
                 Assert.Equal("foo", child.Tag);
         }
 
@@ -237,11 +237,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
 
-            var contentControl = target.GetTemplateChildren().OfType<ContentControl>().Single();
+            var contentControl = target.GetTemplateDescendants().OfType<ContentControl>().Single();
             contentControl.ApplyTemplate();
 
-            var border = contentControl.GetTemplateChildren().OfType<Border>().Single();
-            var presenter = contentControl.GetTemplateChildren().OfType<ContentPresenter>().Single();
+            var border = contentControl.GetTemplateDescendants().OfType<Border>().Single();
+            var presenter = contentControl.GetTemplateDescendants().OfType<ContentPresenter>().Single();
             var decorator = (Decorator)presenter.Content!;
             var textBlock = (TextBlock)decorator.Child!;
 

@@ -31,6 +31,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
     private readonly List<ExpressionNode> _nodes;
     private readonly TargetTypeConverter? _targetTypeConverter;
     private readonly UncommonFields? _uncommon;
+    private int _updateTargetDepth;
     private bool _shouldUpdateOneTimeBindingTarget;
 
     /// <summary>
@@ -167,10 +168,19 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
 
         var source = _nodes[0].Source;
 
-        for (var i = 0; i < _nodes.Count; ++i)
-            _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
+        ++_updateTargetDepth;
 
-        _nodes[0].SetSource(source, null);
+        try
+        {
+            for (var i = 0; i < _nodes.Count; ++i)
+                _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
+
+            _nodes[0].SetSource(source, null);
+        }
+        finally
+        {
+            --_updateTargetDepth;
+        }
     }
 
     /// <summary>
@@ -205,7 +215,11 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
                 var error = dataValidationError is not null ?
                     new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
                     null;
-                ConvertAndPublishValue(value, error);
+
+                // UpdateTarget must reapply the source value even if this expression already
+                // has it cached: a two-way target may contain an uncommitted local value.
+                var forceUpdate = _mode == BindingMode.OneWay || _updateTargetDepth > 0;
+                ConvertAndPublishValue(value, error, forceUpdate);
             }
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)
@@ -402,7 +416,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             error);
     }
 
-    private void ConvertAndPublishValue(object? value, BindingError? error)
+    private void ConvertAndPublishValue(object? value, BindingError? error, bool forceUpdate = false)
     {
         var isTargetNullValue = false;
 
@@ -450,7 +464,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             value = ConvertFallback(FallbackValue, nameof(FallbackValue));
 
         // Publish the value.
-        PublishValue(value, error);
+        PublishValue(value, error, forceUpdate);
     }
 
     private void WriteTargetValueToSource()

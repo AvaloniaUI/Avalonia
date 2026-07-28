@@ -1,4 +1,6 @@
-﻿using Avalonia.Data;
+﻿using System;
+using Avalonia.Controls.UnitTests.Utils;
+using Avalonia.Data;
 using Avalonia.UnitTests;
 using Xunit;
 

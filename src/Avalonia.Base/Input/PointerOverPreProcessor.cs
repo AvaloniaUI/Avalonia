@@ -138,11 +138,9 @@ namespace Avalonia.Input
 
             // Do not pass rootVisual, when we have unknown position,
             // so GetPosition won't return invalid values.
-#pragma warning disable CS0618
             var e = new PointerEventArgs(InputElement.PointerExitedEvent, element, pointer,
                 position.HasValue ? root.RootElement : null, position.HasValue ? position.Value : default,
                 timestamp, properties, inputModifiers);
-#pragma warning restore CS0618
 
             if (element is Visual v && !v.IsAttachedToVisualTree)
             {
@@ -161,6 +159,8 @@ namespace Avalonia.Input
             }
 
             root.PointerOverElement = null;
+            root.CursorElement = pointer.Captured;
+
             _lastActivePointerDevice = null;
             _currentPointer = null;
         }
@@ -228,10 +228,9 @@ namespace Avalonia.Input
 
             el = root.PointerOverElement;
 
-#pragma warning disable CS0618
             var e = new PointerEventArgs(InputElement.PointerExitedEvent, el, pointer, root.RootElement, position,
                 timestamp, properties, inputModifiers);
-#pragma warning restore CS0618
+
             if (el is Visual v && branch != null && !v.IsAttachedToVisualTree)
             {
                 ClearChildrenPointerOver(e, branch, false);
@@ -246,6 +245,7 @@ namespace Avalonia.Input
             }
 
             el = root.PointerOverElement = element;
+            root.CursorElement = pointer.Captured ?? element;
 
             e.RoutedEvent = InputElement.PointerEnteredEvent;
 

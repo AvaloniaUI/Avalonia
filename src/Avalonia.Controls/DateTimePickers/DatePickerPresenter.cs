@@ -473,22 +473,30 @@ namespace Avalonia.Controls
 
         private void SetInitialFocus(TemplateItems items)
         {
-            int monthCol = MonthVisible ? Grid.GetColumn(items._monthHost) : int.MaxValue;
-            int dayCol = DayVisible ? Grid.GetColumn(items._dayHost) : int.MaxValue;
-            int yearCol = YearVisible ? Grid.GetColumn(items._yearHost) : int.MaxValue;
+            ReadOnlySpan<(bool visible, Panel host, DateTimePickerPanel selector)> candidates =
+            [
+                (MonthVisible, items._monthHost, items._monthSelector),
+                (DayVisible, items._dayHost, items._daySelector),
+                (YearVisible, items._yearHost, items._yearSelector),
+            ];
 
-            if (monthCol < dayCol && monthCol < yearCol)
+            DateTimePickerPanel? leftmost = null;
+            var minCol = int.MaxValue;
+
+            foreach (var (visible, host, selector) in candidates)
             {
-                items._monthSelector.Focus(NavigationMethod.Pointer);
+                if (!visible)
+                    continue;
+
+                var col = Grid.GetColumn(host);
+                if (col < minCol)
+                {
+                    minCol = col;
+                    leftmost = selector;
+                }
             }
-            else if (dayCol < monthCol && dayCol < yearCol)
-            {
-                items._monthSelector.Focus(NavigationMethod.Pointer);
-            }
-            else if (yearCol < monthCol && yearCol < dayCol)
-            {
-                items._yearSelector.Focus(NavigationMethod.Pointer);
-            }
+
+            leftmost?.Focus(NavigationMethod.Pointer);
         }
 
         private void OnDismissButtonClicked(object? sender, RoutedEventArgs e)

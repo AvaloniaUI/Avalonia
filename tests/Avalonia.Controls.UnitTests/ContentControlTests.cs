@@ -18,6 +18,20 @@ namespace Avalonia.Controls.UnitTests
     public class ContentControlTests : ScopedTestBase
     {
         [Fact]
+        public void Empty_PseudoClass_Should_Track_Content()
+        {
+            var target = new ContentControl();
+
+            Assert.Contains(":empty", target.Classes);
+
+            target.Content = "Content";
+            Assert.DoesNotContain(":empty", target.Classes);
+
+            target.Content = null;
+            Assert.Contains(":empty", target.Classes);
+        }
+
+        [Fact]
         public void Template_Should_Be_Instantiated()
         {
             var target = new ContentControl();
@@ -57,7 +71,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter!.ApplyTemplate();
 
-            foreach (Control child in target.GetTemplateChildren())
+            foreach (var child in target.GetTemplateDescendants().OfType<Control>())
                 Assert.Equal("foo", child.Tag);
         }
 

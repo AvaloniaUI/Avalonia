@@ -122,7 +122,6 @@ namespace ControlCatalog.ViewModels
             set { RaiseAndSetIfChanged(ref _selectedDecorationIndex, value); }
         }
 
-
         public MiniCommand AboutCommand { get; }
 
         public MiniCommand ExitCommand { get; }
@@ -137,6 +136,15 @@ namespace ControlCatalog.ViewModels
         {
             get => _validatedDateExample;
             set => RaiseAndSetIfChanged(ref _validatedDateExample, value);
+        }
+
+        public Win32Properties.WindowCornerPreference[] Win32WindowCornerPreferences { get; } =
+            Enum.GetValues<Win32Properties.WindowCornerPreference>();
+
+        public Win32Properties.WindowCornerPreference Win32WindowCornerPreference
+        {
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
     }
 }
