@@ -1118,12 +1118,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         {
             public static SingleParameterTypeXamlTypeComparer Instance { get; } = new();
 
-            public bool Equals(IXamlMethod x, IXamlMethod y)
+            public bool Equals(IXamlMethod? x, IXamlMethod? y)
             {
-                Debug.Assert(x.Parameters.Count == 1);
-                Debug.Assert(y.Parameters.Count == 1);
+                Debug.Assert(x is { Parameters.Count: 1 });
+                Debug.Assert(y is { Parameters.Count: 1 });
 
-                return x.Parameters[0].Equals(y.Parameters[0]);
+                return x!.Parameters[0].Equals(y!.Parameters[0]);
             }
 
             public int GetHashCode(IXamlMethod obj)
