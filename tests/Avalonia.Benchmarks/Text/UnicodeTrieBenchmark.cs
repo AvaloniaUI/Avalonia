@@ -96,7 +96,7 @@ public class UnicodeTrieBenchmark
     [Benchmark]
     public uint Get_GraphemeBreak()
     {
-        var trie = GraphemeBreakTrie.Trie;
+        var trie = SegmentationTrie.Trie;
         var codepoints = _codepoints;
         var sum = 0u;
 
@@ -134,7 +134,7 @@ public class UnicodeTrieBenchmark
     {
         var unicodeData = UnicodeDataTrie.Trie;
         var biDi = BiDiTrie.Trie;
-        var grapheme = GraphemeBreakTrie.Trie;
+        var grapheme = SegmentationTrie.Trie;
         var eaw = EastAsianWidthTrie.Trie;
         var codepoints = _codepoints;
         var sum = 0u;
