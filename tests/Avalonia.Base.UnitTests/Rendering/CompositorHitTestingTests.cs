@@ -753,12 +753,12 @@ public class CompositorHitTestingTests : CompositorTestsBase
                 Width = 200,
                 Height = 200,
                 Fill = Brushes.Red,
-                Data = StreamGeometry.Parse("M100,0 L0,100 100,100")
+                Data = new RectangleGeometry(new Rect(50, 50, 100, 100))
             };
             s.TopLevel.Content = path;
 
             s.AssertHitTest(new RectangleGeometry(new Rect(95, 95, 50, 50)), null, path);
-            s.AssertHitTest(new RectangleGeometry(new Rect(10, 10, 10, 10)), null);
+            s.AssertHitTest(new RectangleGeometry(new Rect(0, 0, 10, 10)), null);
         }
     }
 
