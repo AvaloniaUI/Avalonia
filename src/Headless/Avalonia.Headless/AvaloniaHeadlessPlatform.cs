@@ -14,9 +14,9 @@ namespace Avalonia.Headless
         internal static Compositor? Compositor { get; private set; }
         private static IRenderTimer? s_renderTimer;
 
-        private class HeadlessWindowingPlatform(PixelFormat frameBufferFormat) : IWindowingPlatform
+        private class HeadlessWindowingPlatform(PixelFormat frameBufferFormat, bool platformPopupsEnabled) : IWindowingPlatform
         {
-            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false, frameBufferFormat);
+            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(frameBufferFormat, platformPopupsEnabled);
             public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
@@ -49,7 +49,7 @@ namespace Avalonia.Headless
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IRenderLoop>().ToConstant(Rendering.RenderLoop.FromTimer(s_renderTimer))
-                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
+                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat, opts.UsePlatformPopups))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }));
             Compositor = new Compositor( null);
@@ -115,6 +115,15 @@ namespace Avalonia.Headless
         /// Gets or sets the pixel format to be used for the headless Window framebuffers.
         /// </summary>
         public PixelFormat FrameBufferFormat { get; set; } = PixelFormat.Rgba8888;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether popups are hosted in dedicated headless top-levels
+        /// instead of the overlay layer of the parent top-level.
+        /// Popups opened this way are not part of the parent's visual tree;
+        /// use <see cref="HeadlessWindowExtensions.GetOpenPopups"/> to access them.
+        /// This setting is false by default.
+        /// </summary>
+        public bool UsePlatformPopups { get; set; }
     }
 
     public static class AvaloniaHeadlessPlatformExtensions
