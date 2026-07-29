@@ -87,6 +87,7 @@
     <Project Path="samples/SampleControls/ControlSamples.csproj" />
     <Project Path="samples/Sandbox/Sandbox.csproj" />
     <Project Path="samples/SingleProjectSandbox/SingleProjectSandbox.csproj" />
+    <Project Path="samples/TextInputDebugger/TextInputDebugger.csproj" />
     <Project Path="samples/TextTestApp/TextTestApp.csproj" />
     <Project Path="samples/VirtualizationDemo/VirtualizationDemo.csproj" />
     <Project Path="samples/WinUIEmbedSample/WinUIEmbedSample.csproj">

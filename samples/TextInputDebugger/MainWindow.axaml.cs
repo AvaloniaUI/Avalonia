@@ -103,14 +103,11 @@ namespace TextInputDebugger
                 }
             }
 
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                Append();
-            }
-            else
-            {
-                Dispatcher.UIThread.Post(Append);
-            }
+            // Always deferred, even on the UI thread: appending scrolls the log, and a
+            // synchronous layout pass from inside a client callback re-enters the text
+            // stack mid-update (this is exactly how the first live IME session crashed
+            // the preedit path). Posted closures run in order, so the trace stays sequential.
+            Dispatcher.UIThread.Post(Append);
         }
 
         private bool PassesFilter(TraceEntry entry) => entry.Category switch
