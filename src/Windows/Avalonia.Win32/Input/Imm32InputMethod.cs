@@ -277,9 +277,19 @@ namespace Avalonia.Win32.Input
 
         // Sink-gated diagnostics for the whole IMM conversation; enable the TextInput log
         // area to see which messages an IME actually sends (candidate navigation, clause
-        // updates, reconversion probes) next to the client-side trace.
-        private void TraceIme(string template, params object?[] values)
-            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, template, values);
+        // updates, reconversion probes) next to the client-side trace. Typed overloads so
+        // the values reach the sink individually instead of boxed into one array.
+        private void TraceIme(string message)
+            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, message);
+
+        private void TraceIme<T0>(string template, T0 value0)
+            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, template, value0);
+
+        private void TraceIme<T0, T1>(string template, T0 value0, T1 value1)
+            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, template, value0, value1);
+
+        private void TraceIme<T0, T1, T2>(string template, T0 value0, T1 value1, T2 value2)
+            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, template, value0, value1, value2);
 
         /// <summary>Traces WM_IME_NOTIFY; the message itself stays system-handled.</summary>
         public void HandleNotify(IntPtr wParam)
