@@ -14,6 +14,7 @@
       <CheckBox x:Name="FilterReads" Content="reads" Focusable="False" />
       <CheckBox x:Name="FilterGeometry" Content="geometry" IsChecked="True" Focusable="False" />
       <CheckBox x:Name="FilterLegacy" Content="legacy" IsChecked="True" Focusable="False" />
+      <CheckBox x:Name="FilterPlatform" Content="platform" IsChecked="True" Focusable="False" />
       <Separator Width="12" />
       <Button x:Name="ComposeButton" Content="Compose &#x304B;&#x3093;" Focusable="False" />
       <Button x:Name="UpdateCompositionButton" Content="Update &#x611F;" Focusable="False" />

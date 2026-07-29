@@ -931,7 +931,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_CONTROL:
                 case WindowsMessage.WM_IME_KEYDOWN:
                 case WindowsMessage.WM_IME_KEYUP:
+                    break;
                 case WindowsMessage.WM_IME_NOTIFY:
+                    // Trace only; candidate windows and status stay system-handled.
+                    Imm32InputMethod.Current.HandleNotify(wParam);
                     break;
                 case WindowsMessage.WM_IME_REQUEST:
                     if (Imm32InputMethod.Current.HandleImeRequest(wParam, lParam, out var imeResult))

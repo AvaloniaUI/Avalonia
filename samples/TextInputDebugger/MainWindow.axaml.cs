@@ -39,6 +39,11 @@ namespace TextInputDebugger
             FilterReads.IsCheckedChanged += (_, _) => RebuildVisibleEntries();
             FilterGeometry.IsCheckedChanged += (_, _) => RebuildVisibleEntries();
             FilterLegacy.IsCheckedChanged += (_, _) => RebuildVisibleEntries();
+            FilterPlatform.IsCheckedChanged += (_, _) => RebuildVisibleEntries();
+
+            // Interleave the platform side of the conversation (the TextInput log area,
+            // e.g. the IMM message trace) with the client-side entries.
+            Avalonia.Logging.Logger.Sink = new TextInputLogSink(Avalonia.Logging.Logger.Sink, this);
             ClearLogButton.Click += (_, _) => { _allEntries.Clear(); _visibleEntries.Clear(); };
 
             ComposeButton.Click += (_, _) => WithActive(r => r.SetCompositionText("かん", 2));
@@ -115,8 +120,53 @@ namespace TextInputDebugger
             TraceCategory.Read => FilterReads.IsChecked == true,
             TraceCategory.Geometry => FilterGeometry.IsChecked == true,
             TraceCategory.Legacy => FilterLegacy.IsChecked == true,
+            TraceCategory.Platform => FilterPlatform.IsChecked == true,
             _ => true,
         };
+
+        private sealed class TextInputLogSink : Avalonia.Logging.ILogSink
+        {
+            private readonly Avalonia.Logging.ILogSink? _inner;
+            private readonly MainWindow _window;
+
+            public TextInputLogSink(Avalonia.Logging.ILogSink? inner, MainWindow window)
+            {
+                _inner = inner;
+                _window = window;
+            }
+
+            public bool IsEnabled(Avalonia.Logging.LogEventLevel level, string area)
+                => area == Avalonia.Logging.LogArea.TextInput || (_inner?.IsEnabled(level, area) ?? false);
+
+            public void Log(Avalonia.Logging.LogEventLevel level, string area, object? source, string messageTemplate)
+                => Log(level, area, source, messageTemplate, Array.Empty<object?>());
+
+            public void Log(Avalonia.Logging.LogEventLevel level, string area, object? source, string messageTemplate, params object?[] propertyValues)
+            {
+                if (area == Avalonia.Logging.LogArea.TextInput)
+                {
+                    var message = messageTemplate;
+                    foreach (var value in propertyValues)
+                    {
+                        var open = message.IndexOf('{');
+                        var close = open >= 0 ? message.IndexOf('}', open) : -1;
+                        if (close < 0)
+                        {
+                            break;
+                        }
+
+                        message = message[..open] + (value?.ToString() ?? "null") + message[(close + 1)..];
+                    }
+
+                    _window.AddEntry(TraceCategory.Platform, source?.GetType().Name ?? "platform", message, false);
+                }
+
+                if (_inner?.IsEnabled(level, area) == true)
+                {
+                    _inner.Log(level, area, source, messageTemplate, propertyValues);
+                }
+            }
+        }
 
         private void RebuildVisibleEntries()
         {

@@ -6,6 +6,7 @@ using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Logging;
 using Avalonia.Threading;
 
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -274,10 +275,36 @@ namespace Avalonia.Win32.Input
             // we're skipping this. not usable on windows
         }
 
+        // Sink-gated diagnostics for the whole IMM conversation; enable the TextInput log
+        // area to see which messages an IME actually sends (candidate navigation, clause
+        // updates, reconversion probes) next to the client-side trace.
+        private void TraceIme(string template, params object?[] values)
+            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, template, values);
+
+        /// <summary>Traces WM_IME_NOTIFY; the message itself stays system-handled.</summary>
+        public void HandleNotify(IntPtr wParam)
+        {
+            TraceIme("WM_IME_NOTIFY {Code}", (int)wParam switch
+            {
+                0x0003 => "IMN_CHANGECANDIDATE",
+                0x0004 => "IMN_CLOSECANDIDATE",
+                0x0005 => "IMN_OPENCANDIDATE",
+                0x0006 => "IMN_SETCONVERSIONMODE",
+                0x0007 => "IMN_SETSENTENCEMODE",
+                0x0008 => "IMN_SETOPENSTATUS",
+                0x000B => "IMN_SETCOMPOSITIONWINDOW",
+                0x000F => "IMN_PRIVATE",
+                var other => $"0x{other:X4}",
+            });
+        }
+
         public void CompositionChanged(string? composition, int? cursorPosition)
         {
             Composition = composition;
             _compositionCursorPosition = cursorPosition;
+
+            TraceIme("CompositionChanged text={Text} cursor={Cursor} structured={Structured}",
+                composition, cursorPosition, Client is IStructuredTextInput);
 
             if (!IsActive)
             {
@@ -348,6 +375,8 @@ namespace Avalonia.Win32.Input
 
         public void HandleCompositionStart()
         {
+            TraceIme("WM_IME_STARTCOMPOSITION structured={Structured}", Client is IStructuredTextInput);
+
             Composition = null;
             _compositionCursorPosition = null;
 
@@ -377,6 +406,8 @@ namespace Avalonia.Win32.Input
 
         public void HandleCompositionEnd(uint timestamp)
         {
+            TraceIme("WM_IME_ENDCOMPOSITION pending={Pending}", Composition);
+
             //Cleanup composition state.
             IsComposing = false;
 
@@ -420,11 +451,13 @@ namespace Avalonia.Win32.Input
             if (_ignoreComposition)
             {
                 _ignoreComposition = false;
+                TraceIme("WM_IME_COMPOSITION ignored (self-inflicted)");
 
                 return;
             }
 
             var flags = (GCS)ToInt32(lParam);
+            TraceIme("WM_IME_COMPOSITION flags={Flags}", flags);
             var resultChanged = (flags & GCS.GCS_RESULTSTR) != 0;
 
             if (flags == 0)
@@ -628,6 +661,15 @@ namespace Avalonia.Win32.Input
         /// </summary>
         public bool HandleImeRequest(IntPtr wParam, IntPtr lParam, out IntPtr result)
         {
+            TraceIme("WM_IME_REQUEST {Code}", (int)wParam switch
+            {
+                0x0004 => "IMR_RECONVERTSTRING",
+                0x0005 => "IMR_CONFIRMRECONVERTSTRING",
+                0x0006 => "IMR_QUERYCHARPOSITION",
+                0x0007 => "IMR_DOCUMENTFEED",
+                var other => $"0x{other:X4}",
+            });
+
             result = IntPtr.Zero;
 
             if (!IsActive || !Client.SupportsSurroundingText)

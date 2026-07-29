@@ -10,6 +10,7 @@ namespace TextInputDebugger
         Geometry,
         Event,
         Legacy,
+        Platform,
         Invariant,
     }
 
@@ -36,6 +37,7 @@ namespace TextInputDebugger
             TraceCategory.Geometry => Brushes.SteelBlue,
             TraceCategory.Event => Brushes.SeaGreen,
             TraceCategory.Legacy => Brushes.DarkKhaki,
+            TraceCategory.Platform => Brushes.DarkCyan,
             _ => Brushes.Red,
         };
 
@@ -49,6 +51,7 @@ namespace TextInputDebugger
             TraceCategory.Geometry => "geo",
             TraceCategory.Event => "evt",
             TraceCategory.Legacy => "leg",
+            TraceCategory.Platform => "ime",
             _ => "INV",
         };
     }
