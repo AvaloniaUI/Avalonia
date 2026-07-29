@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Logging;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -262,6 +263,17 @@ namespace Avalonia.Media
         /// </returns>
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
             FontStretch fontStretch, FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
+            => TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily, culture,
+                Script.Unknown, out typeface);
+
+        /// <summary>
+        /// Character-to-typeface match with an optional shaping-capability constraint: when
+        /// <paramref name="shapingScript"/> is a complex script, only fonts that can shape it are
+        /// considered. <see cref="Script.Unknown"/> imposes no constraint and is identical to the
+        /// public overload.
+        /// </summary>
+        internal bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
+            FontStretch fontStretch, FontFamily? fontFamily, CultureInfo? culture, Script shapingScript, out Typeface typeface)
         {
             if (_fontFallbacks != null)
             {
@@ -271,7 +283,9 @@ namespace Avalonia.Media
                     {
                         typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
 
-                        if (TryGetGlyphTypeface(typeface, out var glyphTypeface) && glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
+                        if (TryGetGlyphTypeface(typeface, out var glyphTypeface) &&
+                            glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _) &&
+                            (shapingScript == Script.Unknown || glyphTypeface.CanShapeScript(shapingScript)))
                         {
                             return true;
                         }
@@ -298,7 +312,7 @@ namespace Avalonia.Media
                         if (TryGetFontCollection(source, out var fontCollection) &&
                             // With composite fonts we need to first check if the font collection contains the family if not we skip it
                             fontCollection.TryGetGlyphTypeface(familyName, fontStyle, fontWeight, fontStretch, out _) &&
-                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                            TryMatchCharacterInCollection(fontCollection, codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, shapingScript, out typeface))
                         {
                             if (typeface.FontFamily.Name == DefaultFontFamily.Name && i + 1 < compositeKey.Keys.Count)
                             {
@@ -315,7 +329,7 @@ namespace Avalonia.Media
                 if (fontUri.IsFontCollection())
                 {
                     if (TryGetFontCollection(fontUri, out var fontCollection) &&
-                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily.Name, culture, out typeface))
+                            TryMatchCharacterInCollection(fontCollection, codepoint, fontStyle, fontWeight, fontStretch, fontFamily.Name, culture, shapingScript, out typeface))
                     {
                         return true;
                     }
@@ -323,7 +337,23 @@ namespace Avalonia.Media
             }
 
             //Try to find a match with the system font collection
-            return SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily?.Name,
+            return TryMatchCharacterInCollection(SystemFonts, codepoint, fontStyle, fontWeight, fontStretch,
+                fontFamily?.Name, culture, shapingScript, out typeface);
+        }
+
+        // Routes through the shaping-aware overload when the collection is a FontCollectionBase (all
+        // built-in collections are); a foreign IFontCollection gets the unconstrained match.
+        private static bool TryMatchCharacterInCollection(IFontCollection fontCollection, int codepoint,
+            FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, string? familyName,
+            CultureInfo? culture, Script shapingScript, out Typeface typeface)
+        {
+            if (fontCollection is FontCollectionBase fontCollectionBase)
+            {
+                return fontCollectionBase.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch,
+                    familyName, culture, shapingScript, out typeface);
+            }
+
+            return fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName,
                 culture, out typeface);
         }
 

@@ -13,6 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj"/>
+    <ProjectReference Include="../../src/HarfBuzz/Avalonia.HarfBuzz/Avalonia.HarfBuzz.csproj"/>
+
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj"/>
   </ItemGroup>
 

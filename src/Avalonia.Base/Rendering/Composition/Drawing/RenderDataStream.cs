@@ -93,7 +93,7 @@ internal partial class RenderDataStream : IDisposable
         });
     }
 
-    public void DrawGeometry(IBrush? serverBrush, IPen? serverPen, IPen? clientPen, IGeometryImpl? geometry)
+    public void DrawGeometry(IBrush? serverBrush, IPen? serverPen, IPen? clientPen, IRenderDataGeometry? geometry)
     {
         _writer.WritePayload(new DrawGeometryPayload
         {
@@ -138,7 +138,7 @@ internal partial class RenderDataStream : IDisposable
         EnterScope();
     }
 
-    public void PushGeometryClip(IGeometryImpl? geometry)
+    public void PushGeometryClip(IRenderDataGeometry? geometry)
     {
         _writer.WritePayload(new PushGeometryClipPayload { Geometry = _resources.Intern(geometry) });
         EnterScope();

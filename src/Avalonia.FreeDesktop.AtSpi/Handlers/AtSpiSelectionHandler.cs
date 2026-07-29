@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
@@ -8,9 +8,6 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
-    /// <summary>
-    /// Implements the AT-SPI Selection interface for list-like containers.
-    /// </summary>
     internal sealed class AtSpiSelectionHandler(AtSpiServer server, AtSpiNode node) : IOrgA11yAtspiSelection
     {
         public uint Version => SelectionVersion;
@@ -38,7 +35,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
             var selectedPeer = selection[selectedChildIndex];
             var childNode = server.TryGetAttachedNode(selectedPeer);
-            if (childNode is null || !ReferenceEquals(childNode.Parent, node))
+            if (childNode is null)
                 return ValueTask.FromResult(server.GetNullReference());
 
             return ValueTask.FromResult(server.GetReference(childNode));
@@ -46,15 +43,11 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> SelectChildAsync(int childIndex)
         {
-            var children = node.Peer.GetChildren();
-            if (childIndex < 0 || childIndex >= children.Count)
+            var items = CollectSelectableItems(node.Peer);
+            if (childIndex < 0 || childIndex >= items.Count)
                 return ValueTask.FromResult(false);
 
-            var childPeer = children[childIndex];
-            if (childPeer.GetProvider<ISelectionItemProvider>() is not { } selectionItem)
-                return ValueTask.FromResult(false);
-
-            selectionItem.AddToSelection();
+            items[childIndex].AddToSelection();
             return ValueTask.FromResult(true);
         }
 
@@ -78,15 +71,11 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> IsChildSelectedAsync(int childIndex)
         {
-            var children = node.Peer.GetChildren();
-            if (childIndex < 0 || childIndex >= children.Count)
+            var items = CollectSelectableItems(node.Peer);
+            if (childIndex < 0 || childIndex >= items.Count)
                 return ValueTask.FromResult(false);
 
-            var childPeer = children[childIndex];
-            if (childPeer.GetProvider<ISelectionItemProvider>() is not { } selectionItem)
-                return ValueTask.FromResult(false);
-
-            return ValueTask.FromResult(selectionItem.IsSelected);
+            return ValueTask.FromResult(items[childIndex].IsSelected);
         }
 
         public ValueTask<bool> SelectAllAsync()
@@ -95,12 +84,8 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (provider is null || !provider.CanSelectMultiple)
                 return ValueTask.FromResult(false);
 
-            var children = node.Peer.GetChildren();
-            foreach (var child in children)
-            {
-                if (child.GetProvider<ISelectionItemProvider>() is { } selectionItem)
-                    selectionItem.AddToSelection();
-            }
+            foreach (var item in CollectSelectableItems(node.Peer))
+                item.AddToSelection();
 
             return ValueTask.FromResult(true);
         }
@@ -123,16 +108,32 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> DeselectChildAsync(int childIndex)
         {
-            var children = node.Peer.GetChildren();
-            if (childIndex < 0 || childIndex >= children.Count)
+            var items = CollectSelectableItems(node.Peer);
+            if (childIndex < 0 || childIndex >= items.Count)
                 return ValueTask.FromResult(false);
 
-            var childPeer = children[childIndex];
-            if (childPeer.GetProvider<ISelectionItemProvider>() is not { } selectionItem)
-                return ValueTask.FromResult(false);
-
-            selectionItem.RemoveFromSelection();
+            items[childIndex].RemoveFromSelection();
             return ValueTask.FromResult(true);
+        }
+
+        private static List<ISelectionItemProvider> CollectSelectableItems(AutomationPeer peer)
+        {
+            var result = new List<ISelectionItemProvider>();
+            CollectSelectableItemsCore(peer.GetChildren(), result);
+            return result;
+        }
+
+        private static void CollectSelectableItemsCore(
+            IReadOnlyList<AutomationPeer> children,
+            List<ISelectionItemProvider> result)
+        {
+            foreach (var child in children)
+            {
+                if (child.GetProvider<ISelectionItemProvider>() is { } item)
+                    result.Add(item);
+                else
+                    CollectSelectableItemsCore(child.GetChildren(), result);
+            }
         }
     }
 }

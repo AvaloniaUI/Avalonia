@@ -27,7 +27,7 @@ namespace Avalonia.Input
 
             var children = GetInputElementChildren(parent);
 
-            bool hasFocusChildren = true;
+            bool hasFocusChildren = false;
 
             foreach (var child in children)
             {
