@@ -141,12 +141,7 @@ namespace Avalonia.Native
             public int IsStructured() => _structured is null ? 0 : 1;
 
             public void SetPreeditText(string preeditText)
-            {
-                if (_client.SupportsPreedit)
-                {
-                    _client.SetPreeditText(preeditText);
-                }
-            }
+                => SetCompositionText(string.IsNullOrEmpty(preeditText) ? null : preeditText, -1);
 
             public void SelectInSurroundingText(int start, int end)
             {

@@ -279,7 +279,28 @@ namespace Avalonia.Win32.Input
             Composition = composition;
             _compositionCursorPosition = cursorPosition;
 
-            if (!IsActive || !Client.SupportsPreedit)
+            if (!IsActive)
+            {
+                return;
+            }
+
+            // Structured clients compose in the document through the composition range;
+            // the preedit overlay remains only for third-party clients that declare it.
+            if (Client is IStructuredTextInput structured)
+            {
+                if (string.IsNullOrEmpty(composition))
+                {
+                    structured.SetCompositionText(null, 0);
+                }
+                else
+                {
+                    structured.SetCompositionText(composition, cursorPosition ?? composition.Length);
+                }
+
+                return;
+            }
+
+            if (!Client.SupportsPreedit)
             {
                 return;
             }
@@ -332,10 +353,11 @@ namespace Avalonia.Win32.Input
 
             if (IsActive)
             {
-                // A reconversion target armed as the structured composition range must survive
-                // until the first composition update replaces it in place; clearing the preedit
-                // or deleting the selection here would edit the target text.
-                if (Client is IStructuredTextInput { CompositionRange: { IsEmpty: false } })
+                // Structured clients need nothing here: a reconversion target armed as the
+                // composition range must survive until the first update replaces it in
+                // place, and a fresh composition replaces the selection itself on the
+                // first SetCompositionText.
+                if (Client is IStructuredTextInput)
                 {
                     IsComposing = true;
                     return;
@@ -357,6 +379,19 @@ namespace Avalonia.Win32.Input
         {
             //Cleanup composition state.
             IsComposing = false;
+
+            if (IsActive && Client is IStructuredTextInput structured)
+            {
+                // In-document composition: whatever sits in the composition range stays in
+                // the document as the committed result (the focus-loss implicit commit);
+                // re-raising it as text input would insert it a second time.
+                structured.CommitComposition();
+                ClearCompositionDecorations();
+
+                Composition = null;
+                _compositionCursorPosition = null;
+                return;
+            }
 
             if (_parent != null && !string.IsNullOrEmpty(Composition))
             {
@@ -427,7 +462,7 @@ namespace Avalonia.Win32.Input
                         _parent._ignoreWmChar = true;
                     }
                 }
-                else if (IsActive)
+                else if (IsActive && Client is not IStructuredTextInput)
                 {
                     Client.SetPreeditText(null, null);
                 }
