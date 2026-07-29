@@ -16,6 +16,12 @@ public class EglDisplayOptions
     public EglInterface? Egl { get; set; }
     public bool SupportsContextSharing { get; set; }
     public bool SupportsMultipleContexts { get; set; }
+
+    /// <summary>
+    /// Also considers configs that can only be used with PBuffer surfaces. Required for EGL platforms
+    /// that have no window surface support at all, e.g. EGL_MESA_platform_surfaceless.
+    /// </summary>
+    public bool AllowPbufferOnlyConfigs { get; set; }
     public bool ContextLossIsDisplayLoss { get; set; }
     public Func<bool>? DeviceLostCheckCallback { get; set; }
     public Action? DisposeCallback { get; set; }

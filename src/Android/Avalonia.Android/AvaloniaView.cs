@@ -20,12 +20,10 @@ namespace Avalonia.Android
     public partial class AvaloniaView : FrameLayout
     {
         private EmbeddableControlRoot? _root;
-        private ExploreByTouchHelper? _accessHelper;
-
         private readonly ViewImpl _view;
+        private readonly ExploreByTouchHelper _accessHelper;
 
         private IDisposable? _timerSubscription;
-        private object? _content;
         private bool _surfaceCreated;
 
         public AvaloniaView(Context context) : base(context)
@@ -33,8 +31,6 @@ namespace Avalonia.Android
             _view = new ViewImpl(this);
 
             AddView(_view.View);
-
-            this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
@@ -73,47 +69,20 @@ namespace Avalonia.Android
 
         public object? Content
         {
-            get { return _root?.Content; }
-            set
-            {
-                _content = value;
-                if (_root != null)
-                    _root.Content = value;
-            }
+            get => _root?.Content;
+            set => _root?.Content = value;
         }
 
         internal new void Dispose()
         {
-            _root?.Dispose();
-            _root = null;
-            _content = null;
-        }
-
-        protected override void OnDetachedFromWindow()
-        {
-            base.OnDetachedFromWindow();
             OnVisibilityChanged(false);
             _surfaceCreated = false;
-
-            if (_accessHelper is { } accessHelper)
-            {
-                ViewCompat.SetAccessibilityDelegate(this, null);
-                _accessHelper = null;
-            }
+            _root?.Dispose();
+            _root = null;
         }
 
         protected override void OnAttachedToWindow()
         {
-            _root?.Content = null;
-            _root = new EmbeddableControlRoot(_view);
-            _root.Prepare();
-            if (_content != null)
-            {
-                _root.Content = _content;
-            }
-
-            _accessHelper = new AvaloniaAccessHelper(this);
-            ViewCompat.SetAccessibilityDelegate(this, _accessHelper);
             SendConfigurationChanged(Context?.Resources?.Configuration);
 
             base.OnAttachedToWindow();

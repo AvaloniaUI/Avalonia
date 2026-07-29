@@ -45,7 +45,8 @@ internal class RenderDataDrawingContext : DrawingContext
         if (resource == null
             || resource is IImmutableBrush
             || resource is ImmutablePen
-            || resource is ImmutableTransform)
+            || resource is ImmutableTransform
+            || resource is CompositionBrush)
             return;
 
         if (resource is ICompositionRenderResource renderResource)
@@ -101,6 +102,18 @@ internal class RenderDataDrawingContext : DrawingContext
         AddResource(brush);
         AddResource(pen);
         Stream.DrawGeometry(brush.GetServer(_compositor), pen.GetServer(_compositor), pen, geometry);
+    }
+
+    protected override void DrawGeometryCore(IBrush? brush, IPen? pen, Geometry geometry)
+    {
+        if (brush is null && pen is null)
+            return;
+
+        AddResource(brush);
+        AddResource(pen);
+        AddResource(geometry);
+
+        Stream.DrawGeometry(brush.GetServer(_compositor), pen.GetServer(_compositor), pen, geometry.GetServer(_compositor));
     }
 
     protected override void DrawRectangleCore(IBrush? brush, IPen? pen, RoundedRect rrect, BoxShadows boxShadows = default)
@@ -164,8 +177,9 @@ internal class RenderDataDrawingContext : DrawingContext
             return;
         }
 
+        AddResource(clip);
         var before = Stream.OpcodeLength;
-        Stream.PushGeometryClip(clip.PlatformImpl);
+        Stream.PushGeometryClip(clip.GetServer(_compositor));
         PushedScope(before);
     }
 

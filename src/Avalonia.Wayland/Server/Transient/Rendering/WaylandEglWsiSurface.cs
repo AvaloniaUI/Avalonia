@@ -37,16 +37,27 @@ internal sealed class WaylandEglWsiSurface : EglGlPlatformSurfaceBase, IPlatform
         private IntPtr _eglWindow;
         private EglSurface? _eglSurface;
         private PixelSize _currentSize;
+        private bool _disposed;
 
         public RenderTarget(WSurface surface, EglContext context) : base(context)
         {
             _surface = surface;
+            _surface.RegisterRenderTarget(this);
         }
-        
+
         protected override bool SkipWaits => true;
 
-        public override PlatformRenderTargetState State =>
-            IsCorrupted ? PlatformRenderTargetState.Corrupted : _surface.State;
+        public override PlatformRenderTargetState State
+        {
+            get
+            {
+                if (_disposed)
+                    return PlatformRenderTargetState.Disposed;
+                if (IsCorrupted)
+                    return PlatformRenderTargetState.Corrupted;
+                return _surface.State;
+            }
+        }
 
         public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
@@ -89,6 +100,11 @@ internal sealed class WaylandEglWsiSurface : EglGlPlatformSurfaceBase, IPlatform
 
         public override void Dispose()
         {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+            _surface.UnregisterRenderTarget(this);
             _eglSurface?.Dispose();
             _eglSurface = null;
             if (_eglWindow != IntPtr.Zero)

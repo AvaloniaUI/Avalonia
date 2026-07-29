@@ -18,11 +18,12 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
 using Avalonia.X11;
-using Avalonia.X11.Clipboard;
 using Avalonia.X11.Dispatching;
 using Avalonia.X11.Glx;
-using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
+using Avalonia.X11.Selections.Clipboard;
+using Avalonia.X11.Selections.DragDrop;
+using Avalonia.X11.Vulkan;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -35,7 +36,7 @@ namespace Avalonia.X11
         private X11AtSpiAccessibility? _accessibility;
         internal AtSpiServer? AtSpiServer => _accessibility?.Server;
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
+        public Dictionary<IntPtr, X11WindowInfo> Windows { get; } = new ();
         public XI2Manager? XI2 { get; private set; }
         public X11Info Info { get; private set; } = null!;
         public X11Screens X11Screens { get; private set; } = null!;
@@ -44,6 +45,7 @@ namespace Avalonia.X11
         public X11PlatformOptions Options { get; private set; } = null!;
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; } = null!;
+        public X11ActiveWindowTracker ActiveWindowTracker { get; private set; } = null!;
         public XResources Resources { get; private set; } = null!;
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
         public IX11PlatformDispatcher DispatcherImpl { get; private set; } = null!;
@@ -74,6 +76,7 @@ namespace Avalonia.X11
 
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
+            ActiveWindowTracker = new X11ActiveWindowTracker(this);
             Resources = new XResources(this);
 
             IRenderTimer timer = options.ShouldRenderOnUIThread
@@ -97,6 +100,7 @@ namespace Avalonia.X11
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
                 .Bind<IClipboard>().ToConstant(clipboard)
+                .Bind<IPlatformDragSource>().ToConstant(new X11DragSource(this))
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())

@@ -20,6 +20,7 @@
     <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[10.0.100]" />
     <PackageDownload Include="Microsoft.DotNet.ApiDiff.Tool" Version="[10.0.100-rtm.25531.102]" />
     <PackageDownload Include="dotnet-ilrepack" Version="[2.0.44]" />
+    <PackageDownload Include="CycloneDX" Version="[6.2.0]" />
   </ItemGroup>
 
   <Import Project="..\build\MicroCOM.props" />
