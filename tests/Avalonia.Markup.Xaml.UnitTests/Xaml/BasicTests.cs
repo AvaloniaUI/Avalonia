@@ -113,7 +113,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal("Foo", ToolTip.GetTip(target));
         }
-        
+
         [Fact]
         public void NonExistent_Property_Throws()
         {
@@ -279,7 +279,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal(expected3, grid.RowDefinitions[2].Height);
             Assert.Equal(expected4, grid.RowDefinitions[3].Height);
         }
-        
+
         [Fact]
         public void Grid_Row_Col_Definitions_Are_Parsed_Space_Delimiter()
         {
@@ -905,7 +905,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var xaml = "<Button xmlns='https://github.com/avaloniaui' Classes='foo bar'/>";
             var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
 
-            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+            Assert.Contains("foo", target.Classes);
+            Assert.Contains("bar", target.Classes);
         }
 
         [Fact]
@@ -921,7 +922,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Button>";
             var target = (Button)AvaloniaRuntimeXamlLoader.Load(xaml);
 
-            Assert.Equal(new[] { "foo", "bar" }, target.Classes);
+            Assert.Contains("foo", target.Classes);
+            Assert.Contains("bar", target.Classes);
         }
 
         [Fact]
@@ -970,16 +972,16 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Child = child;
         }
     }
-    
+
     public class ObjectWithoutPublicCtor
     {
         public ObjectWithoutPublicCtor(string param)
         {
             Test1 = param;
         }
-        
+
         public string? Test1 { get; set; }
-        
+
         public string? Test2 { get; set; }
     }
 

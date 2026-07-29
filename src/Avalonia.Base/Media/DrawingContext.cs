@@ -90,8 +90,19 @@ namespace Avalonia.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(IBrush? brush, IPen? pen, Geometry geometry)
         {
-            if ((brush != null || PenIsVisible(pen)) && geometry.PlatformImpl != null)
-                DrawGeometryCore(brush, pen, geometry.PlatformImpl);
+            if (brush != null || PenIsVisible(pen))
+                DrawGeometryCore(brush, pen, geometry);
+        }
+
+        /// <summary>
+        /// Draws a mutable geometry. Implementations that support compositor-aware resources can keep a reference to
+        /// the <see cref="Geometry"/> so that subsequent changes to it are propagated without re-recording.
+        /// The default implementation simply forwards the geometry's current <see cref="Geometry.PlatformImpl"/>.
+        /// </summary>
+        protected virtual void DrawGeometryCore(IBrush? brush, IPen? pen, Geometry geometry)
+        {
+            if (geometry.PlatformImpl is { } geometryImpl)
+                DrawGeometryCore(brush, pen, geometryImpl);
         }
         
         /// <summary>

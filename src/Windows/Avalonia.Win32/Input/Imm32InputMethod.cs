@@ -27,6 +27,7 @@ namespace Avalonia.Win32.Input
         private const int CaretMargin = 1;
 
         private bool _ignoreComposition;
+        private int? _compositionCursorPosition;
 
         public TextInputMethodClient? Client { get; private set; }
 
@@ -112,6 +113,7 @@ namespace Avalonia.Win32.Input
             _langId = 0;
 
             IsComposing = false;
+            _compositionCursorPosition = null;
         }
 
         //Dependant on CurrentThread. When Avalonia will support Multiple Dispatchers -
@@ -120,6 +122,8 @@ namespace Avalonia.Win32.Input
 
         public void Reset()
         {
+            _compositionCursorPosition = null;
+
             Dispatcher.UIThread.Post(() =>
             {
                 var himc = ImmGetContext(Hwnd);
@@ -143,6 +147,7 @@ namespace Avalonia.Win32.Input
                     IsComposing = false;
 
                     Composition = null;
+                    _compositionCursorPosition = null;
                 }
             });
         }
@@ -152,8 +157,9 @@ namespace Avalonia.Win32.Input
             if(Client != null)
             {
                 Composition = null;
+                _compositionCursorPosition = null;
 
-                Client.SetPreeditText(null);
+                Client.SetPreeditText(null, null);
             }
 
             Client = client;
@@ -268,16 +274,17 @@ namespace Avalonia.Win32.Input
             // we're skipping this. not usable on windows
         }
 
-        public void CompositionChanged(string? composition)
+        public void CompositionChanged(string? composition, int? cursorPosition)
         {
             Composition = composition;
+            _compositionCursorPosition = cursorPosition;
 
             if (!IsActive || !Client.SupportsPreedit)
             {
                 return;
             }
 
-            Client.SetPreeditText(composition);
+            Client.SetPreeditText(composition, cursorPosition);
         }
         
         public string? GetCompositionString(GCS flag)
@@ -292,9 +299,36 @@ namespace Avalonia.Win32.Input
             return ImmGetCompositionString(himc, flag);
         }
 
+        private int? GetCompositionCursorPosition()
+        {
+            if (!IsComposing)
+            {
+                return null;
+            }
+
+            var himc = ImmGetContext(Hwnd);
+
+            if (himc == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            try
+            {
+                var cursorPosition = ImmGetCompositionString(himc, GCS.GCS_CURSORPOS, IntPtr.Zero, 0);
+
+                return cursorPosition >= 0 ? cursorPosition : null;
+            }
+            finally
+            {
+                ImmReleaseContext(Hwnd, himc);
+            }
+        }
+
         public void HandleCompositionStart()
         {
             Composition = null;
+            _compositionCursorPosition = null;
 
             if (IsActive)
             {
@@ -307,7 +341,7 @@ namespace Avalonia.Win32.Input
                     return;
                 }
 
-                Client.SetPreeditText(null);
+                Client.SetPreeditText(null, null);
                 ClearCompositionDecorations();
 
                 if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
@@ -337,10 +371,11 @@ namespace Avalonia.Win32.Input
             }
 
             Composition = null;
+            _compositionCursorPosition = null;
 
             if (IsActive)
             {
-                Client.SetPreeditText(null);
+                Client.SetPreeditText(null, null);
                 ClearCompositionDecorations();
             }
         }
@@ -355,61 +390,77 @@ namespace Avalonia.Win32.Input
             }
 
             var flags = (GCS)ToInt32(lParam);
+            var resultChanged = (flags & GCS.GCS_RESULTSTR) != 0;
 
             if (flags == 0)
             {
-                CompositionChanged("");
+                CompositionChanged("", null);
                 ClearCompositionDecorations();
             }
 
-            if ((flags & GCS.GCS_RESULTSTR) != 0)
+            if (resultChanged)
             {
                 var resultString = GetCompositionString(GCS.GCS_RESULTSTR);
 
-                if (_parent != null && !string.IsNullOrEmpty(resultString))
+                Composition = null;
+                _compositionCursorPosition = null;
+
+                // Structured client (in-document composition, e.g. the rich text editor): replace the
+                // composition range with the result in one atomic edit and commit. The legacy path below
+                // clears the preedit first and then re-inserts the result as a separate text-input event -
+                // a clear-then-reinsert that, for an in-document composition, resets the composition range
+                // before the text input arrives, so the client's composition-commit handling is bypassed.
+                var committedInDocument = false;
+
+                if (IsActive && !string.IsNullOrEmpty(resultString) &&
+                    Client is IStructuredTextInput structured &&
+                    structured.CompositionRange is { IsEmpty: false } compositionRange)
                 {
-                    Composition = null;
+                    structured.ReplaceText(compositionRange, resultString);
+                    structured.CommitComposition();
 
-                    // Structured client (in-document composition, e.g. the rich text editor): replace the
-                    // composition range with the result in one atomic edit and commit. The legacy path below
-                    // clears the preedit first and then re-inserts the result as a separate text-input event -
-                    // a clear-then-reinsert that, for an in-document composition, resets the composition range
-                    // before the text input arrives, so the client's composition-commit handling is bypassed.
-                    if (IsActive && Client is IStructuredTextInput structured &&
-                        structured.CompositionRange is { IsEmpty: false } compositionRange)
+                    committedInDocument = true;
+
+                    if (_parent != null)
                     {
-                        structured.ReplaceText(compositionRange, resultString);
-                        structured.CommitComposition();
-                        ClearCompositionDecorations();
-
                         // The result is already in the document; ignore the WM_CHAR the IME posts next.
                         _parent._ignoreWmChar = true;
                     }
-                    else
+                }
+                else if (IsActive)
+                {
+                    Client.SetPreeditText(null, null);
+                }
+
+                ClearCompositionDecorations();
+
+                if (!committedInDocument && _parent != null && !string.IsNullOrEmpty(resultString))
+                {
+                    var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, resultString);
+
+                    if (_parent.Input != null)
                     {
-                        if (IsActive)
-                        {
-                            Client.SetPreeditText(null);
-                            ClearCompositionDecorations();
-                        }
+                        _parent.Input(e);
 
-                        var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, resultString);
-
-                        if (_parent.Input != null)
-                        {
-                            _parent.Input(e);
-
-                            _parent._ignoreWmChar = true;
-                        }
+                        _parent._ignoreWmChar = true;
                     }
                 }
             }
 
-            if ((flags & GCS.GCS_COMPSTR) != 0)
-            {
-                var compositionString = GetCompositionString(GCS.GCS_COMPSTR);
+            var compositionChanged = (flags & GCS.GCS_COMPSTR) != 0;
+            var cursorPositionChanged = (flags & GCS.GCS_CURSORPOS) != 0;
 
-                CompositionChanged(compositionString);
+            if (compositionChanged || (cursorPositionChanged && !resultChanged))
+            {
+                var compositionString = compositionChanged
+                    ? GetCompositionString(GCS.GCS_COMPSTR)
+                    : Composition;
+
+                var cursorPosition = cursorPositionChanged
+                    ? GetCompositionCursorPosition()
+                    : _compositionCursorPosition;
+
+                CompositionChanged(compositionString, cursorPosition);
 
                 // Feed the per-clause composition attributes (GCS_COMPATTR) to a structured client so the IME
                 // chooses the clause highlighting instead of the framework hard-coding a preedit underline.

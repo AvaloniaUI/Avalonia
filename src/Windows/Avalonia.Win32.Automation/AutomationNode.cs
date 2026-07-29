@@ -78,18 +78,7 @@ namespace Avalonia.Win32.Automation
 
         public virtual Rect GetBoundingRectangle()
         {
-            return InvokeSync(() =>
-            {
-                if (Peer.GetVisualRoot() is ControlAutomationPeer root &&
-                    root.Owner.GetPresentationSource() is not null)
-                {
-                    var originalRect = Peer.GetBoundingRectangle();
-                    return new PixelRect(root.Owner.PointToScreen(originalRect.TopLeft),
-                        root.Owner.PointToScreen(originalRect.BottomRight)).ToRect(1);
-                }
-
-                return default;
-            });
+            return InvokeSync(() => Peer.ToScreen(Peer.GetBoundingRectangle()) ?? default);
         }
 
         // Converts text-range rectangles (in top-level coordinates) to a flat screen-pixel
@@ -363,8 +352,8 @@ namespace Avalonia.Win32.Automation
                 UiaCoreProviderApi.UiaRaiseAutomationPropertyChangedEvent(
                     this,
                     (int)id,
-                    e.OldValue as IConvertible,
-                    e.NewValue as IConvertible);
+                    e.OldValue is ExpandCollapseState o ? ToUiaExpandCollapseState(o) : e.OldValue as IConvertible,
+                    e.NewValue is ExpandCollapseState n ? ToUiaExpandCollapseState(n) : e.NewValue as IConvertible);
             }
 
             if (id == UiaPropertyId.Name && Peer.GetLiveSetting() != AutomationLiveSetting.Off)

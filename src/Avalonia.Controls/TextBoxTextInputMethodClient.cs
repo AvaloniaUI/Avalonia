@@ -4,7 +4,6 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Reactive;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -30,28 +29,22 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_presenter is null || _parent is null)
+                if (_parent is null)
                 {
                     return "";
                 }
 
-                if (_parent.CaretIndex != _presenter.CaretIndex)
+                if (_presenter is not null && _parent.CaretIndex != _presenter.CaretIndex)
                 {
                     _presenter.SetCurrentValue(TextPresenter.CaretIndexProperty, _parent.CaretIndex);
                 }
 
-                if (_parent.Text != _presenter.Text)
+                if (_presenter is not null && _parent.Text != _presenter.Text)
                 {
                     _presenter.SetCurrentValue(TextPresenter.TextProperty, _parent.Text);
                 }
 
-                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
-
-                var textLine = _presenter.TextLayout.TextLines[lineIndex];
-
-                var lineText = GetTextLineText(textLine);
-
-                return lineText;
+                return _parent.Text ?? string.Empty;
             }
         }
 
@@ -79,41 +72,22 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_presenter is null || _parent is null)
+                if (_parent is null)
                 {
                     return default;
                 }
 
-                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_parent.CaretIndex, false);
-
-                var textLine = _presenter.TextLayout.TextLines[lineIndex];
-
-                var lineStart = textLine.FirstTextSourceIndex;
-
-                var selectionStart = Math.Max(0, _parent.SelectionStart - lineStart);
-
-                var selectionEnd = Math.Max(0, _parent.SelectionEnd - lineStart);
-
-                return new TextSelection(selectionStart, selectionEnd);
+                return new TextSelection(_parent.SelectionStart, _parent.SelectionEnd);
             }
             set
             {
-                if (_parent is null || _presenter is null)
+                if (_parent is null)
                 {
                     return;
                 }
 
-                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_parent.CaretIndex, false);
-
-                var textLine = _presenter.TextLayout.TextLines[lineIndex];
-
-                var lineStart = textLine.FirstTextSourceIndex;
-
-                var selectionStart = lineStart + value.Start;
-                var selectionEnd = lineStart + value.End;
-
-                _parent.SelectionStart = selectionStart;
-                _parent.SelectionEnd = selectionEnd;
+                _parent.SelectionStart = value.Start;
+                _parent.SelectionEnd = value.End;
 
                 RaiseSelectionChanged();
             }
@@ -146,7 +120,7 @@ namespace Avalonia.Controls
                 oldPresenter.CurrentImClient = null;
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
 
-                if (_caretBoundsChangedHandler != null)
+                if (_caretBoundsChangedHandler is not null)
                 {
                     oldPresenter.CaretBoundsChanged -= _caretBoundsChangedHandler;
                 }
@@ -535,30 +509,6 @@ namespace Avalonia.Controls
 
             var position = CreateLocalPointer(prefix, LogicalDirection.Forward);
             handler(this, new TextChange(position, oldLength, newLength));
-        }
-
-        private static string GetTextLineText(TextLine textLine)
-        {
-            if (textLine.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            var builder = StringBuilderCache.Acquire(textLine.Length);
-
-            foreach (var run in textLine.TextRuns)
-            {
-                if (run.Length > 0)
-                {
-                    builder.Append(run.Text.Span);
-                }
-            }
-
-            var lineText = builder.ToString();
-
-            StringBuilderCache.Release(builder);
-
-            return lineText;
         }
 
         public override void ExecuteContextMenuAction(ContextMenuAction action)
