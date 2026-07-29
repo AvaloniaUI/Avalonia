@@ -2370,14 +2370,68 @@ namespace Avalonia.Controls.UnitTests
             var inWord = nav.GetPosition(nav.DocumentStart, 1); // inside "foo"
             var word = nav.GetRangeEnclosing(inWord, TextUnit.Word);
             Assert.Equal(0, word.Start.Offset);
-            Assert.Equal(3, word.End.Offset);
+            Assert.Equal(4, word.End.Offset); // the word owns its trailing space
 
-            // A single word forward from the start lands on the word-end boundary.
-            Assert.Equal(3, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
+            // A single word forward from the start lands on the next word's start.
+            Assert.Equal(4, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
 
             var whole = nav.GetRangeEnclosing(inWord, TextUnit.Document);
             Assert.Equal(0, whole.Start.Offset);
             Assert.Equal(7, whole.End.Offset);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Word_Owns_Trailing_Whitespace()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "one  two\tthree", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // A word unit runs to the start of the following word (UIA "word plus
+            // trailing whitespace", AT-SPI GRANULARITY_WORD): spaces and tabs after a
+            // word belong to it, and expanding inside the gap resolves to that word.
+            var first = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 1), TextUnit.Word);
+            Assert.Equal(0, first.Start.Offset);
+            Assert.Equal(5, first.End.Offset);
+
+            var inGap = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 4), TextUnit.Word);
+            Assert.Equal(0, inGap.Start.Offset);
+            Assert.Equal(5, inGap.End.Offset);
+
+            var second = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 6), TextUnit.Word);
+            Assert.Equal(5, second.Start.Offset);
+            Assert.Equal(9, second.End.Offset); // "two" plus its tab
+
+            // One stop per word when stepping by the unit.
+            Assert.Equal(5, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
+            Assert.Equal(9, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 2).Offset);
+            Assert.Equal(14, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 3).Offset);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Word_Never_Attaches_Line_Breaks_Or_Leading_Whitespace()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "one \n  two", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // The space before the break attaches to "one"; the break itself does not.
+            var word = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 3), TextUnit.Word);
+            Assert.Equal(0, word.Start.Offset);
+            Assert.Equal(4, word.End.Offset);
+
+            var separator = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 4), TextUnit.Word);
+            Assert.Equal(4, separator.Start.Offset);
+            Assert.Equal(5, separator.End.Offset);
+
+            // Whitespace with no word before it on its line stays a gap unit of its own.
+            var leading = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 5), TextUnit.Word);
+            Assert.Equal(5, leading.Start.Offset);
+            Assert.Equal(7, leading.End.Offset);
         }
 
         [Fact]
@@ -2452,7 +2506,8 @@ namespace Avalonia.Controls.UnitTests
             textBox.ApplyTemplate();
             var nav = GetNavigation(textBox);
 
-            // Offset 4 is the boundary between the " " gap segment [3,4) and "bar" [4,7).
+            // Offset 4 is the boundary between the "foo " unit [0,4) (the word owns its
+            // trailing space) and the "bar" unit [4,7).
             var forward = nav.PointerAt(4, LogicalDirection.Forward);
             var backward = nav.PointerAt(4, LogicalDirection.Backward);
 
@@ -2461,7 +2516,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(7, following.End.Offset);
 
             var preceding = nav.GetRangeEnclosing(backward, TextUnit.Word);
-            Assert.Equal(3, preceding.Start.Offset);
+            Assert.Equal(0, preceding.Start.Offset);
             Assert.Equal(4, preceding.End.Offset);
         }
 
@@ -2493,13 +2548,14 @@ namespace Avalonia.Controls.UnitTests
             textBox.ApplyTemplate();
             var nav = GetNavigation(textBox);
 
-            // UAX-29 keeps the contraction together; the old ASCII heuristic split it at the apostrophe.
+            // UAX-29 keeps the contraction together; the old ASCII heuristic split it at
+            // the apostrophe. The word owns its trailing space.
             var word = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 2), TextUnit.Word);
             Assert.Equal(0, word.Start.Offset);
-            Assert.Equal(5, word.End.Offset);
+            Assert.Equal(6, word.End.Offset);
 
-            // Word boundaries: 0 | "don't" 5 | " " 6 | "stop" 10.
-            Assert.Equal(5, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
+            // Word units: 0 | "don't " 6 | "stop" 10.
+            Assert.Equal(6, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
             Assert.Equal(0, nav.GetPosition(nav.GetPosition(nav.DocumentStart, 5), TextUnit.Word, -1).Offset);
         }
 
@@ -2516,17 +2572,18 @@ namespace Avalonia.Controls.UnitTests
             var doc = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentEnd);
             Assert.Equal("foo bar", doc.GetText(-1));
 
-            // A degenerate range inside "foo" expands to the enclosing word.
+            // A degenerate range inside "foo" expands to the enclosing word, which owns
+            // its trailing space.
             var inFoo = nav.GetPosition(nav.DocumentStart, 1);
             var word = new Avalonia.Automation.AutomationTextRange(nav, inFoo, inFoo);
             word.ExpandToEnclosingUnit(TextUnit.Word);
-            Assert.Equal("foo", word.GetText(-1));
+            Assert.Equal("foo ", word.GetText(-1));
 
             // Clone is independent; moving the clone's end back one character does not affect the original.
             var clone = (Avalonia.Automation.AutomationTextRange)word.Clone();
             clone.MoveEndpointByUnit(Avalonia.Automation.Provider.TextRangeEndpoint.End, TextUnit.Character, -1);
-            Assert.Equal("fo", clone.GetText(-1));
-            Assert.Equal("foo", word.GetText(-1));
+            Assert.Equal("foo", clone.GetText(-1));
+            Assert.Equal("foo ", word.GetText(-1));
 
             // The original word's end follows the clone's shortened end.
             Assert.True(word.CompareEndpoints(
@@ -2570,11 +2627,11 @@ namespace Avalonia.Controls.UnitTests
 
             var word = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentStart);
             word.ExpandToEnclosingUnit(TextUnit.Word);
-            Assert.Equal("foo", word.GetText(-1));
+            Assert.Equal("foo ", word.GetText(-1));
 
-            // Forward moves a whole word at a time, skipping inter-word whitespace.
+            // Forward moves a whole word unit at a time; the whitespace travels with it.
             Assert.Equal(1, word.Move(TextUnit.Word, 1));
-            Assert.Equal("bar", word.GetText(-1));
+            Assert.Equal("bar ", word.GetText(-1));
             Assert.Equal(1, word.Move(TextUnit.Word, 1));
             Assert.Equal("baz", word.GetText(-1));
 
@@ -2584,7 +2641,7 @@ namespace Avalonia.Controls.UnitTests
 
             // Backward two words returns to the first.
             Assert.Equal(-2, word.Move(TextUnit.Word, -2));
-            Assert.Equal("foo", word.GetText(-1));
+            Assert.Equal("foo ", word.GetText(-1));
 
             // Character units tile.
             var ch = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentStart);
@@ -2707,13 +2764,14 @@ namespace Avalonia.Controls.UnitTests
             var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(
                 Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox));
 
-            // Expand the document range to the first word and select it through the UIA-shaped range.
+            // Expand the document range to the first word unit (which owns its trailing
+            // space) and select it through the UIA-shaped range.
             var range = textProvider.DocumentRange;
             range.ExpandToEnclosingUnit(TextUnit.Word);
             range.Select();
 
             Assert.Equal(0, textBox.SelectionStart);
-            Assert.Equal(3, textBox.SelectionEnd);
+            Assert.Equal(4, textBox.SelectionEnd);
         }
 
         [Fact]

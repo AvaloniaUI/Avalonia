@@ -101,6 +101,11 @@ namespace Avalonia.Controls
         }
 
         // UAX-29 word segmentation; enumerates from the document start, so O(offset).
+        // A word unit is the word together with its trailing spaces and tabs — the extent
+        // both UIA ("word plus trailing whitespace") and AT-SPI define for the word unit —
+        // so expanding inside a gap resolves to the preceding word and stepping stops once
+        // per word. Line and paragraph separators never attach, and whitespace with no
+        // word before it on its line (leading or isolated runs) stays a unit of its own.
         public static (int Start, int End) WordBounds(int offset, ReadOnlySpan<char> text)
         {
             if (text.Length == 0)
@@ -109,13 +114,12 @@ namespace Avalonia.Controls
             }
 
             var clamped = Math.Clamp(offset, 0, text.Length);
-            var enumerator = new WordBreakEnumerator(text);
-            while (enumerator.MoveNext(out var segment))
+            var units = new WordUnitEnumerator(text);
+            while (units.MoveNext(out var start, out var end))
             {
-                var end = segment.Offset + segment.Length;
                 if (clamped < end)
                 {
-                    return (segment.Offset, end);
+                    return (start, end);
                 }
             }
 
@@ -131,10 +135,9 @@ namespace Avalonia.Controls
                     return text.Length;
                 }
 
-                var enumerator = new WordBreakEnumerator(text);
-                while (enumerator.MoveNext(out var segment))
+                var units = new WordUnitEnumerator(text);
+                while (units.MoveNext(out _, out var end))
                 {
-                    var end = segment.Offset + segment.Length;
                     if (end > offset)
                     {
                         return end;
@@ -150,10 +153,9 @@ namespace Avalonia.Controls
             }
 
             var previous = 0;
-            var backward = new WordBreakEnumerator(text);
-            while (backward.MoveNext(out var segment))
+            var backward = new WordUnitEnumerator(text);
+            while (backward.MoveNext(out _, out var end))
             {
-                var end = segment.Offset + segment.Length;
                 if (end >= offset)
                 {
                     break;
@@ -164,6 +166,92 @@ namespace Avalonia.Controls
 
             return previous;
         }
+
+        // Enumerates word units over the UAX-29 segments: a word segment absorbs the
+        // space/tab segments that follow it, separators and word-less whitespace runs
+        // come through as their own units, and the units tile the text.
+        private ref struct WordUnitEnumerator
+        {
+            private WordBreakEnumerator _segments;
+            private readonly ReadOnlySpan<char> _text;
+            private bool _hasPending;
+            private int _pendingStart;
+            private int _pendingEnd;
+            private bool _pendingIsWord;
+
+            public WordUnitEnumerator(ReadOnlySpan<char> text)
+            {
+                _segments = new WordBreakEnumerator(text);
+                _text = text;
+            }
+
+            public bool MoveNext(out int start, out int end)
+            {
+                while (_segments.MoveNext(out var segment))
+                {
+                    var segmentStart = segment.Offset;
+                    var segmentEnd = segment.Offset + segment.Length;
+                    var isSpaceRun = IsSpaceTabRun(_text.Slice(segmentStart, segmentEnd - segmentStart));
+
+                    if (_hasPending && _pendingIsWord && isSpaceRun)
+                    {
+                        _pendingEnd = segmentEnd;
+                        continue;
+                    }
+
+                    var isWord = !isSpaceRun && !IsLineSeparator(_text[segmentStart]);
+
+                    if (_hasPending)
+                    {
+                        start = _pendingStart;
+                        end = _pendingEnd;
+                        _pendingStart = segmentStart;
+                        _pendingEnd = segmentEnd;
+                        _pendingIsWord = isWord;
+                        return true;
+                    }
+
+                    _hasPending = true;
+                    _pendingStart = segmentStart;
+                    _pendingEnd = segmentEnd;
+                    _pendingIsWord = isWord;
+                }
+
+                if (_hasPending)
+                {
+                    _hasPending = false;
+                    start = _pendingStart;
+                    end = _pendingEnd;
+                    return true;
+                }
+
+                start = _text.Length;
+                end = _text.Length;
+                return false;
+            }
+        }
+
+        private static bool IsSpaceTabRun(ReadOnlySpan<char> segment)
+        {
+            if (segment.IsEmpty)
+            {
+                return false;
+            }
+
+            foreach (var c in segment)
+            {
+                if (c != ' ' && c != '\t')
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsLineSeparator(char c)
+            => c == '\r' || c == '\n' || c == (char)0x000B || c == (char)0x000C
+                || c == (char)0x0085 || c == (char)0x2028 || c == (char)0x2029;
 
         // Logical line: bounded by UAX-14 mandatory breaks via LineBreakEnumerator (so CRLF is one
         // break), with the terminator trimmed from the content but trailing spaces kept. This is not
