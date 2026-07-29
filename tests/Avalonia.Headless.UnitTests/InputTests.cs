@@ -129,9 +129,9 @@ public class InputTests
         _window.Content = border;
         _window.Show();
 
-        _window.TouchBegin(new Point(50, 50));
-        _window.TouchMove(new Point(60, 60));
-        _window.TouchEnd(new Point(60, 60));
+        var touch = _window.TouchBegin(new Point(50, 50));
+        _window.TouchMove(touch, new Point(60, 60));
+        _window.TouchEnd(touch, new Point(60, 60));
 
         AssertHelper.Equal(1, pressedCount);
         AssertHelper.Equal(1, movedCount);
@@ -154,12 +154,37 @@ public class InputTests
         _window.Content = border;
         _window.Show();
 
-        _window.TouchBegin(new Point(30, 30), touchPointId: 1);
-        _window.TouchBegin(new Point(70, 70), touchPointId: 2);
-        _window.TouchEnd(new Point(30, 30), touchPointId: 1);
-        _window.TouchEnd(new Point(70, 70), touchPointId: 2);
+        var touch1 = _window.TouchBegin(new Point(30, 30));
+        var touch2 = _window.TouchBegin(new Point(70, 70));
+        _window.TouchEnd(touch1, new Point(30, 30));
+        _window.TouchEnd(touch2, new Point(70, 70));
 
         AssertHelper.Equal(2, pointerIds.Count);
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Disposing_Touch_Point_Cancels_Contact()
+    {
+        var captureLostCount = 0;
+        var releasedCount = 0;
+
+        var border = new Border { Background = Brushes.Red };
+        border.PointerCaptureLost += (_, _) => captureLostCount++;
+        border.PointerReleased += (_, _) => releasedCount++;
+
+        _window.Content = border;
+        _window.Show();
+
+        using (_window.TouchBegin(new Point(50, 50)))
+        {
+        }
+
+        AssertHelper.Equal(1, captureLostCount);
+        AssertHelper.Equal(0, releasedCount);
     }
 
 #if NUNIT
