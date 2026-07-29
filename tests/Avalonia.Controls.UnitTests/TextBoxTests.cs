@@ -3113,6 +3113,42 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Preedit_Survives_Reentrant_Layout_Invalidation_From_CaretBoundsChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "hello",
+                CaretIndex = 5
+            };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object)
+            {
+                Template = CreateTopLevelTemplate(),
+                Content = textBox
+            };
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            var client = GetInputMethodClient(textBox);
+            var presenter = textBox.FindDescendantOfType<TextPresenter>();
+            Assert.NotNull(presenter);
+
+            // A CaretBoundsChanged subscriber may synchronously invalidate the text layout
+            // (the IME candidate window or a caret-following overlay forcing a layout pass
+            // does exactly that). The preedit update must still complete against the layout
+            // it computed with instead of dereferencing the reentrantly cleared field.
+            presenter.CaretBoundsChanged += (_, _) => presenter.HideCaret();
+
+            client.SetPreeditText("かん", 2);
+
+            Assert.Equal("かん", presenter.PreeditText);
+        }
+
+        [Fact]
         public void InputMethodClient_Selection_Setter_Uses_Document_Offsets_For_Multiline_Text()
         {
             using var _ = UnitTestApplication.Start(Services);
