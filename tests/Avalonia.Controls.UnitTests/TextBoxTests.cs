@@ -3141,11 +3141,108 @@ namespace Avalonia.Controls.UnitTests
             // (the IME candidate window or a caret-following overlay forcing a layout pass
             // does exactly that). The preedit update must still complete against the layout
             // it computed with instead of dereferencing the reentrantly cleared field.
+            // The presenter overlay is driven directly: structured clients compose in the
+            // document, but the overlay path remains for third-party clients.
             presenter.CaretBoundsChanged += (_, _) => presenter.HideCaret();
+
+            presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, "かん");
+            presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, 2);
+
+            Assert.Equal("かん", presenter.PreeditText);
+        }
+
+        [Fact]
+        public void SetPreeditText_Composes_In_Document()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "hello",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(client);
+
+            // The legacy entry point writes the composition into the text buffer with a
+            // tracked composition region; the presenter's preedit overlay stays unset and
+            // legacy consumers read the pending composition from the client.
+            client.SetPreeditText("かん", 2);
+
+            Assert.Equal("helloかん", textBox.Text);
+            Assert.Equal("かん", client.PreeditText);
+            Assert.NotNull(structured.CompositionRange);
+            Assert.Equal(5, structured.CompositionRange!.Start.Offset);
+            Assert.Equal(7, structured.CompositionRange.End.Offset);
+            Assert.Equal(7, textBox.CaretIndex);
+
+            // An empty preedit cancels: the composition text leaves the buffer.
+            client.SetPreeditText(null, null);
+
+            Assert.Equal("hello", textBox.Text);
+            Assert.Null(client.PreeditText);
+            Assert.Null(structured.CompositionRange);
+        }
+
+        [Fact]
+        public void Composition_Commit_Keeps_Text_And_Clears_The_Region()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(client);
+
+            client.SetPreeditText("かん", 2);
+            structured.CommitComposition();
+
+            Assert.Equal("かん", textBox.Text);
+            Assert.Null(structured.CompositionRange);
+            Assert.Null(client.PreeditText);
+        }
+
+        [Fact]
+        public void Composition_Events_Flow_Text_Then_Composition_Then_Caret()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 5 };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(client);
+            var nav = Assert.IsAssignableFrom<ITextNavigation>(client);
+
+            var events = new List<string>();
+            nav.TextChanged += (_, _) => events.Add("text");
+            structured.CompositionChanged += (_, _) => events.Add("composition");
+            structured.CaretPositionChanged += (_, _) => events.Add("caret");
 
             client.SetPreeditText("かん", 2);
 
-            Assert.Equal("かん", presenter.PreeditText);
+            // The document mutates first (so every subsequent reader sees consistent
+            // text), then the composition region reports, then the caret.
+            Assert.Equal(new[] { "text", "composition", "caret" }, events);
+        }
+
+        [Fact]
+        public void TextBox_Client_Declares_In_Document_Composition_Only()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "" };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+
+            Assert.False(client.SupportsPreedit);
+            Assert.True(client.SupportsInDocumentComposition);
+            Assert.True(client.SupportsInlineComposition());
         }
 
         [Fact]

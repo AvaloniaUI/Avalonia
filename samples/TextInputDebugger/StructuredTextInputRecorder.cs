@@ -75,6 +75,8 @@ namespace TextInputDebugger
 
         public override bool SupportsPreedit => _innerClient.SupportsPreedit;
 
+        public override string? PreeditText => _innerClient.PreeditText;
+
         public override bool SupportsInDocumentComposition => _innerClient.SupportsInDocumentComposition;
 
         public override bool SupportsSurroundingText => _innerClient.SupportsSurroundingText;

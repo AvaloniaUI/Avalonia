@@ -93,7 +93,27 @@ namespace Avalonia.Controls
             }
         }
 
-        public override bool SupportsPreedit => true;
+        // The composition is written into the text buffer through the structured
+        // composition range; the presenter's preedit overlay is never set. Backends and
+        // other legacy consumers read the pending composition through PreeditText.
+        public override bool SupportsInDocumentComposition => true;
+
+        public override string? PreeditText
+        {
+            get
+            {
+                if (_parent?.Text is not { } text || _compositionRange is not { } range)
+                {
+                    return null;
+                }
+
+                var (start, end) = GetAbsoluteRange(range);
+                end = Math.Min(end, text.Length);
+                return start >= end ? null : text.Substring(start, end - start);
+            }
+        }
+
+        internal bool HasActiveComposition => _compositionRange is not null;
 
         public override bool SupportsSurroundingText => true;
 
@@ -119,6 +139,7 @@ namespace Avalonia.Controls
             {
                 oldPresenter.CurrentImClient = null;
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
+                oldPresenter.SetCompositionRegion(null);
 
                 if (_caretBoundsChangedHandler is not null)
                 {
@@ -133,6 +154,7 @@ namespace Avalonia.Controls
                 _presenter.CurrentImClient = this;
                 _caretBoundsChangedHandler ??= OnPresenterCaretBoundsChanged;
                 _presenter.CaretBoundsChanged += _caretBoundsChangedHandler;
+                PushCompositionToPresenter();
             }
 
             RaiseTextViewVisualChanged();
@@ -155,13 +177,17 @@ namespace Avalonia.Controls
 
         public override void SetPreeditText(string? preeditText, int? cursorPos)
         {
-            if (_presenter == null || _parent == null)
+            // Legacy entry point kept for third-party backends: the composition lands in
+            // the text buffer with a tracked composition region instead of the presenter
+            // overlay. An empty preedit is a cancellation.
+            var structured = (IStructuredTextInput)this;
+            if (string.IsNullOrEmpty(preeditText))
             {
+                structured.SetCompositionText(null, 0);
                 return;
             }
 
-            _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
-            _presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, cursorPos);
+            structured.SetCompositionText(preeditText, cursorPos ?? preeditText.Length);
         }
 
         ITextPointer IStructuredTextInput.CaretPosition =>
@@ -281,6 +307,7 @@ namespace Avalonia.Controls
             }
 
             _inputDecorations = decorations;
+            PushCompositionToPresenter();
             InputDecorationsChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -642,10 +669,55 @@ namespace Avalonia.Controls
             }
 
             _compositionRange = normalized;
+            PushCompositionToPresenter();
             if (raiseEvent)
             {
                 RaiseCompositionChangedCore();
             }
+        }
+
+        // The composition region always renders decorated: explicit clause decorations
+        // when the IME supplied them, the default underline over the whole region
+        // otherwise. The presenter draws from resolved offsets so it stays free of the
+        // navigation vocabulary.
+        private void PushCompositionToPresenter()
+        {
+            if (_presenter is null)
+            {
+                return;
+            }
+
+            if (_compositionRange is not { } range)
+            {
+                _presenter.SetCompositionRegion(null);
+                return;
+            }
+
+            var (start, end) = GetAbsoluteRange(range);
+            var highlights = new List<TextPresenter.CompositionHighlight>();
+
+            foreach (var decoration in _inputDecorations)
+            {
+                var (decorationStart, decorationEnd) = GetAbsoluteRange(decoration.Range);
+                if (decorationStart >= decorationEnd)
+                {
+                    continue;
+                }
+
+                highlights.Add(new TextPresenter.CompositionHighlight(
+                    decorationStart,
+                    decorationEnd,
+                    decoration.Background,
+                    decoration.Underline,
+                    decoration.Kind is TextInputDecorationKind.ConvertedTarget or TextInputDecorationKind.ReconversionTarget));
+            }
+
+            if (highlights.Count == 0 && start < end)
+            {
+                highlights.Add(new TextPresenter.CompositionHighlight(start, end, null, TextInputUnderline.None, false));
+            }
+
+            _presenter.SetCompositionRegion(highlights);
         }
 
         private bool AreRangesEqual(ITextRange? left, ITextRange? right)
@@ -691,7 +763,19 @@ namespace Avalonia.Controls
             return point.Transform(transform.Value);
         }
 
-        private void RaiseCaretPositionChangedCore() => CaretPositionChanged?.Invoke(this, EventArgs.Empty);
+        // Deferred while a change scope is open so the events flow in contract order:
+        // the text delta first, then the composition range, then caret and selection.
+        // The presenter's caret-bounds relay would otherwise raise the caret mid-edit.
+        private void RaiseCaretPositionChangedCore()
+        {
+            if (_isInChange)
+            {
+                _selectionChanged = true;
+                return;
+            }
+
+            CaretPositionChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         private void RaiseCompositionChangedCore() => CompositionChanged?.Invoke(this, EventArgs.Empty);
 

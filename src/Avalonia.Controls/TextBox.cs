@@ -1492,7 +1492,9 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (!string.IsNullOrEmpty(_presenter.PreeditText))
+            // The IME owns the keyboard while a composition is active - both the
+            // in-document composition and a third-party presenter preedit overlay.
+            if (_imClient.HasActiveComposition || !string.IsNullOrEmpty(_presenter.PreeditText))
             {
                 return;
             }
