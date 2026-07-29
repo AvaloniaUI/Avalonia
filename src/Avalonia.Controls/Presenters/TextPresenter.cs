@@ -267,11 +267,13 @@ namespace Avalonia.Controls.Presenters
                     return _textLayout;
                 }
 
-                _textLayout = CreateTextLayout();
+                var textLayout = _textLayout = CreateTextLayout();
 
                 UpdateCaret(_lastCharacterHit, false);
 
-                return _textLayout;
+                // A CaretBoundsChanged handler run by UpdateCaret may have invalidated the
+                // layout again; the caller still gets the coherent layout it asked for.
+                return textLayout;
             }
         }
 
@@ -658,9 +660,13 @@ namespace Avalonia.Controls.Presenters
 
             InvalidateArrange();
 
+            // Read the layout once: materializing it runs UpdateCaret, whose
+            // CaretBoundsChanged handlers may invalidate the layout reentrantly.
+            var textLayout = TextLayout;
+
             // The textWidth used here is matching that TextBlock uses to measure the text.
-            var textWidth = TextLayout.WidthIncludingTrailingWhitespace;
-            return new Size(textWidth, TextLayout.Height);
+            var textWidth = textLayout.WidthIncludingTrailingWhitespace;
+            return new Size(textWidth, textLayout.Height);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -697,10 +703,17 @@ namespace Avalonia.Controls.Presenters
             InvalidateVisual();
         }
 
-        public void MoveCaretToTextPosition(int textPosition, bool trailingEdge = false)
+        /// <summary>
+        /// Normalizes a text position into a caret-valid <see cref="CharacterHit"/> via the
+        /// line's caret hit walkers, so positions on cluster or run boundaries (the end of a
+        /// preedit shaped with a fallback font, a surrogate pair) resolve to a hit the
+        /// layout can measure.
+        /// </summary>
+        private CharacterHit GetCaretCharacterHit(int textPosition, bool trailingEdge = false)
         {
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, trailingEdge);
-            var textLine = TextLayout.TextLines[lineIndex];
+            var textLayout = TextLayout;
+            var lineIndex = textLayout.GetLineIndexFromCharacterIndex(textPosition, trailingEdge);
+            var textLine = textLayout.TextLines[lineIndex];
 
             var characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(textPosition));
 
@@ -713,12 +726,15 @@ namespace Avalonia.Controls.Presenters
 
             if (textPosition == characterHit.FirstCharacterIndex + characterHit.TrailingLength)
             {
-                UpdateCaret(characterHit);
+                return characterHit;
             }
-            else
-            {
-                UpdateCaret(trailingEdge ? characterHit : new CharacterHit(characterHit.FirstCharacterIndex));
-            }
+
+            return trailingEdge ? characterHit : new CharacterHit(characterHit.FirstCharacterIndex);
+        }
+
+        public void MoveCaretToTextPosition(int textPosition, bool trailingEdge = false)
+        {
+            UpdateCaret(GetCaretCharacterHit(textPosition, trailingEdge));
 
             _navigationPosition = _caretBounds.Position;
 
@@ -916,15 +932,19 @@ namespace Avalonia.Controls.Presenters
 
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, characterHit.TrailingLength > 0);
-            var textLine = TextLayout.TextLines[lineIndex];
+            // Read the layout once: raising CaretBoundsChanged below can run handlers that
+            // invalidate it, and the whole computation must use one coherent layout.
+            var textLayout = TextLayout;
+
+            var lineIndex = textLayout.GetLineIndexFromCharacterIndex(caretIndex, characterHit.TrailingLength > 0);
+            var textLine = textLayout.TextLines[lineIndex];
             var distanceX = textLine.GetDistanceFromCharacterHit(characterHit);
 
             var distanceY = 0d;
 
             for (var i = 0; i < lineIndex; i++)
             {
-                var currentLine = TextLayout.TextLines[i];
+                var currentLine = textLayout.TextLines[i];
 
                 distanceY += currentLine.Height;
             }
@@ -1003,14 +1023,14 @@ namespace Avalonia.Controls.Presenters
         {
             if (string.IsNullOrEmpty(preeditText))
             {
-                UpdateCaret(new CharacterHit(CaretIndex), false);
+                UpdateCaret(GetCaretCharacterHit(CaretIndex), false);
             }
             else
             {
                 var cursorPos = cursorPosition is >= 0 && cursorPosition <= preeditText.Length
                     ? cursorPosition.Value
                     : preeditText.Length;
-                UpdateCaret(new CharacterHit(CaretIndex + cursorPos), false);
+                UpdateCaret(GetCaretCharacterHit(CaretIndex + cursorPos), false);
                 InvalidateMeasure();
                 CaretChanged();
             }
@@ -1023,16 +1043,6 @@ namespace Avalonia.Controls.Presenters
             if (change.Property == CaretIndexProperty)
             {
                 MoveCaretToTextPosition(change.GetNewValue<int>());
-            }
-
-            if (change.Property == PreeditTextProperty)
-            {
-                OnPreeditChanged(change.NewValue as string, PreeditTextCursorPosition);
-            }
-
-            if (change.Property == PreeditTextCursorPositionProperty)
-            {
-                OnPreeditChanged(PreeditText, PreeditTextCursorPosition);
             }
 
             if (change.Property == TextProperty || change.Property == CaretIndexProperty)
@@ -1090,6 +1100,19 @@ namespace Avalonia.Controls.Presenters
                         }
                         break;
                     }
+            }
+
+            // After the invalidation above, so the caret is computed against a layout
+            // that already contains the new preedit text; the stale layout does not
+            // cover the preedit-shifted caret index.
+            if (change.Property == PreeditTextProperty)
+            {
+                OnPreeditChanged(change.NewValue as string, PreeditTextCursorPosition);
+            }
+
+            if (change.Property == PreeditTextCursorPositionProperty)
+            {
+                OnPreeditChanged(PreeditText, PreeditTextCursorPosition);
             }
         }
     }
