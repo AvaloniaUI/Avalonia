@@ -93,6 +93,10 @@ namespace Avalonia
         private ControlTheme? _implicitTheme;
         private ResourcesChangedEventArgs _lastResourcesChangedEventArgs;
 
+        // True when this element has been removed from a logical children collection and not added back since:
+        // This flag avoids a costly quadratic LogicalChildren.Contains call in OnAttachedToLogicalTreeCore.
+        private bool _removedFromLogicalParent;
+
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
         /// </summary>
@@ -869,7 +873,10 @@ namespace Avalonia
 
             foreach (var logicalChild in TypedLogicalChildren)
             {
-                if (logicalChild is StyledElement child && child._logicalRoot != e.Root) // child may already have been attached within an event handler
+                // An event handler may have modified the children while we're enumerating a snapshot of the collection.
+                if (logicalChild is StyledElement child &&
+                    child._logicalRoot != e.Root &&
+                    (child.Parent is not null || !child._removedFromLogicalParent))
                 {
                     child.OnAttachedToLogicalTreeCore(e);
                 }
@@ -917,7 +924,12 @@ namespace Avalonia
             for (var i = 0; i < count; i++)
             {
                 var logical = (ILogical) children[i]!;
-                
+
+                if (logical is StyledElement styledElement)
+                {
+                    styledElement._removedFromLogicalParent = false;
+                }
+
                 if (logical.LogicalParent is null)
                 {
                     ((ISetLogicalParent)logical).SetParent(this);
@@ -932,7 +944,12 @@ namespace Avalonia
             for (var i = 0; i < count; i++)
             {
                 var logical = (ILogical) children[i]!;
-                
+
+                if (logical is StyledElement styledElement)
+                {
+                    styledElement._removedFromLogicalParent = true;
+                }
+
                 if (logical.LogicalParent == this)
                 {
                     ((ISetLogicalParent)logical).SetParent(null);

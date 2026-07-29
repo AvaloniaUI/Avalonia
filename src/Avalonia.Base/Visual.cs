@@ -561,7 +561,9 @@ namespace Avalonia
 
             foreach (var child in TypedVisualChildren)
             {
-                if (child.PresentationSource != e.PresentationSource) // child may already have been attached within an event handler
+                // An event handler may have modified the children: skip a child which has already been attached, or
+                // which has been removed from this visual (we're enumerating a snapshot of the collection).
+                if (child.PresentationSource != e.PresentationSource && child.VisualParent == this)
                 {
                     child.OnAttachedToVisualTreeCore(e);
                 }
@@ -596,7 +598,12 @@ namespace Avalonia
 
             foreach (var child in TypedVisualChildren)
             {
-                child.OnDetachedFromVisualTreeCore(e);
+                // A child removed within an event handler has already been detached by the removal itself:
+                // don't detach it a second time (we're enumerating a snapshot of the collection).
+                if (child.PresentationSource is not null)
+                {
+                    child.OnDetachedFromVisualTreeCore(e);
+                }
             }
         }
 
