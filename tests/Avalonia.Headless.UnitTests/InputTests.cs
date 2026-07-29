@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace Avalonia.Headless.UnitTests;
@@ -101,6 +103,94 @@ public class InputTests
         _window.MouseUp(translatePoint.Value, MouseButton.Left, RawInputModifiers.None);
 
         AssertHelper.Equal(1, clickCount);
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Touch_Contact_Raises_Touch_Pointer_Events()
+    {
+        var pressedCount = 0;
+        var movedCount = 0;
+        var releasedCount = 0;
+        PointerType pressedPointerType = default;
+
+        var border = new Border { Background = Brushes.Red };
+        border.PointerPressed += (_, e) =>
+        {
+            pressedCount++;
+            pressedPointerType = e.Pointer.Type;
+        };
+        border.PointerMoved += (_, _) => movedCount++;
+        border.PointerReleased += (_, _) => releasedCount++;
+
+        _window.Content = border;
+        _window.Show();
+
+        _window.TouchBegin(new Point(50, 50));
+        _window.TouchMove(new Point(60, 60));
+        _window.TouchEnd(new Point(60, 60));
+
+        AssertHelper.Equal(1, pressedCount);
+        AssertHelper.Equal(1, movedCount);
+        AssertHelper.Equal(1, releasedCount);
+        AssertHelper.Equal(PointerType.Touch, pressedPointerType);
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Multiple_Touch_Contacts_Are_Distinct_Pointers()
+    {
+        var pointerIds = new HashSet<int>();
+
+        var border = new Border { Background = Brushes.Red };
+        border.PointerPressed += (_, e) => pointerIds.Add(e.Pointer.Id);
+
+        _window.Content = border;
+        _window.Show();
+
+        _window.TouchBegin(new Point(30, 30), touchPointId: 1);
+        _window.TouchBegin(new Point(70, 70), touchPointId: 2);
+        _window.TouchEnd(new Point(30, 30), touchPointId: 1);
+        _window.TouchEnd(new Point(70, 70), touchPointId: 2);
+
+        AssertHelper.Equal(2, pointerIds.Count);
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Pen_Input_Reports_Pen_Type_And_Pressure()
+    {
+        PointerType pressedPointerType = default;
+        float pressure = 0f;
+        var releasedCount = 0;
+
+        var border = new Border { Background = Brushes.Red };
+        border.PointerPressed += (_, e) =>
+        {
+            pressedPointerType = e.Pointer.Type;
+            pressure = e.GetCurrentPoint(border).Properties.Pressure;
+        };
+        border.PointerReleased += (_, _) => releasedCount++;
+
+        _window.Content = border;
+        _window.Show();
+
+        _window.PenDown(new Point(50, 50), pressure: 0.75f);
+        _window.PenMove(new Point(60, 60), pressure: 0.75f);
+        _window.PenUp(new Point(60, 60));
+
+        AssertHelper.Equal(PointerType.Pen, pressedPointerType);
+        AssertHelper.Equal(0.75f, pressure);
+        AssertHelper.Equal(1, releasedCount);
     }
 
 #if NUNIT

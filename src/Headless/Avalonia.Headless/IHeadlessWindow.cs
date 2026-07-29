@@ -15,6 +15,8 @@ namespace Avalonia.Headless
         void MouseMove(Point point, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseUp(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None);
         void MouseWheel(Point point, Vector delta, RawInputModifiers modifiers = RawInputModifiers.None);
+        void Touch(Point point, long touchPointId, RawPointerEventType type, RawInputModifiers modifiers = RawInputModifiers.None);
+        void Pen(RawPointerPoint point, RawPointerEventType type, RawInputModifiers modifiers = RawInputModifiers.None);
         void DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None);
         void SetRenderScaling(double scaling);
     }

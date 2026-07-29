@@ -80,7 +80,7 @@ public static class HeadlessWindowExtensions
     /// Simulates a mouse down on the headless window/toplevel.
     /// </summary>
     /// <remarks>
-    /// In the headless platform, there is a single mouse pointer. There are no helper methods for touch or pen input.
+    /// In the headless platform, there is a single mouse pointer. For touch input use the TouchBegin/TouchMove/TouchEnd methods, for pen input use the PenDown/PenMove/PenUp methods.
     /// </remarks>
     public static void MouseDown(this TopLevel topLevel, Point point, MouseButton button,
         RawInputModifiers modifiers = RawInputModifiers.None) =>
@@ -106,6 +106,83 @@ public static class HeadlessWindowExtensions
     public static void MouseWheel(this TopLevel topLevel, Point point, Vector delta,
         RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.MouseWheel(point, delta, modifiers));
+
+    /// <summary>
+    /// Simulates a touch contact being pressed on the headless window/toplevel.
+    /// </summary>
+    /// <remarks>
+    /// To simulate multi-touch, use a distinct <paramref name="touchPointId"/> for each simultaneous contact.
+    /// </remarks>
+    public static void TouchBegin(this TopLevel topLevel, Point point, long touchPointId = 0,
+        RawInputModifiers modifiers = RawInputModifiers.None) =>
+        RunJobsOnImpl(topLevel, w => w.Touch(point, touchPointId, RawPointerEventType.TouchBegin, modifiers));
+
+    /// <summary>
+    /// Simulates a touch contact being moved on the headless window/toplevel.
+    /// </summary>
+    public static void TouchMove(this TopLevel topLevel, Point point, long touchPointId = 0,
+        RawInputModifiers modifiers = RawInputModifiers.None) =>
+        RunJobsOnImpl(topLevel, w => w.Touch(point, touchPointId, RawPointerEventType.TouchUpdate, modifiers));
+
+    /// <summary>
+    /// Simulates a touch contact being released on the headless window/toplevel.
+    /// </summary>
+    public static void TouchEnd(this TopLevel topLevel, Point point, long touchPointId = 0,
+        RawInputModifiers modifiers = RawInputModifiers.None) =>
+        RunJobsOnImpl(topLevel, w => w.Touch(point, touchPointId, RawPointerEventType.TouchEnd, modifiers));
+
+    /// <summary>
+    /// Simulates a touch contact being cancelled on the headless window/toplevel.
+    /// </summary>
+    public static void TouchCancel(this TopLevel topLevel, Point point, long touchPointId = 0,
+        RawInputModifiers modifiers = RawInputModifiers.None) =>
+        RunJobsOnImpl(topLevel, w => w.Touch(point, touchPointId, RawPointerEventType.TouchCancel, modifiers));
+
+    /// <summary>
+    /// Simulates a pen tip being pressed on the headless window/toplevel.
+    /// </summary>
+    /// <param name="topLevel">The target headless top level.</param>
+    /// <param name="point">The pen position.</param>
+    /// <param name="pressure">The pen pressure, in the 0..1 range.</param>
+    /// <param name="xTilt">The pen tilt along the X axis, in the -90..90 degrees range.</param>
+    /// <param name="yTilt">The pen tilt along the Y axis, in the -90..90 degrees range.</param>
+    /// <param name="twist">The pen rotation around its own axis, in the 0..359 degrees range.</param>
+    /// <param name="modifiers">The optional key modifiers.</param>
+    public static void PenDown(this TopLevel topLevel, Point point, float pressure = 0.5f,
+        float xTilt = 0f, float yTilt = 0f, float twist = 0f,
+        RawInputModifiers modifiers = RawInputModifiers.None) =>
+        RunJobsOnImpl(topLevel, w => w.Pen(CreatePenPoint(point, pressure, xTilt, yTilt, twist),
+            RawPointerEventType.LeftButtonDown, modifiers));
+
+    /// <summary>
+    /// Simulates a pen being moved over the headless window/toplevel.
+    /// </summary>
+    /// <inheritdoc cref="PenDown" path="/param"/>
+    public static void PenMove(this TopLevel topLevel, Point point, float pressure = 0.5f,
+        float xTilt = 0f, float yTilt = 0f, float twist = 0f,
+        RawInputModifiers modifiers = RawInputModifiers.None) =>
+        RunJobsOnImpl(topLevel, w => w.Pen(CreatePenPoint(point, pressure, xTilt, yTilt, twist),
+            RawPointerEventType.Move, modifiers));
+
+    /// <summary>
+    /// Simulates a pen tip being released on the headless window/toplevel.
+    /// </summary>
+    /// <inheritdoc cref="PenDown" path="/param"/>
+    public static void PenUp(this TopLevel topLevel, Point point, float pressure = 0f,
+        float xTilt = 0f, float yTilt = 0f, float twist = 0f,
+        RawInputModifiers modifiers = RawInputModifiers.None) =>
+        RunJobsOnImpl(topLevel, w => w.Pen(CreatePenPoint(point, pressure, xTilt, yTilt, twist),
+            RawPointerEventType.LeftButtonUp, modifiers));
+
+    private static RawPointerPoint CreatePenPoint(Point point, float pressure, float xTilt, float yTilt, float twist) =>
+        new()
+        {
+            Position = point,
+            Pressure = pressure,
+            XTilt = xTilt,
+            YTilt = yTilt,
+            Twist = twist
+        };
 
     /// <summary>
     /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
