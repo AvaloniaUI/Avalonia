@@ -376,14 +376,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Renders the <see cref="TextPresenter"/> to a drawing context.
-        /// </summary>
-        /// <param name="context">The drawing context.</param>
-        /// <summary>
         /// One rendered composition clause: offsets into <see cref="Text"/>, an optional
         /// explicit background, and the underline the input method requested (None means
         /// the default single underline; emphasized clauses draw thick).
         /// </summary>
+        /// <param name="Start">The clause start offset into <see cref="Text"/>.</param>
+        /// <param name="End">The clause end offset into <see cref="Text"/>.</param>
+        /// <param name="Background">An explicit background, or null for none.</param>
+        /// <param name="Underline">The requested underline style.</param>
+        /// <param name="Emphasized">Whether the clause is the conversion target and draws thick.</param>
         internal readonly record struct CompositionHighlight(
             int Start,
             int End,
@@ -423,6 +424,10 @@ namespace Avalonia.Controls.Presenters
             return new ImmutablePen(foreground, thickness, dashStyle);
         }
 
+        /// <summary>
+        /// Renders the <see cref="TextPresenter"/> to a drawing context.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
         private void RenderInternal(DrawingContext context)
         {
             var background = Background;
