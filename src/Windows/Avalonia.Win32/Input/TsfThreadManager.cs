@@ -166,9 +166,16 @@ namespace Avalonia.Win32.Input
         {
             if (client is IStructuredTextInput structuredClient && hwnd != IntPtr.Zero)
             {
-                AssociateWindow(hwnd);
+                EnsureDocumentManager();
+
+                // The client attaches before focus lands on the document: setting the
+                // focus makes the IME inspect the store immediately, and a first
+                // impression of an empty read-only document would park it in direct
+                // input.
                 _textStore?.SetWindow(hwnd, window);
                 _textStore?.SetClient(structuredClient);
+
+                AssociateWindow(hwnd);
             }
             else
             {
@@ -178,54 +185,63 @@ namespace Avalonia.Win32.Input
             }
         }
 
-        private unsafe void AssociateWindow(IntPtr hwnd)
+        private unsafe void EnsureDocumentManager()
         {
-            if (_documentManager is null)
-            {
-                _documentManager = _threadManager.CreateDocumentMgr();
-
-                // The store owns the context: TSF query-interfaces the context owner for
-                // ITextStoreACP2 (and the composition sink) and drives the document
-                // through it.
-                _textStore = new TsfTextStore();
-                IntPtr contextPtr;
-                _documentManager.CreateContext(_clientId, 0, _textStore, &contextPtr);
-                _context = MicroComRuntime.CreateProxyFor<ITfContext>(contextPtr, true);
-                _documentManager.Push(_context);
-
-                // The text edit sink supplies the read-only edit cookie the store needs
-                // to read the composition's display attribute property.
-                try
-                {
-                    using var source = _context.QueryInterface<ITfSource>();
-                    var sinkIid = MicroComRuntime.GetGuidFor(typeof(ITfTextEditSink));
-                    _textEditSinkCookie = source.AdviseSink(&sinkIid, _textStore);
-                    _hasTextEditSinkCookie = true;
-                }
-                catch (Exception exception)
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.TextInput)
-                        ?.Log(this, "TSF text edit sink advise failed: {Error}", exception.Message);
-                }
-            }
-
-            if (_associatedHwnd == hwnd)
+            if (_documentManager is not null)
             {
                 return;
             }
 
+            _documentManager = _threadManager.CreateDocumentMgr();
+
+            // The store owns the context: TSF query-interfaces the context owner for
+            // ITextStoreACP2 (and the composition sink) and drives the document
+            // through it.
+            _textStore = new TsfTextStore();
+            IntPtr contextPtr;
+            _documentManager.CreateContext(_clientId, 0, _textStore, &contextPtr);
+            _context = MicroComRuntime.CreateProxyFor<ITfContext>(contextPtr, true);
+            _documentManager.Push(_context);
+
+            // The text edit sink supplies the read-only edit cookie the store needs
+            // to read the composition's display attribute property.
             try
             {
-                if (_associatedHwnd != IntPtr.Zero)
+                using var source = _context.QueryInterface<ITfSource>();
+                var sinkIid = MicroComRuntime.GetGuidFor(typeof(ITfTextEditSink));
+                _textEditSinkCookie = source.AdviseSink(&sinkIid, _textStore);
+                _hasTextEditSinkCookie = true;
+            }
+            catch (Exception exception)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.TextInput)
+                    ?.Log(this, "TSF text edit sink advise failed: {Error}", exception.Message);
+            }
+        }
+
+        private void AssociateWindow(IntPtr hwnd)
+        {
+            try
+            {
+                if (_associatedHwnd != hwnd)
                 {
-                    _threadManager.AssociateFocus(_associatedHwnd, null)?.Dispose();
+                    if (_associatedHwnd != IntPtr.Zero)
+                    {
+                        _threadManager.AssociateFocus(_associatedHwnd, null)?.Dispose();
+                    }
+
+                    _threadManager.AssociateFocus(hwnd, _documentManager)?.Dispose();
+                    _associatedHwnd = hwnd;
+
+                    Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
+                        ?.Log(this, "TSF document manager associated with window {Hwnd}", hwnd);
                 }
 
-                _threadManager.AssociateFocus(hwnd, _documentManager)?.Dispose();
-                _associatedHwnd = hwnd;
-
-                Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
-                    ?.Log(this, "TSF document manager associated with window {Hwnd}", hwnd);
+                // AssociateFocus only routes future focus changes, but the window
+                // already holds the keyboard focus when a client focuses inside it, so
+                // the document focus must be set explicitly or text services never look
+                // at the store.
+                _threadManager.SetFocus(_documentManager!);
             }
             catch (Exception exception)
             {

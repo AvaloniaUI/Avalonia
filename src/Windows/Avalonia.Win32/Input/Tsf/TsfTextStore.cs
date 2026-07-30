@@ -42,6 +42,7 @@ namespace Avalonia.Win32.Input.Tsf
         private readonly List<TS_TEXTCHANGE> _pendingTextChanges = new();
         private bool _pendingSelectionChange;
         private bool _pendingLayoutChange;
+        private bool _pendingStatusChange;
         private ITfCompositionView? _compositionView;
         private ITfCategoryMgr? _categoryManager;
         private ITfDisplayAttributeMgr? _displayAttributeManager;
@@ -100,6 +101,17 @@ namespace Avalonia.Win32.Input.Tsf
                 newEnd = _client.DocumentEnd.Offset;
                 _client.TextChanged += OnClientTextChanged;
                 _client.CaretPositionChanged += OnClientCaretPositionChanged;
+            }
+
+            // The dynamic read-only state follows the client, and text services cache it
+            // until a status change tells them to look again.
+            if (_activeLockFlags != 0)
+            {
+                _pendingStatusChange = true;
+            }
+            else
+            {
+                NotifyStatusChange();
             }
 
             if (oldEnd != 0 || newEnd != 0)
@@ -218,8 +230,33 @@ namespace Avalonia.Win32.Input.Tsf
             }
         }
 
+        private void NotifyStatusChange()
+        {
+            if (_sink is null || (_sinkMask & TS_AS_STATUS_CHANGE) == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                _sink.OnStatusChange(_client is null ? TS_SD_READONLY : 0);
+            }
+            catch (Exception exception)
+            {
+                Trace("OnStatusChange failed: {Error}", exception.Message);
+            }
+        }
+
         private void FlushPendingNotifications()
         {
+            // Status first: whether the document is writable gates how much the rest
+            // matters to a text service.
+            if (_pendingStatusChange)
+            {
+                _pendingStatusChange = false;
+                NotifyStatusChange();
+            }
+
             if (_pendingTextChanges.Count > 0)
             {
                 var changes = _pendingTextChanges.ToArray();
