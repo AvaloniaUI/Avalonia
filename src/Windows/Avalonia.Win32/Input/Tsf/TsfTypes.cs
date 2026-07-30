@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 
 namespace Avalonia.Win32.Input.Tsf
@@ -39,6 +40,39 @@ namespace Avalonia.Win32.Input.Tsf
         public int NewEnd;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct TF_DA_COLOR
+    {
+        public uint Type;
+        public uint Value;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct TF_DISPLAYATTRIBUTE
+    {
+        public TF_DA_COLOR Text;
+        public TF_DA_COLOR Background;
+        public uint LineStyle;
+        public int BoldLine;
+        public TF_DA_COLOR LineColor;
+        public int Attribute;
+    }
+
+    /// <summary>
+    /// Blittable VARIANT layout for reading scalar property values through an opaque
+    /// pointer parameter; matches the native size on both pointer widths.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct TsfVariant
+    {
+        public ushort Vt;
+        public ushort Reserved1;
+        public ushort Reserved2;
+        public ushort Reserved3;
+        public IntPtr Data1;
+        public IntPtr Data2;
+    }
+
     internal static class TsfConstants
     {
         public const uint TS_LF_SYNC = 0x1;
@@ -64,6 +98,32 @@ namespace Avalonia.Win32.Input.Tsf
 
         public const uint TS_IAS_NOQUERY = 0x1;
         public const uint TS_IAS_QUERYONLY = 0x2;
+
+        public const uint TF_LS_NONE = 0;
+        public const uint TF_LS_SOLID = 1;
+        public const uint TF_LS_DOT = 2;
+        public const uint TF_LS_DASH = 3;
+        public const uint TF_LS_SQUIGGLE = 4;
+
+        public const uint TF_CT_NONE = 0;
+        public const uint TF_CT_SYSCOLOR = 1;
+        public const uint TF_CT_COLORREF = 2;
+
+        public const int TF_ATTR_INPUT = 0;
+        public const int TF_ATTR_TARGET_CONVERTED = 1;
+        public const int TF_ATTR_CONVERTED = 2;
+        public const int TF_ATTR_TARGET_NOTCONVERTED = 3;
+        public const int TF_ATTR_INPUT_ERROR = 4;
+        public const int TF_ATTR_FIXEDCONVERTED = 5;
+
+        public const ushort VT_EMPTY = 0;
+        public const ushort VT_I4 = 3;
+
+        /// <summary>The context property holding per-clause display attribute atoms.</summary>
+        public static readonly Guid PropAttribute = new("34745c63-b2f0-4784-8b67-5e12c8701a31");
+
+        public static readonly Guid ClsidCategoryMgr = new("a4b544a1-438d-4b41-9325-869523e2d6c7");
+        public static readonly Guid ClsidDisplayAttributeMgr = new("3ce74de4-53d3-4d74-8b83-431b3828ba53");
 
         public const int S_OK = 0;
         public const int TS_S_ASYNC = 0x1;

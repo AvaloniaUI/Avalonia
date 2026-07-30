@@ -22,10 +22,13 @@ namespace Avalonia.Win32.Input
         [ThreadStatic] private static bool t_creationFailed;
 
         private readonly ITfThreadMgrEx _threadManager;
+        private readonly ITfKeystrokeMgr? _keystrokeManager;
         private readonly uint _clientId;
         private ITfDocumentMgr? _documentManager;
         private ITfContext? _context;
         private TsfTextStore? _textStore;
+        private uint _textEditSinkCookie;
+        private bool _hasTextEditSinkCookie;
         private IntPtr _associatedHwnd;
 
         /// <summary>
@@ -72,6 +75,16 @@ namespace Avalonia.Win32.Input
             _threadManager.ActivateEx(&clientId, 0);
             _clientId = clientId;
 
+            try
+            {
+                _keystrokeManager = _threadManager.QueryInterface<ITfKeystrokeMgr>();
+            }
+            catch (Exception exception)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.TextInput)
+                    ?.Log(this, "TSF keystroke manager unavailable: {Error}", exception.Message);
+            }
+
             Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
                 ?.Log(this, "TSF thread manager activated, client id {ClientId}", _clientId);
         }
@@ -102,12 +115,28 @@ namespace Avalonia.Win32.Input
                 _documentManager = _threadManager.CreateDocumentMgr();
 
                 // The store owns the context: TSF query-interfaces the context owner for
-                // ITextStoreACP2 and drives the document through it.
+                // ITextStoreACP2 (and the composition sink) and drives the document
+                // through it.
                 _textStore = new TsfTextStore();
                 IntPtr contextPtr;
                 _documentManager.CreateContext(_clientId, 0, _textStore, &contextPtr);
                 _context = MicroComRuntime.CreateProxyFor<ITfContext>(contextPtr, true);
                 _documentManager.Push(_context);
+
+                // The text edit sink supplies the read-only edit cookie the store needs
+                // to read the composition's display attribute property.
+                try
+                {
+                    using var source = _context.QueryInterface<ITfSource>();
+                    var sinkIid = MicroComRuntime.GetGuidFor(typeof(ITfTextEditSink));
+                    _textEditSinkCookie = source.AdviseSink(&sinkIid, _textStore);
+                    _hasTextEditSinkCookie = true;
+                }
+                catch (Exception exception)
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.TextInput)
+                        ?.Log(this, "TSF text edit sink advise failed: {Error}", exception.Message);
+                }
             }
 
             if (_associatedHwnd == hwnd)
@@ -125,6 +154,43 @@ namespace Avalonia.Win32.Input
 
             Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
                 ?.Log(this, "TSF document manager associated with window {Hwnd}", hwnd);
+        }
+
+        /// <summary>
+        /// Offers a key message to the active text service before the framework processes
+        /// it; true means the service ate the key and the message must not be dispatched
+        /// (the already-translated WM_CHAR is suppressed by the caller). Only keys for the
+        /// TSF-associated window are offered, so legacy-focused windows are untouched.
+        /// </summary>
+        public bool FilterKeyMessage(IntPtr hwnd, WindowsMessage message, IntPtr wParam, IntPtr lParam)
+        {
+            if (_keystrokeManager is null || _associatedHwnd != hwnd)
+            {
+                return false;
+            }
+
+            try
+            {
+                switch (message)
+                {
+                    case WindowsMessage.WM_KEYDOWN:
+                    case WindowsMessage.WM_SYSKEYDOWN:
+                        return _keystrokeManager.TestKeyDown(wParam, lParam) != 0
+                            && _keystrokeManager.KeyDown(wParam, lParam) != 0;
+
+                    case WindowsMessage.WM_KEYUP:
+                    case WindowsMessage.WM_SYSKEYUP:
+                        return _keystrokeManager.TestKeyUp(wParam, lParam) != 0
+                            && _keystrokeManager.KeyUp(wParam, lParam) != 0;
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
+                    ?.Log(this, "TSF key forwarding failed: {Error}", exception.Message);
+            }
+
+            return false;
         }
 
         private void ClearAssociation()
@@ -146,6 +212,21 @@ namespace Avalonia.Win32.Input
             _textStore?.SetClient(null);
             ClearAssociation();
 
+            if (_hasTextEditSinkCookie && _context is not null)
+            {
+                try
+                {
+                    using var source = _context.QueryInterface<ITfSource>();
+                    source.UnadviseSink(_textEditSinkCookie);
+                }
+                catch (Exception)
+                {
+                    // The context is going away regardless.
+                }
+
+                _hasTextEditSinkCookie = false;
+            }
+
             if (_documentManager is not null)
             {
                 _documentManager.Pop(1); // TF_POPF_ALL
@@ -158,6 +239,7 @@ namespace Avalonia.Win32.Input
             _textStore?.Dispose();
             _textStore = null;
 
+            _keystrokeManager?.Dispose();
             _threadManager.Deactivate();
             _threadManager.Dispose();
 

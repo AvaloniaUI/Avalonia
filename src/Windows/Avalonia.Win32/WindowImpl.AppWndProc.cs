@@ -229,6 +229,13 @@ namespace Avalonia.Win32
                     return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
+                    // The active text service gets first claim on the key; an eaten key must
+                    // not be dispatched, and its already-translated WM_CHAR is suppressed.
+                    if (TsfThreadManager.Current?.FilterKeyMessage(_hwnd, message, wParam, lParam) == true)
+                    {
+                        _ignoreWmChar = true;
+                        return IntPtr.Zero;
+                    }
                     // Ctrl+Backspace is not an IME key, so the IME never offers reconversion for it.
                     // Drive it ourselves when there is a selection the active IME can reconvert.
                     if (ToInt32(wParam) == (int)VirtualKeyStates.VK_BACK
@@ -241,6 +248,11 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SYSKEYDOWN:
+                    if (TsfThreadManager.Current?.FilterKeyMessage(_hwnd, message, wParam, lParam) == true)
+                    {
+                        _ignoreWmChar = true;
+                        return IntPtr.Zero;
+                    }
                     e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, false);
                     break;
 
@@ -257,11 +269,21 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_KEYUP:
+                    if (TsfThreadManager.Current?.FilterKeyMessage(_hwnd, message, wParam, lParam) == true)
+                    {
+                        _ignoreWmChar = false;
+                        return IntPtr.Zero;
+                    }
                     e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam, true);
                     _ignoreWmChar = false;
                     break;
 
                 case WindowsMessage.WM_SYSKEYUP:
+                    if (TsfThreadManager.Current?.FilterKeyMessage(_hwnd, message, wParam, lParam) == true)
+                    {
+                        _ignoreWmChar = false;
+                        return IntPtr.Zero;
+                    }
                     e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam, false);
                     _ignoreWmChar = false;
                     break;

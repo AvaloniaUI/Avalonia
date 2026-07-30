@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
+using Avalonia.Media;
 using Avalonia.MicroCom;
 using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
@@ -18,9 +19,12 @@ namespace Avalonia.Win32.Input.Tsf
     /// UI thread (TSF drives the store from the thread that activated the thread manager);
     /// notifications raised while a lock is held are queued and flushed after release, and
     /// edits TSF itself performs under a write lock are not echoed back as change
-    /// notifications. Geometry and attribute queries arrive in a later phase.
+    /// notifications. The store is also the context owner's composition sink: composition
+    /// views map to <see cref="IStructuredTextInput.CompositionRange"/>, and the per-clause
+    /// display attributes are read from the context's attribute property on each edit and
+    /// reported as input decorations. Geometry queries arrive in a later phase.
     /// </summary>
-    internal sealed unsafe class TsfTextStore : CallbackBase, ITextStoreACP2
+    internal sealed unsafe class TsfTextStore : CallbackBase, ITextStoreACP2, ITfContextOwnerCompositionSink, ITfTextEditSink
     {
         private static readonly Guid s_iidTextStoreAcpSink = MicroComRuntime.GetGuidFor(typeof(ITextStoreACPSink));
 
@@ -33,6 +37,17 @@ namespace Avalonia.Win32.Input.Tsf
         private bool _inTsfEdit;
         private readonly List<TS_TEXTCHANGE> _pendingTextChanges = new();
         private bool _pendingSelectionChange;
+        private ITfCompositionView? _compositionView;
+        private ITfCategoryMgr? _categoryManager;
+        private ITfDisplayAttributeMgr? _displayAttributeManager;
+        private bool _displayAttributeManagersUnavailable;
+        private readonly Dictionary<uint, ResolvedDisplayAttribute?> _displayAttributeCache = new();
+
+        private readonly record struct ResolvedDisplayAttribute(
+            TextInputDecorationKind Kind,
+            Color? Foreground,
+            Color? Background,
+            TextInputUnderline Underline);
 
         /// <summary>
         /// Attaches the store to the focused structured client, or detaches it when focus
@@ -46,6 +61,11 @@ namespace Avalonia.Win32.Input.Tsf
             {
                 return;
             }
+
+            // Any composition tracked against the old client is stale; TSF terminates its
+            // side when the focus moves.
+            _compositionView?.Dispose();
+            _compositionView = null;
 
             var oldEnd = 0;
 
@@ -507,6 +527,321 @@ namespace Avalonia.Win32.Input.Tsf
             }
         }
 
+        // The composition sink: TSF query-interfaces the context owner for it. The view's
+        // range tracks IStructuredTextInput.CompositionRange, and the composition commits
+        // through the structured client when TSF ends it (the text itself is already in
+        // the document via the store's edit path).
+
+        public void OnStartComposition(ITfCompositionView pComposition, IntPtr pfOk)
+        {
+            if (pfOk != IntPtr.Zero)
+            {
+                *(int*)pfOk = _client is not null ? 1 : 0;
+            }
+
+            if (_client is null)
+            {
+                return;
+            }
+
+            _compositionView?.Dispose();
+            _compositionView = pComposition.CloneReference();
+            UpdateCompositionRange(pComposition);
+            Trace("Composition started");
+        }
+
+        public void OnUpdateComposition(ITfCompositionView pComposition, ITfRange? pRangeNew)
+        {
+            if (_client is null || pRangeNew is null)
+            {
+                return;
+            }
+
+            UpdateCompositionRangeFromRange(pRangeNew);
+        }
+
+        public void OnEndComposition(ITfCompositionView pComposition)
+        {
+            _compositionView?.Dispose();
+            _compositionView = null;
+
+            if (_client is null)
+            {
+                return;
+            }
+
+            _client.CommitComposition();
+            Trace("Composition ended");
+        }
+
+        private void UpdateCompositionRange(ITfCompositionView view)
+        {
+            ITfRange? range = null;
+            try
+            {
+                range = view.Range;
+                UpdateCompositionRangeFromRange(range);
+            }
+            catch (COMException exception)
+            {
+                Trace("Composition range query failed: {Error}", exception.Message);
+            }
+            finally
+            {
+                range?.Dispose();
+            }
+        }
+
+        private void UpdateCompositionRangeFromRange(ITfRange range)
+        {
+            if (_client is null || !TryGetRangeExtent(range, out var start, out var length))
+            {
+                return;
+            }
+
+            _client.CompositionRange = _client.RangeAt(start, length);
+        }
+
+        private static bool TryGetRangeExtent(ITfRange range, out int start, out int length)
+        {
+            start = 0;
+            length = 0;
+
+            ITfRangeACP? acpRange = null;
+            try
+            {
+                acpRange = range.QueryInterface<ITfRangeACP>();
+
+                int anchor, count;
+                acpRange.GetExtent(new IntPtr(&anchor), new IntPtr(&count));
+                start = anchor;
+                length = count;
+                return true;
+            }
+            catch (COMException)
+            {
+                // A non-ACP range cannot appear over an ACP store; treat it as no extent.
+                return false;
+            }
+            finally
+            {
+                acpRange?.Dispose();
+            }
+        }
+
+        // The text edit sink, advised on the context through ITfSource: its read-only edit
+        // cookie is the only channel to property values, so the per-clause display
+        // attributes are re-read here after every TSF edit while a composition is active.
+
+        public void OnEndEdit(ITfContext pic, uint ecReadOnly, ITfEditRecord pEditRecord)
+        {
+            if (_client is null || _compositionView is null)
+            {
+                return;
+            }
+
+            // A conversion can replace the composition text without moving its extent, so
+            // OnUpdateComposition does not fire; re-anchor the range from the held view
+            // after every edit in case the client's edit path disturbed it.
+            UpdateCompositionRange(_compositionView);
+
+            try
+            {
+                UpdateCompositionDecorations(pic, ecReadOnly);
+            }
+            catch (COMException exception)
+            {
+                Trace("Reading composition attributes failed: {Error}", exception.Message);
+            }
+        }
+
+        private void UpdateCompositionDecorations(ITfContext context, uint cookie)
+        {
+            var client = _client!;
+
+            ITfRange? compositionRange = null;
+            ITfProperty? property = null;
+            IEnumTfRanges? enumerator = null;
+            try
+            {
+                compositionRange = _compositionView!.Range;
+
+                var propGuid = PropAttribute;
+                property = context.GetProperty(&propGuid);
+
+                void* enumeratorPtr = null;
+                property.EnumRanges(cookie, new IntPtr(&enumeratorPtr), compositionRange);
+                if (enumeratorPtr == null)
+                {
+                    return;
+                }
+
+                enumerator = MicroComRuntime.CreateProxyFor<IEnumTfRanges>(enumeratorPtr, true);
+
+                var decorations = new List<TextInputDecoration>();
+
+                while (TryGetNextRange(enumerator, out var range))
+                {
+                    using (range)
+                    {
+                        if (!TryGetRangeExtent(range, out var start, out var length) || length <= 0)
+                        {
+                            continue;
+                        }
+
+                        var resolved = GetRangeDisplayAttribute(property, cookie, range);
+                        decorations.Add(resolved is { } attribute
+                            ? new TextInputDecoration(client.RangeAt(start, length), attribute.Kind, attribute.Foreground, attribute.Background, attribute.Underline)
+                            : new TextInputDecoration(client.RangeAt(start, length), TextInputDecorationKind.Input));
+                    }
+                }
+
+                client.SetInputDecorations(decorations);
+            }
+            finally
+            {
+                enumerator?.Dispose();
+                property?.Dispose();
+                compositionRange?.Dispose();
+            }
+        }
+
+        private static bool TryGetNextRange(IEnumTfRanges enumerator, out ITfRange range)
+        {
+            range = null!;
+
+            void* rangePtr = null;
+            uint fetched = 0;
+            try
+            {
+                enumerator.Next(1, new IntPtr(&rangePtr), new IntPtr(&fetched));
+            }
+            catch (COMException exception) when (exception.HResult == 1)
+            {
+                // S_FALSE: the enumeration is exhausted.
+            }
+
+            if (fetched == 0 || rangePtr == null)
+            {
+                return false;
+            }
+
+            range = MicroComRuntime.CreateProxyFor<ITfRange>(rangePtr, true);
+            return true;
+        }
+
+        private ResolvedDisplayAttribute? GetRangeDisplayAttribute(ITfProperty property, uint cookie, ITfRange range)
+        {
+            var variant = default(TsfVariant);
+            try
+            {
+                property.GetValue(cookie, range, new IntPtr(&variant));
+
+                return variant.Vt == VT_I4
+                    ? ResolveDisplayAttribute((uint)variant.Data1.ToInt64())
+                    : null;
+            }
+            finally
+            {
+                VariantClear(new IntPtr(&variant));
+            }
+        }
+
+        // Display attribute atoms resolve through the category manager to the owning text
+        // service's TF_DISPLAYATTRIBUTE; resolutions are cached per atom (atoms are stable
+        // for the thread's lifetime).
+
+        private ResolvedDisplayAttribute? ResolveDisplayAttribute(uint atom)
+        {
+            if (_displayAttributeCache.TryGetValue(atom, out var cached))
+            {
+                return cached;
+            }
+
+            ResolvedDisplayAttribute? resolved = null;
+            try
+            {
+                EnsureDisplayAttributeManagers();
+
+                if (_categoryManager is not null && _displayAttributeManager is not null)
+                {
+                    Guid attributeGuid;
+                    _categoryManager.GetGUID(atom, new IntPtr(&attributeGuid));
+
+                    void* infoPtr = null;
+                    Guid ownerClsid;
+                    _displayAttributeManager.GetDisplayAttributeInfo(&attributeGuid, new IntPtr(&infoPtr), new IntPtr(&ownerClsid));
+
+                    if (infoPtr != null)
+                    {
+                        using var info = MicroComRuntime.CreateProxyFor<ITfDisplayAttributeInfo>(infoPtr, true);
+                        var attribute = default(TF_DISPLAYATTRIBUTE);
+                        info.GetAttributeInfo(&attribute);
+                        resolved = MapDisplayAttribute(attribute);
+                    }
+                }
+            }
+            catch (COMException exception)
+            {
+                Trace("Display attribute resolution failed: {Error}", exception.Message);
+            }
+
+            _displayAttributeCache[atom] = resolved;
+            return resolved;
+        }
+
+        private void EnsureDisplayAttributeManagers()
+        {
+            if (_displayAttributeManagersUnavailable || (_categoryManager is not null && _displayAttributeManager is not null))
+            {
+                return;
+            }
+
+            try
+            {
+                _categoryManager ??= UnmanagedMethods.CreateInstance<ITfCategoryMgr>(
+                    in ClsidCategoryMgr, MicroComRuntime.GetGuidFor(typeof(ITfCategoryMgr)));
+                _displayAttributeManager ??= UnmanagedMethods.CreateInstance<ITfDisplayAttributeMgr>(
+                    in ClsidDisplayAttributeMgr, MicroComRuntime.GetGuidFor(typeof(ITfDisplayAttributeMgr)));
+            }
+            catch (COMException exception)
+            {
+                _displayAttributeManagersUnavailable = true;
+                Trace("Display attribute managers unavailable: {Error}", exception.Message);
+            }
+        }
+
+        private static ResolvedDisplayAttribute MapDisplayAttribute(in TF_DISPLAYATTRIBUTE attribute)
+        {
+            var kind = attribute.Attribute switch
+            {
+                TF_ATTR_TARGET_CONVERTED => TextInputDecorationKind.ConvertedTarget,
+                TF_ATTR_CONVERTED or TF_ATTR_FIXEDCONVERTED => TextInputDecorationKind.Converted,
+                TF_ATTR_TARGET_NOTCONVERTED => TextInputDecorationKind.TargetNotConverted,
+                TF_ATTR_INPUT_ERROR => TextInputDecorationKind.InputError,
+                _ => TextInputDecorationKind.Input,
+            };
+
+            var underline = attribute.LineStyle switch
+            {
+                TF_LS_SOLID => attribute.BoldLine != 0 ? TextInputUnderline.Thick : TextInputUnderline.Single,
+                TF_LS_DOT => TextInputUnderline.Dotted,
+                TF_LS_DASH => TextInputUnderline.Dashed,
+                TF_LS_SQUIGGLE => TextInputUnderline.Wavy,
+                _ => TextInputUnderline.None,
+            };
+
+            return new ResolvedDisplayAttribute(kind, ToColor(attribute.Text), ToColor(attribute.Background), underline);
+        }
+
+        private static Color? ToColor(in TF_DA_COLOR color)
+            => color.Type == TF_CT_COLORREF
+                ? Color.FromRgb((byte)(color.Value & 0xFF), (byte)((color.Value >> 8) & 0xFF), (byte)((color.Value >> 16) & 0xFF))
+                : null; // system palette indexes keep the theme's kind mapping
+
+        [DllImport("oleaut32.dll")]
+        private static extern int VariantClear(IntPtr pvarg);
+
         // Embedded objects and formatted text are not part of the plain-text store;
         // attribute requests report an empty result set rather than failing so text
         // services that probe attributes keep going.
@@ -582,6 +917,18 @@ namespace Avalonia.Win32.Input.Tsf
 
         public void GetScreenExt(uint vcView, UnmanagedMethods.RECT* prc)
             => throw new COMException(null, E_NOTIMPL);
+
+        protected override void Destroyed()
+        {
+            _compositionView?.Dispose();
+            _compositionView = null;
+            _categoryManager?.Dispose();
+            _categoryManager = null;
+            _displayAttributeManager?.Dispose();
+            _displayAttributeManager = null;
+            _sink?.Dispose();
+            _sink = null;
+        }
 
         private void Trace(string message)
             => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, message);

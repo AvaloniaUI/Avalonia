@@ -2,6 +2,8 @@
 @clr-access internal
 @clr-map HWND IntPtr
 @clr-map LPVOID IntPtr
+@clr-map WPARAM IntPtr
+@clr-map LPARAM IntPtr
 @clr-map BOOL int
 @clr-map DWORD uint
 @clr-map LONG int
@@ -9,15 +11,103 @@
 @clr-map WCHAR System.Char
 @clr-map TfClientId uint
 @clr-map TfEditCookie uint
+@clr-map TfGuidAtom uint
 @clr-map TsViewCookie uint
 @clr-map REFCLSID System.Guid*
 @clr-map REFIID System.Guid*
+@clr-map REFGUID System.Guid*
 @clr-map TS_STATUS Avalonia.Win32.Input.Tsf.TS_STATUS
 @clr-map TS_SELECTION_ACP Avalonia.Win32.Input.Tsf.TS_SELECTION_ACP
 @clr-map TS_RUNINFO Avalonia.Win32.Input.Tsf.TS_RUNINFO
 @clr-map TS_TEXTCHANGE Avalonia.Win32.Input.Tsf.TS_TEXTCHANGE
+@clr-map TF_DISPLAYATTRIBUTE Avalonia.Win32.Input.Tsf.TF_DISPLAYATTRIBUTE
 @clr-map RECT Avalonia.Win32.Interop.UnmanagedMethods.RECT
 @clr-map POINT Avalonia.Win32.Interop.UnmanagedMethods.POINT
+
+// Consumed as proxies over TSF-implemented ranges. Only the members the store calls
+// carry exact managed signatures; the rest keep the vtable slot with opaque LPVOID
+// parameters (the MicroCom dialect cannot express their mid-list [out] params, and the
+// store never invokes them).
+[
+    object,
+    uuid(aa80e7ff-2021-11d2-93e0-0060b067b86e),
+    pointer_default(unique)
+]
+interface ITfRange : IUnknown
+{
+    HRESULT GetText([in] TfEditCookie ec, [in] DWORD dwFlags, [in] LPVOID pchText, [in] ULONG cchMax, [in] LPVOID pcch);
+    HRESULT SetText([in] TfEditCookie ec, [in] DWORD dwFlags, [in] LPVOID pchText, [in] LONG cch);
+    HRESULT GetFormattedText([in] TfEditCookie ec, [in] LPVOID ppDataObject);
+    HRESULT GetEmbedded([in] TfEditCookie ec, [in] REFGUID rguidService, [in] REFIID riid, [in] LPVOID ppunk);
+    HRESULT InsertEmbedded([in] TfEditCookie ec, [in] DWORD dwFlags, [in] LPVOID pDataObject);
+    HRESULT ShiftStart([in] TfEditCookie ec, [in] LONG cchReq, [in] LPVOID pcch, [in] LPVOID pHalt);
+    HRESULT ShiftEnd([in] TfEditCookie ec, [in] LONG cchReq, [in] LPVOID pcch, [in] LPVOID pHalt);
+    HRESULT ShiftStartToRange([in] TfEditCookie ec, [in] ITfRange* pRange, [in] DWORD aPos);
+    HRESULT ShiftEndToRange([in] TfEditCookie ec, [in] ITfRange* pRange, [in] DWORD aPos);
+    HRESULT ShiftStartRegion([in] TfEditCookie ec, [in] DWORD dir, [in] LPVOID pfNoRegion);
+    HRESULT ShiftEndRegion([in] TfEditCookie ec, [in] DWORD dir, [in] LPVOID pfNoRegion);
+    HRESULT IsEmpty([in] TfEditCookie ec, [in] LPVOID pfEmpty);
+    HRESULT Collapse([in] TfEditCookie ec, [in] DWORD aPos);
+    HRESULT IsEqualStart([in] TfEditCookie ec, [in] ITfRange* pWith, [in] DWORD aPos, [in] LPVOID pfEqual);
+    HRESULT IsEqualEnd([in] TfEditCookie ec, [in] ITfRange* pWith, [in] DWORD aPos, [in] LPVOID pfEqual);
+    HRESULT CompareStart([in] TfEditCookie ec, [in] ITfRange* pWith, [in] DWORD aPos, [in] LPVOID plResult);
+    HRESULT CompareEnd([in] TfEditCookie ec, [in] ITfRange* pWith, [in] DWORD aPos, [in] LPVOID plResult);
+    HRESULT AdjustForInsert([in] TfEditCookie ec, [in] ULONG cchInsert, [in] LPVOID pfInsertOk);
+    HRESULT GetGravity([in] LPVOID pgStart, [in] LPVOID pgEnd);
+    HRESULT SetGravity([in] TfEditCookie ec, [in] DWORD gStart, [in] DWORD gEnd);
+    HRESULT Clone([out] ITfRange** ppClone);
+    HRESULT GetContext([in] LPVOID ppContext);
+}
+
+[
+    object,
+    uuid(057a6296-029b-4154-b79a-0d461d4ea94c),
+    pointer_default(unique)
+]
+interface ITfRangeACP : ITfRange
+{
+    HRESULT GetExtent([in] LPVOID pacpAnchor, [in] LPVOID pcch);
+    HRESULT SetExtent([in] LONG acpAnchor, [in] LONG cch);
+}
+
+[
+    object,
+    uuid(f99d3f40-8e32-11d2-bf46-00105a2799b5),
+    pointer_default(unique)
+]
+interface IEnumTfRanges : IUnknown
+{
+    HRESULT Clone([in] LPVOID ppEnum);
+    HRESULT Next([in] ULONG ulCount, [in] LPVOID ppRange, [in] LPVOID pcFetched);
+    HRESULT Reset();
+    HRESULT Skip([in] ULONG ulCount);
+}
+
+[
+    object,
+    uuid(17d49a3d-f8b8-4b2f-b254-52319dd64c53),
+    pointer_default(unique)
+]
+interface ITfReadOnlyProperty : IUnknown
+{
+    HRESULT GetType([in] LPVOID pguid);
+    HRESULT EnumRanges([in] TfEditCookie ec, [in] LPVOID ppEnum, [in] ITfRange* pTargetRange);
+    HRESULT GetValue([in] TfEditCookie ec, [in] ITfRange* pRange, [in] LPVOID pvarValue);
+    HRESULT GetContext([in] LPVOID ppContext);
+}
+
+[
+    object,
+    uuid(e2449660-9542-11d2-bf46-00105a2799b5),
+    pointer_default(unique)
+]
+interface ITfProperty : ITfReadOnlyProperty
+{
+    HRESULT FindRange([in] TfEditCookie ec, [in] ITfRange* pRange, [in] LPVOID ppRange, [in] DWORD aPos);
+    HRESULT SetValueStore([in] TfEditCookie ec, [in] ITfRange* pRange, [in] LPVOID pPropStore);
+    HRESULT SetValue([in] TfEditCookie ec, [in] ITfRange* pRange, [in] LPVOID pvarValue);
+    HRESULT Clear([in] TfEditCookie ec, [in] ITfRange* pRange);
+}
 
 [
     object,
@@ -26,6 +116,21 @@
 ]
 interface ITfContext : IUnknown
 {
+    HRESULT RequestEditSession([in] TfClientId tid, [in] LPVOID pes, [in] DWORD dwFlags, [in] LPVOID phrSession);
+    HRESULT InWriteSession([in] TfClientId tid, [in] LPVOID pfWriteSession);
+    HRESULT GetSelection([in] TfEditCookie ec, [in] ULONG ulIndex, [in] ULONG ulCount, [in] LPVOID pSelection, [in] LPVOID pcFetched);
+    HRESULT SetSelection([in] TfEditCookie ec, [in] ULONG ulCount, [in] LPVOID pSelection);
+    HRESULT GetStart([in] TfEditCookie ec, [out] ITfRange** ppStart);
+    HRESULT GetEnd([in] TfEditCookie ec, [out] ITfRange** ppEnd);
+    HRESULT GetActiveView([in] LPVOID ppView);
+    HRESULT EnumViews([in] LPVOID ppEnum);
+    HRESULT GetStatus([in] LPVOID pdcs);
+    HRESULT GetProperty([in] REFGUID guidProp, [out] ITfProperty** ppProp);
+    HRESULT GetAppProperty([in] REFGUID guidProp, [in] LPVOID ppProp);
+    HRESULT TrackProperties([in] LPVOID prgProp, [in] ULONG cProp, [in] LPVOID prgAppProp, [in] ULONG cAppProp, [in] LPVOID ppProperty);
+    HRESULT EnumProperties([in] LPVOID ppEnum);
+    HRESULT GetDocumentMgr([in] LPVOID ppDm);
+    HRESULT CreateRangeBackup([in] TfEditCookie ec, [in] ITfRange* pRange, [in] LPVOID ppBackup);
 }
 
 [
@@ -72,6 +177,131 @@ interface ITfThreadMgrEx : ITfThreadMgr
 {
     HRESULT ActivateEx([out] TfClientId* ptid, [in] DWORD dwFlags);
     HRESULT GetActiveFlags([out] DWORD* lpdwFlags);
+}
+
+// Vtable prefix through KeyUp; the preserved-key tail is never called.
+[
+    object,
+    uuid(aa80e7f0-2021-11d2-93e0-0060b067b86e),
+    pointer_default(unique)
+]
+interface ITfKeystrokeMgr : IUnknown
+{
+    HRESULT AdviseKeyEventSink([in] TfClientId tid, [in] LPVOID pSink, [in] BOOL fForeground);
+    HRESULT UnadviseKeyEventSink([in] TfClientId tid);
+    HRESULT GetForeground([in] LPVOID pclsid);
+    HRESULT TestKeyDown([in] WPARAM wParam, [in] LPARAM lParam, [out] BOOL* pfEaten);
+    HRESULT TestKeyUp([in] WPARAM wParam, [in] LPARAM lParam, [out] BOOL* pfEaten);
+    HRESULT KeyDown([in] WPARAM wParam, [in] LPARAM lParam, [out] BOOL* pfEaten);
+    HRESULT KeyUp([in] WPARAM wParam, [in] LPARAM lParam, [out] BOOL* pfEaten);
+}
+
+[
+    object,
+    uuid(4ea48a35-60ae-446f-8fd6-e6a8d82459f7),
+    pointer_default(unique)
+]
+interface ITfSource : IUnknown
+{
+    HRESULT AdviseSink([in] REFIID riid, [in] IUnknown* punk, [out] DWORD* pdwCookie);
+    HRESULT UnadviseSink([in] DWORD dwCookie);
+}
+
+[
+    object,
+    uuid(42d4d099-7c1a-4a89-b836-6c6f22160df0),
+    pointer_default(unique)
+]
+interface ITfEditRecord : IUnknown
+{
+    HRESULT GetSelectionStatus([in] LPVOID pfChanged);
+    HRESULT GetTextAndPropertyUpdates([in] DWORD dwFlags, [in] LPVOID prgProperties, [in] ULONG cProperties, [in] LPVOID ppEnum);
+}
+
+// Implemented by the text store (advised on the context through ITfSource); the
+// read-only edit cookie is the store's only channel to property values.
+[
+    object,
+    uuid(8127d409-ccd3-4683-967a-b43d5b482bf7),
+    pointer_default(unique)
+]
+interface ITfTextEditSink : IUnknown
+{
+    HRESULT OnEndEdit([in] ITfContext* pic, [in] TfEditCookie ecReadOnly, [in] ITfEditRecord* pEditRecord);
+}
+
+[
+    object,
+    uuid(d7540241-f9a1-4364-befc-dbcd2c4395b7),
+    pointer_default(unique)
+]
+interface ITfCompositionView : IUnknown
+{
+    HRESULT GetOwnerClsid([in] LPVOID pclsid);
+    HRESULT GetRange([out] ITfRange** ppRange);
+}
+
+// Implemented by the text store; TSF query-interfaces the context owner for it to
+// grant and report compositions.
+[
+    object,
+    uuid(5f20aa40-b57a-4f34-96ab-3576f377cc79),
+    pointer_default(unique)
+]
+interface ITfContextOwnerCompositionSink : IUnknown
+{
+    HRESULT OnStartComposition([in] ITfCompositionView* pComposition, [in] LPVOID pfOk);
+    HRESULT OnUpdateComposition([in] ITfCompositionView* pComposition, [in] ITfRange* pRangeNew);
+    HRESULT OnEndComposition([in] ITfCompositionView* pComposition);
+}
+
+// Vtable prefix through GetGUID; IsEqualTfGuidAtom is never called.
+[
+    object,
+    uuid(c3acefb5-f69d-4905-938f-fcadcf4be830),
+    pointer_default(unique)
+]
+interface ITfCategoryMgr : IUnknown
+{
+    HRESULT RegisterCategory([in] REFCLSID rclsid, [in] REFGUID rcatid, [in] REFGUID rguid);
+    HRESULT UnregisterCategory([in] REFCLSID rclsid, [in] REFGUID rcatid, [in] REFGUID rguid);
+    HRESULT EnumCategoriesInItem([in] REFGUID rguid, [in] LPVOID ppEnum);
+    HRESULT EnumItemsInCategory([in] REFGUID rcatid, [in] LPVOID ppEnum);
+    HRESULT FindClosestCategory([in] REFGUID rguid, [in] LPVOID pcatid, [in] LPVOID ppcatidList, [in] ULONG ulCount);
+    HRESULT RegisterGUIDDescription([in] REFCLSID rclsid, [in] REFGUID rguid, [in] LPVOID pchDesc, [in] ULONG cch);
+    HRESULT UnregisterGUIDDescription([in] REFCLSID rclsid, [in] REFGUID rguid);
+    HRESULT GetGUIDDescription([in] REFGUID rguid, [in] LPVOID pbstrDesc);
+    HRESULT RegisterGUIDDWORD([in] REFCLSID rclsid, [in] REFGUID rguid, [in] DWORD dw);
+    HRESULT UnregisterGUIDDWORD([in] REFCLSID rclsid, [in] REFGUID rguid);
+    HRESULT GetGUIDDWORD([in] REFGUID rguid, [in] LPVOID pdw);
+    HRESULT RegisterGUID([in] REFGUID rguid, [in] LPVOID pguidatom);
+    HRESULT GetGUID([in] TfGuidAtom guidatom, [in] LPVOID pguid);
+}
+
+[
+    object,
+    uuid(70528852-2f26-4aea-8c96-215150578932),
+    pointer_default(unique)
+]
+interface ITfDisplayAttributeInfo : IUnknown
+{
+    HRESULT GetGUID([in] LPVOID pguid);
+    HRESULT GetDescription([in] LPVOID pbstrDesc);
+    HRESULT GetAttributeInfo([in] TF_DISPLAYATTRIBUTE* pda);
+    HRESULT SetAttributeInfo([in] LPVOID pda);
+    HRESULT Reset();
+}
+
+[
+    object,
+    uuid(8ded7393-5db1-475c-9e71-a39111b0ff67),
+    pointer_default(unique)
+]
+interface ITfDisplayAttributeMgr : IUnknown
+{
+    HRESULT OnUpdateInfo();
+    HRESULT EnumDisplayAttributeInfo([in] LPVOID ppEnum);
+    HRESULT GetDisplayAttributeInfo([in] REFGUID guid, [in] LPVOID ppInfo, [in] LPVOID pclsidOwner);
 }
 
 [
