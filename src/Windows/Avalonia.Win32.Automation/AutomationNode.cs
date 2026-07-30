@@ -11,6 +11,7 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Avalonia.Win32.Automation.Interop;
 using AAP = Avalonia.Automation.Provider;
 using UIA = Avalonia.Win32.Automation.Interop;
@@ -66,6 +67,8 @@ namespace Avalonia.Win32.Automation
             s_nodes.Add(peer, this);
             peer.ChildrenChanged += OnPeerChildrenChanged;
             peer.PropertyChanged += OnPeerPropertyChanged;
+            peer.TextChanged += OnPeerTextChanged;
+            peer.TextSelectionChanged += OnPeerTextSelectionChanged;
 
             if (Peer.GetProvider<AAP.IEmbeddedRootProvider>() is { } embeddedRoot)
                 embeddedRoot.FocusChanged += OnEmbeddedRootFocusChanged;
@@ -78,6 +81,51 @@ namespace Avalonia.Win32.Automation
             return InvokeSync(() => Peer.ToScreen(Peer.GetBoundingRectangle()) ?? default);
         }
 
+        // Converts text-range rectangles (in top-level coordinates) to a flat screen-pixel
+        // [x, y, w, h, ...] array, as UIA GetBoundingRectangles expects.
+        internal double[] PointsToScreen(IReadOnlyList<Rect> topLevelRects)
+        {
+            return InvokeSync(() =>
+            {
+                if (topLevelRects.Count == 0 ||
+                    Peer.GetVisualRoot() is not ControlAutomationPeer root ||
+                    root.Owner.GetPresentationSource() is null)
+                {
+                    return Array.Empty<double>();
+                }
+
+                var result = new double[topLevelRects.Count * 4];
+                for (var i = 0; i < topLevelRects.Count; i++)
+                {
+                    var screen = new PixelRect(
+                        root.Owner.PointToScreen(topLevelRects[i].TopLeft),
+                        root.Owner.PointToScreen(topLevelRects[i].BottomRight)).ToRect(1);
+                    result[i * 4] = screen.X;
+                    result[i * 4 + 1] = screen.Y;
+                    result[i * 4 + 2] = screen.Width;
+                    result[i * 4 + 3] = screen.Height;
+                }
+
+                return result;
+            });
+        }
+
+        // Converts a screen-pixel point to top-level coordinates (the inverse of the PointToScreen used
+        // by PointsToScreen), for UIA RangeFromPoint hit-testing.
+        internal Point PointFromScreen(double x, double y)
+        {
+            return InvokeSync(() =>
+            {
+                if (Peer.GetVisualRoot() is not ControlAutomationPeer root ||
+                    root.Owner.GetPresentationSource() is null)
+                {
+                    return default;
+                }
+
+                return root.Owner.PointToClient(new PixelPoint((int)x, (int)y));
+            });
+        }
+
         public virtual IRawElementProviderFragmentRoot? GetFragmentRoot()
         {
             return InvokeSync(() => GetRoot());
@@ -88,21 +136,32 @@ namespace Avalonia.Win32.Automation
 
         public virtual object? GetPatternProvider(int patternId)
         {
-            AutomationNode? ThisIfPeerImplementsProvider<T>() => Peer.GetProvider<T>() is object ? this : null;
-
-            return (UiaPatternId)patternId switch
+            // A peer's GetProviderCore can touch UI properties (e.g. MenuItem.ToggleType); UIA calls this
+            // on its own thread, so resolve the pattern on the UI thread.
+            return InvokeSync(() =>
             {
-                UiaPatternId.ExpandCollapse => ThisIfPeerImplementsProvider<AAP.IExpandCollapseProvider>(),
-                UiaPatternId.Invoke => ThisIfPeerImplementsProvider<AAP.IInvokeProvider>(),
-                UiaPatternId.RangeValue => ThisIfPeerImplementsProvider<AAP.IRangeValueProvider>(),
-                UiaPatternId.Scroll => ThisIfPeerImplementsProvider<AAP.IScrollProvider>(),
-                UiaPatternId.ScrollItem => this,
-                UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
-                UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
-                UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
-                UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
-                _ => null,
-            };
+                AutomationNode? ThisIfPeerImplementsProvider<T>() => Peer.GetProvider<T>() is object ? this : null;
+
+                return (UiaPatternId)patternId switch
+                {
+                    UiaPatternId.ExpandCollapse => ThisIfPeerImplementsProvider<AAP.IExpandCollapseProvider>(),
+                    UiaPatternId.Grid => ThisIfPeerImplementsProvider<AAP.IGridProvider>(),
+                    UiaPatternId.GridItem => ThisIfPeerImplementsProvider<AAP.IGridItemProvider>(),
+                    UiaPatternId.Invoke => ThisIfPeerImplementsProvider<AAP.IInvokeProvider>(),
+                    UiaPatternId.RangeValue => ThisIfPeerImplementsProvider<AAP.IRangeValueProvider>(),
+                    UiaPatternId.Scroll => ThisIfPeerImplementsProvider<AAP.IScrollProvider>(),
+                    UiaPatternId.ScrollItem => this,
+                    UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
+                    UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
+                    UiaPatternId.Table => ThisIfPeerImplementsProvider<AAP.ITableProvider>(),
+                    UiaPatternId.TableItem => ThisIfPeerImplementsProvider<AAP.ITableItemProvider>(),
+                    UiaPatternId.Text => ThisIfPeerImplementsProvider<AAP.ITextProvider>(),
+                    UiaPatternId.Text2 => ThisIfPeerImplementsProvider<AAP.ITextProvider2>(),
+                    UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
+                    UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
+                    _ => null,
+                };
+            });
         }
 
         public virtual object? GetPropertyValue(int propertyId)
@@ -196,7 +255,9 @@ namespace Avalonia.Win32.Automation
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
         void IInvokeProvider.Invoke() => InvokeSync((AAP.IInvokeProvider x) => x.Invoke());
 
-        protected void InvokeSync(Action action)
+        // protected internal so the text-range provider (a separate COM object) can marshal its
+        // cross-platform calls onto the UI thread - UIA invokes those on its own thread.
+        protected internal void InvokeSync(Action action)
         {
             if (Dispatcher.UIThread.CheckAccess())
                 action();
@@ -204,7 +265,7 @@ namespace Avalonia.Win32.Automation
                 Dispatcher.UIThread.InvokeAsync(action).Wait();
         }
 
-        protected T InvokeSync<T>(Func<T> func)
+        protected internal T InvokeSync<T>(Func<T> func)
         {
             if (Dispatcher.UIThread.CheckAccess())
                 return func();
@@ -214,7 +275,9 @@ namespace Avalonia.Win32.Automation
 
         protected void InvokeSync<TInterface>(Action<TInterface> action)
         {
-            if (Peer.GetProvider<TInterface>() is TInterface i)
+            // GetProvider runs the peer's GetProviderCore, which can touch UI properties, so marshal it
+            // onto the UI thread too - not just the action.
+            if (InvokeSync(() => Peer.GetProvider<TInterface>()) is TInterface i)
             {
                 try
                 {
@@ -233,7 +296,7 @@ namespace Avalonia.Win32.Automation
 
         protected TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
         {
-            if (Peer.GetProvider<TInterface>() is TInterface i)
+            if (InvokeSync(() => Peer.GetProvider<TInterface>()) is TInterface i)
             {
                 try
                 {
@@ -297,6 +360,17 @@ namespace Avalonia.Win32.Automation
             {
                 RaiseLiveRegionChanged();
             }
+        }
+
+        // UIA text events carry no payload; clients re-query the text pattern after the event.
+        private void OnPeerTextChanged(object? sender, AutomationTextChangedEventArgs e)
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)UiaEventId.Text_TextChanged);
+        }
+
+        private void OnPeerTextSelectionChanged(object? sender, AutomationTextSelectionChangedEventArgs e)
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)UiaEventId.Text_TextSelectionChanged);
         }
 
         private void OnEmbeddedRootFocusChanged(object? sender, EventArgs e)

@@ -1,17 +1,27 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
-    internal class TextBoxTextInputMethodClient : TextInputMethodClient
+    internal class TextBoxTextInputMethodClient : TextInputMethodClient, IStructuredTextInput, ITextNavigation
     {
         private TextBox? _parent;
         private TextPresenter? _presenter;
         private bool _selectionChanged;
         private bool _isInChange;
         private EventHandler? _caretBoundsChangedHandler;
+        private ITextRange? _compositionRange;
+        private long _documentVersion;
+        private EventHandler<TextChange>? _navTextChanged;
+        private IReadOnlyList<TextInputDecoration> _inputDecorations = Array.Empty<TextInputDecoration>();
+
+        public event EventHandler? CaretPositionChanged;
+        public event EventHandler? CompositionChanged;
+        public event EventHandler? InputDecorationsChanged;
 
         public override Visual TextViewVisual => _presenter!;
 
@@ -83,7 +93,27 @@ namespace Avalonia.Controls
             }
         }
 
-        public override bool SupportsPreedit => true;
+        // The composition is written into the text buffer through the structured
+        // composition range; the presenter's preedit overlay is never set. Backends and
+        // other legacy consumers read the pending composition through PreeditText.
+        public override bool SupportsInDocumentComposition => true;
+
+        public override string? PreeditText
+        {
+            get
+            {
+                if (_parent?.Text is not { } text || _compositionRange is not { } range)
+                {
+                    return null;
+                }
+
+                var (start, end) = GetAbsoluteRange(range);
+                end = Math.Min(end, text.Length);
+                return start >= end ? null : text.Substring(start, end - start);
+            }
+        }
+
+        internal bool HasActiveComposition => _compositionRange is not null;
 
         public override bool SupportsSurroundingText => true;
 
@@ -109,6 +139,7 @@ namespace Avalonia.Controls
             {
                 oldPresenter.CurrentImClient = null;
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
+                oldPresenter.SetCompositionRegion(null);
 
                 if (_caretBoundsChangedHandler is not null)
                 {
@@ -120,10 +151,10 @@ namespace Avalonia.Controls
 
             if (_presenter != null)
             {
-
                 _presenter.CurrentImClient = this;
                 _caretBoundsChangedHandler ??= OnPresenterCaretBoundsChanged;
                 _presenter.CaretBoundsChanged += _caretBoundsChangedHandler;
+                PushCompositionToPresenter();
             }
 
             RaiseTextViewVisualChanged();
@@ -134,6 +165,7 @@ namespace Avalonia.Controls
         private void OnPresenterCaretBoundsChanged(object? sender, EventArgs e)
         {
             RaiseCursorRectangleChanged();
+            RaiseCaretPositionChangedCore();
         }
 
         private void OnParentTapped(object? sender, Input.TappedEventArgs e)
@@ -145,13 +177,365 @@ namespace Avalonia.Controls
 
         public override void SetPreeditText(string? preeditText, int? cursorPos)
         {
-            if (_presenter == null || _parent == null)
+            // Legacy entry point kept for third-party backends: the composition lands in
+            // the text buffer with a tracked composition region instead of the presenter
+            // overlay. An empty preedit is a cancellation.
+            var structured = (IStructuredTextInput)this;
+            if (string.IsNullOrEmpty(preeditText))
+            {
+                structured.SetCompositionText(null, 0);
+                return;
+            }
+
+            structured.SetCompositionText(preeditText, cursorPos ?? preeditText.Length);
+        }
+
+        ITextPointer IStructuredTextInput.CaretPosition =>
+            CreateLocalPointer(_parent?.CaretIndex ?? 0, LogicalDirection.Forward);
+
+        ITextRange IStructuredTextInput.Selection
+        {
+            get
+            {
+                if (_parent is null)
+                {
+                    return CreateLocalRange(0, 0);
+                }
+
+                var start = Math.Min(_parent.SelectionStart, _parent.SelectionEnd);
+                var end = Math.Max(_parent.SelectionStart, _parent.SelectionEnd);
+
+                return CreateLocalRange(start, end);
+            }
+            set
+            {
+                if (_parent is null)
+                {
+                    return;
+                }
+
+                var (start, end) = GetAbsoluteRange(value);
+                _parent.SelectionStart = start;
+                _parent.SelectionEnd = end;
+            }
+        }
+
+        ITextRange? IStructuredTextInput.CompositionRange
+        {
+            get => _compositionRange;
+            set => SetCompositionRangeCore(value, raiseEvent: true);
+        }
+
+        void IStructuredTextInput.ReplaceText(ITextRange range, string text)
+        {
+            if (_parent is null)
             {
                 return;
             }
 
-            _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
-            _presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, cursorPos);
+            using var _ = BeginChange();
+
+            var (start, end) = GetAbsoluteRange(range);
+
+            ReplaceTextCore(start, end, text, clearComposition: true);
+        }
+
+        void IStructuredTextInput.SetCompositionText(string? text, int cursorOffset)
+        {
+            if (_parent is null)
+            {
+                return;
+            }
+
+            using var _ = BeginChange();
+
+            if (text is null)
+            {
+                if (_compositionRange is { } activeRange)
+                {
+                    var (activeStart, activeEnd) = GetAbsoluteRange(activeRange);
+                    ReplaceTextCore(activeStart, activeEnd, string.Empty, clearComposition: false);
+                }
+
+                SetCompositionRangeCore(null, raiseEvent: true);
+                return;
+            }
+
+            int start;
+            if (_compositionRange is { } existing)
+            {
+                var (existingStart, existingEnd) = GetAbsoluteRange(existing);
+                start = existingStart;
+                ReplaceTextCore(existingStart, existingEnd, text, clearComposition: false);
+            }
+            else
+            {
+                var selectionStart = Math.Min(_parent.SelectionStart, _parent.SelectionEnd);
+                var selectionEnd = Math.Max(_parent.SelectionStart, _parent.SelectionEnd);
+                start = selectionStart;
+                ReplaceTextCore(selectionStart, selectionEnd, text, clearComposition: false);
+            }
+
+            var compositionEnd = start + text.Length;
+            SetCompositionRangeCore(CreateLocalRange(start, compositionEnd), raiseEvent: true);
+
+            var relativeCursor = Math.Clamp(cursorOffset, 0, text.Length);
+            var caretOffset = start + relativeCursor;
+            _parent.SelectionStart = caretOffset;
+            _parent.SelectionEnd = caretOffset;
+        }
+
+        void IStructuredTextInput.CommitComposition()
+        {
+            SetCompositionRangeCore(null, raiseEvent: true);
+
+            // Transient decorations belong to the composition/reconversion session; drop them on commit.
+            SetInputDecorationsCore(Array.Empty<TextInputDecoration>());
+        }
+
+        IReadOnlyList<TextInputDecoration> IStructuredTextInput.InputDecorations => _inputDecorations;
+
+        void IStructuredTextInput.SetInputDecorations(IReadOnlyList<TextInputDecoration> decorations)
+            => SetInputDecorationsCore(decorations ?? Array.Empty<TextInputDecoration>());
+
+        private void SetInputDecorationsCore(IReadOnlyList<TextInputDecoration> decorations)
+        {
+            if (ReferenceEquals(_inputDecorations, decorations) ||
+                (_inputDecorations.Count == 0 && decorations.Count == 0))
+            {
+                return;
+            }
+
+            _inputDecorations = decorations;
+            PushCompositionToPresenter();
+            InputDecorationsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        Rect IStructuredTextInput.GetFirstRectForRange(ITextRange range)
+        {
+            if (_presenter is null)
+            {
+                return default;
+            }
+
+            var (start, end) = GetAbsoluteRange(range);
+            if (start == end)
+            {
+                return ((IStructuredTextInput)this).GetCaretRect(CreateLocalPointer(start, LogicalDirection.Forward));
+            }
+
+            foreach (var rect in _presenter.TextLayout.HitTestTextRange(start, end - start))
+            {
+                return TransformPresenterRect(rect);
+            }
+
+            return default;
+        }
+
+        Rect IStructuredTextInput.GetCaretRect(ITextPointer position)
+        {
+            if (_presenter is null)
+            {
+                return default;
+            }
+
+            var offset = RequireOwnOffset(position);
+            var rect = _presenter.TextLayout.HitTestTextPosition(offset);
+
+            return TransformPresenterRect(rect);
+        }
+
+        Rect[] IStructuredTextInput.GetSelectionRects(ITextRange range)
+        {
+            if (_presenter is null)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var (start, end) = GetAbsoluteRange(range);
+            if (start == end)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var result = new List<Rect>();
+            foreach (var rect in _presenter.TextLayout.HitTestTextRange(start, end - start))
+            {
+                result.Add(TransformPresenterRect(rect));
+            }
+
+            return result.ToArray();
+        }
+
+        ITextPointer? IStructuredTextInput.GetClosestPosition(Point point)
+        {
+            if (_presenter is null)
+            {
+                return null;
+            }
+
+            var localPoint = TransformPointToPresenter(point);
+            var hit = _presenter.TextLayout.HitTestPoint(localPoint);
+
+            return CreateLocalPointer(hit.TextPosition, hit.IsTrailing ? LogicalDirection.Backward : LogicalDirection.Forward);
+        }
+
+        ITextPointer? IStructuredTextInput.GetClosestPosition(Point point, ITextRange withinRange)
+        {
+            var closest = ((IStructuredTextInput)this).GetClosestPosition(point);
+            if (closest is null)
+            {
+                return null;
+            }
+
+            var (start, end) = GetAbsoluteRange(withinRange);
+            var clamped = Math.Clamp(closest.Offset, start, end);
+
+            return CreateLocalPointer(clamped, closest.Gravity);
+        }
+
+        ITextRange? IStructuredTextInput.GetCharacterRangeAtPoint(Point point)
+        {
+            var closest = ((IStructuredTextInput)this).GetClosestPosition(point);
+            if (closest is null)
+            {
+                return null;
+            }
+
+            var start = closest.Offset;
+            var end = Math.Min(GetDocumentLength(), start + 1);
+            return CreateLocalRange(start, end);
+        }
+
+        // ── ITextNavigation ────────────────────────────────────────────────
+
+        ITextPointer ITextNavigation.DocumentStart => CreateLocalPointer(0, LogicalDirection.Forward);
+
+        ITextPointer ITextNavigation.DocumentEnd =>
+            CreateLocalPointer(GetDocumentLength(), LogicalDirection.Backward);
+
+        ITextRange ITextNavigation.DocumentRange => CreateLocalRange(0, GetDocumentLength());
+
+        long ITextNavigation.DocumentVersion => _documentVersion;
+
+        ITextPointer ITextNavigation.GetPosition(ITextPointer origin, int distance)
+        {
+            var text = GetDocumentText();
+            var target = Math.Clamp(RequireOwnOffset(origin) + distance, 0, text.Length);
+            target = TextSegmentation.SnapToValid(target, text, forward: distance >= 0);
+
+            return CreateLocalPointer(
+                target,
+                distance > 0 ? LogicalDirection.Forward
+                : distance < 0 ? LogicalDirection.Backward
+                : origin.Gravity);
+        }
+
+        ITextPointer ITextNavigation.GetPosition(ITextPointer origin, TextUnit unit, int count)
+        {
+            var offset = RequireOwnOffset(origin);
+
+            if (count == 0)
+            {
+                return CreateLocalPointer(offset, origin.Gravity);
+            }
+
+            var text = GetDocumentText();
+            var forward = count > 0;
+            var steps = Math.Abs(count);
+            var current = offset;
+
+            for (var i = 0; i < steps; i++)
+            {
+                var next = TextSegmentation.MoveByUnit(current, unit, forward, text);
+                if (next == current)
+                {
+                    break;
+                }
+
+                current = next;
+            }
+
+            return CreateLocalPointer(current, forward ? LogicalDirection.Forward : LogicalDirection.Backward);
+        }
+
+        ITextRange ITextNavigation.GetRangeEnclosing(ITextPointer position, TextUnit unit)
+        {
+            var offset = RequireOwnOffset(position);
+            var text = GetDocumentText();
+
+            switch (unit)
+            {
+                case TextUnit.Document:
+                case TextUnit.Page:
+                case TextUnit.Format:
+                    return CreateLocalRange(0, text.Length);
+
+                default:
+                    var (start, end) = TextSegmentation.UnitBounds(offset, unit, position.Gravity, text);
+                    return CreateLocalRange(start, end);
+            }
+        }
+
+        ITextRange ITextNavigation.GetRange(ITextPointer a, ITextPointer b)
+        {
+            var oa = RequireOwnOffset(a);
+            var ob = RequireOwnOffset(b);
+
+            return oa <= ob ? CreateLocalRange(oa, ob) : CreateLocalRange(ob, oa);
+        }
+
+        int ITextNavigation.GetOffset(ITextPointer from, ITextPointer to)
+            => RequireOwnOffset(to) - RequireOwnOffset(from);
+
+        string ITextNavigation.GetText(ITextRange range)
+        {
+            var text = GetDocumentText();
+            var start = RequireOwnOffset(range.Start);
+            var end = RequireOwnOffset(range.End);
+            if (start > end)
+            {
+                (start, end) = (end, start);
+            }
+
+            return text.Substring(start, end - start);
+        }
+
+        event EventHandler<TextChange>? ITextNavigation.TextChanged
+        {
+            add => _navTextChanged += value;
+            remove => _navTextChanged -= value;
+        }
+
+        private int RequireOwnOffset(ITextPointer pointer)
+        {
+            if (pointer is not SimpleTextPointer simple || simple.Owner != this)
+            {
+                throw new ArgumentException("The text pointer was not produced by this navigator.", nameof(pointer));
+            }
+
+            return Math.Clamp(simple.Offset, 0, GetDocumentLength());
+        }
+
+        private void RaiseDocumentTextChanged(string oldText, string newText)
+        {
+            var (prefix, oldLength, newLength) = TextSegmentation.ComputeChange(oldText, newText);
+
+            if (oldLength == 0 && newLength == 0)
+            {
+                return;
+            }
+
+            _documentVersion++;
+
+            var handler = _navTextChanged;
+            if (handler is null)
+            {
+                return;
+            }
+
+            var position = CreateLocalPointer(prefix, LogicalDirection.Forward);
+            handler(this, new TextChange(position, oldLength, newLength));
         }
 
         public override void ExecuteContextMenuAction(ContextMenuAction action)
@@ -179,6 +563,8 @@ namespace Avalonia.Controls
         {
             if (e.Property == TextBox.TextProperty)
             {
+                RaiseDocumentTextChanged(e.OldValue as string ?? string.Empty, e.NewValue as string ?? string.Empty);
+
                 RaiseSurroundingTextChanged();
             }
 
@@ -187,7 +573,10 @@ namespace Avalonia.Controls
                 if (_isInChange)
                     _selectionChanged = true;
                 else
+                {
                     RaiseSelectionChanged();
+                    RaiseCaretPositionChangedCore();
+                }
             }
         }
 
@@ -205,9 +594,242 @@ namespace Avalonia.Controls
             _isInChange = false;
 
             if (_selectionChanged)
+            {
                 RaiseSelectionChanged();
+                RaiseCaretPositionChangedCore();
+            }
 
             _selectionChanged = false;
+        }
+
+        private string GetDocumentText() => _parent?.Text ?? string.Empty;
+
+        private int GetDocumentLength() => GetDocumentText().Length;
+
+        private ITextPointer CreateLocalPointer(int offset, LogicalDirection direction)
+            => new SimpleTextPointer(this, Math.Clamp(offset, 0, GetDocumentLength()), direction);
+
+        private ITextRange CreateLocalRange(int start, int end)
+            => new SimpleTextRange(
+                CreateLocalPointer(start, LogicalDirection.Forward),
+                CreateLocalPointer(end, LogicalDirection.Backward));
+
+        // Mutation and geometry paths share the navigation paths' provenance rule: a foreign pointer
+        // throws instead of being silently reinterpreted by its raw offset.
+        private (int Start, int End) GetAbsoluteRange(ITextRange range)
+        {
+            if (range is null)
+                throw new ArgumentNullException(nameof(range));
+
+            var start = RequireOwnOffset(range.Start);
+            var end = RequireOwnOffset(range.End);
+
+            return start <= end ? (start, end) : (end, start);
+        }
+
+        private void ReplaceTextCore(int start, int end, string text, bool clearComposition)
+        {
+            if (_parent is null)
+            {
+                return;
+            }
+
+            var oldText = GetDocumentText();
+
+            var safeStart = Math.Clamp(Math.Min(start, end), 0, oldText.Length);
+            var safeEnd = Math.Clamp(Math.Max(start, end), 0, oldText.Length);
+
+            var replacement = text ?? string.Empty;
+            var newText = oldText.Remove(safeStart, safeEnd - safeStart).Insert(safeStart, replacement);
+
+            _parent.Text = newText;
+
+            var newCaret = safeStart + replacement.Length;
+            _parent.SelectionStart = newCaret;
+            _parent.SelectionEnd = newCaret;
+
+            if (clearComposition)
+            {
+                SetCompositionRangeCore(null, raiseEvent: true);
+            }
+        }
+
+        private void SetCompositionRangeCore(ITextRange? range, bool raiseEvent)
+        {
+            ITextRange? normalized = null;
+            if (range is not null)
+            {
+                var (start, end) = GetAbsoluteRange(range);
+                normalized = CreateLocalRange(start, end);
+            }
+
+            if (AreRangesEqual(_compositionRange, normalized))
+            {
+                return;
+            }
+
+            _compositionRange = normalized;
+            PushCompositionToPresenter();
+            if (raiseEvent)
+            {
+                RaiseCompositionChangedCore();
+            }
+        }
+
+        // The composition region always renders decorated: explicit clause decorations
+        // when the IME supplied them, the default underline over the whole region
+        // otherwise. The presenter draws from resolved offsets so it stays free of the
+        // navigation vocabulary.
+        private void PushCompositionToPresenter()
+        {
+            if (_presenter is null)
+            {
+                return;
+            }
+
+            if (_compositionRange is not { } range)
+            {
+                _presenter.SetCompositionRegion(null);
+                return;
+            }
+
+            var (start, end) = GetAbsoluteRange(range);
+            var highlights = new List<TextPresenter.CompositionHighlight>();
+
+            foreach (var decoration in _inputDecorations)
+            {
+                var (decorationStart, decorationEnd) = GetAbsoluteRange(decoration.Range);
+                if (decorationStart >= decorationEnd)
+                {
+                    continue;
+                }
+
+                highlights.Add(new TextPresenter.CompositionHighlight(
+                    decorationStart,
+                    decorationEnd,
+                    decoration.Background,
+                    decoration.Underline,
+                    decoration.Kind is TextInputDecorationKind.ConvertedTarget or TextInputDecorationKind.ReconversionTarget));
+            }
+
+            if (highlights.Count == 0 && start < end)
+            {
+                highlights.Add(new TextPresenter.CompositionHighlight(start, end, null, TextInputUnderline.None, false));
+            }
+
+            _presenter.SetCompositionRegion(highlights);
+        }
+
+        private bool AreRangesEqual(ITextRange? left, ITextRange? right)
+        {
+            if (left is null || right is null)
+            {
+                return left is null && right is null;
+            }
+
+            return left.Start.Offset == right.Start.Offset &&
+                   left.End.Offset == right.End.Offset;
+        }
+
+        // The structured geometry contract is top-level coordinates, so rects go from the
+        // presenter to the visual root and inbound points come back the same way.
+
+        private Rect TransformPresenterRect(Rect rect)
+        {
+            if (_presenter is null || _presenter.VisualRoot is not Visual root)
+            {
+                return rect;
+            }
+
+            var transform = _presenter.TransformToVisual(root);
+            if (transform is null)
+            {
+                return rect;
+            }
+
+            return rect.TransformToAABB(transform.Value);
+        }
+
+        private Point TransformPointToPresenter(Point point)
+        {
+            if (_presenter is null || _presenter.VisualRoot is not Visual root)
+            {
+                return point;
+            }
+
+            var transform = root.TransformToVisual(_presenter);
+            if (transform is null)
+            {
+                return point;
+            }
+
+            return point.Transform(transform.Value);
+        }
+
+        // Deferred while a change scope is open so the events flow in contract order:
+        // the text delta first, then the composition range, then caret and selection.
+        // The presenter's caret-bounds relay would otherwise raise the caret mid-edit.
+        private void RaiseCaretPositionChangedCore()
+        {
+            if (_isInChange)
+            {
+                _selectionChanged = true;
+                return;
+            }
+
+            CaretPositionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void RaiseCompositionChangedCore() => CompositionChanged?.Invoke(this, EventArgs.Empty);
+
+        private sealed class SimpleTextPointer : ITextPointer
+        {
+            public SimpleTextPointer(TextBoxTextInputMethodClient owner, int offset, LogicalDirection logicalDirection)
+            {
+                Owner = owner;
+                Offset = offset;
+                Gravity = logicalDirection;
+            }
+
+            public TextBoxTextInputMethodClient Owner { get; }
+
+            public int Offset { get; }
+
+            public LogicalDirection Gravity { get; }
+
+            public int CompareTo(ITextPointer? other)
+            {
+                if (other is null)
+                {
+                    return 1;
+                }
+
+                return Offset.CompareTo(other.Offset);
+            }
+
+            // Equality is by document position; a flat-text store determines position entirely by
+            // Offset, so gravity is intentionally ignored. Comparing pointers from different
+            // navigators is undefined.
+            public bool Equals(ITextPointer? other) => other is not null && Offset == other.Offset;
+
+            public override bool Equals(object? obj) => obj is ITextPointer other && Equals(other);
+
+            public override int GetHashCode() => Offset;
+        }
+
+        private sealed class SimpleTextRange : ITextRange
+        {
+            public SimpleTextRange(ITextPointer start, ITextPointer end)
+            {
+                Start = start;
+                End = end;
+            }
+
+            public ITextPointer Start { get; }
+
+            public ITextPointer End { get; }
+
+            public bool IsEmpty => Start.Offset == End.Offset;
         }
     }
 }

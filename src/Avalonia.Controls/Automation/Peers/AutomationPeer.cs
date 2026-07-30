@@ -567,6 +567,39 @@ namespace Avalonia.Automation.Peers
         public T? GetProvider<T>() => (T?)GetProviderCore(typeof(T));
 
         /// <summary>
+        /// Gets the peer that automation clients should treat as focused when this peer's owner holds
+        /// keyboard focus.
+        /// </summary>
+        /// <remarks>
+        /// A composite control whose interaction patterns live on an inner element - an editor whose
+        /// text pattern is exposed by its text view, for example - redirects focus reporting there, so
+        /// clients see keyboard focus land on the element that carries the patterns. This is what lets
+        /// a screen reader engage its document behaviors (such as reading a focused document) instead
+        /// of stopping at a container. Redirection resolves transitively with a small bound so a
+        /// misconfigured cycle cannot hang the client.
+        /// </remarks>
+        public AutomationPeer GetFocusTarget()
+        {
+            var peer = this;
+
+            for (var i = 0; i < 8; i++)
+            {
+                var next = peer.GetFocusTargetCore();
+                if (next is null || next == peer)
+                    return peer;
+                peer = next;
+            }
+
+            return peer;
+        }
+
+        /// <summary>
+        /// Overridden by composite controls to redirect focus reporting to an inner peer; returning
+        /// null keeps focus reporting on this peer.
+        /// </summary>
+        protected virtual AutomationPeer? GetFocusTargetCore() => null;
+
+        /// <summary>
         /// Occurs when the children of the automation peer have changed.
         /// </summary>
         public event EventHandler? ChildrenChanged;
@@ -593,6 +626,42 @@ namespace Avalonia.Automation.Peers
             object? newValue)
         {
             PropertyChanged?.Invoke(this, new AutomationPropertyChangedEventArgs(property, oldValue, newValue));
+        }
+
+        /// <summary>
+        /// Occurs when the text content of a peer that exposes a text pattern has changed.
+        /// </summary>
+        public event EventHandler<AutomationTextChangedEventArgs>? TextChanged;
+
+        /// <summary>
+        /// Occurs when the text selection or caret of a peer that exposes a text pattern has moved.
+        /// </summary>
+        public event EventHandler<AutomationTextSelectionChangedEventArgs>? TextSelectionChanged;
+
+        /// <summary>
+        /// Raises an event to notify the automation client that text content changed. The removed and
+        /// inserted text let backends report the change without re-reading the document; UIA raises a
+        /// payload-free Text_TextChanged and clients re-query, AT-SPI forwards the texts in its
+        /// text-changed signals.
+        /// </summary>
+        /// <param name="offset">The UTF-16 code-unit offset at which the change starts.</param>
+        /// <param name="removedText">The removed text; empty for a pure insertion.</param>
+        /// <param name="insertedText">The inserted text; empty for a pure deletion.</param>
+        public void RaiseTextChangedEvent(int offset, string removedText, string insertedText)
+        {
+            TextChanged?.Invoke(this, new AutomationTextChangedEventArgs(offset, removedText, insertedText));
+        }
+
+        /// <summary>
+        /// Raises an event to notify the automation client that the text selection or caret moved.
+        /// </summary>
+        /// <param name="selectionStart">The normalized selection start, in UTF-16 code units.</param>
+        /// <param name="selectionEnd">The normalized selection end, in UTF-16 code units.</param>
+        /// <param name="caretOffset">The caret offset (the selection's active end).</param>
+        public void RaiseTextSelectionChangedEvent(int selectionStart, int selectionEnd, int caretOffset)
+        {
+            TextSelectionChanged?.Invoke(
+                this, new AutomationTextSelectionChangedEventArgs(selectionStart, selectionEnd, caretOffset));
         }
 
         protected virtual string GetLocalizedControlTypeCore()

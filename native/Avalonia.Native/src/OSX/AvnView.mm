@@ -755,14 +755,46 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     return (AvnInputModifiers)rv;
 }
 
-- (BOOL)hasMarkedText
+// The composition range is owned by the managed client for a structured client - the composition is
+// part of the document there, so asking the client is the only way to stay in one index space. The
+// locally tracked _markedRange remains the source of truth for a legacy client.
+- (IAvnTextInputMethodClient*) tryGetStructuredClient
 {
-    return _markedRange.length > 0;
+    auto parent = _parent.tryGet();
+
+    if(parent == nullptr || !parent->InputMethod->IsActive())
+    {
+        return nullptr;
+    }
+
+    auto client = parent->InputMethod->Client;
+
+    return client->IsStructured() ? client : nullptr;
 }
 
 - (NSRange)markedRange
 {
+    if(auto client = [self tryGetStructuredClient])
+    {
+        int start = -1, end = -1;
+        client->GetCompositionRange(&start, &end);
+
+        if(start < 0 || end < start)
+        {
+            return NSMakeRange(NSNotFound, 0);
+        }
+
+        return NSMakeRange((NSUInteger)start, (NSUInteger)(end - start));
+    }
+
     return _markedRange;
+}
+
+- (BOOL)hasMarkedText
+{
+    NSRange marked = [self markedRange];
+
+    return marked.location != NSNotFound && marked.length > 0;
 }
 
 - (NSRange)selectedRange
@@ -794,10 +826,30 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         parent->TopLevelEvents->RawKeyEvent(KeyUp, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
     }
     
-    _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
-
-    if (parent != nullptr && parent->InputMethod->IsActive())
+    if (parent == nullptr || !parent->InputMethod->IsActive())
     {
+        return;
+    }
+
+    // selectedRange.location is the caret offset within the marked text.
+    if (parent->InputMethod->Client->IsStructured())
+    {
+        // The client splices the composition into the document and owns its range, so there is no
+        // local marked range to maintain and no second index space to reconcile.
+        if ([markedText length] == 0)
+        {
+            // AppKit marks with an empty string to abandon the composition. That is a cancel, not a
+            // commit: the composition region has to go, not just its marking. Passing null deletes it.
+            parent->InputMethod->Client->SetCompositionText(nullptr, 0);
+        }
+        else
+        {
+            parent->InputMethod->Client->SetCompositionText((char*)[markedText UTF8String], (int)selectedRange.location);
+        }
+    }
+    else
+    {
+        _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
         parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
     }
 }
@@ -805,12 +857,20 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 - (void)unmarkText
 {
     auto parent = _parent.tryGet();
-    if(parent->InputMethod->IsActive()){
-        parent->InputMethod->Client->SetPreeditText(nullptr);
+
+    if(parent != nullptr && parent->InputMethod->IsActive()){
+        // unmarkText keeps the text and drops only the marking, which is exactly CommitComposition.
+        // For a legacy client the preedit lives outside the document, so clearing it is the
+        // equivalent teardown.
+        if(parent->InputMethod->Client->IsStructured()){
+            parent->InputMethod->Client->CommitComposition();
+        } else {
+            parent->InputMethod->Client->SetPreeditText(nullptr);
+        }
     }
-    
+
     _markedRange = NSMakeRange(_selectedRange.location, 0);
-    
+
     if([self inputContext]) {
         [[self inputContext] discardMarkedText];
     }
@@ -863,27 +923,82 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     {
         parent->InputMethod->Client->SelectInSurroundingText((int)replacementRange.location, (int)(replacementRange.location + replacementRange.length));
     }
-    
+
+    // Committing an active composition is a replacement of the composition, not an insertion at the
+    // caret: the composition text is already in the document, so re-raising it as text input would
+    // duplicate it. Structured clients express that as "set the final text, then end the session".
+    if([self hasMarkedText] && parent->InputMethod->Client->IsStructured())
+    {
+        parent->InputMethod->Client->SetCompositionText((char*)[text UTF8String], (int)[text length]);
+        parent->InputMethod->Client->CommitComposition();
+
+        if([self inputContext]) {
+            [[self inputContext] discardMarkedText];
+        }
+
+        return;
+    }
+
     [self unmarkText];
-        
+
     uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
-        
+
     parent->TopLevelEvents->RawTextInputEvent(timestamp, [text UTF8String]);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
 {
-    return NSNotFound;
+    auto client = [self tryGetStructuredClient];
+
+    if(client == nullptr){
+        return NSNotFound;
+    }
+
+    // point is in screen coordinates; convert to the top level space the client works in, the same
+    // way the pointer path does.
+    NSPoint windowPoint = [[self window] convertPointFromScreen:point];
+    auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
+    auto localPoint = NSMakePoint(windowPoint.x - viewLocation.x, viewLocation.y - windowPoint.y);
+
+    int index = client->GetCharacterIndexFromPoint(ToAvnPoint(localPoint));
+
+    return index < 0 ? NSNotFound : (NSUInteger)index;
 }
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
     auto parent = _parent.tryGet();
-    if(!parent->InputMethod->IsActive()){
+    if(parent == nullptr || !parent->InputMethod->IsActive()){
         return NSZeroRect;
     }
-    
-    return _cursorRect;
+
+    auto client = [self tryGetStructuredClient];
+
+    if(client == nullptr){
+        return _cursorRect;
+    }
+
+    AvnRect avnRect = {};
+    client->GetFirstRectForRange((int)range.location, (int)(range.location + range.length), &avnRect);
+
+    if(avnRect.Width <= 0 || avnRect.Height <= 0){
+        // No geometry for that range - fall back to the caret rect rather than reporting an empty
+        // rectangle as if it were real, which would park the candidate window at the origin.
+        return _cursorRect;
+    }
+
+    // avnRect is top level space and Y-down; convert to a screen rect with the same math setCursorRect uses.
+    NSRect rect = ToNSRect(avnRect);
+    NSRect viewRectOnScreen = [[self window] convertRectToScreen:self.frame];
+    viewRectOnScreen.origin = NSMakePoint(viewRectOnScreen.origin.x + rect.origin.x,
+                                          viewRectOnScreen.origin.y + self.frame.size.height - rect.origin.y - rect.size.height);
+    viewRectOnScreen.size = rect.size;
+
+    if(actualRange){
+        *actualRange = range;
+    }
+
+    return viewRectOnScreen;
 }
 
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
@@ -1047,7 +1162,14 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     auto parent = _parent.tryGet();
 
     if(parent != nullptr && parent->InputMethod->IsActive()){
-        parent->InputMethod->Client->SetPreeditText(nullptr);
+        // Committing, not cancelling: the composition text keeps its place in the document and only
+        // the marking is dropped. For a structured client that is the whole of it - clearing the
+        // preedit property would touch nothing and leave CompositionRange marking committed text.
+        if(parent->InputMethod->Client->IsStructured()){
+            parent->InputMethod->Client->CommitComposition();
+        } else {
+            parent->InputMethod->Client->SetPreeditText(nullptr);
+        }
     }
 
     _markedRange = NSMakeRange(_selectedRange.location, 0);

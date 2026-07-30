@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls.Utils;
+using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
+using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
@@ -35,13 +39,20 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public uint Version => TextVersion;
 
-        public int CharacterCount => GetText().Length;
+        public int CharacterCount => Navigation is { } nav ? nav.DocumentEnd.Offset : GetText().Length;
 
-        public int CaretOffset => 0;
+        public int CaretOffset => Navigation is { } nav ? nav.GetSelection().End.Offset : 0;
 
         public ValueTask<(string Text, int StartOffset, int EndOffset)> GetStringAtOffsetAsync(
             int offset, uint granularity)
         {
+            if (Navigation is { } nav)
+            {
+                var position = nav.GetPosition(nav.DocumentStart, offset);
+                var range = nav.GetRangeEnclosing(position, MapGranularity((TextGranularity)granularity));
+                return ValueTask.FromResult((nav.GetText(range), range.Start.Offset, range.End.Offset));
+            }
+
             var text = GetText();
             if (text.Length == 0)
                 return ValueTask.FromResult((string.Empty, 0, 0));
@@ -93,6 +104,13 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> SetCaretOffsetAsync(int offset)
         {
+            if (Navigation is { } nav)
+            {
+                var position = nav.GetPosition(nav.DocumentStart, offset);
+                nav.SetSelection(nav.GetRange(position, position));
+                return ValueTask.FromResult(true);
+            }
+
             return ValueTask.FromResult(false);
         }
 
@@ -203,46 +221,76 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<string> GetAttributeValueAsync(int offset, string attributeName)
         {
+            if (Navigation is { } nav)
+            {
+                var attributes = ToAtSpi(nav.GetTextAttributes(nav.GetPosition(nav.DocumentStart, offset)).Attributes);
+                if (attributes.TryGetValue(attributeName, out var value))
+                    return ValueTask.FromResult(value);
+            }
+
             return ValueTask.FromResult(string.Empty);
         }
 
         public ValueTask<(AtSpiAttributeSet Attributes, int StartOffset, int EndOffset)> GetAttributesAsync(int offset)
         {
-            var text = GetText();
-            return ValueTask.FromResult((new AtSpiAttributeSet(), 0, text.Length));
+            if (Navigation is { } nav)
+            {
+                var (attributes, run) = nav.GetTextAttributes(nav.GetPosition(nav.DocumentStart, offset));
+                return ValueTask.FromResult((ToAtSpi(attributes), run.Start.Offset, run.End.Offset));
+            }
+
+            return ValueTask.FromResult((new AtSpiAttributeSet(), 0, GetText().Length));
         }
 
         public ValueTask<AtSpiAttributeSet> GetDefaultAttributesAsync()
-        {
-            return ValueTask.FromResult(new AtSpiAttributeSet());
-        }
+            => ValueTask.FromResult(Navigation is { } nav
+                ? ToAtSpi(nav.GetTextAttributes(nav.DocumentStart).Attributes)
+                : new AtSpiAttributeSet());
 
         public ValueTask<(int X, int Y, int Width, int Height)> GetCharacterExtentsAsync(
             int offset, uint coordType)
         {
+            if (Navigation is { } nav)
+            {
+                var start = nav.GetPosition(nav.DocumentStart, offset);
+                var end = nav.GetPosition(start, TextUnit.Character, 1);
+                if (TryGetExtents(nav, nav.GetRange(start, end), coordType, out var extents))
+                    return ValueTask.FromResult(extents);
+            }
+
             return ValueTask.FromResult((0, 0, 0, 0));
         }
 
         public ValueTask<int> GetOffsetAtPointAsync(int x, int y, uint coordType)
         {
+            if (Navigation is { } nav)
+            {
+                var point = AtSpiCoordinateHelper.PointToTopLevel(node, x, y, coordType);
+                if (nav.GetPositionFromPoint(point) is { } position)
+                    return ValueTask.FromResult(position.Offset);
+            }
+
             return ValueTask.FromResult(-1);
         }
 
         public ValueTask<int> GetNSelectionsAsync()
-        {
-            return ValueTask.FromResult(0);
-        }
+            => ValueTask.FromResult(Navigation is { } nav && !nav.GetSelection().IsEmpty ? 1 : 0);
 
         public ValueTask<(int StartOffset, int EndOffset)> GetSelectionAsync(int selectionNum)
         {
+            if (Navigation is { } nav)
+            {
+                var selection = nav.GetSelection();
+                return ValueTask.FromResult((selection.Start.Offset, selection.End.Offset));
+            }
+
             return ValueTask.FromResult((0, 0));
         }
 
         public ValueTask<bool> AddSelectionAsync(int startOffset, int endOffset)
-        {
-            return ValueTask.FromResult(false);
-        }
+            => SetSelectionAsync(0, startOffset, endOffset);
 
+        // A single-selection control cannot remove its only selection.
         public ValueTask<bool> RemoveSelectionAsync(int selectionNum)
         {
             return ValueTask.FromResult(false);
@@ -250,35 +298,73 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> SetSelectionAsync(int selectionNum, int startOffset, int endOffset)
         {
+            if (Navigation is { } nav)
+            {
+                nav.SetSelection(nav.GetRange(
+                    nav.GetPosition(nav.DocumentStart, startOffset),
+                    nav.GetPosition(nav.DocumentStart, endOffset)));
+                return ValueTask.FromResult(true);
+            }
+
             return ValueTask.FromResult(false);
         }
 
         public ValueTask<(int X, int Y, int Width, int Height)> GetRangeExtentsAsync(
             int startOffset, int endOffset, uint coordType)
         {
+            if (Navigation is { } nav)
+            {
+                var range = nav.GetRange(
+                    nav.GetPosition(nav.DocumentStart, startOffset),
+                    nav.GetPosition(nav.DocumentStart, endOffset));
+                if (TryGetExtents(nav, range, coordType, out var extents))
+                    return ValueTask.FromResult(extents);
+            }
+
             return ValueTask.FromResult((0, 0, 0, 0));
         }
 
         public ValueTask<List<AtSpiTextRange>> GetBoundedRangesAsync(
             int x, int y, int width, int height, uint coordType, uint xClipType, uint yClipType)
         {
-            return ValueTask.FromResult(new List<AtSpiTextRange>());
+            var result = new List<AtSpiTextRange>();
+
+            if (Navigation is { } nav &&
+                nav.GetPositionFromPoint(AtSpiCoordinateHelper.PointToTopLevel(node, x, y, coordType)) is { } startPos &&
+                nav.GetPositionFromPoint(AtSpiCoordinateHelper.PointToTopLevel(node, x + width, y + height, coordType)) is { } endPos)
+            {
+                var start = Math.Min(startPos.Offset, endPos.Offset);
+                var end = Math.Max(startPos.Offset, endPos.Offset);
+                if (end > start)
+                {
+                    var text = nav.GetText(nav.GetRange(
+                        nav.GetPosition(nav.DocumentStart, start),
+                        nav.GetPosition(nav.DocumentStart, end)));
+                    result.Add(new AtSpiTextRange(start, end, text, new DBusVariant(0)));
+                }
+            }
+
+            return ValueTask.FromResult(result);
         }
 
+        // A TextBox is uniform, so the attribute run is the same set the whole document carries.
         public ValueTask<(AtSpiAttributeSet Attributes, int StartOffset, int EndOffset)> GetAttributeRunAsync(
             int offset, bool includeDefaults)
-        {
-            var text = GetText();
-            return ValueTask.FromResult((new AtSpiAttributeSet(), 0, text.Length));
-        }
+            => GetAttributesAsync(offset);
 
         public ValueTask<AtSpiAttributeSet> GetDefaultAttributeSetAsync()
-        {
-            return ValueTask.FromResult(new AtSpiAttributeSet());
-        }
+            => GetDefaultAttributesAsync();
 
         public ValueTask<bool> ScrollSubstringToAsync(int startOffset, int endOffset, uint type)
         {
+            if (Navigation is { } nav)
+            {
+                nav.ScrollIntoView(nav.GetRange(
+                    nav.GetPosition(nav.DocumentStart, startOffset),
+                    nav.GetPosition(nav.DocumentStart, endOffset)));
+                return ValueTask.FromResult(true);
+            }
+
             return ValueTask.FromResult(false);
         }
 
@@ -288,8 +374,84 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             return ValueTask.FromResult(false);
         }
 
+        private IAccessibleText? Navigation => node.Peer.GetProvider<IAccessibleText>();
+
+        private static TextUnit MapGranularity(TextGranularity granularity) => granularity switch
+        {
+            TextGranularity.Word => TextUnit.Word,
+            TextGranularity.Sentence => TextUnit.Sentence,
+            TextGranularity.Line => TextUnit.Line,
+            TextGranularity.Paragraph => TextUnit.Paragraph,
+            _ => TextUnit.Character,
+        };
+
+        // Maps the shared attribute vocabulary onto AT-SPI's Pango/ATK attribute names. Read-only is
+        // intentionally omitted: AT-SPI exposes editability through the state set, not a text attribute.
+        private static AtSpiAttributeSet ToAtSpi(IReadOnlyDictionary<TextAttribute, object?> attributes)
+        {
+            var set = new AtSpiAttributeSet();
+
+            foreach (var (attribute, value) in attributes)
+            {
+                switch (attribute)
+                {
+                    case TextAttribute.FontFamily when value is string family:
+                        set["family-name"] = family;
+                        break;
+                    case TextAttribute.FontSize when value is double size:
+                        set["size"] = size.ToString("0.##", CultureInfo.InvariantCulture);
+                        break;
+                    case TextAttribute.FontWeight when value is FontWeight weight:
+                        set["weight"] = ((int)weight).ToString(CultureInfo.InvariantCulture);
+                        break;
+                    case TextAttribute.FontStyle when value is FontStyle style:
+                        set["style"] = style switch
+                        {
+                            FontStyle.Italic => "italic",
+                            FontStyle.Oblique => "oblique",
+                            _ => "normal",
+                        };
+                        break;
+                    case TextAttribute.Foreground when value is Color fg:
+                        set["fg-color"] = $"{fg.R},{fg.G},{fg.B}";
+                        break;
+                    case TextAttribute.Background when value is Color bg:
+                        set["bg-color"] = $"{bg.R},{bg.G},{bg.B}";
+                        break;
+                }
+            }
+
+            return set;
+        }
+
+        // Unions the per-line top-level rects of a range and maps them to the requested coordinate space.
+        private bool TryGetExtents(
+            IAccessibleText nav, ITextRange range, uint coordType, out (int X, int Y, int Width, int Height) extents)
+        {
+            var rects = nav.GetBoundingRectangles(range);
+            if (rects.Length == 0)
+            {
+                extents = (0, 0, 0, 0);
+                return false;
+            }
+
+            var union = rects[0];
+            for (var i = 1; i < rects.Length; i++)
+                union = union.Union(rects[i]);
+
+            var screen = AtSpiCoordinateHelper.ToScreenRect(node, union);
+            var translated = AtSpiCoordinateHelper.TranslateRect(node, screen, coordType);
+            extents = ((int)translated.X, (int)translated.Y, (int)translated.Width, (int)translated.Height);
+            return true;
+        }
+
         private string GetText()
         {
+            if (Navigation is { } nav)
+            {
+                return nav.GetText(nav.DocumentRange);
+            }
+
             return node.Peer.GetProvider<IValueProvider>()?.Value ?? string.Empty;
         }
     }

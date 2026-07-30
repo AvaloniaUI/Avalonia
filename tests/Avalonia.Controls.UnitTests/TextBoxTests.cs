@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -2277,6 +2278,822 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void InputMethodClient_StructuredTextInput_Can_Read_Document_Range()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "Line1\nLine2",
+                CaretIndex = 0
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            Assert.Equal(0, structured.DocumentStart.Offset);
+            Assert.Equal(textBox.Text!.Length, structured.DocumentEnd.Offset);
+            Assert.Equal(textBox.Text, structured.GetText(structured.DocumentRange));
+
+            var backwardPointer = structured.PointerAt(2, LogicalDirection.Backward);
+            Assert.Equal(2, backwardPointer.Offset);
+            Assert.Equal(LogicalDirection.Backward, backwardPointer.Gravity);
+        }
+
+        private static ITextNavigation GetNavigation(TextBox textBox)
+        {
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+            return Assert.IsAssignableFrom<ITextNavigation>(eventArgs.Client);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Resolves_Offsets_And_Reads_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello world", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            Assert.Equal(0, nav.DocumentStart.Offset);
+            Assert.Equal(11, nav.DocumentEnd.Offset);
+
+            // Resolve a platform offset relative to the produced DocumentStart anchor.
+            var range = nav.GetRange(nav.GetPosition(nav.DocumentStart, 6), nav.DocumentEnd);
+            var text = nav.GetText(range);
+
+            Assert.Equal("world", text);
+            Assert.Equal(range.End.Offset - range.Start.Offset, text.Length); // gapless invariant
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_GetPosition_Clamps_And_GetRange_Normalizes()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abc", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            Assert.Equal(3, nav.GetPosition(nav.DocumentStart, 100).Offset);
+            Assert.Equal(0, nav.GetPosition(nav.DocumentEnd, -100).Offset);
+
+            var a = nav.GetPosition(nav.DocumentStart, 2);
+            var b = nav.GetPosition(nav.DocumentStart, 1);
+            var range = nav.GetRange(a, b); // arguments out of order are normalized
+
+            Assert.Equal(1, range.Start.Offset);
+            Assert.Equal(2, range.End.Offset);
+            Assert.Equal(-1, nav.GetOffset(a, b));
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Enclosing_And_Move_By_Word()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            var inWord = nav.GetPosition(nav.DocumentStart, 1); // inside "foo"
+            var word = nav.GetRangeEnclosing(inWord, TextUnit.Word);
+            Assert.Equal(0, word.Start.Offset);
+            Assert.Equal(4, word.End.Offset); // the word owns its trailing space
+
+            // A single word forward from the start lands on the next word's start.
+            Assert.Equal(4, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
+
+            var whole = nav.GetRangeEnclosing(inWord, TextUnit.Document);
+            Assert.Equal(0, whole.Start.Offset);
+            Assert.Equal(7, whole.End.Offset);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Word_Owns_Trailing_Whitespace()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "one  two\tthree", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // A word unit runs to the start of the following word (UIA "word plus
+            // trailing whitespace", AT-SPI GRANULARITY_WORD): spaces and tabs after a
+            // word belong to it, and expanding inside the gap resolves to that word.
+            var first = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 1), TextUnit.Word);
+            Assert.Equal(0, first.Start.Offset);
+            Assert.Equal(5, first.End.Offset);
+
+            var inGap = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 4), TextUnit.Word);
+            Assert.Equal(0, inGap.Start.Offset);
+            Assert.Equal(5, inGap.End.Offset);
+
+            var second = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 6), TextUnit.Word);
+            Assert.Equal(5, second.Start.Offset);
+            Assert.Equal(9, second.End.Offset); // "two" plus its tab
+
+            // One stop per word when stepping by the unit.
+            Assert.Equal(5, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
+            Assert.Equal(9, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 2).Offset);
+            Assert.Equal(14, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 3).Offset);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Word_Never_Attaches_Line_Breaks_Or_Leading_Whitespace()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "one \n  two", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // The space before the break attaches to "one"; the break itself does not.
+            var word = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 3), TextUnit.Word);
+            Assert.Equal(0, word.Start.Offset);
+            Assert.Equal(4, word.End.Offset);
+
+            var separator = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 4), TextUnit.Word);
+            Assert.Equal(4, separator.Start.Offset);
+            Assert.Equal(5, separator.End.Offset);
+
+            // Whitespace with no word before it on its line stays a gap unit of its own.
+            var leading = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 5), TextUnit.Word);
+            Assert.Equal(5, leading.Start.Offset);
+            Assert.Equal(7, leading.End.Offset);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_TextChanged_Reports_Delta_And_Bumps_Version()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello", CaretIndex = 5 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            TextChange? captured = null;
+            nav.TextChanged += (_, c) => captured = c;
+            var startVersion = nav.DocumentVersion;
+
+            var structured = (IStructuredTextInput)nav;
+            structured.ReplaceText(structured.GetRange(structured.DocumentEnd, structured.DocumentEnd), "!");
+
+            Assert.NotNull(captured);
+            Assert.Equal(5, captured!.Value.Position.Offset);
+            Assert.Equal(0, captured.Value.OldLength);
+            Assert.Equal(1, captured.Value.NewLength);
+            Assert.True(nav.DocumentVersion > startVersion);
+
+            // The inserted text is read on demand from the change position.
+            var inserted = nav.GetRange(
+                captured.Value.Position,
+                nav.GetPosition(captured.Value.Position, captured.Value.NewLength));
+            Assert.Equal("!", nav.GetText(inserted));
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Rejects_Foreign_Pointer()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var a = new TextBox { Template = CreateTemplate(), Text = "aaa" };
+            a.ApplyTemplate();
+            var b = new TextBox { Template = CreateTemplate(), Text = "bbb" };
+            b.ApplyTemplate();
+
+            var navA = GetNavigation(a);
+            var navB = GetNavigation(b);
+
+            Assert.Throws<ArgumentException>(() => navA.GetOffset(navA.DocumentStart, navB.DocumentStart));
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Rejects_Foreign_Pointer_In_Mutation()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var a = new TextBox { Template = CreateTemplate(), Text = "aaa" };
+            a.ApplyTemplate();
+            var b = new TextBox { Template = CreateTemplate(), Text = "bbb" };
+            b.ApplyTemplate();
+
+            var structuredA = (IStructuredTextInput)GetNavigation(a);
+            var navB = GetNavigation(b);
+
+            // The mutation path enforces the same provenance rule as the navigation reads.
+            Assert.Throws<ArgumentException>(() => structuredA.ReplaceText(navB.DocumentRange, "x"));
+            Assert.Equal("aaa", a.Text);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_GetRangeEnclosing_Honors_Gravity_At_Boundary()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // Offset 4 is the boundary between the "foo " unit [0,4) (the word owns its
+            // trailing space) and the "bar" unit [4,7).
+            var forward = nav.PointerAt(4, LogicalDirection.Forward);
+            var backward = nav.PointerAt(4, LogicalDirection.Backward);
+
+            var following = nav.GetRangeEnclosing(forward, TextUnit.Word);
+            Assert.Equal(4, following.Start.Offset);
+            Assert.Equal(7, following.End.Offset);
+
+            var preceding = nav.GetRangeEnclosing(backward, TextUnit.Word);
+            Assert.Equal(0, preceding.Start.Offset);
+            Assert.Equal(4, preceding.End.Offset);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Character_Unit_Is_Grapheme_Aware()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "áb", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // "a" + combining acute (U+0301) is a single grapheme spanning two code units.
+            var grapheme = nav.GetRangeEnclosing(nav.DocumentStart, TextUnit.Character);
+            Assert.Equal(0, grapheme.Start.Offset);
+            Assert.Equal(2, grapheme.End.Offset);
+
+            var afterTwo = nav.GetPosition(nav.DocumentStart, TextUnit.Character, 2);
+            Assert.Equal(3, afterTwo.Offset);
+            Assert.Equal(2, nav.GetPosition(afterTwo, TextUnit.Character, -1).Offset);
+        }
+
+        [Fact]
+        public void InputMethodClient_TextNavigation_Word_Unit_Uses_Uax29()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "don't stop", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // UAX-29 keeps the contraction together; the old ASCII heuristic split it at
+            // the apostrophe. The word owns its trailing space.
+            var word = nav.GetRangeEnclosing(nav.GetPosition(nav.DocumentStart, 2), TextUnit.Word);
+            Assert.Equal(0, word.Start.Offset);
+            Assert.Equal(6, word.End.Offset);
+
+            // Word units: 0 | "don't " 6 | "stop" 10.
+            Assert.Equal(6, nav.GetPosition(nav.DocumentStart, TextUnit.Word, 1).Offset);
+            Assert.Equal(0, nav.GetPosition(nav.GetPosition(nav.DocumentStart, 5), TextUnit.Word, -1).Offset);
+        }
+
+        [Fact]
+        public void AutomationTextRange_Over_TextNavigation_Expands_Moves_And_Reads()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            // The document range reads the whole text.
+            var doc = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentEnd);
+            Assert.Equal("foo bar", doc.GetText(-1));
+
+            // A degenerate range inside "foo" expands to the enclosing word, which owns
+            // its trailing space.
+            var inFoo = nav.GetPosition(nav.DocumentStart, 1);
+            var word = new Avalonia.Automation.AutomationTextRange(nav, inFoo, inFoo);
+            word.ExpandToEnclosingUnit(TextUnit.Word);
+            Assert.Equal("foo ", word.GetText(-1));
+
+            // Clone is independent; moving the clone's end back one character does not affect the original.
+            var clone = (Avalonia.Automation.AutomationTextRange)word.Clone();
+            clone.MoveEndpointByUnit(Avalonia.Automation.Provider.TextRangeEndpoint.End, TextUnit.Character, -1);
+            Assert.Equal("foo", clone.GetText(-1));
+            Assert.Equal("foo ", word.GetText(-1));
+
+            // The original word's end follows the clone's shortened end.
+            Assert.True(word.CompareEndpoints(
+                Avalonia.Automation.Provider.TextRangeEndpoint.End,
+                clone,
+                Avalonia.Automation.Provider.TextRangeEndpoint.End) > 0);
+        }
+
+        [Fact]
+        public void AutomationTextRange_FindText_Searches_The_Range()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar baz", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            Avalonia.Automation.AutomationTextRange Doc() => new(nav, nav.DocumentStart, nav.DocumentEnd);
+
+            Assert.Equal("bar", Doc().FindText("bar", false, false)!.GetText(-1));
+            Assert.Null(Doc().FindText("BAR", false, false));                     // case-sensitive miss
+            Assert.Equal("bar", Doc().FindText("BAR", false, true)!.GetText(-1)); // ignore case
+            Assert.Null(Doc().FindText("qux", false, false));                     // not found
+
+            // Forward finds the first "ba" (in "bar"); backward finds the last (in "baz").
+            var forward = Doc().FindText("ba", false, false)!;
+            var backward = Doc().FindText("ba", true, false)!;
+            Assert.True(forward.CompareEndpoints(
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start, backward,
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start) < 0);
+        }
+
+        [Fact]
+        public void AutomationTextRange_Move_Advances_By_Whole_Units()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar baz", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            var word = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentStart);
+            word.ExpandToEnclosingUnit(TextUnit.Word);
+            Assert.Equal("foo ", word.GetText(-1));
+
+            // Forward moves a whole word unit at a time; the whitespace travels with it.
+            Assert.Equal(1, word.Move(TextUnit.Word, 1));
+            Assert.Equal("bar ", word.GetText(-1));
+            Assert.Equal(1, word.Move(TextUnit.Word, 1));
+            Assert.Equal("baz", word.GetText(-1));
+
+            // No more words forward.
+            Assert.Equal(0, word.Move(TextUnit.Word, 1));
+            Assert.Equal("baz", word.GetText(-1));
+
+            // Backward two words returns to the first.
+            Assert.Equal(-2, word.Move(TextUnit.Word, -2));
+            Assert.Equal("foo ", word.GetText(-1));
+
+            // Character units tile.
+            var ch = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentStart);
+            ch.ExpandToEnclosingUnit(TextUnit.Character);
+            Assert.Equal("f", ch.GetText(-1));
+            Assert.Equal(2, ch.Move(TextUnit.Character, 2));
+            Assert.Equal("o", ch.GetText(-1));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Exposes_Text_Via_ITextProvider()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(peer);
+
+            Assert.Equal("foo bar", textProvider.DocumentRange.GetText(-1));
+            Assert.Equal(Avalonia.Automation.Provider.SupportedTextSelection.Single, textProvider.SupportedTextSelection);
+
+            textBox.SelectionStart = 0;
+            textBox.SelectionEnd = 3;
+
+            var selection = textProvider.GetSelection();
+            Assert.Single(selection);
+            Assert.Equal("foo", selection[0].GetText(-1));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Raises_TextChanged_With_Delta()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abc" };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+
+            Avalonia.Automation.AutomationTextChangedEventArgs? change = null;
+            peer.TextChanged += (_, e) => change = e;
+
+            textBox.Text = "abXc";
+
+            Assert.NotNull(change);
+            Assert.Equal(2, change!.Offset);
+            Assert.Equal(string.Empty, change.RemovedText);
+            Assert.Equal("X", change.InsertedText);
+
+            textBox.Text = "aZXc";
+
+            Assert.Equal(1, change!.Offset);
+            Assert.Equal("b", change.RemovedText);
+            Assert.Equal("Z", change.InsertedText);
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Raises_TextSelectionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+
+            var count = 0;
+            Avalonia.Automation.AutomationTextSelectionChangedEventArgs? last = null;
+            peer.TextSelectionChanged += (_, e) => { count++; last = e; };
+
+            textBox.SelectionStart = 1;
+            textBox.SelectionEnd = 4;
+
+            Assert.True(count >= 1);
+            Assert.NotNull(last);
+            Assert.Equal(1, last!.SelectionStart);
+            Assert.Equal(4, last.SelectionEnd);
+            Assert.Equal(textBox.CaretIndex, last.CaretOffset);
+
+            // A caret move that collapses the selection reports the new state.
+            textBox.CaretIndex = 2;
+
+            Assert.Equal(2, last!.SelectionStart);
+            Assert.Equal(2, last.SelectionEnd);
+            Assert.Equal(2, last.CaretOffset);
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Exposes_The_Caret_Via_TextPattern2()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 3 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var provider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider2>(peer);
+
+            var caret = provider.GetCaretRange(out var isActive);
+
+            Assert.NotNull(caret);
+            Assert.False(isActive); // the box is not focused in this harness
+            Assert.Equal(string.Empty, caret!.GetText(-1)); // degenerate range at the caret
+
+            // Expanding the caret range to a character lands on the character at the caret index.
+            caret.ExpandToEnclosingUnit(TextUnit.Character);
+            Assert.Equal("l", caret.GetText(-1));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_ITextRange_Select_Updates_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox));
+
+            // Expand the document range to the first word unit (which owns its trailing
+            // space) and select it through the UIA-shaped range.
+            var range = textProvider.DocumentRange;
+            range.ExpandToEnclosingUnit(TextUnit.Word);
+            range.Select();
+
+            Assert.Equal(0, textBox.SelectionStart);
+            Assert.Equal(4, textBox.SelectionEnd);
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_IAccessibleText_GetSelection_Round_Trips_The_Control_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var accessible = Assert.IsAssignableFrom<Avalonia.Automation.Provider.IAccessibleText>(
+                peer.GetProvider<Avalonia.Automation.Provider.IAccessibleText>());
+
+            // Selection-read reflects the control and normalizes reversed anchors.
+            textBox.SelectionStart = 7;
+            textBox.SelectionEnd = 4;
+            var selection = accessible.GetSelection();
+            Assert.Equal(4, selection.Start.Offset);
+            Assert.Equal(7, selection.End.Offset);
+            Assert.False(selection.IsEmpty);
+
+            // A collapsed selection (the caret) is empty.
+            textBox.SelectionStart = textBox.SelectionEnd = 2;
+            Assert.True(accessible.GetSelection().IsEmpty);
+
+            // SetSelection writes back through the control.
+            accessible.SetSelection(accessible.GetRange(
+                accessible.GetPosition(accessible.DocumentStart, 0),
+                accessible.GetPosition(accessible.DocumentStart, 3)));
+            Assert.Equal(0, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_IAccessibleText_Reports_Font_Attributes_Over_A_Uniform_Run()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "foo bar",
+                FontFamily = new FontFamily("Courier New"),
+                FontSize = 17,
+                FontWeight = FontWeight.Bold,
+                FontStyle = FontStyle.Italic,
+                Foreground = Brushes.Red,
+            };
+            textBox.ApplyTemplate();
+
+            var accessible = Assert.IsAssignableFrom<Avalonia.Automation.Provider.IAccessibleText>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox)
+                    .GetProvider<Avalonia.Automation.Provider.IAccessibleText>());
+
+            var (attributes, run) = accessible.GetTextAttributes(accessible.DocumentStart);
+
+            Assert.Equal("Courier New", attributes[TextAttribute.FontFamily]);
+            Assert.Equal(17d, attributes[TextAttribute.FontSize]);
+            Assert.Equal(FontWeight.Bold, attributes[TextAttribute.FontWeight]);
+            Assert.Equal(FontStyle.Italic, attributes[TextAttribute.FontStyle]);
+            Assert.Equal(Colors.Red, attributes[TextAttribute.Foreground]);
+            Assert.Equal(false, attributes[TextAttribute.IsReadOnly]);
+
+            // Uniform formatting: the run spans the whole document.
+            Assert.Equal(0, run.Start.Offset);
+            Assert.Equal(7, run.End.Offset);
+
+            // The UIA-shaped range reports the same value uniformly over any sub-range.
+            var word = new Avalonia.Automation.AutomationTextRange(
+                accessible, accessible.DocumentStart, accessible.GetPosition(accessible.DocumentStart, 3));
+            Assert.Equal(FontWeight.Bold, word.GetAttributeValue(TextAttribute.FontWeight));
+            Assert.Equal(Colors.Red, word.GetAttributeValue(TextAttribute.Foreground));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_GetPositionFromPoint_Hit_Tests_Back_To_The_Character()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello world" };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object) { Template = CreateTopLevelTemplate() };
+            topLevel.Content = textBox;
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+            textBox.Measure(Size.Infinity);
+
+            var accessible = Assert.IsAssignableFrom<Avalonia.Automation.Provider.IAccessibleText>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox)
+                    .GetProvider<Avalonia.Automation.Provider.IAccessibleText>());
+
+            // Top-level bounding rect of 'w' (offset 6 in "Hello world").
+            var wChar = accessible.GetRange(
+                accessible.GetPosition(accessible.DocumentStart, 6),
+                accessible.GetPosition(accessible.DocumentStart, 7));
+            var rects = accessible.GetBoundingRectangles(wChar);
+            Assert.NotEmpty(rects);
+
+            // A point just inside that rect hit-tests back into the same character (the inverse of
+            // GetBoundingRectangles round-trips).
+            var probe = new Point(rects[0].X + 1, rects[0].Center.Y);
+            var hit = accessible.GetPositionFromPoint(probe);
+
+            Assert.NotNull(hit);
+            Assert.Equal("w", accessible.GetText(accessible.GetRangeEnclosing(hit!, TextUnit.Character)));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_GetVisibleRanges_Covers_The_Visible_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello world" };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object) { Template = CreateTopLevelTemplate() };
+            topLevel.Content = textBox;
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+            textBox.Measure(Size.Infinity);
+
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox));
+
+            var visible = textProvider.GetVisibleRanges();
+            Assert.Single(visible);
+            Assert.Equal("Hello world", visible[0].GetText(-1));
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "Hello",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            structured.SetCompositionText("!", 1);
+
+            Assert.Equal("Hello!", textBox.Text);
+            Assert.NotNull(structured.CompositionRange);
+            Assert.Equal(5, structured.CompositionRange!.Start.Offset);
+            Assert.Equal(6, structured.CompositionRange!.End.Offset);
+
+            structured.CommitComposition();
+
+            Assert.Null(structured.CompositionRange);
+            Assert.Equal("Hello!", textBox.Text);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_ReplaceText_Replaces_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abcde",
+                SelectionStart = 1,
+                SelectionEnd = 4
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            structured.ReplaceText(structured.Selection, "ZZ");
+
+            Assert.Equal("aZZe", textBox.Text);
+            Assert.Equal(3, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_ReplaceText_Raises_TextChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abc",
+                CaretIndex = 3
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            var eventCount = 0;
+            structured.TextChanged += (_, _) => eventCount++;
+
+            var end = structured.DocumentEnd;
+            structured.ReplaceText(structured.GetRange(end, end), "!");
+
+            Assert.Equal("abc!", textBox.Text);
+            Assert.Equal(1, eventCount);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_SetCompositionText_Raises_CompositionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "text",
+                CaretIndex = 4
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            var eventCount = 0;
+            structured.CompositionChanged += (_, _) => eventCount++;
+
+            structured.SetCompositionText("!", 1);
+            structured.CommitComposition();
+
+            Assert.Equal("text!", textBox.Text);
+            Assert.Equal(2, eventCount);
+            Assert.Null(structured.CompositionRange);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_ReplaceText_Raises_CaretPositionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abc",
+                CaretIndex = 3
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            var eventCount = 0;
+            structured.CaretPositionChanged += (_, _) => eventCount++;
+
+            var end = structured.DocumentEnd;
+            structured.ReplaceText(structured.GetRange(end, end), "!");
+
+            Assert.Equal("abc!", textBox.Text);
+            Assert.True(eventCount > 0);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_SetSelection_Raises_CaretPositionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abcdef",
+                CaretIndex = 6
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            var eventCount = 0;
+            structured.CaretPositionChanged += (_, _) => eventCount++;
+
+            var start = structured.PointerAt(1, LogicalDirection.Forward);
+            var end = structured.PointerAt(4, LogicalDirection.Backward);
+            structured.Selection = structured.GetRange(start, end);
+
+            Assert.Equal(1, textBox.SelectionStart);
+            Assert.Equal(4, textBox.SelectionEnd);
+            Assert.True(eventCount > 0);
+        }
+
+        [Fact]
         public void InputMethodClient_SurroundingText_Uses_Full_Document_For_Multiline_Text()
         {
             using var _ = UnitTestApplication.Start(Services);
@@ -2293,6 +3110,139 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal("one\ntwo", client.SurroundingText);
             Assert.Equal(new TextSelection(5, 5), client.Selection);
+        }
+
+        [Fact]
+        public void Preedit_Survives_Reentrant_Layout_Invalidation_From_CaretBoundsChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "hello",
+                CaretIndex = 5
+            };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object)
+            {
+                Template = CreateTopLevelTemplate(),
+                Content = textBox
+            };
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            var client = GetInputMethodClient(textBox);
+            var presenter = textBox.FindDescendantOfType<TextPresenter>();
+            Assert.NotNull(presenter);
+
+            // A CaretBoundsChanged subscriber may synchronously invalidate the text layout
+            // (the IME candidate window or a caret-following overlay forcing a layout pass
+            // does exactly that). The preedit update must still complete against the layout
+            // it computed with instead of dereferencing the reentrantly cleared field.
+            // The presenter overlay is driven directly: structured clients compose in the
+            // document, but the overlay path remains for third-party clients.
+            presenter.CaretBoundsChanged += (_, _) => presenter.HideCaret();
+
+            presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, "かん");
+            presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, 2);
+
+            Assert.Equal("かん", presenter.PreeditText);
+        }
+
+        [Fact]
+        public void SetPreeditText_Composes_In_Document()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "hello",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(client);
+
+            // The legacy entry point writes the composition into the text buffer with a
+            // tracked composition region; the presenter's preedit overlay stays unset and
+            // legacy consumers read the pending composition from the client.
+            client.SetPreeditText("かん", 2);
+
+            Assert.Equal("helloかん", textBox.Text);
+            Assert.Equal("かん", client.PreeditText);
+            Assert.NotNull(structured.CompositionRange);
+            Assert.Equal(5, structured.CompositionRange!.Start.Offset);
+            Assert.Equal(7, structured.CompositionRange.End.Offset);
+            Assert.Equal(7, textBox.CaretIndex);
+
+            // An empty preedit cancels: the composition text leaves the buffer.
+            client.SetPreeditText(null, null);
+
+            Assert.Equal("hello", textBox.Text);
+            Assert.Null(client.PreeditText);
+            Assert.Null(structured.CompositionRange);
+        }
+
+        [Fact]
+        public void Composition_Commit_Keeps_Text_And_Clears_The_Region()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(client);
+
+            client.SetPreeditText("かん", 2);
+            structured.CommitComposition();
+
+            Assert.Equal("かん", textBox.Text);
+            Assert.Null(structured.CompositionRange);
+            Assert.Null(client.PreeditText);
+        }
+
+        [Fact]
+        public void Composition_Events_Flow_Text_Then_Composition_Then_Caret()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 5 };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(client);
+            var nav = Assert.IsAssignableFrom<ITextNavigation>(client);
+
+            var events = new List<string>();
+            nav.TextChanged += (_, _) => events.Add("text");
+            structured.CompositionChanged += (_, _) => events.Add("composition");
+            structured.CaretPositionChanged += (_, _) => events.Add("caret");
+
+            client.SetPreeditText("かん", 2);
+
+            // The document mutates first (so every subsequent reader sees consistent
+            // text), then the composition region reports, then the caret.
+            Assert.Equal(new[] { "text", "composition", "caret" }, events);
+        }
+
+        [Fact]
+        public void TextBox_Client_Declares_In_Document_Composition_Only()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "" };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+
+            Assert.False(client.SupportsPreedit);
+            Assert.True(client.SupportsInDocumentComposition);
+            Assert.True(client.SupportsInlineComposition());
         }
 
         [Fact]

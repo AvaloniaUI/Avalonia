@@ -68,13 +68,13 @@ partial class WindowImpl
             // Abort any in-flight composition on the old client (if any).
             if (oldClient != null && _hasPreedit)
             {
-                try { oldClient.SetPreeditText(null, null); } catch { }
+                try { oldClient.DeliverComposition(null, null); } catch { }
             }
             _hasPreedit = false;
 
             _client = client;
             var hasClient = client != null;
-            var supportsPreedit = client?.SupportsPreedit ?? false;
+            var supportsPreedit = client?.SupportsInlineComposition() ?? false;
             var supportsSurrounding = client?.SupportsSurroundingText ?? false;
 
             ApplyTextInputStateToSurface(hasClient, supportsPreedit, supportsSurrounding);
@@ -104,7 +104,7 @@ partial class WindowImpl
             _registeredAgainstSurface = null;
 
             var hasClient = _client != null;
-            var supportsPreedit = _client?.SupportsPreedit ?? false;
+            var supportsPreedit = _client?.SupportsInlineComposition() ?? false;
             var supportsSurrounding = _client?.SupportsSurroundingText ?? false;
             ApplyTextInputStateToSurface(hasClient, supportsPreedit, supportsSurrounding);
 
@@ -168,7 +168,7 @@ partial class WindowImpl
             // ongoing composition needs to be torn down first).
             if (_hasPreedit && (hasDelete || hasCommit))
             {
-                client.SetPreeditText(null, null);
+                client.DeliverComposition(null, null);
                 _hasPreedit = false;
             }
 
@@ -199,13 +199,13 @@ partial class WindowImpl
             if (!newPreeditEmpty)
             {
                 _hasPreedit = true;
-                client.SetPreeditText(preeditText,
+                client.DeliverComposition(preeditText,
                     preeditCursorEndChar < 0 ? null : preeditCursorEndChar);
             }
             else if (_hasPreedit)
             {
                 // No new preedit: clear any leftover composition.
-                client.SetPreeditText(null, null);
+                client.DeliverComposition(null, null);
                 _hasPreedit = false;
             }
         }

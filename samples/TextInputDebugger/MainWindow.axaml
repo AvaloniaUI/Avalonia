@@ -1,0 +1,76 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:TextInputDebugger"
+        x:Class="TextInputDebugger.MainWindow"
+        Title="Structured Text Input Debugger"
+        Width="1180" Height="720">
+
+  <DockPanel Margin="8">
+
+    <!-- Toolbar: log filters and the composition simulator. Buttons are not focusable so
+         the target control keeps focus and its client stays attached while clicking. -->
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="0,0,0,8">
+      <TextBlock Text="Show:" VerticalAlignment="Center" />
+      <CheckBox x:Name="FilterReads" Content="reads" Focusable="False" />
+      <CheckBox x:Name="FilterGeometry" Content="geometry" IsChecked="True" Focusable="False" />
+      <CheckBox x:Name="FilterLegacy" Content="legacy" IsChecked="True" Focusable="False" />
+      <CheckBox x:Name="FilterPlatform" Content="platform" IsChecked="True" Focusable="False" />
+      <Separator Width="12" />
+      <Button x:Name="ComposeButton" Content="Compose &#x304B;&#x3093;" Focusable="False" />
+      <Button x:Name="UpdateCompositionButton" Content="Update &#x611F;" Focusable="False" />
+      <Button x:Name="DecorateButton" Content="Decorate" Focusable="False" />
+      <Button x:Name="CommitButton" Content="Commit" Focusable="False" />
+      <Button x:Name="ReplaceSelectionButton" Content="Replace sel" Focusable="False" />
+      <Separator Width="12" />
+      <Button x:Name="ClearLogButton" Content="Clear log" Focusable="False" />
+    </StackPanel>
+
+    <Grid ColumnDefinitions="5*,8,7*">
+
+      <!-- Left: the control under test, its live state, and the marker view. -->
+      <DockPanel Grid.Column="0">
+        <TextBox x:Name="Target"
+                 DockPanel.Dock="Top"
+                 AcceptsReturn="True"
+                 Height="140"
+                 FontSize="16"
+                 Text="The quick brown fox jumps over the lazy dog." />
+
+        <Border DockPanel.Dock="Top" Margin="0,8,0,0" Padding="8"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
+          <StackPanel Spacing="2">
+            <TextBlock x:Name="StateClient" FontFamily="Consolas" />
+            <TextBlock x:Name="StateVersion" FontFamily="Consolas" />
+            <TextBlock x:Name="StateCaret" FontFamily="Consolas" />
+            <TextBlock x:Name="StateSelection" FontFamily="Consolas" />
+            <TextBlock x:Name="StateComposition" FontFamily="Consolas" />
+            <TextBlock x:Name="StateDecorations" FontFamily="Consolas" TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+
+        <Border Margin="0,8,0,0" Padding="8"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4">
+          <ScrollViewer>
+            <TextBlock x:Name="DocumentView" FontFamily="Consolas" FontSize="14" TextWrapping="Wrap" />
+          </ScrollViewer>
+        </Border>
+      </DockPanel>
+
+      <GridSplitter Grid.Column="1" Background="Transparent" />
+
+      <!-- Right: the trace log. -->
+      <ListBox x:Name="LogList" Grid.Column="2" FontFamily="Consolas" FontSize="12">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="local:TraceEntry">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="{Binding Seq}" Foreground="Gray" Width="44" TextAlignment="Right" />
+              <TextBlock Text="{Binding CategoryLabel}" Foreground="{Binding CategoryBrush}" Width="34" FontWeight="Bold" />
+              <TextBlock Text="{Binding Member}" Width="180" />
+              <TextBlock Text="{Binding Details}" Foreground="{Binding TextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Grid>
+  </DockPanel>
+</Window>

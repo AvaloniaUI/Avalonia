@@ -873,6 +873,24 @@ interface IAvnTextInputMethodClient : IUnknown
 {
     void SetPreeditText(char* preeditText);
     void SelectInSurroundingText(int start, int end);
+    // Non-zero when the client implements IStructuredTextInput. The composition then lives inside the
+    // document, so the surrounding text already contains it and every offset below is in that one space.
+    int IsStructured();
+    // Replaces the composition - or the selection, when there is none - with text. cursorOffset is
+    // relative to the start of the composition. Passing null removes the composition text.
+    void SetCompositionText(char* text, int cursorOffset);
+    // Ends the composition session, keeping the text. Only the composition marking is dropped.
+    void CommitComposition();
+    // The composition's range in the document, or start = end = -1 when there is no composition.
+    void GetCompositionRange(int* start, int* end);
+    // The index of the position nearest to point, or -1 when unavailable. Nearest, never "outside" -
+    // NSTextInputClient characterIndexForPoint: is specified that way.
+    int GetCharacterIndexFromPoint(AvnPoint point);
+    // The index of the position nearest to point but constrained to [start, end), or -1 when the point
+    // is not within that range. This is the containment test the nearest-index query cannot answer.
+    int GetCharacterIndexFromPointWithinRange(AvnPoint point, int start, int end);
+    // The bounding rectangle (top level coordinate space) of a character range.
+    HRESULT GetFirstRectForRange(int start, int end, AvnRect* rect);
 }
 
 [uuid(1382a29f-e260-4c7a-b83f-c99fc72e27c2)]

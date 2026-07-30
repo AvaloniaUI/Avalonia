@@ -107,6 +107,14 @@ public class Win32PlatformOptions
     public bool OverlayPopups { get; set; }
 
     /// <summary>
+    /// Experimental: activates the Text Services Framework integration for text input
+    /// clients that support in-document composition, alongside the IMM path. The default
+    /// value is false. The integration is under construction; this switch exists so it
+    /// can be exercised before it becomes the default.
+    /// </summary>
+    public bool UseTsfTextInput { get; set; }
+
+    /// <summary>
     /// Gets or sets Avalonia rendering modes with fallbacks.
     /// The first element in the array has the highest priority.
     /// The default value is: <see cref="Win32RenderingMode.AngleEgl"/>, <see cref="Win32RenderingMode.Software"/>.

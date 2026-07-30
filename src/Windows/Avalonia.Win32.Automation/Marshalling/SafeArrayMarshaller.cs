@@ -10,6 +10,9 @@ internal static class SafeArrayMarshaller<T> where T : notnull
 {
     public static SafeArrayRef ConvertToUnmanaged(T[]? managed) =>
         managed is null ? new SafeArrayRef()
+        // COM interface elements need their CCWs created (not just looked up), and through the same
+        // marshaller the single-interface signatures use so every wrapper shares one identity registry.
+        : typeof(T).IsInterface ? SafeArrayRef.CreateFromComInterfaces(managed)
         : SafeArrayRef.TryCreate(managed, out var result, out _) ? result.Value
         : throw new NotImplementedException($"SafeArray marshalling for '{managed?.GetType().Name}' is not implemented.");
 
