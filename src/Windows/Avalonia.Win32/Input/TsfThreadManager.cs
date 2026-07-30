@@ -75,7 +75,7 @@ namespace Avalonia.Win32.Input
 
         private unsafe TsfThreadManager()
         {
-            _threadManager = CreateInstance<ITfThreadMgrEx>(
+            _threadManager = GetExistingThreadManager() ?? CreateInstance<ITfThreadMgrEx>(
                 in s_clsidThreadMgr,
                 MicroComRuntime.GetGuidFor(typeof(ITfThreadMgrEx)));
 
@@ -86,9 +86,8 @@ namespace Avalonia.Win32.Input
             }
             catch (COMException exception) when (exception.HResult == 1)
             {
-                // S_FALSE: TSF was already active on this thread (CUAS and the input
-                // pane activate it eagerly); the activation is refcounted and the
-                // client id was still written.
+                // S_FALSE: TSF was already active on this thread; the activation is
+                // refcounted and the client id was still written.
             }
 
             _clientId = clientId;
@@ -106,6 +105,32 @@ namespace Avalonia.Win32.Input
             Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
                 ?.Log(this, "TSF thread manager activated, client id {ClientId}", _clientId);
         }
+
+        /// <summary>
+        /// The thread's manager is a per-thread singleton that CUAS and the input pane
+        /// often create before we do; prefer the existing instance over creating one.
+        /// Returns null when the thread has none yet (TF_GetThreadMgr reports S_FALSE).
+        /// </summary>
+        private static ITfThreadMgrEx? GetExistingThreadManager()
+        {
+            try
+            {
+                if (TF_GetThreadMgr(out var existing) != 0 || existing == IntPtr.Zero)
+                {
+                    return null;
+                }
+
+                using var threadManager = MicroComRuntime.CreateProxyFor<ITfThreadMgr>(existing, true);
+                return threadManager.QueryInterface<ITfThreadMgrEx>();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        [DllImport("msctf.dll", ExactSpelling = true)]
+        private static extern int TF_GetThreadMgr(out IntPtr pptim);
 
         /// <summary>
         /// Releases the association when the given window is going away; associations
