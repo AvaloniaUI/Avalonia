@@ -28,6 +28,10 @@ namespace Avalonia.Win32.Input.Tsf
     {
         private static readonly Guid s_iidTextStoreAcpSink = MicroComRuntime.GetGuidFor(typeof(ITextStoreACPSink));
 
+        private const uint ViewCookie = 1;
+
+        private IntPtr _hwnd;
+        private WindowImpl? _window;
         private IStructuredTextInput? _client;
         private ITextStoreACPSink? _sink;
         private uint _sinkMask;
@@ -37,6 +41,7 @@ namespace Avalonia.Win32.Input.Tsf
         private bool _inTsfEdit;
         private readonly List<TS_TEXTCHANGE> _pendingTextChanges = new();
         private bool _pendingSelectionChange;
+        private bool _pendingLayoutChange;
         private ITfCompositionView? _compositionView;
         private ITfCategoryMgr? _categoryManager;
         private ITfDisplayAttributeMgr? _displayAttributeManager;
@@ -48,6 +53,16 @@ namespace Avalonia.Win32.Input.Tsf
             Color? Foreground,
             Color? Background,
             TextInputUnderline Underline);
+
+        /// <summary>
+        /// Tracks the window the store's view maps to; geometry answers convert between
+        /// the window's top-level coordinate space and the screen through it.
+        /// </summary>
+        public void SetWindow(IntPtr hwnd, WindowImpl? window)
+        {
+            _hwnd = hwnd;
+            _window = window;
+        }
 
         /// <summary>
         /// Attaches the store to the focused structured client, or detaches it when focus
@@ -95,11 +110,13 @@ namespace Avalonia.Win32.Input.Tsf
                 {
                     _pendingTextChanges.Add(change);
                     _pendingSelectionChange = true;
+                    _pendingLayoutChange = true;
                 }
                 else
                 {
                     NotifyTextChange(change);
                     NotifySelectionChange();
+                    NotifyLayoutChange();
                 }
             }
         }
@@ -124,10 +141,12 @@ namespace Avalonia.Win32.Input.Tsf
             if (_activeLockFlags != 0)
             {
                 _pendingTextChanges.Add(textChange);
+                _pendingLayoutChange = true;
                 return;
             }
 
             NotifyTextChange(textChange);
+            NotifyLayoutChange();
         }
 
         private void OnClientCaretPositionChanged(object? sender, EventArgs e)
@@ -140,10 +159,12 @@ namespace Avalonia.Win32.Input.Tsf
             if (_activeLockFlags != 0)
             {
                 _pendingSelectionChange = true;
+                _pendingLayoutChange = true;
                 return;
             }
 
             NotifySelectionChange();
+            NotifyLayoutChange();
         }
 
         private void NotifyTextChange(TS_TEXTCHANGE change)
@@ -180,6 +201,23 @@ namespace Avalonia.Win32.Input.Tsf
             }
         }
 
+        private void NotifyLayoutChange()
+        {
+            if (_sink is null || (_sinkMask & TS_AS_LAYOUT_CHANGE) == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                _sink.OnLayoutChange(TS_LC_CHANGE, ViewCookie);
+            }
+            catch (Exception exception)
+            {
+                Trace("OnLayoutChange failed: {Error}", exception.Message);
+            }
+        }
+
         private void FlushPendingNotifications()
         {
             if (_pendingTextChanges.Count > 0)
@@ -197,6 +235,12 @@ namespace Avalonia.Win32.Input.Tsf
             {
                 _pendingSelectionChange = false;
                 NotifySelectionChange();
+            }
+
+            if (_pendingLayoutChange)
+            {
+                _pendingLayoutChange = false;
+                NotifyLayoutChange();
             }
         }
 
@@ -899,24 +943,162 @@ namespace Avalonia.Win32.Input.Tsf
             }
         }
 
-        // Geometry arrives with the layout phase; a single-view store reports one cookie.
+        // Geometry: the single view is the associated window. Clients answer in top-level
+        // device-independent coordinates (the contract's space), and the store converts to
+        // and from physical screen coordinates through the window - the top-level origin
+        // is the window's client-area origin, and the desktop scaling factor bridges the
+        // unit systems.
 
         public void GetActiveView(IntPtr pvcView)
         {
             if (pvcView != IntPtr.Zero)
             {
-                *(uint*)pvcView = 1;
+                *(uint*)pvcView = ViewCookie;
             }
         }
 
         public void GetACPFromPoint(uint vcView, UnmanagedMethods.POINT* ptScreen, uint dwFlags, IntPtr pacp)
-            => throw new COMException(null, E_NOTIMPL);
+        {
+            RequireView(vcView);
+            RequireLock(TS_LF_READ);
+
+            if (ptScreen is null || pacp == IntPtr.Zero)
+            {
+                throw new COMException(null, E_INVALIDARG);
+            }
+
+            if (_client is null)
+            {
+                *(int*)pacp = 0;
+                return;
+            }
+
+            // Both GXFPF flags relax containment toward the nearest position, which is
+            // what the client's hit test answers.
+            var position = _client.GetClosestPosition(ToTopLevelPoint(*ptScreen))
+                ?? throw new COMException(null, TS_E_INVALIDPOINT);
+
+            *(int*)pacp = position.Offset;
+        }
 
         public void GetTextExt(uint vcView, int acpStart, int acpEnd, UnmanagedMethods.RECT* prc, IntPtr pfClipped)
-            => throw new COMException(null, E_NOTIMPL);
+        {
+            RequireView(vcView);
+            RequireLock(TS_LF_READ);
+
+            if (prc is null)
+            {
+                throw new COMException(null, E_INVALIDARG);
+            }
+
+            var client = _client ?? throw new COMException(null, TS_E_NOLAYOUT);
+            var length = client.DocumentEnd.Offset;
+
+            if (acpStart < 0 || acpEnd < acpStart || acpStart > length)
+            {
+                throw new COMException(null, TS_E_INVALIDPOS);
+            }
+
+            acpEnd = Math.Min(acpEnd, length);
+
+            Rect rect;
+            if (acpStart == acpEnd)
+            {
+                rect = client.GetCaretRect(client.PointerAt(acpStart));
+            }
+            else
+            {
+                rect = default;
+                foreach (var lineRect in client.GetSelectionRects(client.RangeAt(acpStart, acpEnd - acpStart)))
+                {
+                    rect = rect == default ? lineRect : rect.Union(lineRect);
+                }
+
+                if (rect == default)
+                {
+                    rect = client.GetFirstRectForRange(client.RangeAt(acpStart, acpEnd - acpStart));
+                }
+            }
+
+            if (rect == default)
+            {
+                // The range has no realized layout yet; the sink retries after
+                // OnLayoutChange.
+                throw new COMException(null, TS_E_NOLAYOUT);
+            }
+
+            *prc = ToScreenRect(rect);
+
+            if (pfClipped != IntPtr.Zero)
+            {
+                *(int*)pfClipped = 0;
+            }
+        }
 
         public void GetScreenExt(uint vcView, UnmanagedMethods.RECT* prc)
-            => throw new COMException(null, E_NOTIMPL);
+        {
+            RequireView(vcView);
+
+            if (prc is null)
+            {
+                throw new COMException(null, E_INVALIDARG);
+            }
+
+            *prc = default;
+
+            if (_hwnd == IntPtr.Zero || !UnmanagedMethods.GetClientRect(_hwnd, out var clientRect))
+            {
+                return;
+            }
+
+            var origin = default(UnmanagedMethods.POINT);
+            UnmanagedMethods.ClientToScreen(_hwnd, ref origin);
+
+            prc->left = origin.X + clientRect.left;
+            prc->top = origin.Y + clientRect.top;
+            prc->right = origin.X + clientRect.right;
+            prc->bottom = origin.Y + clientRect.bottom;
+        }
+
+        private static void RequireView(uint vcView)
+        {
+            if (vcView != ViewCookie)
+            {
+                throw new COMException(null, E_INVALIDARG);
+            }
+        }
+
+        private UnmanagedMethods.RECT ToScreenRect(Rect topLevelRect)
+        {
+            var scaling = _window?.DesktopScaling ?? 1.0;
+            var origin = default(UnmanagedMethods.POINT);
+
+            if (_hwnd != IntPtr.Zero)
+            {
+                UnmanagedMethods.ClientToScreen(_hwnd, ref origin);
+            }
+
+            return new UnmanagedMethods.RECT
+            {
+                left = origin.X + (int)Math.Floor(topLevelRect.X * scaling),
+                top = origin.Y + (int)Math.Floor(topLevelRect.Y * scaling),
+                right = origin.X + (int)Math.Ceiling(topLevelRect.Right * scaling),
+                bottom = origin.Y + (int)Math.Ceiling(topLevelRect.Bottom * scaling),
+            };
+        }
+
+        private Point ToTopLevelPoint(UnmanagedMethods.POINT screenPoint)
+        {
+            var point = screenPoint;
+
+            if (_hwnd != IntPtr.Zero)
+            {
+                UnmanagedMethods.ScreenToClient(_hwnd, ref point);
+            }
+
+            var scaling = _window?.DesktopScaling ?? 1.0;
+            return new Point(point.X / scaling, point.Y / scaling);
+        }
 
         protected override void Destroyed()
         {

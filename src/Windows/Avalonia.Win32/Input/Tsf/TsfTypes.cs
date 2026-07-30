@@ -95,6 +95,10 @@ namespace Avalonia.Win32.Input.Tsf
 
         public const uint TS_RT_PLAIN = 0;
 
+        public const uint TS_LC_CREATE = 0;
+        public const uint TS_LC_CHANGE = 1;
+        public const uint TS_LC_DESTROY = 2;
+
         public const uint TF_DEFAULT_SELECTION = 0xFFFFFFFF;
 
         public const uint TS_IAS_NOQUERY = 0x1;

@@ -94,16 +94,18 @@ namespace Avalonia.Win32.Input
         /// manager associated (TSF sees an edit field), anything else clears the
         /// association so TSF treats the window as non-editable again.
         /// </summary>
-        public void NotifyClient(IntPtr hwnd, TextInputMethodClient? client)
+        public void NotifyClient(IntPtr hwnd, WindowImpl? window, TextInputMethodClient? client)
         {
             if (client is IStructuredTextInput structuredClient && hwnd != IntPtr.Zero)
             {
                 AssociateWindow(hwnd);
+                _textStore?.SetWindow(hwnd, window);
                 _textStore?.SetClient(structuredClient);
             }
             else
             {
                 _textStore?.SetClient(null);
+                _textStore?.SetWindow(IntPtr.Zero, null);
                 ClearAssociation();
             }
         }
