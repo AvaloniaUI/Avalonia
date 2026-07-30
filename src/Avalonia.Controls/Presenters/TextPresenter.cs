@@ -407,7 +407,7 @@ namespace Avalonia.Controls.Presenters
 
         private ImmutablePen CreateCompositionUnderlinePen(in CompositionHighlight highlight)
         {
-            var foreground = GetValue(TextElement.ForegroundProperty)?.ToImmutable()
+            var foreground = Foreground?.ToImmutable()
                 ?? new ImmutableSolidColorBrush(Colors.Black);
 
             var thickness = highlight.Emphasized || highlight.Underline == Avalonia.Input.TextInput.TextInputUnderline.Thick
