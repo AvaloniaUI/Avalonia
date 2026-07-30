@@ -32,6 +32,13 @@ namespace Avalonia.Win32.Input
         private IntPtr _associatedHwnd;
 
         /// <summary>
+        /// The thread's manager only if one has already been created; consulting this
+        /// never activates TSF. Teardown and routing guards use it so a window that never
+        /// hosted a structured client cannot trigger an activation.
+        /// </summary>
+        public static TsfThreadManager? Existing => t_current;
+
+        /// <summary>
         /// The thread's manager, created on first use when
         /// <see cref="Win32PlatformOptions.UseTsfTextInput"/> is enabled; null when the
         /// integration is off or activation failed (in which case IMM carries on alone).
@@ -94,6 +101,22 @@ namespace Avalonia.Win32.Input
         /// manager associated (TSF sees an edit field), anything else clears the
         /// association so TSF treats the window as non-editable again.
         /// </summary>
+        /// <summary>
+        /// Releases the association when the given window is going away; associations
+        /// held by other, still-living windows are untouched.
+        /// </summary>
+        public void NotifyWindowDestroyed(IntPtr hwnd)
+        {
+            if (_associatedHwnd != hwnd)
+            {
+                return;
+            }
+
+            _textStore?.SetClient(null);
+            _textStore?.SetWindow(IntPtr.Zero, null);
+            ClearAssociation();
+        }
+
         public void NotifyClient(IntPtr hwnd, WindowImpl? window, TextInputMethodClient? client)
         {
             if (client is IStructuredTextInput structuredClient && hwnd != IntPtr.Zero)
@@ -146,16 +169,27 @@ namespace Avalonia.Win32.Input
                 return;
             }
 
-            if (_associatedHwnd != IntPtr.Zero)
+            try
             {
-                _threadManager.AssociateFocus(_associatedHwnd, null)?.Dispose();
+                if (_associatedHwnd != IntPtr.Zero)
+                {
+                    _threadManager.AssociateFocus(_associatedHwnd, null)?.Dispose();
+                }
+
+                _threadManager.AssociateFocus(hwnd, _documentManager)?.Dispose();
+                _associatedHwnd = hwnd;
+
+                Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
+                    ?.Log(this, "TSF document manager associated with window {Hwnd}", hwnd);
             }
-
-            _threadManager.AssociateFocus(hwnd, _documentManager)?.Dispose();
-            _associatedHwnd = hwnd;
-
-            Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
-                ?.Log(this, "TSF document manager associated with window {Hwnd}", hwnd);
+            catch (Exception exception)
+            {
+                // A window can die between the focus event and the association call;
+                // stay unassociated rather than fault the focus change.
+                _associatedHwnd = IntPtr.Zero;
+                Logger.TryGet(LogEventLevel.Warning, LogArea.TextInput)
+                    ?.Log(this, "TSF focus association failed: {Error}", exception.Message);
+            }
         }
 
         /// <summary>
@@ -202,7 +236,16 @@ namespace Avalonia.Win32.Input
                 return;
             }
 
-            _threadManager.AssociateFocus(_associatedHwnd, null)?.Dispose();
+            try
+            {
+                _threadManager.AssociateFocus(_associatedHwnd, null)?.Dispose();
+            }
+            catch (Exception)
+            {
+                // Clearing against an already-destroyed window is fine; the association
+                // died with it.
+            }
+
             _associatedHwnd = IntPtr.Zero;
 
             Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)

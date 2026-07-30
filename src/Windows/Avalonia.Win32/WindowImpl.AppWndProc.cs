@@ -161,6 +161,11 @@ namespace Avalonia.Win32
                             Imm32InputMethod.Current.ClearLanguageAndWindow();
                         }
 
+                        // The TSF association can outlive the IMM current window (it
+                        // tracks the last structured focus), so release it for this
+                        // window independently.
+                        TsfThreadManager.Existing?.NotifyWindowDestroyed(_hwnd);
+
                         // Cleanup render targets
                         (_glSurface as IDisposable)?.Dispose();
 
