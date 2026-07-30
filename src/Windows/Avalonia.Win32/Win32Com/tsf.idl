@@ -4,9 +4,20 @@
 @clr-map LPVOID IntPtr
 @clr-map BOOL int
 @clr-map DWORD uint
+@clr-map LONG int
+@clr-map ULONG uint
+@clr-map WCHAR System.Char
 @clr-map TfClientId uint
 @clr-map TfEditCookie uint
+@clr-map TsViewCookie uint
 @clr-map REFCLSID System.Guid*
+@clr-map REFIID System.Guid*
+@clr-map TS_STATUS Avalonia.Win32.Input.Tsf.TS_STATUS
+@clr-map TS_SELECTION_ACP Avalonia.Win32.Input.Tsf.TS_SELECTION_ACP
+@clr-map TS_RUNINFO Avalonia.Win32.Input.Tsf.TS_RUNINFO
+@clr-map TS_TEXTCHANGE Avalonia.Win32.Input.Tsf.TS_TEXTCHANGE
+@clr-map RECT Avalonia.Win32.Interop.UnmanagedMethods.RECT
+@clr-map POINT Avalonia.Win32.Interop.UnmanagedMethods.POINT
 
 [
     object,
@@ -61,4 +72,55 @@ interface ITfThreadMgrEx : ITfThreadMgr
 {
     HRESULT ActivateEx([out] TfClientId* ptid, [in] DWORD dwFlags);
     HRESULT GetActiveFlags([out] DWORD* lpdwFlags);
+}
+
+[
+    object,
+    uuid(22d44c94-a419-4542-a272-ae26093ececf),
+    pointer_default(unique)
+]
+interface ITextStoreACPSink : IUnknown
+{
+    HRESULT OnTextChange([in] DWORD dwFlags, [in] TS_TEXTCHANGE* pChange);
+    HRESULT OnSelectionChange();
+    HRESULT OnLayoutChange([in] DWORD lcode, [in] TsViewCookie vcView);
+    HRESULT OnStatusChange([in] DWORD dwFlags);
+    HRESULT OnAttrsChange([in] LONG acpStart, [in] LONG acpEnd, [in] ULONG cAttrs, [in] LPVOID paAttrs);
+    HRESULT OnLockGranted([in] DWORD dwLockFlags);
+    HRESULT OnStartEditTransaction();
+    HRESULT OnEndEditTransaction();
+}
+
+[
+    object,
+    uuid(f86ad89f-5fe4-4b8d-bb9f-ef3797a84f1f),
+    pointer_default(unique)
+]
+interface ITextStoreACP2 : IUnknown
+{
+    HRESULT AdviseSink([in] REFIID riid, [in] IUnknown* punk, [in] DWORD dwMask);
+    HRESULT UnadviseSink([in] IUnknown* punk);
+    HRESULT RequestLock([in] DWORD dwLockFlags, [in] LPVOID phrSession);
+    HRESULT GetStatus([in] TS_STATUS* pdcs);
+    HRESULT QueryInsert([in] LONG acpTestStart, [in] LONG acpTestEnd, [in] ULONG cch, [in] LPVOID pacpResultStart, [in] LPVOID pacpResultEnd);
+    HRESULT GetSelection([in] ULONG ulIndex, [in] ULONG ulCount, [in] LPVOID pSelection, [in] LPVOID pcFetched);
+    HRESULT SetSelection([in] ULONG ulCount, [in] LPVOID pSelection);
+    HRESULT GetText([in] LONG acpStart, [in] LONG acpEnd, [in] LPVOID pchPlain, [in] ULONG cchPlainReq, [in] LPVOID pcchPlainRet, [in] LPVOID prgRunInfo, [in] ULONG cRunInfoReq, [in] LPVOID pcRunInfoRet, [in] LPVOID pacpNext);
+    HRESULT SetText([in] DWORD dwFlags, [in] LONG acpStart, [in] LONG acpEnd, [in] LPVOID pchText, [in] ULONG cch, [in] LPVOID pChange);
+    HRESULT GetFormattedText([in] LONG acpStart, [in] LONG acpEnd, [in] LPVOID ppDataObject);
+    HRESULT GetEmbedded([in] LONG acpPos, [in] REFCLSID rguidService, [in] REFIID riid, [in] LPVOID ppunk);
+    HRESULT QueryInsertEmbedded([in] LPVOID pguidService, [in] LPVOID pFormatEtc, [in] LPVOID pfInsertable);
+    HRESULT InsertEmbedded([in] DWORD dwFlags, [in] LONG acpStart, [in] LONG acpEnd, [in] LPVOID pDataObject, [in] LPVOID pChange);
+    HRESULT InsertTextAtSelection([in] DWORD dwFlags, [in] LPVOID pchText, [in] ULONG cch, [in] LPVOID pacpStart, [in] LPVOID pacpEnd, [in] LPVOID pChange);
+    HRESULT InsertEmbeddedAtSelection([in] DWORD dwFlags, [in] LPVOID pDataObject, [in] LPVOID pacpStart, [in] LPVOID pacpEnd, [in] LPVOID pChange);
+    HRESULT RequestSupportedAttrs([in] DWORD dwFlags, [in] ULONG cFilterAttrs, [in] LPVOID paFilterAttrs);
+    HRESULT RequestAttrsAtPosition([in] LONG acpPos, [in] ULONG cFilterAttrs, [in] LPVOID paFilterAttrs, [in] DWORD dwFlags);
+    HRESULT RequestAttrsTransitioningAtPosition([in] LONG acpPos, [in] ULONG cFilterAttrs, [in] LPVOID paFilterAttrs, [in] DWORD dwFlags);
+    HRESULT FindNextAttrTransition([in] LONG acpStart, [in] LONG acpHalt, [in] ULONG cFilterAttrs, [in] LPVOID paFilterAttrs, [in] DWORD dwFlags, [in] LPVOID pacpNext, [in] LPVOID pfFound, [in] LPVOID plFoundOffset);
+    HRESULT RetrieveRequestedAttrs([in] ULONG ulCount, [in] LPVOID paAttrVals, [in] LPVOID pcFetched);
+    HRESULT GetEndACP([in] LPVOID pacp);
+    HRESULT GetActiveView([in] LPVOID pvcView);
+    HRESULT GetACPFromPoint([in] TsViewCookie vcView, [in] POINT* ptScreen, [in] DWORD dwFlags, [in] LPVOID pacp);
+    HRESULT GetTextExt([in] TsViewCookie vcView, [in] LONG acpStart, [in] LONG acpEnd, [in] RECT* prc, [in] LPVOID pfClipped);
+    HRESULT GetScreenExt([in] TsViewCookie vcView, [in] RECT* prc);
 }

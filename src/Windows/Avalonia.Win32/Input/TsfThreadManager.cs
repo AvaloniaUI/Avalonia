@@ -9,10 +9,10 @@ namespace Avalonia.Win32.Input
 {
     /// <summary>
     /// Owns the thread's Text Services Framework activation: the thread manager, its
-    /// client id, and a document manager whose (still empty) context is associated with
-    /// the focused window while a structured client has focus, so TSF treats the control
-    /// as an edit field. First milestone of the TSF text store; the real
-    /// <c>ITextStoreACP2</c> replaces the empty context in the next phase.
+    /// client id, and a document manager whose context is owned by the
+    /// <see cref="TsfTextStore"/> and associated with the focused window while a
+    /// structured client has focus, so text services talk to the focused control through
+    /// the store.
     /// </summary>
     internal sealed class TsfThreadManager : IDisposable
     {
@@ -25,6 +25,7 @@ namespace Avalonia.Win32.Input
         private readonly uint _clientId;
         private ITfDocumentMgr? _documentManager;
         private ITfContext? _context;
+        private TsfTextStore? _textStore;
         private IntPtr _associatedHwnd;
 
         /// <summary>
@@ -82,12 +83,14 @@ namespace Avalonia.Win32.Input
         /// </summary>
         public void NotifyClient(IntPtr hwnd, TextInputMethodClient? client)
         {
-            if (client is IStructuredTextInput && hwnd != IntPtr.Zero)
+            if (client is IStructuredTextInput structuredClient && hwnd != IntPtr.Zero)
             {
                 AssociateWindow(hwnd);
+                _textStore?.SetClient(structuredClient);
             }
             else
             {
+                _textStore?.SetClient(null);
                 ClearAssociation();
             }
         }
@@ -98,10 +101,11 @@ namespace Avalonia.Win32.Input
             {
                 _documentManager = _threadManager.CreateDocumentMgr();
 
-                // An empty context (no store yet) is enough for TSF to recognize the
-                // window as an edit field; the text store replaces the null owner later.
+                // The store owns the context: TSF query-interfaces the context owner for
+                // ITextStoreACP2 and drives the document through it.
+                _textStore = new TsfTextStore();
                 IntPtr contextPtr;
-                _documentManager.CreateContext(_clientId, 0, null, &contextPtr);
+                _documentManager.CreateContext(_clientId, 0, _textStore, &contextPtr);
                 _context = MicroComRuntime.CreateProxyFor<ITfContext>(contextPtr, true);
                 _documentManager.Push(_context);
             }
@@ -139,6 +143,7 @@ namespace Avalonia.Win32.Input
 
         public void Dispose()
         {
+            _textStore?.SetClient(null);
             ClearAssociation();
 
             if (_documentManager is not null)
@@ -149,6 +154,9 @@ namespace Avalonia.Win32.Input
                 _context = null;
                 _documentManager = null;
             }
+
+            _textStore?.Dispose();
+            _textStore = null;
 
             _threadManager.Deactivate();
             _threadManager.Dispose();
