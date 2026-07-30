@@ -1,0 +1,64 @@
+@clr-namespace Avalonia.Win32.Input.Tsf
+@clr-access internal
+@clr-map HWND IntPtr
+@clr-map LPVOID IntPtr
+@clr-map BOOL int
+@clr-map DWORD uint
+@clr-map TfClientId uint
+@clr-map TfEditCookie uint
+@clr-map REFCLSID System.Guid*
+
+[
+    object,
+    uuid(aa80e7fd-2021-11d2-93e0-0060b067b86e),
+    pointer_default(unique)
+]
+interface ITfContext : IUnknown
+{
+}
+
+[
+    object,
+    uuid(aa80e7f4-2021-11d2-93e0-0060b067b86e),
+    pointer_default(unique)
+]
+interface ITfDocumentMgr : IUnknown
+{
+    HRESULT CreateContext([in] TfClientId tidOwner, [in] DWORD dwFlags, [in] IUnknown* punk, [out] LPVOID* ppic, [out] TfEditCookie* pecTextStore);
+    HRESULT Push([in] ITfContext* pic);
+    HRESULT Pop([in] DWORD dwFlags);
+    HRESULT GetTop([out] ITfContext** ppic);
+    HRESULT GetBase([out] ITfContext** ppic);
+    HRESULT EnumContexts([out] LPVOID* ppEnum);
+}
+
+[
+    object,
+    uuid(aa80e801-2021-11d2-93e0-0060b067b86e),
+    pointer_default(unique)
+]
+interface ITfThreadMgr : IUnknown
+{
+    HRESULT Activate([out] TfClientId* ptid);
+    HRESULT Deactivate();
+    HRESULT CreateDocumentMgr([out] ITfDocumentMgr** ppdim);
+    HRESULT EnumDocumentMgrs([out] LPVOID* ppEnum);
+    HRESULT GetFocus([out] ITfDocumentMgr** ppdimFocus);
+    HRESULT SetFocus([in] ITfDocumentMgr* pdimFocus);
+    HRESULT AssociateFocus([in] HWND hwnd, [in] ITfDocumentMgr* pdimNew, [out] ITfDocumentMgr** ppdimPrev);
+    HRESULT IsThreadFocus([out] BOOL* pfThreadFocus);
+    HRESULT GetFunctionProvider([in] REFCLSID clsid, [out] LPVOID* ppFuncProv);
+    HRESULT EnumFunctionProviders([out] LPVOID* ppEnum);
+    HRESULT GetGlobalCompartment([out] LPVOID* ppCompMgr);
+}
+
+[
+    object,
+    uuid(3e90ade3-7594-4cb0-bb58-69628f5f458c),
+    pointer_default(unique)
+]
+interface ITfThreadMgrEx : ITfThreadMgr
+{
+    HRESULT ActivateEx([out] TfClientId* ptid, [in] DWORD dwFlags);
+    HRESULT GetActiveFlags([out] DWORD* lpdwFlags);
+}

@@ -165,6 +165,10 @@ namespace Avalonia.Win32.Input
 
             Client = client;
 
+            // Experimental TSF integration rides alongside: a structured client gets the
+            // window associated with the TSF document manager so TSF sees an edit field.
+            TsfThreadManager.Current?.NotifyClient(Hwnd, client);
+
             Dispatcher.UIThread.Post(() =>
             {
                 if (IsActive)
