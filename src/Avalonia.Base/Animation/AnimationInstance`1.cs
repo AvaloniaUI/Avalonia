@@ -33,6 +33,9 @@ namespace Avalonia.Animation
         private readonly Func<double, T, T> _interpolator;
         private IDisposable? _timerSub;
         private readonly IClock _baseClock;
+        // Transform animations store their value on a child Transform, but visibility and
+        // detachment still belong to the Visual that owns that transform.
+        private readonly Visual? _visualTarget;
         private IClock? _clock;
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChangedDelegate;
         private EventHandler? _visibilityChangedHandler;
@@ -40,7 +43,8 @@ namespace Avalonia.Animation
 
         private readonly bool _shouldPauseOnInvisible;
 
-        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action? OnComplete, Func<double, T, T> Interpolator, bool shouldPauseOnInvisible)
+        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock,
+            Action? OnComplete, Func<double, T, T> Interpolator, bool shouldPauseOnInvisible, Visual? visualTarget)
         {
             _animator = animator;
             _animation = animation;
@@ -48,6 +52,7 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
+            _visualTarget = visualTarget;
             _lastInterpValue = default!;
             _firstKFValue = default!;
             _neutralValue = default!;
@@ -98,7 +103,7 @@ namespace Avalonia.Animation
             _targetControl.PropertyChanged -= _propertyChangedDelegate;
             timerSub.Dispose();
 
-            if (_targetControl is Visual visual)
+            if (_visualTarget is { } visual)
             {
                 if (_visibilityChangedHandler is not null)
                 {
@@ -121,7 +126,7 @@ namespace Avalonia.Animation
             _clock = new Clock(_baseClock);
             _timerSub = _clock.Subscribe(Step);
 
-            if (_targetControl is Visual visual)
+            if (_visualTarget is { } visual)
             {
                 if (_shouldPauseOnInvisible)
                 {
