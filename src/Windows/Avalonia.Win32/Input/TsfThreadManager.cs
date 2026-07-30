@@ -169,6 +169,15 @@ namespace Avalonia.Win32.Input
             {
                 EnsureDocumentManager();
 
+                // A composition against the previous client must terminate while that
+                // client is still attached and writable - the terminating edit session
+                // wants to finalize its text.
+                if (_textStore is { HasActiveComposition: true } store
+                    && !ReferenceEquals(store.Client, structuredClient))
+                {
+                    TerminateCompositions();
+                }
+
                 // The client attaches before focus lands on the document: setting the
                 // focus makes the IME inspect the store immediately, and a first
                 // impression of an empty read-only document would park it in direct
@@ -180,9 +189,36 @@ namespace Avalonia.Win32.Input
             }
             else
             {
+                // Dropping the association first lets TSF terminate any active
+                // composition against the still-attached, still-writable client; the
+                // final edit of that termination failed with TS_E_READONLY when the
+                // client detached first.
+                ClearAssociation();
                 _textStore?.SetClient(null);
                 _textStore?.SetWindow(IntPtr.Zero, null);
-                ClearAssociation();
+            }
+        }
+
+        /// <summary>
+        /// Asks TSF to end every composition in the context; used before the store's
+        /// client changes so the terminating edit lands in the right document.
+        /// </summary>
+        private void TerminateCompositions()
+        {
+            if (_context is null)
+            {
+                return;
+            }
+
+            try
+            {
+                using var services = _context.QueryInterface<ITfContextOwnerCompositionServices>();
+                services.TerminateComposition(null);
+            }
+            catch (Exception exception)
+            {
+                Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
+                    ?.Log(this, "TSF composition termination failed: {Error}", exception.Message);
             }
         }
 

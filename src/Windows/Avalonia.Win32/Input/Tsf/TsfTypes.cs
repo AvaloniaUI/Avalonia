@@ -132,8 +132,12 @@ namespace Avalonia.Win32.Input.Tsf
         public const ushort VT_I4 = 3;
         public const ushort VT_UNKNOWN = 13;
 
-        /// <summary>The context property holding per-clause display attribute atoms.</summary>
-        public static readonly Guid PropAttribute = new("34745c63-b2f0-4784-8b67-5e12c8701a31");
+        /// <summary>
+        /// The context property holding per-clause display attribute atoms. The value is
+        /// extracted from uuid.lib by symbol (widely circulated references carry a wrong
+        /// GUID for it, which reads as a property no text service ever sets).
+        /// </summary>
+        public static readonly Guid PropAttribute = new("34b45670-7526-11d2-a147-00105a2799b5");
 
         public static readonly Guid ClsidCategoryMgr = new("a4b544a1-438d-4b41-9325-869523e2d6c7");
         public static readonly Guid ClsidDisplayAttributeMgr = new("3ce74de4-53d3-4d74-8b83-431b3828ba53");

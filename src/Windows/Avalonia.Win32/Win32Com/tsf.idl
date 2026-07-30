@@ -327,6 +327,31 @@ interface ITfFnReconversion : ITfFunction
     HRESULT Reconvert([in] ITfRange* pRange);
 }
 
+[
+    object,
+    uuid(d40c8aae-ac92-4fc7-9a11-0ee0e23aa39b),
+    pointer_default(unique)
+]
+interface ITfContextComposition : IUnknown
+{
+    HRESULT StartComposition([in] TfEditCookie ecWrite, [in] ITfRange* pCompositionRange, [in] LPVOID pSink, [in] LPVOID ppComposition);
+    HRESULT EnumCompositions([in] LPVOID ppEnum);
+    HRESULT FindComposition([in] TfEditCookie ecRead, [in] ITfRange* pTestRange, [in] LPVOID ppEnum);
+    HRESULT TakeOwnership([in] TfEditCookie ecWrite, [in] ITfCompositionView* pComposition, [in] LPVOID pSink, [in] LPVOID ppComposition);
+}
+
+// The context owner's composition control; TerminateComposition(null) ends every
+// composition in the context while the store is still attached to its client.
+[
+    object,
+    uuid(86462810-593b-4916-9764-19c08e9ce110),
+    pointer_default(unique)
+]
+interface ITfContextOwnerCompositionServices : ITfContextComposition
+{
+    HRESULT TerminateComposition([in] ITfCompositionView* pComposition);
+}
+
 // Vtable prefix through GetGUID; IsEqualTfGuidAtom is never called.
 [
     object,

@@ -56,6 +56,12 @@ namespace Avalonia.Win32.Input.Tsf
             Color? Background,
             TextInputUnderline Underline);
 
+        /// <summary>The currently attached structured client, if any.</summary>
+        public IStructuredTextInput? Client => _client;
+
+        /// <summary>True while a composition view is held open by a text service.</summary>
+        public bool HasActiveComposition => _compositionView is not null;
+
         /// <summary>
         /// Tracks the window the store's view maps to; geometry answers convert between
         /// the window's top-level coordinate space and the screen through it.
