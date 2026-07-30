@@ -608,6 +608,44 @@ namespace Avalonia.Win32.Input.Tsf
             }
         }
 
+        /// <summary>
+        /// Mints a TSF range over the current selection through the advised sink's ACP
+        /// services (no edit session needed); null when there is no sink, no client, or
+        /// no selection to reconvert.
+        /// </summary>
+        public ITfRange? TryCreateSelectionRange()
+        {
+            if (_sink is null || _client is null)
+            {
+                return null;
+            }
+
+            var selection = _client.Selection;
+            var start = selection.Start.Offset;
+            var end = selection.End.Offset;
+
+            if (start == end)
+            {
+                return null;
+            }
+
+            ITextStoreACPServices? services = null;
+            try
+            {
+                services = _sink.QueryInterface<ITextStoreACPServices>();
+                return services.CreateRange(start, end);
+            }
+            catch (Exception exception)
+            {
+                Trace("Creating a selection range failed: {Error}", DescribeError(exception));
+                return null;
+            }
+            finally
+            {
+                services?.Dispose();
+            }
+        }
+
         // The composition sink: TSF query-interfaces the context owner for it. The view's
         // range tracks IStructuredTextInput.CompositionRange, and the composition commits
         // through the structured client when TSF ends it (the text itself is already in

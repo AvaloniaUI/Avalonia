@@ -278,6 +278,55 @@ interface ITfContextOwnerCompositionSink : IUnknown
     HRESULT OnEndComposition([in] ITfCompositionView* pComposition);
 }
 
+// The sink-side services of an ACP store; CreateRange mints ranges over the store's
+// own document without an edit session (the reconversion entry point needs one).
+[
+    object,
+    uuid(aa80e901-2021-11d2-93e0-0060b067b86e),
+    pointer_default(unique)
+]
+interface ITextStoreACPServices : IUnknown
+{
+    HRESULT Serialize([in] LPVOID pProp, [in] ITfRange* pRange, [in] LPVOID pHdr, [in] LPVOID pStream);
+    HRESULT Unserialize([in] LPVOID pProp, [in] LPVOID pHdr, [in] LPVOID pStream, [in] LPVOID pLoader);
+    HRESULT ForceLoadProperty([in] LPVOID pProp);
+    HRESULT CreateRange([in] LONG acpStart, [in] LONG acpEnd, [out] ITfRangeACP** ppRange);
+}
+
+[
+    object,
+    uuid(db593490-098f-11d3-8df0-00105a2799b5),
+    pointer_default(unique)
+]
+interface ITfFunction : IUnknown
+{
+    HRESULT GetDisplayName([in] LPVOID pbstrName);
+}
+
+[
+    object,
+    uuid(101d6610-0990-11d3-8df0-00105a2799b5),
+    pointer_default(unique)
+]
+interface ITfFunctionProvider : IUnknown
+{
+    HRESULT GetType([in] LPVOID pguid);
+    HRESULT GetDescription([in] LPVOID pbstrDesc);
+    HRESULT GetFunction([in] REFGUID rguid, [in] REFIID riid, [out] IUnknown** ppunk);
+}
+
+[
+    object,
+    uuid(4cea93c0-0a58-11d3-8df0-00105a2799b5),
+    pointer_default(unique)
+]
+interface ITfFnReconversion : ITfFunction
+{
+    HRESULT QueryRange([in] ITfRange* pRange, [in] LPVOID ppNewRange, [out] BOOL* pfConvertable);
+    HRESULT GetReconversion([in] ITfRange* pRange, [in] LPVOID ppCandList);
+    HRESULT Reconvert([in] ITfRange* pRange);
+}
+
 // Vtable prefix through GetGUID; IsEqualTfGuidAtom is never called.
 [
     object,

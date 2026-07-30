@@ -18,6 +18,7 @@ namespace Avalonia.Win32.Input
     internal sealed class TsfThreadManager : IDisposable
     {
         private static readonly Guid s_clsidThreadMgr = new("529a9e6b-6587-4f23-ab9e-9c7d683e3c50");
+        private static readonly Guid s_systemFunctionProvider = new("9a698bb0-0f21-11d3-8df1-00105a2799b5");
 
         [ThreadStatic] private static TsfThreadManager? t_current;
         [ThreadStatic] private static bool t_creationFailed;
@@ -272,8 +273,18 @@ namespace Avalonia.Win32.Input
                 {
                     case WindowsMessage.WM_KEYDOWN:
                     case WindowsMessage.WM_SYSKEYDOWN:
-                        return _keystrokeManager.TestKeyDown(wParam, lParam) != 0
+                    {
+                        var eaten = _keystrokeManager.TestKeyDown(wParam, lParam) != 0
                             && _keystrokeManager.KeyDown(wParam, lParam) != 0;
+
+                        if (eaten)
+                        {
+                            Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
+                                ?.Log(this, "TSF ate key down {Key}", wParam);
+                        }
+
+                        return eaten;
+                    }
 
                     case WindowsMessage.WM_KEYUP:
                     case WindowsMessage.WM_SYSKEYUP:
@@ -288,6 +299,81 @@ namespace Avalonia.Win32.Input
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Starts a reconversion of the focused structured client's selection through the
+        /// system function provider (the TSF-native counterpart of the IMM
+        /// SCS_SETRECONVERTSTRING trigger). False when TSF does not own the focus, there
+        /// is no selection, or the active text service declines the range.
+        /// </summary>
+        public unsafe bool TryReconvert()
+        {
+            if (_associatedHwnd == IntPtr.Zero || _textStore is null)
+            {
+                return false;
+            }
+
+            var range = _textStore.TryCreateSelectionRange();
+            if (range is null)
+            {
+                return false;
+            }
+
+            ITfFunctionProvider? provider = null;
+            IUnknown? functionUnknown = null;
+            ITfFnReconversion? reconversion = null;
+            ITfRange? adjusted = null;
+            try
+            {
+                var providerGuid = s_systemFunctionProvider;
+                var providerPtr = _threadManager.GetFunctionProvider(&providerGuid);
+                if (providerPtr == IntPtr.Zero)
+                {
+                    return false;
+                }
+
+                provider = MicroComRuntime.CreateProxyFor<ITfFunctionProvider>(providerPtr, true);
+
+                var functionGuid = Guid.Empty;
+                var reconversionIid = MicroComRuntime.GetGuidFor(typeof(ITfFnReconversion));
+                functionUnknown = provider.GetFunction(&functionGuid, &reconversionIid);
+                reconversion = functionUnknown.QueryInterface<ITfFnReconversion>();
+
+                // The service may adjust the requested range to what it can reconvert.
+                void* adjustedPtr = null;
+                var convertable = reconversion.QueryRange(range, new IntPtr(&adjustedPtr));
+
+                if (adjustedPtr != null)
+                {
+                    adjusted = MicroComRuntime.CreateProxyFor<ITfRange>(adjustedPtr, true);
+                }
+
+                if (convertable == 0)
+                {
+                    return false;
+                }
+
+                reconversion.Reconvert(adjusted ?? range);
+
+                Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
+                    ?.Log(this, "TSF reconversion started");
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)
+                    ?.Log(this, "TSF reconversion unavailable: {Error}", exception.Message);
+                return false;
+            }
+            finally
+            {
+                adjusted?.Dispose();
+                reconversion?.Dispose();
+                functionUnknown?.Dispose();
+                provider?.Dispose();
+                range.Dispose();
+            }
         }
 
         private void ClearAssociation()

@@ -242,10 +242,13 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
                     // Ctrl+Backspace is not an IME key, so the IME never offers reconversion for it.
-                    // Drive it ourselves when there is a selection the active IME can reconvert.
+                    // Drive it ourselves when there is a selection the active IME can reconvert:
+                    // through the TSF function provider when TSF owns the focus, through the
+                    // IMM reconvert-string path otherwise.
                     if (ToInt32(wParam) == (int)VirtualKeyStates.VK_BACK
                         && WindowsKeyboardDevice.Instance.Modifiers.HasAllFlags(RawInputModifiers.Control)
-                        && Imm32InputMethod.Current.TryReconvert())
+                        && (TsfThreadManager.Existing?.TryReconvert() == true
+                            || Imm32InputMethod.Current.TryReconvert()))
                     {
                         return IntPtr.Zero;
                     }
