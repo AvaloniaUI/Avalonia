@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
@@ -827,6 +828,14 @@ namespace Avalonia.Win32.Input.Tsf
                 }
 
                 client.SetInputDecorations(decorations);
+
+                if (Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput) is { } log)
+                {
+                    var summary = decorations.Count == 0
+                        ? "none (client falls back to the whole-region default)"
+                        : string.Join(", ", decorations.Select(d => $"[{d.Range.Start.Offset}..{d.Range.End.Offset}) {d.Kind}/{d.Underline}"));
+                    log.Log(this, "Composition decorations: {Decorations}", summary);
+                }
             }
             finally
             {
@@ -956,6 +965,11 @@ namespace Avalonia.Win32.Input.Tsf
             }
 
             _displayAttributeCache[atom] = resolved;
+
+            Trace(resolved is { } value
+                ? $"Display attribute atom {atom}: {value.Kind}/{value.Underline}"
+                : $"Display attribute atom {atom}: unresolved");
+
             return resolved;
         }
 
