@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using Avalonia.Win32.Input.Tsf;
@@ -78,8 +79,18 @@ namespace Avalonia.Win32.Input
                 in s_clsidThreadMgr,
                 MicroComRuntime.GetGuidFor(typeof(ITfThreadMgrEx)));
 
-            uint clientId;
-            _threadManager.ActivateEx(&clientId, 0);
+            uint clientId = 0;
+            try
+            {
+                _threadManager.ActivateEx(&clientId, 0);
+            }
+            catch (COMException exception) when (exception.HResult == 1)
+            {
+                // S_FALSE: TSF was already active on this thread (CUAS and the input
+                // pane activate it eagerly); the activation is refcounted and the
+                // client id was still written.
+            }
+
             _clientId = clientId;
 
             try
@@ -97,11 +108,6 @@ namespace Avalonia.Win32.Input
         }
 
         /// <summary>
-        /// Tracks the focused client for a window: a structured client gets the document
-        /// manager associated (TSF sees an edit field), anything else clears the
-        /// association so TSF treats the window as non-editable again.
-        /// </summary>
-        /// <summary>
         /// Releases the association when the given window is going away; associations
         /// held by other, still-living windows are untouched.
         /// </summary>
@@ -117,6 +123,11 @@ namespace Avalonia.Win32.Input
             ClearAssociation();
         }
 
+        /// <summary>
+        /// Tracks the focused client for a window: a structured client gets the document
+        /// manager associated (TSF sees an edit field), anything else clears the
+        /// association so TSF treats the window as non-editable again.
+        /// </summary>
         public void NotifyClient(IntPtr hwnd, WindowImpl? window, TextInputMethodClient? client)
         {
             if (client is IStructuredTextInput structuredClient && hwnd != IntPtr.Zero)
@@ -274,7 +285,15 @@ namespace Avalonia.Win32.Input
 
             if (_documentManager is not null)
             {
-                _documentManager.Pop(1); // TF_POPF_ALL
+                try
+                {
+                    _documentManager.Pop(1); // TF_POPF_ALL
+                }
+                catch (Exception)
+                {
+                    // Teardown must not fault on a context TSF already dropped.
+                }
+
                 _context?.Dispose();
                 _documentManager.Dispose();
                 _context = null;
@@ -285,7 +304,16 @@ namespace Avalonia.Win32.Input
             _textStore = null;
 
             _keystrokeManager?.Dispose();
-            _threadManager.Deactivate();
+
+            try
+            {
+                _threadManager.Deactivate();
+            }
+            catch (Exception)
+            {
+                // Balanced against our activation; a stale thread state is not fatal.
+            }
+
             _threadManager.Dispose();
 
             if (ReferenceEquals(t_current, this))
