@@ -196,19 +196,22 @@ namespace Avalonia.Native
                 *end = range.End.Offset;
             }
 
+            // The structured geometry contract is top-level coordinates - the same space
+            // the native side works in - so points and rects pass through untransformed.
+
             public int GetCharacterIndexFromPoint(AvnPoint point)
             {
-                if (_structured is null || !TryToTextView(point, out var local))
+                if (_structured is null)
                 {
                     return -1;
                 }
 
-                return _structured.GetClosestPosition(local)?.Offset ?? -1;
+                return _structured.GetClosestPosition(point.ToAvaloniaPoint())?.Offset ?? -1;
             }
 
             public int GetCharacterIndexFromPointWithinRange(AvnPoint point, int start, int end)
             {
-                if (_structured is null || !TryToTextView(point, out var local))
+                if (_structured is null)
                 {
                     return -1;
                 }
@@ -217,7 +220,7 @@ namespace Avalonia.Native
                 // answer the plain nearest-index query cannot give.
                 var range = _structured.RangeAt(start, Math.Max(0, end - start));
 
-                return _structured.GetClosestPosition(local, range)?.Offset ?? -1;
+                return _structured.GetClosestPosition(point.ToAvaloniaPoint(), range)?.Offset ?? -1;
             }
 
             public unsafe void GetFirstRectForRange(int start, int end, AvnRect* rect)
@@ -229,49 +232,7 @@ namespace Avalonia.Native
                     return;
                 }
 
-                var visual = _client.TextViewVisual;
-
-                if (visual?.VisualRoot is not Visual root)
-                {
-                    return;
-                }
-
-                var transform = visual.TransformToVisual(root);
-
-                if (transform == null)
-                {
-                    return;
-                }
-
-                var local = _structured.GetFirstRectForRange(_structured.RangeAt(start, Math.Max(0, end - start)));
-
-                *rect = local.TransformToAABB(transform.Value).ToAvnRect();
-            }
-
-            /// <summary>
-            /// Maps a point from the top level space the native side works in to the text view's space.
-            /// </summary>
-            private bool TryToTextView(AvnPoint point, out Point local)
-            {
-                local = default;
-
-                var visual = _client.TextViewVisual;
-
-                if (visual?.VisualRoot is not Visual root)
-                {
-                    return false;
-                }
-
-                var transform = root.TransformToVisual(visual);
-
-                if (transform == null)
-                {
-                    return false;
-                }
-
-                local = point.ToAvaloniaPoint().Transform(transform.Value);
-
-                return true;
+                *rect = _structured.GetFirstRectForRange(_structured.RangeAt(start, Math.Max(0, end - start))).ToAvnRect();
             }
         }
     }

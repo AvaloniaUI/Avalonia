@@ -29,6 +29,11 @@ namespace Avalonia.Input.TextInput
         void SetCompositionText(string? text, int cursorOffset);
         void CommitComposition();
 
+        // Geometry is exchanged in top-level coordinates (device-independent pixels
+        // relative to the client's TopLevel), matching IAccessibleText: the client
+        // transforms from its text visual to the root, and platform adapters only convert
+        // between the top level and the screen, so they never need visual-tree access.
+
         Rect GetFirstRectForRange(ITextRange range);
         Rect GetCaretRect(ITextPointer position);
         Rect[] GetSelectionRects(ITextRange range);

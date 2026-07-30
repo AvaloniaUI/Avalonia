@@ -731,14 +731,17 @@ namespace Avalonia.Controls
                    left.End.Offset == right.End.Offset;
         }
 
+        // The structured geometry contract is top-level coordinates, so rects go from the
+        // presenter to the visual root and inbound points come back the same way.
+
         private Rect TransformPresenterRect(Rect rect)
         {
-            if (_parent is null || _presenter is null)
+            if (_presenter is null || _presenter.VisualRoot is not Visual root)
             {
                 return rect;
             }
 
-            var transform = _presenter.TransformToVisual(_parent);
+            var transform = _presenter.TransformToVisual(root);
             if (transform is null)
             {
                 return rect;
@@ -749,12 +752,12 @@ namespace Avalonia.Controls
 
         private Point TransformPointToPresenter(Point point)
         {
-            if (_parent is null || _presenter is null)
+            if (_presenter is null || _presenter.VisualRoot is not Visual root)
             {
                 return point;
             }
 
-            var transform = _parent.TransformToVisual(_presenter);
+            var transform = root.TransformToVisual(_presenter);
             if (transform is null)
             {
                 return point;
