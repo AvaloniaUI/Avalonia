@@ -18,7 +18,10 @@ public partial class KeyboardPage : UserControl
         AddKeyBinding(new KeyGesture(Key.A), "A");
         AddKeyBinding(new KeyGesture(Key.G, KeyModifiers.Control), "Ctrl+G");
 
-        // TextBox marks TextInput as handled, so an instance handler would never run.
+        // TextBox handles TextInput, and KeyDown for keys like Backspace and the arrows, in a
+        // class handler that runs before instance handlers. Subscribe with handledEventsToo so
+        // those keys stay visible here.
+        KeyDownTextBox.AddHandler(KeyDownEvent, KeyDownTextBox_KeyDown, handledEventsToo: true);
         KeyDownTextBox.AddHandler(TextInputEvent, KeyDownTextBox_TextInput, handledEventsToo: true);
     }
 

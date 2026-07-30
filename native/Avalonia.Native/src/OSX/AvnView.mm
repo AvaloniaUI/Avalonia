@@ -4,6 +4,7 @@
 //
 
 #import <AppKit/AppKit.h>
+#import <Carbon/Carbon.h> /* For the TIS functions used to classify the keyboard input source. */
 #include "AvnView.h"
 #include "automation.h"
 #import "WindowInterfaces.h"
@@ -23,6 +24,8 @@
     NSRange _selectedRange;
     NSRange _markedRange;
     NSMutableArray* _accessibilityChildren;
+    NSString* _keyboardInputSourceId;
+    bool _keyboardInputSourceComposes;
 }
 
 - (void)onClosed
@@ -640,6 +643,102 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     [super flagsChanged:event];
 }
 
+// The input mode an input method uses for direct alphanumeric typing. In this mode the input
+// method passes keys straight through instead of composing, so keys must not be masked.
+static CFStringRef const AlphanumericInputModeId = CFSTR("com.apple.inputmethod.Roman");
+
+static bool InputSourceComposes(TISInputSourceRef source)
+{
+    // A plain keyboard layout never composes. Dead keys are not driven by the input source, they
+    // show up as a composition in progress and are covered by hasMarkedText.
+    auto type = static_cast<CFStringRef>(TISGetInputSourceProperty(source, kTISPropertyInputSourceType));
+
+    if(type == nullptr || CFEqual(type, kTISTypeKeyboardLayout))
+    {
+        return false;
+    }
+
+    auto mode = static_cast<CFStringRef>(TISGetInputSourceProperty(source, kTISPropertyInputModeID));
+
+    return mode == nullptr || !CFEqual(mode, AlphanumericInputModeId);
+}
+
+// Whether this keystroke could be the one that starts a composition. Only a key that produces a
+// printable character can, and masking any of the others would stop controls like TextBox from
+// reacting to them at all.
+static bool CanStartComposition(NSString* keySymbol, NSEventModifierFlags modifierFlags)
+{
+    // No symbol at all: the arrows, the function keys, Home, End and friends.
+    if(keySymbol == nullptr || [keySymbol length] == 0)
+    {
+        return false;
+    }
+
+    // KeySymbolFromScanCode deliberately reports the control character for Backspace, Enter, Tab
+    // and Escape, and Forward Delete reports DEL (0x7F), so a symbol alone does not mean the key
+    // produces text. Those keys edit or cancel, they never start a composition.
+    auto firstChar = [keySymbol characterAtIndex:0];
+
+    if(firstChar < 0x20 || firstChar == 0x7F)
+    {
+        return false;
+    }
+
+    // Command and Control combinations are shortcuts, which an input method does not consume.
+    return (modifierFlags & (NSEventModifierFlagCommand | NSEventModifierFlagControl)) == 0;
+}
+
+// Returns true when the input source with the given id is an input method that can start a
+// composition, as opposed to a plain keyboard layout or an input method in alphanumeric mode.
+static bool KeyboardInputSourceComposes(NSString* sourceId)
+{
+    NSDictionary* filter = @{ (__bridge NSString*)kTISPropertyInputSourceID: sourceId };
+
+    // Include every installed source, not just the enabled ones: an input method mode can be
+    // selected without being listed as enabled, and failing to find it would classify a
+    // composing input method as a plain layout.
+    auto sources = TISCreateInputSourceList((__bridge CFDictionaryRef)filter, true);
+
+    if(sources == nullptr)
+    {
+        return false;
+    }
+
+    auto composes = CFArrayGetCount(sources) > 0 &&
+        InputSourceComposes((TISInputSourceRef)CFArrayGetValueAtIndex(sources, 0));
+
+    CFRelease(sources);
+
+    return composes;
+}
+
+// Whether the currently selected keyboard input source is a composing input method. The result
+// is cached per input source id, since this is queried for every key down.
+- (bool)isComposingInputSourceSelected
+{
+    auto inputContext = [self inputContext];
+
+    if(inputContext == nullptr)
+    {
+        return false;
+    }
+
+    NSString* sourceId = [inputContext selectedKeyboardInputSource];
+
+    if(sourceId == nullptr)
+    {
+        return false;
+    }
+
+    if(![sourceId isEqualToString:_keyboardInputSourceId])
+    {
+        _keyboardInputSourceId = sourceId;
+        _keyboardInputSourceComposes = KeyboardInputSourceComposes(sourceId);
+    }
+
+    return _keyboardInputSourceComposes;
+}
+
 - (void)keyDown:(NSEvent *)event
 {
     auto parent = _parent.tryGet();
@@ -657,14 +756,24 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    // A composition is already in progress, so this keystroke belongs to the input method:
-    // it selects a candidate, commits or cancels the composition. Mask the key the same way
-    // Win32 reports VK_PROCESSKEY, so that user code still observes a KeyDown but no
-    // KeyGesture can match it. The physical key and the key symbol keep their real values.
+    // The keystroke belongs to the input method when a composition is already in progress, since
+    // it then selects a candidate, commits or cancels it. It also belongs to the input method
+    // when a character key is typed into a text input client while a composing input method is
+    // selected, because that keystroke may be the one that starts the composition and we cannot
+    // know that before the input context has seen it.
     //
-    // Masking requires an active client: without one the input context is never consulted, so
+    // In both cases mask the key the way Win32 reports VK_PROCESSKEY, so that user code still
+    // observes a KeyDown but no KeyGesture can match it. The physical key and the key symbol
+    // keep their real values, so the underlying key remains recoverable.
+    //
+    // Both cases require an active client: without one the input context is never consulted, so
     // marked text left over from a composition that lost its client mid-way must not mask keys.
-    auto key = parent->InputMethod->IsActive() && [self hasMarkedText]
+    auto imeProcessed = parent->InputMethod->IsActive() &&
+        ([self hasMarkedText] ||
+         (CanStartComposition(keySymbol, [event modifierFlags]) &&
+          [self isComposingInputSourceSelected]));
+
+    auto key = imeProcessed
         ? AvnKeyImeProcessed
         : VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
 

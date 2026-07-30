@@ -23,7 +23,7 @@
     </StackPanel>
 
     <TextBlock Margin="0,8,0,0">No key bindings in scope, used to inspect raw key downs:</TextBlock>
-    <TextBox Name="KeyDownTextBox" KeyDown="KeyDownTextBox_KeyDown"/>
+    <TextBox Name="KeyDownTextBox"/>
 
     <StackPanel Orientation="Horizontal" Spacing="4">
       <TextBlock>Last key down:</TextBlock>
