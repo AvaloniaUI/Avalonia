@@ -22,7 +22,6 @@
     NSMutableAttributedString* _text;
     NSRange _selectedRange;
     NSRange _markedRange;
-    NSEvent* _lastKeyDownEvent;
     NSMutableArray* _accessibilityChildren;
 }
 
@@ -641,11 +640,6 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     [super flagsChanged:event];
 }
 
-- (bool) handleKeyDown: (NSTimeInterval) timestamp withKey:(AvnKey)key withPhysicalKey:(AvnPhysicalKey)physicalKey withModifiers:(AvnInputModifiers)modifiers withKeySymbol:(NSString*)keySymbol {
-    auto parent = _parent.tryGet();
-    return parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
-}
-
 - (void)keyDown:(NSEvent *)event
 {
     auto parent = _parent.tryGet();
@@ -653,57 +647,47 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     {
         return;
     }
-    
-    _lastKeyDownEvent = event;
-    
+
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
-    
+
     auto scanCode = [event keyCode];
-    auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
     auto physicalKey = PhysicalKeyFromScanCode(scanCode);
     auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
-    
+    auto keySymbolUtf8 = keySymbol == nullptr ? nullptr : [keySymbol UTF8String];
+
     auto modifiers = [self getModifiers:[event modifierFlags]];
-    
-    //InputMethod is active
-    if(parent->InputMethod->IsActive()){
-        auto hasInputModifier = modifiers != AvnInputModifiersNone;
-        
-        //Handle keyDown first if an input modifier is present
-        if(hasInputModifier){
-            if([self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol]){
-                //User code has handled the event
-                _lastKeyDownEvent = nullptr;
-                
-                return;
-            }
-        }
-        
-        if([[self inputContext] handleEvent:event] == NO){
-            //KeyDown has not been consumed by the input context
-                
-            //Only raise a keyDown if we don't have a modifier
-            if(!hasInputModifier){
-                [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
-            }
-        }
-        
+
+    // A composition is already in progress, so this keystroke belongs to the input method:
+    // it selects a candidate, commits or cancels the composition. Mask the key the same way
+    // Win32 reports VK_PROCESSKEY, so that user code still observes a KeyDown but no
+    // KeyGesture can match it. The physical key and the key symbol keep their real values.
+    //
+    // Masking requires an active client: without one the input context is never consulted, so
+    // marked text left over from a composition that lost its client mid-way must not mask keys.
+    auto key = parent->InputMethod->IsActive() && [self hasMarkedText]
+        ? AvnKeyImeProcessed
+        : VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
+
+    // A KeyDown is always raised before the input context sees the event, otherwise the
+    // input context silently consumes printable keys (space, letters, digits) and user code
+    // never gets a chance to react to them.
+    auto handled = parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+
+    if(handled)
+    {
+        // User code has handled the event, so no text may be produced from it.
+        return;
     }
-    //InputMethod not active
-    else{
-        auto keyDownHandled = [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
-            
-        //Raise text input event for unhandled key down
-        if(!keyDownHandled){
-            if(keySymbol != nullptr && key != AvnKeyEnter){
-                auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
-                
-                parent->TopLevelEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
-            }
-        }
+
+    if(parent->InputMethod->IsActive())
+    {
+        // Let the input context produce the text or drive the composition.
+        [[self inputContext] handleEvent:event];
     }
-    
-    _lastKeyDownEvent = nullptr;
+    else if(keySymbol != nullptr && key != AvnKeyEnter)
+    {
+        parent->TopLevelEvents->RawTextInputEvent(timestamp, keySymbolUtf8);
+    }
 }
 
 - (void)keyUp:(NSEvent *)event
@@ -713,9 +697,9 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 }
 
 - (void) doCommandBySelector:(SEL)selector{
-    if(_lastKeyDownEvent != nullptr){
-        [self keyboardEvent:_lastKeyDownEvent withType:KeyDown];
-    }
+    // -keyDown: already raised a KeyDown for this event before handing it to the input
+    // context, so nothing is left to do here. The method still has to be implemented:
+    // falling back to NSResponder would perform the default action and emit a system beep.
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
