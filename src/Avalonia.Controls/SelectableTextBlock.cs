@@ -359,7 +359,7 @@ namespace Avalonia.Controls
                 InvalidateTextLayout();
             }
         }
- 
+
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
@@ -529,7 +529,7 @@ namespace Avalonia.Controls
             RaisePropertyChanged(SelectedTextProperty, "", "");
             UpdateCommandStates();
         }
- 
+
         private void UpdateCommandStates()
         {
             var text = GetSelection();
