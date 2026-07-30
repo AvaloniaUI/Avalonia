@@ -24,6 +24,16 @@
 @clr-map RECT Avalonia.Win32.Interop.UnmanagedMethods.RECT
 @clr-map POINT Avalonia.Win32.Interop.UnmanagedMethods.POINT
 
+// MicroCom limitation (worked around here, generator fix deferred): generated proxies
+// throw on EVERY non-zero HRESULT, success codes included. TSF calls that legitimately
+// return S_FALSE - ActivateEx on an already-active thread (the norm, CUAS activates
+// first) and IEnumTfRanges.Next at the end of every enumeration - are therefore invoked
+// through raw vtable slots so the result stays data; see
+// TsfThreadManager.ActivateThreadManager and TsfTextStore.TryGetNextRange. The upstream
+// fix is a preservesig-style per-method marker in the generator; a blanket throw-only-
+// on-negative change would break S_FALSE paths that leave interface out-params null
+// (GetTop/GetBase on an empty context stack).
+
 // Consumed as proxies over TSF-implemented ranges. Only the members the store calls
 // carry exact managed signatures; the rest keep the vtable slot with opaque LPVOID
 // parameters (the MicroCom dialect cannot express their mid-list [out] params, and the

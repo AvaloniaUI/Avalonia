@@ -79,15 +79,17 @@ namespace Avalonia.Win32.Input
                 in s_clsidThreadMgr,
                 MicroComRuntime.GetGuidFor(typeof(ITfThreadMgrEx)));
 
+            // ActivateEx is still required on an existing manager: it is the only call
+            // that returns our TfClientId (CreateContext's tidOwner), and it takes our
+            // own reference on the refcounted activation so another activator letting go
+            // cannot deactivate TSF under us. On an already-active thread it reports
+            // S_FALSE with the id - a success code the throwing proxy would surface as an
+            // exception, so the slot is called directly and the result stays data.
             uint clientId = 0;
-            try
+            var hr = ActivateThreadManager(_threadManager, &clientId);
+            if (hr < 0)
             {
-                _threadManager.ActivateEx(&clientId, 0);
-            }
-            catch (COMException exception) when (exception.HResult == 1)
-            {
-                // S_FALSE: TSF was already active on this thread; the activation is
-                // refcounted and the client id was still written.
+                throw new COMException("ActivateEx failed", hr);
             }
 
             _clientId = clientId;
@@ -131,6 +133,13 @@ namespace Avalonia.Win32.Input
 
         [DllImport("msctf.dll", ExactSpelling = true)]
         private static extern int TF_GetThreadMgr(out IntPtr pptim);
+
+        // Vtable slot 14 = IUnknown (3) + the eleven ITfThreadMgr methods.
+        private static unsafe int ActivateThreadManager(ITfThreadMgrEx threadManager, uint* clientId)
+        {
+            using var lease = MicroComRuntime.LeaseNativePointerForCall(threadManager);
+            return ((delegate* unmanaged[Stdcall]<void*, uint*, uint, int>)(*(void***)lease.Pointer)[14])(lease.Pointer, clientId, 0);
+        }
 
         /// <summary>
         /// Releases the association when the given window is going away; associations

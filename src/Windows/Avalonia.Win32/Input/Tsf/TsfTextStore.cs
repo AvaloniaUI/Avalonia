@@ -754,18 +754,19 @@ namespace Avalonia.Win32.Input.Tsf
         {
             range = null!;
 
+            // The enumerator reports its end as S_FALSE - a success code the throwing
+            // proxy would surface as an exception on every pass - so the Next slot is
+            // called directly and the result stays data. Slot 4 = IUnknown (3) + Clone.
             void* rangePtr = null;
             uint fetched = 0;
-            try
+            int hr;
+
+            using (var lease = MicroComRuntime.LeaseNativePointerForCall(enumerator))
             {
-                enumerator.Next(1, new IntPtr(&rangePtr), new IntPtr(&fetched));
-            }
-            catch (COMException exception) when (exception.HResult == 1)
-            {
-                // S_FALSE: the enumeration is exhausted.
+                hr = ((delegate* unmanaged[Stdcall]<void*, uint, void**, uint*, int>)(*(void***)lease.Pointer)[4])(lease.Pointer, 1, &rangePtr, &fetched);
             }
 
-            if (fetched == 0 || rangePtr == null)
+            if (hr < 0 || fetched == 0 || rangePtr == null)
             {
                 return false;
             }
