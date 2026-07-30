@@ -82,9 +82,10 @@ namespace Avalonia.Win32.Input.Tsf
         public const uint TS_AS_TEXT_CHANGE = 0x1;
         public const uint TS_AS_SEL_CHANGE = 0x2;
         public const uint TS_AS_LAYOUT_CHANGE = 0x4;
-        public const uint TS_AS_STATUS_CHANGE = 0x8;
+        public const uint TS_AS_ATTR_CHANGE = 0x8;
+        public const uint TS_AS_STATUS_CHANGE = 0x10;
 
-        public const uint TS_SD_READONLY = 0x2;
+        public const uint TS_SD_READONLY = 0x1;
 
         public const uint TS_SS_NOHIDDENTEXT = 0x8;
 
@@ -126,13 +127,15 @@ namespace Avalonia.Win32.Input.Tsf
         public static readonly Guid ClsidDisplayAttributeMgr = new("3ce74de4-53d3-4d74-8b83-431b3828ba53");
 
         public const int S_OK = 0;
-        public const int TS_S_ASYNC = 0x1;
+        public const int TS_S_ASYNC = 0x00040300;
         public const int E_NOTIMPL = unchecked((int)0x80004001);
         public const int E_UNEXPECTED = unchecked((int)0x8000FFFF);
         public const int E_INVALIDARG = unchecked((int)0x80070057);
-        public const int TS_E_NOLOCK = unchecked((int)0x80040201);
-        public const int TS_E_SYNCHRONOUS = unchecked((int)0x80040207);
         public const int TS_E_INVALIDPOS = unchecked((int)0x80040200);
-        public const int TS_E_READONLY = unchecked((int)0x80040206);
+        public const int TS_E_NOLOCK = unchecked((int)0x80040201);
+        public const int TS_E_NOLAYOUT = unchecked((int)0x80040206);
+        public const int TS_E_INVALIDPOINT = unchecked((int)0x80040207);
+        public const int TS_E_SYNCHRONOUS = unchecked((int)0x80040208);
+        public const int TS_E_READONLY = unchecked((int)0x80040209);
     }
 }
