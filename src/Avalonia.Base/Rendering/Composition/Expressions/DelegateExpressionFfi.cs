@@ -120,8 +120,16 @@ namespace Avalonia.Rendering.Composition.Expressions
             [typeof(Matrix3x2)] = VariantType.Matrix3x2,
             [typeof(Matrix4x4)] = VariantType.Matrix4x4,
             [typeof(Quaternion)] = VariantType.Quaternion,
-            [typeof(Color)] = VariantType.Color
+            [typeof(Color)] = VariantType.Color,
+            [typeof(RelativePoint)] = VariantType.RelativePoint,
+            [typeof(RelativeScalar)] = VariantType.RelativeScalar,
+            [typeof(RelativeUnit)] = VariantType.RelativeUnit
         };
+
+        public void Add(string name, Func<ExpressionVariant> cb)
+        {
+            Add(name, _ => cb());
+        }
 
         public void Add<T1>(string name, Func<T1, ExpressionVariant> cb) where T1 : struct
         {
