@@ -1300,10 +1300,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 window.DataContext = new TestDataContext { BoolProperty = true };
-                Assert.Same(BooleanBoxes.True, textBlock.Tag);
-
+                var boxedTrue = textBlock.Tag;
                 window.DataContext = new TestDataContext { BoolProperty = false };
-                Assert.Same(BooleanBoxes.False, textBlock.Tag);
+                var boxedFalse = textBlock.Tag;
+
+                Assert.Equal(true, boxedTrue);
+                Assert.Equal(false, boxedFalse);
+
+                // The getter must return the cached boxes instead of allocating a new box per read.
+                window.DataContext = new TestDataContext { BoolProperty = true };
+                Assert.Same(boxedTrue, textBlock.Tag);
+                window.DataContext = new TestDataContext { BoolProperty = false };
+                Assert.Same(boxedFalse, textBlock.Tag);
             }
         }
 
