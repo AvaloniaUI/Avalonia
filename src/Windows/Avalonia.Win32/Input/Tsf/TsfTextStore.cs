@@ -192,7 +192,7 @@ namespace Avalonia.Win32.Input.Tsf
             }
             catch (Exception exception)
             {
-                Trace("OnTextChange failed: {Error}", exception.Message);
+                Trace("OnTextChange failed: {Error}", DescribeError(exception));
             }
         }
 
@@ -209,7 +209,7 @@ namespace Avalonia.Win32.Input.Tsf
             }
             catch (Exception exception)
             {
-                Trace("OnSelectionChange failed: {Error}", exception.Message);
+                Trace("OnSelectionChange failed: {Error}", DescribeError(exception));
             }
         }
 
@@ -226,7 +226,7 @@ namespace Avalonia.Win32.Input.Tsf
             }
             catch (Exception exception)
             {
-                Trace("OnLayoutChange failed: {Error}", exception.Message);
+                Trace("OnLayoutChange failed: {Error}", DescribeError(exception));
             }
         }
 
@@ -243,7 +243,7 @@ namespace Avalonia.Win32.Input.Tsf
             }
             catch (Exception exception)
             {
-                Trace("OnStatusChange failed: {Error}", exception.Message);
+                Trace("OnStatusChange failed: {Error}", DescribeError(exception));
             }
         }
 
@@ -665,7 +665,7 @@ namespace Avalonia.Win32.Input.Tsf
             }
             catch (COMException exception)
             {
-                Trace("Composition range query failed: {Error}", exception.Message);
+                Trace("Composition range query failed: {Error}", DescribeError(exception));
             }
             finally
             {
@@ -732,7 +732,7 @@ namespace Avalonia.Win32.Input.Tsf
             }
             catch (COMException exception)
             {
-                Trace("Reading composition attributes failed: {Error}", exception.Message);
+                Trace("Reading composition attributes failed: {Error}", DescribeError(exception));
             }
         }
 
@@ -741,17 +741,28 @@ namespace Avalonia.Win32.Input.Tsf
             var client = _client!;
 
             ITfRange? compositionRange = null;
-            ITfProperty? property = null;
+            ITfReadOnlyProperty? trackedProperty = null;
             IEnumTfRanges? enumerator = null;
             try
             {
                 compositionRange = _compositionView!.Range;
 
-                var propGuid = PropAttribute;
-                property = context.GetProperty(&propGuid);
+                // ITfContext.GetProperty answers E_FAIL for context-owner documents on
+                // modern Windows; the channel that works (and the one the browsers use)
+                // is a tracked-property aggregate over the attribute GUID.
+                var attributeGuid = PropAttribute;
+                var attributeGuidPtr = &attributeGuid;
+                void* trackedPtr = null;
+                context.TrackProperties(new IntPtr(&attributeGuidPtr), 1, IntPtr.Zero, 0, new IntPtr(&trackedPtr));
+                if (trackedPtr == null)
+                {
+                    return;
+                }
+
+                trackedProperty = MicroComRuntime.CreateProxyFor<ITfReadOnlyProperty>(trackedPtr, true);
 
                 void* enumeratorPtr = null;
-                property.EnumRanges(cookie, new IntPtr(&enumeratorPtr), compositionRange);
+                trackedProperty.EnumRanges(cookie, new IntPtr(&enumeratorPtr), compositionRange);
                 if (enumeratorPtr == null)
                 {
                     return;
@@ -770,7 +781,7 @@ namespace Avalonia.Win32.Input.Tsf
                             continue;
                         }
 
-                        var resolved = GetRangeDisplayAttribute(property, cookie, range);
+                        var resolved = GetRangeDisplayAttribute(trackedProperty, cookie, range);
                         decorations.Add(resolved is { } attribute
                             ? new TextInputDecoration(client.RangeAt(start, length), attribute.Kind, attribute.Foreground, attribute.Background, attribute.Underline)
                             : new TextInputDecoration(client.RangeAt(start, length), TextInputDecorationKind.Input));
@@ -782,7 +793,7 @@ namespace Avalonia.Win32.Input.Tsf
             finally
             {
                 enumerator?.Dispose();
-                property?.Dispose();
+                trackedProperty?.Dispose();
                 compositionRange?.Dispose();
             }
         }
@@ -812,21 +823,59 @@ namespace Avalonia.Win32.Input.Tsf
             return true;
         }
 
-        private ResolvedDisplayAttribute? GetRangeDisplayAttribute(ITfProperty property, uint cookie, ITfRange range)
+        private ResolvedDisplayAttribute? GetRangeDisplayAttribute(ITfReadOnlyProperty trackedProperty, uint cookie, ITfRange range)
         {
             var variant = default(TsfVariant);
             try
             {
-                property.GetValue(cookie, range, new IntPtr(&variant));
+                trackedProperty.GetValue(cookie, range, new IntPtr(&variant));
 
-                return variant.Vt == VT_I4
-                    ? ResolveDisplayAttribute((uint)variant.Data1.ToInt64())
-                    : null;
+                // A tracked property aggregates its members: the value is an enumerator
+                // of (guid, value) pairs, one per tracked GUID.
+                if (variant.Vt != VT_UNKNOWN || variant.Data1 == IntPtr.Zero)
+                {
+                    return null;
+                }
+
+                using var unknown = MicroComRuntime.CreateProxyFor<IUnknown>((void*)variant.Data1, false);
+                using var values = unknown.QueryInterface<IEnumTfPropertyValue>();
+
+                var propertyValue = default(TF_PROPERTYVAL);
+                try
+                {
+                    if (!TryGetNextPropertyValue(values, &propertyValue)
+                        || propertyValue.GuidId != PropAttribute
+                        || propertyValue.Value.Vt != VT_I4)
+                    {
+                        return null;
+                    }
+
+                    return ResolveDisplayAttribute((uint)propertyValue.Value.Data1.ToInt64());
+                }
+                finally
+                {
+                    VariantClear(new IntPtr(&propertyValue.Value));
+                }
             }
             finally
             {
                 VariantClear(new IntPtr(&variant));
             }
+        }
+
+        private static bool TryGetNextPropertyValue(IEnumTfPropertyValue enumerator, TF_PROPERTYVAL* value)
+        {
+            // Same S_FALSE-at-end contract as the range enumerator, so the Next slot is
+            // called directly (slot 4 = IUnknown 3 + Clone).
+            uint fetched = 0;
+            int hr;
+
+            using (var lease = MicroComRuntime.LeaseNativePointerForCall(enumerator))
+            {
+                hr = ((delegate* unmanaged[Stdcall]<void*, uint, void*, uint*, int>)(*(void***)lease.Pointer)[4])(lease.Pointer, 1, value, &fetched);
+            }
+
+            return hr >= 0 && fetched == 1;
         }
 
         // Display attribute atoms resolve through the category manager to the owning text
@@ -865,7 +914,7 @@ namespace Avalonia.Win32.Input.Tsf
             }
             catch (COMException exception)
             {
-                Trace("Display attribute resolution failed: {Error}", exception.Message);
+                Trace("Display attribute resolution failed: {Error}", DescribeError(exception));
             }
 
             _displayAttributeCache[atom] = resolved;
@@ -889,7 +938,7 @@ namespace Avalonia.Win32.Input.Tsf
             catch (COMException exception)
             {
                 _displayAttributeManagersUnavailable = true;
-                Trace("Display attribute managers unavailable: {Error}", exception.Message);
+                Trace("Display attribute managers unavailable: {Error}", DescribeError(exception));
             }
         }
 
@@ -1149,6 +1198,9 @@ namespace Avalonia.Win32.Input.Tsf
             _sink?.Dispose();
             _sink = null;
         }
+
+        private static string DescribeError(Exception exception)
+            => exception is COMException com ? $"0x{com.HResult:X8}" : exception.Message;
 
         private void Trace(string message)
             => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, message);

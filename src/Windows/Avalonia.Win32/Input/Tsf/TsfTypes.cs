@@ -73,6 +73,13 @@ namespace Avalonia.Win32.Input.Tsf
         public IntPtr Data2;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct TF_PROPERTYVAL
+    {
+        public Guid GuidId;
+        public TsfVariant Value;
+    }
+
     internal static class TsfConstants
     {
         public const uint TS_LF_SYNC = 0x1;
@@ -123,6 +130,7 @@ namespace Avalonia.Win32.Input.Tsf
 
         public const ushort VT_EMPTY = 0;
         public const ushort VT_I4 = 3;
+        public const ushort VT_UNKNOWN = 13;
 
         /// <summary>The context property holding per-clause display attribute atoms.</summary>
         public static readonly Guid PropAttribute = new("34745c63-b2f0-4784-8b67-5e12c8701a31");

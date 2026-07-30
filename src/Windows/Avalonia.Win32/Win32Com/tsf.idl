@@ -95,6 +95,19 @@ interface IEnumTfRanges : IUnknown
 
 [
     object,
+    uuid(8ed8981b-7c10-4d7d-9fb3-ab72e9c75f72),
+    pointer_default(unique)
+]
+interface IEnumTfPropertyValue : IUnknown
+{
+    HRESULT Clone([in] LPVOID ppEnum);
+    HRESULT Next([in] ULONG ulCount, [in] LPVOID rgValues, [in] LPVOID pcFetched);
+    HRESULT Reset();
+    HRESULT Skip([in] ULONG ulCount);
+}
+
+[
+    object,
     uuid(17d49a3d-f8b8-4b2f-b254-52319dd64c53),
     pointer_default(unique)
 ]
