@@ -39,7 +39,7 @@ Please note that Avalonia does not operate a bug bounty programme.
 | 11.x and older | Not provided |
 | 12.x (current stable) | Provided |
  
-Security fixes for the versions listed above are published openly and free of charge. Access to Avalonia's open-source releases, updates and security fixes is never conditional on payment.
+Security fixes are delivered at the head of the current stable series. If a vulnerability affects earlier 12.x releases, we fix it in a new release of the latest version, and the remediation path is to upgrade to that release. Security fixes for the current series are published openly and free of charge. Access to Avalonia's open-source releases, updates and security fixes is never conditional on payment.
 
 ## Scope
 
