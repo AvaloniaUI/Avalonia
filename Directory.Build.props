@@ -10,6 +10,8 @@
     <LangVersion>14.0</LangVersion>
     <TreatWarningsAsErrors Condition="'$(TreatWarningsAsErrors)' == ''">$(AvnTreatWarningsAsErrors)</TreatWarningsAsErrors>
     <TreatWarningsAsErrors Condition="'$(TreatWarningsAsErrors)' == '' And '$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <!-- Suppress NU1507 so local source builds do not warn about the consuming solution's package sources. -->
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
     <CreateHardLinksForCopyAdditionalFilesIfPossible>true</CreateHardLinksForCopyAdditionalFilesIfPossible>
     <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
     <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>
