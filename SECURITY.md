@@ -30,17 +30,6 @@ Alternatively, you may report security vulnerabilities by emailing security@aval
 
 Please note that Avalonia does not operate a bug bounty programme.
 
-## Supported Versions
-
-| Version | Supported |
-|---|---|
-| 12.x (current stable) | Yes |
-| 11.x and older | No |
-
-Security updates are provided free of charge for supported versions.
-
 ## Scope
 
-This policy covers the Avalonia framework packages published from this repository (`Avalonia` and the `Avalonia.*` platform and integration packages).
-
-For security issues in other Avalonia products — including Avalonia Accelerate components and Avalonia XPF — use the affected repository's security page if you have access to it, or email security@avaloniaui.net.
+This policy covers the Avalonia framework packages published from this repository only.
