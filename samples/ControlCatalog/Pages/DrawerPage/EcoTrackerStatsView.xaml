@@ -1,0 +1,224 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.EcoTrackerStatsView">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Stat chips row -->
+      <StackPanel Orientation="Horizontal" Spacing="10" Margin="16,20,16,0">
+
+        <!-- CO2 chip -->
+        <Border CornerRadius="12" Background="White"
+                Padding="12,10" HorizontalAlignment="Stretch">
+          <StackPanel Spacing="2">
+            <TextBlock Text="CO&#x2082;"
+                       FontSize="10" FontWeight="Medium"
+                       Foreground="#90A4AE"/>
+            <TextBlock Text="12.4 kg"
+                       FontSize="16" FontWeight="Bold"
+                       Foreground="#4CAF50"/>
+            <StackPanel Orientation="Horizontal" Spacing="3">
+              <TextBlock Text="&#x2191;8%"
+                         FontSize="10" FontWeight="SemiBold"
+                         Foreground="#4CAF50"/>
+              <TextBlock Text="wk"
+                         FontSize="10"
+                         Foreground="#90A4AE"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- Energy chip -->
+        <Border CornerRadius="12" Background="White"
+                Padding="12,10" HorizontalAlignment="Stretch">
+          <StackPanel Spacing="2">
+            <TextBlock Text="Energy"
+                       FontSize="10" FontWeight="Medium"
+                       Foreground="#90A4AE"/>
+            <TextBlock Text="45 kWh"
+                       FontSize="16" FontWeight="Bold"
+                       Foreground="#FFC107"/>
+            <StackPanel Orientation="Horizontal" Spacing="3">
+              <TextBlock Text="&#x2191;12%"
+                         FontSize="10" FontWeight="SemiBold"
+                         Foreground="#FFC107"/>
+              <TextBlock Text="wk"
+                         FontSize="10"
+                         Foreground="#90A4AE"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- Water chip -->
+        <Border CornerRadius="12" Background="White"
+                Padding="12,10" HorizontalAlignment="Stretch">
+          <StackPanel Spacing="2">
+            <TextBlock Text="Water"
+                       FontSize="10" FontWeight="Medium"
+                       Foreground="#90A4AE"/>
+            <TextBlock Text="87 L"
+                       FontSize="16" FontWeight="Bold"
+                       Foreground="#2196F3"/>
+            <StackPanel Orientation="Horizontal" Spacing="3">
+              <TextBlock Text="&#x2191;5%"
+                         FontSize="10" FontWeight="SemiBold"
+                         Foreground="#2196F3"/>
+              <TextBlock Text="wk"
+                         FontSize="10"
+                         Foreground="#90A4AE"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+
+      <!-- Weekly Activity section -->
+      <StackPanel Margin="16,20,16,0" Spacing="12">
+        <TextBlock Text="This Week's Activity"
+                   FontSize="16" FontWeight="SemiBold"
+                   Foreground="#1A2E1C"/>
+
+        <!-- Bar chart -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+
+          <!-- Monday: 55% -->
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <Border Height="36" Width="24"/>
+            <Border Height="44" Width="24" CornerRadius="4,4,2,2" Background="#A5D6A7"/>
+            <TextBlock Text="M" FontSize="10" Foreground="#90A4AE" HorizontalAlignment="Center"/>
+          </StackPanel>
+
+          <!-- Tuesday: 70% -->
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <Border Height="24" Width="24"/>
+            <Border Height="56" Width="24" CornerRadius="4,4,2,2" Background="#A5D6A7"/>
+            <TextBlock Text="T" FontSize="10" Foreground="#90A4AE" HorizontalAlignment="Center"/>
+          </StackPanel>
+
+          <!-- Wednesday: 45% -->
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <Border Height="44" Width="24"/>
+            <Border Height="36" Width="24" CornerRadius="4,4,2,2" Background="#A5D6A7"/>
+            <TextBlock Text="W" FontSize="10" Foreground="#90A4AE" HorizontalAlignment="Center"/>
+          </StackPanel>
+
+          <!-- Thursday: 88% -->
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <Border Height="10" Width="24"/>
+            <Border Height="70" Width="24" CornerRadius="4,4,2,2" Background="#A5D6A7"/>
+            <TextBlock Text="T" FontSize="10" Foreground="#90A4AE" HorizontalAlignment="Center"/>
+          </StackPanel>
+
+          <!-- Friday: 60% -->
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <Border Height="32" Width="24"/>
+            <Border Height="48" Width="24" CornerRadius="4,4,2,2" Background="#A5D6A7"/>
+            <TextBlock Text="F" FontSize="10" Foreground="#90A4AE" HorizontalAlignment="Center"/>
+          </StackPanel>
+
+          <!-- Saturday: 92% -->
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <Border Height="6" Width="24"/>
+            <Border Height="74" Width="24" CornerRadius="4,4,2,2" Background="#A5D6A7"/>
+            <TextBlock Text="S" FontSize="10" Foreground="#90A4AE" HorizontalAlignment="Center"/>
+          </StackPanel>
+
+          <!-- Sunday (today): 75% -->
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <Border Height="20" Width="24"/>
+            <Border Height="60" Width="24" CornerRadius="4,4,2,2" Background="#4CAF50"/>
+            <TextBlock Text="S" FontSize="10" FontWeight="Bold" Foreground="#2E7D32" HorizontalAlignment="Center"/>
+          </StackPanel>
+
+        </StackPanel>
+      </StackPanel>
+
+      <!-- Carbon Breakdown section -->
+      <StackPanel Margin="16,20,16,20" Spacing="12">
+        <TextBlock Text="Carbon Breakdown"
+                   FontSize="16" FontWeight="SemiBold"
+                   Foreground="#1A2E1C"/>
+
+        <!-- Transportation: 33% -->
+        <Border CornerRadius="10" Background="White" Padding="12">
+          <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Transportation"
+                         FontSize="13" FontWeight="Medium"
+                         Foreground="#1A2E1C"/>
+              <TextBlock Grid.Column="1"
+                         Text="4.1 kg"
+                         FontSize="13" FontWeight="Bold"
+                         Foreground="#4CAF50"/>
+            </Grid>
+            <Grid ColumnDefinitions="33*,67*" Height="6">
+              <Border Grid.ColumnSpan="2" CornerRadius="3" Background="#E8F5E9"/>
+              <Border CornerRadius="3" Background="#4CAF50"/>
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- Food: 31% -->
+        <Border CornerRadius="10" Background="White" Padding="12">
+          <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Food"
+                         FontSize="13" FontWeight="Medium"
+                         Foreground="#1A2E1C"/>
+              <TextBlock Grid.Column="1"
+                         Text="3.8 kg"
+                         FontSize="13" FontWeight="Bold"
+                         Foreground="#4CAF50"/>
+            </Grid>
+            <Grid ColumnDefinitions="31*,69*" Height="6">
+              <Border Grid.ColumnSpan="2" CornerRadius="3" Background="#E8F5E9"/>
+              <Border CornerRadius="3" Background="#4CAF50"/>
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- Home Energy: 21% -->
+        <Border CornerRadius="10" Background="White" Padding="12">
+          <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Home Energy"
+                         FontSize="13" FontWeight="Medium"
+                         Foreground="#1A2E1C"/>
+              <TextBlock Grid.Column="1"
+                         Text="2.6 kg"
+                         FontSize="13" FontWeight="Bold"
+                         Foreground="#4CAF50"/>
+            </Grid>
+            <Grid ColumnDefinitions="21*,79*" Height="6">
+              <Border Grid.ColumnSpan="2" CornerRadius="3" Background="#E8F5E9"/>
+              <Border CornerRadius="3" Background="#4CAF50"/>
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- Shopping: 15% -->
+        <Border CornerRadius="10" Background="White" Padding="12">
+          <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Shopping"
+                         FontSize="13" FontWeight="Medium"
+                         Foreground="#1A2E1C"/>
+              <TextBlock Grid.Column="1"
+                         Text="1.9 kg"
+                         FontSize="13" FontWeight="Bold"
+                         Foreground="#4CAF50"/>
+            </Grid>
+            <Grid ColumnDefinitions="15*,85*" Height="6">
+              <Border Grid.ColumnSpan="2" CornerRadius="3" Background="#E8F5E9"/>
+              <Border CornerRadius="3" Background="#4CAF50"/>
+            </Grid>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

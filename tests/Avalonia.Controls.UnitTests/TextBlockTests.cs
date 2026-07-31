@@ -537,6 +537,32 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBlock_With_Fractional_LineHeight_Should_Not_Cull_Last_Line_At_Fractional_Scaling()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock
+            {
+                Text = "first second third",
+                FontSize = 16,
+                LineHeight = 20.8,
+                TextWrapping = TextWrapping.Wrap,
+                Width = 50,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+            var root = new TestRoot(target)
+            {
+                LayoutScaling = 1.25,
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            Assert.Equal(3, target.TextLayout.TextLines.Count);
+        }
+
+        [Fact]
         public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_Padding_In_MeasureOverride()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
@@ -559,6 +585,33 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(default, target.DesiredSize));
 
             Assert.Equal(new Rect(0, 0, 32.45454545454545, 19.022727272727273), target.Bounds);
+        }
+
+        [Fact]
+        public void Measure_And_Arrange_Should_Use_WidthIncludingTrailingWhitespace_For_Bounds()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock
+            {
+                Text = "fy",
+                FontStyle = FontStyle.Italic,
+                FontSize = 48,
+                UseLayoutRounding = false,
+                Padding = new Thickness(3, 2, 5, 4)
+            };
+
+            target.Measure(Size.Infinity);
+
+            var expectedSize =
+                new Size(target.TextLayout.WidthIncludingTrailingWhitespace, target.TextLayout.Height)
+                    .Inflate(target.Padding);
+
+            Assert.Equal(expectedSize, target.DesiredSize);
+
+            target.Arrange(new Rect(default, target.DesiredSize));
+
+            Assert.Equal(new Rect(default, expectedSize), target.Bounds);
         }
 
         private class TestTextBlock : TextBlock

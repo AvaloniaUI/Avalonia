@@ -36,8 +36,10 @@ extern IAvnPlatformRenderTimer* CreatePlatformRenderTimer();
 extern IAvnNativeObjectsMemoryManagement* CreateMemoryManagementHelper();
 extern void SetAppMenu(IAvnMenu *menu);
 extern void SetServicesMenu (IAvnMenu* menu);
-extern IAvnMenu* GetAppMenu ();
+class AvnAppMenu;
+extern AvnAppMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
+extern void SetDockMenu(NSMenu* menu);
 
 extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDelegate);
 extern void ReleaseAvnAppEvents();

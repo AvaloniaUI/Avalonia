@@ -1,6 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
+             Header="Cursors"
              x:Class="ControlCatalog.Pages.CursorPage"
              x:DataType="viewModels:CursorPageViewModel">
   <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,*">
@@ -27,4 +28,4 @@
       </Button>
     </StackPanel>
  </Grid>
-</UserControl>
+</ContentPage>

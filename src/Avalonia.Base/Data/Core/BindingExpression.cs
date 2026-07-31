@@ -31,6 +31,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
     private readonly List<ExpressionNode> _nodes;
     private readonly TargetTypeConverter? _targetTypeConverter;
     private readonly UncommonFields? _uncommon;
+    private int _updateTargetDepth;
     private bool _shouldUpdateOneTimeBindingTarget;
 
     /// <summary>
@@ -167,63 +168,19 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
 
         var source = _nodes[0].Source;
 
-        for (var i = 0; i < _nodes.Count; ++i)
-            _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
+        ++_updateTargetDepth;
 
-        _nodes[0].SetSource(source, null);
-    }
+        try
+        {
+            for (var i = 0; i < _nodes.Count; ++i)
+                _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
 
-    /// <summary>
-    /// Creates an <see cref="BindingExpression"/> from an expression tree.
-    /// </summary>
-    /// <typeparam name="TIn">The input type of the binding expression.</typeparam>
-    /// <typeparam name="TOut">The output type of the binding expression.</typeparam>
-    /// <param name="source">The source from which the binding value will be read.</param>
-    /// <param name="expression">The expression representing the binding path.</param>
-    /// <param name="converter">The converter to use.</param>
-    /// <param name="converterCulture">The converter culture to use.</param>
-    /// <param name="converterParameter">The converter parameter.</param>
-    /// <param name="enableDataValidation">Whether data validation should be enabled for the binding.</param>
-    /// <param name="fallbackValue">The fallback value.</param>
-    /// <param name="mode">The binding mode.</param>
-    /// <param name="priority">The binding priority.</param>
-    /// <param name="targetNullValue">The null target value.</param>
-    /// <param name="allowReflection">Whether to allow reflection for target type conversion.</param>
-    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
-#if NET8_0_OR_GREATER
-    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
-#endif
-    internal static BindingExpression Create<TIn, TOut>(
-        TIn source,
-        Expression<Func<TIn, TOut>> expression,
-        IValueConverter? converter = null,
-        CultureInfo? converterCulture = null,
-        object? converterParameter = null,
-        bool enableDataValidation = false,
-        Optional<object?> fallbackValue = default,
-        BindingMode mode = BindingMode.OneWay,
-        BindingPriority priority = BindingPriority.LocalValue,
-        object? targetNullValue = null,
-        bool allowReflection = true)
-            where TIn : class?
-    {
-        var nodes = BindingExpressionVisitor<TIn>.BuildNodes(expression, enableDataValidation);
-        var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
-
-        return new BindingExpression(
-            source,
-            nodes,
-            fallback,
-            converter: converter,
-            converterCulture: converterCulture,
-            converterParameter: converterParameter,
-            enableDataValidation: enableDataValidation,
-            mode: mode,
-            priority: priority,
-            targetNullValue: targetNullValue,
-            targetTypeConverter: allowReflection ?
-                TargetTypeConverter.GetReflectionConverter() :
-                TargetTypeConverter.GetDefaultConverter());
+            _nodes[0].SetSource(source, null);
+        }
+        finally
+        {
+            --_updateTargetDepth;
+        }
     }
 
     /// <summary>
@@ -258,7 +215,11 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
                 var error = dataValidationError is not null ?
                     new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
                     null;
-                ConvertAndPublishValue(value, error);
+
+                // UpdateTarget must reapply the source value even if this expression already
+                // has it cached: a two-way target may contain an uncommitted local value.
+                var forceUpdate = _mode == BindingMode.OneWay || _updateTargetDepth > 0;
+                ConvertAndPublishValue(value, error, forceUpdate);
             }
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)
@@ -455,7 +416,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             error);
     }
 
-    private void ConvertAndPublishValue(object? value, BindingError? error)
+    private void ConvertAndPublishValue(object? value, BindingError? error, bool forceUpdate = false)
     {
         var isTargetNullValue = false;
 
@@ -503,7 +464,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             value = ConvertFallback(FallbackValue, nameof(FallbackValue));
 
         // Publish the value.
-        PublishValue(value, error);
+        PublishValue(value, error, forceUpdate);
     }
 
     private void WriteTargetValueToSource()
@@ -513,12 +474,9 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         StopDelayTimer();
 
         if (TryGetTarget(out var target) &&
-            TargetProperty is not null &&
-            target.GetValue(TargetProperty) is var value &&
-            LeafNode is { } leafNode &&
-            !TypeUtilities.IdentityEquals(value, leafNode.Value, TargetType))
+            TargetProperty is not null)
         {
-            WriteValueToSource(value);
+            WriteValueToSource(target.GetValue(TargetProperty));
         }
     }
 

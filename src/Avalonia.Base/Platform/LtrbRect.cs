@@ -23,6 +23,9 @@ public struct LtrbRect
 {
     public double Left, Top, Right, Bottom;
 
+    public double Width => Right - Left;
+    public double Height => Bottom - Top;
+    
     internal LtrbRect(double x, double y, double right, double bottom)
     {
         Left = x;
@@ -40,9 +43,37 @@ public struct LtrbRect
         Bottom = rc.Bottom;
     }
 
-    internal bool IsZeroSize => Left == Right && Top == Bottom;
+    internal static LtrbRect Infinite { get; } = new(double.NegativeInfinity, double.NegativeInfinity,
+        double.PositiveInfinity, double.PositiveInfinity);
 
-    internal LtrbRect Intersect(LtrbRect rect)
+    internal bool IsWellOrdered => Left <= Right && Top <= Bottom;
+    
+    internal bool IsZeroSize => Left == Right || Top == Bottom;
+    internal bool IsEmpty => IsZeroSize;
+    
+
+
+    internal LtrbRect? NullIfZeroSize() => IsZeroSize ? null : this;
+
+    internal LtrbRect? IntersectOrNull(LtrbRect rect)
+    {
+        var newLeft = (rect.Left > Left) ? rect.Left : Left;
+        var newTop = (rect.Top > Top) ? rect.Top : Top;
+        var newRight = (rect.Right < Right) ? rect.Right : Right;
+        var newBottom = (rect.Bottom < Bottom) ? rect.Bottom : Bottom;
+
+        if ((newRight > newLeft) && (newBottom > newTop))
+        {
+            return new LtrbRect(newLeft, newTop, newRight, newBottom);
+        }
+        else
+        {
+            return default;
+        }
+    }
+    
+    
+    internal LtrbRect IntersectOrEmpty(LtrbRect rect)
     {
         var newLeft = (rect.Left > Left) ? rect.Left : Left;
         var newTop = (rect.Top > Top) ? rect.Top : Top;
@@ -118,7 +149,7 @@ public struct LtrbRect
     /// <summary>
     /// Perform _WPF-like_ union operation
     /// </summary>
-    private LtrbRect FullUnionCore(LtrbRect rect)
+    public LtrbRect Union(LtrbRect rect)
     {
         var x1 = Math.Min(Left, rect.Left);
         var x2 = Math.Max(Right, rect.Right);
@@ -134,7 +165,7 @@ public struct LtrbRect
             return right;
         if (right == null)
             return left;
-        return right.Value.FullUnionCore(left.Value);
+        return right.Value.Union(left.Value);
     }
     
     internal static LtrbRect? FullUnion(LtrbRect? left, Rect? right)
@@ -143,7 +174,7 @@ public struct LtrbRect
             return left;
         if (left == null)
             return new(right.Value);
-        return left.Value.FullUnionCore(new(right.Value));
+        return left.Value.Union(new(right.Value));
     }
 
     public override bool Equals(object? obj)
@@ -165,6 +196,18 @@ public struct LtrbRect
             return hash;
         }
     }
+
+    public override string ToString() => $"{Left}:{Top}-{Right}:{Bottom} ({Width}x{Height})";
+
+    public bool Contains(Point point)
+    {
+        return point.X >= Left && point.X <= Right && point.Y >= Top && point.Y <= Bottom;
+    }
+
+    public bool Contains(LtrbRect rect)
+    {
+        return rect.Left >= Left && rect.Right <= Right && rect.Top >= Top && rect.Bottom <= Bottom;
+    }
 }
 
 /// <summary>
@@ -184,7 +227,7 @@ public struct LtrbRect
 public struct LtrbPixelRect
 {
     public int Left, Top, Right, Bottom;
-
+    
     internal LtrbPixelRect(int x, int y, int right, int bottom)
     {
         Left = x;
@@ -218,16 +261,10 @@ public struct LtrbPixelRect
         return new(x1, y1, x2, y2);
     }
 
-    internal Rect ToRectWithNoScaling() => new(Left, Top, (Right - Left), (Bottom - Top));
-
     internal bool Contains(int x, int y)
     {
         return x >= Left && x <= Right && y >= Top && y <= Bottom;
     }
-
-    internal static LtrbPixelRect FromRectWithNoScaling(LtrbRect rect) =>
-        new((int)rect.Left, (int)rect.Top, (int)Math.Ceiling(rect.Right),
-            (int)Math.Ceiling(rect.Bottom));
     
     public static bool operator ==(LtrbPixelRect left, LtrbPixelRect right)=>
         left.Left == right.Left && left.Top == right.Top && left.Right == right.Right && left.Bottom == right.Bottom;
@@ -259,10 +296,9 @@ public struct LtrbPixelRect
     }
 
     internal Rect ToRectUnscaled() => new(Left, Top, Right - Left, Bottom - Top);
-
-    internal static LtrbPixelRect FromRectUnscaled(LtrbRect rect)
-    {
-        return new LtrbPixelRect((int)rect.Left, (int)rect.Top, (int)Math.Ceiling(rect.Right),
+    internal LtrbRect ToLtrbRectUnscaled() => new(Left, Top, Right, Bottom);
+    
+    internal static LtrbPixelRect FromRectUnscaled(LtrbRect rect) =>
+        new((int)rect.Left, (int)rect.Top, (int)Math.Ceiling(rect.Right),
             (int)Math.Ceiling(rect.Bottom));
-    }
 }

@@ -15,8 +15,7 @@ namespace Avalonia.Rendering
     [PrivateApi]
     public class DefaultRenderTimer : IRenderTimer
     {
-        private int _subscriberCount;
-        private Action<TimeSpan>? _tick;
+        private volatile Action<TimeSpan>? _tick;
         private IDisposable? _subscription;
 
         /// <summary>
@@ -36,39 +35,27 @@ namespace Avalonia.Rendering
         public int FramesPerSecond { get; }
 
         /// <inheritdoc/>
-        public event Action<TimeSpan> Tick
+        public Action<TimeSpan>? Tick
         {
-            add
+            get => _tick;
+            set
             {
-                _tick += value;
-
-                if (_subscriberCount++ == 0)
+                if (value != null)
                 {
-                    Start();
+                    _tick = value;
+                    _subscription ??= StartCore(InternalTick);
                 }
-            }
-
-            remove
-            {
-                if (--_subscriberCount == 0)
+                else
                 {
-                    Stop();
+                    _subscription?.Dispose();
+                    _subscription = null;
+                    _tick = null;
                 }
-
-                _tick -= value;
             }
         }
 
         /// <inheritdoc />
         public virtual bool RunsInBackground => true;
-
-        /// <summary>
-        /// Starts the timer.
-        /// </summary>
-        protected void Start()
-        {
-            _subscription = StartCore(InternalTick);
-        }
 
         /// <summary>
         /// Provides the implementation of starting the timer.
@@ -83,15 +70,6 @@ namespace Avalonia.Rendering
             var interval = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
 
             return new Timer(_ => tick(TimeSpan.FromMilliseconds(Environment.TickCount)), null, interval, interval);
-        }
-
-        /// <summary>
-        /// Stops the timer.
-        /// </summary>
-        protected void Stop()
-        {
-            _subscription?.Dispose();
-            _subscription = null;
         }
 
         private void InternalTick(TimeSpan tickCount)

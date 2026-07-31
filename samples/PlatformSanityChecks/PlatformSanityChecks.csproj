@@ -12,5 +12,7 @@
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\build\Rx.props" />
+  <ItemGroup>
+    <PackageReference Include="System.Reactive" />
+  </ItemGroup>
 </Project>

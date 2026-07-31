@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Avalonia.Data.Core.Plugins
 {
     [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
-#if NET8_0_OR_GREATER
     [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
-#endif
     internal class ReflectionMethodAccessorPlugin : IPropertyAccessorPlugin
     {
-        private readonly Dictionary<(Type, string), MethodInfo?> _methodLookup =
-            new Dictionary<(Type, string), MethodInfo?>();
+        private readonly Dictionary<(Type, string), MethodLookupResult> _methodLookup = new();
 
-        public bool Match(object obj, string methodName) => GetFirstMethodWithName(obj.GetType(), methodName) != null;
+        public bool Match(object obj, string methodName) => GetMethod(obj.GetType(), methodName).IsMatch;
 
         public IPropertyAccessor? Start(WeakReference<object?> reference, string methodName)
         {
@@ -25,68 +23,136 @@ namespace Avalonia.Data.Core.Plugins
             if (!reference.TryGetTarget(out var instance) || instance is null)
                 return null;
 
-            var method = GetFirstMethodWithName(instance.GetType(), methodName);
+            var result = GetMethod(instance.GetType(), methodName);
 
-            if (method is not null)
+            if (result.Method is { } method)
             {
                 return new Accessor(reference, method);
             }
             else
             {
-                var message = $"Could not find CLR method '{methodName}' on '{instance}'";
-                var exception = new MissingMemberException(message);
+                Exception exception = result.Error is { } error
+                    ? new AmbiguousMatchException(error)
+                    : new MissingMemberException($"Could not find CLR method '{methodName}' on '{instance}'");
                 return new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
             }
         }
 
-        private MethodInfo? GetFirstMethodWithName(
+        private MethodLookupResult GetMethod(
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] Type type, string methodName)
         {
             var key = (type, methodName);
 
-            if (!_methodLookup.TryGetValue(key, out var methodInfo))
+            if (!_methodLookup.TryGetValue(key, out var result))
             {
-                methodInfo = TryFindAndCacheMethod(type, methodName);
+                result = FindBestCommandMethod(type, methodName);
+                _methodLookup.Add(key, result);
             }
 
-            return methodInfo;
+            return result;
         }
 
-        private MethodInfo? TryFindAndCacheMethod(
+        /// <summary>
+        /// Finds the method named <paramref name="methodName"/> which can be bound to a command.
+        /// </summary>
+        /// <remarks>
+        /// Priority:
+        ///  1. One parameter method
+        ///    1a. Object parameter (amongst several overloads)
+        ///    1b. Single method with one parameter
+        ///  2. Zero parameters method
+        /// </remarks>
+        private static MethodLookupResult FindBestCommandMethod(
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] Type type, string methodName)
         {
-            MethodInfo? found = null;
-
             const BindingFlags bindingFlags =
                 BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
 
-            var methods = type.GetMethods(bindingFlags);
+            List<MethodInfo>? candidates = null;
 
-            foreach (var methodInfo in methods)
+            foreach (var methodInfo in type.GetMethods(bindingFlags))
             {
                 if (methodInfo.Name == methodName)
+                    (candidates ??= []).Add(methodInfo);
+            }
+
+            if (candidates is null)
+                return default;
+
+            MethodInfo? zeroParamCandidate = null;
+            Dictionary<Type, MethodInfo>? oneParamCandidates = null;
+
+            foreach (var candidate in candidates)
+            {
+                var parameters = candidate.GetParameters();
+
+                switch (parameters.Length)
                 {
-                    var parameters = methodInfo.GetParameters();
-                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(object))
-                    {
-                        found = methodInfo;
+                    case 0:
+                        zeroParamCandidate = GetMostDerived(zeroParamCandidate, candidate);
                         break;
-                    }
-                    else if (parameters.Length == 0)
-                    {
-                        found = methodInfo;
-                    }
+
+                    case 1:
+                        // Reflection can return several methods with the same parameter type when one hides another:
+                        // only keep the most derived one, so that overridden or hidden methods are handled properly.
+                        var parameterType = parameters[0].ParameterType;
+                        oneParamCandidates ??= new Dictionary<Type, MethodInfo>();
+                        oneParamCandidates[parameterType] = GetMostDerived(oneParamCandidates.GetValueOrDefault(parameterType), candidate);
+                        break;
                 }
             }
 
-            _methodLookup.Add((type, methodName), found);
+            if (oneParamCandidates is not null)
+            {
+                // Object parameter always wins
+                if (oneParamCandidates.TryGetValue(typeof(object), out var objectParamCandidate))
+                    return new MethodLookupResult(objectParamCandidate, null);
 
-            return found;
+                if (oneParamCandidates.Count == 1)
+                    return new MethodLookupResult(oneParamCandidates.Values.First(), null);
+
+                var parameterTypes = oneParamCandidates.Keys
+                    .Select(t => $"'{t.FullName}'")
+                    .OrderBy(s => s, StringComparer.Ordinal)
+                    .ToArray();
+
+                return new MethodLookupResult(
+                    null,
+                    $"Unable to resolve method of name '{methodName}' on type '{type.FullName}'. " +
+                    $"Found {parameterTypes.Length} overloads accepting one parameter: {string.Join(", ", parameterTypes)}. " +
+                    "Expected either a single overload with one parameter, or an overload accepting System.Object.");
+            }
+
+            if (zeroParamCandidate is { } found)
+                return new MethodLookupResult(found, null);
+
+            return new MethodLookupResult(
+                null,
+                $"Unable to resolve method of name '{methodName}' on type '{type.FullName}'. " +
+                $"Found {candidates.Count} overloads accepting more than one parameter. " +
+                "Expected a method with zero or one parameter.");
         }
 
-#if NET8_0_OR_GREATER
+        private static MethodInfo GetMostDerived(MethodInfo? existing, MethodInfo candidate)
+        {
+            if (existing is null)
+                return candidate;
+
+            return existing.DeclaringType is { } existingType &&
+                   candidate.DeclaringType is { } candidateType &&
+                   existingType != candidateType && existingType.IsAssignableFrom(candidateType) ?
+                candidate :
+                existing;
+        }
+
+        private readonly struct MethodLookupResult(MethodInfo? method, string? error)
+        {
+            public MethodInfo? Method { get; } = method;
+            public string? Error { get; } = error;
+            public bool IsMatch => Method is not null || Error is not null;
+        }
+
         [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
-#endif
         private sealed class Accessor : PropertyAccessorBase
         {
             public Accessor(WeakReference<object?> reference, MethodInfo method)

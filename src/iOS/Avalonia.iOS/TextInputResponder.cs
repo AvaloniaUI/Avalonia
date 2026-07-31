@@ -34,14 +34,10 @@ partial class AvaloniaView
 
             public AvaloniaTextRange(int startIndex, int endIndex)
             {
-                if (startIndex < 0)
-                    throw new ArgumentOutOfRangeException(nameof(startIndex));
-
-                if (endIndex < startIndex)
-                    throw new ArgumentOutOfRangeException(nameof(endIndex));
-
-                StartIndex = startIndex;
-                EndIndex = endIndex;
+                var a = Math.Max(0, startIndex);
+                var b = Math.Max(0, endIndex);
+                StartIndex = Math.Min(a, b);
+                EndIndex = Math.Max(a, b);
             }
 
             public override bool IsEmpty => StartIndex == EndIndex;
@@ -58,9 +54,7 @@ partial class AvaloniaView
         {
             public AvaloniaTextPosition(int index)
             {
-                if (index < 0)
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                Index = index;
+                Index = Math.Max(0, index);
             }
 
             public int Index { get; }
@@ -90,6 +84,7 @@ partial class AvaloniaView
         private int _inSurroundingTextUpdateEvent;
         private readonly UITextPosition _beginningOfDocument = new AvaloniaTextPosition(0);
         private readonly UITextInputStringTokenizer _tokenizer;
+        private readonly NSString _textInputContextIdentifier = new NSString(Guid.NewGuid().ToString());
         private bool _isInUpdate;
 
         public TextInputMethodClient? Client => _client;
@@ -101,7 +96,7 @@ partial class AvaloniaView
         public override UIEditingInteractionConfiguration EditingInteractionConfiguration =>
             UIEditingInteractionConfiguration.Default;
 
-        public override NSString TextInputContextIdentifier => new NSString(Guid.NewGuid().ToString());
+        public override NSString TextInputContextIdentifier => _textInputContextIdentifier;
 
         public override UITextInputMode TextInputMode
         {
@@ -509,13 +504,14 @@ partial class AvaloniaView
             {
                 if (_inSurroundingTextUpdateEvent > 0)
                     return;
-                if (value == null)
-                    _client.Selection = default;
+
+                if (value is AvaloniaTextRange r)
+                {
+                    _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
+                }
                 else
                 {
-                    var r = (AvaloniaTextRange)value;
-
-                    _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
+                    _client.Selection = default;
                 }
             }
         }

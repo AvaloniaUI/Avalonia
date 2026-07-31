@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using Avalonia.Animation;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -272,6 +274,11 @@ namespace Avalonia.Controls
 
                 UpdatePseudoClasses();
             }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ExpanderAutomationPeer(this);
         }
 
         /// <summary>

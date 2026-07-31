@@ -1,8 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Avalonia.Diagnostics;
-using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Platform
@@ -45,7 +42,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Represents a single display screen.
     /// </summary>
-    public class Screen : IEquatable<Screen>
+    public abstract class Screen : IEquatable<Screen>
     {
         /// <summary>
         /// Gets the device name associated with a display.
@@ -65,10 +62,6 @@ namespace Avalonia.Platform
         /// Both X and Y scaling factors are assumed uniform.
         /// </remarks>
         public double Scaling { get; protected set; } = 1;
-
-        /// <inheritdoc cref="Scaling"/>
-        [Obsolete("Use the Scaling property instead.", true), EditorBrowsable(EditorBrowsableState.Never)]
-        public double PixelDensity => Scaling;
 
         /// <summary>
         /// Gets the overall pixel-size and position of the screen.
@@ -92,26 +85,6 @@ namespace Avalonia.Platform
         /// </summary>
         public bool IsPrimary { get; protected set; }
 
-        /// <inheritdoc cref="IsPrimary"/>
-        [Obsolete("Use the IsPrimary property instead.", true), EditorBrowsable(EditorBrowsableState.Never)]
-        public bool Primary => IsPrimary;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Screen"/> class.
-        /// </summary>
-        /// <param name="scaling">The scaling factor applied to the screen by the operating system.</param>
-        /// <param name="bounds">The overall pixel-size of the screen.</param>
-        /// <param name="workingArea">The actual working-area pixel-size of the screen.</param>
-        /// <param name="isPrimary">Whether the screen is the primary one.</param>
-        [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-        public Screen(double scaling, PixelRect bounds, PixelRect workingArea, bool isPrimary)
-        {
-            Scaling = scaling;
-            Bounds = bounds;
-            WorkingArea = workingArea;
-            IsPrimary = isPrimary;
-        }
-
         private protected Screen() { }
 
         /// <summary>
@@ -123,19 +96,15 @@ namespace Avalonia.Platform
         /// </returns>
         public virtual IPlatformHandle? TryGetPlatformHandle() => null;
 
-        // TODO12: make abstract
         /// <inheritdoc />
-        public override int GetHashCode()
-            => RuntimeHelpers.GetHashCode(this);
+        public abstract override int GetHashCode();
 
         /// <inheritdoc />
         public override bool Equals(object? obj)
             => obj is Screen other && Equals(other);
 
-        // TODO12: make abstract
         /// <inheritdoc/>
-        public virtual bool Equals(Screen? other)
-            => ReferenceEquals(this, other);
+        public abstract bool Equals(Screen? other);
 
         public static bool operator ==(Screen? left, Screen? right)
         {

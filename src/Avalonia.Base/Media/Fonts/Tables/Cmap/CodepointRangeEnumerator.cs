@@ -6,21 +6,21 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
     /// Enumerates contiguous ranges of Unicode code points present in a character map (cmap) table.
     /// </summary>
     /// <remarks>This enumerator is typically used to iterate over all code point ranges defined by a cmap
-    /// table in an OpenType or TrueType font. It supports both Format 4 and Format 12 cmap subtables. The enumerator is
-    /// a ref struct and must be used within the stack context; it cannot be stored on the heap or used across await or
-    /// yield boundaries.</remarks>
+    /// table in an OpenType or TrueType font. It supports Format 4, Format 12, and Format 13 cmap subtables.
+    /// The enumerator is a ref struct and must be used within the stack context; it cannot be stored on the
+    /// heap or used across await or yield boundaries.</remarks>
     public ref struct CodepointRangeEnumerator
     {
         private readonly CmapFormat _format;
         private readonly CmapFormat4Table? _f4;
-        private readonly CmapFormat12Table? _f12;
+        private readonly CmapFormat12Or13Table? _f12Or13;
         private int _index;
 
-        internal CodepointRangeEnumerator(CmapFormat format, CmapFormat4Table? f4, CmapFormat12Table? f12)
+        internal CodepointRangeEnumerator(CmapFormat format, CmapFormat4Table? f4, CmapFormat12Or13Table? f12Or13)
         {
             _format = format;
             _f4 = f4;
-            _f12 = f12;
+            _f12Or13 = f12Or13;
             _index = -1;
         }
 
@@ -52,8 +52,9 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                         return result;
                     }
                 case CmapFormat.Format12:
+                case CmapFormat.Format13:
                     {
-                        var result = _f12!.TryGetRange(_index, out var range);
+                        var result = _f12Or13!.TryGetRange(_index, out var range);
 
                         Current = range;
 

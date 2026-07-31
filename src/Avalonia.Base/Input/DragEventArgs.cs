@@ -1,7 +1,5 @@
 ﻿using System;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
@@ -9,15 +7,10 @@ namespace Avalonia.Input
     {
         private readonly Interactive _target;
         private readonly Point _targetLocation;
-        [Obsolete] private IDataObject? _legacyDataObject;
 
         public DragDropEffects DragEffects { get; set; }
 
         public IDataTransfer DataTransfer { get; }
-
-        [Obsolete($"Use {nameof(DataTransfer)} instead.")]
-        public IDataObject Data
-            => _legacyDataObject ??= DataTransfer.ToLegacyDataObject();
 
         public KeyModifiers KeyModifiers { get; }
 
@@ -31,20 +24,8 @@ namespace Avalonia.Input
             return _target.TranslatePoint(_targetLocation, relativeTo) ?? new Point(0, 0);
         }
 
-        [Obsolete($"Use the constructor accepting a {nameof(IDataTransfer)} instance instead.")]
         public DragEventArgs(
-            RoutedEvent<DragEventArgs> routedEvent,
-            IDataObject data,
-            Interactive target,
-            Point targetLocation,
-            KeyModifiers keyModifiers)
-            : this(routedEvent, new DataObjectToDataTransferWrapper(data), target, targetLocation, keyModifiers)
-        {
-        }
-
-        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using DragDrop.DoDragDrop or IHeadlessWindow.DragDrop.")]
-        public DragEventArgs(
-            RoutedEvent<DragEventArgs> routedEvent,
+            RoutedEvent<DragEventArgs>? routedEvent,
             IDataTransfer dataTransfer,
             Interactive target,
             Point targetLocation,

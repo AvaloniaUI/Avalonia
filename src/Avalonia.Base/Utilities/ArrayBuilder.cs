@@ -136,7 +136,6 @@ namespace Avalonia.Utilities
         /// </summary>
         public void Clear()
         {
-#if NET6_0_OR_GREATER
             if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
                 ClearArray();
@@ -145,9 +144,6 @@ namespace Avalonia.Utilities
             {
                 _size = 0;
             }
-#else
-            ClearArray();
-#endif
         }
 
         private void ClearArray()

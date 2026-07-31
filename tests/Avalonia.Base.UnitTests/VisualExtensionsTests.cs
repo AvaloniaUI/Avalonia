@@ -23,6 +23,23 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void FindAncestorOfType_Finds_Visible_Parent()
+        {
+            StackPanel target;
+
+            var root = new TestRoot
+            {
+                Child = new TestRoot
+                {
+                    Child = target = new StackPanel(),
+                    IsVisible = false
+                }
+            };
+
+            Assert.Equal(root, target.FindAncestorOfType<TestRoot>(false, v => v.IsVisible));
+        }
+
+        [Fact]
         public void FindAncestorOfType_Finds_Ancestor_Of_Nested_Child()
         {
             Button target;
@@ -83,6 +100,32 @@ namespace Avalonia.Base.UnitTests
             };
 
             Assert.Equal(target, root.FindDescendantOfType<Button>());
+        }
+
+        [Fact]
+        public void FindDescendantOfType_Finds_Nested_Visible_Child()
+        {
+            Button target;
+
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        new StackPanel
+                        {
+                            Children =
+                            {
+                                new Button { IsVisible = false },
+                                (target = new Button())
+                            }
+                        }
+                    }
+                }
+            };
+
+            Assert.Equal(target, root.FindDescendantOfType<Button>(false, v => v.IsVisible));
         }
 
         [Fact]

@@ -14,11 +14,13 @@ namespace Avalonia.Platform
     [PrivateApi]
     public class DefaultPlatformSettings : IPlatformSettings
     {
+        private const int TouchTapSize = 10;
+        private const int TouchDoubleTapSize = 50; // Default TouchModeN_DtapDist value on win32
         public virtual Size GetTapSize(PointerType type)
         {
             return type switch
             {
-                PointerType.Touch or PointerType.Pen => new(10, 10),
+                PointerType.Touch or PointerType.Pen => new(TouchTapSize, TouchTapSize),
                 _ => new(4, 4),
             };
         }
@@ -27,7 +29,7 @@ namespace Avalonia.Platform
         {
             return type switch
             {
-                PointerType.Touch or PointerType.Pen => new(16, 16),
+                PointerType.Touch or PointerType.Pen => new(TouchDoubleTapSize, TouchDoubleTapSize),
                 _ => new(4, 4),
             };
         }

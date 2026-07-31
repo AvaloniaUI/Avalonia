@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -126,9 +127,14 @@ namespace Avalonia.Controls
             return NeedsContainer<ListBoxItem>(item, out recycleKey);
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ListBoxAutomationPeer(this);
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
+            var hotkeys = this.GetPlatformSettings()?.HotkeyConfiguration;
             var ctrl = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
             if (!ctrl &&

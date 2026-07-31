@@ -27,6 +27,7 @@ namespace Avalonia.Skia
         private readonly Stack<(SKMatrix matrix, PaintWrapper paint)> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
+        private readonly Stack<TextOptions> _textOptionsStack = new();
         private readonly Matrix? _postTransform;
         private double _currentOpacity = 1.0f;
         private readonly bool _disableSubpixelTextRendering;
@@ -169,8 +170,7 @@ namespace Avalonia.Skia
                 public ISkiaSharpPlatformGraphicsApiLease? TryLeasePlatformGraphicsApi()
                 {
                     CheckLease();
-                    if (_context._gpu is ISkiaGpuWithPlatformGraphicsContext gpu &&
-                        gpu.PlatformGraphicsContext is { } context)
+                    if (_context._gpu?.PlatformGraphicsContext is { } context)
                         return new PlatformApiLease(this, context);
                     return null;
                 }
@@ -223,6 +223,7 @@ namespace Avalonia.Skia
         public SKSurface? Surface { get; }
 
         public RenderOptions RenderOptions { get; set; }
+        public TextOptions TextOptions { get; set; }
 
         private void CheckLease()
         {
@@ -604,23 +605,32 @@ namespace Avalonia.Skia
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun;
 
-                var textRenderOptions = RenderOptions;
+                // Determine effective TextOptions for text rendering. Start with current pushed TextOptions.
+                var effectiveTextOptions = TextOptions;
 
+                // If subpixel rendering is disabled globally, map subpixel modes to grayscale.
                 if (_disableSubpixelTextRendering)
                 {
-                    switch (textRenderOptions.TextRenderingMode)
+                    var mode = effectiveTextOptions.TextRenderingMode;
+
+                    if (mode == TextRenderingMode.SubpixelAntialias ||
+                        (mode == TextRenderingMode.Unspecified && (RenderOptions.EdgeMode == EdgeMode.Antialias || RenderOptions.EdgeMode == EdgeMode.Unspecified)))
                     {
-                        case TextRenderingMode.Unspecified
-                            when textRenderOptions.EdgeMode == EdgeMode.Antialias || textRenderOptions.EdgeMode == EdgeMode.Unspecified:
-                        case TextRenderingMode.SubpixelAntialias:
-                            {
-                                textRenderOptions = textRenderOptions with { TextRenderingMode = TextRenderingMode.Antialias };
-                                break;
-                            }
+                        effectiveTextOptions = effectiveTextOptions with { TextRenderingMode = TextRenderingMode.Antialias };
                     }
                 }
 
-                var textBlob = glyphRunImpl.GetTextBlob(textRenderOptions);
+                var renderOptions = RenderOptions;
+
+                // If TextRenderingMode is unspecified in TextOptions, use the one from RenderOptions.
+#pragma warning disable CS0618
+                if (effectiveTextOptions.TextRenderingMode == TextRenderingMode.Unspecified && renderOptions.TextRenderingMode != TextRenderingMode.Unspecified)
+                {
+                    effectiveTextOptions = effectiveTextOptions with { TextRenderingMode = renderOptions.TextRenderingMode };
+                }
+#pragma warning restore CS0618
+
+                var textBlob = glyphRunImpl.GetTextBlob(effectiveTextOptions, RenderOptions);
 
                 Canvas.DrawText(textBlob, (float)glyphRun.BaselineOrigin.X,
                     (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
@@ -631,7 +641,7 @@ namespace Avalonia.Skia
         public IDrawingContextLayerImpl CreateLayer(PixelSize size)
         {
             CheckLease();
-            return CreateRenderTarget(size, true);
+            return CreateRenderTarget(size, true, false);
         }
 
         /// <inheritdoc />
@@ -755,9 +765,23 @@ namespace Avalonia.Skia
             RenderOptions = RenderOptions.MergeWith(renderOptions);
         }
 
+        public void PushTextOptions(TextOptions textOptions)
+        {
+            CheckLease();
+
+            _textOptionsStack.Push(TextOptions);
+
+            TextOptions = TextOptions.MergeWith(textOptions);
+        }
+
         public void PopRenderOptions()
         {
             RenderOptions = _renderOptionsStack.Pop();
+        }
+
+        public void PopTextOptions()
+        {
+            TextOptions = _textOptionsStack.Pop();
         }
 
         /// <inheritdoc />
@@ -1068,11 +1092,11 @@ namespace Avalonia.Skia
         {
             var calc = new TileBrushCalculator(tileBrush, tileBrushImage.PixelSize.ToSizeWithDpi(_intermediateSurfaceDpi), targetBox.Size);
             var intermediate = CreateRenderTarget(
-                PixelSize.FromSizeWithDpi(calc.IntermediateSize, _intermediateSurfaceDpi), false);
+                PixelSize.FromSizeWithDpi(calc.IntermediateSize, _intermediateSurfaceDpi), false, true);
 
             paintWrapper.AddDisposable(intermediate);
 
-            using (var context = intermediate.CreateDrawingContext(true))
+            using (var context = intermediate.CreateDrawingContext())
             {
                 var sourceRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(96));
                 var targetRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(_intermediateSurfaceDpi));
@@ -1160,9 +1184,9 @@ namespace Avalonia.Skia
             if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
             {
                 using var intermediate = CreateRenderTarget(
-                    PixelSize.FromSizeWithDpi(intermediateSize, _intermediateSurfaceDpi), false);
+                    PixelSize.FromSizeWithDpi(intermediateSize, _intermediateSurfaceDpi), false, true);
 
-                using (var ctx = intermediate.CreateDrawingContext(true))
+                using (var ctx = intermediate.CreateDrawingContext())
                 {
                     ctx.PushRenderOptions(RenderOptions);
                     ctx.Clear(Colors.Transparent);
@@ -1463,9 +1487,10 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="pixelSize">The size of the render target.</param>
         /// <param name="isLayer">Whether the render target is being created for a layer.</param>
+        /// <param name="useScaledDrawing">Auto-scales to DPI</param>
         /// <param name="format">Pixel format.</param>
         /// <returns></returns>
-        private SurfaceRenderTarget CreateRenderTarget(PixelSize pixelSize, bool isLayer, PixelFormat? format = null)
+        private SurfaceRenderTarget CreateRenderTarget(PixelSize pixelSize, bool isLayer, bool useScaledDrawing, PixelFormat? format = null)
         {
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
@@ -1478,6 +1503,7 @@ namespace Avalonia.Skia
                 Gpu = _gpu,
                 Session = _session,
                 DisableManualFbo = !isLayer,
+                UseScaledDrawing = useScaledDrawing
             };
 
             return new SurfaceRenderTarget(createInfo);

@@ -45,6 +45,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Setting_Offset_To_NaN_Does_Not_Cause_Infinite_Coerce_Recursion()
+        {
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = "Foo",
+                Extent = new Size(100, 100),
+                Viewport = new Size(10, 10),
+            };
+
+            InitializeScrollViewer(target);
+
+            target.Offset = new Vector(0, double.NaN);
+
+            Assert.False(double.IsNaN(target.Offset.X));
+            Assert.False(double.IsNaN(target.Offset.Y));
+        }
+
+        [Fact]
         public void Test_ScrollToHome()
         {
             var target = new ScrollViewer
@@ -252,6 +271,69 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, raised);
             Assert.Equal(new Vector(20, 20), target.Offset); 
+        }
+
+        [Fact]
+        public void Padding_Should_Be_Included_In_Extent()
+        {
+            const int itemCount = 19;
+            const double itemHeight = 32;
+            const double padding = 50;
+            const double viewportHeight = 200;
+
+            var content = new StackPanel();
+
+            for (var i = 0; i < itemCount; ++i)
+            {
+                content.Children.Add(new Border { Height = itemHeight });
+            }
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Padding = new Thickness(padding),
+                Height = viewportHeight,
+                Content = content
+            };
+
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(viewportHeight, target.Viewport.Height);
+            Assert.Equal(itemCount * itemHeight + 2 * padding, target.Extent.Height);
+
+            // The content is arranged below the top padding and isn't squashed by it.
+            Assert.Equal(padding, content.Bounds.Top);
+            Assert.Equal(itemCount * itemHeight, content.Bounds.Height);
+
+            target.ScrollToEnd();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(itemCount * itemHeight + 2 * padding - viewportHeight, target.Offset.Y);
+
+            // Once scrolled to the end, the last item is fully visible and the bottom padding is still displayed below it.
+            Assert.Equal(viewportHeight - padding, content.Bounds.Bottom);
+        }
+
+        [Fact]
+        public void Padding_Should_Not_Make_Content_Scrollable_When_ScrollViewer_Is_Sized_To_Content()
+        {
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Padding = new Thickness(50),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                Content = new Border { Width = 100, Height = 100 },
+            };
+
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // The padding is included in the desired size, so the content still fits exactly.
+            Assert.Equal(new Size(200, 200), target.Bounds.Size);
+            Assert.Equal(new Size(200, 200), target.Viewport);
+            Assert.Equal(new Size(200, 200), target.Extent);
         }
 
         [Fact]
@@ -556,6 +638,7 @@ namespace Avalonia.Controls.UnitTests
                     new ScrollContentPresenter
                     {
                         Name = "PART_ContentPresenter",
+                        [~ScrollContentPresenter.PaddingProperty] = control[~ScrollViewer.PaddingProperty],
                     }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
@@ -610,9 +693,9 @@ namespace Avalonia.Controls.UnitTests
         private Thumb GetVerticalThumb(ScrollViewer target)
         {
             var scrollbar = Assert.IsType<ScrollBar>(
-                target.GetTemplateChildren().FirstOrDefault(x => x.Name == "PART_VerticalScrollBar"));
+                target.GetTemplateDescendants().FirstOrDefault(x => x.Name == "PART_VerticalScrollBar"));
             var track = Assert.IsType<Track>(
-                scrollbar.GetTemplateChildren().FirstOrDefault(x => x.Name == "track"));
+                scrollbar.GetTemplateDescendants().FirstOrDefault(x => x.Name == "track"));
             return Assert.IsType<Thumb>(track.Thumb);
         }
 

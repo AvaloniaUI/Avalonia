@@ -1,4 +1,5 @@
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 
 #nullable enable
@@ -9,6 +10,6 @@ namespace Avalonia.Platform
     public interface ICursorFactory
     {
         ICursorImpl GetCursor(StandardCursorType cursorType);
-        ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot);
+        ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot);
     }
 }

@@ -50,6 +50,7 @@ internal class ImmediateRenderer
             transform = Matrix.CreateTranslation(bounds.Position);
         }
 
+        using (visual.TextOptions != default ? context.PushTextOptions(visual.TextOptions) : default(DrawingContext.PushedState?))
         using (visual.RenderOptions != default ? context.PushRenderOptions(visual.RenderOptions) : default(DrawingContext.PushedState?))
         using (context.PushTransform(transform))
         using (visual.HasMirrorTransform ? context.PushTransform(new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0)) : default(DrawingContext.PushedState?))
@@ -62,9 +63,11 @@ internal class ImmediateRenderer
         })
         using (visual.Clip is { } clip ? context.PushGeometryClip(clip) : default(DrawingContext.PushedState?))
         using (visual.OpacityMask is { } opctMask ? context.PushOpacityMask(opctMask, rect) : default(DrawingContext.PushedState?))
+        using (visual.Effect is { } effect ? context.PushEffect(effect, rect) : default(DrawingContext.PushedState?))
         {
             var totalTransform = transform * parentTransform;
-            var visualBounds = rect.TransformToAABB(totalTransform);
+            var effectRect = visual.Effect is { } e ? rect.Inflate(e.GetEffectOutputPadding()) : rect;
+            var visualBounds = effectRect.TransformToAABB(totalTransform);
 
             if (visualBounds.Intersects(clipRect))
             {

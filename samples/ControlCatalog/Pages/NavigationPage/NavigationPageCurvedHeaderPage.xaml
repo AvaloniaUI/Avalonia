@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageCurvedHeaderPage">
+
+  <DockPanel>
+    <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="300">
+      <StackPanel Margin="16" Spacing="16">
+
+        <TextBlock Text="Curved Header Shop App" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="A dome-header pattern using a StreamGeometry clip updated on SizeChanged to give the nav bar area its elliptical bottom curve. The avatar floats at the dome tip, straddling the header/content boundary." />
+
+        <Separator />
+
+        <TextBlock Text="Key Techniques" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Dome: StreamGeometry ArcTo on SizeChanged" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Avatar: Canvas overlay, centered at dome Y" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Home: SetHasNavigationBar(page, false)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Profile: BarLayoutBehavior.Overlay (transparent bar)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Tap a featured card or recommended item to open the profile page" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="API Notes" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="The curved shape is achieved entirely in page content: no NavigationPage API changes needed. A future per-page SetBarBackground(page, brush) API would allow the Overlay back-button foreground to be driven by the page theme rather than the global NavigationBarForeground resource." />
+
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+      <NavigationPage x:Name="NavPage"
+                      Background="#f6f7f8">
+        <NavigationPage.Resources>
+          <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+          <SolidColorBrush x:Key="NavigationBarForeground" Color="White" />
+        </NavigationPage.Resources>
+      </NavigationPage>
+    </Border>
+  </DockPanel>
+
+</UserControl>

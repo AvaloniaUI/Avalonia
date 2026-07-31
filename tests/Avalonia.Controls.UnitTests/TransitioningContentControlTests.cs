@@ -371,13 +371,13 @@ namespace Avalonia.Controls.UnitTests
         private static ContentPresenter GetContentPresenters2(TransitioningContentControl target)
         {
             return Assert.IsType<ContentPresenter>(target
-                .GetTemplateChildren()
+                .GetTemplateDescendants()
                 .First(x => x.Name == "PART_ContentPresenter2"));
         }
 
         private void Layout(Control c)
         {
-            (c.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+            c.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private class TestTransition : IPageTransition

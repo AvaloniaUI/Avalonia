@@ -7,7 +7,7 @@ using Avalonia.Data;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Handles interpolation and time-related functions 
+    /// Handles interpolation and time-related functions
     /// for keyframe animations.
     /// </summary>
     internal class AnimationInstance<T> : SingleSubscriberObservableBase<T>
@@ -18,6 +18,8 @@ namespace Avalonia.Animation
         private readonly Action? _onCompleteAction;
         private IDisposable? _timerSub;
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChangedDelegate;
+        private EventHandler? _visibilityChangedHandler;
+        private EventHandler<VisualTreeAttachmentEventArgs>? _detachedHandler;
 
         private readonly IClock _baseClock;
         private IClock? _clock;
@@ -36,7 +38,6 @@ namespace Avalonia.Animation
         private TimeSpan _initialDelay;
         private TimeSpan _iterationDelay;
         private TimeSpan _duration;
-
         private TimeSpan _timePrev;
         private long _animTimePrev;
 
@@ -58,7 +59,9 @@ namespace Avalonia.Animation
         /// </remarks>
         private const long PRECISION_IN_TICKS = 10_000;
 
-        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action? OnComplete, Func<double, T, T> Interpolator)
+        private readonly bool _shouldPauseOnInvisible;
+
+        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action? OnComplete, Func<double, T, T> Interpolator, bool shouldPauseOnInvisible)
         {
             _lastInterpValue = default!;
             _animator = animator;
@@ -69,6 +72,7 @@ namespace Avalonia.Animation
             _baseClock = baseClock;
             _initialKFValue = default!;
             _neutralValue = default!;
+            _shouldPauseOnInvisible = shouldPauseOnInvisible;
             _isFirstFrame = true;
             _isInFirstInitialDelay = true;
             _speedRatio = 1;
@@ -114,12 +118,35 @@ namespace Avalonia.Animation
 
         protected override void Unsubscribed()
         {
+            // Guard against reentrancy: DoComplete() can trigger Unsubscribed() via the
+            // _onCompleteAction disposal chain, and then PublishCompleted() calls it again.
+            var timerSub = _timerSub;
+            _timerSub = null;
+            if (timerSub is null)
+                return;
+
             // Animation may have been stopped before it has finished.
             if (CanApplyFinalFill())
                 ApplyFinalFill(_lastInterpValue);
 
             _targetControl.PropertyChanged -= _propertyChangedDelegate;
-            _timerSub?.Dispose();
+            timerSub.Dispose();
+
+            if (_targetControl is Visual visual)
+            {
+                if (_visibilityChangedHandler is not null)
+                {
+                    visual.IsEffectivelyVisibleChanged -= _visibilityChangedHandler;
+                    _visibilityChangedHandler = null;
+                }
+
+                if (_detachedHandler is not null)
+                {
+                    visual.DetachedFromVisualTree -= _detachedHandler;
+                    _detachedHandler = null;
+                }
+            }
+
             _clock!.PlayState = PlayState.Stop;
         }
 
@@ -127,6 +154,38 @@ namespace Avalonia.Animation
         {
             _clock = new Clock(_baseClock);
             _timerSub = _clock.Subscribe(Step);
+
+            if (_targetControl is Visual visual)
+            {
+                if (_shouldPauseOnInvisible)
+                {
+                    _visibilityChangedHandler = (_, _) =>
+                    {
+                        if (_clock is null || _clock.PlayState == PlayState.Stop)
+                            return;
+                        if (visual.IsEffectivelyVisible)
+                        {
+                            if (_clock.PlayState == PlayState.Pause)
+                                _clock.PlayState = PlayState.Run;
+                        }
+                        else
+                        {
+                            if (_clock.PlayState == PlayState.Run)
+                                _clock.PlayState = PlayState.Pause;
+                        }
+                    };
+                    visual.IsEffectivelyVisibleChanged += _visibilityChangedHandler;
+
+                    // If already invisible when animation starts, pause immediately.
+                    if (!visual.IsEffectivelyVisible)
+                        _clock.PlayState = PlayState.Pause;
+                }
+
+                // Stop and dispose the animation when detached from the visual tree.
+                _detachedHandler = (_, _) => DoComplete(false);
+                visual.DetachedFromVisualTree += _detachedHandler;
+            }
+
             _propertyChangedDelegate ??= ControlPropertyChanged;
             _targetControl.PropertyChanged += _propertyChangedDelegate;
             UpdateNeutralValue();
@@ -136,6 +195,9 @@ namespace Avalonia.Animation
         {
             try
             {
+                if (_clock?.PlayState == PlayState.Pause)
+                    return;
+
                 InternalStep(frameTick);
             }
             catch (Exception e)
@@ -198,7 +260,7 @@ namespace Avalonia.Animation
                 _timeMovesBackwards =
                     _animation.PlaybackDirection == PlaybackDirection.Reverse ||
                     _animation.PlaybackDirection == PlaybackDirection.AlternateReverse;
-					
+
                 var initialKeyFrame = _timeMovesBackwards ? _animator.Last() : _animator.First();
                 _initialKFValue = initialKeyFrame.Value is T initialValue ? initialValue : _neutralValue;
 

@@ -23,7 +23,7 @@ partial class DrawingContextImpl
     public void PopEffect()
     {
         CheckLease();
-        Canvas.Restore();
+        RestoreCanvas();
     }
 
     SKImageFilter? CreateEffect(IEffect effect)

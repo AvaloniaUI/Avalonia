@@ -8,6 +8,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -444,6 +445,42 @@ public class CompositorHitTestingTests : CompositorTestsBase
     }
     
     [Fact]
+    public void Removing_ICustomHitTest_Child_Should_Restore_SubTree_Bounds_Optimization()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            var custom = new CustomHitTestBorder
+            {
+                Width = 100,
+                Height = 100,
+                Background = Brushes.Red
+            };
+            var container = new Panel
+            {
+                Width = 200,
+                Height = 200,
+                Children = { custom }
+            };
+
+            s.TopLevel.Content = container;
+            s.RunJobs();
+
+            var containerVisual = ElementComposition.GetElementVisual(container);
+            Assert.NotNull(containerVisual);
+
+            // While the subtree contains an ICustomHitTest visual, the bounds-based optimization must be disabled.
+            Assert.True(containerVisual!.DisableSubTreeBoundsHitTestOptimization);
+
+            container.Children.Remove(custom);
+            s.RunJobs();
+
+            // Once the custom hit test visual leaves the subtree, the accounting must return to zero and re-enable
+            // the optimization. A sign bug when attaching to a new parent leaves the count stuck at a non-zero value.
+            Assert.False(containerVisual.DisableSubTreeBoundsHitTestOptimization);
+        }
+    }
+
+    [Fact]
     public void HitTest_Should_Not_Hit_Controls_Next_Pixel()
     {
         using (var s = new CompositorTestServices(new Size(200, 200)))
@@ -491,6 +528,139 @@ public class CompositorHitTestingTests : CompositorTestsBase
 
             s.AssertHitTest(new Point(100, 100), null, child, parent);
             s.AssertHitTest(new Point(100, 100), v => v != parent);
+        }
+    }
+
+    [Fact]
+    public void HitTestFirst_Should_Skip_Element_Child_Composition_Visual()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            var target = new Border
+            {
+                Width = 200,
+                Height = 200,
+                Background = Brushes.Red
+            };
+
+            s.TopLevel.Content = target;
+            s.RunJobs();
+
+            var childVisual = s.Compositor.CreateSolidColorVisual();
+            childVisual.Size = new Vector(200, 200);
+            childVisual.Color = Colors.Blue;
+            ElementComposition.SetElementChildVisual(target, childVisual);
+
+            s.AssertHitTestFirst(new Point(100, 100), null, target);
+        }
+    }
+
+    [Fact]
+    public void HitTest_Should_Find_Control_With_Many_Siblings()
+    {
+        using (var s = new CompositorTestServices(new Size(1000, 200)))
+        {
+            Border target = null!;
+            var canvas = new Canvas { Width = 1000, Height = 200 };
+
+            for (var i = 0; i < 70; i++)
+            {
+                var child = new Border { Width = 8, Height = 8, Background = Brushes.Red };
+                Canvas.SetLeft(child, i * 12);
+                canvas.Children.Add(child);
+
+                if (i == 0)
+                    target = child;
+            }
+
+            s.TopLevel.Content = canvas;
+            s.AssertHitTestFirst(new Point(4, 4), null, target);
+        }
+    }
+
+    [Fact]
+    public void HitTest_Should_Return_Top_Controls_First_With_Many_Overlapping_Siblings()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            Border top = null!;
+            var canvas = new Canvas { Width = 200, Height = 200 };
+
+            for (var i = 0; i < 70; i++)
+            {
+                var child = new Border { Width = 100, Height = 100, Background = Brushes.Red };
+                Canvas.SetLeft(child, 50);
+                Canvas.SetTop(child, 50);
+                canvas.Children.Add(child);
+
+                if (i == 69)
+                    top = child;
+            }
+
+            s.TopLevel.Content = canvas;
+            s.AssertHitTestFirst(new Point(100, 100), null, top);
+            s.AssertHitTest(new Point(100, 100), null, canvas.Children.Cast<Visual>().Reverse().ToArray());
+        }
+    }
+
+    [Fact]
+    public void HitTest_Should_Update_Many_Sibling_Index_When_Child_Moves()
+    {
+        using (var s = new CompositorTestServices(new Size(1000, 200)))
+        {
+            Border moving = null!;
+            var canvas = new Canvas { Width = 1000, Height = 200 };
+
+            for (var i = 0; i < 70; i++)
+            {
+                var child = new Border { Width = 8, Height = 8, Background = Brushes.Red };
+                Canvas.SetLeft(child, i * 12);
+                canvas.Children.Add(child);
+
+                if (i == 69)
+                    moving = child;
+            }
+
+            s.TopLevel.Content = canvas;
+            s.AssertHitTestFirst(new Point(69 * 12 + 4, 4), null, moving);
+
+            Canvas.SetLeft(moving, 10);
+            Canvas.SetTop(moving, 100);
+            s.AssertHitTestFirst(new Point(14, 104), null, moving);
+        }
+    }
+
+    [Fact]
+    public void HitTest_Should_Update_Many_Sibling_Index_When_Child_Is_Added_And_Removed()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            Border top = null!;
+            var canvas = new Canvas { Width = 200, Height = 200 };
+
+            for (var i = 0; i < 70; i++)
+            {
+                var child = new Border { Width = 100, Height = 100, Background = Brushes.Red };
+                Canvas.SetLeft(child, 50);
+                Canvas.SetTop(child, 50);
+                canvas.Children.Add(child);
+
+                if (i == 69)
+                    top = child;
+            }
+
+            s.TopLevel.Content = canvas;
+            s.AssertHitTestFirst(new Point(100, 100), null, top);
+
+            var added = new Border { Width = 100, Height = 100, Background = Brushes.Blue };
+            Canvas.SetLeft(added, 50);
+            Canvas.SetTop(added, 50);
+            canvas.Children.Add(added);
+
+            s.AssertHitTestFirst(new Point(100, 100), null, added);
+
+            canvas.Children.Remove(added);
+            s.AssertHitTestFirst(new Point(100, 100), null, top);
         }
     }
 

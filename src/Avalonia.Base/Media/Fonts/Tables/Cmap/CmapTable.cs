@@ -49,22 +49,28 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             }
 
             // Try to find the best Format 12 subtable entry
-            if (TryFindFormat12Entry(entries, out var format12Entry))
+            if (TryFindFormat12Or13Entry(entries, CmapFormat.Format12, out var format12Entry))
             {
                 // Prefer Format 12 if available
-                return new CharacterToGlyphMap(new CmapFormat12Table(format12Entry.GetSubtableMemory(table)));
+                return new CharacterToGlyphMap(new CmapFormat12Or13Table(format12Entry.GetSubtableMemory(table)));
             }
 
-            // Fallback to Format 4
+            // Then Format 4
             if (TryFindFormat4Entry(entries, out var format4Entry))
             {
                 return new CharacterToGlyphMap(new CmapFormat4Table(format4Entry.GetSubtableMemory(table)));
             }
 
+            // Fallback to Format 13, which is a "last resort" format mapping many codepoints to a single glyph
+            if (TryFindFormat12Or13Entry(entries, CmapFormat.Format13, out var format13Entry))
+            {
+                return new CharacterToGlyphMap(new CmapFormat12Or13Table(format13Entry.GetSubtableMemory(table)));
+            }
+
             throw new InvalidOperationException("No suitable cmap subtable found.");
 
             // Tries to find the best Format 12 subtable entry based on platform and encoding preferences
-            static bool TryFindFormat12Entry(CmapSubtableEntry[] entries, out CmapSubtableEntry result)
+            static bool TryFindFormat12Or13Entry(CmapSubtableEntry[] entries, CmapFormat expectedFormat, out CmapSubtableEntry result)
             {
                 result = default;
                 var foundPlatformScore = int.MaxValue;
@@ -72,7 +78,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
                 foreach (var entry in entries)
                 {
-                    if (entry.Format != CmapFormat.Format12)
+                    if (entry.Format != expectedFormat)
                     {
                         continue;
                     }

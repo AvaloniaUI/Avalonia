@@ -4,6 +4,7 @@
   <ControlTheme x:Key="{x:Type AutoCompleteBox}"
                 TargetType="AutoCompleteBox">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="Padding" Value="4" />
@@ -19,8 +20,9 @@
                    CaretIndex="{TemplateBinding CaretIndex, Mode=TwoWay}"
                    ClearSelectionOnLostFocus="{TemplateBinding ClearSelectionOnLostFocus}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
-                   Watermark="{TemplateBinding Watermark}"
-                   MaxLength="{TemplateBinding MaxLength}"                   
+                   PlaceholderText="{TemplateBinding PlaceholderText}"
+                   PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                   MaxLength="{TemplateBinding MaxLength}"
                    InnerLeftContent="{TemplateBinding InnerLeftContent}"
                    InnerRightContent="{TemplateBinding InnerRightContent}"
                    />
@@ -38,6 +40,7 @@
                        BorderThickness="0"
                        Foreground="{TemplateBinding Foreground}"
                        ItemTemplate="{TemplateBinding ItemTemplate}"
+                       ScrollViewer.IsScrollChainingEnabled="False"
                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
                        ScrollViewer.VerticalScrollBarVisibility="Auto" />
             </Border>

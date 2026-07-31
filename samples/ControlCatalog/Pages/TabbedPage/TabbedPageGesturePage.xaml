@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageGesturePage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Swipe Gestures" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Swipe left or right to switch tabs when TabPlacement is Top or Bottom. Swipe up or down when TabPlacement is Left or Right." />
+
+        <Separator />
+
+        <CheckBox x:Name="GestureCheck"
+                  Content="IsGestureEnabled"
+                  IsChecked="True"
+                  IsCheckedChanged="OnGestureEnabledChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Tab Placement" FontWeight="SemiBold" FontSize="13" />
+        <ComboBox x:Name="PlacementCombo" SelectedIndex="0"
+                  SelectionChanged="OnPlacementChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Top" />
+          <ComboBoxItem Content="Bottom" />
+          <ComboBoxItem Content="Left" />
+          <ComboBoxItem Content="Right" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="API" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="IsGestureEnabled" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="Enable or disable swipe-to-navigate on the TabbedPage." />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Top" IsGestureEnabled="True">
+        <TabbedPage.PageTransition>
+          <PageSlide Duration="0:0:0.25" Orientation="Horizontal" />
+        </TabbedPage.PageTransition>
+        <ContentPage Header="Alpha" Background="#FFE3F2FD">
+          <TextBlock Text="Alpha" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="24" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage Header="Beta" Background="#FFF3E5F5">
+          <TextBlock Text="Beta" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="24" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage Header="Gamma" Background="#FFE8F5E9">
+          <TextBlock Text="Gamma" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="24" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage Header="Delta" Background="#FFFFF3E0">
+          <TextBlock Text="Delta" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="24" Opacity="0.7" />
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </DockPanel>
+</UserControl>

@@ -9,6 +9,7 @@ using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -75,12 +76,6 @@ namespace Avalonia.Controls
             add => AddHandler(SelectingItemsControl.SelectionChangedEvent, value);
             remove => RemoveHandler(SelectingItemsControl.SelectionChangedEvent, value);
         }
-
-        /// <summary>
-        /// Gets the <see cref="TreeItemContainerGenerator"/> for the tree view.
-        /// </summary>
-        public new TreeItemContainerGenerator ItemContainerGenerator =>
-            (TreeItemContainerGenerator)base.ItemContainerGenerator;
 
         /// <summary>
         /// Gets or sets a value indicating whether to automatically scroll to newly selected items.
@@ -174,7 +169,7 @@ namespace Avalonia.Controls
             item.IsExpanded = true;
 
             if (item.Presenter?.Panel is null)
-                (this.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+                this.GetLayoutManager()?.ExecuteLayoutPass();
 
             if (item.Presenter?.Panel is { } panel)
             {
@@ -556,7 +551,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             if (e.NavigationMethod == NavigationMethod.Directional)
             {
@@ -688,6 +683,11 @@ namespace Avalonia.Controls
                         ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
                         eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true });
 
+                    if (eventArgs is PointerEventArgs)
+                    {
+                        container.PerformFeedback(FeedbackAction.Click);
+                    }
+
                     eventArgs.Handled = true;
                     return true;
 
@@ -771,12 +771,6 @@ namespace Avalonia.Controls
                     }
                 }
             }
-        }
-
-        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
-        private protected override ItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new TreeItemContainerGenerator(this);
         }
 
         /// <summary>

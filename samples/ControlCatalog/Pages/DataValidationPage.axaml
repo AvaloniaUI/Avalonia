@@ -1,14 +1,15 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+﻿<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:ControlCatalog.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             Header="Data Validation"
              x:DataType="viewModels:DataValidationViewModel"
              x:Class="ControlCatalog.Pages.DataValidationPage">
-  <UserControl.DataContext>
+  <ContentPage.DataContext>
     <viewModels:DataValidationViewModel />
-  </UserControl.DataContext>
+  </ContentPage.DataContext>
   <StackPanel TextBlock.TextWrapping="Wrap">
     <Label Target="Email1" Content="Email validation" />
     <TextBox x:Name="Email1"
@@ -38,5 +39,5 @@
       </TextBox.Styles>
     </TextBox>
   </StackPanel>
-</UserControl>
+</ContentPage>
 

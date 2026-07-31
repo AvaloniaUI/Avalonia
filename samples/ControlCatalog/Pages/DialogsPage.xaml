@@ -1,6 +1,7 @@
-<UserControl x:Class="ControlCatalog.Pages.DialogsPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.DialogsPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="Dialogs"
              xmlns:storage="clr-namespace:Avalonia.Platform.Storage;assembly=Avalonia.Base"
              xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Collections">
   <StackPanel Margin="4"
@@ -49,26 +50,17 @@
         <Button Name="OpenFolderFromBookmark">Open Folder Bookmark</Button>
       </StackPanel>
     </Expander>
-    <Expander Header="Legacy OpenFileDialog">
-      <StackPanel Spacing="4">
-        <Button Name="OpenFile">_Open File</Button>
-        <Button Name="OpenMultipleFiles">Open _Multiple File</Button>
-        <Button Name="SaveFile">_Save File</Button>
-        <Button Name="SelectFolder">Select Fo_lder</Button>
-        <Button Name="OpenBoth">Select _Both</Button>
-      </StackPanel>
-    </Expander>
-    
+
     <Expander Header="Launcher dialogs">
       <StackPanel Spacing="4">
-        <TextBox Name="UriToLaunch" Watermark="Uri to launch" Text="https://avaloniaui.net/" />
+        <TextBox Name="UriToLaunch" PlaceholderText="Uri to launch" Text="https://avaloniaui.net/" />
         <Button Name="LaunchUri">Launch Uri</Button>
         <Button Name="LaunchFile">Launch File</Button>
         <TextBlock Name="LaunchStatus" />
       </StackPanel>
     </Expander>
 
-    <AutoCompleteBox x:Name="CurrentFolderBox" Watermark="Write full path/uri or well known folder name">
+    <AutoCompleteBox x:Name="CurrentFolderBox" PlaceholderText="Write full path/uri or well known folder name">
       <AutoCompleteBox.ItemsSource>
         <generic:List x:TypeArguments="storage:WellKnownFolder">
           <storage:WellKnownFolder>Desktop</storage:WellKnownFolder>
@@ -80,17 +72,17 @@
         </generic:List>
       </AutoCompleteBox.ItemsSource>
     </AutoCompleteBox>
-    
+
     <TextBlock x:Name="PickerLastResultsVisible"
                Classes="h2"
                IsVisible="False"
                Text="Last picker results:" />
     <ItemsControl x:Name="PickerLastResults" />
 
-    <TextBox Name="BookmarkContainer" Watermark="Bookmark" />
+    <TextBox Name="BookmarkContainer" PlaceholderText="Bookmark" />
     <TextBox Name="OpenedFileContent"
              MaxLines="10"
-             Watermark="Picked file content" />
+             PlaceholderText="Picked file content" />
 
   </StackPanel>
-</UserControl>
+</ContentPage>

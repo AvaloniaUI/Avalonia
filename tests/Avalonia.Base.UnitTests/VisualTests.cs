@@ -73,18 +73,19 @@ namespace Avalonia.Base.UnitTests
             var root = new TestRoot();
             var called1 = false;
             var called2 = false;
-
+            
             child1.AttachedToVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                // TODO: Tests are running against TestRoot, so behavior DOES NOT match the actual TopLevel.
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called1 = true;
             };
 
             child2.AttachedToVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called2 = true;
             };
 
@@ -107,15 +108,16 @@ namespace Avalonia.Base.UnitTests
 
             child1.DetachedFromVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                // TODO: Tests are running against TestRoot, so behavior DOES NOT match the actual TopLevel.
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called1 = true;
             };
 
             child2.DetachedFromVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called2 = true;
             };
 

@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageModalTransitionsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Modal Transition" />
+        <ComboBox x:Name="TransitionCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnTransitionChanged">
+          <ComboBoxItem Content="Slide from Bottom" />
+          <ComboBoxItem Content="Cross Fade" />
+          <ComboBoxItem Content="None" />
+        </ComboBox>
+
+        <TextBlock Text="Duration (ms)" />
+        <DockPanel>
+          <TextBlock x:Name="DurationLabel" DockPanel.Dock="Right"
+                     Text="300 ms"
+                     FontSize="12" Opacity="0.7"
+                     VerticalAlignment="Center"
+                     Width="50" TextAlignment="Right" />
+          <Slider x:Name="DurationSlider"
+                  Minimum="100"
+                  Maximum="1000"
+                  Value="300"
+                  TickFrequency="100"
+                  IsSnapToTickEnabled="True"
+                  ValueChanged="OnDurationChanged" />
+        </DockPanel>
+
+        <Separator />
+
+        <Button Content="Open Modal"
+                HorizontalAlignment="Stretch"
+                Click="OnOpenModal" />
+        <Button Content="Pop Modal"
+                HorizontalAlignment="Stretch"
+                Click="OnPopModal" />
+
+        <TextBlock x:Name="StatusText"
+                   Text="Modals: 0"
+                   Opacity="0.7" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>

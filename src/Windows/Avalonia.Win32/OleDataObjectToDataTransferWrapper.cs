@@ -36,11 +36,7 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
 
         foreach (var format in formats)
         {
-            if (format.Identifier is ClipboardFormatRegistry.DibFormat 
-                or ClipboardFormatRegistry.BitmapFormat 
-                or ClipboardFormatRegistry.PngFormatMimeType
-                or ClipboardFormatRegistry.PngFormatSystemType)
-            {
+            if (ClipboardFormatRegistry.ImageFormats.Contains(format)) {
                 hasSupportedImageFormat = true;
                 break;
             }
@@ -65,7 +61,7 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
             if (formatEtc.ptd != IntPtr.Zero)
                 Marshal.FreeCoTaskMem(formatEtc.ptd);
 
-            return ClipboardFormatRegistry.GetFormatById(formatEtc.cfFormat);
+            return ClipboardFormatRegistry.GetOrAddFormat(formatEtc.cfFormat);
         }
     }
 
