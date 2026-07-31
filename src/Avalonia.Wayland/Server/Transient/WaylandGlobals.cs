@@ -6,6 +6,7 @@ using Avalonia.Wayland.Server.Interop;
 using Avalonia.Wayland.Server.Transient.Rendering;
 using NWayland;
 using NWayland.Interop;
+using NWayland.Protocols.CursorShapeV1;
 using NWayland.Protocols.FractionalScaleV1;
 using NWayland.Protocols.LinuxDmabufV1;
 using NWayland.Protocols.TextInputUnstableV3;
@@ -31,6 +32,7 @@ class WaylandGlobals
     public WlDataDeviceManager? DataDeviceManager { get; }
     public ZwpLinuxDmabufV1? LinuxDmabuf { get; }
     public WpFractionalScaleManagerV1? FractionalScaleManager { get; }
+    public WpCursorShapeManagerV1? CursorShapeManager;
     public WpViewporter? Viewporter { get; }
     public ZwpTextInputManagerV3? TextInputManagerV3 { get; }
     public ZxdgExporterV2? XdgExporter { get; }
@@ -90,7 +92,7 @@ class WaylandGlobals
         if (descriptor.Interface.Version < maxVersion)
             throw new AvaloniaWaylandException(
                 $"{descriptor.Interface.Name} v{maxVersion} is not supported by current bindings");
-        
+
         if (!_knownGlobals.TryGetValue(descriptor.Interface.Name, out var global))
             return null;
         if (global.version < minVersion)
@@ -124,7 +126,7 @@ class WaylandGlobals
             eventSender.Pong(serial);
         }
     }
-    
+
     public WaylandGlobals(WaylandConnection connection, WaylandWorker worker, WaylandPlatformOptions platformOptions,
         WaylandOutputsSinkProxy? outputsSink)
     {
@@ -138,7 +140,8 @@ class WaylandGlobals
         WlShm = BindRequired<WlShm>(1, 1, new ShmListener(this));
         WlCompositor = BindRequired<WlCompositor>(4, 6, null);
         XdgWmBase = BindRequired<XdgWmBase>(3, 4, new XdgWmBaseListener());
-        CursorManager = new WaylandCursorManager(connection.Display, WlShm, WlCompositor);
+        CursorShapeManager = Bind<WpCursorShapeManagerV1>(1, 1, null);
+        CursorManager = new WaylandCursorManager(connection.Display, WlShm, WlCompositor, CursorShapeManager != null);
         DataDeviceManager = Bind<WlDataDeviceManager>(3, 3, null);
         LinuxDmabuf = Bind<ZwpLinuxDmabufV1>(4, 4, null);
         FractionalScaleManager = Bind<WpFractionalScaleManagerV1>(1, 1, null);
@@ -158,7 +161,7 @@ class WaylandGlobals
         XdgDecorationManager = platformOptions.ForceDrawnDecorationsInternal
             ? null
             : Bind<ZxdgDecorationManagerV1>(1, 1, null);
-        
+
         // Seats may have been announced before the data-device manager / text-input
         // manager were bound — InputDispatcher backfills now and constructs the
         // text-input-v3 facade if the manager is available.
