@@ -32,7 +32,10 @@ void AvnTextInputMethod::Reset() {
 }
 
 void AvnTextInputMethod::SetSurroundingText(char* text, int start, int end) {
-    [_inputMethodDelegate setText:[NSString stringWithUTF8String:text]];
+    // stringWithUTF8String: throws on a null pointer and returns nil for invalid UTF-8.
+    NSString* surroundingText = text != nullptr ? [NSString stringWithUTF8String:text] : nil;
+
+    [_inputMethodDelegate setText:surroundingText != nil ? surroundingText : @""];
     [_inputMethodDelegate setSelection: start:end];
 }
 
