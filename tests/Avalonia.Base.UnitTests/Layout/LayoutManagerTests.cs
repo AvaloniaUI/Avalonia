@@ -78,9 +78,48 @@ namespace Avalonia.Base.UnitTests.Layout
             grandparent.IsVisible = true;
 
             root.LayoutManager.ExecuteLayoutPass();
-            
+
             Assert.True(control.IsMeasureValid);
             Assert.True(control.IsArrangeValid);
+        }
+
+        [Fact]
+        public void Lays_Out_Control_That_Was_Invalidated_While_Detached_From_Visual_Tree()
+        {
+            var control = new LayoutTestControl();
+
+            // `control` is held as a raw visual child, so the host never measures or arranges it
+            // and adding/removing it doesn't invalidate the host: nothing but `control` itself
+            // can get it registered with the layout manager.
+            var host = new Border();
+            var root = new LayoutTestRoot { Child = host };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            host.VisualChildren.Add(control);
+            control.Measure(new Size(100, 100));
+            control.Arrange(new Rect(0, 0, 100, 100));
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(control.IsMeasureValid);
+            Assert.True(control.IsArrangeValid);
+
+            host.VisualChildren.Remove(control);
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Invalidating while detached can't reach a layout manager, and the invalidation
+            // can't be raised again after re-attaching because InvalidateMeasure no-ops once
+            // IsMeasureValid is false.
+            control.InvalidateMeasure();
+            Assert.False(control.IsMeasureValid);
+
+            host.VisualChildren.Add(control);
+
+            control.Measured = control.Arranged = false;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(control.Measured);
+            Assert.True(control.Arranged);
         }
 
         [Fact]
