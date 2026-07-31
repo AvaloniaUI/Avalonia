@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -47,6 +47,14 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
             formats.Add(DataFormat.Bitmap);
         }
 
+        // Shell virtual files have descriptors and indexed contents, but no CF_HDROP path.
+        if (formats.Contains(OleVirtualFileData.FileGroupDescriptorFormat) &&
+            formats.Contains(OleVirtualFileData.FileContentsFormat) &&
+            !formats.Contains(DataFormat.File))
+        {
+            formats.Add(DataFormat.File);
+        }
+
         return formats.ToArray();
 
         static unsafe DataFormat? Next(IEnumFORMATETC enumFormat)
@@ -87,6 +95,13 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
                     foreach (var storageItem in storageItems)
                         items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                 }
+                else if (OleVirtualFileData.TryCreateFiles(_oleDataObject) is { Count: > 0 } virtualFiles)
+                {
+                    hasFiles = true;
+
+                    foreach (var virtualFile in virtualFiles)
+                        items.Add(PlatformDataTransferItem.Create<IStorageItem>(DataFormat.File, virtualFile));
+                }
             }
             else
                 (nonFileFormats ??= new()).Add(format);
@@ -94,7 +109,7 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
 
         // Single item containing all formats except for DataFormat.File.
         if (nonFileFormats is not null)
-            items.Add(new OleDataObjectToDataTransferItemWrapper(_oleDataObject, Formats));
+            items.Add(new OleDataObjectToDataTransferItemWrapper(_oleDataObject, nonFileFormats.ToArray()));
 
         return items.ToArray();
     }
