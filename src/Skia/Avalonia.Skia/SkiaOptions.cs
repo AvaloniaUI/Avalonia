@@ -37,6 +37,6 @@ namespace Avalonia
         /// Only an explicit <c>true</c> opts in: stencil buffers trade geometry anti-aliasing quality for
         /// clipping speed (see issue #21760), so they must never be enabled implicitly.
         /// </summary>
-        internal static bool ShouldAvoidStencilBuffers(bool? useStencilBuffers) => useStencilBuffers == false;
+        internal static bool ShouldAvoidStencilBuffers(bool? useStencilBuffers) => useStencilBuffers != true;
     }
 }
