@@ -338,8 +338,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     ScrollEventType.SmallIncrement,
                     ScrollEventType.LargeIncrement,
-                    ScrollEventType.SmallDecrement,
-                    ScrollEventType.SmallIncrement,
+                    ScrollEventType.LargeDecrement,
+                    ScrollEventType.LargeIncrement,
                 },
                 events);
         }

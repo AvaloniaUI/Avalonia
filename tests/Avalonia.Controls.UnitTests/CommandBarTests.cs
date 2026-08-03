@@ -1364,6 +1364,20 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
         Assert.True(first.Classes.Contains(":focus-visible"));
     }
 
+    [Fact]
+    public void Open_DoesNotThrow_WhenSecondaryCommandVisibilityChangesDuringOverflowRealization()
+    {
+        var secondary = new VisibilityChangingCommandBarButton { Label = "Bound" };
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(secondary);
+        var window = CreateWindow(cb);
+
+        cb.IsOpen = true;
+
+        Assert.True(cb.IsOpen);
+        Assert.False(secondary.IsVisible);
+    }
+
     private static ItemsControl GetOverflowPresenter(CommandBar cb)
     {
         var popup = cb.GetVisualDescendants()
@@ -1411,6 +1425,24 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
             timestamp: 1,
             new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
             KeyModifiers.None));
+    }
+
+    private class VisibilityChangingCommandBarButton : CommandBarButton
+    {
+        private bool _hasUpdatedVisibility;
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (!_hasUpdatedVisibility &&
+                change.Property == ParentProperty &&
+                change.NewValue is not null)
+            {
+                _hasUpdatedVisibility = true;
+                SetCurrentValue(IsVisibleProperty, false);
+            }
+        }
     }
 }
 

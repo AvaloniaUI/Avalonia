@@ -130,6 +130,14 @@ internal partial class X11Screens
             
             if (_scalingProvider is IScalingProviderWithChanges scalingWithChanges)
                 scalingWithChanges.SettingsChanged += () => Changed?.Invoke();
+
+            platform.Globals.RootPropertyChanged += OnRootPropertyChanged;
+        }
+
+        private void OnRootPropertyChanged(IntPtr atom)
+        {
+            if (atom == _x11.Atoms._NET_WORKAREA)
+                Dispatcher.UIThread.Post(() => Changed?.Invoke(), DispatcherPriority.Normal);
         }
 
         private void OnEvent(ref XEvent ev)

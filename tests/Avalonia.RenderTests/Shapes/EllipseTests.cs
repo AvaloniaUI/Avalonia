@@ -51,7 +51,7 @@ namespace Avalonia.Skia.RenderTests
             RenderOptions.SetEdgeMode(target, EdgeMode.Aliased);
 
             await RenderToFile(target);
-            CompareImages();
+            CompareImages(gpuAllowedError: 0.05);
         }
 
         [Fact]

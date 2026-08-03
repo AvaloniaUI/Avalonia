@@ -20,6 +20,20 @@ namespace Avalonia.Controls.UnitTests;
 public sealed class PresentationSourceTests : ScopedTestBase
 {
     [Fact]
+    public void Closing_Should_Detach_Platform_Input_Handler()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+        var windowImpl = MockWindowingPlatform.CreateWindowMock();
+        var window = new Window(windowImpl.Object);
+
+        Assert.NotNull(windowImpl.Object.Input);
+
+        windowImpl.Object.Closed!();
+
+        Assert.Null(windowImpl.Object.Input);
+    }
+
+    [Fact]
     public void ChromeHitTest_Prefers_Overlay_Over_Content()
     {
         var overlay = new Border
