@@ -443,7 +443,11 @@ namespace Avalonia.Headless
             
         }
 
-        public void TakeFocus() 
+        public void TakeFocus()
+        {
+        }
+
+        public void SetHitTestVisible(bool isHitTestVisible)
         {
         }
     }

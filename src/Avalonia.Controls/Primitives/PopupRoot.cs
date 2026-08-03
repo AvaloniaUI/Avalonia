@@ -62,6 +62,7 @@ namespace Avalonia.Controls.Primitives
         {
             ParentTopLevel = parent;
             impl.SetWindowManagerAddShadowHint(WindowManagerAddShadowHint);
+            impl.SetHitTestVisible(IsHitTestVisible);
         }
 
         /// <summary>
@@ -218,6 +219,10 @@ namespace Avalonia.Controls.Primitives
             else if (change.Property == TopmostProperty)
             {
                 PlatformImpl?.SetTopmost(change.GetNewValue<bool>());
+            }
+            else if (change.Property == IsHitTestVisibleProperty)
+            {
+                PlatformImpl?.SetHitTestVisible(change.GetNewValue<bool>());
             }
         }
     }
