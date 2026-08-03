@@ -39,7 +39,7 @@ namespace Avalonia.Animation
         private TimeSpan _iterationDelay;
         private TimeSpan _duration;
         private TimeSpan _timePrev;
-        private long _animTimePrev;
+        private double _animTimePrev;
 
         private PlaybackDirection _playbackDirection;
         private PlaybackDirection _playbackDirectionPrev;
@@ -48,7 +48,7 @@ namespace Avalonia.Animation
         private bool _timeMovesBackwards;
 
         private TimeSpan _timeOfLastChange;
-        private long _animTimeOfLastChange;
+        private double _animTimeOfLastChange;
 
         /// <summary>
         /// Animation's smallest unit of time in terms of TimeSpan Ticks. This can be used
@@ -346,7 +346,7 @@ namespace Avalonia.Animation
             return false;
         }
 
-        private void ApplyLimitedClamp(ref long animTime)
+        private void ApplyLimitedClamp(ref double animTime)
         {
             if (_timeMovesBackwards)
             {
@@ -382,17 +382,19 @@ namespace Avalonia.Animation
             // Calculate animation time. That's time that has passed inside
             // the animation since its beginning.
             var timeSinceLastChange = time - _timeOfLastChange;
-            var animTimeSinceLastChange = (long)(timeSinceLastChange.Ticks / PRECISION_IN_TICKS * speedRatio);
-            var animTime = _animTimeOfLastChange + animTimeSinceLastChange;
+            var animTimeSinceLastChange = timeSinceLastChange.Ticks * speedRatio / PRECISION_IN_TICKS;
+            var animTimeExact = _animTimeOfLastChange + animTimeSinceLastChange;
 
             if (_iterationCount.HasValue)
             {
                 // Make sure animation time is inside a valid interval.
-                ApplyLimitedClamp(ref animTime);
+                ApplyLimitedClamp(ref animTimeExact);
             }
 
             _timePrev = time;
-            _animTimePrev = animTime;
+            _animTimePrev = animTimeExact;
+
+            var animTime = (long)animTimeExact;
 
             // Get animation time oriented in the direction of time. Animation running in
             // same direction as it was on first frame will always increase this variable.
@@ -414,7 +416,9 @@ namespace Avalonia.Animation
             var iterDelay = _iterationDelay.Ticks / PRECISION_IN_TICKS;
             var iterDurationTotal = iterDuration + iterDelay;
 
-            if (iterDurationTotal <= 0)
+            // An iteration with no duration can't be interpolated, no matter how long the
+            // delay between iterations is: end the animation and snap to its final value.
+            if (iterDuration <= 0)
             {
                 DoComplete(false);
                 return;
