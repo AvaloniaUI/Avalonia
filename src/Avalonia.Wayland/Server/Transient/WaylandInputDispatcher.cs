@@ -324,23 +324,21 @@ partial class WaylandInputDispatcher : IDisposable
             if (_focusedSurface == null)
                 return;
             var currentCursor = _focusedSurface.CurrentCursor ?? s_defaultCursor;
-            if (currentCursor is WaylandStandardCursor standardCursor && _cursorShapeDevice is not null)
+
+            if (currentCursor is WaylandStandardCursor standardCursor &&
+                _cursorShapeDevice is not null)
             {
                 var shape = WaylandCursorManager.GetCursorShape(standardCursor.CursorType);
-                if (shape is null)
-                {
-                    _pointer.SetCursor(_lastEnterSerial, null, 0, 0);
-                }
-                else
+                if (shape is not null)
                 {
                     _cursorShapeDevice.SetShape(_lastEnterSerial, shape.Value);
+                    return;
                 }
-                return;
             }
-
             var image = currentCursor.Resolve(_dispatcher._globals);
-            if (image is { } c)
-                _pointer.SetCursor(_lastEnterSerial, c.Surface, c.HotspotX, c.HotspotY);
+
+            if (image is { } cursor)
+                _pointer.SetCursor(_lastEnterSerial, cursor.Surface, cursor.HotspotX, cursor.HotspotY);
             else
                 _pointer.SetCursor(_lastEnterSerial, null, 0, 0);
         }
@@ -366,21 +364,19 @@ partial class WaylandInputDispatcher : IDisposable
             if (_cursorShapeDevice is not null)
             {
                 var shape = WaylandCursorManager.GetCursorShape(cursorType);
-                if (shape is null)
-                {
-                    _pointer.SetCursor(_lastEnterSerial, null, 0, 0);
-                }
-                else
+                if (shape is not null)
                 {
                     _cursorShapeDevice.SetShape(_lastEnterSerial, shape.Value);
+                    return;
                 }
-                return;
             }
+
             var cursorInfo = _dispatcher._globals.CursorManager.GetCursor(cursorType);
-            if (cursorInfo is { } c)
-                _pointer.SetCursor(_lastEnterSerial, c.Surface, c.HotspotX, c.HotspotY);
+
+            if (cursorInfo is { } cursor)
+                _pointer.SetCursor(_lastEnterSerial, cursor.Surface, cursor.HotspotX, cursor.HotspotY);
             else
-                _pointer.SetCursor(_lastEnterSerial, null!, 0, 0);
+                _pointer.SetCursor(_lastEnterSerial, null, 0, 0);
         }
 
         private void ResetFrameState()

@@ -141,7 +141,7 @@ class WaylandGlobals
         WlCompositor = BindRequired<WlCompositor>(4, 6, null);
         XdgWmBase = BindRequired<XdgWmBase>(3, 4, new XdgWmBaseListener());
         CursorShapeManager = Bind<WpCursorShapeManagerV1>(1, 1, null);
-        CursorManager = new WaylandCursorManager(connection.Display, WlShm, WlCompositor, CursorShapeManager != null);
+        CursorManager = new WaylandCursorManager(connection.Display, WlShm, WlCompositor);
         DataDeviceManager = Bind<WlDataDeviceManager>(3, 3, null);
         LinuxDmabuf = Bind<ZwpLinuxDmabufV1>(4, 4, null);
         FractionalScaleManager = Bind<WpFractionalScaleManagerV1>(1, 1, null);

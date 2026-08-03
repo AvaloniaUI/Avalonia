@@ -53,10 +53,10 @@ partial class WaylandCursorManager : IDisposable
         { StandardCursorType.Ibeam, ShapeEnum.Text },
         { StandardCursorType.Wait, ShapeEnum.Wait },
         { StandardCursorType.Cross, ShapeEnum.Crosshair },
-        { StandardCursorType.UpArrow, ShapeEnum.NResize }, // Best approximation
+        { StandardCursorType.UpArrow, ShapeEnum.NResize },
         { StandardCursorType.SizeWestEast, ShapeEnum.EwResize },
         { StandardCursorType.SizeNorthSouth, ShapeEnum.NsResize },
-        { StandardCursorType.SizeAll, ShapeEnum.AllScroll },
+        { StandardCursorType.SizeAll, ShapeEnum.AllResize},
         { StandardCursorType.No, ShapeEnum.NotAllowed },
         { StandardCursorType.Hand, ShapeEnum.Pointer },
         { StandardCursorType.AppStarting, ShapeEnum.Progress },
@@ -73,19 +73,16 @@ partial class WaylandCursorManager : IDisposable
         { StandardCursorType.DragCopy, ShapeEnum.Copy },
         { StandardCursorType.DragLink, ShapeEnum.Alias },
     };
-    public WaylandCursorManager(WlDisplay display, WlShm shm, WlCompositor compositor, bool useCompositorCursorManager = false)
+    public WaylandCursorManager(WlDisplay display, WlShm shm, WlCompositor compositor)
     {
         _display = display;
         _compositor = compositor;
-        if (useCompositorCursorManager == false)
-        {
-            _theme = UnsafeNativeMethods.wl_cursor_theme_load(null, 24, shm.Handle);
-            if (_theme == IntPtr.Zero)
-                throw new AvaloniaWaylandException("Failed to load default cursor theme");
+        _theme = UnsafeNativeMethods.wl_cursor_theme_load(null, 24, shm.Handle);
+        if (_theme == IntPtr.Zero)
+            throw new AvaloniaWaylandException("Failed to load default cursor theme");
 
-            foreach (var type in CursorNames.Keys)
-                LoadCursor(type);
-        }
+        foreach (var type in CursorNames.Keys)
+            LoadCursor(type);
     }
 
     private unsafe void LoadCursor(StandardCursorType type)
