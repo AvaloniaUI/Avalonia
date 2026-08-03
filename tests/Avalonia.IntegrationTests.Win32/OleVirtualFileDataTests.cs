@@ -122,8 +122,8 @@ public class OleVirtualFileDataTests
             *(uint*)(descriptor + FileSizeLowOffset) = (uint)files[index].Size;
 
             var characters = files[index].Name.ToCharArray();
-            Marshal.Copy(characters, 0, descriptor + FileNameOffset, characters.Length);
-        }
+            var characterCount = Math.Min(characters.Length, 259);
+            Marshal.Copy(characters, 0, descriptor + FileNameOffset, characterCount);
 
         Win32UnmanagedMethods.GlobalUnlock(memory);
         return memory;
