@@ -120,8 +120,8 @@ public static class HeadlessWindowExtensions
     /// For popups nested in another popup, call this method on that popup's toplevel.
     /// </summary>
     /// <remarks>
-    /// Only popups hosted in dedicated headless top-levels are returned, which requires enabling
-    /// <see cref="AvaloniaHeadlessPlatformOptions.UsePlatformPopups"/>. Popups hosted in the overlay
+    /// Only popups hosted in dedicated headless top-levels are returned, which requires disabling
+    /// <see cref="AvaloniaHeadlessPlatformOptions.OverlayPopups"/>. Popups hosted in the overlay
     /// layer are part of the parent's visual tree and are not tracked by the platform.
     /// </remarks>
     public static IReadOnlyList<TopLevel> GetOpenPopups(this TopLevel topLevel) =>

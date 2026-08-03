@@ -15,6 +15,6 @@ public class TestApplication : Application
         .UseHeadless(new AvaloniaHeadlessPlatformOptions
         {
             UseHeadlessDrawing = false,
-            UsePlatformPopups = true
+            OverlayPopups = false
         });
 }

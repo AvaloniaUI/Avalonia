@@ -26,13 +26,13 @@ namespace Avalonia.Headless
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
         private readonly PixelFormat _frameBufferFormat;
-        private readonly bool _platformPopupsEnabled;
+        private readonly bool _overlayPopups;
         private readonly HeadlessWindowImpl? _popupParent;
         private readonly IPopupPositioner? _popupPositioner;
         private readonly List<HeadlessWindowImpl> _openPopups = new();
         public bool IsPopup { get; }
 
-        public HeadlessWindowImpl(PixelFormat frameBufferFormat, bool platformPopupsEnabled)
+        public HeadlessWindowImpl(PixelFormat frameBufferFormat, bool overlayPopups)
         {
             Surfaces = [this];
             _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
@@ -41,11 +41,11 @@ namespace Avalonia.Headless
             MouseDevice = new MouseDevice(_mousePointer);
             ClientSize = new Size(1024, 768);
             _frameBufferFormat = frameBufferFormat;
-            _platformPopupsEnabled = platformPopupsEnabled;
+            _overlayPopups = overlayPopups;
         }
 
         private HeadlessWindowImpl(HeadlessWindowImpl popupParent)
-            : this(popupParent._frameBufferFormat, popupParent._platformPopupsEnabled)
+            : this(popupParent._frameBufferFormat, popupParent._overlayPopups)
         {
             IsPopup = true;
             _popupParent = popupParent;
@@ -403,7 +403,7 @@ namespace Avalonia.Headless
             PositionChanged?.Invoke(point);
         }
 
-        public IPopupImpl? CreatePopup() => _platformPopupsEnabled ? new HeadlessWindowImpl(this) : null;
+        public IPopupImpl? CreatePopup() => _overlayPopups ? null : new HeadlessWindowImpl(this);
 
         public IReadOnlyList<TopLevel> GetOpenPopups()
         {
