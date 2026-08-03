@@ -67,8 +67,8 @@ internal static partial class OleVirtualFileData
         if (descriptors.Count == 0)
             return null;
 
-        // Keep the source-side data object alive after IDropTarget.Drop returns. The operation ends
-        // after every returned IStorageFile is disposed, as required by the IStorageItem contract.
+        // Keep the source-side data object alive after IDropTarget.Drop returns. Consumers that retain
+        // returned virtual files must dispose them once they finish reading; the operation ends then.
         var operation = new Operation(BeginAsyncOperation(dataObject), descriptors.Count);
         var files = new List<IStorageFile>(descriptors.Count);
         var fileContentsFormat = ClipboardFormatRegistry.GetOrAddFormat(FileContentsFormat);
