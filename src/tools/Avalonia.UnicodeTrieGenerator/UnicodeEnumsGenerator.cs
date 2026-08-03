@@ -145,6 +145,38 @@ internal static class UnicodeEnumsGenerator
         return entries;
     }
 
+    public static List<DataEntry> CreateSentenceBreakClassEnum(string outputDir)
+    {
+        // Seeds pin the int positions of the public SentenceBreakClass members AND
+        // override UCD's bare "CR"/"LF" with the friendlier names. See the ABI INVARIANT comment above.
+        // UAX-29 Sentence_Break property values (SB1–SB11, SB998).
+        // XX (Other) is index 0 — the trie default for unassigned codepoints.
+        var entries = new List<DataEntry>
+        {
+            new("Other", "XX", string.Empty),
+            new("CarriageReturn", "CR", string.Empty),
+            new("LineFeed", "LF", string.Empty),
+            new("Extend", "EX", string.Empty),
+            new("Sep", "SE", string.Empty),
+            new("Format", "FO", string.Empty),
+            new("Sp", "SP", string.Empty),
+            new("Lower", "LO", string.Empty),
+            new("Upper", "UP", string.Empty),
+            new("OLetter", "OL", string.Empty),
+            new("Numeric", "NU", string.Empty),
+            new("ATerm", "AT", string.Empty),
+            new("SContinue", "SC", string.Empty),
+            new("STerm", "ST", string.Empty),
+            new("Close", "CL", string.Empty),
+        };
+
+        ParseDataEntries("# Sentence_Break (SB)", entries);
+
+        WriteEnumFile(outputDir, "SentenceBreakClass", "SentenceBreakClass", entries);
+
+        return entries;
+    }
+
     public static List<DataEntry> CreateLineBreakClassEnum(string outputDir)
     {
         var entries = new List<DataEntry>

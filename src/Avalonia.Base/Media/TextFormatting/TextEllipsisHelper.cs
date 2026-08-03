@@ -46,7 +46,7 @@ namespace Avalonia.Media.TextFormatting
 
                                         while (currentBreakPosition < measuredLength && wordBreaker.MoveNext(out var wordSegment))
                                         {
-                                            var nextBreakPosition = wordSegment.Offset + wordSegment.Length;
+                                            var nextBreakPosition = wordSegment.Offset + wordSegment.Text.Length;
 
                                             if (nextBreakPosition == 0)
                                             {

@@ -33,10 +33,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             var segmentStart = _offset;
-            var segmentCodepointStart = _codepointOffset;
             var current = ReadForward(_offset);
             var currentEnd = current.End;
-            var boundaryCodepoint = _codepointOffset + 1;
+
+            // Each WordBreakUnit covers exactly one code point, so counting accepted
+            // units yields the segment's code-point length for the WordSegment readouts.
+            var codepointLength = 1;
 
             while (currentEnd < _text.Length)
             {
@@ -49,17 +51,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 current = next;
                 currentEnd = current.End;
-                boundaryCodepoint++;
+                codepointLength++;
             }
 
-            segment = new WordSegment(
-                segmentStart,
-                currentEnd - segmentStart,
-                segmentCodepointStart,
-                boundaryCodepoint - segmentCodepointStart);
-
+            segment = new WordSegment(segmentStart, _text.Slice(segmentStart, currentEnd - segmentStart), _codepointOffset, codepointLength);
             _offset = currentEnd;
-            _codepointOffset = boundaryCodepoint;
+            _codepointOffset += codepointLength;
 
             return true;
         }

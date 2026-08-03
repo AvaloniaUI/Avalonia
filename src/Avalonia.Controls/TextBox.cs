@@ -1918,15 +1918,7 @@ namespace Avalonia.Controls
                 SelectAll();
             }
 
-            if (!StringUtils.IsStartOfWord(text, caretIndex))
-            {
-                selectionStart = StringUtils.PreviousWord(text, caretIndex);
-            }
-
-            if (!StringUtils.IsEndOfWord(text, caretIndex))
-            {
-                selectionEnd = StringUtils.NextWord(text, caretIndex);
-            }
+            (selectionStart, selectionEnd) = TextSegmentation.WordBounds(caretIndex, text);
 
             if (selectionStart != selectionEnd)
             {
@@ -2059,18 +2051,13 @@ namespace Avalonia.Controls
 
             if (caretIndex > _wordSelectionStart)
             {
-                var nextWord = StringUtils.NextWord(text, caretIndex);
-
-                selectionEnd = nextWord;
-
+                selectionEnd = TextSegmentation.WordBoundary(caretIndex, true, text);
                 selectionStart = _wordSelectionStart;
             }
             else
             {
-                var previousWord = StringUtils.PreviousWord(text, caretIndex);
-                selectionStart = previousWord;
-
-                selectionEnd = StringUtils.NextWord(text, _wordSelectionStart);
+                selectionStart = TextSegmentation.WordBoundary(caretIndex, false, text);
+                selectionEnd = TextSegmentation.WordBoundary(_wordSelectionStart, true, text);
             }
         }
 
@@ -2216,11 +2203,19 @@ namespace Avalonia.Controls
 
                 if (direction > 0)
                 {
-                    offset = StringUtils.NextWord(text, selectionEnd) - selectionEnd;
+                    // Skip the current segment; if it was whitespace, also skip the following word.
+                    var nextBound = TextSegmentation.WordBoundary(selectionEnd, true, text);
+                    if (nextBound < text.Length && selectionEnd < text.Length && char.IsWhiteSpace(text[selectionEnd]))
+                        nextBound = TextSegmentation.WordBoundary(nextBound, true, text);
+                    offset = nextBound - selectionEnd;
                 }
                 else
                 {
-                    offset = StringUtils.PreviousWord(text, selectionEnd) - selectionEnd;
+                    // Skip back through any whitespace, then back through the preceding word.
+                    var prevBound = TextSegmentation.WordBoundary(selectionEnd, false, text);
+                    if (prevBound > 0 && char.IsWhiteSpace(text[prevBound]))
+                        prevBound = TextSegmentation.WordBoundary(prevBound, false, text);
+                    offset = prevBound - selectionEnd;
                 }
 
                 SetCurrentValue(SelectionEndProperty, SelectionEnd + offset);

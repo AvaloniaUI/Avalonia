@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Automation.Provider;
-using Avalonia.Controls.Utils;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
@@ -60,15 +60,11 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             // For WORD granularity, find word boundaries
             if (g == TextGranularity.Word)
             {
-                var start = StringUtils.PreviousWord(text, offset + 1);
-                if (start >= text.Length || !StringUtils.IsStartOfWord(text, start))
+                var (wStart, wEnd) = TextSegmentation.WordBounds(offset, text);
+                if (wEnd <= wStart)
                     return ValueTask.FromResult((string.Empty, 0, 0));
 
-                var end = Math.Min(StringUtils.NextWord(text, start), text.Length);
-                if (end <= start)
-                    return ValueTask.FromResult((string.Empty, 0, 0));
-
-                return ValueTask.FromResult((text.Substring(start, end - start), start, end));
+                return ValueTask.FromResult((text.Substring(wStart, wEnd - wStart), wStart, wEnd));
             }
 
             // For SENTENCE, LINE, PARAGRAPH - return full text
@@ -120,16 +116,12 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             // WORD_START or WORD_END boundary
             if (bt is TextBoundaryType.WordStart or TextBoundaryType.WordEnd)
             {
-                var end = offset;
-                var start = StringUtils.PreviousWord(text, end);
-                if (start >= end)
-                    start = StringUtils.PreviousWord(text, start);
-
-                if (start < 0 || start >= text.Length || !StringUtils.IsStartOfWord(text, start))
+                var segStart = TextSegmentation.WordBounds(offset, text).Start;
+                if (segStart <= 0)
                     return ValueTask.FromResult((string.Empty, 0, 0));
 
-                end = Math.Min(StringUtils.NextWord(text, start), end);
-                if (end <= start)
+                var (start, end) = TextSegmentation.WordBounds(segStart - 1, text);
+                if (start >= end)
                     return ValueTask.FromResult((string.Empty, 0, 0));
 
                 return ValueTask.FromResult((text.Substring(start, end - start), start, end));
@@ -167,20 +159,12 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             // WORD_START or WORD_END boundary
             if (bt is TextBoundaryType.WordStart or TextBoundaryType.WordEnd)
             {
-                var start = offset + 1;
-
-                while (start < text.Length &&
-                       StringUtils.IsEndOfWord(text, start) &&
-                       !StringUtils.IsStartOfWord(text, start))
-                {
-                    start++;
-                }
-
-                if (start >= text.Length)
+                var segEnd = TextSegmentation.WordBounds(offset, text).End;
+                if (segEnd >= text.Length)
                     return ValueTask.FromResult((string.Empty, text.Length, text.Length));
 
-                var end = Math.Min(StringUtils.NextWord(text, start), text.Length);
-                if (end <= start)
+                var (start, end) = TextSegmentation.WordBounds(segEnd, text);
+                if (start >= end)
                     return ValueTask.FromResult((string.Empty, text.Length, text.Length));
 
                 return ValueTask.FromResult((text.Substring(start, end - start), start, end));
@@ -292,5 +276,6 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         {
             return node.Peer.GetProvider<IValueProvider>()?.Value ?? string.Empty;
         }
+
     }
 }
