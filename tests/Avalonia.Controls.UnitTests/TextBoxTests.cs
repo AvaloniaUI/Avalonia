@@ -2469,6 +2469,145 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public async Task Pointer_Selection_Is_Published_To_Primary_Selection()
+        {
+            using (UnitTestApplication.Start(CreatePrimarySelectionServices()))
+            {
+                var target = new TextBox { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Left, new Point(5, 300));
+                mouse.Move(target, new Point(700, 300));
+                mouse.Up(target, MouseButton.Left, new Point(700, 300));
+
+                Assert.Equal("0123", target.SelectedText);
+                Assert.Equal("0123", await window.PrimarySelection!.TryGetTextAsync());
+            }
+        }
+
+        [Fact]
+        public async Task Pointer_Selection_Is_Not_Published_To_Primary_Selection_For_Password_Box()
+        {
+            using (UnitTestApplication.Start(CreatePrimarySelectionServices()))
+            {
+                var target = new TextBox { Text = "0123", PasswordChar = '*' };
+                var window = new Window { Content = target };
+                window.Show();
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Left, new Point(5, 300));
+                mouse.Move(target, new Point(700, 300));
+                mouse.Up(target, MouseButton.Left, new Point(700, 300));
+
+                Assert.Null(await window.PrimarySelection!.TryGetTextAsync());
+            }
+        }
+
+        [Fact]
+        public async Task Middle_Click_Pastes_Primary_Selection_At_Click_Position()
+        {
+            using (UnitTestApplication.Start(CreatePrimarySelectionServices()))
+            {
+                var target = new TextBox { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                await window.PrimarySelection!.SetTextAsync("abc");
+
+                PastingFromClipboardEventArgs? pastingArgs = null;
+                target.PastingFromClipboard += (_, e) => pastingArgs = Assert.IsType<PastingFromClipboardEventArgs>(e);
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Middle, new Point(700, 300));
+                mouse.Up(target, MouseButton.Middle, new Point(700, 300));
+
+                Assert.Equal("0123abc", target.Text);
+                Assert.NotNull(pastingArgs);
+                Assert.Same(window.PrimarySelection, pastingArgs.Clipboard);
+
+                // The pasted-over selection was not changed by the gesture, so it must not be published.
+                Assert.Equal("abc", await window.PrimarySelection!.TryGetTextAsync());
+            }
+        }
+
+        [Fact]
+        public async Task Middle_Click_Does_Not_Paste_When_ReadOnly()
+        {
+            using (UnitTestApplication.Start(CreatePrimarySelectionServices()))
+            {
+                var target = new TextBox { Text = "0123", IsReadOnly = true };
+                var window = new Window { Content = target };
+                window.Show();
+
+                await window.PrimarySelection!.SetTextAsync("abc");
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Middle, new Point(700, 300));
+                mouse.Up(target, MouseButton.Middle, new Point(700, 300));
+
+                Assert.Equal("0123", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Middle_Click_Does_Nothing_Without_Primary_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TextBox { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                Assert.Null(window.PrimarySelection);
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Middle, new Point(700, 300));
+                mouse.Up(target, MouseButton.Middle, new Point(700, 300));
+
+                Assert.Equal("0123", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Paste_Raises_Event_When_No_Clipboard_Is_Available()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TextBox { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                Assert.Null(window.Clipboard);
+
+                PastingFromClipboardEventArgs? pastingArgs = null;
+                target.PastingFromClipboard += (_, e) =>
+                {
+                    pastingArgs = Assert.IsType<PastingFromClipboardEventArgs>(e);
+                    e.Handled = true;
+                };
+
+                target.Paste();
+
+                Assert.NotNull(pastingArgs);
+                Assert.Null(pastingArgs.Clipboard);
+            }
+        }
+
+        internal static TestServices CreatePrimarySelectionServices()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IPlatformClipboardManagerImpl))))
+                .Returns(new PlatformClipboardManager(
+                    new Clipboard(new HeadlessClipboardImplStub()),
+                    new Clipboard(new HeadlessClipboardImplStub())));
+
+            return TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
