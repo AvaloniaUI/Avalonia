@@ -165,7 +165,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static Popup()
         {
-            IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>((x, e) => x.ChildChanged(e));
             IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));
         }
@@ -465,6 +464,7 @@ namespace Avalonia.Controls.Primitives
 
             UpdateHostSizing(popupHost, topLevel, placementTarget);
             popupHost.Topmost = Topmost;
+            popupHost.IsHitTestVisible = IsHitTestVisible;
             popupHost.SetChild(Child);
             ((ISetLogicalParent)popupHost).SetParent(this);
 
@@ -704,6 +704,10 @@ namespace Avalonia.Controls.Primitives
                 else if (change.Property == TopmostProperty)
                 {
                     _openState.PopupHost.Topmost = change.GetNewValue<bool>();
+                }
+                else if (change.Property == IsHitTestVisibleProperty)
+                {
+                    _openState.PopupHost.IsHitTestVisible = change.GetNewValue<bool>();
                 }
             }
         }

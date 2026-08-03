@@ -40,6 +40,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void PopupRoot_Forwards_Initial_IsHitTestVisible_To_Impl()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = MockWindowingPlatform.CreatePopupMock(new Mock<IWindowBaseImpl>().Object);
+
+                CreateTarget(new Window(), impl.Object);
+
+                impl.Verify(x => x.SetHitTestVisible(true));
+            }
+        }
+
+        [Fact]
+        public void PopupRoot_Forwards_IsHitTestVisible_Changes_To_Impl()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = MockWindowingPlatform.CreatePopupMock(new Mock<IWindowBaseImpl>().Object);
+                var target = CreateTarget(new Window(), impl.Object);
+
+                target.IsHitTestVisible = false;
+
+                impl.Verify(x => x.SetHitTestVisible(false));
+            }
+        }
+
+        [Fact]
         public void PopupRoot_StylingParent_Is_Popup()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

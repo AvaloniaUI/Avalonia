@@ -10,6 +10,7 @@ namespace Avalonia.Win32
     {
         private readonly IWindowBaseImpl? _parent;
         private bool _dropShadowHint = true;
+        private bool _isHitTestVisible = true;
         private Size? _maxAutoSize;
 
 
@@ -85,6 +86,8 @@ namespace Avalonia.Win32
                     goto default;
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEACTIVATE:
                     return (IntPtr)UnmanagedMethods.MouseActivate.MA_NOACTIVATE;
+                case UnmanagedMethods.WindowsMessage.WM_NCHITTEST when !_isHitTestVisible:
+                    return (IntPtr)UnmanagedMethods.HitTestValues.HTTRANSPARENT;
                 default:
                     return base.WndProc(hWnd, msg, wParam, lParam);
             }
@@ -148,6 +151,11 @@ namespace Avalonia.Win32
             _dropShadowHint = enabled;
 
             EnableBoxShadow(Handle.Handle, enabled);
+        }
+
+        public void SetHitTestVisible(bool isHitTestVisible)
+        {
+            _isHitTestVisible = isHitTestVisible;
         }
 
         public void TakeFocus()

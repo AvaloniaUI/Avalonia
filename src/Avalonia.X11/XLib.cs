@@ -21,6 +21,7 @@ namespace Avalonia.X11
         private const string libX11Ext = "libXext.so.6";
         private const string libXInput = "libXi.so.6";
         private const string libXCursor = "libXcursor.so.1";
+        private const string libXFixes = "libXfixes.so.3";
 
         public static readonly IntPtr AnyPropertyType = IntPtr.Zero;
 
@@ -583,6 +584,23 @@ namespace Avalonia.X11
         
         [DllImport(libX11Ext)]
         public static extern int XSyncSetCounter(IntPtr dpy, IntPtr counter, XSyncValue value);
+
+        [DllImport(libXFixes)]
+        public static extern int XFixesQueryExtension(IntPtr dpy, out int event_base_return, out int error_base_return);
+
+        [DllImport(libXFixes)]
+        public static extern int XFixesQueryVersion(IntPtr dpy, out int major_version_return,
+            out int minor_version_return);
+
+        [DllImport(libXFixes)]
+        public static extern IntPtr XFixesCreateRegion(IntPtr dpy, XRectangle* rectangles, int nrectangles);
+
+        [DllImport(libXFixes)]
+        public static extern void XFixesSetWindowShapeRegion(IntPtr dpy, IntPtr win, ShapeKind shape_kind,
+            int x_off, int y_off, IntPtr region);
+
+        [DllImport(libXFixes)]
+        public static extern void XFixesDestroyRegion(IntPtr dpy, IntPtr region);
 
         [DllImport(libX11Randr)]
         public static extern int XRRQueryVersion(IntPtr dpy,

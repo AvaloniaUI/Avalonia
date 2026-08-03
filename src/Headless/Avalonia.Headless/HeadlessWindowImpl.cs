@@ -249,7 +249,7 @@ namespace Avalonia.Headless
 
         private ulong Timestamp => (ulong)_st.ElapsedMilliseconds;
 
-        // TODO: Hook recent Popup changes. 
+        // TODO: Hook recent Popup changes.
         IPopupPositioner IPopupImpl.PopupPositioner => null!;
 
         public Size MaxAutoSizeHint => new Size(1920, 1080);
@@ -383,7 +383,7 @@ namespace Avalonia.Headless
 
         public IPopupImpl? CreatePopup()
         {
-            // TODO: Hook recent Popup changes. 
+            // TODO: Hook recent Popup changes.
             return null;
         }
 
@@ -437,7 +437,7 @@ namespace Avalonia.Headless
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
-            
+
         }
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
@@ -459,7 +459,11 @@ namespace Avalonia.Headless
             }
         }
 
-        public void TakeFocus() 
+        public void TakeFocus()
+        {
+        }
+
+        public void SetHitTestVisible(bool isHitTestVisible)
         {
         }
     }

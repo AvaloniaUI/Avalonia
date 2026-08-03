@@ -62,6 +62,11 @@ namespace Avalonia.Controls.Primitives
         bool Topmost { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the popup takes part in pointer hit testing.
+        /// </summary>
+        bool IsHitTestVisible { get; set; }
+
+        /// <summary>
         /// Gets or sets a transform that will be applied to the popup.
         /// </summary>
         Transform? Transform { get; set; }
