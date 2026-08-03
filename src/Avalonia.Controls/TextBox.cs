@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices; // COMException
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
@@ -1308,8 +1309,17 @@ namespace Avalonia.Controls
                 if (clipboard == null)
                     return;
 
-                await clipboard.SetTextAsync(text);
-                DeleteSelection();
+               try
+               {
+                    await clipboard.SetTextAsync(text);
+               }
+               catch (Exception ex) when (ex is COMException or TimeoutException or UnauthorizedAccessException)
+               {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                    return; // don't delete the selection if it never made it to the clipboard
+               }
+               DeleteSelection();
             }
         }
 
@@ -1336,9 +1346,10 @@ namespace Avalonia.Controls
                     if (clipboard != null)
                         await clipboard.SetTextAsync(text);
                 }
-                catch (UnauthorizedAccessException uex)
+                catch (Exception ex) when (ex is COMException or TimeoutException or UnauthorizedAccessException)
                 {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to write text to clipboard: {Error}", uex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
                 }
             }
         }
@@ -1369,9 +1380,10 @@ namespace Avalonia.Controls
                 {
                     // Silently ignore.
                 }
-                catch (UnauthorizedAccessException uex)
+                catch (Exception ex) when (ex is COMException or UnauthorizedAccessException)
                 {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to read text from clipboard: {Error}", ex);
                 }
             }
 

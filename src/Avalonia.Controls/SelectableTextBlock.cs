@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
@@ -137,7 +139,17 @@ namespace Avalonia.Controls
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
                 if (clipboard != null)
-                    await clipboard.SetTextAsync(text);
+                    {
+                     try
+                     {
+                         await clipboard.SetTextAsync(text);
+                     }
+                     catch (Exception ex) when (ex is COMException or TimeoutException or UnauthorizedAccessException)
+                     {
+                         Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                             ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                     }
+                 }
             }
         }
 
