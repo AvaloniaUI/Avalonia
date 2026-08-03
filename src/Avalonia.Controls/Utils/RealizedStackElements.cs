@@ -441,27 +441,32 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
-        /// Validates that <see cref="StartU"/> is still valid.
+        /// Reconciles the stored element sizes with the elements' current desired sizes and, when
+        /// only content the user has already scrolled past changed size, shifts
+        /// <see cref="StartU"/> so the item at <paramref name="anchorIndex"/> keeps its position.
+        /// Returns true if any layout-significant change was found.
         /// </summary>
-        /// <param name="orientation">The panel orientation.</param>
+        /// <param name="anchorIndex">
+        /// Index of the item intersecting the start of the viewport (the item the user is looking
+        /// at), or -1 if unknown. Growth before it must be cancelled out of <see cref="StartU"/>:
+        /// the anchor sits at <c>StartU + Σ sizes before it</c>, so if that sum grew by
+        /// <c>preDelta</c>, StartU must shrink by the same amount for the anchor to stay put.
+        /// Growth at or after the anchor legitimately pushes later content down and needs no
+        /// compensation.
+        /// </param>
+        /// <param name="preDelta">The accumulated size change of items before the anchor.</param>
+        /// <param name="getSizeU">
+        /// Returns an element's size along the panel's layout axis, given the element and its item
+        /// index. It must be the same function the panel used to record the sizes in the first
+        /// place, otherwise every pass would re-detect the difference between the two as a resize.
+        /// </param>
         /// <remarks>
-        /// Checks if any realized element's DesiredSize differs from the stored size.
-        /// - Small changes (&lt; 1px): absorbed silently by updating stored sizes. StartU stays stable.
-        ///   This prevents layout cycles with complex items that produce slightly different sizes each measure.
-        /// - Large changes (&gt;= 1px): genuine resize — marks StartU as unstable.
+        /// Changes below <see cref="LayoutHelper.LayoutEpsilon"/> are floating-point noise, not
+        /// resizes: they are folded into the stored size and nothing else. Anything larger is a
+        /// real change, however small — a fractional layout scale (125%, 150% DPI) makes the
+        /// layout rounding grid itself sub-pixel, so genuine sub-1px changes do occur.
         /// </remarks>
-        /// <summary>
-        /// Checks whether any realized element's DesiredSize has changed from the stored size.
-        /// Returns true if a significant (>= 1px) change was detected.
-        /// When <paramref name="anchorIndex"/> is provided and only items OUTSIDE the viewport
-        /// changed size (the anchor item itself is stable), compensates StartU by the accumulated
-        /// pre-anchor delta to prevent scroll jumping from async content loading.
-        /// If the anchor item itself changed, marks StartU as unstable (global resize scenario).
-        /// Updates stored sizes in-place unless <paramref name="lockSizes"/> is true.
-        /// When lockSizes is true (during extent oscillation), stored sizes are NOT updated for
-        /// significant changes, preventing item position shifts within the viewport.
-        /// </summary>
-        public bool ValidateStartU(Orientation orientation, int anchorIndex, out double preDelta, bool lockSizes = false)
+        public bool ValidateStartU(int anchorIndex, Func<Control, int, double> getSizeU, out double preDelta)
         {
             preDelta = 0;
 
@@ -491,41 +496,25 @@ namespace Avalonia.Controls.Utils
                         otherItemsPendingMeasure = true;
                 }
 
-                var sizeU = orientation == Orientation.Horizontal ?
-                    element.DesiredSize.Width : element.DesiredSize.Height;
+                var sizeU = getSizeU(element, itemIndex);
 
                 var diff = sizeU - _sizes[i];
                 if (diff == 0)
                     continue;
 
-                if (Math.Abs(diff) >= 1.0)
+                if (!MathUtilities.AreClose(sizeU, _sizes[i], LayoutHelper.LayoutEpsilon))
                 {
-                    if (Logger.TryGet(LogEventLevel.Warning, LogArea.Control) is { } log)
+                    if (Logger.TryGet(LogEventLevel.Verbose, LogArea.Control) is { } log)
                     {
                         var dc = (element as StyledElement)?.DataContext;
                         log.Log(element,
-                            "Item template size changed significantly during layout. " +
+                            "Item template size changed during layout. " +
                             "This typically means the item template produces non-deterministic sizes " +
                             "(e.g., async image loading, text wrapping). Consider using fixed-size templates. " +
                             "DataContext='{DataContext}', OldSize='{OldSize}', NewSize='{NewSize}', Diff='{Diff}' " +
                             "(#{HashCode} idx={ItemIndex})",
                             dc?.GetType().FullName ?? "(null)", _sizes[i], sizeU, diff,
                             element.GetHashCode(), itemIndex);
-                    }
-
-                    // During extent oscillation (lockSizes=true), still track size
-                    // changes for position compensation — if an item before the
-                    // viewport anchor shrinks/grows, StartU must be adjusted to
-                    // keep visible items at their current positions. Update stored
-                    // sizes so future passes don't re-detect the same change.
-                    // But don't set hasSignificantChange — that would invalidate
-                    // the estimate cache and cause extent oscillation.
-                    if (lockSizes)
-                    {
-                        if (anchorIndex >= 0 && itemIndex <= anchorIndex)
-                            preDelta += diff;
-                        _sizes[i] = sizeU;
-                        continue;
                     }
 
                     hasSignificantChange = true;
@@ -543,29 +532,14 @@ namespace Avalonia.Controls.Utils
                     {
                         otherItemsChanged = true;
                     }
+                }
 
-                    // Update stored size so the next pass won't re-detect this change
-                    _sizes[i] = sizeU;
-                }
-                else
-                {
-                    // Minor fluctuation (< 1px) — absorb by updating stored size.
-                    _sizes[i] = sizeU;
-                }
+                // Update stored size so the next pass won't re-detect this change.
+                _sizes[i] = sizeU;
             }
 
             if (!hasSignificantChange && !anchorMeasurePending)
-            {
-                // No significant (non-locked) changes detected. But we may have
-                // accumulated preDelta from locked-size items before the anchor.
-                // Compensate StartU to keep visible items stable.
-                if (Math.Abs(preDelta) >= 1.0)
-                {
-                    _startU -= preDelta;
-                    return true;
-                }
                 return false;
-            }
 
             if (anchorMeasurePending ||
                 (anchorChanged && (otherItemsChanged || otherItemsPendingMeasure)))
@@ -578,18 +552,15 @@ namespace Avalonia.Controls.Utils
             }
             else if (anchorChanged)
             {
-                // Only the anchor itself changed size and no other items are affected
-                // (e.g., async content loading on the visible item). The anchor's
-                // START position is still correct — only items after it shift.
-                // Return false: the stored size is already updated (preventing
-                // re-detection), and the normal realization flow will handle
-                // the shifted positions. Returning false avoids resetting the
-                // estimate cache in MeasureOverride, which would cause the estimate
-                // to oscillate when items alternate between loaded/unloaded sizes
-                // (e.g., async images cycling between 84px placeholder and 306px loaded).
+                // Only the anchor itself changed size and nothing else is affected (e.g. async
+                // content loading on the visible item). Its START position is still correct —
+                // only the items after it shift, which realization handles. Report no change so
+                // the caller does not treat the recorded per-item sizes as stale: the anchor
+                // alternating between a placeholder and a loaded size would otherwise discard
+                // the whole size record on every flip.
                 return false;
             }
-            else if (Math.Abs(preDelta) >= 1.0)
+            else if (!MathUtilities.AreClose(preDelta, 0, LayoutHelper.LayoutEpsilon))
             {
                 // Only items before the anchor changed (async content loading).
                 // Subtract preDelta from StartU to keep the anchor at its visual position:
