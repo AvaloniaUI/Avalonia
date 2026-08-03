@@ -171,25 +171,25 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IntersectionDetail FillContains(IGeometryImpl geometry)
+        public IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
         {
             var other = geometry as GeometryImpl;
             if (other == null || FillPath == null || other.FillPath == null)
-                return IntersectionDetail.Empty;
+                return IntersectionResult.Empty;
 
             var region = new SKRegion(FillPath);
             var otherRegion = new SKRegion(other.FillPath);
 
             if(region.Contains(otherRegion))
-                return IntersectionDetail.FullyInside;
+                return IntersectionResult.FullyInside;
 
             if (otherRegion.Contains(region))
-                return IntersectionDetail.FullyContains;
+                return IntersectionResult.FullyContains;
 
             if (region.Intersects(otherRegion))
-                return IntersectionDetail.Intersects;
+                return IntersectionResult.Intersects;
 
-            return IntersectionDetail.Empty;
+            return IntersectionResult.Empty;
         }
 
         private struct PathCache : IDisposable

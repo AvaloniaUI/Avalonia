@@ -124,10 +124,10 @@ namespace Avalonia.Media
         /// Returns a value that describes the intersection between the current geometry and the specified geometry
         /// </summary>
         /// <param name="geometry">The geometry to test for containment.</param>
-        /// <returns>The <see cref="IntersectionDetail"/> describing the intersection between the geometries</returns>
-        public IntersectionDetail? FillContains(Geometry geometry)
+        /// <returns>The <see cref="IntersectionResult"/> describing the intersection between the geometries</returns>
+        public IntersectionResult? GetFillIntersectionResult(Geometry geometry)
         {
-            return geometry.PlatformImpl == null ? IntersectionDetail.Empty : PlatformImpl?.FillContains(geometry.PlatformImpl);
+            return geometry.PlatformImpl == null ? IntersectionResult.Empty : PlatformImpl?.GetFillIntersectionResult(geometry.PlatformImpl);
         }
 
         /// <summary>

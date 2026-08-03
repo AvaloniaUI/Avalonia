@@ -31,7 +31,7 @@ namespace Avalonia.Rendering.Composition
         /// Attempts to perform a hit-test.
         /// </summary>
         /// <returns>A list of visuals hit during the test.</returns>
-        public PooledList<CompositionVisual>? TryHitTest<THitTester, T>(
+        public PooledList<(IntersectionResult, CompositionVisual)>? TryHitTest<THitTester, T>(
             T input,
             CompositionVisual? root,
             Func<CompositionVisual, bool>? filter)
@@ -52,7 +52,7 @@ namespace Avalonia.Rendering.Composition
 
             var parentInput = THitTester.Transform(input, in readback.Matrix);
 
-            var res = new PooledList<CompositionVisual>();
+            var res = new PooledList<(IntersectionResult, CompositionVisual)>();
             HitTestCore<THitTester, T>(root, parentInput, res, filter);
             return res;
         }
@@ -87,7 +87,7 @@ namespace Avalonia.Rendering.Composition
         private void HitTestCore<THitTester, T>(
             CompositionVisual visual,
             T parentInput,
-            PooledList<CompositionVisual> result,
+            PooledList<(IntersectionResult, CompositionVisual)> result,
             Func<CompositionVisual, bool>? filter)
             where THitTester : struct, ICompositionHitTester<T>
         {
@@ -99,11 +99,11 @@ namespace Avalonia.Rendering.Composition
                 HitTestChildren<THitTester, T>(cv, input, result, filter);
 
             // Hit-test the current node
-            if (THitTester.HitTest(visual, input))
-                result.Add(visual);
+            if (THitTester.HitTest(visual, input) is IntersectionResult intersectionResult && intersectionResult > IntersectionResult.Empty)
+                result.Add((intersectionResult, visual));
         }
 
-        private void HitTestChildren<THitTester, T>(CompositionContainerVisual visual, T input, PooledList<CompositionVisual> result, Func<CompositionVisual, bool>? filter)
+        private void HitTestChildren<THitTester, T>(CompositionContainerVisual visual, T input, PooledList<(IntersectionResult, CompositionVisual)> result, Func<CompositionVisual, bool>? filter)
             where THitTester : struct, ICompositionHitTester<T>
         {
             if (visual.Children.Count >= CompositionContainerVisual.HitTestAabbTreeThreshold)
@@ -170,10 +170,12 @@ namespace Avalonia.Rendering.Composition
             T input,
             CompositionVisual? root,
             Func<CompositionVisual, bool>? filter,
-            Func<CompositionVisual, bool>? resultFilter)
+            Func<CompositionVisual, bool>? resultFilter, out IntersectionResult intersectionResult)
             where THitTester : struct, ICompositionHitTester<T>
         {
             Server.Compositor.Readback.NextRead();
+
+            intersectionResult = IntersectionResult.NotCalculated;
 
             root ??= Root;
             if (root == null)
@@ -188,16 +190,18 @@ namespace Avalonia.Rendering.Composition
 
             var parentInput = THitTester.Transform(input, in readback.Matrix);
 
-            return HitTestFirstCore<THitTester, T>(root, parentInput, filter, resultFilter);
+            return HitTestFirstCore<THitTester, T>(root, parentInput, filter, resultFilter, out intersectionResult);
         }
 
         internal CompositionVisual? HitTestFirstCore<THitTester, T>(
             CompositionVisual visual,
             T parentInput,
             Func<CompositionVisual, bool>? filter,
-            Func<CompositionVisual, bool>? resultFilter)
+            Func<CompositionVisual, bool>? resultFilter, out IntersectionResult intersectionResult)
             where THitTester : struct, ICompositionHitTester<T>
         {
+            intersectionResult = IntersectionResult.NotCalculated;
+
             if (!HitTestVisual<THitTester, T>(visual, parentInput, filter, out var input))
                 return null;
 
@@ -206,7 +210,7 @@ namespace Avalonia.Rendering.Composition
                 var queriedIndexedChildren = false;
                 if (cv.Children.Count >= CompositionContainerVisual.HitTestAabbTreeThreshold)
                 {
-                    if (cv.TryQueryFirstHitTestChild<THitTester, T>(this, input, filter, resultFilter, out var hit))
+                    if (cv.TryQueryFirstHitTestChild<THitTester, T>(this, input, filter, resultFilter, out var hit, out intersectionResult))
                     {
                         queriedIndexedChildren = true;
                         if (hit != null)
@@ -218,14 +222,16 @@ namespace Avalonia.Rendering.Composition
                 {
                     for (var c = cv.Children.Count - 1; c >= 0; c--)
                     {
-                        var hit = HitTestFirstCore<THitTester, T>(cv.Children[c], input, filter, resultFilter);
+                        var hit = HitTestFirstCore<THitTester, T>(cv.Children[c], input, filter, resultFilter, out intersectionResult);
                         if (hit != null)
                             return hit;
                     }
                 }
             }
 
-            return THitTester.HitTest(visual, input) && (resultFilter == null || resultFilter(visual)) ? visual : null;
+            intersectionResult = THitTester.HitTest(visual, input);
+
+            return intersectionResult > IntersectionResult.Empty && (resultFilter == null || resultFilter(visual)) ? visual : null;
         }
 
         /// <summary>

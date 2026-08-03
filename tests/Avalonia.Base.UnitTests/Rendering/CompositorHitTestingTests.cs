@@ -1,17 +1,12 @@
 using System;
 using System.Linq;
-using Avalonia.Base.UnitTests.VisualTree;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
-using Moq;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Rendering;
@@ -54,7 +49,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
 
             s.TopLevel.Content = border;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(100,100, 50, 50)), null, border);
+            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 50, 50)), null, new GeometryHitTestResult(border, IntersectionResult.FullyContains));
         }
     }
 
@@ -210,7 +205,9 @@ public class CompositorHitTestingTests : CompositorTestsBase
                 }
             };
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 50, 50)), null, visible, border);
+            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 50, 50)), null,
+                new GeometryHitTestResult(visible, IntersectionResult.FullyContains),
+                new GeometryHitTestResult(border, IntersectionResult.FullyContains));
         }
     }
 
@@ -320,7 +317,9 @@ public class CompositorHitTestingTests : CompositorTestsBase
             };
             s.TopLevel.Content = container;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 50, 50)), null, container.Children[1], container.Children[0]);
+            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 50, 50)), null,
+                new GeometryHitTestResult(container.Children[1], IntersectionResult.Intersects),
+                new GeometryHitTestResult(container.Children[0], IntersectionResult.FullyContains));
         }
     }
 
@@ -412,7 +411,9 @@ public class CompositorHitTestingTests : CompositorTestsBase
             };
             s.TopLevel.Content = container;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 50, 50)), null, new[] { container.Children[2], container.Children[0], container.Children[1] });
+            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 50, 50)), null, new GeometryHitTestResult(container.Children[2], IntersectionResult.Intersects),
+                new GeometryHitTestResult(container.Children[0], IntersectionResult.FullyContains),
+                new GeometryHitTestResult(container.Children[1], IntersectionResult.Intersects));
         }
     }
 
@@ -492,7 +493,8 @@ public class CompositorHitTestingTests : CompositorTestsBase
             };
             s.TopLevel.Content = container;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(120, 120, 50, 50)), null, target, container);
+            s.AssertHitTest(new RectangleGeometry(new Rect(120, 120, 50, 50)), null, new GeometryHitTestResult(target, IntersectionResult.Intersects),
+                new GeometryHitTestResult(container, IntersectionResult.FullyContains));
         }
     }
 
@@ -572,7 +574,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
             };
             s.TopLevel.Content = container;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(50, 50, 50, 50)), null, container);
+            s.AssertHitTest(new RectangleGeometry(new Rect(50, 50, 50, 50)), null, new GeometryHitTestResult(container, IntersectionResult.FullyContains));
         }
     }
 
@@ -757,7 +759,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
             };
             s.TopLevel.Content = path;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(95, 95, 50, 50)), null, path);
+            s.AssertHitTest(new RectangleGeometry(new Rect(95, 95, 50, 50)), null, new GeometryHitTestResult(path, IntersectionResult.FullyContains));
             s.AssertHitTest(new RectangleGeometry(new Rect(0, 0, 10, 10)), null);
         }
     }
@@ -816,7 +818,8 @@ public class CompositorHitTestingTests : CompositorTestsBase
             s.RunJobs();
             Assert.Equal(new Rect(100, 100, 200, 200), border.Bounds);
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(195, 195, 10, 10)), null, canvas, border);
+            s.AssertHitTest(new RectangleGeometry(new Rect(195, 195, 10, 10)), null, new GeometryHitTestResult(canvas, IntersectionResult.FullyContains),
+                new GeometryHitTestResult(border, IntersectionResult.FullyContains));
 
             s.AssertHitTest(new RectangleGeometry(new Rect(110, 110, 10, 10)), null);
         }
@@ -862,8 +865,8 @@ public class CompositorHitTestingTests : CompositorTestsBase
 
             s.TopLevel.Content = border;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(75, 100, 10, 10)), null, border);
-            s.AssertHitTest(new RectangleGeometry(new Rect(125, 100, 10, 10)), null, border);
+            s.AssertHitTest(new RectangleGeometry(new Rect(75, 100, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.Intersects));
+            s.AssertHitTest(new RectangleGeometry(new Rect(125, 100, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.Intersects));
             s.AssertHitTest(new RectangleGeometry(new Rect(175, 100, 10, 10)), null);
         }
     }
@@ -948,7 +951,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
 
             s.TopLevel.Content = stackPanel;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(5, 10, 10, 10)), null, targetRectangle);
+            s.AssertHitTest(new RectangleGeometry(new Rect(5, 10, 10, 10)), null, new GeometryHitTestResult(targetRectangle, IntersectionResult.Intersects));
         }
     }
 
@@ -999,7 +1002,8 @@ public class CompositorHitTestingTests : CompositorTestsBase
                 }
             };
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 10, 10)), null, child, parent);
+            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 10, 10)), null, new GeometryHitTestResult(child, IntersectionResult.FullyContains),
+                new GeometryHitTestResult(parent, IntersectionResult.FullyContains));
             s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 10, 10)), v => v != parent);
         }
     }
@@ -1144,7 +1148,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
 
             s.TopLevel.Content = canvas;
             s.AssertHitTestFirst(new RectangleGeometry(new Rect(100, 100, 10, 10)), null, top);
-            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 10, 10)), null, canvas.Children.Cast<Visual>().Reverse().ToArray());
+            s.AssertHitTest(new RectangleGeometry(new Rect(100, 100, 10, 10)), null, canvas.Children.Cast<Visual>().Reverse().Select(x => new GeometryHitTestResult(x, IntersectionResult.FullyContains)).ToArray());
         }
     }
 
@@ -1452,9 +1456,42 @@ public class CompositorHitTestingTests : CompositorTestsBase
         }
     }
 
-    private static IDisposable TestApplication()
+    [Theory]
+    [InlineData(50, 50, 100, 100, 50, 50, IntersectionResult.FullyInside)]
+    [InlineData(80, 80, 100, 100, 50, 50, IntersectionResult.Intersects)]
+    [InlineData(95, 95, 40, 40, 80, 80, IntersectionResult.FullyContains)]
+    [InlineData(0, 0, 10, 10, 50, 50, IntersectionResult.Empty)]
+    public void HitTest_Geometry_Should_Return_Correct_IntersectionResult(
+        double geomX, double geomY, double geomWidth, double geomHeight,
+        double elemWidth, double elemHeight, IntersectionResult expectedResult)
     {
-        return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
-    }
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            var border = new Border
+            {
+                Width = elemWidth,
+                Height = elemHeight,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
 
+            s.TopLevel.Content = border;
+            s.RunJobs();
+
+            var geometry = new RectangleGeometry(new Rect(geomX, geomY, geomWidth, geomHeight));
+            
+            if (expectedResult == IntersectionResult.Empty)
+            {
+                // Geometry doesn't intersect element
+                s.AssertHitTest(geometry, null);
+            }
+            else
+            {
+                // Geometry intersects element
+                s.AssertHitTest(geometry, null, 
+                    new GeometryHitTestResult(border, expectedResult));
+            }
+        }
+    }
 }

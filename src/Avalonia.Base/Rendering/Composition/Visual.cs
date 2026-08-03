@@ -1,5 +1,4 @@
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 
@@ -100,6 +99,6 @@ namespace Avalonia.Rendering.Composition
         internal object? Tag { get; set; }
 
         internal virtual bool HitTest(Point point) => true;
-        internal virtual IntersectionDetail HitTest(Geometry geometry) => IntersectionDetail.Intersects;
+        internal virtual IntersectionResult HitTest(Geometry geometry) => IntersectionResult.Intersects;
     }
 }

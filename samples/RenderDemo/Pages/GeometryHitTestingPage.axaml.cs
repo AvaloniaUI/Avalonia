@@ -6,7 +6,6 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Avalonia.Platform;
 
 namespace RenderDemo.Pages;
 
@@ -69,7 +68,7 @@ public class GeometryHitTestingPage : UserControl
 
         foreach (var element in _scene.GetInputElementsAt(_probeGeometry))
         {
-            if (element is Shape shape && _strokes.ContainsKey(shape))
+            if (element?.VisualHit is Shape shape && _strokes.ContainsKey(shape))
             {
                 shape.Stroke = _hitStroke;
                 _hits.Add(shape);
@@ -107,7 +106,7 @@ public class GeometryHitTestingPage : UserControl
         _status.Text = "Intersecting, " + string.Join(", ", _hits.Select(shape => $"{shape.Name} ({GetIntersectionDetail(shape)})"));
     }
 
-    private IntersectionDetail? GetIntersectionDetail(Shape shape)
+    private IntersectionResult? GetIntersectionDetail(Shape shape)
     {
         if (shape.RenderedGeometry is not { } geometry || _scene.TransformToVisual(shape) is not { } transform)
         {
@@ -117,7 +116,7 @@ public class GeometryHitTestingPage : UserControl
         var probe = CreateProbeGeometry();
         probe.Transform = new MatrixTransform(_probePosition.Value * transform);
 
-        return geometry.FillContains(probe);
+        return geometry.GetFillIntersectionResult(probe);
     }
 }
 

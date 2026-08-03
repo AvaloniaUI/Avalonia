@@ -12,8 +12,8 @@ internal struct GeometryCompositionHitTester : ICompositionHitTester<Geometry>
         return result;
     }
 
-    public static bool HitTest(CompositionVisual visual, Geometry input)
-        => visual.HitTest(input) > IntersectionDetail.Empty;
+    public static IntersectionResult HitTest(CompositionVisual visual, Geometry input)
+        => visual.HitTest(input);
 
     public static bool TransformedSubTreeBoundsMatch(LtrbRect bounds, Geometry input)
     {
@@ -34,5 +34,5 @@ internal struct GeometryCompositionHitTester : ICompositionHitTester<Geometry>
 
     public static bool ClipMatches(IGeometryImpl clip, Geometry input)
         => input.PlatformImpl is { } geometryImpl &&
-           clip.FillContains(geometryImpl) > IntersectionDetail.Empty;
+           clip.GetFillIntersectionResult(geometryImpl) > IntersectionResult.Empty;
 }

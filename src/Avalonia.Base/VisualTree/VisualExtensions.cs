@@ -323,8 +323,8 @@ namespace Avalonia.VisualTree
         /// </summary>
         /// <param name="visual">The root visual to test.</param>
         /// <param name="geometry">The geometry.</param>
-        /// <returns>The visual intersecting the requested geometry.</returns>
-        public static Visual? GetVisualAt(this Visual visual, Geometry geometry)
+        /// <returns>A <see cref="GeometryHitTestResult"/> containing the visual intersecting the requested geometry and intersection details, or null if no intersection.</returns>
+        public static GeometryHitTestResult? GetVisualAt(this Visual visual, Geometry geometry)
         {
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
@@ -363,8 +363,8 @@ namespace Avalonia.VisualTree
         /// A filter predicate. If the predicate returns false then the visual and all its
         /// children will be excluded from the results.
         /// </param>
-        /// <returns>The visual intersecting the requested geometry.</returns>
-        public static Visual? GetVisualAt(this Visual visual, Geometry geometry, Func<Visual, bool> filter)
+        /// <returns>A <see cref="GeometryHitTestResult"/> containing the visual intersecting the requested geometry and intersection details, or null if no intersection.</returns>
+        public static GeometryHitTestResult? GetVisualAt(this Visual visual, Geometry geometry, Func<Visual, bool> filter)
         {
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
@@ -397,8 +397,8 @@ namespace Avalonia.VisualTree
         /// </summary>
         /// <param name="visual">The root visual to test.</param>
         /// <param name="geometry">The geometry.</param>
-        /// <returns>The visuals intersecting the requested geometry.</returns>
-        public static IEnumerable<Visual> GetVisualsAt(
+        /// <returns>The visuals intersecting the requested geometry with intersection details.</returns>
+        public static IEnumerable<GeometryHitTestResult> GetVisualsAt(
             this Visual visual,
             Geometry geometry)
         {
@@ -443,8 +443,8 @@ namespace Avalonia.VisualTree
         /// A filter predicate. If the predicate returns false then the visual and all its
         /// children will be excluded from the results.
         /// </param>
-        /// <returns>The visuals intersecting the requested geometry.</returns>
-        public static IEnumerable<Visual> GetVisualsAt(
+        /// <returns>The visuals intersecting the requested geometry with intersection details.</returns>
+        public static IEnumerable<GeometryHitTestResult> GetVisualsAt(
             this Visual visual,
             Geometry geometry,
             Func<Visual, bool> filter)
@@ -455,7 +455,7 @@ namespace Avalonia.VisualTree
 
             if (source is null)
             {
-                return Array.Empty<Visual>();
+                return Array.Empty<GeometryHitTestResult>();
             }
 
             return source.HitTester.HitTest(geometry, visual, filter);

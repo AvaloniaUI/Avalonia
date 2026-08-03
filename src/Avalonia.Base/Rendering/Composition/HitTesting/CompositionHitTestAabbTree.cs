@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Collections.Pooled;
+using Avalonia.Media;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering.Composition.HitTesting;
@@ -145,9 +146,11 @@ internal sealed class CompositionHitTestAabbTree
         T input,
         Func<CompositionVisual, bool>? filter,
         Func<CompositionVisual, bool>? resultFilter,
-        ulong readbackRevision)
+        ulong readbackRevision,
+        out IntersectionResult intersectionResult)
         where THitTester : struct, ICompositionHitTester<T>
     {
+        intersectionResult = IntersectionResult.NotCalculated;
         var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
         var stack = ArrayPool<int>.Shared.Rent(16);
         var candidateCount = 0;
@@ -169,7 +172,7 @@ internal sealed class CompositionHitTestAabbTree
 
                 for (var j = 0; j < candidateCount; j++)
                 {
-                    var hit = target.HitTestFirstCore<THitTester, T>(candidates[j].Visual, input, filter, resultFilter);
+                    var hit = target.HitTestFirstCore<THitTester, T>(candidates[j].Visual, input, filter, resultFilter, out intersectionResult);
                     if (hit != null)
                         return hit;
                 }

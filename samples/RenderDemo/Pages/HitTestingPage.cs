@@ -183,7 +183,7 @@ namespace RenderDemo.Pages
 
                 foreach (var cell in cells)
                 {
-                    if(cell is Cell c)
+                    if(cell?.VisualHit is Cell c)
                     {
                         c.IsLatestClick = true;
                         c.UpdateHighlight();

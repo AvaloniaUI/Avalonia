@@ -226,7 +226,7 @@ namespace Avalonia.Headless
                 return false;
             }
 
-            public virtual IntersectionDetail FillContains(IGeometryImpl geometry)
+            public virtual IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
             {
                 var intersection = Intersect(geometry);
 
@@ -236,15 +236,15 @@ namespace Avalonia.Headless
                     var otherBounds = geometry.GetRenderBounds(null);
 
                     if (bounds.Contains(otherBounds))
-                        return IntersectionDetail.FullyContains;
+                        return IntersectionResult.FullyContains;
 
                     if (otherBounds.Contains(bounds))
-                        return IntersectionDetail.FullyInside;
+                        return IntersectionResult.FullyInside;
 
-                    return IntersectionDetail.Intersects;
+                    return IntersectionResult.Intersects;
                 }
 
-                return IntersectionDetail.Empty;
+                return IntersectionResult.Empty;
             }
         }
 
@@ -304,7 +304,7 @@ namespace Avalonia.Headless
             public List<Point> Points => _points;
 
 
-            public override IntersectionDetail FillContains(IGeometryImpl geometry)
+            public override IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
             {
                 if (geometry is IHeadlessGeometryWithEdges stub)
                 {
@@ -317,13 +317,13 @@ namespace Avalonia.Headless
                         var projection2 = stub.ProjectionOnAxis(axis);
 
                         if (max < projection2.min || projection2.max < min)
-                            return IntersectionDetail.Empty;
+                            return IntersectionResult.Empty;
                     }
 
-                    return IntersectionDetail.Intersects;
+                    return IntersectionResult.Intersects;
                 }
 
-                return base.FillContains(geometry);
+                return base.GetFillIntersectionResult(geometry);
             }
         }
 
@@ -393,12 +393,12 @@ namespace Avalonia.Headless
                 return _context.FillContains(point);
             }
 
-            public override IntersectionDetail FillContains(IGeometryImpl geometry)
+            public override IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
             {
                 if (geometry is IHeadlessGeometryWithEdges stub)
                     return _context.FillContains(stub);
 
-                return base.FillContains(geometry);
+                return base.GetFillIntersectionResult(geometry);
             }
 
             private class HeadlessStreamingGeometryContextStub : IStreamGeometryContextImpl, IHeadlessGeometryWithEdges
@@ -501,7 +501,7 @@ namespace Avalonia.Headless
                     return false;
                 }
 
-                public IntersectionDetail FillContains(IHeadlessGeometryWithEdges geometry)
+                public IntersectionResult FillContains(IHeadlessGeometryWithEdges geometry)
                 {
                     var axes = (this as IHeadlessGeometryWithEdges).GetAxes();
                     axes.AddRange(geometry.GetAxes());
@@ -512,10 +512,10 @@ namespace Avalonia.Headless
                         var projection2 = geometry.ProjectionOnAxis(axis);
 
                         if (max < projection2.min || projection2.max < min)
-                            return IntersectionDetail.Empty;
+                            return IntersectionResult.Empty;
                     }
 
-                    return IntersectionDetail.Intersects;
+                    return IntersectionResult.Intersects;
                 }
             }
         }

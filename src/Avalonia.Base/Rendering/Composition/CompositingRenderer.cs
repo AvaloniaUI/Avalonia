@@ -93,13 +93,14 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
     /// <inheritdoc/>
     public IEnumerable<Visual> HitTest(Point p, Visual? root, Func<Visual, bool>? filter)
-        => HitTest<PointCompositionHitTester, Point>(p, root, filter);
+        => HitTest<PointCompositionHitTester, Point, Visual>(p, root, filter);
 
-    public IEnumerable<Visual> HitTest(Geometry geometry, Visual? root, Func<Visual, bool>? filter)
-        => HitTest<GeometryCompositionHitTester, Geometry>(geometry, root, filter);
+    public IEnumerable<GeometryHitTestResult> HitTest(Geometry geometry, Visual? root, Func<Visual, bool>? filter)
+        => HitTest<GeometryCompositionHitTester, Geometry, GeometryHitTestResult>(geometry, root, filter);
 
-    private IEnumerable<Visual> HitTest<THitTester, T>(T input, Visual? root, Func<Visual, bool>? filter)
+    private IEnumerable<Y> HitTest<THitTester, T, Y>(T input, Visual? root, Func<Visual, bool>? filter)
         where THitTester : struct, ICompositionHitTester<T>
+        where Y : class
     {
         using var _ = Diagnostic.PerformingHitTest();
 
@@ -121,29 +122,44 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             };
 
         using var res = CompositionTarget.TryHitTest<THitTester, T>(input, rootVisual, f);
-        if(res == null)
+        if (res == null)
             yield break;
-        foreach(var v in res)
+
+        foreach (var v in res)
         {
-            if (v is CompositionDrawListVisual dv)
+            if (v.Item2 is CompositionDrawListVisual dv)
             {
-                if (filter == null || filter(dv.Visual))
-                    yield return dv.Visual;
+                if (typeof(Y) == typeof(Visual))
+                {
+                    if (filter == null || filter(dv.Visual))
+                        yield return (dv.Visual as Y)!;
+                }
+                else if (typeof(Y) == typeof(GeometryHitTestResult))
+                {
+                    if (filter == null || filter(dv.Visual))
+                        yield return (new GeometryHitTestResult(dv.Visual, v.Item1) as Y)!;
+                }
             }
         }
     }
 
     /// <inheritdoc/>
     public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter)
-        => HitTestFirst<PointCompositionHitTester, Point>(p, root, filter);
+        => HitTestFirst<PointCompositionHitTester, Point>(p, root, filter, out _);
 
     /// <inheritdoc/>
-    public Visual? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter)
-        => HitTestFirst<GeometryCompositionHitTester, Geometry>(geometry, root, filter);
+    public GeometryHitTestResult? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter)
+    {
+        var visual = HitTestFirst<GeometryCompositionHitTester, Geometry>(geometry, root, filter, out var intersectionResult);
 
-    private Visual? HitTestFirst<THitTester, T>(T input, Visual root, Func<Visual, bool>? filter)
+        return visual != null ? new GeometryHitTestResult(visual, intersectionResult) : null;
+    }
+
+    private Visual? HitTestFirst<THitTester, T>(T input, Visual root, Func<Visual, bool>? filter, out IntersectionResult intersectionResult)
         where THitTester : struct, ICompositionHitTester<T>
     {
+        intersectionResult = IntersectionResult.NotCalculated;
+
         using var _ = Diagnostic.PerformingHitTest();
 
         if (root.CompositionVisual == null)
@@ -153,7 +169,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             ? null :
             v => v is not CompositionDrawListVisual dlv || filter(dlv.Visual);
 
-        return CompositionTarget.TryHitTestFirst<THitTester, T>(input, root.CompositionVisual, f, static v => v is CompositionDrawListVisual)
+        return CompositionTarget.TryHitTestFirst<THitTester, T>(input, root.CompositionVisual, f, static v => v is CompositionDrawListVisual, out intersectionResult)
             is CompositionDrawListVisual dv ? dv.Visual : null;
     }
 

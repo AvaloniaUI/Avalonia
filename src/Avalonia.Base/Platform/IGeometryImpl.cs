@@ -50,8 +50,8 @@ namespace Avalonia.Platform
         /// Returns a value that describes the intersection between the current geometry and the specified geometry
         /// </summary>
         /// <param name="geometry">The geometry to test for containment.</param>
-        /// <returns>The <see cref="IntersectionDetail"/> describing the intersection between the geometries</returns>
-        IntersectionDetail FillContains(IGeometryImpl geometry);
+        /// <returns>The <see cref="IntersectionResult"/> describing the intersection between the geometries</returns>
+        IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry);
 
         /// <summary>
         /// Intersects the geometry with another geometry.

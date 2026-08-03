@@ -108,7 +108,7 @@ namespace Avalonia.Rendering
         /// children will be excluded from the results.
         /// </param>
         /// <returns>The visuals intersecting the specified geometry, topmost first.</returns>
-        IEnumerable<Visual> HitTest(Geometry geometry, Visual root, Func<Visual, bool> filter);
+        IEnumerable<GeometryHitTestResult> HitTest(Geometry geometry, Visual root, Func<Visual, bool> filter);
 
         /// <summary>
         /// Hit tests a location to find first visual at the specified point.
@@ -122,6 +122,6 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <inheritdoc cref="HitTest(Geometry, Visual, Func{Visual, bool}?)"/>
         /// <returns>The visuals intersecting the specified geometry, topmost first.</returns>
-        Visual? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter);
+        GeometryHitTestResult? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter);
     }
 }

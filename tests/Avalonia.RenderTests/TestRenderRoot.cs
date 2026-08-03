@@ -45,11 +45,11 @@ namespace Avalonia.Skia.RenderTests
         {
             public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter) => Array.Empty<Visual>();
 
-            public IEnumerable<Visual> HitTest(Geometry geometry, Visual root, Func<Visual, bool> filter) => Array.Empty<Visual>();
+            public IEnumerable<GeometryHitTestResult> HitTest(Geometry geometry, Visual root, Func<Visual, bool> filter) => Array.Empty<GeometryHitTestResult>();
 
             public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter) => null;
 
-            public Visual? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter) => null;
+            public GeometryHitTestResult? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter) => null;
         }
 
         internal void Initialize(CompositingRenderer renderer, Control child)

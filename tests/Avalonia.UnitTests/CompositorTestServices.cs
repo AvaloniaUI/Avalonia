@@ -108,7 +108,7 @@ public class CompositorTestServices : IDisposable
         Assert.Equal(expected, tested);
     }
 
-    public void AssertHitTest(Geometry geometry, Func<Visual, bool>? filter, params Visual[] expected)
+    public void AssertHitTest(Geometry geometry, Func<Visual, bool>? filter, params GeometryHitTestResult[] expected)
     {
         RunJobs();
         var tested = Renderer.HitTest(geometry, TopLevel, filter);
@@ -126,7 +126,7 @@ public class CompositorTestServices : IDisposable
     {
         RunJobs();
         var tested = Renderer.HitTestFirst(geometry, TopLevel, filter);
-        Assert.Equal(expected, tested);
+        Assert.Equal(expected, tested?.VisualHit);
     }
 
     public class DebugEvents : ICompositionTargetDebugEvents

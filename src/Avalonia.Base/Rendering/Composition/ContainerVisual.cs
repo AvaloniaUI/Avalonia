@@ -74,19 +74,21 @@ namespace Avalonia.Rendering.Composition
             T input,
             Func<CompositionVisual, bool>? filter,
             Func<CompositionVisual, bool>? resultFilter,
-            out CompositionVisual? hit)
+            out CompositionVisual? hit,
+            out IntersectionResult intersectionResult)
             where THitTester : struct, ICompositionHitTester<T>
         {
             if (Children.Count < HitTestAabbTreeThreshold)
             {
                 _hitTestChildren = null;
                 hit = null;
+                intersectionResult = IntersectionResult.Empty;
                 return false;
             }
 
             _hitTestChildren ??= new CompositionHitTestAabbTree(Children);
 
-            hit = _hitTestChildren.QueryFirst<THitTester, T>(target, input, filter, resultFilter, Server.Compositor.Readback.ReadRevision);
+            hit = _hitTestChildren.QueryFirst<THitTester, T>(target, input, filter, resultFilter, Server.Compositor.Readback.ReadRevision, out intersectionResult);
             return true;
         }
 

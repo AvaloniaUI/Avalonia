@@ -43,18 +43,19 @@ namespace Avalonia.Input
         /// <param name="geometry">The geometry on <paramref name="element"/>.</param>
         /// <param name="enabledElementsOnly">Whether to only return elements for which <see cref="IInputElement.IsEffectivelyEnabled"/> is true.</param>
         /// <returns>
-        /// The active input elements found intersecting the geometry, ordered topmost first.
+        /// The active input elements found intersecting the geometry, with intersection details, ordered topmost first.
         /// </returns>
-        public static IEnumerable<IInputElement> GetInputElementsAt(this IInputElement element, Geometry geometry, bool enabledElementsOnly = true)
+        public static IEnumerable<GeometryHitTestResult?> GetInputElementsAt(this IInputElement element, Geometry geometry, bool enabledElementsOnly = true)
         {
             element = element ?? throw new ArgumentNullException(nameof(element));
 
-            return (element as Visual)?.GetVisualsAt(geometry, enabledElementsOnly ? s_hitTestEnabledOnlyDelegate : s_hitTestDelegate).Cast<IInputElement>() ??
-                Enumerable.Empty<IInputElement>();
+            return (element as Visual)?.GetVisualsAt(geometry, enabledElementsOnly ? s_hitTestEnabledOnlyDelegate : s_hitTestDelegate)
+                .Select(x => x.VisualHit is IInputElement ? x : null) ??
+                Enumerable.Empty<GeometryHitTestResult>();
         }
 
         /// <inheritdoc cref="GetInputElementsAt(IInputElement, Geometry, bool)"/>
-        public static IEnumerable<IInputElement> GetInputElementsAt(this IInputElement element, Geometry geometry) => GetInputElementsAt(element, geometry, true);
+        public static IEnumerable<GeometryHitTestResult?> GetInputElementsAt(this IInputElement element, Geometry geometry) => GetInputElementsAt(element, geometry, true);
 
         /// <summary>
         /// Returns the topmost active input element at a point on an <see cref="IInputElement"/>.
@@ -79,16 +80,18 @@ namespace Avalonia.Input
         /// <param name="element">The element to test.</param>
         /// <param name="geometry">The geometry on <paramref name="element"/>.</param>
         /// <param name="enabledElementsOnly">Whether to only return elements for which <see cref="IInputElement.IsEffectivelyEnabled"/> is true.</param>
-        /// <returns>The topmost <see cref="IInputElement"/> intersecting the specified geometry.</returns>
-        public static IInputElement? InputHitTest(this IInputElement element, Geometry geometry, bool enabledElementsOnly = true)
+        /// <returns>A <see cref="GeometryHitTestResult"/> containing the topmost <see cref="IInputElement"/> intersecting the specified geometry and intersection details, or null if no element intersects.</returns>
+        public static GeometryHitTestResult? InputHitTest(this IInputElement element, Geometry geometry, bool enabledElementsOnly = true)
         {
             element = element ?? throw new ArgumentNullException(nameof(element));
 
-            return (element as Visual)?.GetVisualAt(geometry, enabledElementsOnly ? s_hitTestEnabledOnlyDelegate : s_hitTestDelegate) as IInputElement;
+            var hitTest = (element as Visual)?.GetVisualAt(geometry, enabledElementsOnly ? s_hitTestEnabledOnlyDelegate : s_hitTestDelegate);
+
+            return hitTest?.VisualHit is IInputElement inputElement ? hitTest : null;
         }
 
         /// <inheritdoc cref="InputHitTest(IInputElement, Geometry, bool)"/>
-        public static IInputElement? InputHitTest(this IInputElement element, Geometry geometry) => InputHitTest(element, geometry, true);
+        public static GeometryHitTestResult? InputHitTest(this IInputElement element, Geometry geometry) => InputHitTest(element, geometry, true);
 
         /// <summary>
         /// Returns the topmost active input element at a point on an <see cref="IInputElement"/>.
@@ -127,7 +130,7 @@ namespace Avalonia.Input
         /// children will be excluded from the results.
         /// </param>
         /// <param name="enabledElementsOnly">Whether to only return elements for which <see cref="IInputElement.IsEffectivelyEnabled"/> is true.</param>
-        /// <returns>The topmost <see cref="IInputElement"/> intersecting the specified geometry.</returns>
+        /// <returns>A <see cref="GeometryHitTestResult"/> containing the topmost <see cref="IInputElement"/> intersecting the specified geometry and intersection details, or null if no element intersects.</returns>
         public static IInputElement? InputHitTest(
             this IInputElement element,
             Geometry geometry,

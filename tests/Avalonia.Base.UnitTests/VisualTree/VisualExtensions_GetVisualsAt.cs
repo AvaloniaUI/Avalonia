@@ -85,7 +85,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
             var geo = new RectangleGeometry(target.Bounds);
             var result = target.GetVisualsAt(geo);
 
-            Assert.Same(target, result.Single());
+            Assert.Equal(new GeometryHitTestResult(target, IntersectionResult.FullyContains), result.Single());
         }
 
         [Fact]

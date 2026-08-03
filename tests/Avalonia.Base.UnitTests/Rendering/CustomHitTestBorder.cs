@@ -1,6 +1,5 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Rendering;
 
 namespace Avalonia.Base.UnitTests.Rendering
@@ -14,9 +13,9 @@ namespace Avalonia.Base.UnitTests.Rendering
                 .Contains(point);
         }
 
-         public IntersectionDetail HitTest(Geometry geometry)
+         public IntersectionResult HitTest(Geometry geometry)
         {
-            return new RectangleGeometry(new Rect(-Bounds.Width / 2, 0, Bounds.Width, Bounds.Height)).FillContains(geometry) ?? IntersectionDetail.Empty;
+            return new RectangleGeometry(new Rect(-Bounds.Width / 2, 0, Bounds.Width, Bounds.Height)).GetFillIntersectionResult(geometry) ?? IntersectionResult.Empty;
         }
     }
 }
