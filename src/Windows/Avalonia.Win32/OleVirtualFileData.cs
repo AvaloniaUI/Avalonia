@@ -378,6 +378,9 @@ internal static partial class OleVirtualFileData
         {
             ObjectDisposedException.ThrowIf(_stream == IntPtr.Zero, this);
 
+            if (buffer.IsEmpty)
+                return 0;
+
             uint bytesRead = 0;
             fixed (byte* pointer = buffer)
             {
