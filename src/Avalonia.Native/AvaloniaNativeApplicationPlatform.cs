@@ -16,8 +16,6 @@ namespace Avalonia.Native
 
         void IAvnApplicationEvents.FilesOpened(IAvnStringArray urls)
         {
-            ((IApplicationPlatformEvents?)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
-
             if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime
                 && AvaloniaLocator.Current.GetService<IStorageProviderFactory>() is StorageProviderApi storageApi)
             {
@@ -41,9 +39,6 @@ namespace Avalonia.Native
 
         void IAvnApplicationEvents.UrlsOpened(IAvnStringArray urls)
         {
-            // Raise the urls opened event to be compatible with legacy behavior.
-            ((IApplicationPlatformEvents?)Application.Current)?.RaiseUrlsOpened(urls.ToStringArray());
-
             if (AvaloniaLocator.Current.GetService<IActivatableLifetime>() is ActivatableLifetimeBase lifetime
                 && AvaloniaLocator.Current.GetService<IStorageProviderFactory>() is StorageProviderApi storageApi)
             {

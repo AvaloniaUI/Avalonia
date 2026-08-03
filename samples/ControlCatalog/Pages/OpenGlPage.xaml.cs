@@ -11,7 +11,7 @@ using ControlCatalog.Pages.OpenGl;
 
 namespace ControlCatalog.Pages
 {
-    public partial class OpenGlPage : UserControl
+    public partial class OpenGlPage : ContentPage
     {
         public OpenGlPage()
         {
@@ -76,6 +76,7 @@ namespace ControlCatalog.Pages
                 _knobs.Yaw, _knobs.Pitch, _knobs.Roll, _knobs.Disco);
             if (_knobs.Disco > 0.01)
                 RequestNextFrameRendering();
+            _knobs?.Info = _content.Info;
         }
     }
 }

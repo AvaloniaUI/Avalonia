@@ -79,11 +79,14 @@ public class DesignTests : ScopedTestBase
     }
 
     [Fact]
-    public void Should_Apply_Design_Mode_Properties()
+    public void Should_Apply_Design_Mode_Properties_From_Control_To_Window()
     {
         using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
 
+        // Use-case: User previews a control, which is wrapped by the window.
+        var window = new Window();
         var control = new ContentControl();
+        window.Content = control;
 
         Design.SetWidth(control, 200);
         Design.SetHeight(control, 150);
@@ -94,12 +97,12 @@ public class DesignTests : ScopedTestBase
                 Setters = { new Setter(TemplatedControl.BackgroundProperty, Brushes.Yellow) }
             });
 
-        Design.ApplyDesignModeProperties(control, control);
+        Design.ApplyDesignModeProperties(window, control);
 
-        Assert.Equal(200, control.Width);
-        Assert.Equal(150, control.Height);
-        Assert.Equal("TestDataContext", control.DataContext);
-        Assert.Contains(control.Styles,
+        Assert.Equal(200, window.Width);
+        Assert.Equal(150, window.Height);
+        Assert.Equal("TestDataContext", window.DataContext);
+        Assert.Contains(window.Styles,
             s => ((Style)s).Setters.OfType<Setter>().First().Property == TemplatedControl.BackgroundProperty);
     }
 

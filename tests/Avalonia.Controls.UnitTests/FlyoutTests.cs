@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -256,7 +257,7 @@ namespace Avalonia.Controls.UnitTests
                 var hitTester = new Mock<IHitTester>();
                 window.HitTesterOverride = hitTester.Object;
                 hitTester.Setup(x =>
-                    x.HitTestFirst(new Point(90, 90), window, It.IsAny<Func<Visual, bool>>()))
+                    x.HitTestFirst(new Point(90, 90), (Visual)window.VisualRoot!, It.IsAny<Func<Visual, bool>>()))
                     .Returns(button);
 
                 var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
@@ -299,7 +300,7 @@ namespace Avalonia.Controls.UnitTests
                 var hitTester = new Mock<IHitTester>();
                 window.HitTesterOverride = hitTester.Object;
                 hitTester.Setup(x =>
-                    x.HitTestFirst(new Point(90, 90), window, It.IsAny<Func<Visual, bool>>()))
+                    x.HitTestFirst(new Point(90, 90), (Visual)window.VisualRoot!, It.IsAny<Func<Visual, bool>>()))
                     .Returns(button);
 
                 var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
@@ -459,7 +460,7 @@ namespace Avalonia.Controls.UnitTests
                     ContextFlyout = flyout
                 };
                 var contextRequestedCount = 0;
-                target.AddHandler(Control.ContextRequestedEvent, (s, a) => contextRequestedCount++, Interactivity.RoutingStrategies.Tunnel);
+                target.AddHandler(InputElement.ContextRequestedEvent, (s, a) => contextRequestedCount++, Interactivity.RoutingStrategies.Tunnel);
 
                 var window = PreparedWindow(target);
                 window.Show();
@@ -646,6 +647,203 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void IsOpen_SetFalse_Closes_Flyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Show();
+
+                var flyout = new TestFlyout();
+                bool closedFired = false;
+                flyout.Closed += (s, e) => closedFired = true;
+
+                flyout.ShowAt(window);
+                Assert.True(flyout.IsOpen);
+
+                flyout.IsOpen = false;
+
+                Assert.False(flyout.IsOpen);
+                Assert.False(flyout.Popup.IsOpen);
+                Assert.True(closedFired);
+            }
+        }
+
+        [Fact]
+        public void IsOpen_SetTrue_Reopens_At_Last_Target()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Show();
+
+                var flyout = new TestFlyout();
+                flyout.ShowAt(window);
+                Assert.True(flyout.IsOpen);
+
+                flyout.Hide();
+                Assert.False(flyout.IsOpen);
+
+                flyout.IsOpen = true;
+
+                Assert.True(flyout.IsOpen);
+                Assert.True(flyout.Popup.IsOpen);
+                Assert.Equal(window, flyout.Popup.PlacementTarget);
+            }
+        }
+
+        [Fact]
+        public void IsOpen_SetTrue_Without_Previous_Target_Reverts_To_False()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Show();
+
+                var flyout = new TestFlyout();
+
+                flyout.IsOpen = true;
+
+                Assert.False(flyout.IsOpen);
+                Assert.False(flyout.Popup.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void IsOpen_SetTrue_Opens_At_Button_Flyout_Owner()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var button = new Button();
+                var window = PreparedWindow(button);
+                window.Show();
+
+                var flyout = new TestFlyout();
+                button.Flyout = flyout;
+
+                flyout.IsOpen = true;
+
+                Assert.True(flyout.IsOpen);
+                Assert.True(flyout.Popup.IsOpen);
+                Assert.Equal(button, flyout.Popup.PlacementTarget);
+            }
+        }
+
+        [Fact]
+        public void IsOpen_Button_Flyout_Removed_Clears_Target()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var button = new Button();
+                var window = PreparedWindow(button);
+                window.Show();
+
+                var flyout = new TestFlyout();
+                button.Flyout = flyout;
+
+                button.Flyout = null;
+
+                flyout.IsOpen = true;
+
+                Assert.False(flyout.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void IsOpen_TwoWay_Binding_Syncs_With_Source()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Show();
+
+                var viewModel = new FlyoutViewModel();
+                var flyout = new TestFlyout();
+                flyout.Bind(FlyoutBase.IsOpenProperty, new Binding(nameof(FlyoutViewModel.IsOpen))
+                {
+                    Source = viewModel,
+                    Mode = BindingMode.TwoWay
+                });
+
+                Assert.False(viewModel.IsOpen);
+
+                flyout.ShowAt(window);
+                Assert.True(viewModel.IsOpen);
+
+                flyout.Hide();
+                Assert.False(viewModel.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void IsOpen_SetFalse_Cancelled_Closing_Reverts_To_True()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Show();
+
+                var flyout = new TestFlyout();
+                flyout.Closing += (s, e) => e.Cancel = true;
+
+                flyout.ShowAt(window);
+                Assert.True(flyout.IsOpen);
+
+                flyout.IsOpen = false;
+
+                Assert.True(flyout.IsOpen);
+                Assert.True(flyout.Popup.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void IsOpen_SetTrue_After_Target_Detached_Reverts_To_False()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var target = new Button();
+                var window = PreparedWindow(target);
+                window.Show();
+
+                var flyout = new TestFlyout();
+                flyout.ShowAt(target);
+                Assert.True(flyout.IsOpen);
+
+                // Detach the target from the visual tree
+                window.Content = null;
+                Assert.False(flyout.IsOpen);
+
+                flyout.IsOpen = true;
+
+                Assert.False(flyout.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void IsOpen_SetTrue_Cancelled_Opening_Reverts_To_False()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Show();
+
+                var flyout = new TestFlyout();
+                flyout.ShowAt(window);
+                flyout.Hide();
+
+                flyout.Opening += (s, e) =>
+                {
+                    if (e is CancelEventArgs cancelArgs)
+                        cancelArgs.Cancel = true;
+                };
+
+                flyout.IsOpen = true;
+
+                Assert.False(flyout.IsOpen);
+            }
+        }
+
         private IDisposable CreateServicesWithFocus()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
@@ -677,10 +875,30 @@ namespace Avalonia.Controls.UnitTests
                 new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
                 KeyModifiers.None);
         }
-        
+
         public class TestFlyout : Flyout
         {
             public new Popup Popup => base.Popup;
+        }
+
+        private class FlyoutViewModel : INotifyPropertyChanged
+        {
+            private bool _isOpen;
+
+            public bool IsOpen
+            {
+                get => _isOpen;
+                set
+                {
+                    if (_isOpen != value)
+                    {
+                        _isOpen = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsOpen)));
+                    }
+                }
+            }
+
+            public event PropertyChangedEventHandler? PropertyChanged;
         }
     }
 

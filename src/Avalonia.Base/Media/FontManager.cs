@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Logging;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -199,7 +200,7 @@ namespace Avalonia.Media
                     return true;
                 }
 
-                var logger = Logger.TryGet(LogEventLevel.Debug, "FontManager");
+                var logger = Logger.TryGet(LogEventLevel.Debug, LogArea.Fonts);
 
                 logger?.Log(this,
                     $"Font family '{familyName}' could not be found. Present font families: [{string.Join(",", fontCollection)}]");
@@ -262,6 +263,17 @@ namespace Avalonia.Media
         /// </returns>
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
             FontStretch fontStretch, FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
+            => TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily, culture,
+                Script.Unknown, out typeface);
+
+        /// <summary>
+        /// Character-to-typeface match with an optional shaping-capability constraint: when
+        /// <paramref name="shapingScript"/> is a complex script, only fonts that can shape it are
+        /// considered. <see cref="Script.Unknown"/> imposes no constraint and is identical to the
+        /// public overload.
+        /// </summary>
+        internal bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
+            FontStretch fontStretch, FontFamily? fontFamily, CultureInfo? culture, Script shapingScript, out Typeface typeface)
         {
             if (_fontFallbacks != null)
             {
@@ -271,7 +283,9 @@ namespace Avalonia.Media
                     {
                         typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
 
-                        if (TryGetGlyphTypeface(typeface, out var glyphTypeface) && glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
+                        if (TryGetGlyphTypeface(typeface, out var glyphTypeface) &&
+                            glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _) &&
+                            (shapingScript == Script.Unknown || glyphTypeface.CanShapeScript(shapingScript)))
                         {
                             return true;
                         }
@@ -298,7 +312,7 @@ namespace Avalonia.Media
                         if (TryGetFontCollection(source, out var fontCollection) &&
                             // With composite fonts we need to first check if the font collection contains the family if not we skip it
                             fontCollection.TryGetGlyphTypeface(familyName, fontStyle, fontWeight, fontStretch, out _) &&
-                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out typeface))
+                            TryMatchCharacterInCollection(fontCollection, codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, shapingScript, out typeface))
                         {
                             if (typeface.FontFamily.Name == DefaultFontFamily.Name && i + 1 < compositeKey.Keys.Count)
                             {
@@ -315,7 +329,7 @@ namespace Avalonia.Media
                 if (fontUri.IsFontCollection())
                 {
                     if (TryGetFontCollection(fontUri, out var fontCollection) &&
-                            fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily.Name, culture, out typeface))
+                            TryMatchCharacterInCollection(fontCollection, codepoint, fontStyle, fontWeight, fontStretch, fontFamily.Name, culture, shapingScript, out typeface))
                     {
                         return true;
                     }
@@ -323,7 +337,23 @@ namespace Avalonia.Media
             }
 
             //Try to find a match with the system font collection
-            return SystemFonts.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, fontFamily?.Name,
+            return TryMatchCharacterInCollection(SystemFonts, codepoint, fontStyle, fontWeight, fontStretch,
+                fontFamily?.Name, culture, shapingScript, out typeface);
+        }
+
+        // Routes through the shaping-aware overload when the collection is a FontCollectionBase (all
+        // built-in collections are); a foreign IFontCollection gets the unconstrained match.
+        private static bool TryMatchCharacterInCollection(IFontCollection fontCollection, int codepoint,
+            FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, string? familyName,
+            CultureInfo? culture, Script shapingScript, out Typeface typeface)
+        {
+            if (fontCollection is FontCollectionBase fontCollectionBase)
+            {
+                return fontCollectionBase.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch,
+                    familyName, culture, shapingScript, out typeface);
+            }
+
+            return fontCollection.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName,
                 culture, out typeface);
         }
 
@@ -351,36 +381,58 @@ namespace Avalonia.Media
             return [];
         }
 
-        private bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
+        internal bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
         {
             Debug.Assert(source.IsAbsoluteUri);
 
-            if (source.Scheme == SystemFontScheme)
+            // Both the systemfont: scheme and SystemFontsKey (fonts:SystemFonts) map to the system
+            // font collection. SystemFontsKey is checked before the generic IsFontCollection branch
+            // so that the SystemFontCollection is created on demand regardless of which URI form is used.
+            if (source.Scheme == SystemFontScheme || source == SystemFontsKey)
             {
-                source = SystemFontsKey;
+                fontCollection = GetOrCreateFontCollection(SystemFontsKey, PlatformImpl,
+                    static (_, impl) => new SystemFontCollection(impl));
+                return true;
             }
 
-            if (!_fontCollections.TryGetValue(source, out fontCollection))
+            // Other fonts: URIs are only returned when they have been explicitly registered
+            // via AddFontCollection — no implicit creation to avoid caching null for unknown keys.
+            if (source.IsFontCollection())
             {
-                if (source == SystemFontsKey)
-                {
-                    fontCollection = new SystemFontCollection(PlatformImpl);
-                }
-                else
-                {
-                    if (source.IsAbsoluteResm() || source.IsAvares())
-                    {
-                        fontCollection = new EmbeddedFontCollection(source, source);
-                    }
-                }
-
-                if (fontCollection != null)
-                {
-                    return _fontCollections.TryAdd(fontCollection.Key, fontCollection);
-                }
+                return _fontCollections.TryGetValue(source, out fontCollection);
             }
 
-            return fontCollection != null;
+            if (source.IsAbsoluteResm() || source.IsAvares())
+            {
+                fontCollection = GetOrCreateFontCollection(source, 0,
+                    static (key, _) => new EmbeddedFontCollection(key, key));
+                return true;
+            }
+
+            fontCollection = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Thread-safe get-or-create that disposes any candidate that loses the insertion race,
+        /// preventing resource leaks that <see cref="ConcurrentDictionary{TKey,TValue}.GetOrAdd(TKey,Func{TKey,TValue})"/>
+        /// can cause when the factory is invoked concurrently by multiple threads.
+        /// </summary>
+        private IFontCollection GetOrCreateFontCollection<TState>(Uri key, TState state, Func<Uri, TState, IFontCollection> factory)
+        {
+            if (_fontCollections.TryGetValue(key, out var existing))
+                return existing;
+
+            var candidate = factory(key, state);
+
+            // GetOrAdd(key, value) atomically inserts or returns the existing value;
+            // it never invokes a factory, so only one IFontCollection instance survives.
+            var winner = _fontCollections.GetOrAdd(key, candidate);
+
+            if (!ReferenceEquals(winner, candidate))
+                candidate.Dispose(); // Our candidate lost the race – dispose it to avoid the leak.
+
+            return winner;
         }
 
         private string GetDefaultFontFamilyName(FontManagerOptions? options)

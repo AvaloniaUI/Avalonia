@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Logging;
+using Avalonia.Media.Imaging;
 using Avalonia.Native.Interop;
 
 namespace Avalonia.Native;
@@ -18,7 +19,7 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
     private readonly IDataTransferItem _item = item;
 
     IAvnStringArray IAvnClipboardDataItem.ProvideFormats()
-        => new AvnStringArray(_item.Formats.Select(ClipboardDataFormatHelper.ToNativeFormat));
+        => new AvnStringArray(_item.Formats.Where(f => f.Kind != DataFormatKind.InProcess).Select(ClipboardDataFormatHelper.ToNativeFormat));
 
     IAvnClipboardDataValue? IAvnClipboardDataItem.GetValue(string format)
     {
@@ -35,7 +36,7 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
                 if (_item.TryGetValue(DataFormat.Bitmap) is { } bitmap)
                 {
                     var memoryStream = new MemoryStream();
-                    bitmap.Save(memoryStream);
+                    bitmap.Save(memoryStream, PngBitmapEncoderOptions.Default);
                     memoryStream.Seek(0, SeekOrigin.Begin);
                     return new StreamValue(memoryStream);
                 }
@@ -63,6 +64,8 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
         for (var i = 0; i < count; i++)
         {
             var format = formats[i];
+            if (format.Kind == DataFormatKind.InProcess)
+                continue;
             if (ClipboardDataFormatHelper.ToNativeFormat(format) == nativeFormat)
                 return format;
         }

@@ -20,7 +20,9 @@ namespace Avalonia
         /// <returns>The configured <see cref="AppBuilder"/> instance.</returns>
         public static AppBuilder UseHarfBuzz(this AppBuilder builder)
         {
-            return builder.With<ITextShaperImpl>(new HarfBuzzTextShaper());
+            return builder.UseTextShapingSubsystem(
+                () => AvaloniaLocator.CurrentMutable.Bind<ITextShaperImpl>().ToConstant(new HarfBuzzTextShaper()),
+                "HarfBuzz");
         }
     }
 

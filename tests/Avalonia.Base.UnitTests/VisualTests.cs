@@ -73,18 +73,19 @@ namespace Avalonia.Base.UnitTests
             var root = new TestRoot();
             var called1 = false;
             var called2 = false;
-
+            
             child1.AttachedToVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                // TODO: Tests are running against TestRoot, so behavior DOES NOT match the actual TopLevel.
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called1 = true;
             };
 
             child2.AttachedToVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called2 = true;
             };
 
@@ -107,15 +108,16 @@ namespace Avalonia.Base.UnitTests
 
             child1.DetachedFromVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                // TODO: Tests are running against TestRoot, so behavior DOES NOT match the actual TopLevel.
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called1 = true;
             };
 
             child2.DetachedFromVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called2 = true;
             };
 
@@ -123,6 +125,87 @@ namespace Avalonia.Base.UnitTests
 
             Assert.True(called1);
             Assert.True(called2);
+        }
+
+        [Fact]
+        public void VisualChildren_Can_Be_Added_During_AttachedToVisualTree()
+        {
+            var root = new TestRoot();
+            var parent = new TestVisual();
+            var child1 = new TestVisual();
+            var child2 = new TestVisual();
+
+            parent.AddChild(child1);
+
+            child1.AttachedToVisualTree += (_, _) => parent.AddChild(child2);
+
+            root.VisualChildren.Add(parent);
+
+            Assert.Equal([child1, child2], parent.VisualChildren);
+            Assert.True(child1.IsAttachedToVisualTree());
+            Assert.True(child2.IsAttachedToVisualTree());
+        }
+
+        [Fact]
+        public void VisualChildren_Can_Be_Removed_During_AttachedToVisualTree()
+        {
+            var root = new TestRoot();
+            var parent = new TestVisual();
+            var child1 = new TestVisual();
+            var child2 = new TestVisual();
+
+            parent.AddChildren([child1, child2]);
+
+            child1.AttachedToVisualTree += (_, _) => parent.RemoveChild(child2);
+
+            root.VisualChildren.Add(parent);
+
+            Assert.Equal([child1], parent.VisualChildren);
+            Assert.True(child1.IsAttachedToVisualTree());
+            Assert.False(child2.IsAttachedToVisualTree());
+        }
+
+        [Fact]
+        public void VisualChildren_Can_Be_Added_During_DetachedFromVisualTree()
+        {
+            var root = new TestRoot();
+            var parent = new TestVisual();
+            var child1 = new TestVisual();
+            var child2 = new TestVisual();
+
+            parent.AddChild(child1);
+            root.VisualChildren.Add(parent);
+
+            child1.DetachedFromVisualTree += (_, _) => parent.AddChild(child2);
+
+            root.VisualChildren.Remove(parent);
+
+            Assert.Equal([child1, child2], parent.VisualChildren);
+            Assert.False(child1.IsAttachedToVisualTree());
+            Assert.False(child2.IsAttachedToVisualTree());
+        }
+
+        [Fact]
+        public void VisualChildren_Can_Be_Removed_During_DetachedFromVisualTree()
+        {
+            var root = new TestRoot();
+            var parent = new TestVisual();
+            var child1 = new TestVisual();
+            var child2 = new TestVisual();
+            var child2Detached = 0;
+
+            parent.AddChildren([child1, child2]);
+            root.VisualChildren.Add(parent);
+
+            child1.DetachedFromVisualTree += (_, _) => parent.RemoveChild(child2);
+            child2.DetachedFromVisualTree += (_, _) => ++child2Detached;
+
+            root.VisualChildren.Remove(parent);
+
+            Assert.Equal([child1], parent.VisualChildren);
+            Assert.False(child1.IsAttachedToVisualTree());
+            Assert.False(child2.IsAttachedToVisualTree());
+            Assert.Equal(1, child2Detached);
         }
 
         [Fact]

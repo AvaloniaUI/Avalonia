@@ -10,20 +10,13 @@ internal struct RefCountingSmallDictionary<TKey> : IEnumerable<KeyValuePair<TKey
 
     public bool Add(TKey key)
     {
-#if NET6_0_OR_GREATER
         ref var cnt = ref _counts.GetValueRefOrAddDefault(key, out bool exists);
         cnt++;
-#else
-        var exists = _counts.TryGetValue(key, out var cnt);
-        cnt++;
-        _counts[key] = cnt;
-#endif
         return !exists;
     }
 
     public bool Remove(TKey key)
     {
-#if NET6_0_OR_GREATER
         ref var cnt = ref _counts.GetValueRefOrNullRef(key);
         cnt--;
         if (cnt == 0)
@@ -31,17 +24,6 @@ internal struct RefCountingSmallDictionary<TKey> : IEnumerable<KeyValuePair<TKey
             _counts.Remove(key);
             return true;
         }
-#else
-        var cnt = _counts[key];
-        cnt--;
-        if (cnt == 0)
-        {
-            _counts.Remove(key);
-            return true;
-        }
-
-        _counts[key] = cnt;
-#endif
         
         return false;
     }

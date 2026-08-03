@@ -22,13 +22,13 @@ namespace Avalonia.UnitTests
             _popupImpl = popupImpl;
         }
 
-        public static Mock<IWindowImpl> CreateWindowMock(double initialWidth = 800, double initialHeight = 600)
+        public static Mock<IWindowImpl> CreateWindowMock(double initialWidth = 800, double initialHeight = 600, Compositor? compositor = null)
         {
             var windowImpl = new Mock<IWindowImpl>();
             var clientSize = new Size(initialWidth,  initialHeight);
 
             windowImpl.SetupAllProperties();
-            var compositor = RendererMocks.CreateDummyCompositor();
+            compositor ??= RendererMocks.CreateDummyCompositor();
             windowImpl.Setup(x => x.Compositor).Returns(compositor);
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
@@ -126,7 +126,7 @@ namespace Avalonia.UnitTests
         {
             var screenImpl = new Mock<IScreenImpl>();
             var bounds = new PixelRect(0, 0, (int)s_screenSize.Width, (int)s_screenSize.Height);
-            var screen = new Screen(96, bounds, bounds, true);
+            var screen = new MockScreen(96, bounds, bounds, true);
             screenImpl.Setup(x => x.AllScreens).Returns(new[] { screen });
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
             return screenImpl;
@@ -162,5 +162,8 @@ namespace Avalonia.UnitTests
         {
             return null;
         }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+            => zOrder.Clear();
     }
 }

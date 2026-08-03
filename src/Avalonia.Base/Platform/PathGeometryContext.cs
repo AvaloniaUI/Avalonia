@@ -21,7 +21,7 @@ namespace Avalonia.Visuals.Platform
         }
 
         /// <inheritdoc/>
-        public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
+        public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true)
         {
             var arcSegment = new ArcSegment
             {
@@ -29,7 +29,8 @@ namespace Avalonia.Visuals.Platform
                 RotationAngle = rotationAngle,
                 IsLargeArc = isLargeArc,
                 SweepDirection = sweepDirection,
-                Point = point
+                Point = point,
+                IsStroked = isStroked
             };
 
             CurrentFigureSegments().Add(arcSegment);
@@ -47,27 +48,39 @@ namespace Avalonia.Visuals.Platform
         }
 
         /// <inheritdoc/>
-        public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint)
+        public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked = true)
         {
-            var bezierSegment = new BezierSegment { Point1 = controlPoint1, Point2 = controlPoint2, Point3 = endPoint };
+            var bezierSegment = new BezierSegment
+            {
+                Point1 = controlPoint1,
+                Point2 = controlPoint2,
+                Point3 = endPoint,
+                IsStroked = isStroked
+            };
 
             CurrentFigureSegments().Add(bezierSegment);
         }
 
         /// <inheritdoc/>
-        public void QuadraticBezierTo(Point controlPoint , Point endPoint)
+        public void QuadraticBezierTo(Point controlPoint , Point endPoint, bool isStroked = true)
         {
-            var quadraticBezierSegment = new QuadraticBezierSegment { Point1 = controlPoint , Point2 = endPoint };
+            var quadraticBezierSegment = new QuadraticBezierSegment
+            {
+                Point1 = controlPoint,
+                Point2 = endPoint,
+                IsStroked = isStroked
+            };
 
             CurrentFigureSegments().Add(quadraticBezierSegment);
         }
 
         /// <inheritdoc/>
-        public void LineTo(Point endPoint)
+        public void LineTo(Point point, bool isStroked = true)
         {
             var lineSegment = new LineSegment
             {
-                Point = endPoint
+                Point = point,
+                IsStroked = isStroked
             };
 
             CurrentFigureSegments().Add(lineSegment);

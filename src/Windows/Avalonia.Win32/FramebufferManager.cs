@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Internal;
 using Avalonia.Win32.Interop;
@@ -49,7 +49,7 @@ namespace Avalonia.Win32
 
                 return fb = new LockedFramebuffer(
                     framebufferData.Data.Address, framebufferData.Size, framebufferData.RowBytes,
-                    GetCurrentDpi(), s_format, _onDisposeAction);
+                    GetCurrentDpi(), s_format, AlphaFormat.Premul, _onDisposeAction);
             }
             finally
             {

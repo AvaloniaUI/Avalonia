@@ -52,6 +52,7 @@ namespace Avalonia.UnitTests
 
                 (AvaloniaLocator.Current.GetService<IToolTipService>() as ToolTipService)?.Dispose();
                 (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
+                (AvaloniaLocator.Current.GetService<IInputManager>() as IDisposable)?.Dispose();
 
                 Dispatcher.ResetForUnitTests();
                 scope.Dispose();
@@ -84,13 +85,11 @@ namespace Avalonia.UnitTests
                 .Bind<IPlatformRenderInterface?>().ToConstant(Services.RenderInterface)
                 .Bind<IFontManagerImpl?>().ToConstant(Services.FontManagerImpl)
                 .Bind<ITextShaperImpl?>().ToConstant(Services.TextShaperImpl)
-                .Bind<IDispatcherImpl?>().ToConstant(Services.DispatcherImpl)
                 .Bind<ICursorFactory?>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform?>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<IAccessKeyHandler?>().ToConstant(Services.AccessKeyHandler)
-                ;
+                .Bind<IAccessKeyHandler?>().ToFunc(Services.AccessKeyHandler ?? (() => null));
             
             // This is a hack to make tests work, we need to refactor the way font manager is registered
             // See https://github.com/AvaloniaUI/Avalonia/issues/10081

@@ -265,6 +265,8 @@ public class StyleIncludeTests : XamlTestBase
     [Fact]
     public void StyleInclude_Should_Be_Replaced_With_Direct_Call()
     {
+        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
         var control = (ContentControl)AvaloniaRuntimeXamlLoader.Load(@"
 <ContentControl xmlns='https://github.com/avaloniaui'
                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
@@ -281,6 +283,8 @@ public class StyleIncludeTests : XamlTestBase
     [Fact]
     public void Style_Inside_Resources_Should_Produce_Warning()
     {
+        using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
         var diagnostics = new List<RuntimeXamlDiagnostic>();
         var control = (ContentControl)AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(@"
 <ContentControl xmlns='https://github.com/avaloniaui'

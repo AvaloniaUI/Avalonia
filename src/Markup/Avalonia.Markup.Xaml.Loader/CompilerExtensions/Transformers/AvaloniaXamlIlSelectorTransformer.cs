@@ -209,8 +209,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 throw new XamlSelectorsTransformException("Unable to parse selector: " + e.Message, node, e);
             }
 
+            // Selectors should resolve control types only.
+            // isMarkupExtension = false to prevent resolving selector types to XExtension.
             var selector = Create(parsed, (p, n) 
-                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
+                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", false, node, true));
             pn.Values[0] = selector;
 
             var templateType = GetLastTemplateTypeFromSelector(selector);
@@ -311,7 +313,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         protected void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, Func<IXamlMethod, bool> method)
         {
-            var selectors = context.Configuration.TypeSystem.GetType("Avalonia.Styling.Selectors");
+            var selectors = context.GetAvaloniaTypes().Selectors;
             var found = selectors.GetMethod(m => m.IsStatic && m.Parameters.Count > 0 && method(m));
             codeGen.EmitCall(found);
         }
@@ -344,7 +346,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             var name = Concrete ? "OfType" : "Is";
             codeGen.Ldtype(TargetType);
             EmitCall(context, codeGen,
-                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].FullName == "System.Type");
+                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].Is("System", "Type"));
         }
     }
     
@@ -373,7 +375,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             codeGen.Ldstr(String);
             var name = _type.ToString();
             EmitCall(context, codeGen,
-                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].FullName == "System.String");
+                m => m.Name == name && m.Parameters.Count == 2 && m.Parameters[1].Is("System", "String"));
         }
     }
 
@@ -477,8 +479,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             EmitCall(context, codeGen,
                 m => m.Name == "PropertyEquals"
                      && m.Parameters.Count == 3
-                     && m.Parameters[1].FullName == "Avalonia.AvaloniaProperty"
-                     && m.Parameters[2].Equals(context.Configuration.WellKnownTypes.Object));
+                     && m.Parameters[1].Is("Avalonia", "AvaloniaProperty")
+                     && m.Parameters[2].Is("System", "Object"));
         }
     }
 
@@ -506,8 +508,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             EmitCall(context, codeGen,
                 m => m.Name == "PropertyEquals"
                      && m.Parameters.Count == 3
-                     && m.Parameters[1].FullName == "Avalonia.AvaloniaProperty"
-                     && m.Parameters[2].Equals(context.Configuration.WellKnownTypes.Object));
+                     && m.Parameters[1].Is("Avalonia", "AvaloniaProperty")
+                     && m.Parameters[2].Is("System", "Object"));
         }
     }
 
@@ -562,7 +564,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 _selectors[0].Emit(context, codeGen);
                 return;
             }
-            var listType = context.Configuration.TypeSystem.GetType("System.Collections.Generic.List`1")
+            var listType = context.Configuration.WellKnownTypes.ListOfT
                 .MakeGenericType(base.Type.GetClrType());
             var add = listType.GetMethod("Add", context.Configuration.WellKnownTypes.Void, false, Type.GetClrType());
             codeGen

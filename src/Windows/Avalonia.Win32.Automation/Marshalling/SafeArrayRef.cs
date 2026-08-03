@@ -8,13 +8,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Avalonia.Controls.Documents;
 // ReSharper disable InconsistentNaming
 
 namespace Avalonia.Win32.Automation.Marshalling;
 
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
-#if NET7_0_OR_GREATER
 internal unsafe partial struct SafeArrayRef
 {
     private SAFEARRAY* _ptr;
@@ -340,4 +338,3 @@ internal unsafe partial struct SafeArrayRef
         }
     }
 }
-#endif

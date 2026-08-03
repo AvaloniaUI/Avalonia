@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ModernMyTripsView">
+
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel>
+
+      <!-- Header -->
+      <Border Background="#101f22" Padding="16,20,16,20">
+        <StackPanel Spacing="4">
+          <TextBlock Text="My Trips" FontSize="24" FontWeight="Bold"
+                     Foreground="White"/>
+          <TextBlock Text="4 adventures · 4 countries"
+                     FontSize="13" Foreground="#0dccf2"/>
+        </StackPanel>
+      </Border>
+
+      <!-- Trip cards wrap panel -->
+      <Border Padding="10,10,2,10">
+        <WrapPanel HorizontalAlignment="Stretch">
+
+          <!-- Tokyo Night Life -->
+          <Border Width="170" Height="180" CornerRadius="10" ClipToBounds="True"
+                  Background="#8a9ba3" Margin="0,0,8,8">
+            <Grid>
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/exp_tokyo.jpg"
+                     Stretch="UniformToFill"/>
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,50%" EndPoint="0%,100%">
+                    <GradientStop Color="#00000000" Offset="0"/>
+                    <GradientStop Color="#C8000000" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="10,0,10,10" Spacing="1">
+                <TextBlock Text="Tokyo Night Life" Foreground="White"
+                           FontSize="13" FontWeight="SemiBold"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="Tokyo, JP · Mar 2025"
+                           Foreground="White" FontSize="10" Opacity="0.75"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- Angkor Wat Sunrise -->
+          <Border Width="170" Height="180" CornerRadius="10" ClipToBounds="True"
+                  Background="#8a9ba3" Margin="0,0,8,8">
+            <Grid>
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/exp_angkor.jpg"
+                     Stretch="UniformToFill"/>
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,50%" EndPoint="0%,100%">
+                    <GradientStop Color="#00000000" Offset="0"/>
+                    <GradientStop Color="#C8000000" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="10,0,10,10" Spacing="1">
+                <TextBlock Text="Angkor Wat Sunrise" Foreground="White"
+                           FontSize="13" FontWeight="SemiBold"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="Siem Reap, KH · Jan 2025"
+                           Foreground="White" FontSize="10" Opacity="0.75"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- Mount Peak Hike -->
+          <Border Width="170" Height="180" CornerRadius="10" ClipToBounds="True"
+                  Background="#8a9ba3" Margin="0,0,8,8">
+            <Grid>
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/dest_alps.jpg"
+                     Stretch="UniformToFill"/>
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,50%" EndPoint="0%,100%">
+                    <GradientStop Color="#00000000" Offset="0"/>
+                    <GradientStop Color="#C8000000" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="10,0,10,10" Spacing="1">
+                <TextBlock Text="Mount Peak Hike" Foreground="White"
+                           FontSize="13" FontWeight="SemiBold"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="Swiss Alps, CH · Dec 2024"
+                           Foreground="White" FontSize="10" Opacity="0.75"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <!-- Forest Trek -->
+          <Border Width="170" Height="180" CornerRadius="10" ClipToBounds="True"
+                  Background="#8a9ba3" Margin="0,0,8,8">
+            <Grid>
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/dest_forest.jpg"
+                     Stretch="UniformToFill"/>
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,50%" EndPoint="0%,100%">
+                    <GradientStop Color="#00000000" Offset="0"/>
+                    <GradientStop Color="#C8000000" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="10,0,10,10" Spacing="1">
+                <TextBlock Text="Forest Trek" Foreground="White"
+                           FontSize="13" FontWeight="SemiBold"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="Oregon, US · Oct 2024"
+                           Foreground="White" FontSize="10" Opacity="0.75"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+
+        </WrapPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

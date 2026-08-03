@@ -8,14 +8,10 @@ namespace Avalonia.Data;
 /// for new code.
 /// </summary>
 [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
-#if NET8_0_OR_GREATER
-    [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
-#endif
+[RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
 public class Binding : ReflectionBinding
 {
     public Binding() { }
 
     public Binding(string path) : base(path) { }
-
-    public Binding(string path, BindingMode mode) : base(path, mode) { }
 }

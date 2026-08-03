@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +9,6 @@ using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -145,15 +145,20 @@ namespace Avalonia.Controls.Primitives
         private int _oldSelectedIndex;
         private WeakReference _oldSelectedItem = new(null);
         private WeakReference<IList?> _oldSelectedItems = new(null);
+        private readonly List<object?> _selectedItemsSnapshot = new();
+        private object?[]? _selectedItemsBeforeReset;
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
         private bool _hasScrolledToSelectedItem;
         private BindingEvaluator<object?>? _selectedValueBindingEvaluator;
         private bool _isSelectionChangeActive;
+        private int _unverifiedSelectedIndex = -1;
 
         public SelectingItemsControl()
         {
-            ((ItemCollection)ItemsView).SourceChanged += OnItemsViewSourceChanged;
+            var items = (ItemCollection)ItemsView;
+            items.SourceChanged += OnItemsViewSourceChanged;
+            items.PreCollectionChanged += OnItemsViewPreCollectionChanged;
         }
 
         /// <summary>
@@ -461,7 +466,15 @@ namespace Avalonia.Controls.Primitives
 
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
-                SelectedIndex = 0;
+                SelectedIndex = ChooseFirstVisibleAndEnabledIndex();
+            }
+        }
+
+        private void OnItemsViewPreCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset && _selectedItemsSnapshot.Count > 0)
+            {
+                _selectedItemsBeforeReset = _selectedItemsSnapshot.ToArray();
             }
         }
 
@@ -478,16 +491,13 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
-            {
-                LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
-
-                AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
-            }
-
             if (AutoScrollToSelectedItem)
             {
-                LayoutUpdated += ExecuteScrollWhenLayoutUpdated;
+                Dispatcher.UIThread.Post(static state =>
+                {
+                    var control = (SelectingItemsControl)state!;
+                    control.AutoScrollToSelectedItemIfNecessary(control.GetAnchorIndex());
+                }, this);
             }
         }
 
@@ -534,6 +544,18 @@ namespace Avalonia.Controls.Primitives
 
             if (Selection.AnchorIndex == index)
                 KeyboardNavigation.SetTabOnceActiveElement(this, container);
+
+            if (AlwaysSelected)
+            {
+                if (SelectedIndex == -1 && container is { IsVisible: true, IsEnabled: true })
+                {
+                    SelectedIndex = index;
+                }
+                else if (index == SelectedIndex && (!container.IsVisible || !container.IsEnabled))
+                {
+                    MoveSelectionToFirstVisibleAndEnabledItem();
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -615,6 +637,13 @@ namespace Avalonia.Controls.Primitives
             if (change.Property == AutoScrollToSelectedItemProperty)
             {
                 AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
+            }
+            else if (change.Property == IsVisibleProperty)
+            {
+                if (change.GetNewValue<bool>())
+                {
+                    AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
+                }
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
@@ -896,12 +925,17 @@ namespace Avalonia.Controls.Primitives
             {
                 case PointerEventArgs pointerEvent when ShouldTriggerSelection(container, pointerEvent):
                 case KeyEventArgs keyEvent when ShouldTriggerSelection(container, keyEvent):
-                case GotFocusEventArgs:
+                case FocusChangedEventArgs:
                     UpdateSelection(containerIndex, true,
                         ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
                         ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
                         eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true },
-                        eventArgs is GotFocusEventArgs);
+                        eventArgs is FocusChangedEventArgs);
+
+                    if(eventArgs is PointerEventArgs)
+                    {
+                        container.PerformFeedback(FeedbackAction.Click);
+                    }
 
                     eventArgs.Handled = true;
                     return true;
@@ -1013,16 +1047,13 @@ namespace Avalonia.Controls.Primitives
                 UpdateSelectedValueFromItem();
             }
 
-            var route = BuildEventRoute(SelectionChangedEvent);
+            _selectedItemsSnapshot.Clear();
+            _selectedItemsSnapshot.AddRange(Selection.SelectedItems);
+            _selectedItemsBeforeReset = null;
 
-            if (route.HasHandlers)
-            {
-                var ev = new SelectionChangedEventArgs(
-                    SelectionChangedEvent,
-                    e.DeselectedItems.ToArray(),
-                    e.SelectedItems.ToArray());
-                RaiseEvent(ev);
-            }
+            RaiseSelectionChanged(e.DeselectedItems, e.SelectedItems);
+
+            VerifySelectedIndex();
         }
 
         /// <summary>
@@ -1033,9 +1064,34 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void OnSelectionModelLostSelection(object? sender, EventArgs e)
         {
+            if (_selectedItemsBeforeReset?.Length > 0)
+            {
+                RaiseSelectionChanged(_selectedItemsBeforeReset, Array.Empty<object?>());
+            }
+
+            _selectedItemsBeforeReset = null;
+
             if (AlwaysSelected && ItemsView.Count > 0)
             {
-                SelectedIndex = 0;
+                SelectedIndex = ChooseFirstVisibleAndEnabledIndex();
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="SelectionChangedEvent"/> if there are registered handlers.
+        /// </summary>
+        /// <param name="removedItems">The items removed from the selection.</param>
+        /// <param name="addedItems">The items added to the selection.</param>
+        private void RaiseSelectionChanged(IReadOnlyList<object?> removedItems, IReadOnlyList<object?> addedItems)
+        {
+            var route = BuildEventRoute(SelectionChangedEvent);
+
+            if (route.HasHandlers)
+            {
+                RaiseEvent(new SelectionChangedEventArgs(
+                    SelectionChangedEvent,
+                    removedItems as IList ?? removedItems.ToArray(),
+                    addedItems as IList ?? addedItems.ToArray()));
             }
         }
 
@@ -1145,20 +1201,53 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private int? _pendingAutoScrollAnchorIndex;
+
         private void AutoScrollToSelectedItemIfNecessary(int anchorIndex)
         {
-            if (AutoScrollToSelectedItem &&
-                !_hasScrolledToSelectedItem &&
-                Presenter is object &&
-                anchorIndex >= 0 &&
-                IsAttachedToVisualTree)
+            if (!(AutoScrollToSelectedItem && !_hasScrolledToSelectedItem && Presenter != null && anchorIndex >= 0 && IsAttachedToVisualTree))
             {
-                Dispatcher.UIThread.Post(state =>
-                {
-                    ScrollIntoView((int)state!);
-                    _hasScrolledToSelectedItem = true;
-                }, anchorIndex);
+                ClearPendingAutoScroll();
+                return;
             }
+
+            if (!IsEffectivelyVisible)
+            {
+                // Defer scroll until the control becomes effectively visible.
+                _pendingAutoScrollAnchorIndex = anchorIndex;
+                IsEffectivelyVisibleChanged -= OnIsEffectivelyVisibleChangedForAutoScroll;
+                IsEffectivelyVisibleChanged += OnIsEffectivelyVisibleChangedForAutoScroll;
+                return;
+            }
+
+            ClearPendingAutoScroll();
+            ScrollToAnchorIndex(anchorIndex);
+        }
+
+        private void OnIsEffectivelyVisibleChangedForAutoScroll(object? sender, EventArgs e)
+        {
+            if (!IsEffectivelyVisible || _pendingAutoScrollAnchorIndex is not { } anchorIndex)
+            {
+                return;
+            }
+
+            ClearPendingAutoScroll();
+            ScrollToAnchorIndex(anchorIndex);
+        }
+
+        private void ClearPendingAutoScroll()
+        {
+            _pendingAutoScrollAnchorIndex = null;
+            IsEffectivelyVisibleChanged -= OnIsEffectivelyVisibleChangedForAutoScroll;
+        }
+
+        private void ScrollToAnchorIndex(int anchorIndex)
+        {
+            Dispatcher.UIThread.Post(state =>
+            {
+                ScrollIntoView((int)state!);
+                _hasScrolledToSelectedItem = true;
+            }, anchorIndex);
         }
 
         /// <summary>
@@ -1205,6 +1294,122 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Finds the first visible and enabled index in the ItemsSource.
+        /// </summary>
+        /// <param name="verified">
+        /// On return, true if the returned index was checked against a realized container or against
+        /// an item which is its own container; false if no container was realized for it and the item
+        /// had to be accepted without knowing its visibility and enabled state.
+        /// </param>
+        /// <returns>the index of the first visible and enabled item, or -1 if none found</returns>
+        private int GetFirstVisibleAndEnabledIndex(out bool verified)
+        {
+            verified = true;
+
+            var count = ItemCount;
+            if (count == 0)
+                return -1;
+
+            for (var i = 0; i < count; i++)
+            {
+                var container = ContainerFromIndex(i);
+                if (container is not null)
+                {
+                    if (container is { IsVisible: true, IsEnabled: true })
+                        return i;
+
+                    continue;
+                }
+
+                var item = ItemsView[i];
+                if (item is Visual v)
+                {
+                    if (v.IsVisible && (v is not Control c || c.IsEnabled))
+                        return i;
+                }
+                else if (item is not null)
+                {
+                    // The container isn't realized so its visibility/enabled state is unknown.
+                    verified = false;
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private int ChooseFirstVisibleAndEnabledIndex()
+        {
+            var index = GetFirstVisibleAndEnabledIndex(out var verified);
+            _unverifiedSelectedIndex = verified ? -1 : index;
+            return index;
+        }
+
+        /// <summary>
+        /// Re-checks a selection which <see cref="ChooseFirstVisibleAndEnabledIndex"/> had to make before the container
+        /// of the selected item was realized.
+        /// </summary>
+        private void VerifySelectedIndex()
+        {
+            if (_unverifiedSelectedIndex == -1)
+                return;
+
+            if (!AlwaysSelected)
+            {
+                _unverifiedSelectedIndex = -1;
+                return;
+            }
+
+            // The selection has moved elsewhere in the meantime.
+            if (_unverifiedSelectedIndex != SelectedIndex)
+            {
+                _unverifiedSelectedIndex = -1;
+                return;
+            }
+
+            // Still not realized: ContainerForItemPreparedOverride will check it.
+            if (ContainerFromIndex(_unverifiedSelectedIndex) is not { } container)
+                return;
+
+            _unverifiedSelectedIndex = -1;
+
+            if (!container.IsVisible || !container.IsEnabled)
+            {
+                MoveSelectionToFirstVisibleAndEnabledItem();
+            }
+        }
+
+        /// <summary>
+        /// Moves selection to the first visible and enabled item, considering only realized (prepared)
+        /// containers. If no such container exists, selection is cleared to -1 so that the next
+        /// valid container prepared in <see cref="ContainerForItemPreparedOverride"/> can pick it up.
+        /// </summary>
+        private void MoveSelectionToFirstVisibleAndEnabledItem()
+        {
+            var index = GetFirstRealizedVisibleAndEnabledIndex();
+            if (index != SelectedIndex)
+            {
+                SelectedIndex = index;
+            }
+        }
+
+        /// <summary>
+        /// Finds the first realized (prepared) container that is both visible and enabled.
+        /// </summary>
+        /// <returns>The index of the first qualifying realized container, or -1 if none found.</returns>
+        private int GetFirstRealizedVisibleAndEnabledIndex()
+        {
+            var count = ItemCount;
+            for (var i = 0; i < count; i++)
+            {
+                var container = ContainerFromIndex(i);
+                if (container is { IsVisible: true, IsEnabled: true })
+                    return i;
+            }
+            return -1;
+        }
+
         private void UpdateContainerSelection()
         {
             if (Presenter?.Panel is { } panel)
@@ -1248,10 +1453,12 @@ namespace Avalonia.Controls.Primitives
 
             _oldSelectedIndex = model.SelectedIndex;
             _oldSelectedItem.Target = model.SelectedItem;
+            _selectedItemsSnapshot.Clear();
+            _selectedItemsSnapshot.AddRange(model.SelectedItems);
 
             if (_updateState is null && AlwaysSelected && model.Count == 0)
             {
-                model.SelectedIndex = 0;
+                model.SelectedIndex = ChooseFirstVisibleAndEnabledIndex();
             }
 
             UpdateContainerSelection();
@@ -1358,7 +1565,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
                 {
-                    SelectedIndex = 0;
+                    SelectedIndex = ChooseFirstVisibleAndEnabledIndex();
                 }
             }
         }

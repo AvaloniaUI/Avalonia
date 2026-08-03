@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using static Avalonia.OpenGL.GlConsts;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -28,6 +29,7 @@ namespace Avalonia.Win32.OpenGl
             private readonly WglContext _context;
             private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
             private IntPtr _hdc;
+
             public RenderTarget(WglContext context,  EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
             {
                 _context = context;
@@ -35,13 +37,16 @@ namespace Avalonia.Win32.OpenGl
                 _hdc = context.CreateConfiguredDeviceContext(info.Handle);
             }
 
+            public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
+
             public void Dispose()
             {
                 WglGdiResourceManager.ReleaseDC(_info.Handle, _hdc);
             }
 
-            public IGlPlatformSurfaceRenderingSession BeginDraw()
+            public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
+                // TODO: use expectedPixelSize
                 var oldContext = _context.MakeCurrent(_hdc);
                 
                 // Reset to default FBO first

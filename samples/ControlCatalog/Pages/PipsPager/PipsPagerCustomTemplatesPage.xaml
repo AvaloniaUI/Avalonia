@@ -1,0 +1,197 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PipsPagerCustomTemplatesPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Custom Templates" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Override pip item templates using Style selectors targeting the inner ListBoxItem to create squares, pills, numbers, or any custom shape." />
+        <Separator />
+        <TextBlock Text="Technique" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" TextWrapping="Wrap"
+                   Text="Target: PipsPager /template/ ListBox ListBoxItem" />
+        <TextBlock FontSize="12" TextWrapping="Wrap"
+                   Text="States: :selected, :pointerover, :pressed" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <StackPanel Spacing="32" Margin="24">
+
+      <!-- Squares -->
+      <StackPanel Spacing="8">
+        <TextBlock Text="Squares" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="5">
+          <PipsPager.Styles>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem">
+              <Setter Property="Template">
+                <ControlTemplate>
+                  <Grid Background="Transparent">
+                    <Rectangle Name="Pip"
+                               Width="4" Height="4"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Fill="{DynamicResource PipsPagerSelectionIndicatorForeground}">
+                      <Rectangle.Transitions>
+                        <Transitions>
+                          <DoubleTransition Property="Width" Duration="0:0:0.167" />
+                          <DoubleTransition Property="Height" Duration="0:0:0.167" />
+                          <BrushTransition Property="Fill" Duration="0:0:0.167" />
+                        </Transitions>
+                      </Rectangle.Transitions>
+                    </Rectangle>
+                  </Grid>
+                </ControlTemplate>
+              </Setter>
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:pointerover /template/ Rectangle#Pip">
+              <Setter Property="Width" Value="6" />
+              <Setter Property="Height" Value="6" />
+              <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPointerOver}" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ Rectangle#Pip">
+              <Setter Property="Width" Value="6" />
+              <Setter Property="Height" Value="6" />
+              <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundSelected}" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected:pointerover /template/ Rectangle#Pip">
+              <Setter Property="Width" Value="6" />
+              <Setter Property="Height" Value="6" />
+              <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundSelected}" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:pressed /template/ Rectangle#Pip">
+              <Setter Property="Width" Value="4" />
+              <Setter Property="Height" Value="4" />
+              <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPressed}" />
+            </Style>
+          </PipsPager.Styles>
+        </PipsPager>
+      </StackPanel>
+
+      <!-- Pill-shaped -->
+      <StackPanel Spacing="8">
+        <TextBlock Text="Pill-shaped Selected" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="5"
+                   IsPreviousButtonVisible="False"
+                   IsNextButtonVisible="False">
+          <PipsPager.Styles>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem">
+              <Setter Property="Width" Value="24" />
+              <Setter Property="Height" Value="24" />
+              <Setter Property="Padding" Value="0" />
+              <Setter Property="Margin" Value="2,0" />
+              <Setter Property="MinWidth" Value="0" />
+              <Setter Property="MinHeight" Value="0" />
+              <Setter Property="ClipToBounds" Value="False" />
+              <Setter Property="VerticalAlignment" Value="Center" />
+              <Setter Property="Template">
+                <ControlTemplate>
+                  <Grid Background="Transparent">
+                    <Border Name="Pip"
+                            Width="8" Height="8" CornerRadius="4"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Background="#C0C0C0">
+                      <Border.Transitions>
+                        <Transitions>
+                          <DoubleTransition Property="Width" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                          <DoubleTransition Property="Height" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                          <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                          <BrushTransition Property="Background" Duration="0:0:0.2" />
+                        </Transitions>
+                      </Border.Transitions>
+                    </Border>
+                  </Grid>
+                </ControlTemplate>
+              </Setter>
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:pointerover /template/ Border#Pip">
+              <Setter Property="Width" Value="10" />
+              <Setter Property="Height" Value="10" />
+              <Setter Property="CornerRadius" Value="5" />
+              <Setter Property="Background" Value="#909090" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ Border#Pip">
+              <Setter Property="Width" Value="24" />
+              <Setter Property="Height" Value="8" />
+              <Setter Property="CornerRadius" Value="4" />
+              <Setter Property="Background" Value="#FF6B35" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected:pointerover /template/ Border#Pip">
+              <Setter Property="Width" Value="24" />
+              <Setter Property="Height" Value="8" />
+              <Setter Property="CornerRadius" Value="4" />
+              <Setter Property="Background" Value="#E85A2A" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:pressed /template/ Border#Pip">
+              <Setter Property="Width" Value="8" />
+              <Setter Property="Height" Value="8" />
+              <Setter Property="Background" Value="#707070" />
+            </Style>
+          </PipsPager.Styles>
+        </PipsPager>
+      </StackPanel>
+
+      <!-- Numbers -->
+      <StackPanel Spacing="8">
+        <TextBlock Text="Numbers" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="10"
+                   MaxVisiblePips="4"
+                   IsNextButtonVisible="True"
+                   IsPreviousButtonVisible="True"
+                   ClipToBounds="False">
+          <PipsPager.Styles>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem">
+              <Setter Property="Width" Value="44" />
+              <Setter Property="Height" Value="44" />
+              <Setter Property="Padding" Value="0" />
+              <Setter Property="Margin" Value="2" />
+              <Setter Property="ClipToBounds" Value="False" />
+              <Setter Property="Template">
+                <ControlTemplate>
+                  <Border Name="PipBorder"
+                          Width="30" Height="30"
+                          VerticalAlignment="Center" HorizontalAlignment="Center"
+                          CornerRadius="10" ClipToBounds="False"
+                          Background="LightGray">
+                    <Border.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Width" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                        <DoubleTransition Property="Height" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                        <BrushTransition Property="Background" Duration="0:0:0.2" />
+                      </Transitions>
+                    </Border.Transitions>
+                    <TextBlock Text="{TemplateBinding Content}"
+                               VerticalAlignment="Center" HorizontalAlignment="Center"
+                               Foreground="Black" FontWeight="SemiBold" />
+                  </Border>
+                </ControlTemplate>
+              </Setter>
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:pointerover /template/ Border#PipBorder">
+              <Setter Property="Background" Value="DarkGray" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:pressed /template/ Border#PipBorder">
+              <Setter Property="Width" Value="28" />
+              <Setter Property="Height" Value="28" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ Border#PipBorder">
+              <Setter Property="Background" Value="#0078D7" />
+              <Setter Property="Width" Value="36" />
+              <Setter Property="Height" Value="36" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ TextBlock">
+              <Setter Property="Foreground" Value="White" />
+            </Style>
+            <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected:pointerover /template/ Border#PipBorder">
+              <Setter Property="Background" Value="#106EBE" />
+            </Style>
+          </PipsPager.Styles>
+        </PipsPager>
+      </StackPanel>
+
+    </StackPanel>
+  </DockPanel>
+</UserControl>

@@ -4,12 +4,7 @@ using Avalonia.Automation.Provider;
 
 namespace Avalonia.Win32.Automation.Interop;
 
-#if NET8_0_OR_GREATER
 [GeneratedComInterface(Options = ComInterfaceOptions.ManagedObjectWrapper)]
-#else
-[ComImport()]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
 [Guid("b38b8077-1fc3-42a5-8cae-d40c2215055a")]
 internal partial interface IScrollProvider
 {

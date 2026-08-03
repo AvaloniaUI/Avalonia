@@ -16,7 +16,7 @@
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.6" />
+    <PackageReference Include="BenchmarkDotNet" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

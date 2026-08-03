@@ -1,4 +1,5 @@
-﻿using Avalonia.Media.TextFormatting;
+﻿using System;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
@@ -13,8 +14,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
             _runTexts = new[] { "A123456789", "B123456789", "C123456789", "D123456789", "E123456789" };
         }
-
-        public static TextRange TextRange => new TextRange(0, 50);
 
         public TextRun? GetTextRun(int textSourceIndex)
         {

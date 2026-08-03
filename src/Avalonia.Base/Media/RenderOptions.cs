@@ -1,13 +1,48 @@
-﻿using Avalonia.Media.Imaging;
+﻿using System;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Media
 {
+    /// <summary>
+    /// Provides a set of options that control rendering behavior for visuals, including text rendering, bitmap
+    /// interpolation, edge rendering, blending, and opacity handling.
+    /// </summary>
+    /// <remarks>Use this structure to specify rendering preferences for visual elements. Each property
+    /// corresponds to a specific aspect of rendering, allowing fine-grained control over how content is displayed.
+    /// These options can be applied to visuals to influence quality, performance, and visual effects. When merging two
+    /// instances, unspecified values are inherited from the other instance, enabling layered configuration.</remarks>
     public readonly record struct RenderOptions
     {
-        public BitmapInterpolationMode BitmapInterpolationMode { get; init; }
-        public EdgeMode EdgeMode { get; init; }
+        /// <summary>
+        /// Gets the text rendering mode used to control how text glyphs are rendered.
+        /// </summary>
+        [Obsolete("TextRenderingMode is obsolete. Use TextOptions.TextRenderingMode instead.")]
         public TextRenderingMode TextRenderingMode { get; init; }
+
+        /// <summary>
+        /// Gets the interpolation mode used when rendering bitmap images.
+        /// </summary>
+        /// <remarks>The interpolation mode determines how bitmap images are scaled or transformed during
+        /// rendering. Selecting an appropriate mode can affect image quality and performance.
+        /// </remarks>
+        public BitmapInterpolationMode BitmapInterpolationMode { get; init; }
+
+        /// <summary>
+        /// Gets the edge rendering mode used for drawing operations.
+        /// </summary>
+        public EdgeMode EdgeMode { get; init; }
+
+        /// <summary>
+        /// Gets the blending mode used when rendering bitmap images.
+        /// </summary>
+        /// <remarks>The blending mode determines how bitmap pixels are composited with the background or
+        /// other images. Select an appropriate mode based on the desired visual effect, such as transparency or
+        /// additive blending.</remarks>
         public BitmapBlendingMode BitmapBlendingMode { get; init; }
+
+        /// <summary>
+        /// Gets a value indicating whether full opacity handling is required for the associated content.
+        /// </summary>
         public bool? RequiresFullOpacityHandling { get; init; }
 
         /// <summary>
@@ -75,6 +110,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="visual">The control.</param>
         /// <returns>The value.</returns>
+        [Obsolete("TextRenderingMode is obsolete. Use TextOptions.TextRenderingMode instead.")]
         public static TextRenderingMode GetTextRenderingMode(Visual visual)
         {
             return visual.RenderOptions.TextRenderingMode;
@@ -85,6 +121,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="visual">The control.</param>
         /// <param name="value">The value.</param>
+        [Obsolete("TextRenderingMode is obsolete. Use TextOptions.TextRenderingMode instead.")]
         public static void SetTextRenderingMode(Visual visual, TextRenderingMode value)
         {
             visual.RenderOptions = visual.RenderOptions with { TextRenderingMode = value };
@@ -126,11 +163,15 @@ namespace Avalonia.Media
                 edgeMode = other.EdgeMode;
             }
 
+#pragma warning disable CS0618
             var textRenderingMode = TextRenderingMode;
+#pragma warning restore CS0618
 
             if (textRenderingMode == TextRenderingMode.Unspecified)
             {
+#pragma warning disable CS0618
                 textRenderingMode = other.TextRenderingMode;
+#pragma warning disable CS0618
             }
 
             var bitmapBlendingMode = BitmapBlendingMode;

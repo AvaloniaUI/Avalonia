@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <av:ImportTypes>Types.xml</av:ImportTypes>
+  <!--
+      org.a11y.atspi.Registry:
+      @short_description: Interface implemented by the AT-SPI registry daemon.
+
+      The registry daemon listens on org.a11y.atspi.Registry and exposes an
+      object at /org/a11y/atspi/registry that implements this interface.
+  -->
+  <interface name="org.a11y.atspi.Registry">
+
+    <!--
+        Version: The version of this interface.
+
+        This property is incremented by one every time a new method, signal, or property
+        is added to this interface.
+    -->
+    <property name="version" type="u" access="read"/>
+
+    <!--
+        RegisterEvent:
+
+        @event_type: a character string indicating the type of events for which
+        notification is requested.  Format is
+        EventClass:major_type:minor_type:detail
+        where all subfields other than EventClass are optional.
+        EventClasses include "object", "window", "mouse",
+        and toolkit events (e.g. "Gtk", "AWT").
+        Examples: "focus:", "Gtk:GtkWidget:button_press_event".
+
+        @properties: A list of properties that applications should pass
+        when sending the event specified in @event_type. This is intended
+        to allow an AT to proactively request the information that it is
+        interested in and minimize the need to make additional queries in
+        response to the event. This is currently unimplemented; the
+        specification would need to be fleshed out here.
+
+        @app_bus_name: The application that this request pertains to.
+        This allows an app to indicate that it is interested in a
+        particular event only for a certain application. If this string is
+        empty, then this registration applies to all applications.
+
+        This method is to be called by an AT to indicate that it is
+        interested in receiving a particular event from applications.
+        Applications can optionally call GetRegisteredEvents and listen for
+        EventListenerRewgistered and EventListenerDeregistered signals and,
+        in this way, only send events that an AT is interested in receiving.
+    -->
+    <method name="RegisterEvent">
+      <arg direction="in" name="event" type="s"/>
+      <arg direction="in" name="properties" type="as"/>
+      <arg direction="in" name="app_bus_name" type="s"/>
+    </method>
+
+    <!--
+        DeregisterEvent:
+
+        @event_type: A character string indicating the event to be
+        deregistered. See RegisterEvent for a description of the format of
+        this string.
+
+        Indicates that an AT is no longer interested in listening to a
+        particular event.
+        TODO: Add app_bus_name here.
+    -->
+    <method name="DeregisterEvent">
+      <arg direction="in" name="event" type="s"/>
+    </method>
+
+    <!--
+        GetRegisteredEvents:
+
+        @events: A dictionary listing the registered events. For each entry,
+        the first string gives the bus name of the AT holding the
+        registration. The second string gives the event. See RegisterEvent
+        for a description of the format of this string.
+    -->
+    <method name="GetRegisteredEvents">
+      <arg direction="out" name="events" type="a(ss)">
+        <av:TypeDefinition>
+          <av:List>
+            <av:Struct Type="AtSpiEventListener"/>
+          </av:List>
+        </av:TypeDefinition>
+      </arg>
+    </method>
+
+    <!--
+        EventListenerRegistered:
+
+        @bus: The bus name of the AT registering the event.
+
+        @event: The event being registered. See RegisterEvent for a
+        description of the format of this string.
+
+        @properties: An array of properties that the AT is interested in
+        receiving along with the event. Currently unimplemented; the
+        specification for this would need to be fleshed out.
+
+        Indicates that an AT has requested to listen for an event.
+        Applications can optionally listen to this signal to maintain a
+        list of events that ATs are interested in receiving and only send
+        events when needed.
+    -->
+    <signal name="EventListenerRegistered">
+      <arg name="bus" type="s"/>
+      <arg name="event" type="s"/>
+      <arg name="properties" type="as"/>
+    </signal>
+
+    <!--
+        EventListenerDeregistered:
+
+        @bus: The bus name of the AT registering the event.
+
+        @event: The event being deregistered. See RegisterEvent for a
+        description of the format of this string.
+
+        Indicates that an AT is no longer interested in listening for an
+        event. Applications can optionally listen to this signal to maintain
+        a list of events that ATs are interested in receiving and only send
+        events when needed.
+    -->
+    <signal name="EventListenerDeregistered">
+      <arg name="bus" type="s"/>
+      <arg name="event" type="s"/>
+    </signal>
+  </interface>
+</node>

@@ -65,13 +65,13 @@ namespace Avalonia.Rendering.Composition.Server
             _animations?.RemoveAnimationForProperty(property);
         }
         
-        public virtual void NotifyAnimatedValueChanged(CompositionProperty prop) => ValuesInvalidated();
+        public virtual void NotifyAnimatedValueChanged(CompositionProperty property) => ValuesInvalidated();
         
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
         ExpressionVariant IExpressionObject.GetProperty(string name)
         {
             if (_animations == null)
-                return CompositionProperty.Find(this.GetType(), name)?.GetVariant?.Invoke(this) ?? default;
+                return GetCompositionProperty(name)?.GetVariant?.Invoke(this) ?? default;
 
             return _animations.GetPropertyForAnimation(name);
         }

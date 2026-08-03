@@ -1,0 +1,346 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.RetroGamingHomeView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- GAME OF THE DAY header -->
+      <Grid ColumnDefinitions="*,Auto" Margin="16,16,16,8">
+        <TextBlock Text="&gt; GAME OF THE DAY"
+                   FontFamily="Courier New, monospace" FontSize="11" FontWeight="Bold"
+                   Foreground="#00ffff" VerticalAlignment="Center"/>
+        <Border Grid.Column="1" Background="#ffff00" Padding="8,3" VerticalAlignment="Center">
+          <TextBlock Text="NEW!" FontFamily="Courier New, monospace" FontSize="9"
+                     FontWeight="Bold" Foreground="#120a1f"/>
+        </Border>
+      </Grid>
+
+      <!-- Hero Section: Cyber Ninja 2084 -->
+      <Border Margin="16,0,16,0" BorderBrush="#00ffff" BorderThickness="2">
+        <StackPanel Spacing="0">
+          <Border Height="180" ClipToBounds="True">
+            <Panel>
+              <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Border.Background>
+                  <ImageBrush Source="avares://ControlCatalog/Assets/RetroGaming/hero.jpg"
+                              Stretch="UniformToFill"/>
+                </Border.Background>
+              </Border>
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#20000000" Offset="0"/>
+                    <GradientStop Color="#D0000000" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <!-- Pixel decorations (right side) -->
+              <Canvas Width="220" Height="150" HorizontalAlignment="Right">
+                <Border Canvas.Left="20"  Canvas.Top="20"  Width="8"  Height="8"  Background="#00ffff"/>
+                <Border Canvas.Left="30"  Canvas.Top="12"  Width="8"  Height="8"  Background="#00ffff"/>
+                <Border Canvas.Left="30"  Canvas.Top="20"  Width="8"  Height="8"  Background="#00ffff"/>
+                <Border Canvas.Left="40"  Canvas.Top="20"  Width="8"  Height="8"  Background="#00ffff"/>
+                <Border Canvas.Left="30"  Canvas.Top="28"  Width="8"  Height="8"  Background="#00ffff"/>
+                <Border Canvas.Left="80"  Canvas.Top="35"  Width="12" Height="12" Background="#ad2bee"/>
+                <Border Canvas.Left="92"  Canvas.Top="22"  Width="12" Height="12" Background="#ad2bee"/>
+                <Border Canvas.Left="104" Canvas.Top="35"  Width="12" Height="12" Background="#ad2bee"/>
+                <Border Canvas.Left="92"  Canvas.Top="47"  Width="12" Height="12" Background="#ad2bee"/>
+                <Border Canvas.Left="150" Canvas.Top="18"  Width="10" Height="10" Background="#ffff00"/>
+                <Border Canvas.Left="150" Canvas.Top="42"  Width="10" Height="10" Background="#ffff00"/>
+                <Border Canvas.Left="165" Canvas.Top="30"  Width="8"  Height="8"  Background="#ff4466"/>
+                <Border Canvas.Left="190" Canvas.Top="15"  Width="6"  Height="6"  Background="#00ffff"/>
+                <Border Canvas.Left="200" Canvas.Top="25"  Width="4"  Height="4"  Background="#ad2bee"/>
+                <Border Canvas.Left="180" Canvas.Top="60"  Width="8"  Height="8"  Background="#ffff00"/>
+              </Canvas>
+              <!-- Genre badges -->
+              <StackPanel Orientation="Horizontal" Spacing="6"
+                          HorizontalAlignment="Left" VerticalAlignment="Top"
+                          Margin="10,10,0,0">
+                <Border Background="#00ffff" BorderBrush="#00ffff" BorderThickness="1" Padding="5,2">
+                  <TextBlock Text="ACTION" FontFamily="Courier New, monospace"
+                             FontSize="7" FontWeight="Bold" Foreground="#120a1f"/>
+                </Border>
+                <Border Background="#4050ad2b" BorderBrush="#7856a8" BorderThickness="1" Padding="5,2">
+                  <TextBlock Text="RPG" FontFamily="Courier New, monospace"
+                             FontSize="7" FontWeight="Bold" Foreground="#7856a8"/>
+                </Border>
+              </StackPanel>
+              <!-- Title overlay -->
+              <StackPanel VerticalAlignment="Bottom" Margin="10,0,10,10" Spacing="4">
+                <WrapPanel Orientation="Horizontal">
+                  <TextBlock Text="CYBER " FontFamily="Courier New, monospace"
+                             FontSize="20" FontWeight="Bold" Foreground="#ff00ff"/>
+                  <TextBlock Text="NINJA" FontFamily="Courier New, monospace"
+                             FontSize="20" FontWeight="Bold" Foreground="White"/>
+                </WrapPanel>
+                <WrapPanel Orientation="Horizontal">
+                  <TextBlock Text="2084 " FontFamily="Courier New, monospace"
+                             FontSize="20" FontWeight="Bold" Foreground="White"/>
+                  <TextBlock Text="₿" FontFamily="Courier New, monospace"
+                             FontSize="18" FontWeight="Bold" Foreground="#ffff00"
+                             VerticalAlignment="Center"/>
+                </WrapPanel>
+                <TextBlock Text="Hack the mainframe. Slice the AI."
+                           FontFamily="Courier New, monospace" FontSize="9"
+                           Foreground="#D2E0D0FF"/>
+              </StackPanel>
+            </Panel>
+          </Border>
+          <!-- Play button -->
+          <Button x:Name="HeroPlayBtn"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Margin="0" Padding="0,14" CornerRadius="0"
+                  Classes="retro-primary-btn">
+            <TextBlock Text="▶ INSERT COIN TO PLAY"
+                       FontFamily="Courier New, monospace" FontSize="10"
+                       FontWeight="Bold" Foreground="White"/>
+          </Button>
+        </StackPanel>
+      </Border>
+
+      <!-- CONTINUE PLAYING header -->
+      <Grid ColumnDefinitions="*,Auto" Margin="16,16,16,8">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <PathIcon Width="13" Height="13" Foreground="#00ffff"
+                    Data="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z"/>
+          <TextBlock Text="CONTINUE PLAYING"
+                     FontFamily="Courier New, monospace" FontSize="11" FontWeight="Bold"
+                     Foreground="#00ffff" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Grid>
+
+      <!-- Continue Playing cards (horizontal scroll) -->
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled"
+                    Margin="0,0,0,4">
+        <StackPanel Orientation="Horizontal" Spacing="10" Margin="16,0">
+
+          <!-- Pixel Quest card -->
+          <Button x:Name="ContinuePixelQuestBtn" Padding="0" Background="Transparent"
+                  CornerRadius="0" MinWidth="240" Classes="retro-list-btn">
+            <Border Background="#1a0a33"
+                    BorderBrush="#3300ffff" BorderThickness="1" ClipToBounds="True">
+              <StackPanel Spacing="0">
+                <Grid ColumnDefinitions="80,*,40" MinHeight="80">
+                  <Border Width="80" ClipToBounds="True">
+                    <Border.Background>
+                      <ImageBrush Source="avares://ControlCatalog/Assets/RetroGaming/pixel_quest.jpg"
+                                  Stretch="UniformToFill"/>
+                    </Border.Background>
+                  </Border>
+                  <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center"
+                              Margin="10,10,0,10">
+                    <TextBlock Text="PIXEL QUEST" FontFamily="Courier New, monospace"
+                               FontSize="11" FontWeight="Bold" Foreground="#00ffff"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="LVL 4 - DUNGEON" FontFamily="Courier New, monospace"
+                               FontSize="9" Foreground="#7856a8"/>
+                  </StackPanel>
+                  <Panel Width="40" Grid.Column="2">
+                    <Border Width="40" Height="40" Background="#ffff00" VerticalAlignment="Center">
+                      <PathIcon Width="16" Height="16" Foreground="#120a1f"
+                                Data="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+                    </Border>
+                  </Panel>
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto" Margin="10,4,10,2">
+                  <TextBlock Text="HP" FontFamily="Courier New, monospace"
+                             FontSize="8" Foreground="#7856a8"/>
+                  <TextBlock Grid.Column="1" Text="65%"
+                             FontFamily="Courier New, monospace" FontSize="8"
+                             FontWeight="Bold" Foreground="#ffff00"
+                             HorizontalAlignment="Right"/>
+                </Grid>
+                <Grid ColumnDefinitions="65*,35*" Height="5">
+                  <Border Background="#ad2bee"/>
+                  <Border Grid.Column="1" Background="#33ad2bee"/>
+                </Grid>
+              </StackPanel>
+            </Border>
+          </Button>
+
+          <!-- Space Voids card -->
+          <Button x:Name="ContinueSpaceVoidsBtn" Padding="0" Background="Transparent"
+                  CornerRadius="0" MinWidth="240" Classes="retro-list-btn">
+            <Border Background="#1a0a33"
+                    BorderBrush="#33ffff00" BorderThickness="1" ClipToBounds="True">
+              <StackPanel Spacing="0">
+                <Grid ColumnDefinitions="80,*,40" MinHeight="80">
+                  <Border Width="80" ClipToBounds="True">
+                    <Border.Background>
+                      <ImageBrush Source="avares://ControlCatalog/Assets/RetroGaming/space_voids.jpg"
+                                  Stretch="UniformToFill"/>
+                    </Border.Background>
+                  </Border>
+                  <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center"
+                              Margin="10,10,0,10">
+                    <TextBlock Text="SPACE VOIDS" FontFamily="Courier New, monospace"
+                               FontSize="11" FontWeight="Bold" Foreground="#00ffff"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="SECTOR 7" FontFamily="Courier New, monospace"
+                               FontSize="9" Foreground="#7856a8"/>
+                  </StackPanel>
+                  <Panel Width="40" Grid.Column="2">
+                    <Border Width="40" Height="40" Background="#ffff00" VerticalAlignment="Center">
+                      <PathIcon Width="16" Height="16" Foreground="#120a1f"
+                                Data="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+                    </Border>
+                  </Panel>
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto" Margin="10,4,10,2">
+                  <TextBlock Text="HP" FontFamily="Courier New, monospace"
+                             FontSize="8" Foreground="#7856a8"/>
+                  <TextBlock Grid.Column="1" Text="32%"
+                             FontFamily="Courier New, monospace" FontSize="8"
+                             FontWeight="Bold" Foreground="#ffff00"
+                             HorizontalAlignment="Right"/>
+                </Grid>
+                <Grid ColumnDefinitions="32*,68*" Height="5">
+                  <Border Background="#ad2bee"/>
+                  <Border Grid.Column="1" Background="#33ad2bee"/>
+                </Grid>
+              </StackPanel>
+            </Border>
+          </Button>
+
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- NEW RELEASES header -->
+      <Grid ColumnDefinitions="*,Auto" Margin="16,20,16,10">
+        <StackPanel Grid.Column="0" Spacing="3">
+          <TextBlock Text="~NEW RELEASES" FontFamily="Courier New, monospace"
+                     FontSize="12" FontWeight="Bold" Foreground="#e0d0ff"/>
+          <Border Height="1" Background="#ad2bee"/>
+        </StackPanel>
+        <TextBlock Grid.Column="1" Text="VIEW ALL &gt;"
+                   FontFamily="Courier New, monospace" FontSize="9" FontWeight="Bold"
+                   Foreground="#ad2bee" VerticalAlignment="Top"/>
+      </Grid>
+
+      <!-- New Releases row (horizontal scroll) -->
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled">
+        <StackPanel Orientation="Horizontal" Spacing="8" Margin="16,0">
+
+          <!-- Neon Racer -->
+          <Button x:Name="NewReleaseNeonRacerBtn" Padding="0" Width="100"
+                  Background="Transparent" CornerRadius="0" Classes="retro-list-btn">
+            <StackPanel Spacing="0">
+              <Border Height="115" ClipToBounds="True">
+                <Panel>
+                  <Border>
+                    <Border.Background>
+                      <ImageBrush Source="avares://ControlCatalog/Assets/RetroGaming/neon_racer.jpg"
+                                  Stretch="UniformToFill"/>
+                    </Border.Background>
+                  </Border>
+                  <Border Background="#ff4466" Padding="4,2"
+                          HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <TextBlock Text="HOT" FontFamily="Courier New, monospace"
+                               FontSize="7" FontWeight="Bold" Foreground="White"/>
+                  </Border>
+                </Panel>
+              </Border>
+              <StackPanel Spacing="2" Margin="2,6,2,4">
+                <TextBlock Text="Neon Racer" FontFamily="Courier New, monospace"
+                           FontSize="9" FontWeight="Bold" Foreground="#e0d0ff"
+                           TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="Racing" FontFamily="Courier New, monospace"
+                           FontSize="8" Foreground="#7856a8"/>
+              </StackPanel>
+            </StackPanel>
+          </Button>
+
+          <!-- Dungeon Bit -->
+          <Button x:Name="NewReleaseDungeonBitBtn" Padding="0" Width="100"
+                  Background="Transparent" CornerRadius="0" Classes="retro-list-btn">
+            <StackPanel Spacing="0">
+              <Border Height="115" ClipToBounds="True">
+                <Border.Background>
+                  <ImageBrush Source="avares://ControlCatalog/Assets/RetroGaming/dungeon_bit.jpg"
+                              Stretch="UniformToFill"/>
+                </Border.Background>
+              </Border>
+              <StackPanel Spacing="2" Margin="2,6,2,4">
+                <TextBlock Text="Dungeon Bit" FontFamily="Courier New, monospace"
+                           FontSize="9" FontWeight="Bold" Foreground="#e0d0ff"
+                           TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="Adventure" FontFamily="Courier New, monospace"
+                           FontSize="8" Foreground="#7856a8"/>
+              </StackPanel>
+            </StackPanel>
+          </Button>
+
+          <!-- Forest Spirit -->
+          <Button x:Name="NewReleaseForestSpiritBtn" Padding="0" Width="100"
+                  Background="Transparent" CornerRadius="0" Classes="retro-list-btn">
+            <StackPanel Spacing="0">
+              <Border Height="115" ClipToBounds="True">
+                <Border.Background>
+                  <ImageBrush Source="avares://ControlCatalog/Assets/RetroGaming/forest_spirit.jpg"
+                              Stretch="UniformToFill"/>
+                </Border.Background>
+              </Border>
+              <StackPanel Spacing="2" Margin="2,6,2,4">
+                <TextBlock Text="Forest Spirit" FontFamily="Courier New, monospace"
+                           FontSize="9" FontWeight="Bold" Foreground="#e0d0ff"
+                           TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="Platform" FontFamily="Courier New, monospace"
+                           FontSize="8" Foreground="#7856a8"/>
+              </StackPanel>
+            </StackPanel>
+          </Button>
+
+          <!-- Cyber City -->
+          <Button x:Name="NewReleaseCyberCityBtn" Padding="0" Width="100"
+                  Background="Transparent" CornerRadius="0" Classes="retro-list-btn">
+            <StackPanel Spacing="0">
+              <Border Height="115" ClipToBounds="True">
+                <Border.Background>
+                  <ImageBrush Source="avares://ControlCatalog/Assets/RetroGaming/cyber_city.jpg"
+                              Stretch="UniformToFill"/>
+                </Border.Background>
+              </Border>
+              <StackPanel Spacing="2" Margin="2,6,2,4">
+                <TextBlock Text="Cyber City" FontFamily="Courier New, monospace"
+                           FontSize="9" FontWeight="Bold" Foreground="#e0d0ff"
+                           TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="Strategy" FontFamily="Courier New, monospace"
+                           FontSize="8" Foreground="#7856a8"/>
+              </StackPanel>
+            </StackPanel>
+          </Button>
+
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Category bar -->
+      <WrapPanel Orientation="Horizontal" Margin="16,14,16,24">
+        <Button Content="ARCADE" Padding="14,8" CornerRadius="0"
+                Margin="0,0,8,8" Classes="retro-cat-selected">
+          <Button.ContentTemplate>
+            <DataTemplate>
+              <TextBlock Text="ARCADE" FontFamily="Courier New, monospace"
+                         FontSize="10" FontWeight="Bold" Foreground="White"/>
+            </DataTemplate>
+          </Button.ContentTemplate>
+        </Button>
+        <Button Padding="14,8" CornerRadius="0" Margin="0,0,8,8" Classes="retro-cat-btn">
+          <TextBlock Text="STRATEGY" FontFamily="Courier New, monospace"
+                     FontSize="10" FontWeight="Bold" Foreground="#e0d0ff"/>
+        </Button>
+        <Button Padding="14,8" CornerRadius="0" Margin="0,0,8,8" Classes="retro-cat-btn">
+          <TextBlock Text="RPG" FontFamily="Courier New, monospace"
+                     FontSize="10" FontWeight="Bold" Foreground="#e0d0ff"/>
+        </Button>
+        <Button Padding="14,8" CornerRadius="0" Margin="0,0,8,8" Classes="retro-cat-btn">
+          <TextBlock Text="PUZZLE" FontFamily="Courier New, monospace"
+                     FontSize="10" FontWeight="Bold" Foreground="#e0d0ff"/>
+        </Button>
+      </WrapPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

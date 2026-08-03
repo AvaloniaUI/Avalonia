@@ -6,7 +6,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class TabControlPage : UserControl
+    public partial class TabControlPage : ContentPage
     {
         public TabControlPage()
         {

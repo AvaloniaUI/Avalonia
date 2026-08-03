@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 attributes = attributes.Concat(referenceNode.Getter.CustomAttributes);
             }
 
-            if (attributes.All(attribute => attribute.Type.FullName != "Avalonia.Controls.ResolveByNameAttribute"))
+            if (attributes.All(attribute => !attribute.Type.Is("Avalonia.Controls", "ResolveByNameAttribute")))
                 return node;
 
             if (propertyValueNode.Values.Count != 1 || !(propertyValueNode.Values.First() is XamlAstTextNode))

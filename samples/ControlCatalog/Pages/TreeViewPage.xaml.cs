@@ -3,7 +3,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class TreeViewPage : UserControl
+    public partial class TreeViewPage : ContentPage
     {
         public TreeViewPage()
         {

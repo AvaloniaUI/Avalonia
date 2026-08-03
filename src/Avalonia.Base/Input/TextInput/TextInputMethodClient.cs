@@ -82,13 +82,6 @@ namespace Avalonia.Input.TextInput
         {
             SetPreeditText(preeditText);
         }
-
-        //TODO12: remove
-        [Obsolete]
-        public virtual void ShowInputPanel()
-        {
-            RaiseInputPaneActivationRequested();
-        }
         
         protected virtual void RaiseTextViewVisualChanged()
         {

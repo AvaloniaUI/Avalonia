@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Logging;
 using Avalonia.MicroCom;
 using Avalonia.OpenGL.Egl;
@@ -19,14 +21,35 @@ internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactor
 {
     private static readonly Guid IID_IDCompositionDesktopDevice = Guid.Parse("5f4633fe-1e08-4cb8-8c75-ce24333f5602");
 
-    public event Action<TimeSpan>? Tick;
+    private volatile Action<TimeSpan>? _tick;
     public bool RunsInBackground => true;
 
     private readonly DirectCompositionShared _shared;
+    private readonly AutoResetEvent _wakeEvent = new(false);
+    private volatile bool _stopped = true;
 
     public DirectCompositionConnection(DirectCompositionShared shared)
     {
         _shared = shared;
+    }
+
+    public Action<TimeSpan>? Tick
+    {
+        get => _tick;
+        set
+        {
+            if (value != null)
+            {
+                _tick = value;
+                _stopped = false;
+                _wakeEvent.Set();
+            }
+            else
+            {
+                _stopped = true;
+                _tick = null;
+            }
+        }
     }
     
     private static bool TryCreateAndRegisterCore()
@@ -50,7 +73,7 @@ internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactor
                 }
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connect);
-                AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
+                AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(connect));
                 tcs.SetResult(true);
             }
             catch (Exception e)
@@ -79,8 +102,11 @@ internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactor
         {
             try
             {
+                if (_stopped)
+                    WaitHandle.WaitAny([_wakeEvent, cts.Token.WaitHandle]);
+
                 device.WaitForCommitCompletion();
-                Tick?.Invoke(_stopwatch.Elapsed);
+                _tick?.Invoke(_stopwatch.Elapsed);
             }
             catch (Exception ex)
             {
@@ -125,5 +151,5 @@ internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactor
     }
 
     public bool RequiresNoRedirectionBitmap => true;
-    public object CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new DirectCompositedWindowSurface(_shared, info);
+    public IPlatformRenderSurface CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new DirectCompositedWindowSurface(_shared, info);
 }

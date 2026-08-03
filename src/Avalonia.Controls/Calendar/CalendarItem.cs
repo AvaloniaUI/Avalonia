@@ -244,7 +244,7 @@ namespace Avalonia.Controls.Primitives
 
         /// <summary>
         /// Builds the visual tree for the
-        /// <see cref="T:System.Windows.Controls.Primitives.CalendarItem" />
+        /// <see cref="T:Avalonia.Controls.Primitives.CalendarItem" />
         /// when a new template is applied.
         /// </summary>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -299,6 +299,19 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <inheritdoc/>
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            // Reset mouse button tracking state. When the calendar popup closes
+            // (e.g. due to a programmatic window change during date selection),
+            // the PointerReleased event never fires, leaving these flags stuck.
+            // See https://github.com/AvaloniaUI/Avalonia/issues/18418
+            _isMouseLeftButtonDown = false;
+            _isMouseLeftButtonDownYearView = false;
+        }
+        
         private void SetDayTitles()
         {
             for (int childIndex = 0; childIndex < Calendar.ColumnsPerMonth; childIndex++)

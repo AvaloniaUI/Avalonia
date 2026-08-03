@@ -8,27 +8,14 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public readonly record struct TextShaperOptions
     {
-        // TODO12: Remove in 12.0.0 and make fontFeatures parameter in main ctor optional
-        public TextShaperOptions(
-            GlyphTypeface typeface,
-            double fontRenderingEmSize = 12,
-            sbyte bidiLevel = 0,
-            CultureInfo? culture = null,
-            double incrementalTabWidth = 0,
-            double letterSpacing = 0)
-            : this(typeface, null, fontRenderingEmSize, bidiLevel, culture, incrementalTabWidth, letterSpacing)
-        {
-        }
-
-        // TODO12:Change signature in 12.0.0
         public TextShaperOptions(
             GlyphTypeface typeface, 
-            IReadOnlyList<FontFeature>? fontFeatures,
-            double fontRenderingEmSize = 12, 
+            double fontRenderingEmSize = GenericTextRunProperties.DefaultFontRenderingEmSize,
             sbyte bidiLevel = 0, 
             CultureInfo? culture = null, 
             double incrementalTabWidth = 0,
-            double letterSpacing = 0)
+            double letterSpacing = 0,
+            IReadOnlyList<FontFeature>? fontFeatures = null)
         {
             GlyphTypeface = typeface;
             FontRenderingEmSize = fontRenderingEmSize;

@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.5.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

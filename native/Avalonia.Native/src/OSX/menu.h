@@ -29,8 +29,8 @@ class AvnAppMenuItem : public ComSingleObject<IAvnMenuItem, &IID_IAvnMenuItem>
 {
 private:
     NSMenuItem* _native; // here we hold a pointer to an AvnMenuItem
-    IAvnActionCallback* _callback;
-    IAvnPredicateCallback* _predicate;
+    ComPtr<IAvnActionCallback> _callback;
+    ComPtr<IAvnPredicateCallback> _predicate;
     bool _isCheckable;
     
 public:

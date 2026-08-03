@@ -1,0 +1,367 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:ControlCatalog.Pages"
+             x:Class="ControlCatalog.Pages.TabbedPageFabPage">
+
+  <UserControl.Resources>
+    <StreamGeometry x:Key="HeartIcon">M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z</StreamGeometry>
+    <StreamGeometry x:Key="CommentIcon">M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z</StreamGeometry>
+
+    <ControlTheme x:Key="FabTheme" TargetType="Button">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Name="PART_Root"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  ClipToBounds="True">
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#7C3AED" Offset="0" />
+                <GradientStop Color="#EC4899" Offset="1" />
+              </LinearGradientBrush>
+            </Border.Background>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Background="Transparent"
+                              Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pressed /template/ Border#PART_Root">
+        <Setter Property="Opacity" Value="0.85" />
+      </Style>
+    </ControlTheme>
+  </UserControl.Resources>
+
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="16" Spacing="16">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Action Button" FontSize="13" FontWeight="SemiBold" />
+        <Button x:Name="TriggerFabButton" Content="Trigger FAB"
+                HorizontalAlignment="Stretch" />
+        <TextBlock x:Name="StatusText" Text="Tap   to create a post"
+                   TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
+
+        <Separator />
+
+        <TextBlock Text="How It Works" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="TabbedPage drives real tab management. A single Style setter in TabbedPage.Styles replaces the inner TabControl's ItemsPanel with CenteredTabPanel. The FAB overlays the centre gap as a Panel sibling, no template override, no code-behind." />
+
+        <Separator />
+
+        <TextBlock Text="Key Techniques" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <TextBlock TextWrapping="Wrap" FontSize="11" Opacity="0.6"
+                     Text="1. CenteredTabPanel: 4 items → 5 equal slots, slot ⌊N/2⌋ left empty. Selection indices are preserved 1-to-1." />
+          <TextBlock TextWrapping="Wrap" FontSize="11" Opacity="0.6"
+                     Text="2. Style Selector=&quot;TabControl /template/ ItemsPresenter#PART_ItemsPresenter&quot; in TabbedPage.Styles sets ItemsPanel only, scoped to this TabbedPage, no ControlTemplate rewrite needed." />
+          <TextBlock TextWrapping="Wrap" FontSize="11" Opacity="0.6"
+                     Text="3. Tab icons from ContentPage.Icon (StreamGeometry). TabbedPage.CreateIconControl creates a Path and binds Fill to Foreground for tinting." />
+          <TextBlock TextWrapping="Wrap" FontSize="11" Opacity="0.6"
+                     Text="4. FAB declared after TabbedPage in a Panel, giving it higher z-order. VerticalAlignment=Bottom with Margin positions it above the tab bar." />
+          <TextBlock TextWrapping="Wrap" FontSize="11" Opacity="0.6"
+                     Text="5. FabButton.Click fires in code-behind; Button is in the UserControl scope outside TabbedPage." />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True"
+            Margin="8">
+      <Panel>
+
+        <TabbedPage x:Name="DemoTabs" TabPlacement="Bottom">
+
+          <TabbedPage.Resources>
+            <x:Double x:Key="TabbedPageTabItemHeaderPipeThickness">0</x:Double>
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderSelectedPipeFill" Color="Transparent" />
+            <x:Double x:Key="TabbedPageTabItemHeaderFontSize">12</x:Double>
+            <FontWeight x:Key="TabbedPageTabItemHeaderThemeFontWeight">Medium</FontWeight>
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelected"            Color="#7C3AED" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelectedPointerOver" Color="#9D6FF5" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelectedPressed"     Color="#6D28D9" />
+            <!-- No coloured backgrounds on items -->
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelected"            Color="Transparent" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPointerOver" Color="#157C3AED" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselected"          Color="Transparent" />
+            <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPointerOver" Color="#0A000000" />
+            <!-- Tab strip styling -->
+            <CornerRadius x:Key="TabbedPageTabStripCornerRadius">20,20,0,0</CornerRadius>
+            <Thickness x:Key="TabbedPageTabStripBorderThickness">1,1,1,0</Thickness>
+            <SolidColorBrush x:Key="TabbedPageTabStripBorderBrush" Color="{DynamicResource SystemBaseMediumLowColor}" />
+            <Thickness x:Key="TabbedPageTabStripMargin">0</Thickness>
+            <Thickness x:Key="TabbedPageTabStripPadding">0,8</Thickness>
+          </TabbedPage.Resources>
+
+          <TabbedPage.Styles>
+            <Style Selector="TabControl">
+              <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
+            </Style>
+
+            <Style Selector="TabControl TabItem">
+              <Setter Property="Padding"                    Value="2,6,2,6" />
+              <Setter Property="MinHeight"                  Value="0" />
+              <Setter Property="CornerRadius"               Value="8" />
+              <Setter Property="HorizontalContentAlignment" Value="Center" />
+            </Style>
+
+            <!-- Replace standard WrapPanel with CenteredTabPanel to yield a gap for the FAB -->
+            <Style Selector="TabControl">
+              <Setter Property="ItemsPanel">
+                <Setter.Value>
+                  <ItemsPanelTemplate>
+                    <local:CenteredTabPanel />
+                  </ItemsPanelTemplate>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </TabbedPage.Styles>
+
+          <ContentPage x:Name="FeedPage" Header="Feed">
+            <ScrollViewer>
+              <StackPanel Margin="12,12,12,8" Spacing="10">
+                <TextBlock Text="Your Feed" FontSize="16" FontWeight="SemiBold" />
+                <!-- Post 1 -->
+                <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                        CornerRadius="12" Padding="12,10">
+                  <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Border Width="32" Height="32" CornerRadius="16" Background="#7C3AED" VerticalAlignment="Top">
+                        <TextBlock Text="A" Foreground="White" FontWeight="Bold" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Alex Rivera" FontWeight="SemiBold" FontSize="12" />
+                        <TextBlock Text="2m ago" FontSize="10"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                    <TextBlock Text="Just shipped dark mode support with Avalonia."
+                               FontSize="12" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                      <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <PathIcon Width="12" Height="12" Data="{StaticResource HeartIcon}"
+                                  Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                        <TextBlock Text="142" FontSize="11" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                      <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <PathIcon Width="12" Height="12" Data="{StaticResource CommentIcon}"
+                                  Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                        <TextBlock Text="23" FontSize="11" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+                <!-- Post 2 -->
+                <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                        CornerRadius="12" Padding="12,10">
+                  <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Border Width="32" Height="32" CornerRadius="16" Background="#EC4899" VerticalAlignment="Top">
+                        <TextBlock Text="M" Foreground="White" FontWeight="Bold" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Maya Chen" FontWeight="SemiBold" FontSize="12" />
+                        <TextBlock Text="18m ago" FontSize="10"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                    <TextBlock Text="Loving the new design system. Consistency is everything."
+                               FontSize="12" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                      <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <PathIcon Width="12" Height="12" Data="{StaticResource HeartIcon}"
+                                  Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                        <TextBlock Text="89" FontSize="11" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                      <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <PathIcon Width="12" Height="12" Data="{StaticResource CommentIcon}"
+                                  Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                        <TextBlock Text="11" FontSize="11" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+                <!-- Post 3 -->
+                <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                        CornerRadius="12" Padding="12,10">
+                  <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Border Width="32" Height="32" CornerRadius="16" Background="#0EA5E9" VerticalAlignment="Top">
+                        <TextBlock Text="J" Foreground="White" FontWeight="Bold" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Jordan Park" FontWeight="SemiBold" FontSize="12" />
+                        <TextBlock Text="1h ago" FontSize="10"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                    <TextBlock Text="One codebase, every platform. That's Avalonia."
+                               FontSize="12" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                      <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <PathIcon Width="12" Height="12" Data="{StaticResource HeartIcon}"
+                                  Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                        <TextBlock Text="317" FontSize="11" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                      <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <PathIcon Width="12" Height="12" Data="{StaticResource CommentIcon}"
+                                  Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                        <TextBlock Text="54" FontSize="11" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </ScrollViewer>
+          </ContentPage>
+
+          <ContentPage x:Name="DiscoverPage" Header="Discover">
+            <ScrollViewer>
+              <StackPanel Margin="12" Spacing="10">
+                <TextBlock Text="Trending" FontSize="16" FontWeight="SemiBold" />
+                <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                        CornerRadius="12" Padding="12,10">
+                  <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Border Background="#157C3AED" Width="36" Height="36" CornerRadius="10">
+                        <TextBlock Text="#1" Foreground="#7C3AED" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" />
+                      </Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="#AvaloniaUI" FontWeight="SemiBold" FontSize="13" />
+                        <TextBlock Text="2.4k posts today" FontSize="11"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Border Background="#15EC4899" Width="36" Height="36" CornerRadius="10">
+                        <TextBlock Text="#2" Foreground="#EC4899" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" />
+                      </Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="#dotNET" FontWeight="SemiBold" FontSize="13" />
+                        <TextBlock Text="1.8k posts today" FontSize="11"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Border Background="#150EA5E9" Width="36" Height="36" CornerRadius="10">
+                        <TextBlock Text="#3" Foreground="#0EA5E9" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" />
+                      </Border>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="#CrossPlatform" FontWeight="SemiBold" FontSize="13" />
+                        <TextBlock Text="940 posts today" FontSize="11"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </ScrollViewer>
+          </ContentPage>
+
+          <ContentPage x:Name="AlertsPage" Header="Alerts">
+            <ScrollViewer>
+              <StackPanel Margin="12" Spacing="10">
+                <TextBlock Text="Notifications" FontSize="16" FontWeight="SemiBold" />
+                <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                        CornerRadius="12" Padding="12,10">
+                  <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Border Width="8" Height="8" CornerRadius="4" Background="#7C3AED" VerticalAlignment="Center" />
+                      <TextBlock FontSize="12" TextWrapping="Wrap" Text="Alex Rivera liked your post" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Border Width="8" Height="8" CornerRadius="4" Background="#EC4899" VerticalAlignment="Center" />
+                      <TextBlock FontSize="12" TextWrapping="Wrap" Text="Maya Chen commented: 'So true!'" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Border Width="8" Height="8" CornerRadius="4"
+                              Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                              VerticalAlignment="Center" />
+                      <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.6"
+                                 Text="Jordan Park started following you" />
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </ScrollViewer>
+          </ContentPage>
+
+          <ContentPage x:Name="ProfilePage" Header="Profile">
+            <ScrollViewer>
+              <StackPanel Margin="12" Spacing="12">
+                <StackPanel Spacing="6" HorizontalAlignment="Center">
+                  <Border Width="56" Height="56" CornerRadius="28" HorizontalAlignment="Center">
+                    <Border.Background>
+                      <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                        <GradientStop Color="#7C3AED" Offset="0" />
+                        <GradientStop Color="#EC4899" Offset="1" />
+                      </LinearGradientBrush>
+                    </Border.Background>
+                    <TextBlock Text="Y" Foreground="White" FontWeight="Bold" FontSize="22"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <TextBlock Text="You" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" />
+                  <TextBlock Text="@you · TRENDZ" FontSize="11" HorizontalAlignment="Center"
+                             Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                </StackPanel>
+                <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                        CornerRadius="12" Padding="12,10">
+                  <Grid ColumnDefinitions="*,*,*">
+                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                      <TextBlock Text="142" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" />
+                      <TextBlock Text="Posts" FontSize="11" HorizontalAlignment="Center"
+                                 Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                      <TextBlock Text="2.1k" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" />
+                      <TextBlock Text="Followers" FontSize="11" HorizontalAlignment="Center"
+                                 Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                      <TextBlock Text="318" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" />
+                      <TextBlock Text="Following" FontSize="11" HorizontalAlignment="Center"
+                                 Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </ScrollViewer>
+          </ContentPage>
+
+        </TabbedPage>
+
+        <!--
+          FAB overlaid at the centre of the tab bar.
+          Declared AFTER TabbedPage → higher z-order.
+          HorizontalAlignment=Center aligns with CenteredTabPanel's gap slot.
+        -->
+        <Button x:Name="FabButton"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,24"
+                Width="56" Height="56" CornerRadius="28"
+                Theme="{StaticResource FabTheme}">
+          <Path Width="24" Height="24" Stretch="Uniform" Fill="White"
+                Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+        </Button>
+
+      </Panel>
+    </Border>
+  </DockPanel>
+</UserControl>

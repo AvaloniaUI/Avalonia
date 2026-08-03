@@ -154,8 +154,8 @@
     </Style>
 
     <Style Selector="^:disabled /template/ Ellipse#CheckGlyph">
-      <Setter Property="Stroke" Value="{DynamicResource RadioButtonCheckGlyphFillDisabled}" />
-      <Setter Property="Fill" Value="{DynamicResource RadioButtonCheckGlyphStrokeDisabled}" />
+      <Setter Property="Fill" Value="{DynamicResource RadioButtonCheckGlyphFillDisabled}" />
+      <Setter Property="Stroke" Value="{DynamicResource RadioButtonCheckGlyphStrokeDisabled}" />
     </Style>
 
 

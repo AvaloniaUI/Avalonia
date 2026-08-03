@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageBackButtonPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="280">
+      <StackPanel Margin="12" Spacing="14">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <!-- Global override -->
+        <TextBlock Text="Global Override" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="IsBackButtonVisible=false hides the back button for every page in this NavigationPage."
+                   TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+        <CheckBox x:Name="IsBackButtonVisibleCheck" Content="IsBackButtonVisible"
+                  IsChecked="True" IsCheckedChanged="OnGlobalBackButtonChanged" />
+
+        <Separator />
+
+        <!-- Per-page visibility -->
+        <TextBlock Text="Per-Page Visibility" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Button Content="Standard Page" Click="OnPushStandard"
+                  HorizontalAlignment="Stretch" />
+          <Button Content="Hidden Back Button" Click="OnPushNoBack"
+                  HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <!-- Per-page enabled/disabled -->
+        <TextBlock Text="Per-Page Enabled" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="IsBackButtonEnabled=false shows the back button grayed out and non-interactive."
+                   TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+        <Button Content="Disabled Back Button" Click="OnPushDisabledBack"
+                HorizontalAlignment="Stretch" />
+
+        <Separator />
+
+        <!-- Custom BackButtonContent -->
+        <TextBlock Text="Custom Back Content" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="Any string, icon or control can be the back button content."
+                   TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+        <TextBox x:Name="BackContentInput" PlaceholderText="Text content (default: Cancel)..." />
+        <StackPanel Spacing="6">
+          <Button Content="Push with Text Content" Click="OnPushCustomText"
+                  HorizontalAlignment="Stretch" />
+          <Button Content="Push with Icon (×)" Click="OnPushCustomIcon"
+                  HorizontalAlignment="Stretch" />
+          <Button Content="Push with Icon + Text" Click="OnPushIconTextBack"
+                  HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <!-- Navigation Guard -->
+        <TextBlock Text="Navigation Guard" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="Push a page that intercepts back navigation."
+                   TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+        <StackPanel Spacing="6">
+          <RadioButton x:Name="CancelRadio" GroupName="GuardMode"
+                       Content="Cancel navigation" IsChecked="True" />
+          <RadioButton x:Name="DeferRadio" GroupName="GuardMode"
+                       Content="Async save (1.5s)" />
+        </StackPanel>
+        <Button Content="Push Guarded Page" Click="OnPushGuarded"
+                HorizontalAlignment="Stretch" />
+
+        <Separator />
+        <TextBlock Text="Navigation" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Button Content="Pop" Click="OnPop" HorizontalAlignment="Stretch" />
+          <Button Content="Pop to Root" Click="OnPopToRoot" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <!-- Event Log -->
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Left" Text="Event Log" FontSize="13" FontWeight="SemiBold"
+                     VerticalAlignment="Center" />
+          <Button DockPanel.Dock="Right" Content="Clear" Click="OnClearLog"
+                  HorizontalAlignment="Right" Padding="8,2" FontSize="11" />
+        </DockPanel>
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8" MinHeight="100" MaxHeight="200">
+          <ScrollViewer>
+            <StackPanel x:Name="LogPanel" Spacing="1" />
+          </ScrollViewer>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>
