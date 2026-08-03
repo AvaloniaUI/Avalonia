@@ -10,6 +10,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NugetPackageName>Avalonia</NugetPackageName>
+    <IsAotCompatible>false</IsAotCompatible>
     <WebAppDir>$(MSBuildThisFileDirectory)Remote/HtmlTransport/webapp</WebAppDir>
   </PropertyGroup>
   <ItemGroup>
@@ -31,4 +32,5 @@
     <Exec Command="dnx Bun.Unofficial.Tool build.js" WorkingDirectory="$(WebAppDir)" />
   </Target>
 
+  <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

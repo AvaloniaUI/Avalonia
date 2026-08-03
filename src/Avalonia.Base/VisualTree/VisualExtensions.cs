@@ -468,7 +468,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual children.</returns>
         public static IEnumerable<Visual> GetVisualChildren(this Visual visual)
         {
-            return visual.VisualChildren;
+            return visual.TypedVisualChildren;
         }
 
         /// <summary>
@@ -478,7 +478,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual's ancestors.</returns>
         public static IEnumerable<Visual> GetVisualDescendants(this Visual visual)
         {
-            foreach (Visual child in visual.VisualChildren)
+            foreach (Visual child in visual.TypedVisualChildren)
             {
                 yield return child;
 
@@ -594,13 +594,8 @@ namespace Avalonia.VisualTree
 
         private static T? FindDescendantOfTypeCore<T>(Visual visual, Predicate<T>? predicate) where T : class
         {
-            var visualChildren = visual.VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
-
-            for (var i = 0; i < visualChildrenCount; i++)
+            foreach (var child in visual.TypedVisualChildren)
             {
-                Visual child = visualChildren[i];
-
                 if (child is T result)
                 {
                     if (predicate == null || predicate(result))
