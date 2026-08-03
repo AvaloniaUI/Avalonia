@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
@@ -17,5 +19,6 @@ namespace Avalonia.Headless
         void MouseWheel(Point point, Vector delta, RawInputModifiers modifiers = RawInputModifiers.None);
         void DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None);
         void SetRenderScaling(double scaling);
+        IReadOnlyList<TopLevel> GetOpenPopups();
     }
 }
