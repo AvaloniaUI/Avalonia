@@ -403,9 +403,12 @@ namespace Avalonia.Controls.Presenters
                 return base.MeasureOverride(availableSize);
             }
 
+            var padding = GetChildPadding();
+            var deflated = availableSize.Deflate(padding);
+
             var constraint = new Size(
-                CanHorizontallyScroll ? double.PositiveInfinity : availableSize.Width,
-                CanVerticallyScroll ? double.PositiveInfinity : availableSize.Height);
+                CanHorizontallyScroll ? double.PositiveInfinity : deflated.Width,
+                CanVerticallyScroll ? double.PositiveInfinity : deflated.Height);
 
             Child.Measure(constraint);
 
@@ -415,7 +418,7 @@ namespace Avalonia.Controls.Presenters
                 UpdateSnapPoints();
             }
 
-            return Child.DesiredSize.Constrain(availableSize);
+            return Child.DesiredSize.Inflate(padding).Constrain(availableSize);
         }
 
         /// <inheritdoc/>
@@ -431,9 +434,12 @@ namespace Avalonia.Controls.Presenters
 
         private Size ArrangeWithAnchoring(Size finalSize)
         {
+            var padding = GetChildPadding();
+            var desiredSize = Child!.DesiredSize.Inflate(padding);
+
             var size = new Size(
-                CanHorizontallyScroll ? Math.Max(Child!.DesiredSize.Width, finalSize.Width) : finalSize.Width,
-                CanVerticallyScroll ? Math.Max(Child!.DesiredSize.Height, finalSize.Height) : finalSize.Height);
+                CanHorizontallyScroll ? Math.Max(desiredSize.Width, finalSize.Width) : finalSize.Width,
+                CanVerticallyScroll ? Math.Max(desiredSize.Height, finalSize.Height) : finalSize.Height);
 
             Vector TrackAnchor()
             {
@@ -501,13 +507,28 @@ namespace Avalonia.Controls.Presenters
             }
 
             Viewport = finalSize;
-            Extent = ComputeExtent(finalSize);
+            Extent = ComputeExtent(finalSize, padding);
             _isAnchorElementDirty = true;
 
             return finalSize;
         }
 
-        private Size ComputeExtent(Size viewportSize)
+        private Thickness GetChildPadding()
+        {
+            var padding = Padding;
+            var borderThickness = BorderThickness;
+
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale);
+                borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, scale);
+            }
+
+            return padding + borderThickness;
+        }
+
+        private Size ComputeExtent(Size viewportSize, Thickness padding)
         {
             var childMargin = Child!.Margin;
 
@@ -517,7 +538,7 @@ namespace Avalonia.Controls.Presenters
                 childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale);
             }
 
-            var extent = Child!.Bounds.Size.Inflate(childMargin);
+            var extent = Child!.Bounds.Size.Inflate(childMargin).Inflate(padding);
 
             if (MathUtilities.AreClose(extent.Width, viewportSize.Width, LayoutHelper.LayoutEpsilon))
                 extent = extent.WithWidth(viewportSize.Width);

@@ -8,10 +8,13 @@
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CS8002</NoWarn> <!-- ignore signing warnings for samples -->
+    <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
   </PropertyGroup>
 
   <Import Project="..\build\SharedVersion.props"/>
   <Import Project="..\build\DevAnalyzers.props"/>
+  <Import Project="..\build\TrimmingEnable.props" />
+
   <Import Project="$(MSBuildThisFileDirectory)\..\Directory.Build.props" />
 
 </Project>
