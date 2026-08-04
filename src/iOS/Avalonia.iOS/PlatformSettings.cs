@@ -64,6 +64,6 @@ internal class PlatformSettings : DefaultPlatformSettings
 
     internal void OnColorValuesChanged()
     {
-        OnColorValuesChanged(GetColorValues());
+        TraitCollectionDidChange();
     }
 }

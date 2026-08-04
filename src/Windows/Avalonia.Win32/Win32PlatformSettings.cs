@@ -11,6 +11,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     private static readonly Lazy<bool> s_uiSettingsSupported = new(() =>
         WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.UISettings")
         && WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.AccessibilitySettings"));
+    private PlatformColorValues? _lastColorValues;
 
     public override Size GetTapSize(PointerType type)
     {
@@ -31,7 +32,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     }
 
     public override TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
-    
+
     public override PlatformColorValues GetColorValues()
     {
         if (!s_uiSettingsSupported.Value)
@@ -52,7 +53,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
             // - Night sky - High Contrast #2
             // Only "Desert" one can be considered a "light" preference. 
             using var highContrastScheme = new HStringInterop(accessibilitySettings.HighContrastScheme);
-            return new PlatformColorValues
+            return _lastColorValues = new PlatformColorValues
             {
                 ThemeVariant = highContrastScheme.Value?.Contains("White") == true ?
                     PlatformThemeVariant.Light :
@@ -65,19 +66,25 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         else
         {
             var background = uiSettings.GetColorValue(UIColorType.Background).ToAvalonia();
-            return new PlatformColorValues
+            return _lastColorValues = new PlatformColorValues
             {
                 ThemeVariant = background.R + background.G + background.B < (255 * 3 - background.R - background.G - background.B) ?
                     PlatformThemeVariant.Dark :
                     PlatformThemeVariant.Light,
                 ContrastPreference = ColorContrastPreference.NoPreference,
                 AccentColor1 = accent
-            };   
+            };
         }
     }
-    
+
     internal void OnColorValuesChanged()
     {
-        OnColorValuesChanged(GetColorValues());
+        var oldColors = _lastColorValues;
+        var newColors = GetColorValues();
+
+        if (oldColors != newColors)
+        {
+            OnColorValuesChanged(newColors);
+        }
     }
 }

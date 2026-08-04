@@ -34,8 +34,9 @@ namespace Avalonia.FreeDesktop
             {
                 _themeVariant = await TryGetThemeVariantAsync(settings);
                 _accentColor = await TryGetAccentColorAsync(settings);
+                var oldValues = _lastColorValues;
                 _lastColorValues = BuildPlatformColorValues();
-                if (_lastColorValues is not null)
+                if (_lastColorValues is not null && oldValues != _lastColorValues)
                     Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
             }
         }
