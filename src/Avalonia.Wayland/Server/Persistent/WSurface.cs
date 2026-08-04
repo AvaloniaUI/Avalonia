@@ -29,6 +29,7 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
     protected double? PreferredFractionalScale { get; private set; }
     protected List<WaylandOutputsTracker.Output> Outputs  { get; } = new();
     private WlCallback? _frameCallback;
+    private bool _hitTestVisible = true;
     private double _currentScale = 1;
     private const double ScaleEpsilon = 1e-6;
     private readonly List<IDisposable> _activeRenderTargets = new();
@@ -115,6 +116,65 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
 
     public virtual void ResetTextInput() => TextInputV3?.Reset(this);
 
+    public void SetHitTestVisible(bool value)
+    {
+        if (_hitTestVisible == value)
+            return;
+        _hitTestVisible = value;
+        // No-op while disconnected; OnConnected replays the cached value.
+        if (WlSurface == null)
+            return;
+        ApplyInputRegion();
+        // Toggling hit-test visibility changes nothing about what's drawn, so an
+        // idle surface may never attach another buffer. Commit out of band to
+        // promote the region — a commit without an attach is well-defined.
+        if (CanCommitOutOfBand)
+            WlSurface.Commit();
+    }
+
+    /// <summary>
+    /// Whether committing this surface outside of a buffer attach is legal right
+    /// now. When it isn't, staged double-buffered state stays pending and is
+    /// promoted by the surface's own next commit.
+    /// </summary>
+    /// <remarks>
+    /// Such a commit can't promote another frame's half-staged state: UI→worker
+    /// proxy calls land as compositor server jobs, which ServerCompositor.RenderCore
+    /// drains before it renders any target, while the per-frame staging
+    /// (<see cref="OnBeforeNewBufferAttached"/>) and the attach+commit that
+    /// promotes it are one synchronous block inside the render pass.
+    /// </remarks>
+    protected virtual bool CanCommitOutOfBand => true;
+
+    /// <summary>
+    /// Installs the input region matching the cached hit-test state. An empty
+    /// region makes the compositor route pointer/touch input to whatever is
+    /// behind this surface.
+    /// </summary>
+    private void ApplyInputRegion()
+    {
+        if (WlSurface == null)
+            return;
+
+        if (_hitTestVisible)
+        {
+            // null is the protocol default: an infinite input region.
+            WlSurface.SetInputRegion(null!);
+            return;
+        }
+
+        var region = Globals!.WlCompositor.CreateRegion();
+        try
+        {
+            WlSurface.SetInputRegion(region);
+        }
+        finally
+        {
+            region.Destroy();
+            region.Dispose();
+        }
+    }
+
     public virtual void OnConnected(WaylandConnection connection, WaylandGlobals globals)
     {
         Connection = connection;
@@ -127,6 +187,11 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
                 WlSurface, new FractionalScaleListener(this), connection.Queue);
             Viewport = globals.Viewporter!.GetViewport(WlSurface);
         }
+
+        // Re-apply the cached input region on (re)connect. It's double-buffered
+        // state, promoted by the next commit — which happens before the surface
+        // can receive any input.
+        ApplyInputRegion();
     }
 
     private IPlatformRenderSurface[]? _renderSurfaces;
@@ -345,6 +410,12 @@ class WXdgShellSurface : WSurface, IWXdgShellSurface
 
     /// <summary>True iff this surface is currently mapped (xdg-shell sense).</summary>
     internal bool IsMapped => _mapped;
+
+    // Committing an xdg_surface before it has a role, or before its initial
+    // configure has been acked, is a protocol error. Until we're mapped, staged
+    // state rides along on the commit that assigns the role (TryAttachToParent)
+    // or on the first buffer attach.
+    protected override bool CanCommitOutOfBand => _mapped;
 
     internal void RegisterPendingChildPopup(WXdgPopup popup) => _pendingChildPopups.Add(popup);
     internal void UnregisterPendingChildPopup(WXdgPopup popup) => _pendingChildPopups.Remove(popup);
