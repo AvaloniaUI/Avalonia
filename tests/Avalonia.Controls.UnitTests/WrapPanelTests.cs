@@ -137,6 +137,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Justify_Distributes_Exact_Spacing()
+        {
+            var target = new WrapPanel
+            {
+                Width = 100,
+                ItemsAlignment = WrapPanelItemsAlignment.Justify,
+                UseLayoutRounding = false,
+                Children =
+                {
+                    new Border { Width = 40, Height = 50 },
+                    new Border { Width = 40, Height = 50 },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 40, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(60, 0, 40, 50), target.Children[1].Bounds);
+        }
+
+        [Fact]
         public void Lays_Out_Vertically_Children_On_A_Single_Line()
         {
             var target = new WrapPanel()

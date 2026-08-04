@@ -383,14 +383,12 @@ namespace Avalonia.Controls
                         u = uvFinalSize.U - totalU;
                         break;
                     case WrapPanelItemsAlignment.Justify:
-                        var totalSpacing = GetDistributableSpace(uvFinalSize.U, totalU);
+                        var totalSpacing = Max(uvFinalSize.U - totalU, 0);
                         if (spacingCount > 0)
                             spacing = totalSpacing / spacingCount;
                         break;
                     case WrapPanelItemsAlignment.Stretch /*or WrapPanelItemsAlignment.StretchAll*/:
-                        var finalUWithoutSpacing = GetDistributableSpace(
-                            uvFinalSize.U,
-                            spacing * spacingCount);
+                        var finalUWithoutSpacing = Max(uvFinalSize.U - spacing * spacingCount, 0);
                         stretchRatio = finalUWithoutSpacing / totalU;
                         break;
                     default:
@@ -445,19 +443,5 @@ namespace Avalonia.Controls
             }
         }
 
-        private const double DistributionEpsilon = 0.01;
-
-        private static double GetDistributableSpace(double availableSize, double occupiedSpace)
-        {
-            var distributableSpace = availableSize - occupiedSpace;
-            if (!MathUtilities.GreaterThan(distributableSpace, 0))
-                return 0;
-
-            // The epsilon only exists to absorb rounding drift in positive free space.
-            // Applying it after the free space has already reached 0 would manufacture a negative layout size.
-            return distributableSpace > DistributionEpsilon
-                ? distributableSpace - DistributionEpsilon
-                : 0;
-        }
     }
 }
