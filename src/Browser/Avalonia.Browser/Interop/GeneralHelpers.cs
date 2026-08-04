@@ -24,6 +24,10 @@ internal static partial class GeneralHelpers
     [JSImport("GeneralHelpers.callMethod", AvaloniaModule.MainModuleName)]
     public static partial Task<JSObject?> IntCallMethodPromiseObj(JSObject jsObject, string name);
 
+
+    [JSImport("GeneralHelpers.callLambda", AvaloniaModule.MainModuleName)]
+    public static partial void IntCallLambda(JSObject jsObject);
+
     public static string CallMethodString(this JSObject jsObject, string name) => IntCallMethodStr(jsObject, name);
     public static string CallMethodString(this JSObject jsObject, string name, string arg1) => IntCallMethodStrStr(jsObject, name, arg1);
     public static Task<JSObject?> CallMethodObjectAsync(this JSObject jsObject, string name) => IntCallMethodPromiseObj(jsObject, name);
