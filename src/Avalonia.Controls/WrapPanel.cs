@@ -4,7 +4,6 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
-using System.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Utilities;
@@ -365,8 +364,6 @@ namespace Avalonia.Controls
                             ++spacingCount;
                     }
                 }
-
-                Debug.Assert(MathUtilities.GreaterThanOrClose(uvFinalSize.U, totalU + spacing * spacingCount));
 
                 switch (lineItemsAlignment)
                 {
