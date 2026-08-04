@@ -95,5 +95,91 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Inlines_Changes_Should_Update_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock();
+                target.Inlines!.Add(new Run("foo"));
+                target.SelectionEnd = 3;
+
+                var selectedTextChanged = false;
+                target.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == SelectableTextBlock.SelectedTextProperty)
+                    {
+                        selectedTextChanged = true;
+                    }
+                };
+
+                target.Inlines.Add(new Run("bar"));
+
+                Assert.True(selectedTextChanged);
+
+                target.SelectionStart = 6;
+                target.SelectionEnd = 0;
+                target.Inlines.RemoveAt(1);
+
+                Assert.Equal(3, target.SelectionStart);
+                Assert.Equal(0, target.SelectionEnd);
+
+                target.SelectionStart = 0;
+                target.SelectionEnd = 3;
+
+                target.Inlines[0] = new Run("a");
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(1, target.SelectionEnd);
+                Assert.Equal("a", target.SelectedText);
+            }
+        }
+
+        [Fact]
+        public void Text_Changes_Should_Update_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Text = "foo",
+                    SelectionEnd = 3
+                };
+
+                var selectedTextChanged = false;
+                target.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == SelectableTextBlock.SelectedTextProperty)
+                    {
+                        selectedTextChanged = true;
+                    }
+                };
+
+                target.Text = "a";
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(1, target.SelectionEnd);
+                Assert.True(selectedTextChanged);
+            }
+        }
+
+        [Fact]
+        public void CoerceCaretIndex_OnTextChanged()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Text = "foo",
+                    SelectionStart = 3,
+                    SelectionEnd = 3
+                };
+
+                target.Text = "a";
+
+                Assert.Equal(1, target.SelectionStart);
+                Assert.Equal(1, target.SelectionEnd);
+            }
+        }
     }
 }

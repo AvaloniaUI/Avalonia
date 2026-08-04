@@ -379,6 +379,55 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.False(args.Handled);
         }
 
+        [Fact]
+        public void Focus_KeyInput_Should_Scroll()
+        {
+            // Vertical scrollbar
+            var target = CreateScrollBar(Orientation.Vertical);
+
+            // Page down and page up
+            KeyDown(target, Key.PageDown);
+            Assert.Equal(target.LargeChange, target.Value);
+            KeyDown(target, Key.PageUp);
+            Assert.Equal(0, target.Value);
+
+            // Small scrolling with arrow keys
+            KeyDown(target, Key.Down);
+            Assert.Equal(target.SmallChange, target.Value);
+            KeyDown(target, Key.Up);
+            Assert.Equal(0, target.Value);
+
+            // Vertical scrollbars shouldn't scroll for left and right keys
+            KeyDown(target, Key.Right);
+            Assert.Equal(0, target.Value);
+            KeyDown(target, Key.Left);
+            Assert.Equal(0, target.Value);
+
+            // Horizontal scrollbar
+            target = CreateScrollBar(Orientation.Horizontal);
+
+            // Small scrolling with arrow keys
+            KeyDown(target, Key.Right);
+            Assert.Equal(target.SmallChange, target.Value);
+            KeyDown(target, Key.Left);
+            Assert.Equal(0, target.Value);
+
+            // Horizontal scrollbars shouldn't scroll for up and down keys
+            KeyDown(target, Key.Down);
+            Assert.Equal(0, target.Value);
+            KeyDown(target, Key.Up);
+            Assert.Equal(0, target.Value);
+        }
+
+        private static void KeyDown(IInputElement target, Key key)
+        {
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = key,
+            });
+        }
+
         private static ContextRequestedEventArgs CreateContextRequested(ScrollBar target, PointerType pointerType)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), pointerType, true);
