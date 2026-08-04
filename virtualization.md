@@ -59,10 +59,30 @@ Why this is upstreamable where the dampers were not:
 |---|---|
 | Insert *n* at *i* | Entries `>= i` shift up by *n*; inserted slots left unrecorded (unknown) |
 | Remove *n* at *i* | Entries in range dropped; entries after shift down |
-| Move / Reset / Replace | `Clear()` — index→item mapping is no longer trustworthy |
-| Detach from visual tree | `Clear()` |
+| Move / Reset | `Clear()` — index→item mapping is no longer trustworthy |
+| Replace | The replaced indices are dropped; the rest stand |
+| Detach from visual tree | **Nothing.** The record survives detach |
 
-Insert/remove **remap by allocating a fresh dictionary**. See `handoff_pr.md` §2d for the cost.
+Insert/remove **remap in place**: the moving entries are snapshotted, removed, then re-inserted at their
+new keys — removing before re-inserting is what stops a shifted key landing on one that has not moved
+yet, and it needs no sort (dictionary order is unspecified). An insert at or past the highest recorded
+index allocates nothing at all. A prepend is still inherently O(N): every entry is re-keyed.
+
+The running sum `_measuredSizesSum` is maintained **incrementally** at the single upsert site
+(`RecordMeasuredSize`), never by sweeping the record — a sweep per measure pass would be O(items ever
+measured), strictly worse than stock's O(realized window). An upsert whose value is bit-identical
+writes nothing, so a scrolling session over settled content accumulates no rounding error at all;
+genuine deltas go through Neumaier compensated summation, which keeps the incremental sum within a
+rounding of a freshly computed one however many updates it has seen. Read it through
+`MeasuredSizesSum`, never the field. This is why there is no periodic re-sum: the interval would be a
+tuning constant.
+
+**Surviving detach is deliberate.** On detach/re-attach — a `TabControl` page, a virtualized control
+inside another virtualizing panel — the collection has not changed, so every recorded size is still
+valid and throwing them away would only re-introduce estimation error on the way back. If the
+collection *did* change while detached, the ordinary lifecycle rows above still apply, and anything
+missed self-heals per the staleness contract below. An earlier version of this table claimed detach
+cleared the record; the code never did.
 
 ### Cache staleness contract — do not "fix" this as a bug
 
@@ -130,21 +150,39 @@ And back in:
 
 ```
 1. item is T                                  → recycleKey = null   (item is its own container)
-2. IVirtualizingDataTemplate.GetKey(item)     → that key            (explicit)
-3. ITypedDataTemplate with DataType != null   → DataType            (automatic)
-4. otherwise                                  → item.GetType()      (type-aware fallback)
+2. IVirtualizingDataTemplate.GetKey(item)     → that key            (the only opt-in)
+3. otherwise                                  → DefaultRecycleKey   (stock behaviour)
 ```
 
 The `item is T` check **must come first** — otherwise items that are their own containers get
-incorrectly wrapped. That ordering was a real bug fix.
+incorrectly wrapped. That ordering was a real bug fix. Covered by
+`Item_That_Is_Its_Own_Container_Is_Not_Wrapped_When_Virtualization_Enabled`.
 
-Step 1 is unconditional; steps 2–4 apply only when
-`ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel`. Stock
-behaviour is one shared pool under `DefaultRecycleKey`; this fork gives one pool per key.
+Step 1 is unconditional; step 2 applies only when
+`ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel`, and it
+resolves the template through `GetEffectiveItemTemplate()` — the same path everything else keys off.
+Stock behaviour is one shared pool under `DefaultRecycleKey`; an opted-in template gets one pool per
+key.
 
-> `ContentVirtualizationDiagnostics.IsEnabled` currently defaults to **`true`**, so this is on by
-> default for every `ItemsControl` over a `VirtualizingStackPanel`, not opt-in. See `handoff_pr.md`
-> §2b — this is unresolved and contradicts the PR text.
+**Virtualization is opt-in, and the code now says so.** There were once two more branches — automatic
+`ITypedDataTemplate with DataType != null → DataType`, and an `item.GetType()` fallback — which meant
+type-aware pools and skipped content-clearing applied to *every* `ItemsControl` over a
+`VirtualizingStackPanel`, including plain XAML `<DataTemplate DataType="local:Foo">`. That silently
+imposed the §9 view-lifecycle trade on every Avalonia user and contradicted the PR's own breaking-changes
+text. Both are gone: nothing changes for anyone who has not asked for it.
+
+`ContentVirtualizationDiagnostics.IsEnabled` (default `true`) is therefore a **kill switch, not the
+opt-in** — it forces every `ItemsControl` back to stock recycling, which is how you establish whether a
+layout problem comes from virtualization. Covered by
+`IsEnabled_False_Forces_Default_Recycle_Key_And_Clears_Content`.
+
+`MaxPoolSizePerKey` is honoured only for keys an `IVirtualizingDataTemplate` actually handed out
+(`ItemsControl.GetMaxPoolSizePerKey`); `DefaultRecycleKey` pooling is uncapped. This matters because the
+XAML `DataTemplate` implements `IVirtualizingDataTemplate` *unconditionally* with `MaxPoolSizePerKey = 5`,
+so reading the cap off the template type alone capped stock pooling at 5 containers per key for every
+`ItemTemplate` in XAML — a perf regression in the common case, inside a change whose headline claim is
+perf. Covered by `Plain_DataTemplate_Does_Not_Cap_Recycle_Pool` and
+`MaxPoolSizePerKey_Is_Respected_For_DataTemplate_With_EnableVirtualization`.
 
 ### `IVirtualizingDataTemplate`
 
@@ -167,7 +205,29 @@ the base interface. XAML `DataTemplate` implements it with `EnableVirtualization
 - **`_templateCache`** (`Dictionary<Type, IDataTemplate?>`) — memoizes `FindDataTemplate` per item
   type so measure doesn't repeatedly walk the tree. Necessary for `DataTemplates` *collections*;
   repeated tree walks during measure were themselves a layout-cycle source. Cleared on `ItemTemplate`
-  / `DisplayMemberBinding` change — **but not on `DataTemplates` mutation**, see `handoff_pr.md` §2e.
+  / `DisplayMemberBinding` change, and on mutation of this control's own `DataTemplates` collection —
+  the subscription is created lazily the first time the cache is, which is only on the
+  `DataTemplates`-collection path, so an `ItemsControl` that never takes that path neither caches nor
+  subscribes. Covered by `Mutating_DataTemplates_Invalidates_Template_Cache`.
+
+  Two things a reviewer will ask about, both known:
+
+  1. **`FindDataTemplate` walks *up* the tree**, so a template added to or removed from an *ancestor's*
+     `DataTemplates`, or to `Application.DataTemplates`, is not picked up for a type already cached —
+     nor is a change of resolution caused by reparenting the control. Hooking the whole ancestor chain
+     for the lifetime of the control is not worth it; the supported way to change templates at runtime
+     is to mutate the collection on the `ItemsControl` itself. Already-realized containers keep the
+     template they were prepared with either way, exactly as in stock, where `ContentPresenter`
+     resolves the template once when it builds its child.
+  2. **On the `DataTemplates`-collection path the cache currently memoizes `null` and achieves
+     nothing.** `VirtualizingStackPanel.CreateElement` calls `PrepareItemContainer` *before*
+     `AddInternalChild`, so on an item type's first realization `container.FindDataTemplate(item, null)`
+     runs on an **unparented** container, finds nothing, and that `null` is cached permanently.
+     `ContentTemplate` is then never set on the container and the `ContentPresenter` does its own tree
+     walk on every `CreateChild` — i.e. the layout-cycle motivation for the cache is not actually being
+     served on the one path that needs it. The obvious fix is to add the child before preparing it, but
+     that reorders container lifecycle relative to stock. **Open**: either fix the ordering or delete
+     the cache as dead weight; do not describe it as working until one of those happens.
 - **`SetIfUnsetOrDifferent`** — unlike `SetIfUnset`, forces the update when a recycled container
   already holds a (different) value. Without it a reused container keeps the previous item.
 - **`ContentPresenter.BeginBatchUpdate` / `EndBatchUpdate`** — `Content` and `ContentTemplate` must
@@ -219,6 +279,18 @@ Test note worth keeping: an edit must land **past the middle of the realized win
 majority to still match, which is why the `LateInWindow` position in
 `Collection_Edit_Keeps_Every_Container_On_Its_Own_Item` (7 edit kinds × 4 positions) is the case that
 actually catches this. An edit near the front does not reproduce it.
+
+**A `Refresh()` is not a preservable Reset.** `ItemsControl.RefreshContainers()` — raised on an
+`ItemTemplate`, `ItemContainerTheme` or `DisplayMemberBinding` change — reaches the panel as a
+*synthetic* `Reset` via `ItemsPresenter.Refresh()` → `VirtualizingPanel.Refresh()`. The collection has
+not changed, so *every* realized element matches its item, preservation always kicks in and
+`PrepareItemContainer` is never called: on a virtualized `ItemsControl` those three properties had no
+effect on already-realized containers. `VirtualizingPanel.Refresh()` is therefore `virtual`, and
+`VirtualizingStackPanel` overrides it to recycle every realized element *before* delegating to the
+base Reset path — which then sees an empty realized set, so neither preservation nor
+`RetainMatchingContainers` (§5, also skips `PrepareItemContainer`) can hold a container back. Covered
+by `ItemsControlTests.ItemContainerTheme_Can_Be_Changed_Virtualizing` and
+`ItemsControlTests.ItemTemplate_Can_Be_Changed_Virtualizing`.
 
 Whether upstream wants Reset-preservation *at all* is still open.
 
@@ -296,7 +368,21 @@ template, and it behaves the same way in a plain `StackPanel`.
 **View lifecycle events do not fire as templates expect.** Because the child stays attached across
 recycling, `Loaded`/`Unloaded` and added/removed-to-visual/logical-tree do not fire per item. A
 template that forwards those to its view model will not see them. Unresolved: whether to synthesise
-them or add virtualization-aware equivalents.
+them or add virtualization-aware equivalents. Since virtualization became opt-in this trade is only
+paid by templates that asked for it, which is what makes it acceptable at all.
+
+**`Panel.Children` retains invisible pooled containers.** Stock's `RecycleElementOnItemRemoved`
+unparented the container (`RemoveInternalChild`); this fork pools it instead, so it stays in
+`Children` with `IsVisible = false`. That is the point — unparenting is exactly the detach/reattach
+churn container-level virtualization exists to avoid, and §12 records that separate content pooling
+failed partly because the child was still being detached. Note stock *already* retained the parent on
+the ordinary scroll-recycle path; only the item-removed path changed.
+
+It is not a ghost: invisible and absent from the realized set means nothing renders it, and focus
+navigation filters on `IsEffectivelyVisible` so nothing navigates to it. But it *is* publicly
+observable — anything enumerating `Panel.Children` and assuming every child is a live item will now
+see extras. `ListBoxVirtualizationIssueTests.GhostItemTest_FocusManagement` asserted the old contract
+and was updated to the new one.
 
 ## 10. Test harness knowledge
 
@@ -326,6 +412,20 @@ other test does. Do the same for anything added here.
 
 Internal test seams: `TryGetMeasuredSizeForTesting(int, out double)`, `RecyclePoolForTesting`.
 
+**Making the recycle pool observable is harder than it looks.** Two approaches that do *not* work:
+
+- **Shrinking the viewport** does not reduce the realized count. `root.ClientSize` shrink, with or
+  without an explicit `InvalidateMeasure()`, leaves all realized elements in place — the extended
+  viewport (`CacheLength`) swallows it.
+- **Scrolling** drains the pool in the same measure pass that fills it, so the pool is ~0 whenever you
+  look at it.
+
+What works is **shrinking the item collection** so fewer containers are needed than are currently
+realized; the surplus lands in the pool and stays there.
+
+Also: with `DisplayMemberBinding`, items whose display value is an empty string collapse the container
+width to 0, after which the panel realizes exactly one item. Give test items non-empty display values.
+
 Run the suite with:
 
 ```
@@ -344,6 +444,18 @@ Every fork-added tuning constant is gone. Two values remain, neither a tuning co
 
 `CacheLength` is **not** part of this work: it already exists on this repo's `master` via `#18626`
 (commit `df1816bde5`). The branch diff against it is a single trailing space.
+
+**How this inventory was wrong, so the next audit is done right.** It claimed completeness while a
+fourth constant was still live: the `remainingItems <= 3` tail-realization block in `RealizeElements`
+(§12). It was missed because the audit grepped for the *named* fields and constants the removal work
+had catalogued — `_frozenExtentU`, `WarmupSampleSize`, and so on — and an inline literal in the middle
+of a method has no name to grep for. Worse, it had a fork-added test asserting its behaviour, so the
+suite was green and read as confirmation.
+
+Auditing constants means **reading the layout methods**, not grepping for known names. And a green
+suite is not evidence: a damper added together with a test that asserts the damper's own threshold will
+always look correct. When a test's failure message quotes a threshold (this one said "since the last 2
+were within the `<=3` threshold"), that is the tell that it guards a mechanism rather than a behaviour.
 
 ## 12. Removed — and why, so nobody re-adds it
 
@@ -364,6 +476,7 @@ arithmetic.
 | Separate **content** pooling (`ItemsControl._contentRecyclePool`, `ReturnContentToPool`, `GetRecycledContent`, `DataTypeRecyclingMarker`, `_recycledContentToUse`, `PrepareRecycledContent`) | pool cap `5` | Two levels of pooling (container in VSP, content in ItemsControl) could not be reconciled: the child was pooled while still attached to its old container, so reattaching threw *"The control Border already has a visual parent"*. Superseded by container+child-as-one-unit (§4). Profiling had also shown ~no gain, because the child was still detached/reattached from the visual tree — full layout invalidation, nearly the cost of building new. |
 | Distance-based disjunct gap tolerance (`GapBefore`/`GapAfter` pixel thresholds vs. viewport size) | viewport-relative thresholds | Replaced by the plain index test `anchorIndex < FirstIndex \|\| anchorIndex > LastIndex`. |
 | `[VSP-*]` trace logging + `IsTracingEnabled` + the `ScrollTrace` static hook | — | Diagnostic scaffolding. The trace in §7 came from it; it lives on `release/12.0.3.1-optiq01` if a fresh device trace is ever needed. |
+| Tail-realization heuristic in `RealizeElements` (realize all remaining items when the forward loop stopped within a few of the collection end) | `3` remaining items | By its own comment it existed so "the extent is based on actual measured sizes rather than estimates" — exactly the §2 root cause. Subsumed: scrolling to the end measures the tail, `unknownCount` reaches 0 and `CacheBasedExtentU` returns the exact total, so the last item is reachable in full. Covered by `Last_Item_Is_Reachable_And_Extent_Is_Exact_After_Scrolling_To_End` (red/green verified). It also over-realized on every viewport that ended near the collection end, which is what `ListBoxTests.Handles_Resetting_Items_With_Existing_Selection_And_AutoScrollToSelectedItem` caught. Its guard test `Last_Item_Not_Clipped_When_Few_Remaining_Items_Are_Larger_Than_Estimate` went with it: it demanded a measurement-accurate extent *before any scrolling*, which no virtualizing panel (stock included) can deliver. |
 
 ## 13. Decisions that reversed
 
@@ -379,6 +492,17 @@ Worth knowing, because the reasoning that produced the *wrong* answer is still t
   changes by a tick. See §9.
 - **"Smoothing is needed, only the factor needs tuning."** No amount of smoothing fixes a
   window-dependent estimate; it only slows the swing down.
-- **"`ITypedDataTemplate` auto-recycling was removed."** It was *not* — that branch is still live in
-  both `NeedsContainer<T>` and `ClearContainerForItemOverride`. Recorded here because an earlier doc
-  claimed otherwise and the claim survived several rounds of review.
+- **"`ITypedDataTemplate` auto-recycling was removed."** This claim was false for a long time and
+  survived several rounds of review — the branch was still live in both `NeedsContainer<T>` and
+  `ClearContainerForItemOverride`, which is how virtualization ended up on by default while the PR
+  text advertised it as opt-in. It is *now* genuinely removed (§4), deliberately and with tests. Both
+  states of this claim were once wrong; check the code, not the doc.
+
+- **"These three test failures are pre-existing."** They were not. `ListBoxTests.Handles_Resetting_Items_With_Existing_Selection_And_AutoScrollToSelectedItem`,
+  `ListBoxVirtualizationIssueTests.GhostItemTest_FocusManagement` and
+  `ItemsControlTests.ItemContainerTheme_Can_Be_Changed_Virtualizing` were all introduced by this
+  branch's first commit (`6812547229`) and all three pass at the merge-base. The verification that
+  produced the wrong answer was `git stash` + re-run — which only removes *uncommitted* work, leaving
+  every branch commit in place. **To check a claim about baseline behaviour, use a worktree at
+  `git merge-base master HEAD`, not a stash.** (A fresh worktree needs
+  `git submodule update --init --recursive` for `external/XamlX` before it will build.)

@@ -35,17 +35,13 @@
       <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
       <CheckBox IsChecked="{Binding AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
       <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
-      <Separator Margin="0,8"/>
-      <CheckBox IsChecked="{Binding EnableVirtualization}">Enable Content Virtualization</CheckBox>
-      <TextBlock x:Name="CacheStatsText" Margin="0,8" TextWrapping="Wrap" FontSize="11" Foreground="Gray"/>
     </StackPanel>
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
       <Button Command="{Binding AddItemCommand}">Add</Button>
       <Button Command="{Binding RemoveItemCommand}">Remove</Button>
       <Button Command="{Binding SelectRandomItemCommand}">Select Random Item</Button>
     </StackPanel>
-    <ListBox x:Name="MainListBox"
-             ItemsSource="{Binding Items}"
+    <ListBox ItemsSource="{Binding Items}"
              Selection="{Binding Selection}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
              SelectionMode="{Binding SelectionMode^}"

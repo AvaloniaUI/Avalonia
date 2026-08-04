@@ -100,15 +100,19 @@ namespace Avalonia.Controls
         // Indices are remapped on structural collection changes so an entry never points
         // at the wrong item's size. Memory is bounded by the number of distinct item
         // indices ever measured (no artificial cap; stock has none).
-        private Dictionary<int, double> _measuredSizes = new();
+        private readonly Dictionary<int, double> _measuredSizes = new();
 
-        // Running sum of _measuredSizes.Values, published by EstimateElementSizeU (which
-        // already iterates the record each measure pass, so this is its single source of
-        // truth — no separate sweep). Together with _measuredSizes.Count it lets the extent
-        // be computed as knownSum + (itemCount - knownCount) * mean: a cumulative estimate
-        // that depends only on what has EVER been measured, not on the current realized
-        // window. That makes the reported extent reproducible when an offset is revisited.
+        // Running sum of _measuredSizes.Values, maintained incrementally by the accessors
+        // below — every mutation of the record adjusts it by the delta, so the record is
+        // never swept (an O(items ever measured) sweep per measure pass would be worse than
+        // stock's O(realized window) average). Together with _measuredSizes.Count it lets
+        // the extent be computed as knownSum + (itemCount - knownCount) * mean: a cumulative
+        // estimate that depends only on what has EVER been measured, not on the current
+        // realized window. That makes the reported extent reproducible when an offset is
+        // revisited. _measuredSizesSumError is the Neumaier compensation term (see
+        // AddToMeasuredSizesSum): read the sum through MeasuredSizesSum, never directly.
         private double _measuredSizesSum;
+        private double _measuredSizesSumError;
         internal bool TryGetMeasuredSizeForTesting(int index, out double size) => _measuredSizes.TryGetValue(index, out size);
         private RealizedStackElements? _measureElements;
         private RealizedStackElements? _realizedElements;
@@ -296,7 +300,7 @@ namespace Avalonia.Controls
                     // after a resize that spans the anchor. The recorded per-item sizes describe
                     // the old layout, so drop them and let the estimate rebuild from the new
                     // measurements (stock likewise adapts instantly to a uniform resize).
-                    _measuredSizes.Clear();
+                    ClearMeasuredSizes();
                 }
 
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
@@ -435,6 +439,21 @@ namespace Avalonia.Controls
             _scrollAnchorProvider = null;
         }
 
+        internal override void Refresh()
+        {
+            // A refresh means the ItemTemplate / ItemContainerTheme / DisplayMemberBinding changed:
+            // the collection is untouched, but every container must be re-prepared so the new
+            // template or theme is applied. It must therefore never be treated as a preservable
+            // Reset. Because nothing changed, the Reset path below would find every realized
+            // element still valid at its index and keep it as-is, and the non-preserving branch
+            // would hand matching containers to RetainMatchingContainers — neither calls
+            // PrepareItemContainer. So recycle every realized element up front: the base Reset
+            // handling then sees an empty realized set (no preservation, nothing to retain) and the
+            // next measure re-prepares every container.
+            _realizedElements?.ItemsReset(_recycleElementOnItemRemoved);
+            base.Refresh();
+        }
+
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
             _lastCapturedViewportStart = double.NaN;
@@ -471,7 +490,7 @@ namespace Avalonia.Controls
                     // The items at these indices are now different objects, so their recorded
                     // sizes are stale — drop them (they'll be re-measured on the next pass).
                     for (var i = 0; i < e.OldItems!.Count; ++i)
-                        _measuredSizes.Remove(e.OldStartingIndex + i);
+                        ForgetMeasuredSize(e.OldStartingIndex + i);
                     break;
                 case NotifyCollectionChangedAction.Move:
                     if (e.OldStartingIndex < 0)
@@ -491,7 +510,7 @@ namespace Avalonia.Controls
                     // A move shifts an arbitrary index range; rather than track the permutation,
                     // clear the record (conservative but always correct — no entry can point at
                     // the wrong item). Sizes rebuild as items are re-measured.
-                    _measuredSizes.Clear();
+                    ClearMeasuredSizes();
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     // Try to preserve scroll position during Reset
@@ -574,7 +593,7 @@ namespace Avalonia.Controls
 
                         // All elements were recycled and item identities/indices are no longer
                         // known — clear the per-item size record so no entry points at a stale item.
-                        _measuredSizes.Clear();
+                        ClearMeasuredSizes();
                     }
 
                     // WARMUP OPTIMIZATION: After reset, clear only obsolete keys and top-up if needed
@@ -1107,7 +1126,7 @@ namespace Avalonia.Controls
             if (knownCount == 0)
                 return itemCount * _lastEstimatedElementSizeU;
 
-            var knownSum = _measuredSizesSum;
+            var knownSum = MeasuredSizesSum;
             var mean = knownSum / knownCount;
             var unknownCount = itemCount - knownCount;
             if (unknownCount < 0)
@@ -1132,31 +1151,106 @@ namespace Avalonia.Controls
             {
                 if (elements[i] is not { IsMeasureValid: true } element)
                     continue;
-                _measuredSizes[firstIndex + i] = GetElementSizeU(element, firstIndex + i);
+                RecordMeasuredSize(firstIndex + i, GetElementSizeU(element, firstIndex + i));
             }
 
             // Not enough information yet: keep the last estimate (stock's seed until the
             // first measurement).
-            if (_measuredSizes.Count == 0)
-            {
-                _measuredSizesSum = 0;
+            var knownCount = _measuredSizes.Count;
+            if (knownCount == 0)
                 return _lastEstimatedElementSizeU;
-            }
 
-            var total = 0.0;
-            foreach (var size in _measuredSizes.Values)
-                total += size;
-
-            // Publish the running sum here — this is the one place the record is summed, so
-            // the extent calculation reuses this value rather than sweeping again.
-            _measuredSizesSum = total;
+            // The running sum is maintained by the upsert above, so this pass costs
+            // O(realized window) — the record itself is never swept.
+            var total = MeasuredSizesSum;
 
             // Guard against a degenerate all-zero record (matches stock's total == 0 guard).
             if (total == 0)
                 return _lastEstimatedElementSizeU;
 
             // Store and return the estimate: the mean of all recorded sizes.
-            return _lastEstimatedElementSizeU = total / _measuredSizes.Count;
+            return _lastEstimatedElementSizeU = total / knownCount;
+        }
+
+        /// <summary>
+        /// The sum of every value in <see cref="_measuredSizes"/>, maintained incrementally.
+        /// </summary>
+        private double MeasuredSizesSum => _measuredSizesSum + _measuredSizesSumError;
+
+        /// <summary>
+        /// The single upsert point for the persistent per-item size record: records
+        /// <paramref name="size"/> for <paramref name="index"/> and keeps the running sum in
+        /// agreement by applying only the delta.
+        /// </summary>
+        private void RecordMeasuredSize(int index, double size)
+        {
+            if (_measuredSizes.TryGetValue(index, out var previous))
+            {
+                // Re-measuring an unchanged item is the common case and must not touch the
+                // sum: no write means no rounding, so a scrolling session over settled
+                // content accumulates no error at all.
+                if (previous == size)
+                    return;
+
+                _measuredSizes[index] = size;
+                AddToMeasuredSizesSum(size - previous);
+            }
+            else
+            {
+                _measuredSizes[index] = size;
+                AddToMeasuredSizesSum(size);
+            }
+        }
+
+        /// <summary>
+        /// Drops the recorded size for <paramref name="index"/>, keeping the running sum in
+        /// agreement.
+        /// </summary>
+        private void ForgetMeasuredSize(int index)
+        {
+            if (!_measuredSizes.Remove(index, out var previous))
+                return;
+
+            if (_measuredSizes.Count == 0)
+                ResetMeasuredSizesSum();
+            else
+                AddToMeasuredSizesSum(-previous);
+        }
+
+        /// <summary>
+        /// Drops the whole record (used when the index-to-item mapping is no longer
+        /// trustworthy), keeping the running sum in agreement.
+        /// </summary>
+        private void ClearMeasuredSizes()
+        {
+            _measuredSizes.Clear();
+            ResetMeasuredSizesSum();
+        }
+
+        private void ResetMeasuredSizesSum()
+        {
+            _measuredSizesSum = 0;
+            _measuredSizesSumError = 0;
+        }
+
+        /// <summary>
+        /// Adds <paramref name="delta"/> to the running sum using Neumaier compensated
+        /// summation: the rounding error of each accumulation is carried in
+        /// <see cref="_measuredSizesSumError"/> and folded back in by
+        /// <see cref="MeasuredSizesSum"/>, so an incrementally maintained sum stays within one
+        /// rounding of a freshly computed full sum however many updates it has seen. This is
+        /// what makes the reported extent reproducible without periodically re-summing the
+        /// record (which would need a rebuild interval, i.e. a tuning constant).
+        /// </summary>
+        private void AddToMeasuredSizesSum(double delta)
+        {
+            var sum = _measuredSizesSum + delta;
+
+            _measuredSizesSumError += Math.Abs(_measuredSizesSum) >= Math.Abs(delta)
+                ? (_measuredSizesSum - sum) + delta
+                : (delta - sum) + _measuredSizesSum;
+
+            _measuredSizesSum = sum;
         }
 
         /// <summary>
@@ -1164,38 +1258,77 @@ namespace Avalonia.Controls
         /// inserted at <paramref name="index"/>: entries at or after the insertion point shift up
         /// by <paramref name="count"/>. The inserted slots are left unrecorded (unknown size).
         /// Mirrors <see cref="RealizedStackElements.ItemsInserted"/> so an entry never points at
-        /// the wrong item.
+        /// the wrong item. Remapped in place: an insert at or past the highest recorded index
+        /// — the append case an infinite-scroll list pays on every batch — moves nothing and
+        /// allocates nothing, and a mid-list insert only touches the entries after it.
         /// </summary>
         private void RemapMeasuredSizesForInsert(int index, int count)
         {
-            if (_measuredSizes.Count == 0)
+            if (count <= 0 || _measuredSizes.Count == 0)
                 return;
 
-            var remapped = new Dictionary<int, double>(_measuredSizes.Count);
-            foreach (var kvp in _measuredSizes)
-                remapped[kvp.Key >= index ? kvp.Key + count : kvp.Key] = kvp.Value;
-            _measuredSizes = remapped;
+            // Snapshot the entries that have to move; the record is enumerated but not
+            // rebuilt, and nothing is allocated when none of them do.
+            List<KeyValuePair<int, double>>? shifted = null;
+            foreach (var entry in _measuredSizes)
+            {
+                if (entry.Key >= index)
+                    (shifted ??= new List<KeyValuePair<int, double>>()).Add(entry);
+            }
+
+            if (shifted is null)
+                return;
+
+            // Remove every moving entry before writing any of them back, so a shifted key can
+            // never overwrite an entry that has not been moved yet (which iterating the
+            // snapshot in dictionary order otherwise would). A pure shift leaves the sum
+            // unchanged.
+            foreach (var entry in shifted)
+                _measuredSizes.Remove(entry.Key);
+            foreach (var entry in shifted)
+                _measuredSizes[entry.Key + count] = entry.Value;
         }
 
         /// <summary>
         /// Remaps the persistent per-item size record after <paramref name="count"/> items were
         /// removed at <paramref name="index"/>: entries in the removed range are dropped and
         /// entries after it shift down by <paramref name="count"/>. Mirrors
-        /// <see cref="RealizedStackElements.ItemsRemoved"/>.
+        /// <see cref="RealizedStackElements.ItemsRemoved"/>. Remapped in place, like
+        /// <see cref="RemapMeasuredSizesForInsert"/>: a remove past the highest recorded index
+        /// moves nothing and allocates nothing.
         /// </summary>
         private void RemapMeasuredSizesForRemove(int index, int count)
         {
-            if (_measuredSizes.Count == 0)
+            if (count <= 0 || _measuredSizes.Count == 0)
                 return;
 
-            var remapped = new Dictionary<int, double>(_measuredSizes.Count);
-            foreach (var kvp in _measuredSizes)
+            var end = index + count;
+            List<KeyValuePair<int, double>>? shifted = null;
+            List<int>? dropped = null;
+            foreach (var entry in _measuredSizes)
             {
-                if (kvp.Key >= index && kvp.Key < index + count)
-                    continue;
-                remapped[kvp.Key >= index + count ? kvp.Key - count : kvp.Key] = kvp.Value;
+                if (entry.Key >= end)
+                    (shifted ??= new List<KeyValuePair<int, double>>()).Add(entry);
+                else if (entry.Key >= index)
+                    (dropped ??= new List<int>()).Add(entry.Key);
             }
-            _measuredSizes = remapped;
+
+            if (dropped is not null)
+            {
+                foreach (var key in dropped)
+                    ForgetMeasuredSize(key);
+            }
+
+            if (shifted is null)
+                return;
+
+            // As in the insert case: clear the moving entries first so a shifted key cannot
+            // land on one that has not moved yet. The entries that stay put are all below
+            // index, and every shifted key lands at or above it, so the two never collide.
+            foreach (var entry in shifted)
+                _measuredSizes.Remove(entry.Key);
+            foreach (var entry in shifted)
+                _measuredSizes[entry.Key - count] = entry.Value;
         }
 
         private void GetOrEstimateAnchorElementForViewport(
@@ -1461,35 +1594,6 @@ namespace Avalonia.Controls
                 _realizingIndex = -1;
                 _realizingElement = null;
             } while (u < viewport.viewportUEnd && index < items.Count);
-
-            // When the forward loop stopped because u >= viewportUEnd but only a few items
-            // remain, realize them too. This ensures the extent is based on actual measured
-            // sizes rather than estimates, preventing the last item(s) from being clipped
-            // because the ScrollViewer couldn't scroll far enough.
-            var remainingItems = items.Count - index;
-            if (remainingItems > 0 && remainingItems <= 3)
-            {
-                while (index < items.Count)
-                {
-                    _realizingIndex = index;
-                    var e = GetOrCreateElement(items, index);
-                    _realizingElement = e;
-
-                    if (!e.IsMeasureValid)
-                        e.Measure(availableSize);
-
-                    var sizeU = GetElementSizeU(e, index);
-                    var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
-
-                    _measureElements!.Add(index, e, u, sizeU);
-                    viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
-
-                    u += sizeU;
-                    ++index;
-                    _realizingIndex = -1;
-                    _realizingElement = null;
-                }
-            }
 
             // Check if we reached the end of the collection
             _hasReachedEnd = index >= items.Count;
@@ -1926,9 +2030,10 @@ namespace Avalonia.Controls
                 _recyclePool.Add(recycleKey, pool);
             }
 
-            // respect max poolsize per key of IVirtualizingDataTemplate
-            if (ItemsControl?.ItemTemplate is Templates.IVirtualizingDataTemplate vdt &&
-                pool.Count >= vdt.MaxPoolSizePerKey)
+            // Respect MaxPoolSizePerKey, but only for keys an IVirtualizingDataTemplate handed out.
+            // Containers under DefaultRecycleKey are pooled uncapped, as in stock Avalonia.
+            if (ItemsControl?.GetMaxPoolSizePerKey(recycleKey) is { } maxPoolSize &&
+                pool.Count >= maxPoolSize)
                 return;
             
             pool.Add(element);
@@ -2270,7 +2375,7 @@ namespace Avalonia.Controls
 
             // How many containers to keep per kind. The template says so when it knows (it is the
             // thing that knows how expensive it is to build); otherwise keep a small pool.
-            var targetCount = ItemsControl?.ItemTemplate is Templates.IVirtualizingDataTemplate vdt
+            var targetCount = ItemsControl?.EffectiveVirtualizingItemTemplate is { } vdt
                 ? vdt.MinPoolSizePerKey
                 : DefaultWarmupPoolSizePerKey;
 

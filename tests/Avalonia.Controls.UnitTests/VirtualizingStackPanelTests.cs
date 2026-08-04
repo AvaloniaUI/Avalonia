@@ -1635,6 +1635,188 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(77d, cached5);
         }
 
+        [Fact]
+        public void Measured_Size_Record_Shifts_Up_On_Insert_At_The_Front()
+        {
+            using var app = App();
+            var (target, scroll, items) = CreateTargetWithPopulatedSizeRecord();
+
+            var before = ReadMeasuredSizeRecord(target, items.Count + 4);
+            var expected = before.ToDictionary(e => e.Key + 2, e => e.Value);
+
+            // Prepend: every recorded entry moves. Asserted before any layout, so a re-measure of
+            // the realized window cannot paper over a wrong mapping.
+            items.InsertRange(0, new[] { new ItemWithHeight(900, 33), new ItemWithHeight(901, 34) });
+
+            AssertMeasuredSizeRecordEquals(expected, target, items.Count + 4);
+
+            Layout(target);
+            AssertExtentAgreesWithMeasuredSizeRecord(target, scroll, items.Count);
+        }
+
+        [Fact]
+        public void Measured_Size_Record_Shifts_Up_On_Mid_List_Insert()
+        {
+            using var app = App();
+            var (target, scroll, items) = CreateTargetWithPopulatedSizeRecord();
+
+            var before = ReadMeasuredSizeRecord(target, items.Count + 4);
+            Assert.Contains(before.Keys, k => k < 20);
+            Assert.Contains(before.Keys, k => k >= 20);
+
+            // Only the entries at or after the insertion point move; the ones before it must not.
+            var expected = before.ToDictionary(e => e.Key >= 20 ? e.Key + 3 : e.Key, e => e.Value);
+
+            items.InsertRange(20, Enumerable.Range(0, 3).Select(i => new ItemWithHeight(900 + i, 35 + i)));
+
+            AssertMeasuredSizeRecordEquals(expected, target, items.Count + 4);
+
+            Layout(target);
+            AssertExtentAgreesWithMeasuredSizeRecord(target, scroll, items.Count);
+        }
+
+        [Fact]
+        public void Measured_Size_Record_Is_Untouched_By_An_Insert_Past_The_Last_Item()
+        {
+            using var app = App();
+            var (target, scroll, items) = CreateTargetWithPopulatedSizeRecord();
+
+            var before = ReadMeasuredSizeRecord(target, items.Count + 4);
+
+            // Append: nothing is at or after the insertion point, so the record must come through
+            // untouched (this is the early-out an infinite-scroll list hits on every batch).
+            items.InsertRange(items.Count, Enumerable.Range(0, 3).Select(i => new ItemWithHeight(900 + i, 35 + i)));
+
+            AssertMeasuredSizeRecordEquals(before, target, items.Count + 4);
+
+            Layout(target);
+            AssertExtentAgreesWithMeasuredSizeRecord(target, scroll, items.Count);
+        }
+
+        [Fact]
+        public void Measured_Size_Record_Shifts_Down_On_Remove_At_The_Front()
+        {
+            using var app = App();
+            var (target, scroll, items) = CreateTargetWithPopulatedSizeRecord();
+
+            var before = ReadMeasuredSizeRecord(target, items.Count + 4);
+            Assert.Contains(0, before.Keys);
+            Assert.Contains(1, before.Keys);
+
+            // The two removed items' entries are dropped; everything after them moves down.
+            var expected = before
+                .Where(e => e.Key >= 2)
+                .ToDictionary(e => e.Key - 2, e => e.Value);
+
+            items.RemoveRange(0, 2);
+
+            AssertMeasuredSizeRecordEquals(expected, target, items.Count + 4);
+
+            Layout(target);
+            AssertExtentAgreesWithMeasuredSizeRecord(target, scroll, items.Count);
+        }
+
+        [Fact]
+        public void Measured_Size_Record_Shifts_Down_On_Mid_List_Remove()
+        {
+            using var app = App();
+            var (target, scroll, items) = CreateTargetWithPopulatedSizeRecord();
+
+            var before = ReadMeasuredSizeRecord(target, items.Count + 4);
+            Assert.Contains(before.Keys, k => k < 20);
+            Assert.Contains(before.Keys, k => k >= 23);
+
+            var expected = before
+                .Where(e => e.Key < 20 || e.Key >= 23)
+                .ToDictionary(e => e.Key >= 23 ? e.Key - 3 : e.Key, e => e.Value);
+
+            items.RemoveRange(20, 3);
+
+            AssertMeasuredSizeRecordEquals(expected, target, items.Count + 4);
+
+            Layout(target);
+            AssertExtentAgreesWithMeasuredSizeRecord(target, scroll, items.Count);
+        }
+
+        /// <summary>
+        /// Builds a panel whose per-item size record covers many more indices than are realized —
+        /// so a remap error cannot be hidden by the realized window being re-measured — with a
+        /// distinct height per item, so an entry that ends up on the wrong index is detectable.
+        /// </summary>
+        private static (VirtualizingStackPanel, ScrollViewer, AvaloniaList<ItemWithHeight>) CreateTargetWithPopulatedSizeRecord()
+        {
+            var items = new AvaloniaList<ItemWithHeight>(
+                Enumerable.Range(0, 40).Select(x => new ItemWithHeight(x, 20 + x)));
+            var (target, scroll, _) = CreateTarget(
+                items: items,
+                itemTemplate: CanvasWithHeightTemplate,
+                bufferFactor: 0d);
+
+            // Scroll across the collection and back so entries exist well outside the realized
+            // window, then settle at the top.
+            foreach (var offset in new[] { 400d, 800d, 1200d, 0d })
+            {
+                scroll.Offset = new Vector(0, offset);
+                Layout(target);
+            }
+
+            return (target, scroll, items);
+        }
+
+        /// <summary>
+        /// Reads the panel's per-item size record back through the internal test seam, scanning
+        /// past the end of the collection so an entry left stranded beyond it is caught.
+        /// </summary>
+        private static Dictionary<int, double> ReadMeasuredSizeRecord(VirtualizingStackPanel target, int scanTo)
+        {
+            var record = new Dictionary<int, double>();
+
+            for (var i = 0; i <= scanTo; ++i)
+            {
+                if (target.TryGetMeasuredSizeForTesting(i, out var size))
+                    record[i] = size;
+            }
+
+            Assert.NotEmpty(record);
+            return record;
+        }
+
+        private static void AssertMeasuredSizeRecordEquals(
+            IReadOnlyDictionary<int, double> expected,
+            VirtualizingStackPanel target,
+            int scanTo)
+        {
+            static string Format(IEnumerable<KeyValuePair<int, double>> record) =>
+                string.Join(", ", record.OrderBy(e => e.Key).Select(e => $"[{e.Key}]={e.Value}"));
+
+            Assert.Equal(Format(expected), Format(ReadMeasuredSizeRecord(target, scanTo)));
+        }
+
+        /// <summary>
+        /// The reported extent is <c>knownSum + (itemCount - knownCount) * mean</c> over the size
+        /// record, so recomputing it from the entries read back through the seam proves the
+        /// panel's incrementally maintained running sum still agrees with those entries.
+        /// </summary>
+        private static void AssertExtentAgreesWithMeasuredSizeRecord(
+            VirtualizingStackPanel target,
+            ScrollViewer scroll,
+            int itemCount)
+        {
+            var record = ReadMeasuredSizeRecord(target, itemCount + 4);
+            Assert.All(record.Keys, key => Assert.InRange(key, 0, itemCount - 1));
+
+            var knownSum = record.Values.Sum();
+            var mean = knownSum / record.Count;
+            var expected = knownSum + ((itemCount - record.Count) * mean);
+
+            // The panel's desired size goes through layout rounding, so the reported extent is
+            // quantised to whole pixels. Any larger gap means the running sum no longer matches
+            // the entries it is meant to summarise (e.g. a drop that forgot to subtract).
+            Assert.True(Math.Abs(expected - scroll.Extent.Height) <= 1d,
+                $"Extent {scroll.Extent.Height} does not match the {record.Count} recorded sizes " +
+                $"(sum {knownSum}, mean {mean}, {itemCount} items => {expected}).");
+        }
+
         [Theory]
         [InlineData(0d)]
         [InlineData(0.5d)]
@@ -2009,15 +2191,10 @@ namespace Avalonia.Controls.UnitTests
             4, 7,
             3, 6,
             3, 7)]
-        // For the buffered case, lastIndex3 is 19 (all remaining items) rather than 17: after
-        // the item heights shrink, the tail of the collection falls within 3 items of the end,
-        // so the "don't clip the last element" logic in RealizeElements (remainingItems <= 3)
-        // fully realizes the last items instead of estimating them. This intentionally
-        // over-realizes a couple of extra tail items to guarantee the final item is not clipped.
         [InlineData(0.5d,
             0, 7,
             0, 7,
-            7, 19)]
+            7, 17)]
         public void Focused_Container_Is_Positioned_Correctly_when_Container_Size_Change_Causes_It_To_Be_Moved_Into_Visible_Viewport(double bufferFactor,
             int firstIndex1, int lastIndex1,
             int firstIndex2, int lastIndex2,
@@ -5900,17 +6077,19 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Last_Item_Not_Clipped_When_Few_Remaining_Items_Are_Larger_Than_Estimate()
+        public void Last_Item_Is_Reachable_And_Extent_Is_Exact_After_Scrolling_To_End()
         {
-            // Regression test: when the forward realization loop fills the viewport and stops
-            // with only 1-3 items remaining, those items' sizes are estimated (not measured).
-            // If their actual size is much larger than the estimate, the extent is too small,
-            // preventing the ScrollViewer from scrolling far enough to show them in full.
+            // 12 items in a 100px viewport: the first 10 are 10px tall, the last 2 are 200px, so
+            // the true total is 100 + 400 = 500. The tail items are far larger than the mean of
+            // everything measured so far, so an estimate-based extent starts out much too small —
+            // the shape that used to leave the last item unreachable/clipped.
             //
-            // Setup: 12 items total. First 10 are 10px tall, last 2 are 200px tall.
-            // Viewport is 100px. The forward loop realizes items 0-9 (fills 100px), leaving
-            // 2 items remaining. Without fix: estimated extent = 100 + 2*10 = 120.
-            // With fix: those 2 items are realized, giving extent = 100 + 200 + 200 = 500.
+            // Asking the ScrollViewer for the bottom must still walk to the end: each pass measures
+            // more of the tail, which sharpens the estimate (it can only sharpen, never oscillate —
+            // the estimate is a mean over the persistent per-item size record, not over the
+            // currently-realized window). Once every item has been measured unknownCount == 0 and
+            // CacheBasedExtentU returns the exact total, so the bottom edge is the real bottom edge
+            // and the last item is not clipped.
             using var app = App();
 
             var items = Enumerable.Range(0, 12)
@@ -5922,15 +6101,29 @@ namespace Avalonia.Controls.UnitTests
                 itemTemplate: CanvasWithHeightTemplate,
                 bufferFactor: 0);
 
-            // Check right after initial layout — before any scrolling.
-            // The extent must already reflect the actual sizes of the last 2 items.
-            Assert.True(
-                scroll.Extent.Height >= 500,
-                $"Extent ({scroll.Extent.Height}) should be >= 500 (actual content height). " +
-                $"The last 2 items (<=3 remaining after forward loop) should be realized, not estimated.");
+            for (var i = 0; i < 20; i++)
+            {
+                var previousOffset = scroll.Offset.Y;
+                scroll.Offset = new Vector(0, scroll.Extent.Height);
+                Layout(target);
 
-            // All 12 items should be realized since the last 2 were within the <=3 threshold.
+                if (Math.Abs(scroll.Offset.Y - previousOffset) < 1)
+                    break;
+            }
+
+            // Every item has been measured, so the reported extent is the exact measured total.
+            Assert.Equal(500, scroll.Extent.Height);
+
+            // The last item is realized, laid out at its true position and reachable in full: its
+            // bottom edge coincides with the bottom of the viewport at the maximum offset.
             Assert.Equal(11, target.LastRealizedIndex);
+
+            var last = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(11));
+            Assert.Equal(new Rect(0, 300, 100, 200), last.Bounds);
+            Assert.Equal(400, scroll.Offset.Y);
+            Assert.True(last.Bounds.Bottom <= scroll.Offset.Y + scroll.Viewport.Height,
+                $"Last item is clipped: it ends at {last.Bounds.Bottom} but the viewport ends at " +
+                $"{scroll.Offset.Y + scroll.Viewport.Height}.");
         }
 
         private class TestLogSink : ILogSink

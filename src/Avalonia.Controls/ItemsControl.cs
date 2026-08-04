@@ -479,25 +479,16 @@ namespace Avalonia.Controls
             }
             else if (container is ContentControl cc)
             {
-                bool shouldSkipClear = false;
-
                 // Check if we should skip clearing for virtualization
-                // ONLY skip when using a VirtualizingPanel that actually recycles containers
+                // ONLY skip when using a VirtualizingPanel that actually recycles containers, and
+                // only for a template that opted in by handing out a recycle key for this item -
+                // the same condition NeedsContainer<T> keys on.
                 // When we skip clearing, the Child stays attached to this container
-                if(cc.Presenter != null && ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel)
-                {
-                    var item = cc.Content;
-                    var template = cc.ContentTemplate;
-
-                    if (template is IVirtualizingDataTemplate vdt && vdt.GetKey(item) != null)
-                    {
-                        shouldSkipClear = true;
-                    }
-                    else if (template is IRecyclingDataTemplate && template is ITypedDataTemplate tdt && tdt.DataType != null)
-                    {
-                        shouldSkipClear = true;
-                    }
-                }
+                var shouldSkipClear = cc.Presenter != null &&
+                                      ContentVirtualizationDiagnostics.IsEnabled &&
+                                      Presenter?.Panel is VirtualizingStackPanel &&
+                                      cc.ContentTemplate is IVirtualizingDataTemplate vdt &&
+                                      vdt.GetKey(cc.Content) != null;
 
                 // Only clear if NOT being recycled for virtualization
                 // This keeps the Child attached, avoiding detach/reattach visual tree churn
@@ -509,25 +500,15 @@ namespace Avalonia.Controls
             }
             else if (container is ContentPresenter p)
             {
-                bool shouldSkipClear = false;
-
-                var item = p.Content;
-                var template = p.ContentTemplate;
-
                 // Check if we should skip clearing for virtualization
-                // ONLY skip when using a VirtualizingPanel that actually recycles containers
+                // ONLY skip when using a VirtualizingPanel that actually recycles containers, and
+                // only for a template that opted in by handing out a recycle key for this item -
+                // the same condition NeedsContainer<T> keys on.
                 // When we skip clearing, the Child stays attached to this container
-                if (ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel)
-                {
-                    if (template is IVirtualizingDataTemplate vdt && vdt.GetKey(item) != null)
-                    {
-                        shouldSkipClear = true;
-                    }
-                    else if (template is IRecyclingDataTemplate && template is ITypedDataTemplate tdt && tdt.DataType != null)
-                    {
-                        shouldSkipClear = true;
-                    }
-                }
+                var shouldSkipClear = ContentVirtualizationDiagnostics.IsEnabled &&
+                                      Presenter?.Panel is VirtualizingStackPanel &&
+                                      p.ContentTemplate is IVirtualizingDataTemplate vdt &&
+                                      vdt.GetKey(p.Content) != null;
 
                 // Only clear if NOT being recycled for virtualization
                 // This keeps the Child attached, avoiding detach/reattach visual tree churn
@@ -602,40 +583,16 @@ namespace Avalonia.Controls
                 return false;
             }
 
-            // When content virtualization is enabled, use type-aware recycling keys to ensure
-            // containers are only reused for compatible data types. This prevents unnecessary
-            // Child rebuilds in ContentPresenter when the data type changes.
-            if (ContentVirtualizationDiagnostics.IsEnabled && Presenter?.Panel is VirtualizingStackPanel)
+            // Container-level virtualization is opt-in: a template has to hand out a recycle key
+            // for this item. Keys partition the container pool so a container is only ever reused
+            // for data that its retained Child can display. Anything else falls through to stock
+            // behaviour - a single shared pool under DefaultRecycleKey.
+            if (ContentVirtualizationDiagnostics.IsEnabled &&
+                Presenter?.Panel is VirtualizingStackPanel &&
+                GetEffectiveItemTemplate() is IVirtualizingDataTemplate vdt &&
+                vdt.GetKey(item) is { } key)
             {
-                // Only check ItemTemplate property if set (avoid FindDataTemplate during measure)
-                // For DataTemplates collections, we rely on item type matching template DataType
-                var template = GetEffectiveItemTemplate();
-
-                if (template != null)
-                {
-                    // Use IVirtualizingDataTemplate key if available
-                    if (template is IVirtualizingDataTemplate vdt)
-                    {
-                        var key = vdt.GetKey(item);
-                        if (key != null)
-                        {
-                            recycleKey = key;
-                            return true;
-                        }
-                    }
-                    // Use DataType for automatic recycling
-                    else if (template is ITypedDataTemplate tdt && tdt.DataType != null)
-                    {
-                        recycleKey = tdt.DataType;
-                        return true;
-                    }
-                }
-
-                // For DataTemplates collections: use item type as recycle key
-                // This works because DataTemplate.Match uses DataType.IsInstanceOfType(data)
-                // so items of same type always match the same template
-                // Example: typeof(TaskItem) key → TaskItem pool → template with DataType=TaskItem
-                recycleKey = item?.GetType() ?? DefaultRecycleKey;
+                recycleKey = key;
                 return true;
             }
 
@@ -923,9 +880,48 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the effective item template if it opted into container virtualization, otherwise null.
+        /// </summary>
+        /// <remarks>
+        /// This resolves the template through the same path <see cref="NeedsContainer{T}"/> uses to
+        /// pick a recycle key, so pooling decisions can never key off one template while the panel
+        /// sizes its pools from another - a <see cref="DisplayMemberBinding"/> template or a
+        /// <see cref="Control.DataTemplates"/> collection is not reachable through
+        /// <see cref="ItemTemplate"/> alone.
+        /// </remarks>
+        internal IVirtualizingDataTemplate? EffectiveVirtualizingItemTemplate =>
+            GetEffectiveItemTemplate() as IVirtualizingDataTemplate;
+
+        /// <summary>
+        /// Gets the maximum number of containers a <see cref="VirtualizingStackPanel"/> should pool
+        /// under <paramref name="recycleKey"/>, or null if that pool is unbounded.
+        /// </summary>
+        /// <remarks>
+        /// Only keys handed out by an <see cref="IVirtualizingDataTemplate"/> are capped. Containers
+        /// pooled under <see cref="DefaultRecycleKey"/> - i.e. every item whose template did not opt
+        /// into container virtualization - stay uncapped, as in stock Avalonia.
+        /// </remarks>
+        internal int? GetMaxPoolSizePerKey(object recycleKey)
+        {
+            return recycleKey != DefaultRecycleKey && EffectiveVirtualizingItemTemplate is { } vdt
+                ? vdt.MaxPoolSizePerKey
+                : null;
+        }
+
+        /// <summary>
         /// Gets a data template for the item, using cache to avoid repeated FindDataTemplate calls during measure.
         /// This is critical for avoiding layout cycles when using DataTemplates collections.
         /// </summary>
+        /// <remarks>
+        /// The cache is invalidated when <see cref="ItemTemplate"/> or <see cref="DisplayMemberBinding"/>
+        /// changes, and when this control's own <see cref="Control.DataTemplates"/> collection is
+        /// mutated. Known limitation: <see cref="Avalonia.Controls.Templates.TemplateExtensions"/> lookup
+        /// walks up the tree, so a template added to or removed from an *ancestor's* DataTemplates - or
+        /// from <see cref="Application.DataTemplates"/> - after a type has been cached is not picked up,
+        /// nor is a change of resolution caused by reparenting this control. Hooking every ancestor would
+        /// mean tracking the whole chain for the lifetime of the control; the supported way to change
+        /// templates at runtime is to mutate the collection on the ItemsControl itself.
+        /// </remarks>
         private IDataTemplate? GetCachedDataTemplate(Control container, object? item, IDataTemplate? effectiveTemplate)
         {
             // If there's an ItemTemplate property, use it directly (no need for cache)
@@ -938,8 +934,14 @@ namespace Avalonia.Controls
 
             var itemType = item.GetType();
 
-            // Initialize cache if needed
-            _templateCache ??= new Dictionary<Type, IDataTemplate?>();
+            // Initialize cache if needed. Only reached when the template comes from a DataTemplates
+            // collection rather than from ItemTemplate, so the subscription is set up lazily here -
+            // an ItemsControl that never takes this path neither caches nor subscribes.
+            if (_templateCache is null)
+            {
+                _templateCache = new Dictionary<Type, IDataTemplate?>();
+                DataTemplates.CollectionChanged += OnDataTemplatesCollectionChanged;
+            }
 
             // Check cache first
             if (_templateCache.TryGetValue(itemType, out var cachedTemplate))
@@ -952,6 +954,17 @@ namespace Avalonia.Controls
             _templateCache[itemType] = template;
 
             return template;
+        }
+
+        private void OnDataTemplatesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            // A template added or removed at runtime changes what FindDataTemplate would return for
+            // types already memoized, so the whole cache has to go - the templates are matched by
+            // Match(data), not by key, so we cannot tell which types a given template affects.
+            // Containers already realized keep the template they were prepared with, exactly as in
+            // stock Avalonia, where ContentPresenter resolves the template once when it builds a
+            // child; only subsequent lookups see the change.
+            _templateCache?.Clear();
         }
 
         private void UpdatePseudoClasses()
@@ -1027,61 +1040,16 @@ namespace Avalonia.Controls
     public static class ContentVirtualizationDiagnostics
     {
         /// <summary>
-        /// Gets or sets whether content virtualization is globally enabled.
-        /// Default is true. Set to false for debugging.
+        /// Gets or sets whether container-level virtualization is globally enabled.
         /// </summary>
+        /// <remarks>
+        /// This is a kill switch, not the opt-in. Virtualization is opted into per template, by
+        /// implementing <see cref="IVirtualizingDataTemplate"/> and returning a non-null key from
+        /// <see cref="IVirtualizingDataTemplate.GetKey"/> - for a XAML
+        /// <c>DataTemplate</c> that means <c>EnableVirtualization="True"</c>. Setting this to false
+        /// forces every <see cref="ItemsControl"/> back to stock container recycling, which is useful
+        /// when isolating whether a layout problem comes from virtualization.
+        /// </remarks>
         public static bool IsEnabled { get; set; } = true;
-
-        /// <summary>
-        /// Gets pool statistics for the specified ItemsControl.
-        /// </summary>
-        /// <param name="control">The ItemsControl to get statistics for.</param>
-        /// <returns>Statistics about the content recycle pools, or null if no pools exist.</returns>
-        public static ContentPoolStats? GetPoolStats(ItemsControl control)
-        {
-            // Content pooling has been removed. Only container-level pooling remains (in VirtualizingStackPanel).
-            return null;
-        }
-
-        /// <summary>
-        /// Clears all content recycle pools for the specified ItemsControl.
-        /// </summary>
-        /// <param name="control">The ItemsControl to clear pools for.</param>
-        public static void ClearPools(ItemsControl control)
-        {
-            // No-op: Content pooling has been removed. Only container-level pooling remains.
-        }
-    }
-
-    /// <summary>
-    /// Statistics about content recycle pools.
-    /// </summary>
-    public class ContentPoolStats
-    {
-        /// <summary>
-        /// Gets the pool entries.
-        /// </summary>
-        public List<PoolEntry> PoolEntries { get; } = new();
-    }
-
-    /// <summary>
-    /// Information about a single pool entry.
-    /// </summary>
-    public class PoolEntry
-    {
-        /// <summary>
-        /// Gets or sets the name of the template.
-        /// </summary>
-        public string TemplateName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the recycle key for this pool.
-        /// </summary>
-        public object RecycleKey { get; set; } = new();
-
-        /// <summary>
-        /// Gets or sets the number of controls currently pooled.
-        /// </summary>
-        public int PooledCount { get; set; }
     }
 }
