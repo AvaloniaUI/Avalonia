@@ -32,6 +32,20 @@ namespace Avalonia.Controls.UnitTests
                 [!Layoutable.HeightProperty] = new Binding("Height"),
             });
 
+        /// <summary>
+        /// Same as <see cref="CanvasWithHeightTemplate"/> but with layout rounding disabled, so
+        /// a fractional Height survives into DesiredSize. Needed to exercise sub-pixel size
+        /// changes: at the default scale of 1 layout rounding snaps every desired size to a
+        /// whole pixel, which makes sub-pixel changes unreachable in a test.
+        /// </summary>
+        private static FuncDataTemplate<ItemWithHeight> UnroundedCanvasWithHeightTemplate = new((_, _) =>
+            new CanvasCountingMeasureArrangeCalls
+            {
+                Width = 100,
+                UseLayoutRounding = false,
+                [!Layoutable.HeightProperty] = new Binding("Height"),
+            });
+
         private static FuncDataTemplate<ItemWithWidth> CanvasWithWidthTemplate = new((_, _) =>
             new CanvasCountingMeasureArrangeCalls
             {
@@ -1392,20 +1406,71 @@ namespace Avalonia.Controls.UnitTests
             // should hold containers for items 21..30 (matching DataContexts) and reuse them
             // WITHOUT going through PrepareContainerForItemOverride again. Only the genuinely
             // new content at the new anchor index (old item 19) needs preparation.
+            // Record which container instance is serving each item, so we can assert the very
+            // same instances keep serving those items afterwards.
+            var containerByItem = CaptureContainerByItem(target, itemsControl);
+            Assert.True(containerByItem.Count >= 8,
+                $"Test setup: expected ~10 realized containers, captured {containerByItem.Count}.");
+
             var newItems = new ItemWithHeightAndMeasureArrangeCount(-1);
             items.Insert(0, newItems);
             Layout(target);
 
-            // With RetainMatchingContainers active: only ~1-2 prepares (the new anchor item
-            // that wasn't previously realised).
-            // Without it: ALL 10 realised slots go through Recycle + PrepareContainerForItem.
-            // With RetainMatchingContainers active: only ~1-2 prepares (the new anchor item
-            // that wasn't previously realised).
-            // Without it: ALL 10 realised slots go through Recycle + PrepareContainerForItem.
+            // The items themselves did not change — only their indices did. Reuse means the same
+            // container instance is still showing the same item; the loose prepare-count bound
+            // below could also be met by recycling a container and re-preparing it for a
+            // different item, which is not reuse.
+            var reused = CountSameContainerForSameItem(target, itemsControl, containerByItem);
+            Assert.True(reused >= 8,
+                $"Only {reused} of {containerByItem.Count} items are still served by the same " +
+                $"container instance after the insert. RetainMatchingContainers should have kept " +
+                $"them rather than recycling and re-preparing.");
+
             Assert.True(itemsControl.PrepareCount <= 3,
                 $"Expected ≤ 3 container preparations after Insert (only the new anchor item " +
                 $"needs Prepare); got {itemsControl.PrepareCount}. Without RetainMatchingContainers " +
                 $"every realised slot would be re-prepared.");
+        }
+
+        /// <summary>
+        /// Maps each currently-realized item to the container instance serving it.
+        /// </summary>
+        private static Dictionary<object, Control> CaptureContainerByItem(
+            VirtualizingStackPanel target, ItemsControl itemsControl)
+        {
+            var result = new Dictionary<object, Control>();
+            foreach (var container in target.GetRealizedContainers()!)
+            {
+                if (itemsControl.IndexFromContainer(container) < 0)
+                    continue;
+                if ((container as IDataContextProvider)?.DataContext is { } item)
+                    result[item] = container;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Counts how many of the previously-captured items are still served by the exact same
+        /// container instance — i.e. genuinely reused rather than recycled and re-prepared.
+        /// </summary>
+        private static int CountSameContainerForSameItem(
+            VirtualizingStackPanel target,
+            ItemsControl itemsControl,
+            Dictionary<object, Control> before)
+        {
+            var count = 0;
+            foreach (var container in target.GetRealizedContainers()!)
+            {
+                if (itemsControl.IndexFromContainer(container) < 0)
+                    continue;
+                if ((container as IDataContextProvider)?.DataContext is { } item &&
+                    before.TryGetValue(item, out var previous) &&
+                    ReferenceEquals(previous, container))
+                {
+                    count++;
+                }
+            }
+            return count;
         }
 
         [Fact]
@@ -1432,6 +1497,10 @@ namespace Avalonia.Controls.UnitTests
             // Reset prepare counter — only count preparations triggered by the Reset operation.
             itemsControl.PrepareCount = 0;
 
+            var containerByItem = CaptureContainerByItem(target, itemsControl);
+            Assert.True(containerByItem.Count >= 8,
+                $"Test setup: expected ~10 realized containers, captured {containerByItem.Count}.");
+
             // Reset with the first 10 items reversed. The same 10 item objects remain at indices
             // 0-9 (just shuffled among themselves). RetainMatchingContainers should hold their
             // containers and skip PrepareContainer when re-realising.
@@ -1440,13 +1509,130 @@ namespace Avalonia.Controls.UnitTests
             collection.Reset(shuffled);
             Layout(target);
 
-            // With RetainMatchingContainers active: ≤ 1-2 prepares (likely zero — all 10 same
-            // DataContexts are retained).
-            // Without: every realised slot goes through Recycle + Prepare.
+            // Same items, new indices: each must still be served by the container it already had.
+            var reused = CountSameContainerForSameItem(target, itemsControl, containerByItem);
+            Assert.True(reused >= 8,
+                $"Only {reused} of {containerByItem.Count} items are still served by the same " +
+                $"container instance after the reordering Reset. RetainMatchingContainers should " +
+                $"have re-keyed the existing containers rather than recycling and re-preparing.");
+
             Assert.True(itemsControl.PrepareCount <= 3,
                 $"Expected ≤ 3 container preparations after Reset-reorder (same items retained), " +
                 $"got {itemsControl.PrepareCount}. Without RetainMatchingContainers every slot would " +
                 $"be re-prepared.");
+        }
+
+        [Fact]
+        public void Off_View_Height_Change_Is_Remeasured_On_Scroll_Back()
+        {
+            // Self-heal contract: while an item is virtualized (out of view) its persistent
+            // size-cache entry may go stale because the VM data changed with no container to
+            // re-measure it. When the item scrolls back into view it MUST be re-measured, which
+            // overwrites the stale cache entry and corrects the extent. Uses the normal
+            // recycle -> re-prepare realization path. Item 50 avoids the item-0 clamping heuristic.
+            using var app = App();
+
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, 10)).ToList();
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate, bufferFactor: 0d);
+
+            // Realize item 50 at its initial height (H1 = 10). Item 50 top sits at 50*10 = 500.
+            scroll.Offset = new Vector(0, 500);
+            Layout(target);
+
+            var c50 = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(50));
+            Assert.Equal(10, c50.Bounds.Height);
+            Assert.True(target.TryGetMeasuredSizeForTesting(50, out var cached50));
+            Assert.Equal(10d, cached50);
+
+            var extentBefore = scroll.Extent.Height;
+
+            // Scroll item 50 fully out of view (back to the top). It is recycled/virtualized.
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+            Assert.Null(target.ContainerFromIndex(50));
+
+            // Mutate its height while it is virtualized (no live container -> nothing invalidates now).
+            items[50].Height = 100;
+
+            // Scroll back to item 50. Item 50 top is still at 500 (items 0..49 unchanged at 10 each).
+            scroll.Offset = new Vector(0, 500);
+            Layout(target);
+
+            // The re-realized container was re-measured to H2 = 100 ...
+            var c50b = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(50));
+            Assert.Equal(100, c50b.Bounds.Height);
+            // ... the stale cache entry was overwritten with the fresh measure ...
+            Assert.True(target.TryGetMeasuredSizeForTesting(50, out var cached50b));
+            Assert.Equal(100d, cached50b);
+            // ... and the extent grew to reflect the larger item.
+            Assert.True(scroll.Extent.Height > extentBefore,
+                $"Extent should grow after off-view height change self-heals; before={extentBefore}, after={scroll.Extent.Height}");
+        }
+
+        [Fact]
+        public void Retained_Container_Reuse_Remeasures_Changed_Item()
+        {
+            // Risk case: the RetainMatchingContainers reuse path returns a still-realized container
+            // for the SAME item without an explicit re-measure. A data-bound height change on that
+            // item invalidates the container's measure, so RealizeElements' "if (!IsMeasureValid)
+            // Measure(...)" must re-measure the REUSED container. This asserts the reused container
+            // instance renders H2 (correct self-heal) instead of the stale H1.
+            using var app = App();
+
+            var items = new ObservableCollection<ItemWithHeight>(
+                Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, 10)));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate, bufferFactor: 0d);
+
+            // Realize items 20..29 (viewport 100 / 10px each).
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+            Assert.Equal(20, target.FirstRealizedIndex);
+            Assert.Equal(29, target.LastRealizedIndex);
+
+            // Capture the container instance for item 25 to prove it is REUSED (not re-prepared).
+            var item25 = items[25];
+            var c25 = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(25));
+            Assert.Equal(10, c25.Bounds.Height);
+
+            // Change item 25's height, then insert at the front WITHOUT an intervening layout so the
+            // pending re-measure is carried into the retained-reuse realization. After Insert(0),
+            // item 25 shifts to index 26; the disjunct measure retains its container and reuses it.
+            item25.Height = 100;
+            items.Insert(0, new ItemWithHeight(-1, 10));
+            Layout(target);
+
+            // Same container instance was reused for the same item, now at index 26 ...
+            var c26 = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(26));
+            Assert.Same(c25, c26);
+            Assert.Same(item25, c26.DataContext);
+            // ... and it was re-measured to H2 = 100 rather than rendering the stale H1.
+            Assert.Equal(100, c26.Bounds.Height);
+            Assert.True(target.TryGetMeasuredSizeForTesting(26, out var cached26));
+            Assert.Equal(100d, cached26);
+        }
+
+        [Fact]
+        public void Visible_Item_Height_Change_Uses_Live_Measure()
+        {
+            // Contract: a realized (visible) item is always sized by its live measure, never by a
+            // cache entry. Changing a visible item's height must update its Bounds on the very next
+            // layout pass, independent of any recorded/estimated size.
+            using var app = App();
+
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, 10)).ToList();
+            var (target, scroll, itemsControl) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate, bufferFactor: 0d);
+
+            var c5 = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
+            Assert.Equal(10, c5.Bounds.Height);
+
+            // Mutate while visible; a live container's binding invalidates measure immediately.
+            items[5].Height = 77;
+            Layout(target);
+
+            var c5b = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
+            Assert.Equal(77, c5b.Bounds.Height);
+            Assert.True(target.TryGetMeasuredSizeForTesting(5, out var cached5));
+            Assert.Equal(77d, cached5);
         }
 
         [Theory]
@@ -1594,8 +1780,8 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(0d, 15, 5, 190, 210, 110)]
-        [InlineData(0.5d, 10, 10, 253, 273, 173)]
+        [InlineData(0d, 15, 5, 190, 267, 110)]
+        [InlineData(0.5d, 10, 10, 253, 300, 173)]
         public void ScrollIntoView_Correctly_Scrolls_Down_To_A_Page_Of_Larger_Items(double bufferFactor, int firstIndex, int count, int y, int extentHeight, int offset)
         {
             using var app = App();
@@ -1607,10 +1793,17 @@ namespace Avalonia.Controls.UnitTests
             // Scroll the last item into view.
             target.ScrollIntoView(19);
 
-            // At the time of the scroll, the average item height is 10, so the requested item
-            // should be placed at 190 (19 * 10) which therefore results in an extent of 210 to
-            // accommodate the item height of 20. This is obviously not a perfect answer, but
-            // it's the best we can do without knowing the actual item heights.
+            // At the time of the scroll the estimate is still 10 (only the first-10 short items
+            // have been measured), so item 19 is positioned at 190 (19 * 10) — an intentionally
+            // imperfect estimate we don't correct. The EXTENT, however, is now computed from the
+            // persistent per-item size record (knownSum + unknown*mean), which remembers the
+            // measured sizes:
+            //  - bufferFactor 0 (firstIndex 15): only items 0-9 (h=10) and 15-19 (h=20) are ever
+            //    realized; items 10-14 are never measured. Extent = 200 (knownSum) + 5*13.33
+            //    (mean over the 15 known) = 267 — more than the naive realized bottom of 210,
+            //    honestly accounting for the five unmeasured tall middle items.
+            //  - bufferFactor 0.5 (firstIndex 10): the buffer also realizes items 10-14, so all
+            //    20 items are measured and the extent is the exact true total 300.
             var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(19));
             Assert.Equal(new Rect(0, y, 100, 20), container.Bounds);
             Assert.Equal(new Size(100, 100), scroll.Viewport);
@@ -1653,8 +1846,8 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(0d, 15, 5, 190, 210, 110)]
-        [InlineData(0.5d, 10, 10, 253, 273, 173)]
+        [InlineData(0d, 15, 5, 190, 267, 110)]
+        [InlineData(0.5d, 10, 10, 253, 300, 173)]
         public void ScrollIntoView_Correctly_Scrolls_Right_To_A_Page_Of_Larger_Items(double bufferFactor, int firstIndex, int count, int x, int extentWidth, int offset)
         {
             using var app = App();
@@ -1662,17 +1855,21 @@ namespace Avalonia.Controls.UnitTests
             // First 10 items have width of 10, next 10 have width of 20.
             var items = Enumerable.Range(0, 20).Select(x => new ItemWithWidth(x, ((x / 10) + 1) * 10));
             var (target, scroll, itemsControl) = CreateTarget(items: items,
-                itemTemplate: CanvasWithWidthTemplate, 
+                itemTemplate: CanvasWithWidthTemplate,
                 orientation: Orientation.Horizontal,
                 bufferFactor: bufferFactor);
 
             // Scroll the last item into view.
             target.ScrollIntoView(19);
 
-            // At the time of the scroll, the average item width is 10, so the requested item
-            // should be placed at 190 (19 * 10) which therefore results in an extent of 210 to
-            // accommodate the item width of 20. This is obviously not a perfect answer, but
-            // it's the best we can do without knowing the actual item widths.
+            // Horizontal mirror of ScrollIntoView_Correctly_Scrolls_Down_To_A_Page_Of_Larger_Items.
+            // Item 19 is positioned at 190 (19 * the still-10 scroll-time estimate) — an
+            // intentionally imperfect estimate we don't correct. The EXTENT now comes from the
+            // persistent per-item size record (knownSum + unknown*mean):
+            //  - bufferFactor 0 (firstIndex 15): items 10-14 are never realized, so extent =
+            //    200 + 5*13.33 = 267, honestly covering the five unmeasured wide middle items.
+            //  - bufferFactor 0.5 (firstIndex 10): the buffer realizes items 10-14 too, so all
+            //    20 are measured and the extent is the exact true total 300.
             var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(19));
             Assert.Equal(new Rect(x, 0, 20, 100), container.Bounds);
             Assert.Equal(new Size(100, 100), scroll.Viewport);
@@ -1789,12 +1986,18 @@ namespace Avalonia.Controls.UnitTests
 
             var firstIndex = target.FirstRealizedIndex;
             var firstRealized = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(firstIndex));
-            var realized = target.GetRealizedElements()
-                .Where(x => x is not null)
-                .Cast<Control>()
-                .ToList();
 
-            var estimatedSize = realized.Average(x => x.DesiredSize.Height);
+            // An off-screen focused element is positioned by GetOrEstimateElementU as
+            //   realized.StartU - ((firstIndex - focusedIndex) * EstimateElementSizeU())
+            // i.e. anchored at the first realized element's top, bridged by the panel's
+            // element-size estimate. This test asserts that invariant. It uses the panel's
+            // actual estimate rather than the realized-window average: EstimateElementSizeU
+            // now derives its value from a persistent per-item size record (mean over all
+            // items ever measured), not the currently-realized set, so the realized-window
+            // average is no longer the estimate the panel uses.
+            var estField = typeof(VirtualizingStackPanel).GetField("_lastEstimatedElementSizeU",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var estimatedSize = (double)estField!.GetValue(target)!;
             var expectedTop = firstRealized.Bounds.Top - ((firstIndex - 5) * estimatedSize);
 
             focused = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
@@ -2822,27 +3025,31 @@ namespace Avalonia.Controls.UnitTests
         }
 
         /// <summary>
-        /// A VirtualizingStackPanel subclass that simulates non-deterministic measurement
-        /// via the AdjustElementSize hook. On alternating measure passes, element sizes
-        /// are inflated by a configurable amount, causing extent oscillation that the
-        /// cycle breaker must prevent.
+        /// A VirtualizingStackPanel that simulates content which settles its size after being
+        /// realized (async images, deferred bindings, text that wraps once it knows its width),
+        /// and re-invalidates its own measure whenever that changes its DesiredSize — modelling
+        /// the parent re-measuring the panel and driving the measure feedback loop.
         /// </summary>
-        /// <summary>
-        /// A VirtualizingStackPanel that simulates non-deterministic measurement by
-        /// oscillating element sizes on alternating passes and re-invalidating itself.
-        /// This triggers the layout cycle that the cycle breaker is designed to prevent.
-        /// </summary>
+        /// <remarks>
+        /// The perturbation is applied once per item and then settles. An earlier version flipped
+        /// sizes by measure-pass parity, which never settles: no panel can converge against
+        /// content that reports a different size on every single measure, so such a model can only
+        /// ever demonstrate that some hard cap exists, not that layout converges. Avalonia's
+        /// LayoutManager already bounds a never-settling template globally.
+        /// </remarks>
         private class VirtualizingStackPanelWithInstability : VirtualizingStackPanel
         {
             public int Measured { get; set; }
 
             /// <summary>
-            /// Counts calls to <see cref="AdjustElementSize"/>, which only fire during a
-            /// "full" measure pass that runs RealizeElements. When the cycle breaker
-            /// short-circuits MeasureOverride, this counter does NOT advance — making it
-            /// a clean proxy for "how many full measure passes did the panel actually do".
+            /// Total number of times the panel actually measured a container — the real cost of
+            /// a layout cycle, and the thing these tests care about bounding. (An earlier version
+            /// counted <see cref="AdjustElementSize"/> calls, but that hook is consulted wherever
+            /// the panel needs an element's size, not only during realization, so it does not
+            /// measure layout work.)
             /// </summary>
-            public int AdjustElementSizeCalls { get; set; }
+            public int ContainerMeasures =>
+                Items.OfType<ICountMeasureArrangeCalls>().Sum(i => i.Measured);
 
             public bool EnableInstability { get; set; }
             public double Instability { get; set; } = 5.0;
@@ -2850,16 +3057,22 @@ namespace Avalonia.Controls.UnitTests
             public void ResetMeasureArrangeCounters()
             {
                 Measured = 0;
-                AdjustElementSizeCalls = 0;
+                foreach (var itm in Items.OfType<ICountMeasureArrangeCalls>())
+                {
+                    itm.Measured = 0;
+                    itm.Arranged = 0;
+                }
             }
 
             private Size _lastResult;
             private int _invalidationBudget;
+            private readonly HashSet<int> _perturbed = new();
 
             public void StartInstability(int budget = 10)
             {
                 EnableInstability = true;
                 _invalidationBudget = budget;
+                _perturbed.Clear();
             }
 
             protected override Size MeasureOverride(Size availableSize)
@@ -2883,10 +3096,9 @@ namespace Avalonia.Controls.UnitTests
 
             protected internal override double AdjustElementSize(int index, double measuredSizeU)
             {
-                AdjustElementSizeCalls++;
                 if (!EnableInstability) return measuredSizeU;
-                // On odd measure passes, inflate sizes to simulate non-deterministic measurement
-                return Measured % 2 == 1
+                // The first size this item is seen at is provisional; it settles afterwards.
+                return _perturbed.Add(index)
                     ? measuredSizeU + Instability
                     : measuredSizeU;
             }
@@ -2909,28 +3121,14 @@ namespace Avalonia.Controls.UnitTests
         }
 
         /// <summary>
-        /// A VirtualizingStackPanel that introduces sub-pixel (≈0.3 px) jitter in
-        /// element sizes via the AdjustElementSize hook. Used to verify that
-        /// ValidateStartU's `Math.Abs(diff) >= 1.0` threshold absorbs such jitter.
-        /// Also captures the post-MeasureOverride state of `_suppressValidateStartU`
-        /// for the suppression test.
+        /// A VirtualizingStackPanel that applies a constant sub-pixel (±0.3 px) size adjustment
+        /// per index via the AdjustElementSize hook. Because the adjustment never changes, the
+        /// panel must stop seeing size changes after the first pass — used to verify the panel
+        /// records and re-checks element sizes through the same accessor.
         /// </summary>
         private class VirtualizingStackPanelWithSubPixelNoise : VirtualizingStackPanel
         {
             public bool EnableNoise { get; set; }
-            public bool LastSuppressAfterMeasure { get; private set; }
-
-            private static readonly System.Reflection.FieldInfo s_suppressField =
-                typeof(VirtualizingStackPanel).GetField(
-                    "_suppressValidateStartU",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
-
-            protected override Size MeasureOverride(Size availableSize)
-            {
-                var result = base.MeasureOverride(availableSize);
-                LastSuppressAfterMeasure = (bool)s_suppressField.GetValue(this)!;
-                return result;
-            }
 
             protected internal override double AdjustElementSize(int index, double measuredSizeU)
             {
@@ -2938,6 +3136,30 @@ namespace Avalonia.Controls.UnitTests
                 // Alternate +0.3 / -0.3 by index parity — produces sub-pixel diffs
                 // between stored size and re-measured DesiredSize.
                 return index % 2 == 0 ? measuredSizeU + 0.3 : measuredSizeU - 0.3;
+            }
+        }
+
+        /// <summary>
+        /// A VirtualizingStackPanel that models async-loaded content via the
+        /// <see cref="VirtualizingStackPanel.AdjustElementSize"/> hook: the first time an
+        /// element at a given index is measured it reports a small "placeholder" size, and
+        /// on every subsequent measure it reports a larger "loaded" size. The size an item
+        /// reports therefore flips based on whether it has already been realized — exactly
+        /// the input that makes the realized-set-average estimate in EstimateElementSizeU
+        /// swing between layout passes.
+        /// </summary>
+        private class VirtualizingStackPanelAsyncGrow : VirtualizingStackPanel
+        {
+            private readonly Dictionary<int, int> _measureCount = new();
+
+            public double PlaceholderSizeU { get; set; } = 84;
+            public double LoadedSizeU { get; set; } = 292;
+
+            protected internal override double AdjustElementSize(int index, double measuredSizeU)
+            {
+                var count = _measureCount.TryGetValue(index, out var c) ? c : 0;
+                _measureCount[index] = count + 1;
+                return count == 0 ? PlaceholderSizeU : LoadedSizeU;
             }
         }
 
@@ -3807,6 +4029,115 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Warmup_Pools_Keys_First_Encountered_Outside_The_Head_Of_The_Collection()
+        {
+            // Warmup used to discover which template keys exist by sampling the first N items
+            // (WarmupSampleSize, default 50). That assumes the head of the collection represents
+            // the whole of it. Here it does not: the first 200 items are one type and the rest
+            // another — a shape as ordinary as a grouped or sorted list. Under head sampling the
+            // second type is never pooled no matter how much the user scrolls through it.
+            //
+            // The pool must instead grow off the keys the panel actually encounters.
+            using var app = App();
+            ContentVirtualizationDiagnostics.IsEnabled = true;
+
+            try
+            {
+                var items = new ObservableCollection<object>(
+                    Enumerable.Range(0, 400).Select<int, object>(i =>
+                        i < 200
+                            ? new TypeA_Item { Name = $"A{i}" }
+                            : new TypeB_Item { Name = $"B{i}" }));
+
+                // Well above the ~10 containers a 100px viewport realizes, so a shortfall to
+                // warm up always remains.
+                var template = new FuncVirtualizingDataTemplate<object>((item, _) =>
+                    new Canvas { Width = 100, Height = 10 })
+                {
+                    MinPoolSizePerKey = 25
+                };
+
+                var (target, scroll, itemsControl) = CreateTarget(
+                    items: items,
+                    itemTemplate: template);
+                target.EnableWarmup = true;
+
+                target.PerformWarmup();
+
+                var pool = target.RecyclePoolForTesting;
+                Assert.NotNull(pool);
+                Assert.True(pool!.ContainsKey(typeof(TypeA_Item)),
+                    "Warming at the top of the collection should pool the type found there.");
+
+                // Scroll deep into the second region so TypeB containers are actually used.
+                scroll.Offset = new Vector(0, 2500);
+                Layout(target);
+
+                var realizedAreTypeB = target.GetRealizedElements()
+                    .Where(e => e is not null)
+                    .All(e => (e as IDataContextProvider)?.DataContext is TypeB_Item);
+                Assert.True(realizedAreTypeB,
+                    "Test setup: after scrolling to offset 2500 the realized items should be TypeB.");
+
+                target.PerformWarmup();
+
+                var poolB = pool.TryGetValue(typeof(TypeB_Item), out var listB) ? listB.Count : 0;
+                Assert.True(poolB > 0,
+                    $"After scrolling through the TypeB region, warmup must pool TypeB " +
+                    $"containers, but the pool holds {poolB}. Keys are still being discovered " +
+                    $"from a sample of the head of the collection instead of from what the " +
+                    $"panel actually encountered.");
+            }
+            finally
+            {
+                ContentVirtualizationDiagnostics.IsEnabled = true;
+            }
+        }
+
+        [Fact]
+        public void Warmup_Forgets_Template_Keys_The_Collection_No_Longer_Contains()
+        {
+            // The pool now follows encountered keys, so those keys must also be forgotten when the
+            // items they came from are gone — otherwise replacing the collection would leave the
+            // panel warming (and holding) containers for a kind of item that no longer exists,
+            // which is a leak that grows with every reset.
+            using var app = App();
+            ContentVirtualizationDiagnostics.IsEnabled = true;
+
+            try
+            {
+                var items = new ResettingObservableCollection<object>(
+                    Enumerable.Range(0, 40).Select<int, object>(i => new TypeA_Item { Name = $"A{i}" }));
+
+                var template = new FuncVirtualizingDataTemplate<object>((item, _) =>
+                    new Canvas { Width = 100, Height = 10 })
+                {
+                    MinPoolSizePerKey = 20
+                };
+
+                var (target, scroll, itemsControl) = CreateTarget(
+                    items: items,
+                    itemTemplate: template);
+                target.EnableWarmup = true;
+
+                target.PerformWarmup();
+                Assert.Contains(typeof(TypeA_Item), target.DiscoverTemplateKeys().Keys);
+
+                // Replace the collection with items of an entirely different kind.
+                items.Reset(Enumerable.Range(0, 40).Select<int, object>(i => new TypeB_Item { Name = $"B{i}" }));
+                Layout(target);
+
+                var keys = target.DiscoverTemplateKeys().Keys;
+                Assert.Contains(typeof(TypeB_Item), keys);
+                Assert.DoesNotContain(typeof(TypeA_Item), keys);
+            }
+            finally
+            {
+                ContentVirtualizationDiagnostics.IsEnabled = true;
+            }
+        }
+
+        [Fact]
         public void DiscoverTemplateKeys_Finds_Multiple_Types()
         {
             using var app = App();
@@ -3849,7 +4180,7 @@ namespace Avalonia.Controls.UnitTests
 
             // 100 items with alternating heights: 10px and 100px
             var items = Enumerable.Range(0, 100)
-                .Select(i => (object)new ItemWithHeight(i, i % 2 == 0 ? 10 : 100))
+                .Select(i => (object)new ItemWithHeightAndMeasureArrangeCount(i, i % 2 == 0 ? 10 : 100))
                 .ToList();
 
             var (target, scroll, itemsControl) =
@@ -3868,31 +4199,28 @@ namespace Avalonia.Controls.UnitTests
                 Layout(target);
             }
 
-            // AdjustElementSizeCalls counts full realisation passes. With the cycle breaker,
-            // each scroll step does ~1 full pass × ~realised count; across 10 steps that's
-            // on the order of 50-100. Without the breaker, every layout iteration re-realises
-            // (3-5×), producing 250+ calls.
-            // With breaker active: ~9 calls (one realisation per scroll step, ~5 items).
-            // Without: ~19 (multiple iterations per step).
-            Assert.True(target.AdjustElementSizeCalls <= 12,
-                $"Expected ≤ 12 element-size adjustments for 10 scroll steps but got " +
-                $"{target.AdjustElementSizeCalls}. Cycle breaker may be letting the measure " +
-                $"feedback loop oscillate.");
+            // Bound the real cost: container measures across 10 small scroll steps. A measure
+            // feedback loop shows up here as a multiple of the settled count.
+            Assert.True(target.ContainerMeasures <= 40,
+                $"Expected ≤ 40 container measures for 10 scroll steps but got " +
+                $"{target.ContainerMeasures} (panel measures: {target.Measured}). " +
+                $"The measure feedback loop is not converging.");
         }
 
         // ===== Category: Layout cycle prevention (cycle breaker, ValidateStartU) =====
 
         [Fact]
-        public void Cycle_Breaker_Limits_Measures_Per_Layout_Pass()
+        public void Non_Deterministic_Measurement_Converges_Within_A_Layout_Pass()
         {
-            // The cycle breaker (_consecutiveMeasureCount > 1 short-circuit in MeasureOverride)
-            // must cap measure calls per layout pass when item measurements are non-deterministic.
-            // Without it, the parent's re-invalidation loop would keep re-measuring until the
-            // budget is exhausted (10+ measures).
+            // A large scroll jump while item measurements are non-deterministic must not turn
+            // into an unbounded measure feedback loop. This used to be guaranteed by a cycle
+            // breaker that hard-capped the panel at one full pass; it is now a property of the
+            // panel's estimate being derived from the persistent per-item size record instead of
+            // the currently-realized window, so the extent stops moving and the loop settles.
             using var app = App();
 
             var items = Enumerable.Range(0, 100)
-                .Select(i => (object)new ItemWithHeight(i, i % 3 == 0 ? 10 : 50))
+                .Select(i => (object)new ItemWithHeightAndMeasureArrangeCount(i, i % 3 == 0 ? 10 : 50))
                 .ToList();
 
             var (target, scroll, itemsControl) =
@@ -3912,24 +4240,21 @@ namespace Avalonia.Controls.UnitTests
             scroll.Offset = new Vector(0, 1500);
             Layout(target);
 
-            // AdjustElementSizeCalls only fires during FULL measure passes (RealizeElements).
-            // When the cycle breaker short-circuits MeasureOverride, this counter does NOT
-            // advance. With the breaker the first measure realises ~N elements and subsequent
-            // passes in the same layout cycle skip realisation entirely. Without the breaker
-            // every measure pass re-realises all elements.
-            //
-            // With a ~13 realised count (1500/50 + buffer at bufferFactor=0.5) and the
-            // breaker active, expect roughly 1 full pass × 13 ≈ 13-30 calls.
-            // Without the breaker the count multiplies by the iteration cap (≥ 3× more).
-            // AdjustElementSizeCalls fires only inside RealizeElements during a FULL measure
-            // pass. When the cycle breaker short-circuits MeasureOverride, this counter does
-            // NOT advance. Observed: ~6 calls with breaker active, ~27 without (one full
-            // realisation × ~5 elements × ~5 measure iterations).
-            Assert.True(target.AdjustElementSizeCalls <= 15,
-                $"Expected ≤ 15 element-size adjustments (≈ one full realisation pass) but got " +
-                $"{target.AdjustElementSizeCalls}. Measured={target.Measured}. " +
-                $"Cycle breaker in MeasureOverride (_consecutiveMeasureCount > 1 short-circuit) " +
-                $"is letting multiple full re-realisations through.");
+            // A single scroll jump realizes ~13 containers (1500/50 plus the 0.5 cache buffer).
+            // Settling non-deterministic sizes costs a few extra measures; an unconverged loop
+            // costs a multiple of the realized count per iteration until the budget runs out.
+            Assert.True(target.ContainerMeasures <= 40,
+                $"Expected ≤ 40 container measures for one scroll jump but got " +
+                $"{target.ContainerMeasures} (panel measures: {target.Measured}). " +
+                $"The measure feedback loop is not converging.");
+
+            // And the panel must have actually settled: another layout at the same offset
+            // changes nothing.
+            var desiredBefore = target.DesiredSize;
+            var measuresBefore = target.ContainerMeasures;
+            Layout(target);
+            Assert.Equal(desiredBefore, target.DesiredSize);
+            Assert.Equal(measuresBefore, target.ContainerMeasures);
         }
 
         [Fact]
@@ -3959,15 +4284,17 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void ValidateStartU_Absorbs_Sub_Pixel_Changes()
+        public void Adjusted_Element_Size_Does_Not_Read_As_A_Resize_Every_Pass()
         {
-            // ValidateStartU's `Math.Abs(diff) >= 1.0` threshold filters sub-pixel noise.
-            // When element measurements jitter by < 1px between passes, the threshold
-            // absorbs the change (stored size updated) without setting hasSignificantChange.
-            // The "size changed significantly" warning is the direct observable: it fires
-            // only when the >= 1.0 threshold path runs. With the threshold absorbing sub-px
-            // jitter, no warning is emitted. If the threshold is removed, every sub-pixel
-            // diff produces a warning.
+            // The panel has one view of "how big is element i" (GetElementSizeU, which applies
+            // AdjustElementSize). Recording and re-checking sizes must both go through it. If
+            // recording applied the adjustment and checking read raw DesiredSize instead, the two
+            // would differ by the adjustment on EVERY pass, so every pass would look like a fresh
+            // resize: endless StartU compensation and a discarded size record.
+            //
+            // The panel here adjusts sizes by a constant +/-0.3px per index. The adjustment never
+            // changes, so after the first pass nothing is resizing and the panel must report no
+            // further size changes.
             using var app = App();
 
             var logMessages = new List<string>();
@@ -3986,26 +4313,31 @@ namespace Avalonia.Controls.UnitTests
                         itemTemplate: CanvasWithHeightTemplate,
                         bufferFactor: 0.5d);
 
-                // Realise an initial range with deterministic sizes; record stored _sizes.
+                target.EnableNoise = true;
                 scroll.Offset = new Vector(0, 200);
                 Layout(target);
 
-                // Enable sub-pixel jitter (0.3 px alternating). The FIRST pass stores
-                // noisy sizes (10.3, 9.7, ...). The SECOND pass calls ValidateStartU which
-                // compares Canvas.DesiredSize (clean 10) against stored noisy sizes —
-                // producing sub-pixel diffs. With the `>= 1.0` threshold the diffs are
-                // absorbed silently; without it, the "size changed significantly" warning
-                // fires for every realised element.
-                target.EnableNoise = true;
+                // Let the adjusted sizes be recorded, then watch for phantom resizes.
                 target.InvalidateMeasure();
                 Layout(target);
+                logMessages.Clear();
 
-                // Second layout so ValidateStartU actually runs against the noisy stored sizes.
-                target.InvalidateMeasure();
-                Layout(target);
+                var startUField = GetRealizedStartUAccessor(target, out var realized);
+                var startUBefore = (double)startUField.GetValue(realized)!;
+
+                for (var pass = 0; pass < 5; pass++)
+                {
+                    target.InvalidateMeasure();
+                    Layout(target);
+                }
 
                 Assert.DoesNotContain(logMessages, m =>
-                    m.Contains("Item template size changed significantly during layout"));
+                    m.Contains("Item template size changed during layout"));
+
+                var startUAfter = (double)startUField.GetValue(GetRealizedStackElements(target))!;
+                Assert.True(Math.Abs(startUAfter - startUBefore) < 0.01,
+                    $"StartU drifted from {startUBefore} to {startUAfter} across 5 no-op passes — " +
+                    $"the panel is re-detecting its own size adjustment as a resize.");
             }
             finally
             {
@@ -4024,7 +4356,7 @@ namespace Avalonia.Controls.UnitTests
             // Create items with wildly varying heights (like a real form with headers,
             // text fields, image fields, etc.)
             var items = Enumerable.Range(0, 71)
-                .Select(i => (object)new ItemWithHeight(i, (i % 5) switch
+                .Select(i => (object)new ItemWithHeightAndMeasureArrangeCount(i, (i % 5) switch
                 {
                     0 => 50,   // header
                     1 => 80,   // text field
@@ -4048,13 +4380,10 @@ namespace Avalonia.Controls.UnitTests
             scroll.Offset = new Vector(0, 5000);
             Layout(target);
 
-            // With breaker active: ~one full realisation pass after the disjunct scroll.
-            // Without: multiple re-realisations until budget exhausts.
-            // With breaker active: ~6 calls (one realisation × 6 items).
-            // Without: ~44 (multiple full re-realisations).
-            Assert.True(target.AdjustElementSizeCalls <= 20,
-                $"Expected ≤ 20 element-size adjustments for a single large scroll jump but got " +
-                $"{target.AdjustElementSizeCalls}. Layout cycle likely occurred.");
+            Assert.True(target.ContainerMeasures <= 60,
+                $"Expected ≤ 60 container measures for a single large scroll jump but got " +
+                $"{target.ContainerMeasures} (panel measures: {target.Measured}). " +
+                $"Layout cycle likely occurred.");
 
             // Verify elements are realized at the correct position
             Assert.True(target.FirstRealizedIndex >= 0, "Should have realized elements after scroll jump");
@@ -4087,47 +4416,34 @@ namespace Avalonia.Controls.UnitTests
             scroll.Offset = new Vector(0, 1000);
             Layout(target);
 
+            var firstJumpFirstIndex = target.FirstRealizedIndex;
             var firstJumpLastIndex = target.LastRealizedIndex;
+            Assert.True(firstJumpLastIndex > firstJumpFirstIndex,
+                $"First jump should realize a range, got [{firstJumpFirstIndex}..{firstJumpLastIndex}]");
 
-            var counterField = typeof(VirtualizingStackPanel).GetField(
-                "_consecutiveMeasureCount",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            Assert.NotNull(counterField);
-
-            // Saturate the counter to simulate a stuck breaker between scroll events.
-            counterField!.SetValue(target, 10);
-            var callsBeforeSecondJump = target.AdjustElementSizeCalls;
-
-            // Second scroll jump — OnEffectiveViewportChanged must reset
-            // _consecutiveMeasureCount to 0 so the next measure pass can do a fresh full
-            // realisation. If the reset path is broken the breaker fires on the saturated
-            // counter and the measure short-circuits without calling AdjustElementSize.
+            // Second scroll jump in the same panel lifetime. Each jump must be realized on its
+            // own merits — no per-panel state may make a later pass do less work than the first.
             scroll.Offset = new Vector(0, 2000);
             Layout(target);
 
-            var newCalls = target.AdjustElementSizeCalls - callsBeforeSecondJump;
+            Assert.True(target.FirstRealizedIndex > firstJumpFirstIndex,
+                $"After the second scroll jump the realized range should have moved forward, but " +
+                $"FirstRealizedIndex is still {target.FirstRealizedIndex} " +
+                $"(was [{firstJumpFirstIndex}..{firstJumpLastIndex}]).");
+            Assert.True(target.LastRealizedIndex > target.FirstRealizedIndex,
+                $"Second jump realized a degenerate range " +
+                $"[{target.FirstRealizedIndex}..{target.LastRealizedIndex}].");
 
-            // After the viewport-change reset, the second jump must perform a full
-            // realisation (≥ ~3 AdjustElementSize calls for the new realised range).
-            // If the reset is broken, the breaker fires immediately and newCalls is 0.
-            Assert.True(newCalls >= 3,
-                $"Second scroll jump should trigger a fresh full realisation but only " +
-                $"{newCalls} AdjustElementSize calls happened. The counter-reset path in " +
-                $"OnEffectiveViewportChanged may be broken.");
-
-            // The realized range should have moved forward
-            Assert.True(target.FirstRealizedIndex > firstJumpLastIndex - 10,
-                $"After second scroll jump, FirstRealizedIndex ({target.FirstRealizedIndex}) " +
-                $"should be near or past the previous LastRealizedIndex ({firstJumpLastIndex})");
+            // The realized items must actually cover the viewport, top to bottom.
+            AssertRealizedContiguous(target, "after second scroll jump");
         }
 
         [Fact]
-        public void Items_Changed_Resets_Cycle_Breaker()
+        public void Items_Added_Under_Measurement_Instability_Are_Reflected_In_The_Next_Layout()
         {
-            // Verifies that adding items resets the consecutive measure counter,
-            // allowing a fresh measure pass for the new items. The reset happens in
-            // OnItemsChanged. If it's broken, the breaker remains engaged from prior
-            // passes and the new items never get fully realised in the same lifecycle.
+            // Appending items while measurement is non-deterministic must still grow the extent
+            // in the very next layout pass. No per-panel loop-suppression state may swallow the
+            // work triggered by a collection change.
             using var app = App();
 
             var items = new ObservableCollection<ItemWithHeight>(
@@ -4140,32 +4456,20 @@ namespace Avalonia.Controls.UnitTests
 
             target.StartInstability(budget: 100);
 
-            // Cause the breaker to engage (forces _consecutiveMeasureCount > 1 within a pass)
             scroll.Offset = new Vector(0, 500);
             Layout(target);
 
-            var counterField = typeof(VirtualizingStackPanel).GetField(
-                "_consecutiveMeasureCount",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            Assert.NotNull(counterField);
-
-            // Force the counter high to simulate a saturated breaker state.
-            counterField!.SetValue(target, 10);
             var extentBefore = scroll.Extent.Height;
 
-            // Add items — OnItemsChanged must reset _consecutiveMeasureCount back to 0
-            // so the next measure pass can do real work. Without the reset, the breaker
-            // stays engaged and any new measure short-circuits.
             for (int i = 50; i < 60; i++)
                 items.Add(new ItemWithHeight(i, 50));
 
-            // Verify the reset happened immediately at OnItemsChanged.
-            var counterAfterChange = (int)counterField.GetValue(target)!;
-            Assert.True(counterAfterChange == 0,
-                $"OnItemsChanged should reset _consecutiveMeasureCount to 0, but got " +
-                $"{counterAfterChange}. The reset path may be broken.");
-
             Layout(target);
+
+            // 10 more 50px items => the extent must grow by roughly 500px.
+            Assert.True(scroll.Extent.Height >= extentBefore + 400,
+                $"Extent only grew from {extentBefore} to {scroll.Extent.Height} after appending " +
+                $"10 items of 50px. The collection change was not fully reflected.");
         }
 
         [Fact]
@@ -4176,7 +4480,7 @@ namespace Avalonia.Controls.UnitTests
             using var app = App();
 
             var items = Enumerable.Range(0, 100)
-                .Select(i => (object)new ItemWithHeight(i, 10 + (i % 7) * 15))
+                .Select(i => (object)new ItemWithHeightAndMeasureArrangeCount(i, 10 + (i % 7) * 15))
                 .ToList();
 
             var (target, scroll, itemsControl) =
@@ -4195,66 +4499,346 @@ namespace Avalonia.Controls.UnitTests
                 Layout(target);
             }
 
-            // With the breaker active each scroll step gets ~1 full realisation pass.
-            // With ~20 elements realised that gives ~400 calls across 20 steps. Without
-            // the breaker, every layout iteration re-realises and the count multiplies.
-            // With breaker active: ~87 calls (~5 items × 20 steps).
-            // Without: ~246 (multiple iterations per step).
-            Assert.True(target.AdjustElementSizeCalls <= 150,
-                $"Expected ≤ 150 element-size adjustments for 20 scroll steps but got " +
-                $"{target.AdjustElementSizeCalls}. Layout cycle oscillation is likely occurring.");
+            Assert.True(target.ContainerMeasures <= 400,
+                $"Expected ≤ 400 container measures for 20 scroll steps but got " +
+                $"{target.ContainerMeasures} (panel measures: {target.Measured}). " +
+                $"Layout cycle oscillation is likely occurring.");
 
             // Verify we ended up with valid realized elements
             Assert.True(target.FirstRealizedIndex >= 0, "Should have realized elements");
             Assert.True(target.LastRealizedIndex <= 99, "Last realized index should be within bounds");
         }
 
-        // ===== Category: ValidateStartU suppression =====
+        // ===== Category: Adversarial multi-shape stability harness =====
+        //
+        // These tests exercise EstimateElementSizeU / extent stability across a range of
+        // item-height distributions (not just our proprietary UI's shape). Each shape asserts
+        // the three properties that matter for correctness + stability:
+        //   (a) realized items stay contiguous (no gaps/overlaps in Bounds),
+        //   (b) the reported extent does not oscillate across repeated layout passes,
+        //   (c) scroll position does not jump when off-anchor items resize.
+
+        // Asserts that the visible realized elements tile without gaps or overlaps.
+        private static void AssertRealizedContiguous(VirtualizingStackPanel target, string context)
+        {
+            var realized = target.GetRealizedElements()
+                .Where(e => e is { IsVisible: true })
+                .OrderBy(e => e!.Bounds.Top)
+                .ToList();
+
+            for (int i = 1; i < realized.Count; i++)
+            {
+                var prev = realized[i - 1]!;
+                var curr = realized[i]!;
+                var expectedTop = prev.Bounds.Top + prev.Bounds.Height;
+                Assert.True(
+                    Math.Abs(curr.Bounds.Top - expectedTop) < 1,
+                    $"Gap/overlap ({context}): item ends at {expectedTop}, next starts at {curr.Bounds.Top}");
+            }
+        }
+
+        // Re-measures the panel `passes` times at the current offset and returns the
+        // spread (max - min) of the reported vertical extent. A stable estimate keeps this
+        // small; an oscillating estimate produces a large spread.
+        private static (double spread, double[] extents) MeasureExtentSpreadOverPasses(
+            VirtualizingStackPanel target, ScrollViewer scroll, int passes)
+        {
+            var extents = new double[passes];
+            for (int i = 0; i < passes; i++)
+            {
+                target.InvalidateMeasure();
+                Layout(target);
+                extents[i] = scroll.Extent.Height;
+            }
+            return (extents.Max() - extents.Min(), extents);
+        }
+
+        // --- Shape: uniform (control / no-op case) ---
 
         [Fact]
-        public void ValidateStartU_Only_Fires_Once_Per_Arrange_Cycle()
+        public void Adversarial_Uniform_Extent_Is_Stable_Across_Repeated_Passes()
         {
-            // After ValidateStartU detects a genuine resize, _suppressValidateStartU is set
-            // so it won't fire again until ArrangeOverride resets it. This prevents repeated
-            // instability from non-deterministic measurements. The flag is captured by the
-            // test subclass right after each MeasureOverride completes, then cleared by
-            // ArrangeOverride before the next layout pass.
             using var app = App();
+            var items = Enumerable.Range(0, 1000).Select(i => (object)new ItemWithHeight(i, 30)).ToList();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
 
-            var items = Enumerable.Range(0, 20).Select(x => new ItemWithHeight(x, 50)).ToList();
-            var (target, scroll, itemsControl) = CreateTarget<ItemsControl, VirtualizingStackPanelWithSubPixelNoise>(
-                items: items,
-                itemTemplate: CanvasWithHeightTemplate);
-
-            // Initial layout: no diffs detected → suppression stays false.
-            Assert.False(target.LastSuppressAfterMeasure,
-                "Suppression should be false after a clean layout (no significant changes).");
-
-            // Resize all items so ValidateStartU detects a significant change next measure.
-            foreach (var item in items)
-                item.Height = 25;
-
+            scroll.Offset = new Vector(0, 3000);
             Layout(target);
 
-            // After the resize layout: ValidateStartU fired during MeasureOverride and set
-            // _suppressValidateStartU=true. The test subclass captured this BEFORE ArrangeOverride
-            // ran and cleared it. If the suppression line is removed in production, the
-            // captured value would be false.
-            Assert.True(target.LastSuppressAfterMeasure,
-                "After a significant resize, ValidateStartU should set _suppressValidateStartU=true " +
-                "(captured right after MeasureOverride, before Arrange clears it).");
+            var (spread, extents) = MeasureExtentSpreadOverPasses(target, scroll, 10);
+            Assert.True(spread < 1.0, $"Uniform extent oscillated by {spread}px: [{string.Join(", ", extents)}]");
+        }
 
-            // Sanity: the resize was actually applied (extent updated).
-            Assert.Equal(new Size(100, 500), scroll.Extent);
+        [Fact]
+        public void Adversarial_Uniform_Realized_Items_Stay_Contiguous()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000).Select(i => (object)new ItemWithHeight(i, 30)).ToList();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
 
-            // Now run another layout WITHOUT a change. ValidateStartU sees no diff → suppression
-            // stays false. This confirms the suppression flag is reset by ArrangeOverride
-            // between cycles (otherwise it'd stay true after the first resize cycle).
-            target.InvalidateMeasure();
+            for (double offset = 0; offset < 3000; offset += 25)
+            {
+                scroll.Offset = new Vector(0, offset);
+                Layout(target);
+                AssertRealizedContiguous(target, $"uniform @ {offset}");
+            }
+        }
+
+        // --- Shape: bimodal (40px / 300px) ---
+
+        [Fact]
+        public void Adversarial_Bimodal_Extent_Is_Stable_Across_Repeated_Passes()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000)
+                .Select(i => (object)new ItemWithHeight(i, i % 2 == 0 ? 40 : 300)).ToList();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            scroll.Offset = new Vector(0, 5000);
             Layout(target);
-            Assert.False(target.LastSuppressAfterMeasure,
-                "After a no-change layout pass, suppression should be false again " +
-                "(ArrangeOverride must reset it between layout cycles).");
+
+            var (spread, extents) = MeasureExtentSpreadOverPasses(target, scroll, 10);
+            Assert.True(spread < 1.0, $"Bimodal extent oscillated by {spread}px: [{string.Join(", ", extents)}]");
+        }
+
+        [Fact]
+        public void Adversarial_Bimodal_Realized_Items_Stay_Contiguous()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000)
+                .Select(i => (object)new ItemWithHeight(i, i % 2 == 0 ? 40 : 300)).ToList();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            for (double offset = 0; offset < 5000; offset += 40)
+            {
+                scroll.Offset = new Vector(0, offset);
+                Layout(target);
+                AssertRealizedContiguous(target, $"bimodal @ {offset}");
+            }
+        }
+
+        // --- Shape: extreme outliers (20px rows, occasional 2000px item) ---
+
+        [Fact]
+        public void Adversarial_Outliers_Extent_Is_Stable_Across_Repeated_Passes()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000)
+                .Select(i => (object)new ItemWithHeight(i, i % 50 == 0 ? 2000 : 20)).ToList();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            scroll.Offset = new Vector(0, 3000);
+            Layout(target);
+
+            var (spread, extents) = MeasureExtentSpreadOverPasses(target, scroll, 10);
+            Assert.True(spread < 1.0, $"Outlier extent oscillated by {spread}px: [{string.Join(", ", extents)}]");
+        }
+
+        [Fact]
+        public void Adversarial_Outliers_Realized_Items_Stay_Contiguous()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000)
+                .Select(i => (object)new ItemWithHeight(i, i % 50 == 0 ? 2000 : 20)).ToList();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            for (double offset = 0; offset < 6000; offset += 37)
+            {
+                scroll.Offset = new Vector(0, offset);
+                Layout(target);
+                AssertRealizedContiguous(target, $"outliers @ {offset}");
+            }
+        }
+
+        // --- Shape: monotonic ramp (heights increase with index) ---
+
+        [Fact]
+        public void Adversarial_MonotonicRamp_Extent_Is_Stable_Across_Repeated_Passes()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000)
+                .Select(i => (object)new ItemWithHeight(i, 10 + i * 2)).ToList();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            scroll.Offset = new Vector(0, 10000);
+            Layout(target);
+
+            var (spread, extents) = MeasureExtentSpreadOverPasses(target, scroll, 10);
+            Assert.True(spread < 1.0, $"Ramp extent oscillated by {spread}px: [{string.Join(", ", extents)}]");
+        }
+
+        [Fact]
+        public void Adversarial_MonotonicRamp_Realized_Items_Stay_Contiguous()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000)
+                .Select(i => (object)new ItemWithHeight(i, 10 + i * 2)).ToList();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            for (double offset = 0; offset < 10000; offset += 100)
+            {
+                scroll.Offset = new Vector(0, offset);
+                Layout(target);
+                AssertRealizedContiguous(target, $"ramp @ {offset}");
+            }
+        }
+
+        // --- Shape: async-grow (placeholder 84px -> loaded 292px on re-measure) ---
+        // This is the shape whose measured size flips based on realized-set membership,
+        // which is what drives the estimate oscillation the Tier-C dampers mask.
+
+        [Fact]
+        public void Adversarial_AsyncGrow_Extent_Does_Not_Oscillate_Across_Repeated_Passes()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000).Select(i => (object)new ItemWithHeight(i, 84)).ToList();
+            var (target, scroll, _) =
+                CreateTarget<ItemsControl, VirtualizingStackPanelAsyncGrow>(
+                    items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            scroll.Offset = new Vector(0, 2000);
+            Layout(target);
+
+            // Re-measure repeatedly at a fixed offset. As placeholders flip to their loaded
+            // size the extent may legitimately grow, but it must never oscillate (swing back
+            // down) and must stay bounded — an unstable estimate would swing it wildly.
+            // NOTE (residual): the persistent per-item size record keeps the *estimate* pinned
+            // (it records the raw DesiredSize, which is the 84px placeholder here, matching
+            // stock), so the estimate never swings. A ~1040px monotonic creep remains as
+            // realizedEndU accumulates the grown (292px) sizes of items the drifting window
+            // re-measures; that creep is Tier-C damper interaction, not estimate instability,
+            // and is removed in a later phase. It settles rather than exploding.
+            var (spread, extents) = MeasureExtentSpreadOverPasses(target, scroll, 12);
+            for (int i = 1; i < extents.Length; i++)
+            {
+                Assert.True(extents[i] >= extents[i - 1] - 1.0,
+                    $"Async-grow extent oscillated (swung down) on pass {i}: [{string.Join(", ", extents)}]");
+            }
+            Assert.True(spread < 3000.0,
+                $"Async-grow extent swung by {spread}px across passes: [{string.Join(", ", extents)}]");
+        }
+
+        [Fact]
+        public void Adversarial_AsyncGrow_Realized_Items_Stay_Contiguous()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000).Select(i => (object)new ItemWithHeight(i, 84)).ToList();
+            var (target, scroll, _) =
+                CreateTarget<ItemsControl, VirtualizingStackPanelAsyncGrow>(
+                    items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            scroll.Offset = new Vector(0, 2000);
+            Layout(target);
+
+            for (int pass = 0; pass < 12; pass++)
+            {
+                target.InvalidateMeasure();
+                Layout(target);
+                AssertRealizedContiguous(target, $"async-grow pass {pass}");
+            }
+        }
+
+        [Fact]
+        public void Adversarial_AsyncGrow_Scroll_Position_Does_Not_Jump_When_Items_Grow_Off_Anchor()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 1000).Select(i => (object)new ItemWithHeight(i, 84)).ToList();
+            var (target, scroll, itemsControl) =
+                CreateTarget<ItemsControl, VirtualizingStackPanelAsyncGrow>(
+                    items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            scroll.Offset = new Vector(0, 2000);
+            Layout(target);
+
+            // The top-most visible element is the scroll anchor. Its index and screen
+            // position must not jump as off-anchor items below it flip to their loaded size.
+            var anchor = target.GetRealizedElements()
+                .Where(e => e is { IsVisible: true })
+                .OrderBy(e => e!.Bounds.Top)
+                .First()!;
+            var anchorIndex = itemsControl.IndexFromContainer((Control)anchor);
+            var anchorTop = anchor.Bounds.Top;
+            var offsetY = scroll.Offset.Y;
+
+            for (int pass = 0; pass < 12; pass++)
+            {
+                target.InvalidateMeasure();
+                Layout(target);
+
+                Assert.True(Math.Abs(scroll.Offset.Y - offsetY) < 1.0,
+                    $"Scroll offset jumped on pass {pass}: {offsetY} -> {scroll.Offset.Y}");
+
+                var stillRealized = target.GetRealizedElements()
+                    .FirstOrDefault(e => e is not null && itemsControl.IndexFromContainer((Control)e) == anchorIndex);
+                if (stillRealized is not null)
+                {
+                    Assert.True(Math.Abs(stillRealized.Bounds.Top - anchorTop) < 1.0,
+                        $"Anchor item {anchorIndex} jumped on pass {pass}: {anchorTop} -> {stillRealized.Bounds.Top}");
+                }
+            }
+        }
+
+        // --- Cross-region window independence (the direct realized-window test) ---
+        //
+        // A REGION-bimodal collection: the first half of the items are small and the
+        // second half are large. As the realized window scrolls from the small region
+        // into the large region and back, the reported extent must not swing based on
+        // which region happens to be realized. With the old realized-set-average estimate
+        // the scalar swings small<->large by region, so the extent (estimate x remaining
+        // count) swings by tens of thousands of px; with the persistent per-item size
+        // record the estimate is the mean of ALL measured items and no longer depends on
+        // the current window, so revisiting an offset reproduces the same extent.
+        [Fact]
+        public void Adversarial_CrossRegion_Extent_Is_Window_Independent()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 200)
+                .Select(i => (object)new ItemWithHeight(i, i < 100 ? 40 : 300))
+                .ToList();
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            // Prime: step the window all the way through both regions so every item is
+            // measured into the record. The step MUST be <= the 100px viewport so
+            // consecutive realized windows overlap and no item is skipped — with the 40px
+            // small items a coarse step (e.g. 400) would jump ~10 items per pass, realizing
+            // only ~3 and leaving the rest of the small region unmeasured. That produces a
+            // biased, incomplete cache whose mean (and thus the reported extent) keeps
+            // shifting as later scrolls fill the gaps. A fine step measures all 200 items,
+            // after which the extent is exactly the true total at every offset. Offsets are
+            // clamped to the current extent, which grows monotonically as large items load.
+            for (double o = 0; o <= 34000; o += 80)
+            {
+                scroll.Offset = new Vector(0, o);
+                Layout(target);
+            }
+
+            // Now revisit a set of offsets spanning both regions and the boundary, twice,
+            // recording the reported extent each time. Window-independence => the extent at
+            // a given offset is reproducible and the whole sweep stays within a tight band.
+            double[] offsets = { 0, 1500, 3000, 3800, 20000, 30000, 33000 };
+            var extents = new List<double>();
+            for (int pass = 0; pass < 2; pass++)
+            {
+                foreach (var o in offsets)
+                {
+                    scroll.Offset = new Vector(0, o);
+                    Layout(target);
+                    extents.Add(scroll.Extent.Height);
+                }
+            }
+
+            var spread = extents.Max() - extents.Min();
+            // True total content = 100*40 + 100*300 = 34000. Once every item has been
+            // measured (the priming above), the cache-based extent (knownSum +
+            // unknown*mean with unknown==0) is exactly that true total at EVERY offset, so
+            // revisiting any offset in either region reproduces the same 34000px extent and
+            // the spread is ~0. The old realized-window average instead swings by > 20000px
+            // across these offsets (small-region passes report a ~40px scalar, large-region
+            // passes a ~300px scalar). 3000px is far below that swing yet leaves headroom
+            // for any residual approximation noise.
+            Assert.True(spread < 3000.0,
+                $"Cross-region extent swung by {spread}px across offsets (window-dependent): " +
+                $"[{string.Join(", ", extents.Select(e => e.ToString("F0")))}]");
         }
 
         // ===== Category: CaptureViewportAnchor NaN guard =====
@@ -4420,15 +5004,15 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Item_Zero_Is_Always_At_Position_Zero()
         {
-            // The `u = 0` correction in RealizeElements snaps item 0 to position 0 when
-            // the realisation walk produces a non-zero u for index==0. The snap stores the
-            // corrected u in _measureElements.Add(0, e, u, sizeU), which then becomes the
-            // new _realizedElements._startU after the swap.
+            // Item 0 is at u == 0 by definition, so whenever realization reaches it the block
+            // must be re-based to StartU == 0. Realization walks backwards from an *estimated*
+            // anchor position and can therefore arrive at item 0 with a non-zero u; leaving that
+            // in would clip item 0 above the viewport or leave a gap above it.
             //
             // We force a non-zero u for item 0 by injecting a non-zero _startU on
             // _realizedElements via reflection between scrolls, and using bufferFactor=0
             // so the extended viewport doesn't touch zero (avoiding the IsZero shortcut
-            // at line 1194 of GetOrEstimateAnchorElementForViewport). With the correction,
+            // in GetOrEstimateAnchorElementForViewport). With the re-basing,
             // _realizedElements._startU after the layout is 0. Without, it stays at the
             // injected non-zero value.
             using var app = App();
@@ -4444,12 +5028,6 @@ namespace Avalonia.Controls.UnitTests
 
             scroll.Offset = new Vector(0, 5);
             Layout(target);
-
-            // Unfreeze the extent — extreme size variance can trigger oscillation detection
-            // which freezes the extent and SKIPS the u=0 correction (by design, guarded by
-            // `&& double.IsNaN(_frozenExtentU)`). To test the correction we need the
-            // non-frozen path.
-            SetFrozenExtent(target, double.NaN);
 
             // Inject a non-zero _startU on _realizedElements so the next CaptureViewportAnchor
             // realised-elements loop returns item 0 at u=50.
@@ -4472,17 +5050,295 @@ namespace Avalonia.Controls.UnitTests
             var realizedElementsAfter = realizedElementsField.GetValue(target);
             var startUAfter = (double)startUField.GetValue(realizedElementsAfter!)!;
 
-            // With correction OR defense-in-depth CompensateStartU active:
-            //   _startU = 0, Bounds.Top = 0.
-            // Without BOTH paths: _startU stays at the injected 50, Bounds.Top = 50.
-            //
-            // This test asserts the INVARIANT (item 0 at position 0). It does NOT isolate
-            // the `u = 0` correction alone — that line is one of two redundant defenses
-            // (the other is `CompensateStartU(-anchorDrift)` in CompensateForExtentChange).
-            // See virtualizingstackpanel_test_todo.md for the architectural reason.
             Assert.True(container0!.Bounds.Top < 3 && startUAfter < 3,
                 $"Item 0 invariant broken: Bounds.Top={container0.Bounds.Top}, " +
                 $"_startU={startUAfter}.");
+        }
+
+        // ===== Category: Tier A — index -> container mapping across collection changes =====
+        //
+        // Every keep / reuse / recycle decision the panel makes has to end with each realized
+        // container showing the item its index says it should. This is the only class of bug in
+        // the panel that corrupts what the user sees (an item rendered under the wrong heading),
+        // so it is checked exhaustively: for each kind of collection change, at each position
+        // relative to the realized window, plus the coalesced-Reset shapes that collection
+        // libraries emit when a batch of edits crosses their reset threshold.
+
+        /// <summary>
+        /// Asserts every realized container is showing the item its index maps to.
+        /// </summary>
+        private static void AssertContainerIndexMappingIsCorrect(
+            VirtualizingStackPanel target,
+            ItemsControl itemsControl,
+            IReadOnlyList<object> items,
+            string context)
+        {
+            var checked_ = 0;
+            foreach (var container in target.GetRealizedContainers()!)
+            {
+                var index = itemsControl.IndexFromContainer(container);
+                if (index < 0)
+                    continue;
+
+                Assert.True(index < items.Count,
+                    $"Container realized at index {index} but the collection only has " +
+                    $"{items.Count} items ({context}).");
+
+                var dataContext = (container as IDataContextProvider)?.DataContext;
+                Assert.True(ReferenceEquals(dataContext, items[index]),
+                    $"Container at index {index} is showing '{dataContext}' but Items[{index}] " +
+                    $"is '{items[index]}' ({context}).");
+                checked_++;
+            }
+
+            Assert.True(checked_ > 0, $"No realized containers to check ({context}).");
+        }
+
+        public enum CollectionEdit
+        {
+            InsertOne,
+            InsertRange,
+            RemoveOne,
+            RemoveRange,
+            Replace,
+            MoveForward,
+            MoveBackward,
+        }
+
+        /// <summary>Where the edit lands relative to the realized window.</summary>
+        public enum EditPosition
+        {
+            BeforeWindow,
+
+            /// <summary>Just after the first realized item, so nearly every realized item shifts.</summary>
+            EarlyInWindow,
+
+            /// <summary>
+            /// Past the middle of the realized window, so a majority of realized items still match
+            /// their index and only the tail shifts. This is the shape that defeats any
+            /// "most items still match, so keep them all" shortcut, and it is how a mid-list edit
+            /// coalesced into a Reset originally rendered items under the wrong heading.
+            /// </summary>
+            LateInWindow,
+
+            AfterWindow,
+        }
+
+        [Theory]
+        [InlineData(CollectionEdit.InsertOne, EditPosition.BeforeWindow)]
+        [InlineData(CollectionEdit.InsertOne, EditPosition.EarlyInWindow)]
+        [InlineData(CollectionEdit.InsertOne, EditPosition.LateInWindow)]
+        [InlineData(CollectionEdit.InsertOne, EditPosition.AfterWindow)]
+        [InlineData(CollectionEdit.InsertRange, EditPosition.BeforeWindow)]
+        [InlineData(CollectionEdit.InsertRange, EditPosition.EarlyInWindow)]
+        [InlineData(CollectionEdit.InsertRange, EditPosition.LateInWindow)]
+        [InlineData(CollectionEdit.InsertRange, EditPosition.AfterWindow)]
+        [InlineData(CollectionEdit.RemoveOne, EditPosition.BeforeWindow)]
+        [InlineData(CollectionEdit.RemoveOne, EditPosition.EarlyInWindow)]
+        [InlineData(CollectionEdit.RemoveOne, EditPosition.LateInWindow)]
+        [InlineData(CollectionEdit.RemoveOne, EditPosition.AfterWindow)]
+        [InlineData(CollectionEdit.RemoveRange, EditPosition.BeforeWindow)]
+        [InlineData(CollectionEdit.RemoveRange, EditPosition.EarlyInWindow)]
+        [InlineData(CollectionEdit.RemoveRange, EditPosition.LateInWindow)]
+        [InlineData(CollectionEdit.RemoveRange, EditPosition.AfterWindow)]
+        [InlineData(CollectionEdit.Replace, EditPosition.BeforeWindow)]
+        [InlineData(CollectionEdit.Replace, EditPosition.EarlyInWindow)]
+        [InlineData(CollectionEdit.Replace, EditPosition.LateInWindow)]
+        [InlineData(CollectionEdit.Replace, EditPosition.AfterWindow)]
+        [InlineData(CollectionEdit.MoveForward, EditPosition.BeforeWindow)]
+        [InlineData(CollectionEdit.MoveForward, EditPosition.EarlyInWindow)]
+        [InlineData(CollectionEdit.MoveForward, EditPosition.LateInWindow)]
+        [InlineData(CollectionEdit.MoveForward, EditPosition.AfterWindow)]
+        [InlineData(CollectionEdit.MoveBackward, EditPosition.BeforeWindow)]
+        [InlineData(CollectionEdit.MoveBackward, EditPosition.EarlyInWindow)]
+        [InlineData(CollectionEdit.MoveBackward, EditPosition.LateInWindow)]
+        [InlineData(CollectionEdit.MoveBackward, EditPosition.AfterWindow)]
+        public void Collection_Edit_Keeps_Every_Container_On_Its_Own_Item(
+            CollectionEdit edit, EditPosition position)
+        {
+            using var app = App();
+
+            // Varied heights so a mis-mapping shows up as a position error too, not just a
+            // wrong DataContext.
+            var items = new ObservableCollection<object>(
+                Enumerable.Range(0, 200)
+                    .Select(i => (object)new ItemWithHeight(i, 10 + (i % 4) * 20)));
+
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: CanvasWithHeightTemplate,
+                bufferFactor: 0.5d);
+
+            // Park the realized window in the middle so all three edit positions exist.
+            scroll.Offset = new Vector(0, 2000);
+            Layout(target);
+
+            var first = target.FirstRealizedIndex;
+            var last = target.LastRealizedIndex;
+            Assert.True(first > 10 && last < 180,
+                $"Test setup: expected a mid-list window, got [{first}..{last}].");
+
+            var at = position switch
+            {
+                EditPosition.BeforeWindow => first - 5,
+                EditPosition.EarlyInWindow => first + 1,
+                EditPosition.LateInWindow => first + ((last - first) * 3 / 4),
+                EditPosition.AfterWindow => last + 5,
+                _ => throw new ArgumentOutOfRangeException(nameof(position)),
+            };
+
+            switch (edit)
+            {
+                case CollectionEdit.InsertOne:
+                    items.Insert(at, new ItemWithHeight(900, 55));
+                    break;
+                case CollectionEdit.InsertRange:
+                    for (var i = 0; i < 3; i++)
+                        items.Insert(at + i, new ItemWithHeight(900 + i, 35 + i * 10));
+                    break;
+                case CollectionEdit.RemoveOne:
+                    items.RemoveAt(at);
+                    break;
+                case CollectionEdit.RemoveRange:
+                    for (var i = 0; i < 3; i++)
+                        items.RemoveAt(at);
+                    break;
+                case CollectionEdit.Replace:
+                    items[at] = new ItemWithHeight(900, 65);
+                    break;
+                case CollectionEdit.MoveForward:
+                    items.Move(at, at + 4);
+                    break;
+                case CollectionEdit.MoveBackward:
+                    items.Move(at, at - 4);
+                    break;
+            }
+
+            Layout(target);
+
+            var context = $"{edit} at {position} (index {at}), window was [{first}..{last}]";
+            AssertContainerIndexMappingIsCorrect(target, itemsControl, items, context);
+            AssertRealizedContiguous(target, context);
+        }
+
+        [Theory]
+        [InlineData(EditPosition.BeforeWindow)]
+        [InlineData(EditPosition.EarlyInWindow)]
+        [InlineData(EditPosition.LateInWindow)]
+        [InlineData(EditPosition.AfterWindow)]
+        public void Insert_Coalesced_Into_A_Reset_Keeps_Every_Container_On_Its_Own_Item(
+            EditPosition position)
+        {
+            // The shape that produced the original wrong-item render: a collection library
+            // (DynamicData's Bind past its reset threshold, ObservableCollection.Clear+AddRange,
+            // a sort) reports a batch of edits as a single Reset. Everything before the edit point
+            // still matches its index while everything at or after it has shifted — so any
+            // "most items still match, keep them all" shortcut pins the shifted items to the wrong
+            // containers.
+            using var app = App();
+
+            // Uniform heights on purpose: the inserted item is the same size as everything else,
+            // so nothing about the *sizes* betrays the shift. Every size-based signal the panel
+            // has (its resize detection, its extent) looks unchanged, which leaves the
+            // index -> item mapping as the only thing that can catch the corruption. Varied
+            // heights would let a size mismatch trip re-realization and mask the bug.
+            var backing = Enumerable.Range(0, 400)
+                .Select(i => (object)new ItemWithHeight(i, 10))
+                .ToList();
+            var items = new ResettingObservableCollection<object>(backing);
+
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: CanvasWithHeightTemplate,
+                bufferFactor: 0.5d);
+
+            scroll.Offset = new Vector(0, 2000);
+            Layout(target);
+
+            var first = target.FirstRealizedIndex;
+            var last = target.LastRealizedIndex;
+            Assert.True(first > 10 && last < 380 && last - first >= 8,
+                $"Test setup: expected a mid-list window of several items, got [{first}..{last}].");
+
+            var at = position switch
+            {
+                EditPosition.BeforeWindow => first - 5,
+                EditPosition.EarlyInWindow => first + 1,
+                EditPosition.LateInWindow => first + ((last - first) * 3 / 4),
+                EditPosition.AfterWindow => last + 5,
+                _ => throw new ArgumentOutOfRangeException(nameof(position)),
+            };
+
+            var mutated = new List<object>(backing);
+            mutated.Insert(at, new ItemWithHeight(900, 10));
+            items.Reset(mutated);
+            Layout(target);
+
+            var context = $"insert at {position} (index {at}) coalesced into a Reset, " +
+                          $"window was [{first}..{last}]";
+            AssertContainerIndexMappingIsCorrect(target, itemsControl, items, context);
+            AssertRealizedContiguous(target, context);
+        }
+
+        [Fact]
+        public void Reorder_Coalesced_Into_A_Reset_Keeps_Every_Container_On_Its_Own_Item()
+        {
+            // A sort reported as a Reset: every item survives but almost none keeps its index.
+            using var app = App();
+
+            var backing = Enumerable.Range(0, 200)
+                .Select(i => (object)new ItemWithHeight(i, 10 + (i % 4) * 20))
+                .ToList();
+            var items = new ResettingObservableCollection<object>(backing);
+
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: CanvasWithHeightTemplate,
+                bufferFactor: 0.5d);
+
+            scroll.Offset = new Vector(0, 2000);
+            Layout(target);
+
+            var reversed = new List<object>(backing);
+            reversed.Reverse();
+            items.Reset(reversed);
+            Layout(target);
+
+            AssertContainerIndexMappingIsCorrect(target, itemsControl, items, "reversed via Reset");
+            AssertRealizedContiguous(target, "reversed via Reset");
+        }
+
+        [Fact]
+        public void Append_Coalesced_Into_A_Reset_Keeps_Every_Container_On_Its_Own_Item()
+        {
+            // The case the Reset-preservation shortcut exists for: a pure append, where every
+            // realized item does keep its index and the realized window can legitimately be kept.
+            using var app = App();
+
+            var backing = Enumerable.Range(0, 200)
+                .Select(i => (object)new ItemWithHeight(i, 10 + (i % 4) * 20))
+                .ToList();
+            var items = new ResettingObservableCollection<object>(backing);
+
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: CanvasWithHeightTemplate,
+                bufferFactor: 0.5d);
+
+            scroll.Offset = new Vector(0, 2000);
+            Layout(target);
+
+            var firstBefore = target.FirstRealizedIndex;
+
+            var appended = new List<object>(backing);
+            appended.AddRange(Enumerable.Range(200, 50)
+                .Select(i => (object)new ItemWithHeight(i, 10 + (i % 4) * 20)));
+            items.Reset(appended);
+            Layout(target);
+
+            AssertContainerIndexMappingIsCorrect(target, itemsControl, items, "append via Reset");
+            AssertRealizedContiguous(target, "append via Reset");
+            Assert.Equal(firstBefore, target.FirstRealizedIndex);
         }
 
         // ===== Category: Estimate caching =====
@@ -4557,20 +5413,177 @@ namespace Avalonia.Controls.UnitTests
                 $"Before: {extentBefore}, After: {extentAfter}. Trace:\n{trace}");
         }
 
-        // ===== Category: CompensateForExtentChange dampening =====
+        // ===== Category: ValidateStartU resize detection (Tier C4 clean-up) =====
+        //
+        // ValidateStartU used to classify a size change as "real" only at >= 1px, absorbing
+        // anything smaller, and to fire at most once per measure→arrange cycle
+        // (_suppressValidateStartU). Both were tuned against one in-house control's
+        // measurement noise. The replacement detects any layout-significant change
+        // (LayoutHelper.LayoutEpsilon) and runs on every measure pass.
 
         [Fact]
-        public void Extent_Dampening_Prevents_Wild_Swings_With_Few_Realized_Items()
+        public void Sub_Pixel_Pre_Anchor_Resize_Is_Compensated_Not_Absorbed()
         {
-            // When very few items are realized relative to total count, the panel's
-            // CompensateForExtentChange dampens large extent swings:
-            //   _lastMeasuredExtentU = previousExtent + (extentDelta * 0.3)
-            // when extentChangeRatio > 0.5 AND realized < 10% AND unrealized > 10.
-            // This test reads _lastMeasuredExtentU via reflection across two layouts
-            // and asserts the change is at most ~30% of the raw delta.
+            // A real 0.5px growth of an item above the viewport must move StartU by 0.5px so
+            // the anchor stays put. The old `Math.Abs(diff) >= 1.0` threshold swallowed it:
+            // the stored size was updated but StartU was not, so the anchor slid by 0.5px —
+            // and did so again on every subsequent sub-pixel settle.
+            //
+            // Uses a template that opts out of layout rounding, so a fractional height
+            // survives into DesiredSize. Fractional desired sizes are ordinary in real apps:
+            // any fractional layout scale (125%, 150% DPI) makes the rounding grid itself
+            // sub-pixel, so genuine sub-1px size changes reach the panel.
             using var app = App();
 
-            // Items with extreme size variance — small initial realisation, large after-scroll.
+            var items = Enumerable.Range(0, 50)
+                .Select(i => new ItemWithHeight(i, 50))
+                .ToList();
+
+            // The panel records the *container's* DesiredSize, so the container must opt out
+            // of rounding too, not just the templated content.
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: UnroundedCanvasWithHeightTemplate,
+                styles: new[]
+                {
+                    new Style(x => x.OfType<ContentPresenter>())
+                    {
+                        Setters = { new Setter(Layoutable.UseLayoutRoundingProperty, false) }
+                    }
+                },
+                bufferFactor: 1.0d);
+
+            scroll.Offset = new Vector(0, 600);
+            Layout(target);
+
+            var firstRealized = target.FirstRealizedIndex;
+            var anchorIdx = (int)(scroll.Offset.Y / 50);
+            Assert.True(firstRealized + 1 < anchorIdx,
+                $"Need >= 2 buffer items before the anchor. firstRealized={firstRealized}, anchor={anchorIdx}");
+
+            var startUField = GetRealizedStartUAccessor(target, out var realizedElements);
+            var startUBefore = (double)startUField.GetValue(realizedElements)!;
+
+            // Grow a mid-buffer item above the anchor by 0.5px, with the child already
+            // carrying its new DesiredSize so ValidateStartU (which runs before realization)
+            // observes the diff.
+            var growIdx = firstRealized + 1;
+            var growContainer = itemsControl.ContainerFromIndex(growIdx) as Control;
+            Assert.NotNull(growContainer);
+            items[growIdx].Height = 50.5;
+            growContainer!.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.InvalidateMeasure();
+            Layout(target);
+
+            var realizedAfter = GetRealizedStackElements(target);
+            var startUAfter = (double)startUField.GetValue(realizedAfter)!;
+
+            // StartU must have absorbed the 0.5px of pre-anchor growth by moving up.
+            Assert.True(startUAfter <= startUBefore - 0.4,
+                $"StartU did not compensate for 0.5px of pre-anchor growth: " +
+                $"{startUBefore} -> {startUAfter}. A sub-pixel-but-real resize is being " +
+                $"absorbed instead of compensated.");
+        }
+
+        [Fact]
+        public void Second_Resize_In_Same_Arrange_Cycle_Is_Still_Compensated()
+        {
+            // _suppressValidateStartU allowed only ONE resize compensation per measure→arrange
+            // cycle. A layout cycle that measures twice before arranging (exactly what happens
+            // when content settles across passes) therefore dropped the second resize, leaving
+            // StartU short by that item's growth and sliding the anchor.
+            using var app = App();
+
+            var items = Enumerable.Range(0, 50)
+                .Select(i => new ItemWithHeight(i, 50))
+                .ToList();
+
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: CanvasWithHeightTemplate,
+                bufferFactor: 1.0d);
+
+            scroll.Offset = new Vector(0, 600);
+            Layout(target);
+
+            var firstRealized = target.FirstRealizedIndex;
+            var anchorIdx = (int)(scroll.Offset.Y / 50);
+            Assert.True(firstRealized + 1 < anchorIdx,
+                $"Need >= 2 buffer items before the anchor. firstRealized={firstRealized}, anchor={anchorIdx}");
+
+            var startUField = GetRealizedStartUAccessor(target, out var realizedElements);
+            var startUBefore = (double)startUField.GetValue(realizedElements)!;
+
+            var availableSize = new Size(target.Bounds.Width, target.Bounds.Height);
+
+            // Two measure passes with NO arrange in between, growing the same mid-buffer item
+            // above the anchor by 20px each time (50 -> 70 -> 90) — content settling in steps.
+            // Both steps must be compensated: total StartU shift 40px.
+            var growIdx = firstRealized + 1;
+            foreach (var height in new double[] { 70, 90 })
+            {
+                var container = itemsControl.ContainerFromIndex(growIdx) as Control;
+                Assert.NotNull(container);
+                items[growIdx].Height = height;
+                // The container itself must be re-measured, not just its content: a data change
+                // inside the template invalidates the templated child, not the container, and the
+                // panel skips measure-valid containers.
+                container!.InvalidateMeasure();
+                container.Measure(new Size(100, double.PositiveInfinity));
+                Assert.Equal(height, container.DesiredSize.Height);
+
+                target.InvalidateMeasure();
+                target.Measure(availableSize);
+            }
+
+            var realizedAfter = GetRealizedStackElements(target);
+            var startUAfter = (double)startUField.GetValue(realizedAfter)!;
+            var shift = startUBefore - startUAfter;
+
+            Assert.True(shift >= 39,
+                $"Only {shift}px of the 40px pre-anchor growth was compensated " +
+                $"(StartU {startUBefore} -> {startUAfter}). The second resize in the same " +
+                $"measure→arrange cycle was suppressed.");
+        }
+
+        private static object GetRealizedStackElements(VirtualizingStackPanel target)
+        {
+            var field = typeof(VirtualizingStackPanel).GetField(
+                "_realizedElements",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+            return field.GetValue(target)!;
+        }
+
+        private static System.Reflection.FieldInfo GetRealizedStartUAccessor(
+            VirtualizingStackPanel target, out object realizedElements)
+        {
+            realizedElements = GetRealizedStackElements(target);
+            return realizedElements.GetType().GetField(
+                "_startU",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        }
+
+        // ===== Category: anchor-drift compensation (formerly extent dampening) =====
+        //
+        // CompensateForExtentChange used to gate anchor compensation on the *extent* delta
+        // (a 2px noise floor plus a "dampening" branch keyed on magic 0.5 ratio / 10%
+        // realized / >10 unrealized / 0.3 damp factor). The dampening branch skipped the
+        // anchor compensation AND recorded a fabricated previous extent, so the next pass
+        // saw the same large delta and skipped compensation again — the anchor kept
+        // drifting for as long as the panel stayed in that regime. These tests assert the
+        // constant-free replacement: compensation is gated on the *anchor drift* itself.
+
+        [Fact]
+        public void Anchor_Stays_Put_Across_Repeated_Passes_With_Few_Realized_Items()
+        {
+            // The exact regime the removed dampening branch keyed on: a tiny fraction of
+            // the collection realized (bufferFactor 0, 100px viewport, 500 items) and a
+            // huge extent swing as the window moves out of the small-item head into the
+            // large-item body. In that regime the dampener suppressed anchor compensation,
+            // so the first visible item drifted pass after pass. With drift-gated
+            // compensation the visible content must stay pinned.
+            using var app = App();
+
             var items = Enumerable.Range(0, 500)
                 .Select(i => (object)new ItemWithHeight(i, i < 5 ? 5 : 300))
                 .ToList();
@@ -4580,29 +5593,86 @@ namespace Avalonia.Controls.UnitTests
                 itemTemplate: CanvasWithHeightTemplate,
                 bufferFactor: 0.0d);
 
-            var lastExtentField = typeof(VirtualizingStackPanel).GetField(
-                "_lastMeasuredExtentU",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            Assert.NotNull(lastExtentField);
-
-            // Initial extent — small items dominate the sample → low estimate.
-            var initialExtentEstimate = (double)lastExtentField!.GetValue(target)!;
-
-            // Scroll into the large-item region. The new estimate ought to jump dramatically;
-            // dampening should hold it back to ≈ 30% of the raw delta.
             scroll.Offset = new Vector(0, 2000);
             Layout(target);
 
-            var afterExtent = (double)lastExtentField.GetValue(target)!;
+            var anchor = target.GetRealizedElements()
+                .Where(e => e is { IsVisible: true })
+                .OrderBy(e => e!.Bounds.Top)
+                .First()!;
+            var anchorIndex = itemsControl.IndexFromContainer((Control)anchor);
+            var anchorTop = anchor.Bounds.Top;
 
-            // The dampened change should be substantially smaller than the change that would
-            // occur with full extent assignment. The hard cap is the 0.3 factor — so the
-            // post-layout value should be within (initial × 2.5) i.e. < the full undampened
-            // extent estimate (which with 300px items × 500 ≈ 150000).
-            Assert.True(afterExtent < 50000,
-                $"Dampening should prevent extent from jumping to the full estimate. " +
-                $"initial={initialExtentEstimate}, after={afterExtent}. " +
-                $"Without dampening, the full estimate would be ~150000.");
+            for (var pass = 0; pass < 10; pass++)
+            {
+                target.InvalidateMeasure();
+                Layout(target);
+
+                var still = target.GetRealizedElements()
+                    .FirstOrDefault(e => e is not null &&
+                        itemsControl.IndexFromContainer((Control)e) == anchorIndex);
+
+                Assert.True(still is not null,
+                    $"Anchor item {anchorIndex} was de-realized on pass {pass} even though the " +
+                    $"viewport never moved — positions drifted out from under it.");
+                Assert.True(Math.Abs(still!.Bounds.Top - anchorTop) < 1.0,
+                    $"Anchor item {anchorIndex} drifted on pass {pass}: {anchorTop} -> " +
+                    $"{still.Bounds.Top}. Anchor compensation is being skipped.");
+            }
+        }
+
+        [Fact]
+        public void Reported_Extent_Is_Reproducible_When_Revisiting_An_Offset_With_Few_Realized_Items()
+        {
+            // The dampener recorded a fabricated "previous extent" instead of the value the
+            // panel actually reported. Any book-keeping the panel does about the extent must
+            // describe what it reported, otherwise the delta driving compensation is a
+            // fiction. The observable form: returning to the same offset must reproduce the
+            // same extent, rather than the extent creeping as the fake baseline is chased.
+            using var app = App();
+
+            var items = Enumerable.Range(0, 500)
+                .Select(i => (object)new ItemWithHeight(i, i < 5 ? 5 : 300))
+                .ToList();
+
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: CanvasWithHeightTemplate,
+                bufferFactor: 0.0d);
+
+            // Prime the per-item size record across the whole collection so the extent has
+            // converged on the true total; step finer than the viewport so nothing is skipped.
+            for (double o = 0; o <= 150000; o += 90)
+            {
+                scroll.Offset = new Vector(0, o);
+                Layout(target);
+            }
+
+            double[] offsets = { 0, 2000, 40000, 100000, 148000 };
+            var first = new List<double>();
+            foreach (var o in offsets)
+            {
+                scroll.Offset = new Vector(0, o);
+                Layout(target);
+                first.Add(scroll.Extent.Height);
+            }
+
+            var second = new List<double>();
+            foreach (var o in offsets)
+            {
+                scroll.Offset = new Vector(0, o);
+                Layout(target);
+                second.Add(scroll.Extent.Height);
+            }
+
+            for (var i = 0; i < offsets.Length; i++)
+            {
+                Assert.True(Math.Abs(first[i] - second[i]) < 1.0,
+                    $"Extent at offset {offsets[i]} was not reproducible: " +
+                    $"{first[i]} then {second[i]}. First sweep: " +
+                    $"[{string.Join(", ", first.Select(e => e.ToString("F0")))}], " +
+                    $"second: [{string.Join(", ", second.Select(e => e.ToString("F0")))}]");
+            }
         }
 
         // ===== Category: Scroll-back-to-top correctness =====
@@ -4665,11 +5735,13 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Significant_Size_Change_Logs_Warning()
+        public void Size_Change_During_Layout_Is_Logged()
         {
-            // When an item's size changes significantly during layout (e.g., async image
-            // loading), a Warning-level log should be emitted to help diagnose non-deterministic
-            // item templates.
+            // When an item's size changes during layout (e.g. async image loading), the panel
+            // logs it so non-deterministic item templates can be diagnosed. Verbose, not
+            // Warning: a template settling its size is legitimate and supported, so this is a
+            // diagnostic aid rather than a defect report — and any layout-significant change now
+            // reaches it, which at Warning level would be noise.
             using var app = App();
 
             var logMessages = new List<string>();
@@ -4687,12 +5759,12 @@ namespace Avalonia.Controls.UnitTests
                     itemTemplate: CanvasWithHeightTemplate,
                     bufferFactor: 0d);
 
-                // Resize an item significantly — should trigger a warning
+                // Resize an item — should be reported
                 items[0].Height = 25;
                 Layout(target);
 
                 Assert.Contains(logMessages, m =>
-                    m.Contains("Item template size changed significantly during layout") &&
+                    m.Contains("Item template size changed during layout") &&
                     m.Contains("OldSize=") &&
                     m.Contains("NewSize="));
             }
@@ -4726,8 +5798,8 @@ namespace Avalonia.Controls.UnitTests
 
             var anchorIdx = (int)(scroll.Offset.Y / 50); // ~12
             var firstRealized = target.FirstRealizedIndex;
-            Assert.True(firstRealized < anchorIdx,
-                $"Need buffer items before anchor. firstRealized={firstRealized}, anchor≈{anchorIdx}");
+            Assert.True(firstRealized + 1 < anchorIdx, // need a mid-buffer item, not the edge
+                $"Need ≥2 buffer items before anchor. firstRealized={firstRealized}, anchor≈{anchorIdx}");
 
             // Record viewport-relative position of the anchor (first visible) item.
             // The preDelta compensation should keep this stable when items before it resize.
@@ -4735,10 +5807,18 @@ namespace Avalonia.Controls.UnitTests
             Assert.NotNull(anchorContainerBefore);
             var visualPosBefore = anchorContainerBefore!.Bounds.Y - scroll.Offset.Y;
 
-            // Simulate async image loading: an item in the buffer zone ABOVE the viewport
-            // grows 150px (50→200). With correct preDelta, _startU shifts so the anchor
-            // stays at the same viewport-relative position.
-            items[firstRealized].Height = 200;
+            // Simulate async image loading: a MID-buffer item ABOVE the viewport (not at the
+            // realization edge, so it stays in the realized window) grows 150px (50→200).
+            // As in the shrinking case, the child must already carry its NEW DesiredSize by
+            // the time the panel's MeasureOverride runs ValidateStartU — otherwise the growth
+            // is folded into realization and the pre-anchor compensation path is never
+            // exercised, leaving this test vacuous.
+            var growIdx = firstRealized + 1;
+            var growContainer = itemsControl.ContainerFromIndex(growIdx) as Control;
+            Assert.NotNull(growContainer);
+            items[growIdx].Height = 200;
+            growContainer!.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.InvalidateMeasure();
             Layout(target);
 
             var anchorContainerAfter = itemsControl.ContainerFromIndex(anchorIdx) as Control;
@@ -4819,375 +5899,6 @@ namespace Avalonia.Controls.UnitTests
                 $"delta={visualPosAfter - visualPosBefore}.");
         }
 
-        // ===== Category: Frozen extent boundary clamping =====
-
-        /// <summary>
-        /// Helper: sets the private _frozenExtentU field on a VirtualizingStackPanel
-        /// to simulate the frozen-extent state that occurs during extent oscillation.
-        /// </summary>
-        private static void SetFrozenExtent(VirtualizingStackPanel panel, double value)
-        {
-            var field = typeof(VirtualizingStackPanel).GetField(
-                "_frozenExtentU",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            Assert.NotNull(field);
-            field!.SetValue(panel, value);
-        }
-
-        /// <summary>
-        /// Prevents the frozen extent convergence mechanism from firing by setting
-        /// _frozenStableCount to a large negative value. This isolates tests that
-        /// need to verify the bottom-cap or grow paths without the convergence
-        /// path masking the result.
-        /// </summary>
-        private static void DisableFrozenExtentConvergence(VirtualizingStackPanel panel)
-        {
-            var field = typeof(VirtualizingStackPanel).GetField(
-                "_frozenStableCount",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            Assert.NotNull(field);
-            field!.SetValue(panel, int.MinValue / 2);
-        }
-
-        private static double GetFrozenExtent(VirtualizingStackPanel panel)
-        {
-            var field = typeof(VirtualizingStackPanel).GetField(
-                "_frozenExtentU",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            Assert.NotNull(field);
-            return (double)field!.GetValue(panel)!;
-        }
-
-        [Fact]
-        public void Anchor_Self_Size_Change_During_Frozen_Extent_Compensates_StartU()
-        {
-            // When the anchor item itself shrinks during frozen extent (lockSizes=true),
-            // items after it shift. ValidateStartU must track the anchor's size change
-            // in preDelta (itemIndex <= anchorIndex) and adjust StartU to keep visible
-            // items at their current positions.
-            using var app = App();
-
-            var items = Enumerable.Range(0, 50)
-                .Select(i => new ItemWithHeight(i, 50))
-                .ToList();
-
-            var (target, scroll, itemsControl) = CreateTarget(
-                items: items,
-                itemTemplate: CanvasWithHeightTemplate,
-                bufferFactor: 1.0d);
-
-            // Scroll to middle so items around index 10-15 are visible
-            scroll.Offset = new Vector(0, 600);
-            Layout(target);
-
-            var firstRealized = target.FirstRealizedIndex;
-            var offsetBefore = scroll.Offset.Y;
-
-            // Freeze the extent to simulate oscillation detection
-            SetFrozenExtent(target, scroll.Extent.Height);
-
-            // Shrink the first realized item (which will be the anchor) significantly.
-            // During frozen extent, this must still compensate StartU.
-            items[firstRealized].Height = 10;
-            Layout(target);
-
-            var offsetAfter = scroll.Offset.Y;
-            Assert.True(Math.Abs(offsetAfter - offsetBefore) < 50,
-                $"Scroll jumped too much when anchor shrank during frozen extent: " +
-                $"before={offsetBefore}, after={offsetAfter}, delta={offsetAfter - offsetBefore}. " +
-                $"ValidateStartU may not be compensating anchor-self-size-change during lockSizes.");
-        }
-
-        [Fact]
-        public void Item_Zero_Not_Forced_To_Zero_During_Frozen_Extent()
-        {
-            // During frozen extent, forcing item 0 to position 0 creates a gap between
-            // item 0 and item 1 (which keeps its estimated position). This causes
-            // GetOrEstimateAnchorElementForViewport to fail to find overlapping items,
-            // triggering a false disjunct detection and a visible scroll jump.
-            // Instead, item 0 should keep its natural position relative to item 1.
-            using var app = App();
-
-            var items = Enumerable.Range(0, 50)
-                .Select(i => new ItemWithHeight(i, 50))
-                .ToList();
-
-            var (target, scroll, itemsControl) = CreateTarget(
-                items: items,
-                itemTemplate: CanvasWithHeightTemplate,
-                bufferFactor: 0.5d);
-
-            // Scroll down so items are at estimated positions
-            scroll.Offset = new Vector(0, 300);
-            Layout(target);
-
-            // Freeze extent
-            SetFrozenExtent(target, scroll.Extent.Height);
-
-            // Scroll back toward top so item 0 gets realized
-            scroll.Offset = new Vector(0, 0);
-            Layout(target);
-
-            // Item 0 should be realized
-            Assert.Equal(0, target.FirstRealizedIndex);
-
-            // During frozen extent, item 0 should NOT be at position 0
-            // (it keeps its estimated position to avoid disjunct detection).
-            // After multiple layouts, items should still be contiguous.
-            Layout(target);
-
-            // Verify items are contiguous (no gaps)
-            var realized = target.GetRealizedContainers()!
-                .Where(x => x.IsVisible)
-                .OrderBy(x => x.Bounds.Top)
-                .ToList();
-
-            Assert.True(realized.Count >= 2, "Expected at least 2 realized items");
-
-            for (int i = 1; i < realized.Count; i++)
-            {
-                var prev = realized[i - 1];
-                var curr = realized[i];
-                var expectedTop = prev.Bounds.Top + prev.Bounds.Height;
-                Assert.True(Math.Abs(curr.Bounds.Top - expectedTop) < 1,
-                    $"Gap between items {i - 1} and {i}: prev ends at {expectedTop:F1}, " +
-                    $"curr starts at {curr.Bounds.Top:F1}");
-            }
-        }
-
-        [Fact]
-        public void Frozen_Extent_Top_Boundary_Clamps_When_Viewport_Above_Item_Zero()
-        {
-            // When item 0 is realized during frozen extent at a position P > 0 and the
-            // viewport scrolls above P, the panel shifts items to follow the viewport
-            // and reduces the frozen extent. This prevents empty space above item 0.
-            using var app = App();
-
-            var items = Enumerable.Range(0, 50)
-                .Select(i => new ItemWithHeight(i, 50))
-                .ToList();
-
-            var (target, scroll, itemsControl) = CreateTarget(
-                items: items,
-                itemTemplate: CanvasWithHeightTemplate,
-                bufferFactor: 0.5d);
-
-            // Scroll to a position that gives item 0 a non-zero estimated position
-            scroll.Offset = new Vector(0, 200);
-            Layout(target);
-
-            var extentBefore = scroll.Extent.Height;
-
-            // Freeze extent at current value
-            SetFrozenExtent(target, extentBefore);
-
-            // Scroll to top — item 0 gets realized at its estimated position (> 0)
-            scroll.Offset = new Vector(0, 0);
-            Layout(target);
-            Layout(target); // extra layout to let clamping settle
-
-            // Item 0 must be realized
-            Assert.Equal(0, target.FirstRealizedIndex);
-
-            // Item 0's position should be at or before the viewport start (no empty space above)
-            var container0 = target.ContainerFromIndex(0);
-            Assert.NotNull(container0);
-            // Behavioural assertion. With deterministic, uniform 50px items the panel's
-            // backward walk naturally places item 0 at u=0, so the clamping branch
-            // (firstItemU > viewportUStart) never fires in this test environment.
-            // The path triggers in production when async-content-loading produces estimation
-            // errors. See virtualizingstackpanel_test_todo.md for the limitation.
-            Assert.True(container0!.Bounds.Top <= scroll.Offset.Y + 1,
-                $"Item 0 at position {container0.Bounds.Top} is below viewport start {scroll.Offset.Y}.");
-
-            var frozenAfter = GetFrozenExtent(target);
-            Assert.True(frozenAfter <= extentBefore,
-                $"Frozen extent should not grow. Before={extentBefore}, After={frozenAfter}");
-        }
-
-        [Fact]
-        public void Frozen_Extent_Bottom_Boundary_Caps_When_Last_Item_Realized()
-        {
-            // When the last item is realized during frozen extent and the frozen extent
-            // exceeds the actual content end, the frozen extent should be capped to
-            // prevent scrolling past the last item.
-            using var app = App();
-
-            var items = Enumerable.Range(0, 20)
-                .Select(i => new ItemWithHeight(i, 50))
-                .ToList();
-
-            var (target, scroll, itemsControl) = CreateTarget(
-                items: items,
-                itemTemplate: CanvasWithHeightTemplate,
-                bufferFactor: 1.0d);
-
-            // Initial extent: 20 × 50 = 1000
-            Layout(target);
-
-            // Freeze extent at an inflated value (simulating estimate overshoot)
-            SetFrozenExtent(target, 1500);
-
-            // Scroll near the bottom so the last item gets realized.
-            // With bufferFactor 1.0, the extended viewport reaches past item 19.
-            scroll.Offset = new Vector(0, 800);
-            Layout(target);
-
-            // Last item should be realized (buffer extends past item 19)
-            Assert.Equal(19, target.LastRealizedIndex);
-
-            // The frozen extent should have been capped — it should not exceed
-            // the actual content (which is ~1000px for 20 items × 50px)
-            var frozenAfter = GetFrozenExtent(target);
-            Assert.True(frozenAfter <= 1100,
-                $"Frozen extent should be capped near actual content size when last item is realized. " +
-                $"Expected <= 1100, got {frozenAfter}");
-        }
-
-        [Fact]
-        public void Scroll_To_Top_And_Back_Down_With_Frozen_Extent_Preserves_Contiguity()
-        {
-            // End-to-end test: scroll down, trigger frozen extent, scroll back to top,
-            // scroll down again. Items should remain contiguous throughout (no gaps).
-            using var app = App();
-
-            var items = Enumerable.Range(0, 50)
-                .Select(i => new ItemWithHeight(i, i % 3 == 0 ? 100 : 30))
-                .ToList();
-
-            var (target, scroll, itemsControl) = CreateTarget(
-                items: items,
-                itemTemplate: CanvasWithHeightTemplate,
-                bufferFactor: 0.5d);
-
-            // Scroll down
-            scroll.Offset = new Vector(0, 500);
-            Layout(target);
-
-            // Freeze extent
-            SetFrozenExtent(target, scroll.Extent.Height);
-
-            // Scroll to top
-            scroll.Offset = new Vector(0, 0);
-            Layout(target);
-            Layout(target);
-
-            // Scroll back down
-            scroll.Offset = new Vector(0, 300);
-            Layout(target);
-            Layout(target);
-
-            // Verify contiguity
-            var realized = target.GetRealizedContainers()!
-                .Where(x => x.IsVisible)
-                .OrderBy(x => x.Bounds.Top)
-                .ToList();
-
-            Assert.True(realized.Count >= 2, "Expected at least 2 realized items");
-
-            for (int i = 1; i < realized.Count; i++)
-            {
-                var prev = realized[i - 1];
-                var curr = realized[i];
-                var expectedTop = prev.Bounds.Top + prev.Bounds.Height;
-                Assert.True(Math.Abs(curr.Bounds.Top - expectedTop) < 1,
-                    $"Gap between items at position {i - 1} and {i}: " +
-                    $"prev ends at {expectedTop:F1}, curr starts at {curr.Bounds.Top:F1}");
-            }
-        }
-
-        [Fact]
-        public void Frozen_Extent_Bottom_Boundary_Caps_Even_When_Viewport_Past_Content()
-        {
-            // When fast-scrolling pushes the viewport past all content, the frozen
-            // extent must still be capped to the actual content end. Previously the
-            // cap had a guard (contentEndU >= viewportUEnd) that prevented capping
-            // in this exact scenario, leaving the ScrollViewer showing empty space.
-            using var app = App();
-
-            var items = Enumerable.Range(0, 30)
-                .Select(i => new ItemWithHeight(i, 20 + (i % 5) * 20))
-                .ToList();
-
-            var (target, scroll, itemsControl) = CreateTarget(
-                items: items,
-                itemTemplate: CanvasWithHeightTemplate,
-                bufferFactor: 1.0d);
-
-            Layout(target);
-
-            // Freeze extent much higher than actual content (1800) to simulate
-            // the overshoot scenario where estimation inflated the extent.
-            SetFrozenExtent(target, 5000);
-
-            // Disable the convergence mechanism (which updates frozen extent after
-            // 2 stable passes) so only the bottom-cap code path can fix this.
-            DisableFrozenExtentConvergence(target);
-
-            // Force a layout so the panel reports DesiredSize=5000 to the ScrollViewer.
-            // Without this, the ScrollViewer clamps the offset to the old extent.
-            target.InvalidateMeasure();
-            Layout(target);
-
-            // Now scroll far past all content — the ScrollViewer allows this because
-            // it sees extent=5000 from the frozen override.
-            scroll.Offset = new Vector(0, 4500);
-            Layout(target);
-
-            // The last item should be realized
-            Assert.Equal(29, target.LastRealizedIndex);
-
-            // The frozen extent must be capped to the actual content end, not stay
-            // at 5000. The actual content ends at ~4480 (item 29 at pos 4380 + 100px).
-            var frozenAfter = GetFrozenExtent(target);
-            Assert.True(frozenAfter < 5000,
-                $"Frozen extent should be capped when viewport is past content. " +
-                $"Expected < 5000, got {frozenAfter}");
-        }
-
-        [Fact]
-        public void Frozen_Extent_Grows_Immediately_When_Actual_Extent_Exceeds_It()
-        {
-            // When the actual calculated extent exceeds the frozen extent, the frozen
-            // value must grow immediately. Otherwise the ScrollViewer thinks the user
-            // is at the end of the list when there are more items below ("undershoot").
-            using var app = App();
-
-            // Use heterogeneous heights: first items are short, later items are tall.
-            // The initial estimate (based on short items) underestimates the total
-            // extent. When the user scrolls into the tall region, the actual extent
-            // grows beyond the frozen value.
-            var items = Enumerable.Range(0, 50)
-                .Select(i => new ItemWithHeight(i, i < 20 ? 30 : 120))
-                .ToList();
-
-            var (target, scroll, itemsControl) = CreateTarget(
-                items: items,
-                itemTemplate: CanvasWithHeightTemplate,
-                bufferFactor: 0.5d);
-
-            Layout(target);
-
-            // Initial extent is ~1500 (based on short items at top).
-            // Freeze at this value — it will be too small once tall items are realized.
-            var initialExtent = scroll.Extent.Height;
-            SetFrozenExtent(target, initialExtent);
-
-            // Disable convergence so only the immediate-grow path can update it.
-            DisableFrozenExtentConvergence(target);
-
-            // Scroll into the tall-item region (items 20+ are 120px each)
-            scroll.Offset = new Vector(0, 600);
-            Layout(target);
-
-            // The frozen extent should have grown beyond the initial value because
-            // the newly realized tall items push the actual extent higher.
-            var frozenAfter = GetFrozenExtent(target);
-            Assert.True(frozenAfter > initialExtent,
-                $"Frozen extent should grow when actual extent exceeds it. " +
-                $"Initial={initialExtent}, After={frozenAfter}");
-        }
-
         [Fact]
         public void Last_Item_Not_Clipped_When_Few_Remaining_Items_Are_Larger_Than_Estimate()
         {
@@ -5229,7 +5940,7 @@ namespace Avalonia.Controls.UnitTests
             public TestLogSink(List<string> messages) => _messages = messages;
 
             public bool IsEnabled(LogEventLevel level, string area) =>
-                level >= LogEventLevel.Warning && area == LogArea.Control;
+                level >= LogEventLevel.Verbose && area == LogArea.Control;
 
             public void Log(LogEventLevel level, string area, object? source, string messageTemplate)
             {
