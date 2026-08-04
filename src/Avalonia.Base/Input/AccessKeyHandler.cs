@@ -176,9 +176,9 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPreviewKeyDown(object? sender, KeyEventArgs e)
         {
-            // if the owner (IInputRoot) does not have the keyboard focus, ignore all keyboard events
+            // if the event did not originate from within the owner (IInputRoot), ignore all keyboard events
             // KeyboardDevice.IsKeyboardFocusWithin in case of a PopupRoot seems to only work once, so we created our own
-            var isFocusWithinOwner = IsFocusWithinOwner(_owner!);
+            var isFocusWithinOwner = IsFocusWithinOwner(_owner!, e.Source as IInputElement);
             if (!isFocusWithinOwner)
                 return;
 
@@ -226,9 +226,9 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnKeyDown(object? sender, KeyEventArgs e)
         {
-            // if the owner (IInputRoot) does not have the keyboard focus, ignore all keyboard events
+            // if the event did not originate from within the owner (IInputRoot), ignore all keyboard events
             // KeyboardDevice.IsKeyboardFocusWithin in case of a PopupRoot seems to only work once, so we created our own
-            var isFocusWithinOwner = IsFocusWithinOwner(_owner!);
+            var isFocusWithinOwner = IsFocusWithinOwner(_owner!, e.Source as IInputElement);
             if (!isFocusWithinOwner)
                 return;
 
@@ -450,18 +450,18 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Checks if the focused element is a descendent of the owner.
+        /// Checks if the event's source is the owner itself, or a descendant of it.
         /// </summary>
         /// <param name="owner">The owner to check.</param>
+        /// <param name="source">The source of the key event, representing the effective focused element.</param>
         /// <returns>If focused element is decendant of owner <c>true</c>, otherwise <c>false</c>. </returns>
-        private static bool IsFocusWithinOwner(IInputElement owner)
+        private static bool IsFocusWithinOwner(IInputElement owner, IInputElement? source)
         {
-            var focusedElement = KeyboardDevice.Instance?.FocusedElement;
-            if (focusedElement is not InputElement inputElement)
-                return false;
-
-            var isAncestorOf = owner is Visual root && root.IsVisualAncestorOf(inputElement);
-            return isAncestorOf;
+            if (source is not Visual sourceVisual)
+                    return false;
+            
+            return ReferenceEquals(sourceVisual, owner) ||
+                       (owner is Visual root && root.IsVisualAncestorOf(sourceVisual));
         }
 
         /// <summary>
