@@ -386,8 +386,11 @@ namespace Avalonia.Controls
                             spacing = totalSpacing / spacingCount;
                         break;
                     case WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.StretchAll:
-                        var finalUWithoutSpacing = Max(uvFinalSize.U - spacing * spacingCount, 0);
-                        stretchRatio = finalUWithoutSpacing / totalU;
+                        if (!MathUtilities.IsZero(totalU))
+                        {
+                            var finalUWithoutSpacing = Max(uvFinalSize.U - spacing * spacingCount, 0);
+                            stretchRatio = finalUWithoutSpacing / totalU;
+                        }
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(itemsAlignment), itemsAlignment, null);

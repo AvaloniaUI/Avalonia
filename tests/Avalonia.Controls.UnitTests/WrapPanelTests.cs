@@ -159,6 +159,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Stretch_Handles_A_Zero_Width_Line()
+        {
+            var target = new WrapPanel
+            {
+                Width = 100,
+                ItemSpacing = 1,
+                ItemsAlignment = WrapPanelItemsAlignment.Stretch,
+                Children =
+                {
+                    new Border { Width = 0, Height = 50 },
+                    new Border { Width = 100, Height = 50 },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 0, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(0, 50, 100, 50), target.Children[1].Bounds);
+        }
+
+        [Fact]
         public void Lays_Out_Vertically_Children_On_A_Single_Line()
         {
             var target = new WrapPanel()
