@@ -254,14 +254,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
 
             AppCompatDelegate.DefaultNightMode = nightMode;
-
-            if (nightMode == AppCompatDelegate.ModeNightFollowSystem && _view?.Context is { } context
-                && context.Resources?.Configuration is { } config)
-            {
-                var settings =
-                    AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
-                settings?.OnViewConfigurationChanged(context, config);
-            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new(1, 1, 1);

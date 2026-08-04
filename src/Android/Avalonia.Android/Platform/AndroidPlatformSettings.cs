@@ -12,7 +12,7 @@ namespace Avalonia.Android.Platform;
 // TODO: ideally should be created per view/activity.
 internal class AndroidPlatformSettings : DefaultPlatformSettings
 {
-    private PlatformColorValues _latestValues;
+    private PlatformColorValues _colorValues;
     private TimeSpan _holdWaitDuration = TimeSpan.FromMilliseconds(300);
     private TimeSpan _doubleTapTime = TimeSpan.FromMilliseconds(500);
     private Size _doubleTapSize = new Size(16,16);
@@ -20,16 +20,16 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
 
     public AndroidPlatformSettings()
     {
-        _latestValues = base.GetColorValues();
+        _colorValues = base.GetColorValues();
         if (global::Android.App.Application.Context is { } context)
         {
-            GetInputConfigValues(context);
+            UpdateInputConfigValues(context);
         }
     }
 
     public override PlatformColorValues GetColorValues()
     {
-        return _latestValues;
+        return _colorValues;
     }
 
     public override TimeSpan GetDoubleTapTime(PointerType type)
@@ -51,48 +51,66 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
 
     internal void OnViewConfigurationChanged(Context context, Configuration configuration)
     {
-        if (context.Resources is null)
-        {
-            return;
-        }
+        UpdateInputConfigValues(context);
+        UpdateColorValues(context, configuration);
+    }
 
-        PlatformThemeVariant systemTheme = (configuration.UiMode & UiMode.NightMask) switch
+    private void UpdateColorValues(Context context, Configuration configuration)
+    {
+        var oldColorValues = _colorValues;
+        var colorValues = GetColorValuesFromContext(context, configuration);
+
+        if (oldColorValues != colorValues)
+        {
+            _colorValues = colorValues;
+            OnColorValuesChanged(colorValues);
+        }
+    }
+
+    private static PlatformColorValues GetColorValuesFromContext(Context context, Configuration configuration)
+    {
+        var systemTheme = (configuration.UiMode & UiMode.NightMask) switch
         {
             UiMode.NightYes => PlatformThemeVariant.Dark,
             UiMode.NightNo => PlatformThemeVariant.Light,
             _ => throw new ArgumentOutOfRangeException()
         };
 
+        var contrastPreference = IsHighContrast(context);
+
         if (OperatingSystem.IsAndroidVersionAtLeast(31))
         {
-            // See https://developer.android.com/reference/android/R.color
-            var accent1 = context.Resources.GetColor(17170494, context.Theme); // Resource.Color.SystemAccent1500
-            var accent2 = context.Resources.GetColor(17170507, context.Theme); // Resource.Color.SystemAccent2500
-            var accent3 = context.Resources.GetColor(17170520, context.Theme); // Resource.Color.SystemAccent3500
-
-            _latestValues = new PlatformColorValues
+            if (context.Resources is { } resources)
             {
-                ThemeVariant = systemTheme,
-                ContrastPreference = IsHighContrast(context),
-                AccentColor1 = new Color(accent1.A, accent1.R, accent1.G, accent1.B),
-                AccentColor2 = new Color(accent2.A, accent2.R, accent2.G, accent2.B),
-                AccentColor3 = new Color(accent3.A, accent3.R, accent3.G, accent3.B),
-            };
+                // See https://developer.android.com/reference/android/R.color
+                var accent1 = resources.GetColor(17170494, context.Theme); // Resource.Color.SystemAccent1500
+                var accent2 = resources.GetColor(17170507, context.Theme); // Resource.Color.SystemAccent2500
+                var accent3 = resources.GetColor(17170520, context.Theme); // Resource.Color.SystemAccent3500
+
+                return new PlatformColorValues
+                {
+                    ThemeVariant = systemTheme,
+                    ContrastPreference = contrastPreference,
+                    AccentColor1 = new Color(accent1.A, accent1.R, accent1.G, accent1.B),
+                    AccentColor2 = new Color(accent2.A, accent2.R, accent2.G, accent2.B),
+                    AccentColor3 = new Color(accent3.A, accent3.R, accent3.G, accent3.B),
+                };
+            }
         }
         else if (OperatingSystem.IsAndroidVersionAtLeast(23))
         {
             // See https://developer.android.com/reference/android/R.attr
-            var array = context.Theme?.ObtainStyledAttributes(new[] { 16843829 }); // Resource.Attribute.ColorAccent
+            var array = context.Theme?.ObtainStyledAttributes([16843829]); // Resource.Attribute.ColorAccent
             if (array is not null)
             {
                 try
                 {
                     var accent = array.GetColor(0, 0);
 
-                    _latestValues = new PlatformColorValues
+                    return new PlatformColorValues
                     {
                         ThemeVariant = systemTheme,
-                        ContrastPreference = IsHighContrast(context),
+                        ContrastPreference = contrastPreference,
                         AccentColor1 = new Color(accent.A, accent.R, accent.G, accent.B)
                     };
                 }
@@ -102,17 +120,15 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
                 }
             }
         }
-        else
+
+        return new PlatformColorValues
         {
-            _latestValues = _latestValues with { ThemeVariant = systemTheme };
-        }
-
-        GetInputConfigValues(context);
-
-        OnColorValuesChanged(_latestValues);
+            ThemeVariant = systemTheme,
+            ContrastPreference = contrastPreference
+        };
     }
 
-    private void GetInputConfigValues(Context context)
+    private void UpdateInputConfigValues(Context context)
     {
         _holdWaitDuration = TimeSpan.FromMilliseconds(ViewConfiguration.LongPressTimeout);
 
