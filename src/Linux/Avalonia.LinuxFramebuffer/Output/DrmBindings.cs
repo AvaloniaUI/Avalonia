@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -149,23 +148,36 @@ namespace Avalonia.LinuxFramebuffer.Output
 
     public unsafe class DrmCard : IDisposable
     {
-        public int Fd { get; private set; }
+        public int Fd { get; private set; } = -1;
         public DrmCard(string? path = null)
         {
             if (path == null)
             {
-                var files = Directory.GetFiles("/dev/dri/");
-
-                foreach (var file in files)
+                var files = new SortedDictionary<int, string>();
+                foreach (var file in Directory.GetFiles("/dev/dri/", "card*"))
                 {
-                    var match = Regex.Match(file, "card[0-9]+");
+                    if (int.TryParse(Path.GetFileName(file).AsSpan(4), out var cardNumber))
+                        files[cardNumber] = file;
+                }
 
-                    if (match.Success)
+                foreach (var file in files.Values)
+                {
+                    var fd = open(file, 2, 0);
+                    if (fd == -1)
+                        continue;
+
+                    var resources = drmModeGetResources(fd);
+                    if (resources != null && resources->count_crtcs > 0 && resources->count_encoders > 0 &&
+                        resources->count_connectors > 0)
                     {
-                        Fd = open(file, 2, 0);
-                        if (Fd != -1)
-                            break;
+                        drmModeFreeResources(resources);
+                        Fd = fd;
+                        break;
                     }
+
+                    if (resources != null)
+                        drmModeFreeResources(resources);
+                    close(fd);
                 }
 
                 if (Fd == -1)
@@ -187,6 +199,8 @@ namespace Avalonia.LinuxFramebuffer.Output
         public DrmResources GetResources(bool connectorsForceProbe = false) => new DrmResources(Fd, connectorsForceProbe);
         public void Dispose()
         {
+            if (Fd == -1)
+                return;
             close(Fd);
             Fd = -1;
         }
