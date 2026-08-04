@@ -35,7 +35,7 @@ namespace Avalonia.Controls
         /// Items are laid out with equal spacing between them within each column/row.
         /// </summary>
         /// <remarks>
-        /// <see cref="WrapPanel.ItemSpacing"/> is become the minimum spacing between items,
+        /// <see cref="WrapPanel.ItemSpacing"/> becomes the minimum spacing between items.
         /// </remarks>
         Justify,
 
@@ -43,7 +43,7 @@ namespace Avalonia.Controls
         /// Items are stretched evenly to fill the entire height/width of each column/row (last column/row excluded).
         /// </summary>
         /// <remarks>
-        /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> is become the minimum size of items,
+        /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> becomes the minimum size of items.
         /// </remarks>
         Stretch,
 
@@ -52,7 +52,7 @@ namespace Avalonia.Controls
         /// Items are stretched evenly to fill the entire height/width of each column/row.
         /// </summary>
         /// <remarks>
-        /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> is become the minimum size of items,
+        /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> becomes the minimum size of items.
         /// </remarks>
         StretchAll
         */
