@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using Avalonia.Layout;
 using Avalonia.UnitTests;
 using Xunit;
@@ -99,7 +98,6 @@ namespace Avalonia.Controls.UnitTests
             var row1Bounds = target.Children[0].Bounds.Union(target.Children[1].Bounds);
             var row2Bounds = target.Children[2].Bounds;
 
-            // fix layout rounding
             row1Bounds = new Rect(
                 Math.Round(row1Bounds.X),
                 Math.Round(row1Bounds.Y),
@@ -108,15 +106,8 @@ namespace Avalonia.Controls.UnitTests
 
             if (orientation is Orientation.Vertical)
             {
-                // X <=> Y, Width <=> Height
-                var reflectionMatrix = new Matrix4x4(
-                    0, 1, 0, 0,  // X' = Y
-                    1, 0, 0, 0,  // Y' = X
-                    0, 0, 1, 0,  // Z' = Z
-                    0, 0, 0, 1   // W' = W
-                );
-                row1Bounds = row1Bounds.TransformToAABB(reflectionMatrix);
-                row2Bounds = row2Bounds.TransformToAABB(reflectionMatrix);
+                row1Bounds = new Rect(row1Bounds.Y, row1Bounds.X, row1Bounds.Height, row1Bounds.Width);
+                row2Bounds = new Rect(row2Bounds.Y, row2Bounds.X, row2Bounds.Height, row2Bounds.Width);
             }
 
             Assert.Equal(itemsAlignment switch
