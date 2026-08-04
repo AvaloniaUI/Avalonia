@@ -127,26 +127,45 @@ namespace Avalonia.Controls.UnitTests
             }, row2Bounds);
         }
 
-        [Fact]
-        public void Justify_Distributes_Exact_Spacing()
+        [Theory]
+        [InlineData(Orientation.Horizontal)]
+        [InlineData(Orientation.Vertical)]
+        public void Justify_Positions_Unequal_Items(Orientation orientation)
         {
             var target = new WrapPanel
             {
                 Width = 100,
+                Height = 100,
+                Orientation = orientation,
                 ItemsAlignment = WrapPanelItemsAlignment.Justify,
                 UseLayoutRounding = false,
-                Children =
-                {
-                    new Border { Width = 40, Height = 50 },
-                    new Border { Width = 40, Height = 50 },
-                }
             };
+
+            if (orientation is Orientation.Horizontal)
+            {
+                target.Children.Add(new Border { Width = 40, Height = 50 });
+                target.Children.Add(new Border { Width = 20, Height = 50 });
+            }
+            else
+            {
+                target.Children.Add(new Border { Width = 50, Height = 40 });
+                target.Children.Add(new Border { Width = 50, Height = 20 });
+            }
 
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(new Rect(0, 0, 40, 50), target.Children[0].Bounds);
-            Assert.Equal(new Rect(60, 0, 40, 50), target.Children[1].Bounds);
+            var firstBounds = target.Children[0].Bounds;
+            var secondBounds = target.Children[1].Bounds;
+            if (orientation is Orientation.Vertical)
+            {
+                firstBounds = new Rect(firstBounds.Y, firstBounds.X, firstBounds.Height, firstBounds.Width);
+                secondBounds = new Rect(secondBounds.Y, secondBounds.X, secondBounds.Height, secondBounds.Width);
+            }
+
+            Assert.Equal(new Rect(0, 0, 40, 50), firstBounds);
+            Assert.Equal(new Rect(80, 0, 20, 50), secondBounds);
+            Assert.Equal(40, secondBounds.X - firstBounds.Right);
         }
 
         [Fact]
