@@ -46,7 +46,6 @@ namespace Avalonia.Controls
         /// </remarks>
         Stretch,
 
-        /*
         /// <summary>
         /// Items are stretched evenly to fill the entire height/width of each column/row.
         /// </summary>
@@ -54,7 +53,6 @@ namespace Avalonia.Controls
         /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> becomes the minimum size of items.
         /// </remarks>
         StretchAll
-        */
     }
 
     /// <summary>
@@ -235,7 +233,7 @@ namespace Avalonia.Controls
             if (uvConstraint.U is double.PositiveInfinity)
                 itemsAlignment = WrapPanelItemsAlignment.Start;
             // Justify/StretchAll need to measure with the full constraint on the U axis
-            if (itemsAlignment is WrapPanelItemsAlignment.Justify /*or WrapPanelItemsAlignment.StretchAll*/)
+            if (itemsAlignment is WrapPanelItemsAlignment.Justify or WrapPanelItemsAlignment.StretchAll)
                 panelSize.U = uvConstraint.U;
 
             var childConstraint = new Size(
@@ -387,7 +385,7 @@ namespace Avalonia.Controls
                         if (spacingCount > 0)
                             spacing = totalSpacing / spacingCount;
                         break;
-                    case WrapPanelItemsAlignment.Stretch /*or WrapPanelItemsAlignment.StretchAll*/:
+                    case WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.StretchAll:
                         var finalUWithoutSpacing = Max(uvFinalSize.U - spacing * spacingCount, 0);
                         stretchRatio = finalUWithoutSpacing / totalU;
                         break;

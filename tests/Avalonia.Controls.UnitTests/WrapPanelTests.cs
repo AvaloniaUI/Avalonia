@@ -121,7 +121,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(itemsAlignment switch
             {
-                WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.Justify /*or WrapPanelItemsAlignment.StretchAll*/ => new(0, 0, 200, lineHeight),
+                WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.StretchAll or WrapPanelItemsAlignment.Justify => new(0, 0, 200, lineHeight),
                 WrapPanelItemsAlignment.Center => new(25, 0, 150, lineHeight),
                 WrapPanelItemsAlignment.End => new(50, 0, 150, lineHeight),
                 _ => new(0, 0, 150, lineHeight)
@@ -129,7 +129,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(itemsAlignment switch
             {
-                // WrapPanelItemsAlignment.StretchAll => new(0, lineHeight, 200, lineHeight),
+                WrapPanelItemsAlignment.StretchAll => new(0, lineHeight, 200, lineHeight),
                 WrapPanelItemsAlignment.Center => new(25, lineHeight, 150, lineHeight),
                 WrapPanelItemsAlignment.End => new(50, lineHeight, 150, lineHeight),
                 _ => new(0, 50, 150, 50)
