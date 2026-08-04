@@ -390,7 +390,7 @@ namespace Avalonia.Controls
                         }
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(itemsAlignment), itemsAlignment, null);
+                        throw new ArgumentOutOfRangeException(nameof(ItemsAlignment), itemsAlignment, null);
                 }
 
                 for (int i = start; i < endExcluded; ++i)
