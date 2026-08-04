@@ -93,26 +93,35 @@ namespace Avalonia.LinuxFramebuffer.Output
             if (res == null)
                 throw new Win32Exception("drmModeGetResources failed");
 
-            var crtcs = new drmModeCrtc[res->count_crtcs];
-            for (var c = 0; c < res->count_crtcs; c++)
+            try
             {
-                var crtc = drmModeGetCrtc(fd, res->crtcs[c]);
-                crtcs[c] = *crtc;
-                drmModeFreeCrtc(crtc);
-            }
+                var crtcs = new drmModeCrtc[res->count_crtcs];
+                for (var c = 0; c < res->count_crtcs; c++)
+                {
+                    var crtc = drmModeGetCrtc(fd, res->crtcs[c]);
+                    crtcs[c] = *crtc;
+                    drmModeFreeCrtc(crtc);
+                }
 
-            for (var c = 0; c < res->count_encoders; c++)
-            {
-                var enc = drmModeGetEncoder(fd, res->encoders[c]);
-                Encoders[res->encoders[c]] = new DrmEncoder(*enc, crtcs);
-                drmModeFreeEncoder(enc);
-            }
+                for (var c = 0; c < res->count_encoders; c++)
+                {
+                    var enc = drmModeGetEncoder(fd, res->encoders[c]);
+                    Encoders[res->encoders[c]] = new DrmEncoder(*enc, crtcs);
+                    drmModeFreeEncoder(enc);
+                }
 
-            for (var c = 0; c < res->count_connectors; c++)
+                for (var c = 0; c < res->count_connectors; c++)
+                {
+                    var conn = connectorsForceProbe ?
+                        drmModeGetConnector(fd, res->connectors[c]) :
+                        drmModeGetConnectorCurrent(fd, res->connectors[c]);
+                    Connectors.Add(new DrmConnector(conn));
+                    drmModeFreeConnector(conn);
+                }
+            }
+            finally
             {
-                var conn = connectorsForceProbe ? drmModeGetConnector(fd, res->connectors[c]) : drmModeGetConnectorCurrent(fd, res->connectors[c]);
-                Connectors.Add(new DrmConnector(conn));
-                drmModeFreeConnector(conn);
+                drmModeFreeResources(res);
             }
         }
 
