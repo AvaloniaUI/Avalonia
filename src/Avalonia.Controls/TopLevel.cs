@@ -239,11 +239,6 @@ namespace Avalonia.Controls
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
 
             CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
-            CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
-            {
-                variant ??= ThemeVariant.Default;
-                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant ?? PlatformThemeVariant.Light);
-            });
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -258,6 +253,16 @@ namespace Avalonia.Controls
                 SetValue(ActualThemeVariantProperty, _applicationThemeHost.ActualThemeVariant, BindingPriority.Template);
                 _applicationThemeHost.ActualThemeVariantChanged += GlobalActualThemeVariantChanged;
             }
+            CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
+            {
+                if(_applicationThemeHost is AvaloniaObject element)
+                {
+                    if (element.GetValue(ThemeVariantScope.RequestedThemeVariantProperty) is { } requestedThemeVariant)
+                        variant = requestedThemeVariant == ThemeVariant.Default ? ThemeVariant.Default : variant;
+                }
+                variant ??= ThemeVariant.Default;
+                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant);
+            });
 
             ClientSize = impl.ClientSize;
 

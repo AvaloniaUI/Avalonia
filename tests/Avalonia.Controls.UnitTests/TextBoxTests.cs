@@ -1407,6 +1407,73 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Binding_Source_Change_Clears_Undo_History()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "initial" };
+                var textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    DataContext = source,
+                };
+
+                textBox.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Bar))
+                {
+                    Mode = BindingMode.TwoWay,
+                });
+                textBox.Measure(Size.Infinity);
+                textBox.CaretIndex = textBox.Text!.Length;
+
+                RaiseTextEvent(textBox, " edit");
+                RaiseKeyEvent(textBox, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(textBox, " more");
+
+                Assert.Equal("initial edit more", source.Bar);
+                Assert.True(textBox.CanUndo);
+
+                source.Bar = "replacement";
+
+                Assert.Equal("replacement", textBox.Text);
+                Assert.False(textBox.CanUndo);
+                Assert.False(textBox.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void TwoWay_Binding_Source_Echo_Does_Not_Clear_Undo_History()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "initial" };
+                var textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    DataContext = source,
+                };
+
+                textBox.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Bar))
+                {
+                    Mode = BindingMode.TwoWay,
+                });
+                textBox.Measure(Size.Infinity);
+                textBox.CaretIndex = textBox.Text!.Length;
+
+                RaiseTextEvent(textBox, " edit");
+                RaiseKeyEvent(textBox, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(textBox, " more");
+
+                Assert.Equal("initial edit more", source.Bar);
+                Assert.True(textBox.CanUndo);
+
+                textBox.Undo();
+
+                Assert.Equal("initial edit", textBox.Text);
+                Assert.Equal("initial edit", source.Bar);
+            }
+        }
+
+        [Fact]
         public void Setting_UndoLimit_Clears_Undo_Redo()
         {
             using (UnitTestApplication.Start(Services))
@@ -1483,6 +1550,19 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Empty_TextBox_Initializes_Clipboard_Command_States()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox();
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        [Fact]
         public void Command_States_Update_When_ReadOnly_And_PasswordChar_Change()
         {
             using (UnitTestApplication.Start(Services))
@@ -1523,6 +1603,40 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(tb.CanCopy);
                 Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        [Fact]
+        public void Command_States_Update_When_RevealPassword_Changes()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    PasswordChar = '*',
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                tb.Measure(Size.Infinity);
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = true;
+
+                Assert.True(tb.CanCopy);
+                Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = false;
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
                 Assert.True(tb.CanPaste);
             }
         }
@@ -2163,6 +2277,46 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void InputMethodClient_SurroundingText_Uses_Full_Document_For_Multiline_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "one\ntwo",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+
+            Assert.Equal("one\ntwo", client.SurroundingText);
+            Assert.Equal(new TextSelection(5, 5), client.Selection);
+        }
+
+        [Fact]
+        public void InputMethodClient_Selection_Setter_Uses_Document_Offsets_For_Multiline_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "one\ntwo",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            client.Selection = new TextSelection(0, 3);
+
+            Assert.Equal(0, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+            Assert.Equal("one", textBox.SelectedText);
+        }
+
+        [Fact]
         public void Backspace_Should_Delete_Last_Character_In_Line_And_Keep_Caret_On_Same_Line()
         {
             using var _ = UnitTestApplication.Start(Services);
@@ -2329,6 +2483,18 @@ namespace Avalonia.Controls.UnitTests
             textShaperImpl: new HarfBuzzTextShaper(),
             fontManagerImpl: new TestFontManager(),
             assetLoader: new StandardAssetLoader());
+
+        private static TextInputMethodClient GetInputMethodClient(TextBox textBox)
+        {
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            Assert.NotNull(eventArgs.Client);
+            return eventArgs.Client;
+        }
 
         internal static IControlTemplate CreateTemplate()
         {

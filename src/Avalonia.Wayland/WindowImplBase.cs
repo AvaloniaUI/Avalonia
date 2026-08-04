@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
@@ -76,7 +77,14 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     public WindowTransparencyLevel TransparencyLevel { get; } = WindowTransparencyLevel.Transparent;
     public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = default;
     public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) { }
-    public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
+    public async void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
+    {
+        if (themeVariant == null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is DBusPlatformSettings platformSettings)
+        {
+            platformSettings.OnRequestDefaultThemeVariant();
+        }
+    }
 
     public Action? Closed { get; set; }
     public Action? LostFocus { get; set; }

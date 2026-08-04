@@ -11,7 +11,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Wayland.Server.Interop;
 using Avalonia.Wayland.Server.Transient.Clipboard;
-using Avalonia.X11.Clipboard;
+using Avalonia.X11.Selections;
 
 namespace Avalonia.Wayland.Clipboard;
 
@@ -118,7 +118,7 @@ class WaylandDataTransfer : IDataTransfer, IAsyncDataTransfer
         if (!BuildFormats().formatToMime.TryGetValue(DataFormat.File, out var mime))
             return null;
         var bytes = await WaylandDataTransferItem.ReadRawBytesAsync(_offerCookie, mime).ConfigureAwait(false);
-        return bytes is { Length: > 0 } ? ClipboardUriListHelper.Utf8BytesToFileUriList(bytes) : null;
+        return bytes is { Length: > 0 } ? UriListHelper.Utf8BytesToFileUriList(bytes) : null;
     }
 
     IReadOnlyList<DataFormat> IDataTransfer.Formats => GetFormats();

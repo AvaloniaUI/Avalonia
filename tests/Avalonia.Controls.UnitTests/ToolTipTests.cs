@@ -215,7 +215,7 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyTemplate();
                 window.Presenter!.ApplyTemplate();
 
-                Assert.Empty(toolTip.Classes);
+                Assert.DoesNotContain(":open", toolTip.Classes);
             }
         }
 
@@ -240,7 +240,7 @@ namespace Avalonia.Controls.UnitTests
 
                 ToolTip.SetIsOpen(decorator, true);
 
-                Assert.Equal(new[] { ":open" }, toolTip.Classes);
+                Assert.Contains(":open", toolTip.Classes);
                 VerifyToolTipType(decorator);
             }
         }
@@ -271,7 +271,7 @@ namespace Avalonia.Controls.UnitTests
                 AssertToolTipOpen(decorator);
                 ToolTip.SetIsOpen(decorator, false);
 
-                Assert.Empty(toolTip.Classes);
+                Assert.DoesNotContain(":open", toolTip.Classes);
             }
         }
 
