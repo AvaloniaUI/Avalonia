@@ -75,7 +75,14 @@ namespace Avalonia.OpenGL.Egl
         [GetProcAddress("eglChooseConfig")]
         public partial bool ChooseConfig(IntPtr display, int[] attribs,
             out IntPtr surfaceConfig, int numConfigs, out int choosenConfig);
-        
+
+        // Returns all configs matching the attribute list. Pass a null `configs` array to query the
+        // available config count first. Some drivers (notably nvidia) expose multiple indistinguishable
+        // configs where only a subset is actually usable, so callers need to enumerate and probe them.
+        [GetProcAddress("eglChooseConfig")]
+        public partial bool ChooseConfigs(IntPtr display, int[] attribs,
+            IntPtr[]? configs, int configSize, out int numConfigs);
+
         [GetProcAddress("eglCreateContext")]
         public partial IntPtr CreateContext(IntPtr display, IntPtr config,
             IntPtr share, int[] attrs);
@@ -103,6 +110,9 @@ namespace Avalonia.OpenGL.Egl
 
         [GetProcAddress("eglSwapBuffers")]
         public partial void SwapBuffers(IntPtr display, IntPtr surface);
+
+        [GetProcAddress("eglSwapInterval")]
+        public partial bool SwapInterval(IntPtr display, int interval);
 
         [GetProcAddress("eglCreateWindowSurface")]
         public partial IntPtr CreateWindowSurface(IntPtr display, IntPtr config, IntPtr window, int[]? attrs);
@@ -145,5 +155,19 @@ namespace Avalonia.OpenGL.Egl
         
         [GetProcAddress("eglQueryDeviceAttribEXT", true)]
         public partial bool QueryDeviceAttribExt(IntPtr display, int attr, out IntPtr res);
+
+        // EGL_KHR_image_base
+        [GetProcAddress("eglCreateImageKHR", true)] 
+        public partial IntPtr CreateImageKHR(IntPtr display, IntPtr context, int target, IntPtr clientBuffer, int[] attribs);
+
+        [GetProcAddress("eglDestroyImageKHR", true)] 
+        public partial bool DestroyImageKHR(IntPtr display, IntPtr image);
+
+        // EGL_EXT_image_dma_buf_import_modifiers
+        [GetProcAddress("eglQueryDmaBufFormatsEXT", true)]
+        public partial bool QueryDmaBufFormatsEXT(IntPtr display, int maxFormats, int* formats, out int numFormats);
+
+        [GetProcAddress("eglQueryDmaBufModifiersEXT", true)]
+        public partial bool QueryDmaBufModifiersEXT(IntPtr display, int format, int maxModifiers, ulong* modifiers, bool* externalOnly, out int numModifiers);
     }
 }

@@ -22,12 +22,17 @@ namespace Avalonia.Android
         protected override void OnFocusChanged(bool gainFocus, FocusSearchDirection direction, global::Android.Graphics.Rect? previouslyFocusedRect)
         {
             base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
-            _accessHelper.OnFocusChanged(gainFocus, (int)direction, previouslyFocusedRect);
+            _accessHelper?.OnFocusChanged(gainFocus, (int)direction, previouslyFocusedRect);
         }
 
         protected override bool DispatchHoverEvent(MotionEvent? e)
         {
-            return _accessHelper.DispatchHoverEvent(e!) || base.DispatchHoverEvent(e);
+            var res = _view.PointerHelper.DispatchMotionEvent(e, out var callBase);
+            callBase = (_accessHelper?.DispatchHoverEvent(e!) == true) && callBase;
+
+            var baseResult = callBase && base.DispatchHoverEvent(e);
+
+            return res ?? baseResult;
         }
 
         protected override bool DispatchGenericPointerEvent(MotionEvent? e)
@@ -44,7 +49,7 @@ namespace Avalonia.Android
             var result = _view.PointerHelper.DispatchMotionEvent(e, out var callBase);
             var baseResult = callBase && base.DispatchTouchEvent(e);
 
-            if(result == true)
+            if (result == true)
             {
                 // Request focus for this view
                 RequestFocus();
@@ -57,7 +62,7 @@ namespace Avalonia.Android
         {
             var res = _view.KeyboardHelper.DispatchKeyEvent(e, out var callBase);
             if (res == false)
-                callBase = !_accessHelper.DispatchKeyEvent(e!) && callBase;
+                callBase = _accessHelper?.DispatchKeyEvent(e!) == false && callBase;
 
             var baseResult = callBase && base.DispatchKeyEvent(e);
 

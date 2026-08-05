@@ -38,7 +38,9 @@ public:
     
     virtual void SetCursorRect (AvnRect rect) override;
     
-    virtual void SetSurroundingText (char* text, int anchorOffset, int cursorOffset) override;
+    virtual void SetSurroundingText (char* text, int start, int end) override;
+    
+    virtual void SetSelectionInSurroundingText (int start, int end) override;
     
 public:
     ComPtr<IAvnTextInputMethodClient> Client;
