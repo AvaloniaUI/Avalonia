@@ -1,0 +1,224 @@
+<ContentPage
+    x:Class="ControlCatalog.Pages.HotKeyPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pages="using:ControlCatalog.Pages"
+    x:DataType="pages:HotKeyPage"
+    Header="HotKey / KeyBinding"
+    Theme="{StaticResource ScrollPage}">
+    <StackPanel
+        x:Name="PageRoot"
+        Width="720"
+        HorizontalAlignment="Center"
+        Spacing="16">
+        <StackPanel.KeyBindings>
+            <KeyBinding
+                Command="{Binding IncrementCommand}"
+                CommandParameter="{Binding #RootCount}"
+                Gesture="Ctrl+H" />
+        </StackPanel.KeyBindings>
+
+        <TextBlock
+            FontSize="20"
+            FontWeight="SemiBold"
+            Text="HotKey and KeyBinding routing" />
+
+        <Border
+            Padding="12"
+            BorderBrush="Gray"
+            BorderThickness="1">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <TextBlock TextWrapping="Wrap">
+                    <Run FontWeight="SemiBold" Text="Page-wide shortcut" />
+                    <LineBreak />
+                    <LineBreak />
+                    <Run Text="Press Ctrl+H while any element on this page has focus. Bind a shortcut on the common root when it should work everywhere in the page." />
+                </TextBlock>
+                <TextBlock Grid.Column="1" VerticalAlignment="Center">
+                    <Run Text="Ctrl+H count: " />
+                    <Run
+                        x:Name="RootCount"
+                        FontWeight="SemiBold"
+                        Text="0" />
+                </TextBlock>
+            </Grid>
+        </Border>
+
+        <StackPanel Spacing="8">
+            <TextBlock TextWrapping="Wrap">
+                <Run
+                    FontSize="17"
+                    FontWeight="SemiBold"
+                    Text="1. HotKey" />
+                <LineBreak />
+                <LineBreak />
+                <Run Text="HotKey and KeyBinding have the same focus and routing behavior. HotKey can only invoke the control's predefined action (Click for Button), similar to the relationship between Command and Click." />
+            </TextBlock>
+            <Grid ColumnDefinitions="220,Auto,*" ColumnSpacing="10">
+                <Button
+                    x:Name="HotKeyButton"
+                    Grid.Column="0"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Click="CountButton_OnClick"
+                    Content="HotKey (Ctrl+K)"
+                    HotKey="Ctrl+K"
+                    Tag="{Binding #HotKeyCount}" />
+                <Button
+                    Grid.Column="1"
+                    Click="FocusHotKeyButton_OnClick"
+                    Content="Focus" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center">
+                    <Run Text="Focused: " />
+                    <Run FontWeight="SemiBold" Text="{Binding #HotKeyButton.IsFocused}" />
+                </TextBlock>
+            </Grid>
+            <TextBlock>
+                <Run Text="Click / Ctrl+K count: " />
+                <Run
+                    x:Name="HotKeyCount"
+                    FontWeight="SemiBold"
+                    Text="0" />
+            </TextBlock>
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+            <TextBlock TextWrapping="Wrap">
+                <Run
+                    FontSize="17"
+                    FontWeight="SemiBold"
+                    Text="2. Focus route: Button then parent" />
+                <LineBreak />
+                <LineBreak />
+                <Run Text="The Button binds A internally. Its parent binds A and B. With the Button focused, A is handled by the Button first; B is not handled there and continues to the parent." />
+            </TextBlock>
+
+            <Border
+                Padding="12"
+                BorderBrush="Red"
+                BorderThickness="1">
+                <StackPanel x:Name="SharedParent" Spacing="12">
+                    <StackPanel.KeyBindings>
+                        <KeyBinding
+                            Command="{Binding IncrementCommand}"
+                            CommandParameter="{Binding #ParentACount}"
+                            Gesture="A" />
+                        <KeyBinding
+                            Command="{Binding IncrementCommand}"
+                            CommandParameter="{Binding #ParentBCount}"
+                            Gesture="B" />
+                    </StackPanel.KeyBindings>
+
+                    <Grid ColumnDefinitions="220,Auto,*" ColumnSpacing="10">
+                        <Button
+                            x:Name="RoutingButton"
+                            Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Content="Button (A, C)">
+                            <Button.KeyBindings>
+                                <KeyBinding
+                                    Command="{Binding IncrementCommand}"
+                                    CommandParameter="{Binding #ButtonACount}"
+                                    Gesture="A" />
+                                <KeyBinding
+                                    Command="{Binding IncrementCommand}"
+                                    CommandParameter="{Binding #ButtonCCount}"
+                                    Gesture="C" />
+                            </Button.KeyBindings>
+                        </Button>
+                        <Button
+                            Grid.Column="1"
+                            Click="FocusRoutingButton_OnClick"
+                            Content="Focus" />
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center">
+                            <Run Text="Focused: " />
+                            <Run FontWeight="SemiBold" Text="{Binding #RoutingButton.IsFocused}" />
+                        </TextBlock>
+                    </Grid>
+
+                    <TextBlock>
+                        <Run Text="Button A: " />
+                        <Run
+                            x:Name="ButtonACount"
+                            FontWeight="SemiBold"
+                            Text="0" />
+                        <Run Text="    " />
+                        <Run Text="Button C: " />
+                        <Run
+                            x:Name="ButtonCCount"
+                            FontWeight="SemiBold"
+                            Text="0" />
+                        <Run Text="    " />
+                        <Run Text="Parent A: " />
+                        <Run
+                            x:Name="ParentACount"
+                            FontWeight="SemiBold"
+                            Text="0" />
+                        <Run Text="    " />
+                        <Run Text="Parent B: " />
+                        <Run
+                            x:Name="ParentBCount"
+                            FontWeight="SemiBold"
+                            Text="0" />
+                    </TextBlock>
+
+                    <Separator />
+
+                    <TextBlock TextWrapping="Wrap">
+                        <Run
+                            FontSize="17"
+                            FontWeight="SemiBold"
+                            Text="3. Sibling isolation: TextBox and Button" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="The TextBox is a sibling of the Button and binds A and B itself. Focusing either element never activates bindings on its sibling. C is intentionally not bound on the TextBox: pressing C there does not jump to the Button's C binding." />
+                    </TextBlock>
+                    <Grid ColumnDefinitions="220,Auto,*" ColumnSpacing="10">
+                        <TextBox
+                            x:Name="RoutingTextBox"
+                            Grid.Column="0"
+                            PlaceholderText="Type C here">
+                            <TextBox.KeyBindings>
+                                <KeyBinding
+                                    Command="{Binding IncrementCommand}"
+                                    CommandParameter="{Binding #TextBoxACount}"
+                                    Gesture="A" />
+                                <KeyBinding
+                                    Command="{Binding IncrementCommand}"
+                                    CommandParameter="{Binding #TextBoxBCount}"
+                                    Gesture="B" />
+                            </TextBox.KeyBindings>
+                        </TextBox>
+                        <Button
+                            Grid.Column="1"
+                            Click="FocusRoutingTextBox_OnClick"
+                            Content="Focus" />
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center">
+                            <Run Text="Focused: " />
+                            <Run FontWeight="SemiBold" Text="{Binding #RoutingTextBox.IsFocused}" />
+                        </TextBlock>
+                    </Grid>
+                    <TextBlock>
+                        <Run Text="TextBox A: " />
+                        <Run
+                            x:Name="TextBoxACount"
+                            FontWeight="SemiBold"
+                            Text="0" />
+                        <Run Text="    " />
+                        <Run Text="TextBox B: " />
+                        <Run
+                            x:Name="TextBoxBCount"
+                            FontWeight="SemiBold"
+                            Text="0" />
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <Button
+            HorizontalAlignment="Left"
+            Click="Reset_OnClick"
+            Content="Reset counters" />
+    </StackPanel>
+</ContentPage>
