@@ -294,8 +294,8 @@ public class TextInputOptions
     /// <summary>
     /// Defines the <see cref="LocaleHints"/> property.
     /// </summary>
-    public static readonly AttachedProperty<IList<string>?> LocaleHintsProperty =
-        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, IList<string>?>(
+    public static readonly AttachedProperty<IReadOnlyList<string>?> LocaleHintsProperty =
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, IReadOnlyList<string>?>(
             "LocaleHints",
             inherits: true);
 
@@ -304,7 +304,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The control.</param>
     /// <param name="value">The property value to set.</param>
-    public static void SetLocaleHints(StyledElement avaloniaObject, IList<string>? value)
+    public static void SetLocaleHints(StyledElement avaloniaObject, IReadOnlyList<string>? value)
     {
         avaloniaObject.SetValue(LocaleHintsProperty, value);
     }
@@ -314,7 +314,7 @@ public class TextInputOptions
     /// </summary>
     /// <param name="avaloniaObject">The target.</param>
     /// <returns>BCP47 locale values</returns>
-    public static IList<string>? GetLocaleHints(StyledElement avaloniaObject)
+    public static IReadOnlyList<string>? GetLocaleHints(StyledElement avaloniaObject)
     {
         return avaloniaObject.GetValue(LocaleHintsProperty);
     }
@@ -322,5 +322,5 @@ public class TextInputOptions
     /// <summary>
     /// Locale hints using BCP47 values
     /// </summary>
-    public IList<string>? LocaleHints { get; set; }
+    public IReadOnlyList<string>? LocaleHints { get; set; }
 }
