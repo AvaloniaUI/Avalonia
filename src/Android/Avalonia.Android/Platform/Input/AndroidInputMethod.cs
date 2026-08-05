@@ -208,8 +208,8 @@ namespace Avalonia.Android.Platform.Input
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
 
-                if (options.HintLocales?.Count > 0)
-                    outAttrs.HintLocales = new LocaleList(options.HintLocales.Select(Java.Util.Locale.ForLanguageTag).ToArray());
+                if (options.LocaleHints?.Count > 0)
+                    outAttrs.HintLocales = new LocaleList(options.LocaleHints.Select(Java.Util.Locale.ForLanguageTag).ToArray());
 
                 return _inputConnection;
             });

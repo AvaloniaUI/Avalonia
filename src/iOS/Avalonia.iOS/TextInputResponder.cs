@@ -102,11 +102,11 @@ partial class AvaloniaView
         {
             get
             {
-                var hintLocales = _view._options?.HintLocales;
+                var localeHints = _view._options?.LocaleHints;
 
-                if (hintLocales?.Count > 0)
+                if (localeHints?.Count > 0)
                 {
-                    foreach (var locale in hintLocales)
+                    foreach (var locale in localeHints)
                     {
                         foreach (var inputMode in UITextInputMode.ActiveInputModes)
                         {
