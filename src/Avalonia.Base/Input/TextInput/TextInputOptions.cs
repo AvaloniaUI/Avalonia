@@ -320,7 +320,7 @@ public class TextInputOptions
     }
 
     /// <summary>
-    /// Locale hints using BCP47 values
+    /// Gets or sets the locale hints, using BCP47 values.
     /// </summary>
     public IReadOnlyList<string>? LocaleHints { get; set; }
 }

@@ -111,7 +111,7 @@ partial class AvaloniaView
                         foreach (var inputMode in UITextInputMode.ActiveInputModes)
                         {
                             var lang = inputMode.PrimaryLanguage;
-                            if (lang != null && lang.StartsWith(locale, StringComparison.OrdinalIgnoreCase))
+                            if (lang != null && (lang.Equals(locale, StringComparison.OrdinalIgnoreCase) || lang.StartsWith(locale + "-", StringComparison.OrdinalIgnoreCase)))
                             {
                                 return inputMode;
                             }
