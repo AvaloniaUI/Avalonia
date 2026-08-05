@@ -3,13 +3,14 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Provider;
 using Android.Views;
+using AndroidX.Core.Content;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Color = Avalonia.Media.Color;
 
 namespace Avalonia.Android.Platform;
 
-// TODO: ideally should be created per view/activity.
 internal class AndroidPlatformSettings : DefaultPlatformSettings
 {
     private PlatformColorValues _colorValues;
@@ -20,11 +21,19 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
 
     public AndroidPlatformSettings()
     {
-        _colorValues = base.GetColorValues();
         if (global::Android.App.Application.Context is { } context)
         {
             UpdateInputConfigValues(context);
+            _colorValues = GetColorValuesFromContext(context);
+
+            ContextCompat.RegisterReceiver(
+                context,
+                new ConfigurationChangedReceiver(this),
+                new IntentFilter(Intent.ActionConfigurationChanged),
+                ContextCompat.ReceiverNotExported);
         }
+        else
+            _colorValues = base.GetColorValues();
     }
 
     public override PlatformColorValues GetColorValues()
@@ -49,16 +58,10 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
 
     public override TimeSpan HoldWaitDuration => _holdWaitDuration;
 
-    internal void OnViewConfigurationChanged(Context context, Configuration configuration)
-    {
-        UpdateInputConfigValues(context);
-        UpdateColorValues(context, configuration);
-    }
-
-    private void UpdateColorValues(Context context, Configuration configuration)
+    private void UpdateColorValues(Context context)
     {
         var oldColorValues = _colorValues;
-        var colorValues = GetColorValuesFromContext(context, configuration);
+        var colorValues = GetColorValuesFromContext(context);
 
         if (oldColorValues != colorValues)
         {
@@ -67,15 +70,10 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
         }
     }
 
-    private static PlatformColorValues GetColorValuesFromContext(Context context, Configuration configuration)
+    private static PlatformColorValues GetColorValuesFromContext(Context context)
     {
-        var systemTheme = (configuration.UiMode & UiMode.NightMask) switch
-        {
-            UiMode.NightYes => PlatformThemeVariant.Dark,
-            UiMode.NightNo => PlatformThemeVariant.Light,
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
+        var uiMode = context.Resources?.Configuration?.UiMode & UiMode.NightMask ?? UiMode.NightNo;
+        var systemTheme = uiMode == UiMode.NightYes ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light;
         var contrastPreference = IsHighContrast(context);
 
         if (OperatingSystem.IsAndroidVersionAtLeast(31))
@@ -157,6 +155,27 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
         catch
         {
             return ColorContrastPreference.NoPreference;
+        }
+    }
+
+    private sealed class ConfigurationChangedReceiver(AndroidPlatformSettings settings) : BroadcastReceiver
+    {
+        public override void OnReceive(Context? context, Intent? intent)
+        {
+            if (context is null)
+                return;
+
+            // The context might still have the old values at this point because they haven't been processed yet.
+            // Postpone the update 100ms arbitrarily. Not an ideal solution, but sufficient.
+            var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Normal, Dispatcher.UIThread);
+            timer.Start();
+
+            timer.Tick += (_, _) =>
+            {
+                timer.Stop();
+                settings.UpdateInputConfigValues(context);
+                settings.UpdateColorValues(context);
+            };
         }
     }
 }
