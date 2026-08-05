@@ -52,6 +52,38 @@ namespace Avalonia.Controls.UnitTests.Utils
             }
         }
 
+        [Fact]
+        public void HotKeyManager_Should_Not_Execute_When_Control_Is_Not_Focused()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
+
+                var target = new KeyboardDevice();
+                var root = new Window();
+                var button = new Button { HotKey = new KeyGesture(Key.A, KeyModifiers.Control) };
+                var executed = 0;
+                button.Click += (_, _) => executed++;
+                root.Content = button;
+                root.Template = CreateWindowTemplate();
+                root.ApplyTemplate();
+                root.Presenter!.ApplyTemplate();
+
+                target.ProcessRawEvent(new RawKeyEventArgs(
+                    target,
+                    0,
+                    root.InputRoot,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
+
+                Assert.Equal(0, executed);
+            }
+        }
+
         [Theory]
         [MemberData(nameof(ElementsFactory), arguments: true)]
         public void HotKeyManager_Should_Use_CommandParameter(string factoryName, Factory factory)

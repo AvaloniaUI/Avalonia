@@ -12,6 +12,7 @@ using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -130,6 +131,67 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(
                 BindingMode.TwoWay,
                 TextBox.TextProperty.GetMetadata(typeof(TextBox)).DefaultBindingMode);
+        }
+
+        [Fact]
+        public void Parent_KeyBinding_Should_Not_Override_TextBox_KeyDown()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+                var parent = new StackPanel { Children = { target } };
+                var root = new TestRoot(parent);
+                var executed = 0;
+
+                parent.KeyBindings.Add(new KeyBinding
+                {
+                    Gesture = new KeyGesture(Key.A, KeyModifiers.Control),
+                    Command = new Utils.TestCommand(_ => true, _ => { ++executed; }),
+                });
+
+                parent.KeyBindings.Add(new KeyBinding
+                {
+                    Gesture = new KeyGesture(Key.G, KeyModifiers.Control),
+                    Command = new Utils.TestCommand(_ => true, _ => { ++executed; }),
+                });
+
+                target.ApplyTemplate();
+                target.CaretIndex = target.Text!.Length;
+
+                var keyboardDevice = new KeyboardDevice();
+                keyboardDevice.SetFocusedElement(target, NavigationMethod.Pointer, KeyModifiers.None);
+                keyboardDevice.ProcessRawEvent(
+                    new RawKeyEventArgs(
+                        keyboardDevice,
+                        0,
+                        root,
+                        RawKeyEventType.KeyDown,
+                        Key.A,
+                        RawInputModifiers.Control,
+                        PhysicalKey.A,
+                        "a"));
+
+                Assert.Equal(0, executed);
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(target.Text!.Length, target.SelectionEnd);
+
+                keyboardDevice.ProcessRawEvent(
+                    new RawKeyEventArgs(
+                        keyboardDevice,
+                        0,
+                        root,
+                        RawKeyEventType.KeyDown,
+                        Key.G,
+                        RawInputModifiers.Control,
+                        PhysicalKey.G,
+                        "g"));
+
+                Assert.Equal(1, executed);
+            }
         }
 
         [Fact]
