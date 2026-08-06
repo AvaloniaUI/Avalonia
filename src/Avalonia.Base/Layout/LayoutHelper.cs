@@ -156,8 +156,8 @@ namespace Avalonia.Layout
             // If DPI == 1, don't use DPI-aware rounding.
             return dpiScale == 1.0 ?
                 new Size(
-                    Math.Ceiling(size.Width),
-                    Math.Ceiling(size.Height)) :
+                    Math.Ceiling(RoundTo8Digits(size.Width)),
+                    Math.Ceiling(RoundTo8Digits(size.Height))) :
                 new Size(
                     Math.Ceiling(RoundTo8Digits(size.Width) * dpiScale) / dpiScale,
                     Math.Ceiling(RoundTo8Digits(size.Height) * dpiScale) / dpiScale);
@@ -270,7 +270,7 @@ namespace Avalonia.Layout
         {
             // If DPI == 1, don't use DPI-aware rounding.
             return dpiScale == 1.0 ?
-                Math.Ceiling(value) :
+                Math.Ceiling(RoundTo8Digits(value)) :
                 Math.Ceiling(RoundTo8Digits(value) * dpiScale) / dpiScale;
         }
 
