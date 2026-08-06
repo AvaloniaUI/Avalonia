@@ -458,13 +458,13 @@ public:
         }
     }
     
-    virtual HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv) override
+    virtual HRESULT CreatePlatformRenderTimer(IAvnActionCallback* tick, IAvnActionCallback* stateChanged, IAvnPlatformRenderTimer** ppv) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            *ppv = ::CreatePlatformRenderTimer();
+            *ppv = ::CreatePlatformRenderTimer(tick, stateChanged);
             return S_OK;
         }
     }
