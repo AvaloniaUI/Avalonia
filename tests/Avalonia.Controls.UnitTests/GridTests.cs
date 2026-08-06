@@ -2268,6 +2268,7 @@ namespace Avalonia.Controls.UnitTests
 
         [Theory]
         [InlineData(3, 2)]
+        [InlineData(13, 3)]
         public void Grid_With_Auto_RowDefinitions_And_Spanning_Child_Should_Match_In_Height(int targetHeight, int rowCount)
         {
             var innerBorder = new Border { Height = targetHeight };
