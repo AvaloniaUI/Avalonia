@@ -2236,7 +2236,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(grid1.Children[4].Bounds.Width, grid2.Children[0].Bounds.Width);
         }
 
-
         [Fact]
         public void Grid_With_ColumnSpacing_And_ColumnDefinitions_Unset()
         {
@@ -2266,6 +2265,26 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(10, 10, 80, 80), target.Children[0].Bounds);
             Assert.Equal(new Rect(20, 120, 60, 160),target.Children[1].Bounds);
         }
+
+        [Theory]
+        [InlineData(3, 2)]
+        public void Grid_With_Auto_RowDefinitions_And_Spanning_Child_Should_Match_In_Height(int targetHeight, int rowCount)
+        {
+            var innerBorder = new Border { Height = targetHeight };
+            var outerBorder = new Border { [Grid.RowSpanProperty] = rowCount, Child = innerBorder };
+            var target = new Grid
+            {
+                RowDefinitions = RowDefinitions.Parse(string.Join(',', Enumerable.Repeat("Auto", rowCount))),
+                Children = { outerBorder },
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.Equal(targetHeight, target.Bounds.Height);
+            Assert.Equal(targetHeight, outerBorder.Bounds.Height);
+            Assert.Equal(targetHeight, innerBorder.Bounds.Height);
+        }
+
         private class TestControl : Control
         {
             public Size MeasureSize { get; set; }
