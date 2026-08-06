@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
@@ -156,7 +157,8 @@ namespace Avalonia.LinuxFramebuffer.Output
                 var files = new SortedDictionary<int, string>();
                 foreach (var file in Directory.GetFiles("/dev/dri/", "card*"))
                 {
-                    if (int.TryParse(Path.GetFileName(file).AsSpan(4), out var cardNumber))
+                    if (int.TryParse(Path.GetFileName(file).AsSpan(4), NumberStyles.None, CultureInfo.InvariantCulture,
+                            out var cardNumber))
                         files[cardNumber] = file;
                 }
 
