@@ -1,0 +1,39 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+
+  <ControlTheme x:Key="{x:Type CalendarWeekNumberLabel}" TargetType="CalendarWeekNumberLabel">
+    <Setter Property="MinWidth" Value="40" />
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource CalendarViewOutOfScopeForeground}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="FontSize" Value="{DynamicResource CalendarDayButtonFontSize}"></Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderBrush="{DynamicResource CalendarViewWeekNumberSeparatorForeground}"
+                BorderThickness="0,0,1,0">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Margin="{TemplateBinding Padding}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Header cell (row 0): match the day-of-week title row appearance -->
+    <Style Selector="^:header">
+      <Setter Property="MinHeight" Value="38" />
+      <Setter Property="MaxHeight" Value="38" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="FontStyle" Value="Normal" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource CalendarViewForeground}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>

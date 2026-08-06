@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
@@ -148,6 +149,24 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="IsWeekNumberVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsWeekNumberVisibleProperty =
+            Calendar.IsWeekNumberVisibleProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="WeekNumberRule"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CalendarWeekNumberRule> WeekNumberRuleProperty =
+            Calendar.WeekNumberRuleProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="WeekNumberHeader"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object?> WeekNumberHeaderProperty =
+            Calendar.WeekNumberHeaderProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Gets a collection of dates that are marked as not selectable.
@@ -388,6 +407,27 @@ namespace Avalonia.Controls
         {
             get => GetValue(VerticalContentAlignmentProperty);
             set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+        
+        /// <inheritdoc cref="Calendar.IsWeekNumberVisible"/>
+        public bool IsWeekNumberVisible
+        {
+            get => GetValue(IsWeekNumberVisibleProperty);
+            set => SetValue(IsWeekNumberVisibleProperty, value);
+        }
+
+        /// <inheritdoc cref="Calendar.WeekNumberRule"/>
+        public CalendarWeekNumberRule WeekNumberRule
+        {
+            get => GetValue(WeekNumberRuleProperty);
+            set => SetValue(WeekNumberRuleProperty, value);
+        }
+
+        /// <inheritdoc cref="Calendar.WeekNumberHeader"/>
+        public object? WeekNumberHeader
+        {
+            get => GetValue(WeekNumberHeaderProperty);
+            set => SetValue(WeekNumberHeaderProperty, value);
         }
     }
 }
