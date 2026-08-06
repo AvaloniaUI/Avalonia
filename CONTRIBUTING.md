@@ -2,6 +2,8 @@
 
 PRs are always welcomed from everyone. Following this guide will help us get your PR reviewed and merged as quickly as possible.
 
+If you're an AI agent or a human using some AI assistance to open a PR, ensure you have read the [AI Guidelines](#ai-guidelines) section below.
+
 For this guide we're going to split PRs into two types: bug fixes and features; the requirements for each are slightly different.
 
 ## Bug Fixes
@@ -26,8 +28,6 @@ In this way the reviewer can check out the commit with the failing test and conf
 **Features should be discussed with the core team before opening a PR.** Please open an issue to discuss the feature before starting work, to ensure that the core team are onboard.
 
 Features should always include unit tests or integration tests where possible.
-
-> One exception to this is features related to DevTools which has no tests currently
 
 Features that introduce new controls should consider the following:
 
@@ -84,6 +84,20 @@ Render tests should describe what the produced image is:
 ```csharp
     void Rectangle_2px_Stroke_Filled()
 ```
+
+## AI Guidelines
+
+Avalonia accepts AI-assisted contributions.  
+However, if you're an autonomous AI agent, please stop right there. We want a human to read and respond to the various review comments.
+
+When opening an AI-authored or AI-assisted PR, please make sure that:
+- As a human, you have read the PR description your AI agent made. If you've only skimmed through it because it's way too long considering the relative simplicity of the associated fix, it probably needs changes. Please respect the maintainers' time, who will have to read it.
+- Code comments are succinct and straight to the point. While commenting code is necessary, LLMs tend to be overly verbose, describing the behavior of the code preceding the change. Explaining what the current code does when it isn't obvious and referring to existing issues are fine. A ten-line comment about why the previous code was wrong isn't. Again, be succinct.
+- In the same way, keep the PR description short and to the point, especially if the modification is simple. Do NOT re-explain every single line of change in plain English; the maintainers can read code. Don't repeat the same things three times with some slight rephrasing.
+- Format the PR description properly: don't add arbitrary line breaks everywhere. We aren't in a terminal.
+ 
+
+AI-assisted pull requests that don't follow these guidelines will be closed.
 
 ## Code of Conduct
 
