@@ -65,42 +65,129 @@ namespace Avalonia.Controls.UnitTests
         [Theory, MemberData(nameof(GetItemsAlignmentValues))]
         public void Lays_Out_With_Items_Alignment(Orientation orientation, WrapPanelItemsAlignment itemsAlignment)
         {
-            var target = new WrapPanel()
+            var lineHeight = 50d;
+            var target = new WrapPanel
             {
                 Width = 200,
                 Height = 200,
                 Orientation = orientation,
                 ItemsAlignment = itemsAlignment,
-                Children =
-                {
-                    new Border { Height = 50, Width = 50 },
-                    new Border { Height = 50, Width = 50 },
-                }
+                UseLayoutRounding = false
             };
+
+            if (orientation is Orientation.Horizontal)
+            {
+                target.ItemHeight = lineHeight;
+                target.Children.Add(new Border { MinWidth = 50 });
+                target.Children.Add(new Border { MinWidth = 100 });
+                target.Children.Add(new Border { MinWidth = 150 });
+            }
+            else
+            {
+                target.ItemWidth = lineHeight;
+                target.Children.Add(new Border { MinHeight = 50 });
+                target.Children.Add(new Border { MinHeight = 100 });
+                target.Children.Add(new Border { MinHeight = 150 });
+            }
 
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
             Assert.Equal(new Size(200, 200), target.Bounds.Size);
 
-            var rowBounds = target.Children[0].Bounds.Union(target.Children[1].Bounds);
+            var row1Bounds = target.Children[0].Bounds.Union(target.Children[1].Bounds);
+            var row2Bounds = target.Children[2].Bounds;
 
-            Assert.Equal(orientation switch
-            {
-                Orientation.Horizontal => new(100, 50),
-                Orientation.Vertical => new(50, 100),
-                _ => throw new NotImplementedException()
-            }, rowBounds.Size);
+            row1Bounds = new Rect(
+                Math.Round(row1Bounds.X),
+                Math.Round(row1Bounds.Y),
+                Math.Round(row1Bounds.Width),
+                Math.Round(row1Bounds.Height));
 
-            Assert.Equal((orientation, itemsAlignment) switch
+            if (orientation is Orientation.Vertical)
             {
-                (_, WrapPanelItemsAlignment.Start) => new(0, 0),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.Center) => new(50, 0),
-                (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new(0, 50),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new(100, 0),
-                (Orientation.Vertical, WrapPanelItemsAlignment.End) => new(0, 100),
-                _ => throw new NotImplementedException(),
-            }, rowBounds.Position);
+                row1Bounds = new Rect(row1Bounds.Y, row1Bounds.X, row1Bounds.Height, row1Bounds.Width);
+                row2Bounds = new Rect(row2Bounds.Y, row2Bounds.X, row2Bounds.Height, row2Bounds.Width);
+            }
+
+            Assert.Equal(itemsAlignment switch
+            {
+                WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.StretchAll or WrapPanelItemsAlignment.Justify => new(0, 0, 200, lineHeight),
+                WrapPanelItemsAlignment.Center => new(25, 0, 150, lineHeight),
+                WrapPanelItemsAlignment.End => new(50, 0, 150, lineHeight),
+                _ => new(0, 0, 150, lineHeight)
+            }, row1Bounds);
+
+            Assert.Equal(itemsAlignment switch
+            {
+                WrapPanelItemsAlignment.StretchAll => new(0, lineHeight, 200, lineHeight),
+                WrapPanelItemsAlignment.Center => new(25, lineHeight, 150, lineHeight),
+                WrapPanelItemsAlignment.End => new(50, lineHeight, 150, lineHeight),
+                _ => new(0, 50, 150, 50)
+            }, row2Bounds);
+        }
+
+        [Theory]
+        [InlineData(Orientation.Horizontal)]
+        [InlineData(Orientation.Vertical)]
+        public void Justify_Positions_Unequal_Items(Orientation orientation)
+        {
+            var target = new WrapPanel
+            {
+                Width = 100,
+                Height = 100,
+                Orientation = orientation,
+                ItemsAlignment = WrapPanelItemsAlignment.Justify,
+                UseLayoutRounding = false,
+            };
+
+            if (orientation is Orientation.Horizontal)
+            {
+                target.Children.Add(new Border { Width = 40, Height = 50 });
+                target.Children.Add(new Border { Width = 20, Height = 50 });
+            }
+            else
+            {
+                target.Children.Add(new Border { Width = 50, Height = 40 });
+                target.Children.Add(new Border { Width = 50, Height = 20 });
+            }
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            var firstBounds = target.Children[0].Bounds;
+            var secondBounds = target.Children[1].Bounds;
+            if (orientation is Orientation.Vertical)
+            {
+                firstBounds = new Rect(firstBounds.Y, firstBounds.X, firstBounds.Height, firstBounds.Width);
+                secondBounds = new Rect(secondBounds.Y, secondBounds.X, secondBounds.Height, secondBounds.Width);
+            }
+
+            Assert.Equal(new Rect(0, 0, 40, 50), firstBounds);
+            Assert.Equal(new Rect(80, 0, 20, 50), secondBounds);
+            Assert.Equal(40, secondBounds.X - firstBounds.Right);
+        }
+
+        [Fact]
+        public void Stretch_Handles_A_Zero_Width_Line()
+        {
+            var target = new WrapPanel
+            {
+                Width = 100,
+                ItemSpacing = 1,
+                ItemsAlignment = WrapPanelItemsAlignment.Stretch,
+                Children =
+                {
+                    new Border { Width = 0, Height = 50 },
+                    new Border { Width = 100, Height = 50 },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 0, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(0, 50, 100, 50), target.Children[1].Bounds);
         }
 
         [Fact]
