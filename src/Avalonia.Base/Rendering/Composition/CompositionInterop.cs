@@ -27,6 +27,7 @@ internal class CompositionInterop : ICompositionGpuInterop
 
     public IReadOnlyList<string> SupportedImageHandleTypes => _externalObjects.SupportedImageHandleTypes;
     public IReadOnlyList<string> SupportedSemaphoreTypes => _externalObjects.SupportedSemaphoreTypes;
+    public IReadOnlyList<PlatformGraphicsDrmFormat>? SupportedDmaBufFormats => _externalObjects.SupportedDmaBufFormats;
 
     public CompositionGpuImportedImageSynchronizationCapabilities GetSynchronizationCapabilities(string imageHandleType)
         => _externalObjects.GetSynchronizationCapabilities(imageHandleType);
