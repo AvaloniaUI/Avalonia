@@ -186,7 +186,31 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public TextLayout TextLayout => _textLayout ??= CreateTextLayout(Text);
+        public TextLayout TextLayout => _textLayout ??= CreateTextLayoutCore();
+
+        private TextLayout CreateTextLayoutCore()
+        {
+            // MeasureOverride normally builds the text runs before the layout is created. When the
+            // layout is requested outside of a measure pass - for example by a render pass that runs
+            // before a queued measure - the runs are still null and CreateTextLayout would silently
+            // fall back to Text, shaping the wrong (usually empty) content. The shaped result is
+            // stored in the TextRunCache keyed only by text source index, so that wrong content would
+            // then be reused by every later layout until the cache is invalidated.
+            if (_textRuns == null && HasComplexContent)
+            {
+                var textRuns = new List<TextRun>();
+                var constraint = GetMaxSizeFromConstraint();
+
+                foreach (var inline in Inlines!)
+                {
+                    inline.BuildTextRun(textRuns, constraint);
+                }
+
+                _textRuns = textRuns;
+            }
+
+            return CreateTextLayout(Text);
+        }
 
         /// <summary>
         /// Gets or sets the padding to place around the <see cref="Text"/>.
