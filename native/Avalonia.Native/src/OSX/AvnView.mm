@@ -684,6 +684,8 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
                 _lastKeyDownEvent = nullptr;
                 
                 return;
+            } else {
+                [super keyDown:event];
             }
         }
         
@@ -692,7 +694,9 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
                 
             //Only raise a keyDown if we don't have a modifier
             if(!hasInputModifier){
-                [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
+                if (![self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol]){
+                    [super keyDown:event];
+                }
             }
         }
         
@@ -708,6 +712,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
                 
                 parent->TopLevelEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
             }
+            [super keyDown:event];
         }
     }
     
