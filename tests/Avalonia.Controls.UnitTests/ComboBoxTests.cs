@@ -702,6 +702,129 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(target.SelectionBoxItem);
         }
 
+        [Fact]
+        public void ItemTemplate_Is_Applied_To_Control_Item_In_DropDown()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var item = new Canvas();
+            var target = new ComboBox
+            {
+                Items = { item },
+                ItemTemplate = new FuncDataTemplate<object?>((x, _) => new TextBlock { Tag = x }),
+                SelectedIndex = 0
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            var container = Assert.IsType<ComboBoxItem>(target.ContainerFromIndex(0));
+            var textBlock = Assert.IsType<TextBlock>(container.Presenter?.Child);
+            Assert.Same(item, textBlock.Tag);
+        }
+
+        [Fact]
+        public void DisplayMemberBinding_Is_Applied_To_Control_Item_In_DropDown()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var item = new Canvas { Tag = "foo" };
+            var target = new ComboBox
+            {
+                Items = { item },
+                DisplayMemberBinding = CompiledBinding.Create((Canvas c) => c.Tag),
+                SelectedIndex = 0
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            var container = Assert.IsType<ComboBoxItem>(target.ContainerFromIndex(0));
+            var textBlock = Assert.IsType<TextBlock>(container.Presenter?.Child);
+            Assert.Equal("foo", textBlock.Text);
+        }
+
+        [Fact]
+        public void ItemTemplate_Is_Applied_To_Control_Item_In_SelectionBox()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var item = new Canvas();
+            var target = new ComboBox
+            {
+                Items = { item },
+                ItemTemplate = new FuncDataTemplate<object?>((x, _) => new TextBlock { Tag = x }),
+                SelectedIndex = 0
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            var selectionBoxControl = target.FindDescendantOfType<ContentControl>(
+                false, c => c.ContentTemplate == target.SelectionBoxItemTemplate);
+            Assert.NotNull(selectionBoxControl);
+            var textBlock = Assert.IsType<TextBlock>(selectionBoxControl.Presenter?.Child);
+            Assert.Same(item, textBlock.Tag);
+        }
+
+        [Fact]
+        public void DisplayMemberBinding_Is_Applied_To_Control_Item_In_SelectionBox()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var item = new Canvas { Tag = "foo" };
+
+            var target = new ComboBox
+            {
+                Items = { item },
+                DisplayMemberBinding = CompiledBinding.Create((Canvas c) => c.Tag),
+                SelectedIndex = 0
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            var selectionBoxControl = target.FindDescendantOfType<ContentControl>(
+                false, c => c.ContentTemplate == target.SelectionBoxItemTemplate);
+            Assert.NotNull(selectionBoxControl);
+            var textBlock = Assert.IsType<TextBlock>(selectionBoxControl.Presenter?.Child);
+            Assert.Equal("foo", textBlock.Text);
+        }
+
+        [Fact]
+        public void SelectionBoxItemTemplate_Is_Applied_To_Control_Item_In_SelectionBox()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var item = new Canvas();
+            var target = new ComboBox
+            {
+                Items = { item },
+                SelectionBoxItemTemplate = new FuncDataTemplate<object?>((x, _) => new TextBlock { Tag = x }),
+                SelectedIndex = 0
+            };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            var selectionBoxControl = target.FindDescendantOfType<ContentControl>(
+                false, c => c.ContentTemplate == target.SelectionBoxItemTemplate);
+            Assert.NotNull(selectionBoxControl);
+            var textBlock = Assert.IsType<TextBlock>(selectionBoxControl.Presenter?.Child);
+            Assert.Same(item, textBlock.Tag);
+        }
+
         private sealed record Item(string Value, string Display);
 
         [Fact]
