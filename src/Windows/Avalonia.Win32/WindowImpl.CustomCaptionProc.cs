@@ -122,6 +122,25 @@ namespace Avalonia.Win32
                     }
                     break;
 
+                // Prevent right-clicks from triggering controls underneath while the cursor is over the window edge or HTCAPTION.
+                case WindowsMessage.WM_NCRBUTTONDOWN
+                    when (HitTestValues)ToInt32(wParam) is HitTestValues.HTCAPTION
+                    or HitTestValues.HTTOP or HitTestValues.HTBOTTOM
+                    or HitTestValues.HTLEFT or HitTestValues.HTRIGHT
+                    or HitTestValues.HTTOPLEFT or HitTestValues.HTTOPRIGHT
+                    or HitTestValues.HTBOTTOMLEFT or HitTestValues.HTBOTTOMRIGHT:
+                    callDwp = false;
+                    return IntPtr.Zero;
+
+                case WindowsMessage.WM_NCRBUTTONUP when (HitTestValues)ToInt32(wParam) == HitTestValues.HTCAPTION:
+                    ShowSystemMenu(PointFromLParam(lParam));
+                    callDwp = false;
+                    return IntPtr.Zero;
+
+                case WindowsMessage.WM_INITMENU:
+                    UpdateSystemMenu(GetSystemMenu(hWnd, false));
+                    break;
+
                 // Normally, Avalonia doesn't handles non-client input as a special NonClientLeftButtonDown, ignoring move and up events.
                 // What makes it a problem, Avalonia has to mark templated caption buttons as a non-client area.
                 // Meaning, these buttons no longer can accept normal client input.
@@ -224,7 +243,7 @@ namespace Avalonia.Win32
         private HitTestValues HitTestVisual(IntPtr lParam)
         {
             var position = PointToClient(PointFromLParam(lParam));
-            
+
             // First, check new cross-platform ElementRole via chrome hit-test
             if (_owner is IInputRoot inputRoot)
             {
@@ -254,9 +273,9 @@ namespace Avalonia.Win32
                     };
                 }
             }
-            
+
             // Fall back to Win32-specific NonClientHitTestResult attached property
-            if (_owner?.RootElement is {} window)
+            if (_owner?.RootElement is { } window)
             {
                 var visual = window.GetVisualAt(position, x =>
                 {
@@ -292,5 +311,81 @@ namespace Avalonia.Win32
                 or HitTestValues.HTMENU
                 or HitTestValues.HTSYSMENU;
         }
+
+        private void ShowSystemMenu(PixelPoint screenPoint)
+        {
+            var menu = GetSystemMenu(_hwnd, false);
+            if (menu == IntPtr.Zero)
+            {
+                return;
+            }
+
+            SetForegroundWindow(_hwnd);
+
+            var command = TrackPopupMenu(
+                menu,
+                TrackPopupMenuFlags.TPM_RIGHTBUTTON | TrackPopupMenuFlags.TPM_RETURNCMD,
+                screenPoint.X,
+                screenPoint.Y,
+                0,
+                _hwnd,
+                IntPtr.Zero);
+
+            PostMessage(_hwnd, (uint)WindowsMessage.WM_NULL, IntPtr.Zero, IntPtr.Zero);
+
+            if (command != 0)
+            {
+                if ((SysCommands)command == SysCommands.SC_RESTORE && WindowState == WindowState.FullScreen)
+                {
+                    WindowState = WindowState.Normal;
+                }
+                else
+                {
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)command, MakeLParam(screenPoint));
+                }
+            }
+        }
+
+        private void UpdateSystemMenu(IntPtr menu)
+        {
+            if (menu == IntPtr.Zero)
+            {
+                return;
+            }
+
+            var state = WindowState;
+            var isMinimized = state == WindowState.Minimized;
+            var isMaximized = state == WindowState.Maximized;
+            var isFullScreen = state == WindowState.FullScreen;
+            var isNormal = state == WindowState.Normal;
+
+            SetSystemMenuItemEnabled(menu, SysCommands.SC_RESTORE, isMinimized || isMaximized || isFullScreen);
+            SetSystemMenuItemEnabled(menu, SysCommands.SC_MOVE, isNormal || isFullScreen);
+            SetSystemMenuItemEnabled(menu, SysCommands.SC_SIZE, isNormal && _windowProperties.IsResizable);
+            SetSystemMenuItemEnabled(menu, SysCommands.SC_MINIMIZE, !isMinimized && !isFullScreen && _windowProperties.IsMinimizable);
+            SetSystemMenuItemEnabled(menu, SysCommands.SC_MAXIMIZE, !isMaximized && !isFullScreen && _windowProperties.IsMaximizable);
+
+            if (isMinimized || isMaximized || isFullScreen)
+            {
+                SetMenuDefaultItem(menu, (uint)SysCommands.SC_RESTORE, false);
+            }
+            else if (isNormal && _windowProperties.IsMaximizable)
+            {
+                SetMenuDefaultItem(menu, (uint)SysCommands.SC_MAXIMIZE, false);
+            }
+            else
+            {
+                SetMenuDefaultItem(menu, (uint)SysCommands.SC_CLOSE, false);
+            }
+        }
+
+        private static void SetSystemMenuItemEnabled(IntPtr menu, SysCommands command, bool enabled)
+        {
+            EnableMenuItem(menu, (uint)command,
+                (uint)(MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED)));
+        }
+
+        private static IntPtr MakeLParam(PixelPoint point)
+            => unchecked(((point.Y & 0xffff) << 16) | (point.X & 0xffff));
     }
 }
