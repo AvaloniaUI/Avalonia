@@ -129,8 +129,8 @@ namespace Avalonia.Controls
 
             void Unregister()
             {
-                if (_root != null && _binding != null)
-                    _root.KeyBindings.Remove(_binding);
+                if (_binding != null)
+                    _control.KeyBindings.Remove(_binding);
                 _binding = null;
             }
 
@@ -139,7 +139,7 @@ namespace Avalonia.Controls
                 if (_root != null && _hotkey != null)
                 {
                     _binding = new KeyBinding() { Gesture = _hotkey, Command = _wrapper };
-                    _root.KeyBindings.Add(_binding);
+                    _control.KeyBindings.Add(_binding);
                 }
             }
 

@@ -230,6 +230,42 @@ namespace Avalonia.Input
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        private static void HandleKeyBindings(Visual currentHandler, KeyEventArgs ev)
+        {
+            var bindings = (currentHandler as IInputElement)?.KeyBindings;
+            if (bindings == null)
+            {
+                return;
+            }
+
+            KeyBinding[]? bindingsCopy = null;
+
+            // Create a copy of the KeyBindings list if there's a binding which matches the event.
+            // If we don't do this the foreach loop will throw an InvalidOperationException when the KeyBindings list is changed.
+            // This can happen when a new view is loaded which adds its own KeyBindings to the handler.
+            foreach (var binding in bindings)
+            {
+                if (binding.Gesture?.Matches(ev) == true)
+                {
+                    bindingsCopy = bindings.ToArray();
+                    break;
+                }
+            }
+
+            if (bindingsCopy is object)
+            {
+                foreach (var binding in bindingsCopy)
+                {
+                    if (ev.Handled)
+                    {
+                        break;
+                    }
+
+                    binding.TryHandle(ev);
+                }
+            }
+        }
+
         public void ProcessRawEvent(RawInputEventArgs e)
         {
             if(e.Handled)
@@ -259,39 +295,23 @@ namespace Avalonia.Input
                         };
                         
                         var currentHandler = element as Visual;
-                        while (currentHandler != null && !ev.Handled && keyInput.Type == RawKeyEventType.KeyDown)
+                        if (currentHandler != null && keyInput.Type == RawKeyEventType.KeyDown)
                         {
-                            var bindings = (currentHandler as IInputElement)?.KeyBindings;
-                            if (bindings != null)
-                            {
-                                KeyBinding[]? bindingsCopy = null;
-
-                                // Create a copy of the KeyBindings list if there's a binding which matches the event.
-                                // If we don't do this the foreach loop will throw an InvalidOperationException when the KeyBindings list is changed.
-                                // This can happen when a new view is loaded which adds its own KeyBindings to the handler.
-                                foreach (var binding in bindings)
-                                {
-                                    if (binding.Gesture?.Matches(ev) == true)
-                                    {
-                                        bindingsCopy = bindings.ToArray();
-                                        break;
-                                    }
-                                }
-
-                                if (bindingsCopy is object)
-                                {
-                                    foreach (var binding in bindingsCopy)
-                                    {
-                                        if (ev.Handled)
-                                            break;
-                                        binding.TryHandle(ev);
-                                    }
-                                }
-                            }
-                            currentHandler = currentHandler.VisualParent;
+                            HandleKeyBindings(currentHandler, ev);
                         }
 
                         element.RaiseEvent(ev);
+
+                        // Let the focused control handle the routed key event before trying
+                        // bindings on its ancestors. This allows controls such as TextBox to
+                        // handle their built-in shortcuts before a parent binding consumes them.
+                        currentHandler = currentHandler?.VisualParent;
+                        while (currentHandler != null && !ev.Handled && keyInput.Type == RawKeyEventType.KeyDown)
+                        {
+                            HandleKeyBindings(currentHandler, ev);
+                            currentHandler = currentHandler.VisualParent;
+                        }
+
                         e.Handled = ev.Handled;
                         break;
                 }

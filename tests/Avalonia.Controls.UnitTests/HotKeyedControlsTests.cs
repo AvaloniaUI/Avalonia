@@ -63,11 +63,17 @@ namespace Avalonia.Controls.UnitTests
 
         public object? CommandParameter => null;
 
+        public int CommandExecutionCount { get; private set; }
+
         private readonly DelegateCommand _command;
 
         public HotKeyedTextBox()
         {
-            _command = new DelegateCommand(() => Focus());
+            _command = new DelegateCommand(() =>
+            {
+                CommandExecutionCount++;
+                Focus();
+            });
         }
     }
 
@@ -94,7 +100,7 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
-        public void HotKeyedTextBox_Focus_Performed_On_Hotkey()
+        public void HotKeyedTextBox_HotKey_Executes_When_Focused()
         {
             using var _ = CreateServicesWithFocus();
             
@@ -116,8 +122,26 @@ namespace Avalonia.Controls.UnitTests
                     RawInputModifiers.Control,
                     PhysicalKey.F,
                     "f"));
-            
-            Assert.True(hotKeyedTextBox.IsFocused);
+
+            Assert.Equal(0, hotKeyedTextBox.CommandExecutionCount);
+
+            keyboardDevice.SetFocusedElement(
+                hotKeyedTextBox,
+                NavigationMethod.Pointer,
+                KeyModifiers.None);
+
+            keyboardDevice.ProcessRawEvent(
+                new RawKeyEventArgs(
+                    keyboardDevice,
+                    0,
+                    root.InputRoot,
+                    RawKeyEventType.KeyDown,
+                    Key.F,
+                    RawInputModifiers.Control,
+                    PhysicalKey.F,
+                    "f"));
+
+            Assert.Equal(1, hotKeyedTextBox.CommandExecutionCount);
         }
         
         [Fact]

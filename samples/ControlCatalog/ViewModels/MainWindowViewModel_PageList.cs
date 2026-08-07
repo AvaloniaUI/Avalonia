@@ -60,6 +60,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("Flyouts",() => new FlyoutsPage(), Icons.Flyout),
             new PageItem("Focus",() => new FocusPage(), Icons.Target),
             new PageItem("Gestures",() => new GesturePage(), Icons.Gesture),
+            new PageItem("HotKey / KeyBinding", () => new HotKeyPage(), Icons.Keyboard),
             new PageItem("Image",() => new ImagePage(), Icons.Image),
             new PageItem("Label",() => new LabelsPage(), Icons.Tag),
             new PageItem("LayoutTransformControl",() => new LayoutTransformControlPage(), Icons.Transform),
