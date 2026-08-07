@@ -42,8 +42,10 @@
     <PackageVersion Include="Numerge" Version="1.0.0" />
     <PackageVersion Include="NUnit" Version="4.5.1" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
-    <PackageVersion Include="NWayland" Version="0.11.0" />
-    <PackageVersion Include="NWayland.Server" Version="0.11.0" />
+    <PackageVersion Include="NWayland" Version="0.12.4" />
+    <PackageVersion Include="NWayland.Server" Version="0.12.4" />
+    <PackageVersion Include="NWayland.Generator" Version="0.12.4" />
+    <PackageVersion Include="NWayland.Protocols.Plasma" Version="0.12.4" />
     <PackageVersion Include="Quamotion.RemoteViewing" Version="1.1.211" />
     <PackageVersion Include="SharpCompress" Version="0.48.0" />
     <PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />

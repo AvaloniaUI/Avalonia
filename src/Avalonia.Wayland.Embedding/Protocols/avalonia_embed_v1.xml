@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="avalonia_embed_v1">
+  <copyright>Copyright © 2026 Avalonia. MIT.</copyright>
+
+  <interface name="avalonia_embedder" version="1">
+    <description summary="bind toolkit surfaces to Avalonia hosts">
+      Lets a client associate its xdg_toplevel, or the container wl_surface of an already-embedded window,
+      with an Avalonia-side host, identified by an opaque string minted by the Avalonia application and shared
+      out-of-band.
+    </description>
+
+    <enum name="error">
+      <entry name="role" value="0" summary="object does not have the required role"/>
+      <entry name="already_embedded" value="1" summary="object already has an embedding handle"/>
+    </enum>
+
+    <request name="destroy" type="destructor"/>
+
+    <!-- Associate this client connection with an Avalonia-side ticket, minted by WaylandEmbedderConnection when it
+         binds (outside any render). It lets the Avalonia side scope a surface's wayland object id to THIS connection
+         (ids are only unique per connection), so the resize flush can match toolkit windows to hosts by
+         (ticket, wl_proxy_get_id) with no per-frame round-trip. Sent once, at connection setup. -->
+    <request name="associate">
+      <arg name="ticket" type="uint" summary="opaque per-connection ticket from the Avalonia side"/>
+    </request>
+
+    <!-- Scenario 1: adopt a toplevel into the host that minted `token`. `surface` is the toplevel's
+         wl_surface; the server resolves the xdg_toplevel role from it (`role` error if it has none). Taking
+         the surface (not the xdg_toplevel) lets the client-side helper work from just a wl_surface*, which is
+         all toolkits like GTK expose. -->
+    <request name="embed_toplevel">
+      <arg name="id" type="new_id" interface="avalonia_embed_result"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="the toplevel's wl_surface"/>
+      <arg name="token" type="string" summary="token from WaylandSubcompositorControlHost.GetEmbeddingToken()"/>
+    </request>
+
+    <!-- Scenario 5: bind an Avalonia content host to the container surface of an already-embedded window.
+         `surface` is the toolkit window's OWN wl_surface (resolved to its host control), NOT a placeholder. -->
+    <request name="mark_content_surface">
+      <arg name="id" type="new_id" interface="avalonia_embed_result"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="the embedded window's container surface"/>
+      <arg name="cookie" type="string" summary="cookie from WaylandSubcompositorAvaloniaContentHost.CreateAttachmentCookie()"/>
+    </request>
+  </interface>
+
+  <interface name="avalonia_embed_result" version="1">
+    <description summary="one-shot result of an embed request">
+      Created by avalonia_embedder.embed_toplevel / mark_content_surface. Emits exactly one of bound / rejected
+      once the Avalonia side resolves the token/cookie (after the client's wl_display_roundtrip). Purely a
+      result channel: `destroy` only releases it and does NOT unembed — the embedding's lifetime follows the
+      toplevel/surface, not this object.
+    </description>
+    <request name="destroy" type="destructor"/>
+    <event name="bound"    summary="the host resolved the token/cookie and wired the surface"/>
+    <event name="rejected" summary="the token/cookie was unknown — the client should treat this as an error"/>
+  </interface>
+</protocol>
