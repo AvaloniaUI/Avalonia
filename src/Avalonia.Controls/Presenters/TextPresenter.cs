@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -66,6 +68,12 @@ namespace Avalonia.Controls.Presenters
             AvaloniaProperty.Register<TextPresenter, int?>(nameof(PreeditTextCursorPosition));
 
         /// <summary>
+        /// Defines the <see cref="PreeditTextSegments"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IReadOnlyList<TextInputMethodPreeditSegment>?> PreeditTextSegmentsProperty =
+            AvaloniaProperty.Register<TextPresenter, IReadOnlyList<TextInputMethodPreeditSegment>?>(nameof(PreeditTextSegments));
+
+        /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
@@ -106,6 +114,8 @@ namespace Avalonia.Controls.Presenters
         private Point _navigationPosition;
         private Point? _previousOffset;
         private TextSelectorLayer? _layer;
+        private static readonly TextDecorationCollection s_activePreeditTextDecorations = CreatePreeditTextDecorations(2, null);
+        private static readonly TextDecorationCollection s_inactivePreeditTextDecorations = CreatePreeditTextDecorations(1, new AvaloniaList<double> { 1, 2 });
 
         static TextPresenter()
         {
@@ -154,6 +164,12 @@ namespace Avalonia.Controls.Presenters
         {
             get => GetValue(PreeditTextCursorPositionProperty);
             set => SetValue(PreeditTextCursorPositionProperty, value);
+        }
+
+        public IReadOnlyList<TextInputMethodPreeditSegment>? PreeditTextSegments
+        {
+            get => GetValue(PreeditTextSegmentsProperty);
+            set => SetValue(PreeditTextSegmentsProperty, value);
         }
 
         /// <summary>
@@ -567,18 +583,7 @@ namespace Avalonia.Controls.Presenters
 
             if (!string.IsNullOrEmpty(preeditText))
             {
-                var preeditHighlight = new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
-                        new GenericTextRunProperties(
-                            typeface,
-                            FontSize,
-                            TextDecorations.Underline,
-                            foreground,
-                            fontFeatures: FontFeatures));
-
-                textStyleOverrides = new[]
-                {
-                    preeditHighlight
-                };
+                textStyleOverrides = CreatePreeditTextStyleOverrides(caretIndex, preeditText, typeface, foreground);
             }
             else
             {
@@ -628,6 +633,76 @@ namespace Avalonia.Controls.Presenters
             sb.Append(text.Substring(caretIndex));
 
             return StringBuilderCache.GetStringAndRelease(sb);
+        }
+
+        private IReadOnlyList<ValueSpan<TextRunProperties>> CreatePreeditTextStyleOverrides(
+            int caretIndex,
+            string preeditText,
+            Typeface typeface,
+            IBrush? foreground)
+        {
+            var segments = PreeditTextSegments;
+
+            if (segments is { Count: > 0 })
+            {
+                var valueSpans = new List<ValueSpan<TextRunProperties>>(segments.Count);
+
+                foreach (var segment in segments)
+                {
+                    var start = Math.Max(0, segment.Start);
+                    var end = Math.Min(preeditText.Length, segment.End);
+
+                    if (end <= start)
+                    {
+                        continue;
+                    }
+
+                    valueSpans.Add(new ValueSpan<TextRunProperties>(
+                        caretIndex + start,
+                        end - start,
+                        new GenericTextRunProperties(
+                            typeface,
+                            FontSize,
+                            GetPreeditTextDecorations(segment.Kind),
+                            foreground,
+                            fontFeatures: FontFeatures)));
+                }
+
+                if (valueSpans.Count > 0)
+                {
+                    return valueSpans;
+                }
+            }
+
+            return new[]
+            {
+                new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
+                    new GenericTextRunProperties(
+                        typeface,
+                        FontSize,
+                        TextDecorations.Underline,
+                        foreground,
+                        fontFeatures: FontFeatures))
+            };
+        }
+
+        private static TextDecorationCollection GetPreeditTextDecorations(TextInputMethodPreeditSegmentKind kind) =>
+            kind == TextInputMethodPreeditSegmentKind.ActiveClause ?
+                s_activePreeditTextDecorations :
+                s_inactivePreeditTextDecorations;
+
+        private static TextDecorationCollection CreatePreeditTextDecorations(double strokeThickness, AvaloniaList<double>? strokeDashArray)
+        {
+            return new TextDecorationCollection
+            {
+                new TextDecoration
+                {
+                    Location = TextDecorationLocation.Underline,
+                    StrokeThicknessUnit = TextDecorationUnit.Pixel,
+                    StrokeThickness = strokeThickness,
+                    StrokeDashArray = strokeDashArray
+                }
+            };
         }
 
         protected virtual void InvalidateTextLayout()
@@ -1052,6 +1127,7 @@ namespace Avalonia.Controls.Presenters
             {
                 // Properties that affect shaping: invalidate the run cache + layout.
                 case nameof(PreeditText):
+                case nameof(PreeditTextSegments):
                 case nameof(Foreground):
                 case nameof(FontSize):
                 case nameof(FontStyle):
