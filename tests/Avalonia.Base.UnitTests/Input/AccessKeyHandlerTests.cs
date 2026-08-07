@@ -131,11 +131,9 @@ namespace Avalonia.Base.UnitTests.Input
             KeyUp(root, Key.A, "a", KeyModifiers.Alt);
             KeyUp(root, Key.LeftAlt);
 
-            // Alt+A's KeyDown is now correctly matched and marked Handled by
-            // AccessKeyHandler.OnKeyDown (Bubble), so it no longer reaches a plain
-            // (non-handledEventsToo) KeyDown subscriber. The corresponding KeyUp is
-            // unaffected: AccessKeyHandler only reacts to KeyUp for the Alt key itself
-            // (OnPreviewKeyUp), not for arbitrary registered access keys.
+            // AccessKeyHandler marks the Alt+A KeyDown as Handled once it matches a registered
+            // access key, so a plain KeyDown subscriber doesn't see it. KeyUp is unaffected: only
+            // KeyUp for the Alt key itself is handled, not arbitrary registered access keys.
             Assert.Equal(new[]
             {
                 "KeyDown LeftAlt",
@@ -351,6 +349,29 @@ namespace Avalonia.Base.UnitTests.Input
 
                 KeyUp(root, Key.LeftAlt);
                 Assert.Equal(1, menu.TimesOpenCalled);
+            }
+        }
+        
+        [Fact]
+        public void Should_Raise_AccessKey_When_Focus_Is_On_Descendant()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var button = new Button();
+                var root = new TestRoot(button);
+                var target = new AccessKeyHandler();
+                var raised = 0;
+
+                KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
+
+                target.SetOwner(root);
+                target.Register("A", button);
+                button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
+
+                KeyDown(button, Key.LeftAlt);
+                KeyDown(button, Key.A, "a", KeyModifiers.Alt);
+
+                Assert.Equal(1, raised);
             }
         }
 

@@ -454,14 +454,13 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="owner">The owner to check.</param>
         /// <param name="source">The source of the key event, representing the effective focused element.</param>
-        /// <returns>If focused element is decendant of owner <c>true</c>, otherwise <c>false</c>. </returns>
-        private static bool IsFocusWithinOwner(IInputElement owner, IInputElement? source)
+        /// <returns>If <paramref name="source"/> is <paramref name="owner"/> or a descendant of it, <c>true</c>, otherwise <c>false</c>.</returns>
+        private static bool IsFocusWithinOwner(InputElement owner, IInputElement? source)
         {
-            if (source is not Visual sourceVisual)
-                    return false;
+            if (source is not Visual sourceVisual) 
+                return false;
             
-            return ReferenceEquals(sourceVisual, owner) ||
-                       (owner is Visual root && root.IsVisualAncestorOf(sourceVisual));
+            return ReferenceEquals(sourceVisual, owner) || owner.IsVisualAncestorOf(sourceVisual);
         }
 
         /// <summary>
