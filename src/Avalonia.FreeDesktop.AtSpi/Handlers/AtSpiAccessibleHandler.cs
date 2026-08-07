@@ -150,6 +150,10 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (!string.IsNullOrEmpty(accessKey))
                 attrs["access-key"] = accessKey;
 
+            var placeholderText = node.Peer.GetPlaceholderText();
+            if (!string.IsNullOrEmpty(placeholderText))
+                attrs["placeholder-text"] = placeholderText;
+
             return ValueTask.FromResult(attrs);
         }
 

@@ -118,7 +118,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             // Never defer strings.
-            if (clrType.FullName == "System.String")
+            if (clrType.Is("System", "String"))
             {
                 return false;
             }

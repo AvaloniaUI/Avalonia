@@ -27,6 +27,7 @@
                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                        Foreground="{TemplateBinding PlaceholderForeground}"
+                       Opacity="{DynamicResource TextControlPlaceholderOpacity}"
                        Text="{TemplateBinding PlaceholderText}">
               <TextBlock.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">

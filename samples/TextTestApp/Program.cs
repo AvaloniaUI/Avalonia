@@ -23,7 +23,9 @@ namespace TextTestApp
         {
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+#if DEBUG
                 .WithDeveloperTools()
+#endif
                 .LogToTrace();
         }
     }

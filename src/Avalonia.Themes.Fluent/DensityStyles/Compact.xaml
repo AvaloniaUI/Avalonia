@@ -6,7 +6,10 @@
   <x:Double x:Key="TextControlThemeMinWidth">32</x:Double>
   <Thickness x:Key="TextControlThemePadding">4, 2</Thickness>
   <Thickness x:Key="ListBoxItemPadding">4,2</Thickness>
-  <x:Double x:Key="ListViewItemMinHeight">24</x:Double>
+  <Thickness x:Key="TableViewRowPadding">2,2</Thickness>
+  <Thickness x:Key="TableViewCellPadding">2,0</Thickness>
+  <x:Double x:Key="TableViewColumnResizerWidth">4</x:Double>
+  <Thickness x:Key="TableViewColumnResizerMargin">0,-2,-2,-2</Thickness>
   <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
   <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">4 4 8 4</Thickness>
   <Thickness x:Key="MenuBarItemPadding">5, 2</Thickness>

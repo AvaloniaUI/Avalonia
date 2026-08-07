@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Rendering.Composition.Drawing;
 
 namespace Avalonia.Platform
 {
@@ -8,8 +9,10 @@ namespace Avalonia.Platform
     /// Defines the platform-specific interface for a <see cref="Geometry"/>.
     /// </summary>
     [Unstable]
-    public interface IGeometryImpl
+    public interface IGeometryImpl : IRenderDataGeometry
     {
+        IGeometryImpl IRenderDataGeometry.GeometryImpl => this;
+
         /// <summary>
         /// Gets the geometry's bounding rectangle.
         /// </summary>

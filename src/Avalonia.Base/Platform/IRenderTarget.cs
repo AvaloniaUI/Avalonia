@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Metadata;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Platform
 {
@@ -32,9 +33,9 @@ namespace Avalonia.Platform
         /// </summary>
         PlatformRenderTargetState PlatformRenderTargetState => PlatformRenderTargetState.Ready;
         
-        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize)
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize, CompositionTransparencyLevel TransparencyLevel)
         {
-            public RenderTargetSceneInfo(PixelSize size, double scaling) : this(size, scaling, size.ToSize(scaling))
+            public RenderTargetSceneInfo(PixelSize size, double scaling, CompositionTransparencyLevel transparencyLevel) : this(size, scaling, size.ToSize(scaling), transparencyLevel)
             {
             }
         }

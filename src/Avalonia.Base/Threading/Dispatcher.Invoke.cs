@@ -649,7 +649,8 @@ public partial class Dispatcher
         {
             try
             {
-                action(arg);
+                using (AvaloniaSynchronizationContext.Ensure(this, (DispatcherPriority)priority))
+                    action(arg);
             }
             catch (Exception ex) when (ExceptionFilter(ex))
             {
