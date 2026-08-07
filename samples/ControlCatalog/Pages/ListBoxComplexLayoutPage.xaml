@@ -1,0 +1,406 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ControlCatalog.ViewModels"
+             xmlns:pages="using:ControlCatalog.Pages"
+             xmlns:conv="using:ControlCatalog.Converter"
+             Header="ListBox - Complex Layout"
+             x:Class="ControlCatalog.Pages.ListBoxComplexLayoutPage"
+             x:DataType="vm:ListBoxComplexLayoutPageViewModel">
+
+  <ContentPage.Styles>
+    <!-- Drives the field status bar. `unsatisfied` comes after `mandatory` so it wins. Colours are
+         literal rather than StaticResource: these styles are parsed before the resource dictionary
+         below them. -->
+    <Style Selector="Border.mandatory">
+      <Setter Property="Background" Value="#7ED321" />
+    </Style>
+    <Style Selector="Border.unsatisfied">
+      <Setter Property="Background" Value="#F5A623" />
+    </Style>
+  </ContentPage.Styles>
+
+  <ContentPage.Resources>
+    <conv:MarkdownToInlinesConverter x:Key="Markdown" />
+
+    <SolidColorBrush x:Key="FieldMandatory" Color="#F5A623" />
+    <SolidColorBrush x:Key="FieldSatisfied" Color="#7ED321" />
+
+    <!--
+      The chrome every field row shares: a status bar down the left edge, a wrapping title with a
+      mandatory marker, an optional description button, the value itself, and an audit footer. Kept
+      as one ControlTheme so each row template only has to describe its *value*, which is what
+      makes the row templates below readable.
+    -->
+    <ControlTheme x:Key="FieldChrome" TargetType="ContentControl">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="Template">
+        <ControlTemplate TargetType="ContentControl" x:DataType="vm:FieldItem">
+          <Border Background="{DynamicResource SystemRegionBrush}"
+                  BorderBrush="{DynamicResource SystemAccentColorDark3}"
+                  BorderThickness="0,0,0,1"
+                  Padding="0,2,8,2">
+            <DockPanel LastChildFill="True">
+
+              <!-- Status bar. Only a mandatory field gets one: green once answered, amber while
+                   still empty. Left transparent for optional fields. -->
+              <Border DockPanel.Dock="Left"
+                      Width="4"
+                      Margin="0,2,6,2"
+                      CornerRadius="0,2,2,0"
+                      Classes.mandatory="{Binding IsMandatory}"
+                      Classes.unsatisfied="{Binding IsUnsatisfied}" />
+
+              <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+
+                <!-- Title. Wraps to several lines, which is one reason rows of the same kind
+                     still differ in height. -->
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Margin="0,4,4,0"
+                           TextWrapping="Wrap"
+                           MaxLines="3"
+                           FontWeight="SemiBold">
+                  <Run Text="{Binding Title}" />
+                  <Run Text="{Binding MandatoryMarker}"
+                       Foreground="{StaticResource FieldMandatory}"
+                       FontWeight="Bold" />
+                </TextBlock>
+
+                <Button Grid.Row="0" Grid.Column="1"
+                        IsVisible="{Binding HasDescription}"
+                        Content="?"
+                        Width="24" Height="24"
+                        Padding="0"
+                        Margin="0,4,0,0"
+                        ToolTip.Tip="Field description" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                           Text="{Binding FieldName}"
+                           FontSize="10"
+                           Opacity="0.5" />
+
+                <!-- The value: whatever the row template supplied. -->
+                <ContentPresenter Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                  Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Margin="0,4,0,4" />
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                           Text="{Binding LastModified}"
+                           FontSize="10"
+                           FontStyle="Italic"
+                           HorizontalAlignment="Right"
+                           Opacity="0.55" />
+              </Grid>
+            </DockPanel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
+
+    <!-- Rows tile edge to edge: no container padding, no selection chrome getting in the way of
+         reading the heights. -->
+    <ControlTheme x:Key="VanillaListBoxItem" TargetType="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Template">
+        <ControlTemplate TargetType="ListBoxItem">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            HorizontalContentAlignment="Stretch" />
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
+
+    <!--
+      One template per row kind. The selector hands the panel a recycle key per kind, so scrolling
+      reuses an image row's container for the next image row instead of rebuilding it.
+    -->
+    <pages:FieldTemplateSelector x:Key="FieldTemplates"
+                                 MaxPoolSizePerKey="6"
+                                 MinPoolSizePerKey="3">
+
+      <!-- Section headline. Not a field: no chrome, its own look. -->
+      <DataTemplate DataType="vm:HeadlineItem">
+        <Border Background="{DynamicResource SystemAccentColorDark2}"
+                Padding="8,6"
+                Margin="0,8,0,0"
+                MinHeight="42">
+          <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding Numbering}"
+                       FontWeight="Bold"
+                       Margin="0,0,8,0"
+                       VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding Title}"
+                       FontSize="15"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center" />
+
+            <Border Grid.Column="2"
+                    IsVisible="{Binding HasUnsatisfiedFields}"
+                    Background="{StaticResource FieldMandatory}"
+                    CornerRadius="9"
+                    Height="18" MinWidth="18"
+                    Padding="5,0"
+                    Margin="2,0"
+                    VerticalAlignment="Center"
+                    ToolTip.Tip="Unanswered mandatory fields">
+              <TextBlock Text="{Binding UnsatisfiedFields}"
+                         FontSize="11"
+                         Foreground="Black"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+            </Border>
+
+            <ToggleButton Grid.Column="3"
+                          IsChecked="{Binding IsExpanded}"
+                          Content="⌃"
+                          Width="26" Height="26"
+                          Padding="0"
+                          Margin="4,0,0,0"
+                          VerticalAlignment="Center"
+                          ToolTip.Tip="Expand / collapse (visual only in this sample)" />
+          </Grid>
+        </Border>
+      </DataTemplate>
+
+      <!-- Free text. Height follows how far the text wraps. -->
+      <DataTemplate DataType="vm:TextFieldItem">
+        <ContentControl Theme="{StaticResource FieldChrome}">
+          <TextBox Text="{Binding Value}"
+                   AcceptsReturn="True"
+                   TextWrapping="Wrap"
+                   MinHeight="0" />
+        </ContentControl>
+      </DataTemplate>
+
+      <!-- A one-line row: the small end of the height range. -->
+      <DataTemplate DataType="vm:NumberFieldItem">
+        <ContentControl Theme="{StaticResource FieldChrome}">
+          <Grid ColumnDefinitions="120,Auto">
+            <NumericUpDown Grid.Column="0"
+                           Value="{Binding Value}"
+                           FormatString="0"
+                           ShowButtonSpinner="False" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding Unit}"
+                       Margin="6,0,0,0"
+                       VerticalAlignment="Center"
+                       Opacity="0.7" />
+          </Grid>
+        </ContentControl>
+      </DataTemplate>
+
+      <DataTemplate DataType="vm:DateTimeFieldItem">
+        <ContentControl Theme="{StaticResource FieldChrome}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{Binding DateText}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding TimeText}" VerticalAlignment="Center" Opacity="0.7" />
+          </StackPanel>
+        </ContentControl>
+      </DataTemplate>
+
+      <!-- Mutually exclusive options as a row of buttons. -->
+      <DataTemplate DataType="vm:ChoiceFieldItem">
+        <ContentControl Theme="{StaticResource FieldChrome}">
+          <ItemsControl ItemsSource="{Binding Options}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="4" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="x:String">
+                <Border Background="{DynamicResource SystemChromeMediumColor}"
+                        CornerRadius="4"
+                        Padding="10,4">
+                  <TextBlock Text="{Binding}" />
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ContentControl>
+      </DataTemplate>
+
+      <!-- Height depends on the number of options, so two checklist rows differ in height. -->
+      <DataTemplate DataType="vm:ChecklistFieldItem">
+        <ContentControl Theme="{StaticResource FieldChrome}">
+          <ItemsControl ItemsSource="{Binding Items}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:ChecklistOption">
+                <CheckBox IsChecked="{Binding IsChecked}"
+                          Content="{Binding Text}"
+                          MinHeight="0" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ContentControl>
+      </DataTemplate>
+
+      <!-- Markdown rendered into TextBlock inlines: the tall end of the height range, and a height
+           the panel cannot know without measuring. -->
+      <DataTemplate DataType="vm:MarkdownFieldItem">
+        <ContentControl Theme="{StaticResource FieldChrome}">
+          <Border Background="{DynamicResource SystemChromeLowColor}"
+                  CornerRadius="4"
+                  Padding="10,8">
+            <TextBlock Inlines="{Binding Markdown, Converter={StaticResource Markdown}}"
+                       TextWrapping="Wrap"
+                       LineHeight="19" />
+          </Border>
+        </ContentControl>
+      </DataTemplate>
+
+      <!--
+        The image row. It is realized as an 84px placeholder and grows to its full height when the
+        download finishes — possibly while off screen, possibly mid-scroll.
+
+        The download is kicked off from DataContextChanged, not AttachedToVisualTree: the panel
+        recycles containers, so a container reused for a different image row is never re-attached to
+        the visual tree and an attach-based hook would only ever fire for the first few rows. What
+        does change on reuse is the DataContext, which is exactly "this container now shows a
+        different row".
+      -->
+      <DataTemplate DataType="vm:ImageFieldItem">
+        <ContentControl Theme="{StaticResource FieldChrome}"
+                        DataContextChanged="OnImageFieldDataContextChanged">
+          <Grid RowDefinitions="Auto,Auto">
+
+            <!-- Placeholder, sized so the growth is unmistakable. -->
+            <Border Grid.Row="0"
+                    IsVisible="{Binding !HasValue}"
+                    Height="{Binding PlaceholderHeight}"
+                    Background="{DynamicResource SystemChromeLowColor}"
+                    BorderBrush="{DynamicResource SystemAccentColorDark3}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+              <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
+                <ProgressBar IsIndeterminate="True"
+                             IsVisible="{Binding IsDownloading}"
+                             Width="120" Height="3" />
+                <TextBlock Text="Downloading…"
+                           IsVisible="{Binding IsDownloading}"
+                           FontSize="11"
+                           Opacity="0.7"
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="No photo"
+                           IsVisible="{Binding !IsDownloading}"
+                           FontSize="11"
+                           Opacity="0.7"
+                           HorizontalAlignment="Center" />
+              </StackPanel>
+            </Border>
+
+            <Image Grid.Row="0"
+                   Source="{Binding Image}"
+                   IsVisible="{Binding HasValue}"
+                   Height="{Binding LoadedHeight}"
+                   Stretch="UniformToFill"
+                   HorizontalAlignment="Stretch" />
+
+            <Button Grid.Row="1"
+                    Content="Download again"
+                    Command="{Binding ReDownloadCommand}"
+                    HorizontalAlignment="Left"
+                    Margin="0,4,0,0"
+                    FontSize="11" />
+          </Grid>
+        </ContentControl>
+      </DataTemplate>
+    </pages:FieldTemplateSelector>
+  </ContentPage.Resources>
+
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Margin="8" Spacing="4">
+      <TextBlock Classes="h1">ListBox — complex heterogeneous layout</TextBlock>
+      <TextBlock TextWrapping="Wrap">
+        A data-entry form as one flat, virtualized list: section headlines interleaved with fields of
+        many kinds. Rows differ in height by more than an order of magnitude, and the image rows
+        change height <Run FontStyle="Italic">after</Run> they have been realized, when their
+        picture arrives.
+      </TextBlock>
+      <TextBlock TextWrapping="Wrap" Opacity="0.7">
+        Scroll down to a batch of placeholders and watch them grow, or park anywhere and press
+        “Re-download loaded images” to make several rows change height at once. The scroll position
+        should stay where you left it.
+      </TextBlock>
+
+      <WrapPanel Margin="0,4,0,0">
+        <CheckBox IsChecked="{Binding RecycleContent}"
+                  Margin="0,0,16,0"
+                  ToolTip.Tip="Off = behave like a plain IDataTemplate: a recycled container throws its control tree away and rebuilds it for the new row. Watch the build counter and the scrolling smoothness.">
+          Reuse row content
+        </CheckBox>
+        <Button Content="Re-download loaded images"
+                Command="{Binding ReDownloadLoadedImagesCommand}"
+                Margin="0,0,8,0"
+                ToolTip.Tip="Drops and re-fetches every picture that has already loaded, so a whole viewport of rows shrinks and grows again without the viewport moving" />
+        <Button Content="Add section"
+                Command="{Binding AddSectionCommand}"
+                Margin="0,0,8,0" />
+        <Button Content="Remove last section"
+                Command="{Binding RemoveLastSectionCommand}"
+                Margin="0,0,16,0" />
+        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,16,0">
+          <TextBlock Text="Download delay" VerticalAlignment="Center" />
+          <Slider Value="{Binding DownloadDelayMs}"
+                  Minimum="0" Maximum="5000"
+                  TickFrequency="500"
+                  IsSnapToTickEnabled="True"
+                  Width="130"
+                  VerticalAlignment="Center" />
+          <TextBlock Text="{Binding DownloadDelayMs, StringFormat='{}{0} ms'}"
+                     VerticalAlignment="Center"
+                     Width="58" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="CacheLength" VerticalAlignment="Center"
+                     ToolTip.Tip="How far beyond the viewport the panel realizes, in viewports" />
+          <Slider Value="{Binding CacheLength}"
+                  Minimum="0" Maximum="2"
+                  TickFrequency="0.25"
+                  IsSnapToTickEnabled="True"
+                  Width="130"
+                  VerticalAlignment="Center" />
+          <TextBlock Text="{Binding CacheLength, StringFormat='{}{0:0.00}'}"
+                     VerticalAlignment="Center"
+                     Width="40" />
+        </StackPanel>
+      </WrapPanel>
+    </StackPanel>
+
+    <Border DockPanel.Dock="Bottom"
+            Margin="8,0,8,8"
+            Padding="8,4"
+            Background="{DynamicResource SystemChromeLowColor}"
+            CornerRadius="4">
+      <TextBlock Text="{Binding RealizationStats}"
+                 FontFamily="Consolas,Menlo,monospace"
+                 FontSize="11"
+                 TextWrapping="Wrap" />
+    </Border>
+
+    <ListBox x:Name="FieldsListBox"
+             Margin="8,0"
+             ItemsSource="{Binding Fields}"
+             ItemTemplate="{StaticResource FieldTemplates}"
+             ItemContainerTheme="{StaticResource VanillaListBoxItem}"
+             Padding="0"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <!--
+            CacheLength realizes beyond the viewport, so a row's height can settle just before it
+            scrolls into view rather than in front of the user. EnableWarmup pre-builds a few
+            containers per row kind; it is read once when the panel is attached.
+          -->
+          <VirtualizingStackPanel CacheLength="{Binding CacheLength}" EnableWarmup="True" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+    </ListBox>
+  </DockPanel>
+</ContentPage>

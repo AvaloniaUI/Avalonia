@@ -277,9 +277,15 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
             items.RemoveAt(1); // Item 0 was at index 1 because of Insert(0, "New Item")
             target.UpdateLayout();
                 
-            // container should be removed from children because RecycleElementOnItemRemoved is called
-            Assert.DoesNotContain(container, panel.Children);
+            // RecycleElementOnItemRemoved pools the container rather than unparenting it, so it
+            // stays in Children - invisible and unrealized - and can be handed back out without the
+            // visual tree churn that container-level virtualization exists to avoid. Same contract
+            // as the scroll-recycle path asserted above. It is not a ghost: invisible and absent
+            // from the realized set means nothing renders it and nothing navigates to it, because
+            // focus navigation filters on IsEffectivelyVisible.
+            Assert.Contains(container, panel.Children);
             Assert.False(container.IsVisible);
+            Assert.DoesNotContain(container, target.GetRealizedContainers());
         }
     }
 
