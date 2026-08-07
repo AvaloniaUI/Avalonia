@@ -568,8 +568,19 @@ namespace Avalonia.Input
             if (IsFocused)
             {
                 var root = e.AttachmentPoint ?? e.RootVisual;
-                ((FocusManager?)e.PresentationSource.InputRoot.FocusManager)
-                    ?.ClearFocusOnElementRemoved(this, root);
+                // The PresentationSource (and its InputRoot) may already be torn
+                // down by the time a focused element is detached — for example
+                // when a popup that hosts a focused menu item closes. The
+                // previous direct chain (e.PresentationSource.InputRoot.FocusManager)
+                // was not null-safe on the intermediate accesses and would either
+                // throw a NullReferenceException or silently skip focus clearing,
+                // leaving keyboard focus on a detached element so that shortcuts
+                // stopped working until the user clicked elsewhere (see #21759).
+                // Use GetFocusManager, which falls back to the locator, mirroring
+                // the Focus() method below.
+                var focusManager = (FocusManager?)e.PresentationSource?.InputRoot?.FocusManager
+                    ?? FocusManager.GetFocusManager(this);
+                focusManager?.ClearFocusOnElementRemoved(this, root);
             }
 
             IsKeyboardFocusWithin = false;
