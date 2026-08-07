@@ -42,7 +42,7 @@
   <StreamGeometry x:Key="ButtonSpinnerDecreaseButtonIcon">M0,1 L10,10 20,1 19,0 10,8 1,0 z</StreamGeometry>
 
   <ControlTheme x:Key="FluentButtonSpinnerRepeatButton" TargetType="RepeatButton">
-    <Setter Property="MinWidth" Value="{DynamicResource TextControlInternalButtonMinWidth}" />
+    <Setter Property="MinWidth" Value="{DynamicResource TextControlInnerButtonMinWidth}" />
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter x:Name="PART_ContentPresenter"

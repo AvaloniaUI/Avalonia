@@ -76,8 +76,8 @@
   <x:Double x:Key="PipsPagerItemDotSize">4</x:Double>
   <x:Double x:Key="PipsPagerItemDotSizeActive">6</x:Double>
 
-  <!-- Internal text-control buttons (TextBox clear/reveal, ButtonSpinner arrows) -->
-  <x:Double x:Key="TextControlInternalButtonMinWidth">34</x:Double>
+  <!-- Inner text-control buttons (TextBox clear/reveal, ButtonSpinner arrows) -->
+  <x:Double x:Key="TextControlInnerButtonMinWidth">34</x:Double>
 
   <!-- Override system shape defaults -->
   <CornerRadius x:Key="ControlCornerRadius">3</CornerRadius>
