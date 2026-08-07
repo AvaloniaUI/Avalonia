@@ -142,6 +142,8 @@ namespace ControlCatalog.Desktop
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .WithDataAnnotationsValidation()
+                .UseWaylandWithFallback()
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,

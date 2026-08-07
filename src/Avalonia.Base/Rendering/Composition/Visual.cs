@@ -45,7 +45,7 @@ namespace Avalonia.Rendering.Composition
                 var parent = Parent;
                 while (parent != null)
                 {
-                    parent.CustomHitTestCountInSubTree -= CustomHitTestCountInSubTree;
+                    parent.CustomHitTestCountInSubTree += CustomHitTestCountInSubTree;
                     parent = parent.Parent;
                 }
             }

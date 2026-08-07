@@ -833,6 +833,11 @@ namespace Avalonia.Win32.Interop
             WM_DISPATCH_WORK_ITEM = WM_USER,
         }
 
+        public enum SystemParametersInfo
+        {
+            SPI_SETWORKAREA = 0x002F
+        }
+
         public enum DwmWindowAttribute : uint
         {
             DWMWA_NCRENDERING_ENABLED = 1,

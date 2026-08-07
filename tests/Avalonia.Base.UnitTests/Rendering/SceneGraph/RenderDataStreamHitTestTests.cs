@@ -61,6 +61,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         public void Geometry_Is_Hit_Via_FillContains()
         {
             var geometry = new Mock<IGeometryImpl>();
+            geometry.Setup(g => g.GeometryImpl).Returns(geometry.Object);
             geometry.Setup(x => x.FillContains(new Point(5, 5))).Returns(true);
             geometry.Setup(x => x.FillContains(new Point(50, 50))).Returns(false);
 
@@ -113,6 +114,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         public void Geometry_Clip_Restricts_The_Hit_Region()
         {
             var geometry = new Mock<IGeometryImpl>();
+            geometry.Setup(g => g.GeometryImpl).Returns(geometry.Object);
             geometry.Setup(x => x.FillContains(new Point(5, 5))).Returns(true);
             geometry.Setup(x => x.FillContains(new Point(50, 50))).Returns(false);
 
