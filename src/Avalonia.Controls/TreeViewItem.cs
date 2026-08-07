@@ -198,12 +198,23 @@ namespace Avalonia.Controls
 
                     if (m.HasValue)
                     {
-                        var bounds = new Rect(_header.Bounds.Size);
+                        var bounds = new Rect(GetHeaderTargetSize(_header));
                         var rect = bounds.TransformToAABB(m.Value);
                         e.TargetRect = rect;
                     }
                 }
             }
+        }
+
+        private static Size GetHeaderTargetSize(Control header)
+        {
+            // Use the DesiredWidth, not Bounds.Width: the latter is stretched to the full width of the tree view's extent,
+            // preventing scrolling, whereas the desired size is what the header actually needs.
+            var margin = header.Margin;
+            var desiredWidth = header.DesiredSize.Width - margin.Left - margin.Right;
+            var boundsSize = header.Bounds.Size;
+
+            return boundsSize.WithWidth(Math.Clamp(desiredWidth, 0.0, boundsSize.Width));
         }
 
         /// <inheritdoc/>
