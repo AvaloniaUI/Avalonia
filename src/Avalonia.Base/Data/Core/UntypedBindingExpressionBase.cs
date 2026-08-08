@@ -144,6 +144,16 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     }
 
     /// <summary>
+    /// Gets a value indicating whether the expression currently has a value for the property store.
+    /// </summary>
+    protected virtual bool HasPublishedValue() => true;
+
+    /// <summary>
+    /// Gets the value that should be published to the expression sink.
+    /// </summary>
+    protected virtual object? GetPublishedValue() => GetValueOrDefault();
+
+    /// <summary>
     /// Starts the binding expression following a call to <see cref="AttachCore"/>.
     /// </summary>
     public void Start() => Start(produceValue: true);
@@ -172,13 +182,13 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     bool IValueEntry.HasValue()
     {
         Start(produceValue: false);
-        return true;
+        return HasPublishedValue();
     }
 
     object? IValueEntry.GetValue()
     {
         Start(produceValue: false);
-        return GetValueOrDefault();
+        return GetPublishedValue();
     }
 
     void IValueEntry.Unsubscribe() => Stop();
@@ -437,7 +447,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
 
         if (Dispatcher.UIThread.CheckAccess())
         {
-            _sink.OnChanged(this, hasValueChanged, hasErrorChanged, GetValueOrDefault(), _error);
+            _sink.OnChanged(this, hasValueChanged, hasErrorChanged, GetPublishedValue(), _error);
         }
         else
         {
@@ -446,7 +456,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
             var sink = _sink;
             var vc = hasValueChanged;
             var ec = hasErrorChanged;
-            var v = GetValueOrDefault();
+            var v = GetPublishedValue();
             var e = _error;
             Dispatcher.UIThread.Post(() => sink.OnChanged(this, vc, ec, v, e));
         }
