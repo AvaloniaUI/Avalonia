@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Avalonia.Media;
 using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
@@ -33,6 +34,29 @@ namespace Avalonia.Native
         public static AvnSize ToAvnSize (this Size size)
         {
             return new AvnSize { Height = size.Height, Width = size.Width };
+        }
+
+        public static AvnColorSpace ToAvnColorSpace(this PresentationColorSpace colorSpace)
+        {
+            return colorSpace switch
+            {
+                PresentationColorSpace.Srgb => AvnColorSpace.kAvnColorSpaceSrgb,
+                // Display P3 is the widest gamut a CAMetalLayer can present without going to an
+                // extended range pixel format, so it is what a wide gamut request resolves to.
+                PresentationColorSpace.DisplayP3 or PresentationColorSpace.WideGamut =>
+                    AvnColorSpace.kAvnColorSpaceDisplayP3,
+                _ => AvnColorSpace.kAvnColorSpaceUnspecified
+            };
+        }
+
+        public static PresentationColorSpace ToPresentationColorSpace(this AvnColorSpace colorSpace)
+        {
+            return colorSpace switch
+            {
+                AvnColorSpace.kAvnColorSpaceSrgb => PresentationColorSpace.Srgb,
+                AvnColorSpace.kAvnColorSpaceDisplayP3 => PresentationColorSpace.DisplayP3,
+                _ => PresentationColorSpace.Unspecified
+            };
         }
 
         [return: NotNullIfNotNull(nameof(s))]

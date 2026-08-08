@@ -224,20 +224,53 @@ public:
     }
 };
 
+// Returns the color space which was really applied, leaving the layer untagged when the requested
+// one is not available. 8 bit BGRA already covers the Display P3 gamut, so the pixel format stays.
+static AvnColorSpace ApplyColorSpace(CAMetalLayer* layer, AvnColorSpace colorSpace)
+{
+    CFStringRef name;
+    switch (colorSpace)
+    {
+        case kAvnColorSpaceSrgb:
+            name = kCGColorSpaceSRGB;
+            break;
+        case kAvnColorSpaceDisplayP3:
+            name = kCGColorSpaceDisplayP3;
+            break;
+        default:
+            return kAvnColorSpaceUnspecified;
+    }
+
+    auto cgColorSpace = CGColorSpaceCreateWithName(name);
+    if(cgColorSpace == nullptr)
+        return kAvnColorSpaceUnspecified;
+
+    layer.colorspace = cgColorSpace;
+    // The layer retains it, so drop the reference created here.
+    CGColorSpaceRelease(cgColorSpace);
+    return colorSpace;
+}
+
 class AvnMetalRenderTarget : public ComSingleObject<IAvnMetalRenderTarget, &IID_IAvnMetalRenderTarget>
 {
     CAMetalLayer* _layer;
     double _scaling = 1;
     AvnPixelSize _size = {1,1};
     ComPtr<AvnMetalDevice> _device;
+    AvnColorSpace _colorSpace;
 public:
     double PendingScaling = 1;
     AvnPixelSize PendingSize = {1,1};
     FORWARD_IUNKNOWN()
-    AvnMetalRenderTarget(CAMetalLayer* layer, ComPtr<AvnMetalDevice> device)
+    AvnMetalRenderTarget(CAMetalLayer* layer, ComPtr<AvnMetalDevice> device, AvnColorSpace colorSpace)
     {
         _layer = layer;
         _device = device;
+        _colorSpace = colorSpace;
+    }
+
+    AvnColorSpace GetColorSpace() override {
+        return _colorSpace;
     }
 
     HRESULT BeginDrawing(IAvnMetalRenderingSession **ret) override {
@@ -278,12 +311,13 @@ public:
     CAMetalLayer* _layer;
     ComPtr<AvnMetalRenderTarget> _target;
 }
-- (MetalRenderTarget *)initWithDevice:(IAvnMetalDevice *)device {
+- (MetalRenderTarget *)initWithDevice:(IAvnMetalDevice *)device colorSpace:(AvnColorSpace)colorSpace {
     _device = dynamic_cast<AvnMetalDevice*>(device);
     _layer = [CAMetalLayer new];
     _layer.opaque = false;
     _layer.device = _device->device;
-    _target.setNoAddRef(new AvnMetalRenderTarget(_layer, _device));
+    auto appliedColorSpace = ApplyColorSpace(_layer, colorSpace);
+    _target.setNoAddRef(new AvnMetalRenderTarget(_layer, _device, appliedColorSpace));
     return self;
 }
 

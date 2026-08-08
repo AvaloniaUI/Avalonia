@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Surfaces;
@@ -112,7 +113,10 @@ namespace Avalonia.iOS
             if (l is CAMetalLayer metalLayer)
             {
                 metalLayer.Opaque = false;
-                _topLevelImpl.Surfaces = [new Metal.MetalPlatformSurface(metalLayer, this)];
+                var presentationOptions = AvaloniaLocator.Current.GetService<PresentationOptions>() ?? new PresentationOptions();
+                var metalSurface = new Metal.MetalPlatformSurface(metalLayer, this, presentationOptions.PreferredColorSpace);
+                _topLevelImpl.SetMetalSurface(metalSurface);
+                _topLevelImpl.Surfaces = [metalSurface];
             }
         }
 
@@ -153,7 +157,7 @@ namespace Avalonia.iOS
             _topLevelImpl._insetsManager.InitWithController(controller);
         }
         
-        internal class TopLevelImpl : ITopLevelImpl
+        internal class TopLevelImpl : ITopLevelImpl, IColorManagedPresentation
         {
             private readonly AvaloniaView _view;
             private readonly INativeControlHostImpl _nativeControlHost;
@@ -163,8 +167,22 @@ namespace Avalonia.iOS
             private readonly IInputPane? _inputPane;
             private readonly IOSPlatformFeedback _feedback;
             private IDisposable? _paddingInsets;
+            private Metal.MetalPlatformSurface? _metalSurface;
 
             public AvaloniaView View => _view;
+
+            // Only the Metal surface can tag its layer, so this stays unspecified when the view
+            // renders through OpenGL.
+            public PresentationColorSpace CurrentColorSpace =>
+                _metalSurface?.CurrentColorSpace ?? PresentationColorSpace.Unspecified;
+
+            public event EventHandler? CurrentColorSpaceChanged;
+
+            internal void SetMetalSurface(Metal.MetalPlatformSurface surface)
+            {
+                _metalSurface = surface;
+                surface.CurrentColorSpaceChanged += (_, e) => CurrentColorSpaceChanged?.Invoke(this, e);
+            }
 
             public TopLevelImpl(AvaloniaView view)
             {
@@ -290,6 +308,11 @@ namespace Avalonia.iOS
                 if (featureType == typeof(INativeControlHostImpl))
                 {
                     return _nativeControlHost;
+                }
+
+                if (featureType == typeof(IColorManagedPresentation))
+                {
+                    return this;
                 }
 
                 if (featureType == typeof(IInsetsManager))
