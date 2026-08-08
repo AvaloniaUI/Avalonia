@@ -8,7 +8,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Rendering.Composition;
 
-partial class CompositionBrush : IBrush
+partial class CompositionBrush : IBrush, IRelativeTransformBrush
 {
     partial void InitializeDefaultsExtra()
     {

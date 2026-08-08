@@ -6,7 +6,7 @@ using Avalonia.Rendering.Composition.Transport;
 
 namespace Avalonia.Rendering.Composition.Server;
 
-internal partial class ServerCompositionBrush : IBrush
+internal partial class ServerCompositionBrush : IBrush, IRelativeTransformBrush
 {
     ITransform? IBrush.Transform => Transform;
 }
