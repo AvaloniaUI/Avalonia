@@ -11,31 +11,25 @@ using Avalonia.Controls.Shapes;
 
 namespace ControlCatalog.Pages
 {
-    public class CustomDrawingExampleControl : Control
+    public partial class CustomDrawingExampleControl : Control
     {
         private Point _cursorPoint;
+        private Geometry _smileGeometry;
 
-
-        public static readonly StyledProperty<double> ScaleProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(Scale), 1.0d);
-        public double Scale { get => GetValue(ScaleProperty); set => SetValue(ScaleProperty, value); }
-
-        public static readonly StyledProperty<double> RotationProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(Rotation),
-            coerce: (_, val) => val % (Math.PI * 2));
+        [StyledProperty(DefaultValue = 1.0d)]
+        public partial double Scale { get; set; }
 
         /// <summary>
         /// Rotation, measured in Radians!
         /// </summary>
-        public double Rotation
-        {
-            get => GetValue(RotationProperty);
-            set => SetValue(RotationProperty, value);
-        }
+        [StyledProperty(CoerceMethodName = nameof(CoerceRotation))]
+        public partial double Rotation { get; set; }
 
-        public static readonly StyledProperty<double> ViewportCenterYProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(ViewportCenterY), 0.0d);
-        public double ViewportCenterY { get => GetValue(ViewportCenterYProperty); set => SetValue(ViewportCenterYProperty, value); }
+        [StyledProperty]
+        public partial double ViewportCenterY { get; set; }
 
-        public static readonly StyledProperty<double> ViewportCenterXProperty = AvaloniaProperty.Register<CustomDrawingExampleControl, double>(nameof(ViewportCenterX), 0.0d);
-        public double ViewportCenterX { get => GetValue(ViewportCenterXProperty); set => SetValue(ViewportCenterXProperty, value); }
+        [StyledProperty]
+        public partial double ViewportCenterX { get; set; }
 
         private IPen _pen;
 
@@ -66,7 +60,7 @@ namespace ControlCatalog.Pages
             _smileGeometry = sg.Clone();
         }
 
-        private Geometry _smileGeometry;
+        private static partial double CoerceRotation(AvaloniaObject sender, double value) => value % (Math.PI * 2);
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {

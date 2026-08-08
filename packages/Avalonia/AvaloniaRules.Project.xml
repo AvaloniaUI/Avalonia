@@ -5,6 +5,7 @@
     <Category Name="Compile" DisplayName="Compiling" />
     <Category Name="Debug" DisplayName="Debug" />
     <Category Name="NameGenerator" DisplayName="Name Generator" />
+    <Category Name="PropertyGenerator" DisplayName="Property Generator" />
   </Rule.Categories>
 
   <Rule.DataSource>
@@ -138,5 +139,12 @@ Example: MyApp.Presentation.*, MyApp.Presentation.Views;MyApp.Presentation.Contr
       </NameValuePair>
     </EnumProperty.Metadata>
   </EnumProperty>
+
+  <!-- PropertyGenerator -->
+
+  <BoolProperty Name="AvaloniaPropertyGeneratorIsEnabled"
+              DisplayName="Use Property Generator"
+              Description="Enable/Disable the Avalonia Property Source Generator ([StyledProperty]/[DirectProperty]/[AttachedProperty])"
+              Category="PropertyGenerator" />
 
 </Rule>
