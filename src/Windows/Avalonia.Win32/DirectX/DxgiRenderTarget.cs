@@ -54,11 +54,17 @@ namespace Avalonia.Win32.DirectX
             var preferredColorSpace = AvaloniaLocator.Current.GetService<PresentationOptions>()?.PreferredColorSpace
                                       ?? PresentationColorSpace.Unspecified;
 
+            // WideGamut is a request for whichever wide-gamut space the platform offers, resolved to
+            // a concrete space the same way Metal resolves it to DisplayP3 -- Windows has no Display
+            // P3 swap-chain format, so scRGB is that concrete space here, and requesting it is
+            // exactly what "wants a float buffer" below means for either PresentationColorSpace.
+            bool wantsScRgb = preferredColorSpace is PresentationColorSpace.ScRgb or PresentationColorSpace.WideGamut;
+
             DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc = new DXGI_SWAP_CHAIN_DESC1();
 
             // standard swap chain really. scRGB is the exception, it needs a float buffer to hold
             // the values outside of 0..1 which carry the wider gamut.
-            dxgiSwapChainDesc.Format = preferredColorSpace == PresentationColorSpace.ScRgb
+            dxgiSwapChainDesc.Format = wantsScRgb
                 ? DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT
                 : DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
             dxgiSwapChainDesc.SampleDesc.Count = 1U;
@@ -83,13 +89,13 @@ namespace Avalonia.Win32.DirectX
                     null
             );
 
-            if (preferredColorSpace == PresentationColorSpace.ScRgb
+            if (wantsScRgb
                 && DxgiSwapChainColorSpace.TryApply(MicroComRuntime.GetNativeIntPtr(_swapChain),
                     DXGI_COLOR_SPACE_TYPE.DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709))
             {
                 ColorSpace = PresentationColorSpace.ScRgb;
             }
-            else if (preferredColorSpace == PresentationColorSpace.ScRgb)
+            else if (wantsScRgb)
             {
                 // The float buffer exists but the driver won't present it as scRGB. Recreate an 8 bit
                 // chain, otherwise the renderer would draw 8 bit content into a float buffer.

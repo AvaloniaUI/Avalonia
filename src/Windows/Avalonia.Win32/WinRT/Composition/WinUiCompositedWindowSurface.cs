@@ -105,6 +105,7 @@ namespace Avalonia.Win32.WinRT.Composition
         private ICompositionDrawingSurfaceInterop? _surfaceInterop;
         private ICompositionDrawingSurface? _drawingSurface;
         private readonly PresentationColorSpace _preferredColorSpace;
+        private readonly bool _wantsScRgb;
         private PresentationColorSpace _colorSpace;
 
         /// <summary>
@@ -142,6 +143,9 @@ namespace Avalonia.Win32.WinRT.Composition
             _window = window;
             _preferredColorSpace = AvaloniaLocator.Current.GetService<PresentationOptions>()?.PreferredColorSpace
                                    ?? PresentationColorSpace.Unspecified;
+            // WideGamut resolves to scRGB here the same way it resolves to DisplayP3 on Metal --
+            // Windows has no Display P3 composition format, so scRGB is the concrete answer.
+            _wantsScRgb = _preferredColorSpace is PresentationColorSpace.ScRgb or PresentationColorSpace.WideGamut;
 
             try
             {
@@ -188,7 +192,7 @@ namespace Avalonia.Win32.WinRT.Composition
             // scRGB keeps values outside of 0..1, so it needs a float surface. Windows has no
             // Display P3 composition format, so the pixel format is the only wide gamut lever here.
             ICompositionDrawingSurface? drawingSurface = null;
-            if (_preferredColorSpace == PresentationColorSpace.ScRgb)
+            if (_wantsScRgb)
             {
                 try
                 {
