@@ -19,10 +19,10 @@
     if (peer == nullptr)
         return nil;
     
-    auto instance = peer->GetNode();
+    ComPtr<IAvnAutomationNode> instance(peer->GetNode(), true);
     
     if (instance != nullptr)
-        return dynamic_cast<AvnAutomationNode*>(instance)->GetOwner();
+        return dynamic_cast<AvnAutomationNode*>(instance.getRaw())->GetOwner();
     
     if (peer->IsInteropPeer())
     {
@@ -31,7 +31,7 @@
     }
     else if (peer->IsRootProvider())
     {
-        auto window = peer->RootProvider_GetWindow();
+        ComPtr<IAvnWindowBase> window(peer->RootProvider_GetWindow(), true);
         
         if (window == nullptr)
         {
@@ -39,7 +39,7 @@
             return nil;
         }
         
-        auto holder = dynamic_cast<INSViewHolder*>(window);
+        auto holder = dynamic_cast<INSViewHolder*>(window.getRaw());
         auto view = holder->GetNSView();
         return (NSAccessibilityElement*)[view window];
     }
@@ -335,7 +335,7 @@
 
 - (id)accessibilityParent
 {
-    auto parentPeer = _peer->GetParent();
+    ComPtr<IAvnAutomationPeer> parentPeer(_peer->GetParent(), true);
 
     if (parentPeer == nullptr)
         return [NSApplication sharedApplication];
@@ -350,42 +350,44 @@
     // AvnView instead of the target AvnAccessibilityElement.
     if (parentPeer->IsRootProvider())
     {
-        auto window = parentPeer->RootProvider_GetWindow();
+        ComPtr<IAvnWindowBase> window(parentPeer->RootProvider_GetWindow(), true);
         if (window != nullptr)
         {
-            auto holder = dynamic_cast<INSViewHolder*>(window);
+            auto holder = dynamic_cast<INSViewHolder*>(window.getRaw());
             if (holder != nullptr)
                 return holder->GetNSView();
         }
     }
 
-    return [AvnAccessibilityElement acquire:parentPeer];
+    return [AvnAccessibilityElement acquire:parentPeer.getRaw()];
 }
 
 - (id)accessibilityTopLevelUIElement
 {
-    auto rootPeer = _peer->GetRootPeer();
-    return [AvnAccessibilityElement acquire:rootPeer];
+    ComPtr<IAvnAutomationPeer> rootPeer(_peer->GetRootPeer(), true);
+    return [AvnAccessibilityElement acquire:rootPeer.getRaw()];
 }
 
 - (id)accessibilityWindow
 {
-    auto rootPeer = _peer->GetVisualRoot();
-    return [AvnAccessibilityElement acquire:rootPeer];
+    ComPtr<IAvnAutomationPeer> rootPeer(_peer->GetVisualRoot(), true);
+    return [AvnAccessibilityElement acquire:rootPeer.getRaw()];
 }
 
 - (id)accessibilityHorizontalScrollBar
 {
     if (_peer == nullptr)
         return nil;
-    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetHorizontalScrollBar()];
+    ComPtr<IAvnAutomationPeer> peer(_peer->ScrollProvider_GetHorizontalScrollBar(), true);
+    return [AvnAccessibilityElement acquire:peer.getRaw()];
 }
 
 - (id)accessibilityVerticalScrollBar
 {
     if (_peer == nullptr)
         return nil;
-    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetVerticalScrollBar()];
+    ComPtr<IAvnAutomationPeer> peer(_peer->ScrollProvider_GetVerticalScrollBar(), true);
+    return [AvnAccessibilityElement acquire:peer.getRaw()];
 }
 
 - (BOOL)isAccessibilityExpanded
@@ -572,7 +574,8 @@
     That's exactly what the code below does (templated parent, else walk to the nearest exposed ancestor).
 	*/
 
-    id target = [AvnAccessibilityElement acquire:_peer->GetTemplatedParent()];
+    ComPtr<IAvnAutomationPeer> templatedParent(_peer->GetTemplatedParent(), true);
+    id target = [AvnAccessibilityElement acquire:templatedParent.getRaw()];
     if (target == nil)
         target = self;
     while ([target isKindOfClass:[AvnAccessibilityElement class]] && ![(AvnAccessibilityElement*)target isAccessibilityElement])
@@ -665,7 +668,7 @@
 
 - (void)recalculateChildren
 {
-    auto childPeers = _peer->GetChildren();
+    ComPtr<IAvnAutomationPeerArray> childPeers(_peer->GetChildren(), true);
     auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
 
     if (childCount > 0)
@@ -674,11 +677,11 @@
         
         for (int i = 0; i < childCount; ++i)
         {
-            IAvnAutomationPeer* child;
+            ComPtr<IAvnAutomationPeer> child;
             
-            if (childPeers->Get(i, &child) == S_OK)
+            if (childPeers->Get(i, child.getPPV()) == S_OK)
             {
-                id element = [AvnAccessibilityElement acquire:child];
+                id element = [AvnAccessibilityElement acquire:child.getRaw()];
                 [_children addObject:element];
             }
         }

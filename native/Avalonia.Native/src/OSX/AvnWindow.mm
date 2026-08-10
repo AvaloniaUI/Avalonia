@@ -612,11 +612,11 @@
     if (automationPeer == nullptr || !automationPeer->IsRootProvider())
         return nil;
 
-    auto focusedPeer = automationPeer->RootProvider_GetFocus();
+    ComPtr<IAvnAutomationPeer> focusedPeer(automationPeer->RootProvider_GetFocus(), true);
     if (focusedPeer == nullptr)
         return nil;
 
-    return [AvnAccessibilityElement acquire:focusedPeer];
+    return [AvnAccessibilityElement acquire:focusedPeer.getRaw()];
 }
 
 - (NSString * _Nullable) accessibilityIdentifier
@@ -636,7 +636,8 @@
         auto peer = parent->BaseEvents->GetAutomationPeer();
         if (peer != nullptr)
         {
-            _automationPeer = peer;
+            // GetAutomationPeer returns an owned reference.
+            _automationPeer.setNoAddRef(peer);
             _automationNode = new AvnAutomationNode(self);
             _automationPeer->SetNode(_automationNode);
         }
