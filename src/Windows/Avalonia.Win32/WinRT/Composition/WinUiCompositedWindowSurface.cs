@@ -35,7 +35,8 @@ namespace Avalonia.Win32.WinRT.Composition
         /// <summary>
         /// The color space of the most recently created render target, which is the presented one.
         /// </summary>
-        public PresentationColorSpace CurrentColorSpace => _renderTarget?.ColorSpace ?? PresentationColorSpace.Unspecified;
+        public PresentationColorSpace CurrentColorSpace =>
+            _renderTarget?.ColorSpace ?? PresentationColorSpace.Unspecified;
 
         /// <summary>
         /// Raised on the UI thread when <see cref="CurrentColorSpace"/> changes, forwarded from
