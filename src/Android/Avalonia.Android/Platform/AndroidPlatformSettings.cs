@@ -168,7 +168,6 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
             // The context might still have the old values at this point because they haven't been processed yet.
             // Postpone the update 100ms arbitrarily. Not an ideal solution, but sufficient.
             var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Normal, Dispatcher.UIThread);
-            timer.Start();
 
             timer.Tick += (_, _) =>
             {
@@ -176,6 +175,8 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
                 settings.UpdateInputConfigValues(context);
                 settings.UpdateColorValues(context);
             };
+
+            timer.Start();
         }
     }
 }
