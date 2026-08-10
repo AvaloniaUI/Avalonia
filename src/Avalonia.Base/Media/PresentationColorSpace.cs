@@ -42,5 +42,16 @@ namespace Avalonia.Media
         /// out what was really applied.
         /// </remarks>
         WideGamut = 3,
+
+        /// <summary>
+        /// Content is presented as scRGB, which is linear light with the sRGB primaries.
+        /// </summary>
+        /// <remarks>
+        /// Values below 0 and above 1 are used to reach colors outside of the sRGB gamut, so this
+        /// needs a floating point framebuffer. A backend which honors it also switches its surface
+        /// to 16 bit float. This is how wide gamut presentation is expressed on Windows, which has
+        /// no Display P3 color space for swap chains or composition surfaces.
+        /// </remarks>
+        ScRgb = 4,
     }
 }

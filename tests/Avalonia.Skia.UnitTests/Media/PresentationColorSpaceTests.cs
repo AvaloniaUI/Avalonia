@@ -70,17 +70,43 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
-        public void Render_Target_Without_Color_Management_Should_Not_Produce_A_Color_Space()
+        public void ScRgb_Should_Produce_A_Linear_Color_Space()
         {
-            Assert.Null(new PlainRenderTarget().GetPresentationColorSpace());
+            var colorSpace = PresentationColorSpace.ScRgb.ToSKColorSpace();
+
+            Assert.NotNull(colorSpace);
+            Assert.False(colorSpace!.IsSrgb);
+            Assert.True(colorSpace.GetNumericalTransferFunction(out var transferFunction));
+            Assert.Equal(SKColorSpaceTransferFn.Linear, transferFunction);
         }
 
         [Fact]
-        public void Color_Managed_Render_Target_Should_Produce_Its_Own_Color_Space()
+        public void ScRgb_Should_Require_A_Float_Color_Type()
+        {
+            Assert.Equal(SKColorType.RgbaF16, PresentationColorSpace.ScRgb.ToSKColorType(SKColorType.Rgba8888));
+        }
+
+        [Theory]
+        [InlineData(PresentationColorSpace.Unspecified)]
+        [InlineData(PresentationColorSpace.Srgb)]
+        [InlineData(PresentationColorSpace.DisplayP3)]
+        public void Other_Color_Spaces_Should_Keep_The_Backend_Color_Type(PresentationColorSpace colorSpace)
+        {
+            Assert.Equal(SKColorType.Bgra8888, colorSpace.ToSKColorType(SKColorType.Bgra8888));
+        }
+
+        [Fact]
+        public void Render_Target_Without_Color_Management_Should_Be_Unspecified()
+        {
+            Assert.Equal(PresentationColorSpace.Unspecified, new PlainRenderTarget().GetPresentationColorSpace());
+        }
+
+        [Fact]
+        public void Color_Managed_Render_Target_Should_Report_Its_Own_Color_Space()
         {
             var target = new ColorManagedRenderTarget(PresentationColorSpace.DisplayP3);
 
-            Assert.Same(PresentationColorSpace.DisplayP3.ToSKColorSpace(), target.GetPresentationColorSpace());
+            Assert.Equal(PresentationColorSpace.DisplayP3, target.GetPresentationColorSpace());
         }
 
         private class PlainRenderTarget : IPlatformRenderSurfaceRenderTarget

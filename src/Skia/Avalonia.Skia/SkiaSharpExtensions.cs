@@ -345,6 +345,8 @@ namespace Avalonia.Skia
         private static readonly SKColorSpace s_displayP3 =
             SKColorSpace.CreateRgb(SKColorSpaceTransferFn.Srgb, SKColorSpaceXyz.DisplayP3);
 
+        private static readonly SKColorSpace s_srgbLinear = SKColorSpace.CreateSrgbLinear();
+
         // Null leaves the surface untagged, which is how content was presented before color
         // management was added.
         internal static SKColorSpace? ToSKColorSpace(this PresentationColorSpace colorSpace)
@@ -360,13 +362,25 @@ namespace Avalonia.Skia
                 PresentationColorSpace.WideGamut => throw new ArgumentException(
                     $"{nameof(PresentationColorSpace.WideGamut)} is a request, a render target has to report " +
                     "the color space it really applied.", nameof(colorSpace)),
+                // scRGB is linear light, the extra gamut lives in the values outside of 0..1.
+                PresentationColorSpace.ScRgb => s_srgbLinear,
                 _ => throw new ArgumentOutOfRangeException(nameof(colorSpace), colorSpace, null)
             };
         }
 
-        internal static SKColorSpace? GetPresentationColorSpace(this IPlatformRenderSurfaceRenderTarget target)
+        /// <summary>
+        /// Returns the color type a surface has to use for the given color space, or
+        /// <paramref name="defaultColorType"/> when the color space works with the backend default.
+        /// </summary>
+        internal static SKColorType ToSKColorType(this PresentationColorSpace colorSpace, SKColorType defaultColorType)
         {
-            return (target as IColorManagedRenderTarget)?.ColorSpace.ToSKColorSpace();
+            // scRGB stores values outside of 0..1, so 8 bit per channel can not hold it.
+            return colorSpace == PresentationColorSpace.ScRgb ? SKColorType.RgbaF16 : defaultColorType;
+        }
+
+        internal static PresentationColorSpace GetPresentationColorSpace(this IPlatformRenderSurfaceRenderTarget target)
+        {
+            return (target as IColorManagedRenderTarget)?.ColorSpace ?? PresentationColorSpace.Unspecified;
         }
     }
 }

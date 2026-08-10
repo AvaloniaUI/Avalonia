@@ -69,7 +69,9 @@ namespace Avalonia.Skia
                 gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
 
                 var size = glSession.Size;
-                var colorType = SKColorType.Rgba8888;
+                // scRGB needs a float surface, so the color space decides the color type here.
+                var colorSpace = _surface.GetPresentationColorSpace();
+                var colorType = colorSpace.ToSKColorType(SKColorType.Rgba8888);
                 var scaling = glSession.Scaling;
                 if (size.Width <= 0 || size.Height <= 0 || scaling < 0)
                 {
@@ -91,7 +93,7 @@ namespace Avalonia.Skia
                     var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, samples, disp.StencilSize, glInfo);
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
-                        colorType, _surface.GetPresentationColorSpace(), _surfaceProperties);
+                        colorType, colorSpace.ToSKColorSpace(), _surfaceProperties);
 
                     success = true;
 
