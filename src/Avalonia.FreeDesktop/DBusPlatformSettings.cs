@@ -38,24 +38,6 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private static async Task<PlatformColorValues> GetUncachedColorValuesAsync(Settings settings)
-        {
-            var nullableThemeVariant = await TryGetThemeVariantAsync(settings);
-            var nullableAccentColor = await TryGetAccentColorAsync(settings);
-
-            return (nullableThemeVariant, nullableAccentColor) switch
-            {
-                ({ } themeVariant, { } accentColor)
-                    => new PlatformColorValues { ThemeVariant = themeVariant, AccentColor1 = accentColor },
-                ({ } themeVariant, null)
-                    => new PlatformColorValues { ThemeVariant = themeVariant },
-                (null, { } accentColor)
-                    => new PlatformColorValues { AccentColor1 = accentColor },
-                (null, null)
-                    => new PlatformColorValues { ThemeVariant = PlatformThemeVariant.Light }
-            };
-        }
-
         private static async Task<PlatformThemeVariant?> TryGetThemeVariantAsync(Settings settings)
         {
             try
