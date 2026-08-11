@@ -23,7 +23,7 @@ namespace Avalonia.Skia
 
         public PlatformRenderTargetState State => _surface.State;
 
-        class GlGpuSession : ISkiaGpuRenderSession
+        class GlGpuSession : ISkiaGpuRenderSession, ISkiaGpuRenderSessionSurfaceFormat
         {
             private readonly GRBackendRenderTarget _backendRenderTarget;
             private readonly SKSurface _surface;
@@ -32,15 +32,22 @@ namespace Avalonia.Skia
             public GlGpuSession(GRContext grContext,
                 GRBackendRenderTarget backendRenderTarget,
                 SKSurface surface,
-                IGlPlatformSurfaceRenderingSession glSession)
+                IGlPlatformSurfaceRenderingSession glSession,
+                SKColorType colorType,
+                SKColorSpace? colorSpace)
             {
                 GrContext = grContext;
                 _backendRenderTarget = backendRenderTarget;
                 _surface = surface;
                 _glSession = glSession;
-                
+                ColorType = colorType;
+                ColorSpace = colorSpace;
+
                 SurfaceOrigin = glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft;
             }
+
+            public SKColorType ColorType { get; }
+            public SKColorSpace? ColorSpace { get; }
             public void Dispose()
             {
                 _surface.Canvas.Flush();
@@ -97,7 +104,8 @@ namespace Avalonia.Skia
 
                     success = true;
 
-                    return new GlGpuSession(_grContext, renderTarget, surface, glSession);
+                    return new GlGpuSession(_grContext, renderTarget, surface, glSession, colorType,
+                        colorSpace.ToSKColorSpace());
                 }
             }
             finally
