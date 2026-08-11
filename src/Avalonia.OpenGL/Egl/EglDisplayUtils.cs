@@ -51,7 +51,7 @@ internal static class EglDisplayUtils
 
     public static EglConfigInfo InitializeAndGetConfig(EglInterface egl, IntPtr display,
         IEnumerable<GlVersion>? versions, EglConfigProbeCallback? probeConfig = null,
-        bool allowPbufferOnlyConfigs = false)
+        bool allowPbufferOnlyConfigs = false, bool preferFloat16 = false)
     {
         if (!egl.Initialize(display, out _, out _))
             throw OpenGlException.GetFormattedException("eglInitialize", egl);
@@ -128,33 +128,51 @@ internal static class EglDisplayUtils
             ? new[] { EGL_PBUFFER_BIT | EGL_WINDOW_BIT, EGL_WINDOW_BIT, EGL_PBUFFER_BIT }
             : new[] { EGL_PBUFFER_BIT | EGL_WINDOW_BIT, EGL_WINDOW_BIT };
 
+        // A half float config is a preference, not a requirement, so the 8 bit channel depth is
+        // always tried after it: a driver without EGL_EXT_pixel_format_float still gets a config,
+        // it just presents in the ordinary fixed point way.
+        var channelDepths = preferFloat16
+            ? new[] { 16, 8 }
+            : new[] { 8 };
+
         foreach (var cfg in cfgs)
         {
             if (!egl.BindApi(cfg.Api))
                 continue;
+            foreach (var channelDepth in channelDepths)
             foreach (var surfaceType in surfaceTypes)
             foreach (var stencilSize in new[] { 8, 1, 0 })
             foreach (var depthSize in new[] { 8, 1, 0 })
             {
+                var isFloat16 = channelDepth == 16;
                 var attribs = new[]
                 {
                     EGL_SURFACE_TYPE, surfaceType,
                     EGL_RENDERABLE_TYPE, cfg.RenderableTypeBit,
-                    EGL_RED_SIZE, 8,
-                    EGL_GREEN_SIZE, 8,
-                    EGL_BLUE_SIZE, 8,
-                    EGL_ALPHA_SIZE, 8,
+                    EGL_RED_SIZE, channelDepth,
+                    EGL_GREEN_SIZE, channelDepth,
+                    EGL_BLUE_SIZE, channelDepth,
+                    EGL_ALPHA_SIZE, channelDepth,
                     EGL_STENCIL_SIZE, stencilSize,
                     EGL_DEPTH_SIZE, depthSize,
                     EGL_NONE
                 };
+                if (isFloat16)
+                    attribs = attribs.Take(attribs.Length - 1)
+                        .Concat(new[]
+                        {
+                            EGL_COLOR_COMPONENT_TYPE_EXT, EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT,
+                            EGL_NONE
+                        })
+                        .ToArray();
+
                 if (ChooseConfigWithProbe(egl, display, attribs, probeConfig) is not { } config)
                     continue;
 
                 egl.GetConfigAttrib(display, config, EGL_SAMPLES, out var sampleCount);
                 egl.GetConfigAttrib(display, config, EGL_STENCIL_SIZE, out var returnedStencilSize);
                 return new EglConfigInfo(config, cfg.Version, surfaceType, cfg.Attributes, sampleCount,
-                    returnedStencilSize, cfg.Api);
+                    returnedStencilSize, cfg.Api, isFloat16);
             }
         }
 
@@ -174,8 +192,11 @@ internal class EglConfigInfo
     public int StencilSize { get; }
     public int Api { get; }
 
+    /// <summary>Whether this config has half float rather than fixed point colour channels.</summary>
+    public bool IsFloat16 { get; }
+
     public EglConfigInfo(IntPtr config, GlVersion version, int surfaceType, int[] attributes, int sampleCount,
-        int stencilSize, int api)
+        int stencilSize, int api, bool isFloat16 = false)
     {
         Config = config;
         Version = version;
@@ -184,5 +205,6 @@ internal class EglConfigInfo
         SampleCount = sampleCount;
         StencilSize = stencilSize;
         Api = api;
+        IsFloat16 = isFloat16;
     }
 }
