@@ -575,6 +575,8 @@ namespace Avalonia.Controls.UnitTests
                 topLevel!.PlatformImpl!.Input!(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel.InputRoot,
                     RawPointerEventType.LeaveWindow, default(RawPointerPoint), RawInputModifiers.None));
 
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
                 Assert.False(ToolTip.GetIsOpen(target));
             }
         }
