@@ -48,7 +48,16 @@ namespace Avalonia.Native
         public AvnAutomationControlType AutomationControlType => (AvnAutomationControlType)_inner.GetAutomationControlType();
         public IAvnString? AutomationId => _inner.GetAutomationId().ToAvnString();
         public AvnRect BoundingRectangle => _inner.GetBoundingRectangle().ToAvnRect();
-        public IAvnAutomationPeerArray Children => new AvnAutomationPeerArray(_inner.GetChildren());
+        public IAvnAutomationPeerArray Children
+        {
+            get
+            {
+                var children = _inner is ControlAutomationPeer controlPeer
+                    ? controlPeer.RefreshChildrenForAutomationBridge()
+                    : _inner.GetChildren();
+                return new AvnAutomationPeerArray(children);
+            }
+        }
         public IAvnString? ClassName => _inner.GetClassName().ToAvnString();
         public IAvnAutomationPeer? LabeledBy => Wrap(_inner.GetLabeledBy());
         public IAvnString? Name => _inner.GetName().ToAvnString();

@@ -6,6 +6,12 @@
 #include "AvnView.h"
 #include "WindowInterfaces.h"
 
+@interface AvnAccessibilityElement ()
+- (AvnAccessibilityElement *)initWithPeer:(IAvnAutomationPeer *)peer;
+- (AvnAccessibilityElement *)initWithPeer:(IAvnAutomationPeer *)peer
+                                     node:(AvnAutomationNode *)node;
+@end
+
 @implementation AvnAccessibilityElement
 {
     ComPtr<IAvnAutomationPeer> _peer;
@@ -16,36 +22,50 @@
 
 + (NSAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
 {
-    if (peer == nullptr)
-        return nil;
-    
-    ComPtr<IAvnAutomationNode> instance(peer->GetNode(), true);
-    
-    if (instance != nullptr)
-        return dynamic_cast<AvnAutomationNode*>(instance.getRaw())->GetOwner();
-    
-    if (peer->IsInteropPeer())
+    @synchronized ([AvnAccessibilityElement class])
     {
-        auto view = (__bridge NSAccessibilityElement*)peer->InteropPeer_GetNativeControlHandle();
-        return view;
-    }
-    else if (peer->IsRootProvider())
-    {
-        ComPtr<IAvnWindowBase> window(peer->RootProvider_GetWindow(), true);
-        
-        if (window == nullptr)
-        {
-            NSLog(@"IRootProvider.PlatformImpl returned null or a non-WindowBaseImpl.");
+        if (peer == nullptr)
             return nil;
+
+        ComPtr<IAvnAutomationNode> instance(peer->GetNode(), true);
+
+        if (instance != nullptr)
+        {
+            auto node = dynamic_cast<AvnAutomationNode*>(instance.getRaw());
+            if (node == nullptr)
+            {
+                NSLog(@"IAvnAutomationPeer returned an unknown automation node implementation.");
+                return nil;
+            }
+
+            auto owner = node->GetOwner();
+            if (owner != nil)
+                return owner;
+            return [[AvnAccessibilityElement alloc] initWithPeer:peer node:node];
         }
-        
-        auto holder = dynamic_cast<INSViewHolder*>(window.getRaw());
-        auto view = holder->GetNSView();
-        return (NSAccessibilityElement*)[view window];
-    }
-    else
-    {
-        return [[AvnAccessibilityElement alloc] initWithPeer:peer];
+
+        if (peer->IsInteropPeer())
+        {
+            return (__bridge NSAccessibilityElement*)peer->InteropPeer_GetNativeControlHandle();
+        }
+        else if (peer->IsRootProvider())
+        {
+            ComPtr<IAvnWindowBase> window(peer->RootProvider_GetWindow(), true);
+
+            if (window == nullptr)
+            {
+                NSLog(@"IRootProvider.PlatformImpl returned null or a non-WindowBaseImpl.");
+                return nil;
+            }
+
+            auto holder = dynamic_cast<INSViewHolder*>(window.getRaw());
+            auto view = holder->GetNSView();
+            return (NSAccessibilityElement*)[view window];
+        }
+        else
+        {
+            return [[AvnAccessibilityElement alloc] initWithPeer:peer];
+        }
     }
 }
 
@@ -53,16 +73,50 @@
 {
     self = [super init];
     _peer = peer;
-    _node = new AvnAutomationNode(self);
-    _peer->SetNode(_node);
+
+    @synchronized ([AvnAccessibilityElement class])
+    {
+        ComPtr<IAvnAutomationNode> existing(peer->GetNode(), true);
+        if (existing != nullptr)
+        {
+            _node = dynamic_cast<AvnAutomationNode*>(existing.getRaw());
+            if (_node == nullptr)
+            {
+                NSLog(@"IAvnAutomationPeer returned an unknown automation node implementation.");
+                return nil;
+            }
+
+            _node->SetOwner(self);
+            return self;
+        }
+
+        _node = new AvnAutomationNode(self);
+        _peer->SetNode(_node);
+    }
+    return self;
+}
+
+- (AvnAccessibilityElement *)initWithPeer:(IAvnAutomationPeer *)peer
+                                     node:(AvnAutomationNode *)node
+{
+    self = [super init];
+    _peer = peer;
+    @synchronized ([AvnAccessibilityElement class])
+    {
+        _node = node;
+        _node->SetOwner(self);
+    }
     return self;
 }
 
 - (void)dealloc
 {
-    if (_node)
-        delete _node;
-    _node = nullptr;
+    @synchronized ([AvnAccessibilityElement class])
+    {
+        if (_node)
+            _node->ClearOwner(self);
+        _node = nullptr;
+    }
 }
 
 - (NSString *)description
@@ -322,7 +376,7 @@
 
 - (NSArray *)accessibilityChildren
 {
-    if (_children == nullptr && _peer != nullptr)
+    if (_peer != nullptr)
         [self recalculateChildren];
     return _children;
 }

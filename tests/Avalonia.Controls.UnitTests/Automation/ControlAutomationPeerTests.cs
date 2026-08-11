@@ -150,6 +150,39 @@ namespace Avalonia.Controls.UnitTests.Automation
                 children = target.GetChildren();
                 Assert.Equal(2, children.Count);
             }
+
+            [Fact]
+            public void Automation_Bridge_Can_Refresh_A_Stale_Children_Snapshot()
+            {
+                var owner = new Panel();
+                var first = new Border();
+                var second = new Button();
+                var target = new RefreshableChildrenPeer(owner)
+                {
+                    CurrentChildren = [ControlAutomationPeer.CreatePeerForElement(first)],
+                };
+
+                Assert.Same(
+                    first,
+                    Assert.IsAssignableFrom<ControlAutomationPeer>(Assert.Single(target.GetChildren())).Owner);
+
+                target.CurrentChildren = [ControlAutomationPeer.CreatePeerForElement(second)];
+
+                Assert.Same(
+                    first,
+                    Assert.IsAssignableFrom<ControlAutomationPeer>(Assert.Single(target.GetChildren())).Owner);
+                Assert.Same(
+                    second,
+                    Assert.IsAssignableFrom<ControlAutomationPeer>(
+                        Assert.Single(target.RefreshChildrenForAutomationBridge())).Owner);
+            }
+
+            private sealed class RefreshableChildrenPeer(Control owner) : ControlAutomationPeer(owner)
+            {
+                public IReadOnlyList<AutomationPeer> CurrentChildren { get; set; } = [];
+
+                protected override IReadOnlyList<AutomationPeer>? GetChildrenCore() => CurrentChildren;
+            }
         }
 
         public class Parent : ScopedTestBase

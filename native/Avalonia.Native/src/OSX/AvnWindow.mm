@@ -225,6 +225,27 @@
         parent->BaseEvents->Closed();
         [parent->View onClosed];
     }
+
+    [self releaseAutomationBridge];
+}
+
+- (void)releaseAutomationBridge
+{
+    @synchronized ([AvnAccessibilityElement class])
+    {
+        if (_automationNode != nullptr)
+        {
+            _automationNode->ClearOwner(self);
+            _automationNode = nullptr;
+        }
+
+        _automationPeer.setNoAddRef(nullptr);
+    }
+}
+
+- (void)dealloc
+{
+    [self releaseAutomationBridge];
 }
 
 // From chromium:
@@ -630,20 +651,35 @@
 
 - (IAvnAutomationPeer* _Nullable) automationPeer
 {
-    auto parent = _parent.tryGet();
-    if (parent && _automationPeer == nullptr)
+    @synchronized ([AvnAccessibilityElement class])
     {
-        auto peer = parent->BaseEvents->GetAutomationPeer();
-        if (peer != nullptr)
+        auto parent = _parent.tryGet();
+        if (parent && _automationPeer == nullptr)
         {
-            // GetAutomationPeer returns an owned reference.
-            _automationPeer.setNoAddRef(peer);
-            _automationNode = new AvnAutomationNode(self);
-            _automationPeer->SetNode(_automationNode);
-        }
-    }
+            auto peer = parent->BaseEvents->GetAutomationPeer();
+            if (peer != nullptr)
+            {
+                _automationPeer.setNoAddRef(peer);
 
-    return _automationPeer;
+                ComPtr<IAvnAutomationNode> existing(_automationPeer->GetNode(), true);
+                if (existing != nullptr)
+                {
+                    _automationNode = dynamic_cast<AvnAutomationNode*>(existing.getRaw());
+                    if (_automationNode != nullptr)
+                        _automationNode->SetOwner(self);
+                    else
+                        NSLog(@"IAvnAutomationPeer returned an unknown root automation node implementation.");
+                }
+                else
+                {
+                    _automationNode = new AvnAutomationNode(self);
+                    _automationPeer->SetNode(_automationNode);
+                }
+            }
+        }
+
+        return _automationPeer;
+    }
 }
 
 - (void)raiseChildrenChanged
@@ -676,4 +712,3 @@
 }
 
 @end
-

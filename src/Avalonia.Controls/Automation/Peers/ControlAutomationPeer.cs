@@ -172,6 +172,15 @@ namespace Avalonia.Automation.Peers
         }
 
         /// <summary>
+        /// Refreshes cached children for a platform automation bridge.
+        /// </summary>
+        internal IReadOnlyList<AutomationPeer> RefreshChildrenForAutomationBridge()
+        {
+            _childrenValid = false;
+            return GetOrCreateChildrenCore();
+        }
+
+        /// <summary>
         /// Invalidates the peer's parent.
         /// </summary>
         protected void InvalidateParent()
@@ -349,4 +358,3 @@ namespace Avalonia.Automation.Peers
         }
     }
 }
-
