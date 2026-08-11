@@ -78,7 +78,7 @@ namespace Avalonia.Controls
         {
             var currentToolTip = _tipControl?.GetValue(ToolTip.ToolTipProperty);
 
-            if (root == currentToolTip?.PopupHost?.HostedVisualTreeRoot)
+            if (root == currentToolTip?.PopupHost?.HostedVisualTreeRoot?.GetInputRoot())
             {
                 // Don't update while the pointer is over a tooltip
                 return;
