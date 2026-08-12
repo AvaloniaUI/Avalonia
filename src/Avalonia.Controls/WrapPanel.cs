@@ -205,6 +205,7 @@ namespace Avalonia.Controls
             bool itemHeightSet = !double.IsNaN(itemHeight);
             bool itemExists = false;
             bool lineExists = false;
+            var useLayoutRounding = UseLayoutRounding;
 
             var childConstraint = new Size(
                 itemWidthSet ? itemWidth : constraint.Width,
@@ -222,7 +223,7 @@ namespace Avalonia.Controls
                     itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
                 var nextSpacing = itemExists && child.IsVisible ? itemSpacing : 0;
-                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + nextSpacing, uvConstraint.U)) // Need to switch to another line
+                if (GreaterThan(useLayoutRounding, curLineSize.U + childSize.U + nextSpacing, uvConstraint.U)) // Need to switch to another line
                 {
                     panelSize.U = Max(curLineSize.U, panelSize.U);
                     panelSize.V += curLineSize.V + (lineExists ? lineSpacing : 0);
@@ -235,7 +236,7 @@ namespace Avalonia.Controls
                 {
                     curLineSize.U += childSize.U + nextSpacing;
                     curLineSize.V = Max(childSize.V, curLineSize.V);
-                    
+
                     itemExists |= child.IsVisible; // keep true
                 }
             }
@@ -267,6 +268,7 @@ namespace Avalonia.Controls
             bool itemHeightSet = !double.IsNaN(itemHeight);
             bool itemExists = false;
             bool lineExists = false;
+            var useLayoutRounding = UseLayoutRounding;
 
             for (int i = 0; i < children.Count; ++i)
             {
@@ -276,7 +278,7 @@ namespace Avalonia.Controls
                     itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
                 var nextSpacing = itemExists && child.IsVisible ? itemSpacing : 0;
-                if (MathUtilities.GreaterThan(curLineSize.U + childSize.U + nextSpacing, uvFinalSize.U)) // Need to switch to another line
+                if (GreaterThan(useLayoutRounding, curLineSize.U + childSize.U + nextSpacing, uvFinalSize.U)) // Need to switch to another line
                 {
                     accumulatedV += lineExists ? lineSpacing : 0; // add spacing to arrange line first
                     ArrangeLine(curLineSize.V, firstInLine, i);
@@ -338,6 +340,13 @@ namespace Avalonia.Controls
                 double GetChildU(int i) => useItemU ? itemU :
                     isHorizontal ? children[i].DesiredSize.Width : children[i].DesiredSize.Height;
             }
+        }
+
+        private static bool GreaterThan(bool useLayoutRounding, double value1, double value2)
+        {
+            return useLayoutRounding
+                ? value1 > value2 && value1 - value2 > LayoutHelper.LayoutEpsilon
+                : MathUtilities.GreaterThan(value1, value2);
         }
 
         private struct UVSize
