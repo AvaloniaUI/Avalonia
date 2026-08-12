@@ -14,7 +14,7 @@ public class GeometryHitTestingPage : UserControl
     private readonly IBrush _hitStroke = Brushes.Yellow;
     private readonly TranslateTransform _probePosition = new();
     private readonly Dictionary<Shape, IBrush?> _strokes = new();
-    private readonly List<Shape> _hits = new();
+    private readonly List<(Shape Shape, IntersectionResult Intersection)> _hits = new();
     private readonly Geometry _probeGeometry;
     private readonly Panel _scene;
     private readonly Path _probe;
@@ -66,12 +66,12 @@ public class GeometryHitTestingPage : UserControl
 
         ClearHits();
 
-        foreach (var element in _scene.GetInputElementsAt(_probeGeometry))
+        foreach (var result in _scene.GetInputElementsAt(_probeGeometry))
         {
-            if (element?.VisualHit is Shape shape && _strokes.ContainsKey(shape))
+            if (result?.VisualHit is Shape shape && _strokes.ContainsKey(shape))
             {
                 shape.Stroke = _hitStroke;
-                _hits.Add(shape);
+                _hits.Add((shape, result.IntersectionResult));
             }
         }
 
@@ -87,9 +87,9 @@ public class GeometryHitTestingPage : UserControl
 
     private void ClearHits()
     {
-        foreach (var shape in _hits)
+        foreach (var hit in _hits)
         {
-            shape.Stroke = _strokes[shape];
+            hit.Shape.Stroke = _strokes[hit.Shape];
         }
 
         _hits.Clear();
@@ -103,20 +103,7 @@ public class GeometryHitTestingPage : UserControl
             return;
         }
 
-        _status.Text = "Intersecting, " + string.Join(", ", _hits.Select(shape => $"{shape.Name} ({GetIntersectionDetail(shape)})"));
-    }
-
-    private IntersectionResult? GetIntersectionDetail(Shape shape)
-    {
-        if (shape.RenderedGeometry is not { } geometry || _scene.TransformToVisual(shape) is not { } transform)
-        {
-            return null;
-        }
-
-        var probe = CreateProbeGeometry();
-        probe.Transform = new MatrixTransform(_probePosition.Value * transform);
-
-        return geometry.GetFillIntersectionResult(probe);
+        _status.Text = "Intersecting, " + string.Join(", ", _hits.Select(hit => $"{hit.Shape.Name} ({hit.Intersection})"));
     }
 }
 
