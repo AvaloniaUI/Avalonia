@@ -701,7 +701,28 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
 
     public void SetMaximized() => _xdgTopLevel?.SetMaximized();
     public void UnsetMaximized() => _xdgTopLevel?.UnsetMaximized();
-    public void SetFullscreen() => _xdgTopLevel?.SetFullscreen(null!);
+    public void SetFullscreen(object? outputId) => _xdgTopLevel?.SetFullscreen(ResolveOutput(outputId)!);
+
+    /// <summary>
+    /// Maps an opaque output token (<c>Output.Id</c>, as published in the screen
+    /// snapshots) back to the <c>wl_output</c> it belongs to. Returns null — the
+    /// protocol's "compositor picks" — for a null token, and for a token whose
+    /// output has gone away between the UI thread reading it and this call
+    /// landing on the worker (hotplug races are normal here).
+    /// </summary>
+    private WlOutput? ResolveOutput(object? outputId)
+    {
+        if (outputId is null)
+            return null;
+
+        foreach (var output in Globals?.Outputs.Outputs ?? [])
+        {
+            if (ReferenceEquals(output.Id, outputId))
+                return output.WlOutput;
+        }
+
+        return null;
+    }
     public void UnsetFullscreen() => _xdgTopLevel?.UnsetFullscreen();
     public void SetMinimized() => _xdgTopLevel?.SetMinimized();
 
