@@ -596,6 +596,16 @@ namespace Avalonia.X11
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
                 MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+            else if (ev.type == XEventName.EnterNotify)
+            {
+                if (ev.CrossingEvent.detail is
+                    NotifyDetail.NotifyNonlinear or
+                    NotifyDetail.NotifyNonlinearVirtual or
+                    NotifyDetail.NotifyVirtual)
+                {
+                    MouseEvent(RawPointerEventType.Move, ref ev, ev.CrossingEvent.state);
+                }
+            }
             else if (ev.type == XEventName.PropertyNotify)
             {
                 OnPropertyChange(ev.PropertyEvent.atom, ev.PropertyEvent.state == 0);
