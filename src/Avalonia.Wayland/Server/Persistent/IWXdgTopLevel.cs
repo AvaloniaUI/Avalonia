@@ -26,7 +26,16 @@ internal interface IWXdgTopLevel : IWXdgShellSurface
 {
     void SetMaximized();
     void UnsetMaximized();
-    void SetFullscreen();
+
+    /// <summary>
+    /// Requests fullscreen. <paramref name="outputId"/> is the opaque output token
+    /// carried by <see cref="Screens.WaylandOutputSnapshot"/> and by the screen's
+    /// platform handle; the worker resolves it back to the <c>wl_output</c> it was
+    /// minted for. <c>null</c> leaves the choice to the compositor, which is the
+    /// protocol default and the only behaviour available before this overload.
+    /// </summary>
+    void SetFullscreen(object? outputId);
+
     void UnsetFullscreen();
     void SetMinimized();
     void SetParent(IWXdgTopLevel? parent);

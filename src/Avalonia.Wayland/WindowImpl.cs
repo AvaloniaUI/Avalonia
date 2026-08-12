@@ -37,6 +37,10 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
     private bool _csdSticky;
     private string? _title;
     private FallbackStorageProvider? _storageProvider;
+    // Which output the next fullscreen request should name. Null keeps the
+    // protocol default ("compositor picks"), which is what every caller that
+    // doesn't go through WaylandWindowExtensions gets.
+    private object? _fullscreenOutputId;
 
     public WindowImpl(WaylandWorkerClient client) : base(client)
     {
@@ -216,7 +220,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
                 case WindowState.FullScreen:
                     if (currentState == WindowState.Maximized)
                         proxy.UnsetMaximized();
-                    proxy.SetFullscreen();
+                    proxy.SetFullscreen(_fullscreenOutputId);
                     break;
                 case WindowState.Minimized:
                     proxy.SetMinimized();
@@ -224,6 +228,28 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
             }
         }
     }
+    /// <summary>
+    /// Names the output the window should go fullscreen on, for this request and
+    /// every later one until it is changed again. Takes effect immediately when
+    /// the window already is fullscreen; otherwise it is picked up by the next
+    /// transition to <see cref="WindowState.FullScreen"/>, including one requested
+    /// before the window is shown (the surface proxy exists from construction, so
+    /// the request reaches the compositor before the first commit).
+    ///
+    /// This is the only way for an application to place a window on a chosen
+    /// screen under Wayland: there is no way to position a surface, and a
+    /// fullscreen request without an output leaves the choice to the compositor —
+    /// mutter, for one, answers with the same monitor every time regardless of
+    /// where the pointer or the previous window was.
+    /// </summary>
+    internal void SetFullscreenOutput(object? outputId)
+    {
+        _fullscreenOutputId = outputId;
+
+        if (_windowState == WindowState.FullScreen)
+            _surfaceProxy?.SetFullscreen(outputId);
+    }
+
     public bool WindowStateGetterIsUsable => true;
     public Action<WindowState>? WindowStateChanged { get; set; }
     public void SetTitle(string? title)
