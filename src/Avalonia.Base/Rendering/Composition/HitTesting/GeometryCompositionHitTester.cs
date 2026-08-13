@@ -21,11 +21,6 @@ internal struct GeometryCompositionHitTester : ICompositionHitTester<Geometry>
         return bounds.Intersects(new LtrbRect(geometryRenderBounds));
     }
 
-    public static bool AabbNodeBoundsMatch(LtrbRect bounds, Geometry input)
-    {
-        return bounds.Intersects(new LtrbRect(input.Bounds));
-    }
-
     public static bool ClippedBoundsMatch(CompositionVisual visual, Geometry input)
     {
         var bounds = input.Bounds;

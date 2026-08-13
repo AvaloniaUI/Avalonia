@@ -4,11 +4,12 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Diagnostics;
-using Avalonia.Platform.Surfaces;
 using Avalonia.Media;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.HitTesting;
 using Avalonia.Threading;
+using Microsoft.VisualBasic;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -93,14 +94,14 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
     /// <inheritdoc/>
     public IEnumerable<Visual> HitTest(Point p, Visual? root, Func<Visual, bool>? filter)
-        => HitTest<PointCompositionHitTester, Point, Visual>(p, root, filter);
+        => HitTest<PointCompositionHitTester, Point, Visual>(p, root, filter, (visual, _) => visual);
 
     public IEnumerable<GeometryHitTestResult> HitTest(Geometry geometry, Visual? root, Func<Visual, bool>? filter)
-        => HitTest<GeometryCompositionHitTester, Geometry, GeometryHitTestResult>(geometry, root, filter);
+        => HitTest<GeometryCompositionHitTester, Geometry, GeometryHitTestResult>(geometry, root, filter, (visual, intersection) => new GeometryHitTestResult(visual, intersection));
 
-    private IEnumerable<Y> HitTest<THitTester, T, Y>(T input, Visual? root, Func<Visual, bool>? filter)
+    private IEnumerable<TResult> HitTest<THitTester, T, TResult>(T input, Visual? root, Func<Visual, bool>? filter, Func<Visual, IntersectionResult, TResult> resultSelector)
         where THitTester : struct, ICompositionHitTester<T>
-        where Y : class
+        where TResult : class
     {
         using var _ = Diagnostic.PerformingHitTest();
 
@@ -129,16 +130,8 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
         {
             if (v.Item2 is CompositionDrawListVisual dv)
             {
-                if (typeof(Y) == typeof(Visual))
-                {
-                    if (filter == null || filter(dv.Visual))
-                        yield return (dv.Visual as Y)!;
-                }
-                else if (typeof(Y) == typeof(GeometryHitTestResult))
-                {
-                    if (filter == null || filter(dv.Visual))
-                        yield return (new GeometryHitTestResult(dv.Visual, v.Item1) as Y)!;
-                }
+                if (filter == null || filter(dv.Visual))
+                    yield return resultSelector(dv.Visual, v.Item1);
             }
         }
     }

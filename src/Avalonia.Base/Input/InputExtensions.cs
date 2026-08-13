@@ -45,17 +45,15 @@ namespace Avalonia.Input
         /// <returns>
         /// The active input elements found intersecting the geometry, with intersection details, ordered topmost first.
         /// </returns>
-        public static IEnumerable<GeometryHitTestResult?> GetInputElementsAt(this IInputElement element, Geometry geometry, bool enabledElementsOnly = true)
+        public static IEnumerable<GeometryHitTestResult> GetInputElementsAt(this IInputElement element, Geometry geometry, bool enabledElementsOnly = true)
         {
             element = element ?? throw new ArgumentNullException(nameof(element));
 
             return (element as Visual)?.GetVisualsAt(geometry, enabledElementsOnly ? s_hitTestEnabledOnlyDelegate : s_hitTestDelegate)
-                .Select(x => x.VisualHit is IInputElement ? x : null) ??
+                .Where(x => x.VisualHit is IInputElement)
+                .Select(x => new GeometryHitTestResult(x.VisualHit, x.IntersectionResult)) ??
                 Enumerable.Empty<GeometryHitTestResult>();
         }
-
-        /// <inheritdoc cref="GetInputElementsAt(IInputElement, Geometry, bool)"/>
-        public static IEnumerable<GeometryHitTestResult?> GetInputElementsAt(this IInputElement element, Geometry geometry) => GetInputElementsAt(element, geometry, true);
 
         /// <summary>
         /// Returns the topmost active input element at a point on an <see cref="IInputElement"/>.
@@ -89,9 +87,6 @@ namespace Avalonia.Input
 
             return hitTest?.VisualHit is IInputElement inputElement ? hitTest : null;
         }
-
-        /// <inheritdoc cref="InputHitTest(IInputElement, Geometry, bool)"/>
-        public static GeometryHitTestResult? InputHitTest(this IInputElement element, Geometry geometry) => InputHitTest(element, geometry, true);
 
         /// <summary>
         /// Returns the topmost active input element at a point on an <see cref="IInputElement"/>.
@@ -143,9 +138,6 @@ namespace Avalonia.Input
 
             return (element as Visual)?.GetVisualAt(geometry, x => hitTestDelegate(x) && filter(x)) as IInputElement;
         }
-
-        /// <inheritdoc cref="InputHitTest(IInputElement, Geometry, Func{Visual, bool}, bool)"/>
-        public static IInputElement? InputHitTest(this IInputElement element, Geometry geometry, Func<Visual, bool> filter) => InputHitTest(element, geometry, filter, true);
 
         private static bool IsHitTestVisible(Visual visual) => visual is { IsVisible: true, IsAttachedToVisualTree: true } and IInputElement { IsHitTestVisible: true };
 

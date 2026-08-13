@@ -267,7 +267,7 @@ internal sealed class CompositionHitTestAabbTree
             var nodeIndex = stack[--stackCount];
             var node = _nodes[nodeIndex];
 
-            if (!THitTester.AabbNodeBoundsMatch(node.Bounds, input))
+            if (!THitTester.TransformedSubTreeBoundsMatch(node.Bounds, input))
                 continue;
 
             if (node.IsLeaf)

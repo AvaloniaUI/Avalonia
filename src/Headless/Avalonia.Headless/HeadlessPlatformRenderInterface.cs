@@ -250,6 +250,7 @@ namespace Avalonia.Headless
 
         private class HeadlessTransformedGeometryStub : HeadlessGeometryStub, ITransformedGeometryImpl, IHeadlessGeometryWithEdges
         {
+            private List<Point>? _points;
             public HeadlessTransformedGeometryStub(IGeometryImpl b, Matrix transform) : this(Fix(b, transform))
             {
 
@@ -280,9 +281,9 @@ namespace Avalonia.Headless
             {
                 get
                 {
-                    if(SourceGeometry is IHeadlessGeometryWithEdges geometryWithEdges)
+                    if (SourceGeometry is IHeadlessGeometryWithEdges geometryWithEdges)
                     {
-                        return geometryWithEdges.Points.Select(x => x.Transform(Transform)).ToList();
+                        return _points ??= geometryWithEdges.Points.Select(x => x.Transform(Transform)).ToList();
                     }
 
                     return [];
@@ -302,7 +303,6 @@ namespace Avalonia.Headless
             }
 
             public List<Point> Points => _points;
-
 
             public override IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
             {

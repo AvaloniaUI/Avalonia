@@ -14,9 +14,6 @@ internal struct PointCompositionHitTester : ICompositionHitTester<Point>
     public static bool TransformedSubTreeBoundsMatch(LtrbRect bounds, Point input)
         => bounds.Contains(input);
 
-    public static bool AabbNodeBoundsMatch(LtrbRect bounds, Point input)
-        => bounds.Contains(input);
-
     public static bool ClippedBoundsMatch(CompositionVisual visual, Point input)
         => input.X >= 0 && input.Y >= 0 && input.X <= visual.Size.X && input.Y <= visual.Size.Y;
 
