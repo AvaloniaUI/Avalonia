@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Reactive;
+using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Layout;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using System.Linq;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -118,9 +118,9 @@ namespace Avalonia.Controls.Presenters
         public ScrollContentPresenter()
         {
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
-            AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
-            AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
-            AddHandler(Gestures.ScrollGestureInertiaStartingEvent, OnScrollGestureInertiaStartingEnded);
+            AddHandler(InputElement.ScrollGestureEvent, OnScrollGesture);
+            AddHandler(InputElement.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            AddHandler(InputElement.ScrollGestureInertiaStartingEvent, OnScrollGestureInertiaStartingEnded);
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }
@@ -403,9 +403,12 @@ namespace Avalonia.Controls.Presenters
                 return base.MeasureOverride(availableSize);
             }
 
+            var padding = GetChildPadding();
+            var deflated = availableSize.Deflate(padding);
+
             var constraint = new Size(
-                CanHorizontallyScroll ? double.PositiveInfinity : availableSize.Width,
-                CanVerticallyScroll ? double.PositiveInfinity : availableSize.Height);
+                CanHorizontallyScroll ? double.PositiveInfinity : deflated.Width,
+                CanVerticallyScroll ? double.PositiveInfinity : deflated.Height);
 
             Child.Measure(constraint);
 
@@ -415,7 +418,7 @@ namespace Avalonia.Controls.Presenters
                 UpdateSnapPoints();
             }
 
-            return Child.DesiredSize.Constrain(availableSize);
+            return Child.DesiredSize.Inflate(padding).Constrain(availableSize);
         }
 
         /// <inheritdoc/>
@@ -431,9 +434,12 @@ namespace Avalonia.Controls.Presenters
 
         private Size ArrangeWithAnchoring(Size finalSize)
         {
+            var padding = GetChildPadding();
+            var desiredSize = Child!.DesiredSize.Inflate(padding);
+
             var size = new Size(
-                CanHorizontallyScroll ? Math.Max(Child!.DesiredSize.Width, finalSize.Width) : finalSize.Width,
-                CanVerticallyScroll ? Math.Max(Child!.DesiredSize.Height, finalSize.Height) : finalSize.Height);
+                CanHorizontallyScroll ? Math.Max(desiredSize.Width, finalSize.Width) : finalSize.Width,
+                CanVerticallyScroll ? Math.Max(desiredSize.Height, finalSize.Height) : finalSize.Height);
 
             Vector TrackAnchor()
             {
@@ -501,13 +507,28 @@ namespace Avalonia.Controls.Presenters
             }
 
             Viewport = finalSize;
-            Extent = ComputeExtent(finalSize);
+            Extent = ComputeExtent(finalSize, padding);
             _isAnchorElementDirty = true;
 
             return finalSize;
         }
 
-        private Size ComputeExtent(Size viewportSize)
+        private Thickness GetChildPadding()
+        {
+            var padding = Padding;
+            var borderThickness = BorderThickness;
+
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale);
+                borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, scale);
+            }
+
+            return padding + borderThickness;
+        }
+
+        private Size ComputeExtent(Size viewportSize, Thickness padding)
         {
             var childMargin = Child!.Margin;
 
@@ -517,7 +538,7 @@ namespace Avalonia.Controls.Presenters
                 childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale);
             }
 
-            var extent = Child!.Bounds.Size.Inflate(childMargin);
+            var extent = Child!.Bounds.Size.Inflate(childMargin).Inflate(padding);
 
             if (MathUtilities.AreClose(extent.Width, viewportSize.Width, LayoutHelper.LayoutEpsilon))
                 extent = extent.WithWidth(viewportSize.Width);
@@ -535,6 +556,8 @@ namespace Avalonia.Controls.Presenters
                 var scrollable = Child as ILogicalScrollable;
                 var isLogical = scrollable?.IsLogicalScrollEnabled == true;
                 var logicalScrollItemSize = new Vector(1, 1);
+                var canXScroll = false;
+                var canYScroll = false;
 
                 double x = Offset.X;
                 double y = Offset.Y;
@@ -565,6 +588,8 @@ namespace Avalonia.Controls.Presenters
                     y += dy;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
+
+                    canYScroll = dy != 0;
                 }
 
                 if (Extent.Width > Viewport.Width)
@@ -581,6 +606,8 @@ namespace Avalonia.Controls.Presenters
                     x += dx;
                     x = Math.Max(x, 0);
                     x = Math.Min(x, Extent.Width - Viewport.Width);
+
+                    canXScroll = dx != 0;
                 }
 
                 if (isLogical)
@@ -614,6 +641,12 @@ namespace Avalonia.Controls.Presenters
                 SetCurrentValue(OffsetProperty, newOffset);
 
                 e.Handled = !IsScrollChainingEnabled || offsetChanged;
+
+                if(!e.Handled && !IsScrollChainingEnabled)
+                {
+                    // Gesture may cause an overscroll so we mark the event as handled if it did.
+                    e.Handled = canXScroll || canYScroll;
+                }
 
                 e.ShouldEndScrollGesture = !IsScrollChainingEnabled && !offsetChanged;
             }

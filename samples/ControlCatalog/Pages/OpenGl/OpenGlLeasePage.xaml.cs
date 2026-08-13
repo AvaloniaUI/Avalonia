@@ -12,7 +12,7 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace ControlCatalog.Pages;
 
-public partial class OpenGlLeasePage : UserControl
+public partial class OpenGlLeasePage : ContentPage
 {
     private CompositionCustomVisual? _visual;
 

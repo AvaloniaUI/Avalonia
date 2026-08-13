@@ -2,7 +2,7 @@
 
 namespace ControlCatalog.Pages
 {
-    public partial class ToggleSwitchPage : UserControl
+    public partial class ToggleSwitchPage : ContentPage
     {
         public ToggleSwitchPage()
         {

@@ -130,7 +130,7 @@ namespace Avalonia.Base.UnitTests.Media
         [InlineData(null, "resm:Avalonia.Visuals.UnitTests.Assets.Fonts#MyFont")]
         [InlineData("avares://Avalonia.Visuals.UnitTests/Assets/Fonts", "/#MyFont")]
         [InlineData("avares://Avalonia.Visuals.UnitTests", "/Assets/Fonts#MyFont")]
-        public void Should_Create_FontFamily_From_Uri_With_Base_Uri(string @base, string name)
+        public void Should_Create_FontFamily_From_Uri_With_Base_Uri(string? @base, string name)
         {
             var baseUri = @base != null ? new Uri(@base) : null;
 
@@ -147,7 +147,7 @@ namespace Avalonia.Base.UnitTests.Media
         [InlineData("avares://Avalonia.Fonts.Inter", "/Assets#Inter", "Inter", "avares://Avalonia.Fonts.Inter/Assets")]
         [InlineData("avares://ControlCatalog/MainWindow.xaml", "avares://Avalonia.Fonts.Inter/Assets#Inter", "Inter", "avares://Avalonia.Fonts.Inter/Assets")]
         [Theory]
-        public void Should_Parse_FontFamily_With_BaseUri(string baseUri, string s, string expectedName, string expectedUri)
+        public void Should_Parse_FontFamily_With_BaseUri(string? baseUri, string s, string expectedName, string? expectedUri)
         {
             var b = baseUri is not null ? new Uri(baseUri) : null;
 
@@ -184,10 +184,12 @@ namespace Avalonia.Base.UnitTests.Media
                     }
                     else
                     {
+                        Assert.NotNull(fontUri);
                         fontUri = new Uri(fontUri, sourceUri);
                     }
                 }
 
+                Assert.NotNull(fontUri);
                 Assert.Equal(expectedUri, fontUri.AbsoluteUri);
             }
         }

@@ -1,4 +1,4 @@
-using Avalonia.Data;
+using System;
 
 namespace Avalonia.Controls.Templates
 {
@@ -8,13 +8,14 @@ namespace Avalonia.Controls.Templates
     public interface ITreeDataTemplate : IDataTemplate
     {
         /// <summary>
-        /// Selects the child items of an item.
+        /// Binds the children of the specified item to a property on a target object.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="target">The target object.</param>
+        /// <param name="targetProperty">The target property.</param>
+        /// <param name="item">The item whose children should be bound.</param>
         /// <returns>
-        /// An <see cref="InstancedBinding"/> holding the items, or an observable that tracks the
-        /// items. May return null if no child items.
+        /// An <see cref="IDisposable"/> that can be used to remove the binding.
         /// </returns>
-        InstancedBinding? ItemsSelector(object item);
+        IDisposable BindChildren(AvaloniaObject target, AvaloniaProperty targetProperty, object item);
     }
 }

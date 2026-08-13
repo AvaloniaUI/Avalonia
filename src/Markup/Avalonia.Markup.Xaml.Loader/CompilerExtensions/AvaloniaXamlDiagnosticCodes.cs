@@ -40,15 +40,18 @@ internal static class AvaloniaXamlDiagnosticCodes
     // Reserved 5000-9998
     public const string Obsolete = "AVLN5001";
 
-    internal static string XamlXDiagnosticCodeToAvalonia(object xamlException)
+    internal static string XamlXDiagnosticCodeToAvalonia(object codeOrException)
     {
-        return xamlException switch
+        return codeOrException switch
         {
             XamlXWellKnownDiagnosticCodes wellKnownDiagnosticCodes => wellKnownDiagnosticCodes switch
             {
                 XamlXWellKnownDiagnosticCodes.Obsolete => Obsolete,
                 _ => throw new ArgumentOutOfRangeException()
             },
+
+            // ExperimentalAttribute reports its own code
+            string code => code,
 
             XamlDataContextException => DataContextResolvingError,
             XamlBindingsTransformException => BindingsError,

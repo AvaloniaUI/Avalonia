@@ -9,7 +9,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         [Fact]
         public void Exception_Should_Be_Thrown_If_Source_Is_Null()
         {
-            Assert.Throws<ArgumentNullException>(() => new FontFamilyKey(null));
+            Assert.Throws<ArgumentNullException>(() => new FontFamilyKey(null!));
         }
 
         [Fact]

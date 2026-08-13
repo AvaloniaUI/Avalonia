@@ -156,7 +156,7 @@ public static class BrowserAppBuilder
         {
             builder = builder.UseBrowser();
         }
-
+        
         return builder;
     }
 
@@ -166,6 +166,7 @@ public static class BrowserAppBuilder
         return builder
             .UseBrowserRuntimePlatformSubsystem()
             .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
-            .UseSkia();
+            .UseSkia()
+            .UseHarfBuzz();
     }
 }

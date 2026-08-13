@@ -13,16 +13,14 @@ namespace Avalonia.Android
 {
     internal sealed class ChoreographerTimer : IRenderTimer
     {
-        private static readonly bool s_supports64Callback = OperatingSystem.IsAndroidVersionAtLeast(29);
         private readonly object _lock = new();
         private readonly TaskCompletionSource<IntPtr> _choreographer = new();
         private readonly AutoResetEvent _event = new(false);
         private readonly GCHandle _timerHandle;
         private readonly HashSet<AvaloniaView> _views = new();
-
         private Action<TimeSpan>? _tick;
+        private bool _pendingCallback;
         private long _lastTime;
-        private int _count;
 
         public ChoreographerTimer()
         {
@@ -41,28 +39,13 @@ namespace Avalonia.Android
 
         public bool RunsInBackground => true;
 
-        public event Action<TimeSpan> Tick
+        public Action<TimeSpan>? Tick
         {
-            add
+            get => _tick;
+            set
             {
-                lock (_lock)
-                {
-                    _tick += value;
-                    _count++;
-
-                    if (_count == 1)
-                    {
-                        PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
-                    }
-                }
-            }
-            remove
-            {
-                lock (_lock)
-                {
-                    _tick -= value;
-                    _count--;
-                }
+                _tick = value;
+                PostFrameCallbackIfNeeded();
             }
         }
 
@@ -71,20 +54,14 @@ namespace Avalonia.Android
             lock (_lock)
             {
                 _views.Add(view);
-
-                if (_views.Count == 1)
-                {
-                    PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
-                }
+                PostFrameCallbackIfNeeded();
             }
 
             return Disposable.Create(
                 () =>
                 {
-                    lock (_lock)
-                    {
+                    lock (_lock) 
                         _views.Remove(view);
-                    }
                 }
             );
         }
@@ -110,14 +87,28 @@ namespace Avalonia.Android
             }
         }
 
+        private void PostFrameCallbackIfNeeded()
+        {
+            lock (_lock)
+            {
+                if(_pendingCallback)
+                    return;
+                
+                if (_tick == null || _views.Count == 0)
+                    return;
+
+                _pendingCallback = true;
+                
+                PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
+            }
+        }
+
         private void DoFrameCallback(long frameTimeNanos, IntPtr data)
         {
             lock (_lock)
             {
-                if (_count > 0 && _views.Count > 0)
-                {
-                    PostFrameCallback(_choreographer.Task.Result, data);
-                }
+                _pendingCallback = false;
+                PostFrameCallbackIfNeeded();
                 _lastTime = frameTimeNanos;
                 _event.Set();
             }
@@ -126,7 +117,7 @@ namespace Avalonia.Android
         private static unsafe void PostFrameCallback(IntPtr choreographer, IntPtr data)
         {
             // AChoreographer_postFrameCallback is deprecated on 10.0+. 
-            if (s_supports64Callback)
+            if (OperatingSystem.IsAndroidVersionAtLeast(29))
             {
                 AChoreographer_postFrameCallback64(choreographer, &FrameCallback64, data);
             }

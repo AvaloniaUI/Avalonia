@@ -4,6 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Reactive;
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Rendering.Composition.Server;
+using Avalonia.Rendering.Composition.Transport;
 
 
 namespace Avalonia.Media
@@ -12,7 +16,10 @@ namespace Avalonia.Media
     /// Defines a geometric shape.
     /// </summary>
     [TypeConverter(typeof(GeometryTypeConverter))]
-    public abstract class Geometry : AvaloniaObject
+    public abstract class Geometry :
+        AvaloniaObject,
+        ICompositionRenderResource<ServerCompositionSimpleGeometry>,
+        ICompositorSerializable
     {
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
@@ -168,6 +175,7 @@ namespace Avalonia.Media
 
             _isDirty = true;
             _platformImpl = null;
+            RegisterForSerialization();
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -209,6 +217,7 @@ namespace Avalonia.Media
                 _platformImpl = _platformImpl.WithTransform(transform.Value);
             }
 
+            RegisterForSerialization();
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -297,6 +306,26 @@ namespace Avalonia.Media
             segmentGeometry = new PlatformGeometry(segment);
             return true;
         }
+
+        private CompositorResourceHolder<ServerCompositionSimpleGeometry> _resource;
+
+        private protected void RegisterForSerialization()
+            => _resource.RegisterForInvalidationOnAllCompositors(this);
+
+        ServerCompositionSimpleGeometry ICompositionRenderResource<ServerCompositionSimpleGeometry>.GetForCompositor(Compositor c)
+            => _resource.GetForCompositor(c);
+
+        void ICompositionRenderResource.AddRefOnCompositor(Compositor c)
+            => _resource.CreateOrAddRef(c, this, out _, static c => new ServerCompositionSimpleGeometry(c.Server));
+
+        void ICompositionRenderResource.ReleaseOnCompositor(Compositor c)
+            => _resource.Release(c);
+
+        SimpleServerObject? ICompositorSerializable.TryGetServer(Compositor c)
+            => _resource.TryGetForCompositor(c);
+
+        void ICompositorSerializable.SerializeChanges(Compositor c, BatchStreamWriter writer)
+            => ServerCompositionSimpleGeometry.SerializeAllChanges(writer, PlatformImpl);
     }
 
     public class GeometryTypeConverter : TypeConverter

@@ -45,7 +45,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
             }
 
-            public IDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> GlyphTypefaceCache => _glyphTypefaceCache;
+            public IDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> GlyphTypefaceCache => _glyphTypefaceCache;
         }
 
         [Fact]
@@ -126,11 +126,11 @@ namespace Avalonia.Skia.UnitTests.Media
             }
 
             public override bool TryCreateSyntheticGlyphTypeface(
-                IGlyphTypeface glyphTypeface, 
+                GlyphTypeface glyphTypeface, 
                 FontStyle style, 
                 FontWeight weight,
                 FontStretch stretch, 
-                [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
+                [NotNullWhen(true)] out GlyphTypeface? syntheticGlyphTypeface)
             {
                 syntheticGlyphTypeface = null;
 
@@ -138,7 +138,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 {
                     foreach (var ignorable in _ignorables)
                     {
-                        if (glyphTypeface.FamilyName == ignorable.Name || glyphTypeface is IGlyphTypeface2 glyphTypeface2 && glyphTypeface2.TypographicFamilyName == ignorable.Name)
+                        if (glyphTypeface.FamilyName == ignorable.Name || glyphTypeface.TypographicFamilyName == ignorable.Name)
                         {
                             return false;
                         }

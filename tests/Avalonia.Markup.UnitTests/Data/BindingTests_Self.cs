@@ -34,8 +34,9 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new TextBlock
             {
                 Tag = "Hello World!",
-                [!TextBlock.TextProperty] = new Binding("Tag", BindingMode.TwoWay)
+                [!TextBlock.TextProperty] = new Binding("Tag")
                 {
+                    Mode = BindingMode.TwoWay,
                     RelativeSource = new RelativeSource(RelativeSourceMode.Self)
                 },
             };

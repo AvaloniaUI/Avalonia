@@ -1,35 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
-using Xunit.Abstractions;
-using Xunit.Sdk;
+﻿using System.Reflection;
+using Xunit.v3;
 
 namespace Avalonia.Headless.XUnit;
 
-internal class AvaloniaTestFramework : XunitTestFramework
+internal sealed class AvaloniaTestFramework : XunitTestFramework
 {
-    public AvaloniaTestFramework(IMessageSink messageSink) : base(messageSink)
-    {
-    }
+    protected override ITestFrameworkDiscoverer CreateDiscoverer(Assembly assembly)
+        => new AvaloniaTestFrameworkDiscoverer(new XunitTestAssembly(assembly, null, assembly.GetName().Version));
 
-    protected override ITestFrameworkExecutor CreateExecutor(AssemblyName assemblyName)
-        => new Executor(assemblyName, SourceInformationProvider, DiagnosticMessageSink);
-
-
-    private class Executor : XunitTestFrameworkExecutor
-    {
-        public Executor(AssemblyName assemblyName, ISourceInformationProvider sourceInformationProvider,
-            IMessageSink diagnosticMessageSink) : base(assemblyName, sourceInformationProvider,
-            diagnosticMessageSink)
-        {
-        }
-
-        protected override async void RunTestCases(IEnumerable<IXunitTestCase> testCases,
-            IMessageSink executionMessageSink,
-            ITestFrameworkExecutionOptions executionOptions)
-        {
-            using (var assemblyRunner = new AvaloniaTestAssemblyRunner(
-                       TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink,
-                       executionOptions)) await assemblyRunner.RunAsync();
-        }
-    }
+    protected override ITestFrameworkExecutor CreateExecutor(Assembly assembly)
+        => new AvaloniaTestFrameworkExecutor(new XunitTestAssembly(assembly, null, assembly.GetName().Version));
 }

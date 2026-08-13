@@ -56,7 +56,7 @@ internal class CompositionInterop : ICompositionGpuInterop
         throw new System.NotSupportedException();
     }
 
-    public bool IsLost { get; }
+    public bool IsLost => _context.IsLost;
     public byte[]? DeviceLuid { get; set; }
     public byte[]? DeviceUuid { get; set; }
 }
@@ -87,7 +87,6 @@ abstract class CompositionGpuImportedObjectBase : ICompositionGpuImportedObject
 
     public Task ImportCompleted { get; }
 
-    public Task ImportCompeted => ImportCompleted;
     public bool IsLost => Context.IsLost;
 
     public ValueTask DisposeAsync() => new(Compositor.InvokeServerJobAsync(() =>

@@ -25,10 +25,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             Size = new PixelSize(rc.right, rc.bottom);
             ANativeWindow_lock(_window, &buffer, &rc);
 
-            Format = buffer.format == AndroidPixelFormat.WINDOW_FORMAT_RGB_565
-                ? PixelFormat.Rgb565 : PixelFormat.Rgba8888;
+            (Format, AlphaFormat, RowBytes) = buffer.format == AndroidPixelFormat.WINDOW_FORMAT_RGB_565 ?
+                (PixelFormat.Rgb565, AlphaFormat.Opaque, buffer.stride * 2) :
+                (PixelFormat.Rgba8888, AlphaFormat.Premul, buffer.stride * 4);
 
-            RowBytes = buffer.stride * (Format == PixelFormat.Rgb565 ? 2 : 4);
             Address = buffer.bits;
 
             Dpi = new Vector(96, 96) * scaling;
@@ -46,6 +46,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public int RowBytes { get; }
         public Vector Dpi { get; }
         public PixelFormat Format { get; }
+        public AlphaFormat AlphaFormat { get; }
 
         [DllImport("android")]
         internal static extern IntPtr ANativeWindow_fromSurface(IntPtr jniEnv, IntPtr handle);

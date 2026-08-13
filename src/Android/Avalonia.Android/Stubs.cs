@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.Android
@@ -12,6 +13,8 @@ namespace Avalonia.Android
         public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
 
         public ITrayIconImpl? CreateTrayIcon() => null;
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder) => throw new NotSupportedException();
     }
 
     internal class PlatformIconLoaderStub : IPlatformIconLoader
@@ -20,7 +23,7 @@ namespace Avalonia.Android
         {
             using (var stream = new MemoryStream())
             {
-                bitmap.Save(stream);
+                bitmap.Save(stream, PngBitmapEncoderOptions.Default);
                 return LoadIcon(stream);
             }
         }

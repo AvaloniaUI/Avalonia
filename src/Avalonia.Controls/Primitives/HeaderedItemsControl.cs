@@ -123,10 +123,9 @@ namespace Avalonia.Controls.Primitives
             }
 
             if (headerTemplate is ITreeDataTemplate treeTemplate &&
-                treeTemplate.Match(item) &&
-                treeTemplate.ItemsSelector(item) is { } itemsBinding)
+                treeTemplate.Match(item))
             {
-                _itemsBinding = BindingOperations.Apply(this, ItemsSourceProperty, itemsBinding, null);
+                _itemsBinding = treeTemplate.BindChildren(this, ItemsSourceProperty, item);
             }
         }
 

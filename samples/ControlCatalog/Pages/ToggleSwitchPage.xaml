@@ -1,5 +1,6 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+﻿<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="ToggleSwitch"
              x:Class="ControlCatalog.Pages.ToggleSwitchPage" Margin="5">
   <StackPanel MaxWidth="500"
               HorizontalAlignment="Stretch">
@@ -17,7 +18,7 @@
       <StackPanel>
         <ToggleSwitch Content="h_eadered" IsChecked="true" Margin="10"/>
         <TextBox Classes="CodeBox"
-          Text="&lt;ToggleSwitch&gt;headered&lt;/ToggleSwitch&gt;"/>
+                 Text="&lt;ToggleSwitch&gt;headered&lt;/ToggleSwitch&gt;"/>
       </StackPanel>
     </Border>
 
@@ -26,14 +27,14 @@
     <Border Classes="Thin">
       <StackPanel>
         <ToggleSwitch Content="_Custom"
-          OnContent="On"
-          OffContent="Off"
-          Margin="10"/>
+                      OnContent="On"
+                      OffContent="Off"
+                      Margin="10"/>
 
-        <TextBox Text="&lt;ToggleSwitch Content=&quot;Custom&quot; 
-ContentOn=&quot;On&quot; 
-ContentOff=&quot;Off&quot; /&gt;"
-          Classes="CodeBox"/>
+        <TextBox Text="&lt;ToggleSwitch Content=&quot;Custom&quot;
+        ContentOn=&quot;On&quot;
+        ContentOff=&quot;Off&quot; /&gt;"
+        Classes="CodeBox"/>
       </StackPanel>
     </Border>
 
@@ -55,7 +56,7 @@ ContentOff=&quot;Off&quot; /&gt;"
     </Border>
   </StackPanel>
 
-  <UserControl.Styles >
+  <ContentPage.Styles >
     <Style Selector="TextBox.CodeBox" >
       <Setter Property="Padding" Value="10"/>
       <Setter Property="IsReadOnly" Value="True"/>
@@ -75,6 +76,6 @@ ContentOff=&quot;Off&quot; /&gt;"
       <Setter Property="CornerRadius" Value="2"/>
     </Style>
 
-  </UserControl.Styles>
-</UserControl>
+  </ContentPage.Styles>
+</ContentPage>
 

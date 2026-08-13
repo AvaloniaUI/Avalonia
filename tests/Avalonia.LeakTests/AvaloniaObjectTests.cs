@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
@@ -54,7 +52,7 @@ namespace Avalonia.LeakTests
 
             Action completeSource = () =>
             {
-                ((ISubject<string>)weakSource.Target).OnCompleted();
+                ((ISubject<string>)weakSource.Target!).OnCompleted();
             };
 
             completeSource();
@@ -151,7 +149,7 @@ namespace Avalonia.LeakTests
             }
 
             var weakTarget = SetupBinding();
-            
+
             CollectGarbage();
             Assert.False(weakTarget.IsAlive);
         }

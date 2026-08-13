@@ -23,7 +23,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         {
             var conv = new PointsListTypeConverter();
 
-            var points = (IList<Point>)conv.ConvertFrom(input);
+            var points = (IList<Point>)conv.ConvertFrom(input)!;
 
             Assert.Equal(2, points.Count);
             Assert.Equal(new Point(1, 2), points[0]);

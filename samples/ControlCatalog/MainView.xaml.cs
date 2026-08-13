@@ -10,13 +10,82 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
-    public partial class MainView : UserControl
+    public partial class MainView : DrawerPage
     {
-        private Action? _disposeTransparencySetters;
+        private readonly TransparentStyles _transparentStyles = new();
 
         public MainView()
         {
             InitializeComponent();
+
+            Loaded += MainView_Loaded;
+            Unloaded += MainView_Unloaded;
+        }
+
+        private const double WideBreakpoint = 1008;
+        private const double NarrowBreakpoint = 640;
+
+        protected override Type StyleKeyOverride => typeof(MainView);
+
+        private void MainView_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext == null)
+                return;
+
+            SizeChanged += OnDrawerSizeChanged;
+            UpdateAdaptiveLayout();
+        }
+
+        private void MainView_Unloaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            SizeChanged -= OnDrawerSizeChanged;
+            _lastAppliedMode = null;
+        }
+
+        private SplitViewDisplayMode? _lastAppliedMode;
+        private bool _updatingLayout;
+
+        private void OnDrawerSizeChanged(object? sender, SizeChangedEventArgs e)
+        {
+            if (e.WidthChanged)
+                UpdateAdaptiveLayout();
+        }
+
+        private void UpdateAdaptiveLayout()
+        {
+            if (_updatingLayout || DataContext == null)
+                return;
+
+            var width = Bounds.Width;
+            if (width <= 0)
+                return;
+
+            SplitViewDisplayMode targetMode;
+            if (width >= WideBreakpoint)
+                targetMode = SplitViewDisplayMode.Inline;
+            else if (width >= NarrowBreakpoint)
+                targetMode = SplitViewDisplayMode.CompactInline;
+            else
+                targetMode = SplitViewDisplayMode.Overlay;
+
+            if (_lastAppliedMode == targetMode)
+                return;
+
+            _updatingLayout = true;
+            try
+            {
+                _lastAppliedMode = targetMode;
+                ViewModel.DisplayMode = targetMode;
+
+                if (targetMode == SplitViewDisplayMode.Inline)
+                    ViewModel.IsDrawerOpened = true;
+                else if (targetMode == SplitViewDisplayMode.Overlay)
+                    ViewModel.IsDrawerOpened = false;
+            }
+            finally
+            {
+                _updatingLayout = false;
+            }
         }
 
         private void Themes_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -45,30 +114,40 @@ namespace ControlCatalog
 
         private void Decorations_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (VisualRoot is Window window && e.AddedItems.Count > 0 && e.AddedItems[0] is SystemDecorations systemDecorations)
+            if (TopLevel.GetTopLevel(this) is Window window && e.AddedItems.Count > 0 && e.AddedItems[0] is WindowDecorations systemDecorations)
             {
-                window.SystemDecorations = systemDecorations;
+                window.WindowDecorations = systemDecorations;
             }
         }
 
         private void TransparencyLevels_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            _disposeTransparencySetters?.Invoke();
-
             if (TopLevel.GetTopLevel(this) is { } topLevel && e.AddedItems.Count > 0 && e.AddedItems[0] is WindowTransparencyLevel transparencyLevel)
             {
                 topLevel.TransparencyLevelHint = [transparencyLevel];
 
                 if (topLevel.ActualTransparencyLevel != WindowTransparencyLevel.None &&
-                    topLevel.ActualTransparencyLevel == transparencyLevel)
+                    transparencyLevel != WindowTransparencyLevel.None)
                 {
-                    var transparentBrush = new ImmutableSolidColorBrush(Colors.White, 0);
-                    var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
-                    _disposeTransparencySetters =
-                        (Action)topLevel.SetValue(BackgroundProperty, transparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
-                        Sidebar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
-                        Sidebar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose;
+                    topLevel.Background = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
+                    if (!topLevel.Styles.Contains(_transparentStyles))
+                        topLevel.Styles.Add(_transparentStyles);
                 }
+                else
+                {
+                    topLevel.Background = null;
+                    topLevel.Styles.Remove(_transparentStyles);
+                }
+            }
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+
+            if (ViewModel != null)
+            {
+                ViewModel.Navigator = NavPage;
             }
         }
 
@@ -78,10 +157,16 @@ namespace ControlCatalog
         {
             base.OnAttachedToVisualTree(e);
 
-            if (VisualRoot is Window window)
-                Decorations.SelectedIndex = (int)window.SystemDecorations;
+            if (DataContext == null)
+                return;
 
-            var insets = TopLevel.GetTopLevel(this)!.InsetsManager;
+            UpdateAdaptiveLayout();
+
+            var topLevel = TopLevel.GetTopLevel(this)!;
+            if (topLevel is Window window)
+                ViewModel.SelectedDecorationIndex = (int)window.WindowDecorations;
+
+            var insets = topLevel.InsetsManager;
             if (insets != null)
             {
                 // In real life application these events should be unsubscribed to avoid memory leaks.
@@ -111,6 +196,8 @@ namespace ControlCatalog
                     ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
                 };
             }
+
+            ViewModel.SelectedPageIndex = 0;
         }
     }
 }

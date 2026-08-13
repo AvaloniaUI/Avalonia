@@ -13,6 +13,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Menu : MenuBase, IMainMenu
     {
+        private IAccessKeyHandler? _accessKeyHandler;
+
         private static readonly FuncTemplate<Panel?> DefaultPanel =
             new (() => new StackPanel { Orientation = Orientation.Horizontal });
 
@@ -43,7 +45,7 @@ namespace Avalonia.Controls
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Menu>(OnAccessKeyPressed);
         }
         
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IMainMenu.Close"/>
         public override void Close()
         {
             if (!IsOpen)
@@ -66,7 +68,7 @@ namespace Avalonia.Controls
             });
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IMainMenu.Open"/>
         public override void Open()
         {
             if (IsOpen)
@@ -88,12 +90,18 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            var inputRoot = e.Root as TopLevel;
+            _accessKeyHandler = TopLevel.GetTopLevel(this)?.AccessKeyHandler;
+            _accessKeyHandler?.MainMenu = this;
+        }
 
-            if (inputRoot?.AccessKeyHandler != null)
-            {
-                inputRoot.AccessKeyHandler.MainMenu = this;
-            }
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            if (_accessKeyHandler?.MainMenu == this)
+                _accessKeyHandler.MainMenu = null;
+
+            _accessKeyHandler = null;
+
+            base.OnDetachedFromVisualTree(e);
         }
 
         protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)

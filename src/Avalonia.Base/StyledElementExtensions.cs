@@ -6,7 +6,7 @@ namespace Avalonia
 {
     public static class StyledElementExtensions
     {
-        public static IDisposable BindClass(this StyledElement target, string className, IBinding source, object anchor) =>
+        public static IDisposable BindClass(this StyledElement target, string className, BindingBase source, object anchor) =>
             ClassBindingManager.Bind(target, className, source, anchor);
 
         public static AvaloniaProperty GetClassProperty(string className) =>

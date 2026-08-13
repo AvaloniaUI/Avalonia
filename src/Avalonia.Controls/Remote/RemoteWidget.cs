@@ -10,7 +10,7 @@ using PixelFormat = Avalonia.Platform.PixelFormat;
 
 namespace Avalonia.Controls.Remote
 {
-    public class RemoteWidget : Control
+    internal class RemoteWidget : Control
     {
         public enum SizingMode
         {

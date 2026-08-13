@@ -833,6 +833,11 @@ namespace Avalonia.Win32.Interop
             WM_DISPATCH_WORK_ITEM = WM_USER,
         }
 
+        public enum SystemParametersInfo
+        {
+            SPI_SETWORKAREA = 0x002F
+        }
+
         public enum DwmWindowAttribute : uint
         {
             DWMWA_NCRENDERING_ENABLED = 1,
@@ -893,6 +898,23 @@ namespace Avalonia.Win32.Interop
             BI_BITFIELDS = 3,
             BI_JPEG = 4,
             BI_PNG = 5
+        }
+
+        public enum BitmapColorSpace : uint
+        {
+            LCS_CALIBRATED_RGB = 0,
+            LCS_sRGB = 0x73524742,
+            LCS_WINDOWS_COLOR_SPACE = 0x57696E20,
+            PROFILE_LINKED = 0x4C494E4B,
+            PROFILE_EMBEDDED = 0x4D424544
+        }
+
+        public enum BitmapIntent : uint
+        {
+            LCS_GM_ABS_COLORIMETRIC = 1,
+            LCS_GM_BUSINESS = 2,
+            LCS_GM_GRAPHICS = 4,
+            LCS_GM_IMAGES = 8,
         }
 
         public enum DIBColorTable
@@ -1101,7 +1123,7 @@ namespace Avalonia.Win32.Interop
             public int biHeight;
             public ushort biPlanes;
             public ushort biBitCount;
-            public uint biCompression;
+            public BitmapCompressionMode biCompression;
             public uint biSizeImage;
             public int biXPelsPerMeter;
             public int biYPelsPerMeter;
@@ -1115,28 +1137,53 @@ namespace Avalonia.Win32.Interop
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct BITMAPINFO
+        public struct BITMAPV5HEADER
         {
-            // C# cannot inlay structs in structs so must expand directly here
-            //
-            //[StructLayout(LayoutKind.Sequential)]
-            //public struct BITMAPINFOHEADER
-            //{
-            public uint biSize;
-            public int biWidth;
-            public int biHeight;
-            public ushort biPlanes;
-            public ushort biBitCount;
-            public BitmapCompressionMode biCompression;
-            public uint biSizeImage;
-            public int biXPelsPerMeter;
-            public int biYPelsPerMeter;
-            public uint biClrUsed;
-            public uint biClrImportant;
-            //}
+            public uint bV5Size;
+            public int bV5Width;
+            public int bV5Height;
+            public ushort bV5Planes;
+            public ushort bV5BitCount;
+            public BitmapCompressionMode bV5Compression;
+            public uint bV5SizeImage;
+            public int bV5XPelsPerMeter;
+            public int bV5YPelsPerMeter;
+            public uint bV5ClrUsed;
+            public uint bV5ClrImportant;
+            public uint bV5RedMask;
+            public uint bV5GreenMask;
+            public uint bV5BlueMask;
+            public uint bV5AlphaMask;
+            public BitmapColorSpace bV5CSType;
+            public CIEXYZTRIPLE bV5Endpoints;
+            public uint bV5GammaRed;
+            public uint bV5GammaGreen;
+            public uint bV5GammaBlue;
+            public BitmapIntent bV5Intent;
+            public uint bV5ProfileData;
+            public uint bV5ProfileSize;
+            public uint bV5Reserved;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-            public uint[] cols;
+            public void Init()
+            {
+                bV5Size = (uint)sizeof(BITMAPV5HEADER);
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CIEXYZTRIPLE
+        {
+            public CIEXYZ ciexyzRed;
+            public CIEXYZ ciexyzGreen;
+            public CIEXYZ ciexyzBlue;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CIEXYZ
+        {
+            public int ciexyzX;
+            public int ciexyzY;
+            public int ciexyzZ;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1206,7 +1253,10 @@ namespace Avalonia.Win32.Interop
             uint dwWidth, uint dwHeight,
             int XSrc, int YSrc,
             uint uStartScan, uint cScanLines,
-           IntPtr lpvBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
+           IntPtr lpvBits, IntPtr lpbmi, uint fuColorUse);
+
+        [DllImport("gdi32.dll")]
+        public static extern int SetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint cLines, IntPtr lpBits, IntPtr lpbmi, uint fuColorUse);
 
         [DllImport("gdi32.dll", SetLastError = false, ExactSpelling = true)]
         public static extern IntPtr CreateRectRgn(int x1, int y1, int x2, int y2);
@@ -1697,13 +1747,25 @@ namespace Avalonia.Win32.Interop
         [DllImport("gdi32.dll")]
         public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest, uint
                 dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines,
-            IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, uint fuColorUse);
+            IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, DIBColorTable fuColorUse);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
         [DllImport("gdi32.dll")]
-        public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, int un, out IntPtr lplpVoid, IntPtr handle, int dw);
+        public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, DIBColorTable usage, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateDIBSection(IntPtr hDC, in BITMAPV5HEADER pBitmapInfo, DIBColorTable usage, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateDIBitmap(IntPtr hDC, in BITMAPV5HEADER pBitmapInfo, int flInit, IntPtr lplpVoid, IntPtr pbmi, DIBColorTable iUsage);
+        [DllImport("gdi32.dll")]
+        public static extern bool GdiFlush();
+
+        [DllImport("gdi32.dll")]
+        public static extern bool BitBlt(IntPtr hDC, int x, int y, int cx, int cy, IntPtr hdcSrc, int x1, int y1, uint rop);
+
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateCompatibleBitmap(IntPtr hDC, int cx, int cy);
         [DllImport("gdi32.dll")]
         public static extern IntPtr CreateBitmap(int width, int height, int planes, int bitCount, IntPtr data);
         [DllImport("gdi32.dll")]
@@ -1730,7 +1792,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DescribePixelFormat(IntPtr hdc, int iPixelFormat, int bytes, ref PixelFormatDescriptor pfd);
 
         [DllImport("gdi32.dll")]
-        public static extern int StretchDIBits(IntPtr hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, IntPtr lpBits, [In] ref BITMAPINFO lpbmi, uint iUsage, uint rop);
+        public static extern int StretchDIBits(IntPtr hdc, int xDest, int yDest, int DestWidth, int DestHeight, int xSrc, int ySrc, int SrcWidth, int SrcHeight, IntPtr lpBits, IntPtr lpbmi, uint iUsage, uint rop);
 
         [DllImport("gdi32.dll")]
         public static extern int StretchBlt(IntPtr hdc, int xDest, int yDest, int DestWidth, int DestHeight, IntPtr hdcSrc, int xSrc, int ySrc, int SrcWidth, int SrcHeight, uint rop);
@@ -2208,12 +2270,8 @@ namespace Avalonia.Win32.Interop
             MDT_DEFAULT = MDT_EFFECTIVE_DPI
         }
 
-        public enum ClipboardFormat
+        public enum ClipboardFormat : ushort
         {
-            /// <summary>
-            /// Text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data. Use this format for ANSI text.
-            /// </summary>
-            CF_TEXT = 1,
             /// <summary>
             /// A handle to a bitmap
             /// </summary>
@@ -2230,6 +2288,7 @@ namespace Avalonia.Win32.Interop
             /// A handle to type HDROP that identifies a list of files.
             /// </summary>
             CF_HDROP = 15,
+            CF_DIBV5 = 17,
         }
 
         public struct MSG

@@ -1,8 +1,10 @@
+using Avalonia.Platform;
+
 namespace Avalonia.Rendering.Composition;
 
 internal interface ICompositionTargetDebugEvents
 {
-    int RenderedVisuals { get; }
-    void IncrementRenderedVisuals();
-    void RectInvalidated(Rect rc);
+    int RenderedVisuals { get; set; }
+    int VisitedVisuals { get; set; }
+    void RectInvalidated(LtrbRect rc);
 }

@@ -1,5 +1,4 @@
-﻿using Avalonia.Headless.UnitTests;
-using Avalonia.Themes.Simple;
+﻿using Avalonia.Themes.Simple;
 
 namespace Avalonia.Headless.UnitTests;
 
@@ -11,9 +10,11 @@ public class TestApplication : Application
     }
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<TestApplication>()
+        .UseHarfBuzz()
         .UseSkia()
         .UseHeadless(new AvaloniaHeadlessPlatformOptions
         {
-            UseHeadlessDrawing = false
+            UseHeadlessDrawing = false,
+            OverlayPopups = false
         });
 }

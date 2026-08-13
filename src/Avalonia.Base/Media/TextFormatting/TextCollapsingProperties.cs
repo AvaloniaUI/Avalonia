@@ -21,21 +21,36 @@
         public abstract FlowDirection FlowDirection { get; }
 
         /// <summary>
-        /// Collapses given text line.
+        /// Collapses the given text line and returns the resulting runs, or
+        /// <see langword="null"/> if no collapse is needed (the consumer
+        /// then keeps the original line unchanged).
         /// </summary>
         /// <param name="textLine">Text line to collapse.</param>
+        /// <remarks>
+        /// Implementations MUST return runs in <b>logical order</b>. The
+        /// consumer (<c>TextLineImpl.Collapse</c>) wraps the returned array
+        /// in a new <see cref="TextLine"/> and re-runs the BiDi reorderer
+        /// via <c>FinalizeLine</c>, so pre-applying visual order here would
+        /// be reordered a second time and produce garbled output on RTL or
+        /// mixed-bidi lines.
+        /// <para>
+        /// Iterate the source line's runs via
+        /// <c>LogicalTextRunEnumerator</c>, not <see cref="TextLine.TextRuns"/>
+        /// (which is post-bidi visual order). Use
+        /// <see cref="CreateCollapsedRuns"/> when an implementation only
+        /// needs the standard "logical prefix + symbol" shape.
+        /// </para>
+        /// </remarks>
         public abstract TextRun[]? Collapse(TextLine textLine);
 
-        // TODO12: Remove the flowDirection parameter
         /// <summary>
         /// Creates a list of runs for given collapsed length which includes specified symbol at the end.
         /// </summary>
         /// <param name="textLine">The text line.</param>
         /// <param name="collapsedLength">The collapsed length.</param>
-        /// <param name="flowDirection">The flow direction.</param>
         /// <param name="shapedSymbol">The symbol.</param>
         /// <returns>List of remaining runs.</returns>
-        public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, FlowDirection flowDirection, TextRun shapedSymbol)
+        public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, TextRun shapedSymbol)
         {
             if (collapsedLength <= 0)
             {

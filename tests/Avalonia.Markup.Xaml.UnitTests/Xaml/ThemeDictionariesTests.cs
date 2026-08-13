@@ -43,12 +43,12 @@ public class ThemeDictionariesTests : XamlTestBase
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
         
-        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background!).Color);
 
         var themeVariantKey = new string(['D', 'a', 'r', 'k']); // Ensure that a non-interned string works
         themeVariantScope.RequestedThemeVariant = new ThemeVariant(themeVariantKey, null);
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
     
     [Fact]
@@ -72,11 +72,11 @@ public class ThemeDictionariesTests : XamlTestBase
         
         DelayedBinding.ApplyBindings(border);
         
-        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background!).Color);
 
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
 
     [Fact]
@@ -104,11 +104,11 @@ public class ThemeDictionariesTests : XamlTestBase
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
         
-        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background!).Color);
 
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
 
     [Fact]
@@ -134,14 +134,14 @@ public class ThemeDictionariesTests : XamlTestBase
 </ResourceDictionary>");
         
         themeVariantScope.Resources.MergedDictionaries.Add(resources);
-        var geo = (GeometryDrawing)themeVariantScope.FindResource("Geo");
+        var geo = (GeometryDrawing?)themeVariantScope.FindResource("Geo");
         
         Assert.NotNull(geo);
-        Assert.Equal(Colors.White, ((ISolidColorBrush)geo.Brush)!.Color);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)geo.Brush!).Color);
 
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
         
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)geo.Brush)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)geo.Brush!).Color);
     }
 
     [Fact]
@@ -170,11 +170,11 @@ public class ThemeDictionariesTests : XamlTestBase
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
         
-        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background!).Color);
 
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
 
     [Fact]
@@ -214,11 +214,11 @@ public class ThemeDictionariesTests : XamlTestBase
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
         
-        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background!).Color);
 
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
     
     [Fact]
@@ -381,7 +381,7 @@ public class ThemeDictionariesTests : XamlTestBase
             var border = (Border)themeVariantScope.Child!;
 
             themeVariantScope.RequestedThemeVariant = ThemeVariant.Light;
-            Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
+            Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background!).Color);
         }
     }
     
@@ -409,11 +409,11 @@ public class ThemeDictionariesTests : XamlTestBase
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
         
-        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background!).Color);
 
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
     
     [Fact]
@@ -446,11 +446,11 @@ public class ThemeDictionariesTests : XamlTestBase
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
         
-        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background!).Color);
 
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
     
     [Fact]
@@ -479,11 +479,11 @@ public class ThemeDictionariesTests : XamlTestBase
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
         
-        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.White, ((ISolidColorBrush)border.Background!).Color);
 
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
     
     [Fact]
@@ -519,11 +519,11 @@ public class ThemeDictionariesTests : XamlTestBase
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
         
-        Assert.Equal(Colors.Red, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Red, ((ISolidColorBrush)border.Background!).Color);
 
         themeVariantScope.RequestedThemeVariant = ThemeVariant.Dark;
 
-        Assert.Equal(Colors.Red, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Red, ((ISolidColorBrush)border.Background!).Color);
     }
 
     [Fact]
@@ -556,7 +556,7 @@ public class ThemeDictionariesTests : XamlTestBase
 
         themeVariantScope.RequestedThemeVariant = Custom;
         
-        Assert.Equal(Colors.Pink, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Pink, ((ISolidColorBrush)border.Background!).Color);
     }
     
     [Fact]
@@ -581,7 +581,7 @@ public class ThemeDictionariesTests : XamlTestBase
         
         themeVariantScope.RequestedThemeVariant = new ThemeVariant("Custom", ThemeVariant.Dark);
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
     
     [Fact]
@@ -612,7 +612,7 @@ public class ThemeDictionariesTests : XamlTestBase
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
 
-        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background)!.Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)border.Background!).Color);
     }
     
     [Fact]

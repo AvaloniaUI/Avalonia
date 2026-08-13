@@ -19,7 +19,7 @@ namespace Avalonia.Native
 
         class DndCallback : NativeCallbackBase, IAvnDndResultCallback
         {
-            private TaskCompletionSource<DragDropEffects> _tcs;
+            private TaskCompletionSource<DragDropEffects>? _tcs;
 
             public DndCallback(TaskCompletionSource<DragDropEffects> tcs)
             {
@@ -32,15 +32,8 @@ namespace Avalonia.Native
             }
         }
 
-        [Obsolete($"Use {nameof(DoDragDropAsync)} instead.")]
-        Task<DragDropEffects> IPlatformDragSource.DoDragDrop(
-            PointerEventArgs triggerEvent,
-            IDataObject data,
-            DragDropEffects allowedEffects)
-            => DoDragDropAsync(triggerEvent, new DataObjectToDataTransferWrapper(data), allowedEffects);
-
         public Task<DragDropEffects> DoDragDropAsync(
-            PointerEventArgs triggerEvent,
+            PointerPressedEventArgs triggerEvent,
             IDataTransfer dataTransfer,
             DragDropEffects allowedEffects)
         {

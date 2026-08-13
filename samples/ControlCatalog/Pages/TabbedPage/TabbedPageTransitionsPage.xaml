@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageTransitionsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Page Transition" FontWeight="SemiBold" FontSize="13" />
+        <ComboBox x:Name="TransitionCombo" SelectedIndex="0"
+                  SelectionChanged="OnTransitionChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="None" />
+          <ComboBoxItem Content="CrossFade 250ms" />
+          <ComboBoxItem Content="PageSlide Horizontal" />
+          <ComboBoxItem Content="PageSlide Vertical" />
+          <ComboBoxItem Content="CrossFade + PageSlide" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Tab Placement" FontWeight="SemiBold" FontSize="13" />
+        <ComboBox x:Name="PlacementCombo" SelectedIndex="0"
+                  SelectionChanged="OnPlacementChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Top" />
+          <ComboBoxItem Content="Bottom" />
+          <ComboBoxItem Content="Left" />
+          <ComboBoxItem Content="Right" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="PageTransition animates content switches. Rapid tab clicks are handled gracefully via cancellation." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Top">
+        <ContentPage Header="Alpha">
+          <Panel Background="#FF4F6EF5">
+            <TextBlock Text="α" FontSize="80" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="White" Opacity="0.85" />
+          </Panel>
+        </ContentPage>
+        <ContentPage Header="Beta">
+          <Panel Background="#FF34C77B">
+            <TextBlock Text="β" FontSize="80" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="White" Opacity="0.85" />
+          </Panel>
+        </ContentPage>
+        <ContentPage Header="Gamma">
+          <Panel Background="#FFFF6B35">
+            <TextBlock Text="γ" FontSize="80" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="White" Opacity="0.85" />
+          </Panel>
+        </ContentPage>
+        <ContentPage Header="Delta">
+          <Panel Background="#FFB44FE8">
+            <TextBlock Text="δ" FontSize="80" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="White" Opacity="0.85" />
+          </Panel>
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </DockPanel>
+</UserControl>

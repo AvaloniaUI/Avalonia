@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Chrome;
+using Avalonia.Controls.Platform;
+using Avalonia.Controls.Templates;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -116,7 +121,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 Assert.True(window.IsVisible);
 
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 Assert.False(window.IsVisible);
             }
@@ -196,7 +201,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
+                    var cancel = window.PlatformImpl!.Closing!(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(false, cancel);
                 }
@@ -258,7 +263,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
+                    var cancel = window.PlatformImpl!.Closing!(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(true, cancel);
                 }
@@ -344,7 +349,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent);
 
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 var result = await task;
                 Assert.False(result);
@@ -387,7 +392,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent);
 
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
                 await task;
 
                 var openedRaised = false;
@@ -518,11 +523,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Not_Be_Centered_When_WindowStartupLocation_Is_CenterScreen_And_Window_Is_Hidden_And_Shown()
         {
-            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen1 = new MockScreen(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
 
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
 
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
@@ -553,12 +558,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
-            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
-            var screen2 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
+            var screen1 = new MockScreen(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen2 = new MockScreen(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
 
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1, screen2 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
             
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
@@ -576,8 +581,8 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 var expectedPosition = new PixelPoint(
-                    (int)(screen1.Object.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2),
-                    (int)(screen1.Object.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
+                    (int)(screen1.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2),
+                    (int)(screen1.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
 
                 Assert.Equal(window.Position, expectedPosition);
             }
@@ -586,10 +591,10 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Sized_To_MinSize_If_InitialSize_Less_Than_MinSize()
         {
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
             
             var windowImpl = MockWindowingPlatform.CreateWindowMock(400, 300);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1.75);
@@ -689,6 +694,55 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(window.CanMaximize);
         }
 
+        [Fact]
+        public void FlowDirection_RTL_Should_Not_Result_In_Mirrored_Host()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object)));
+
+            var window = new Window
+            {
+                FlowDirection = FlowDirection.RightToLeft
+            };
+
+            var visualRoot = window.GetVisualRoot();
+            Assert.IsType<TopLevelHost>(visualRoot);
+
+            Assert.False(window.HasMirrorTransform);
+            Assert.False(visualRoot.HasMirrorTransform);
+        }
+
+        [Fact]
+        public void Extending_Client_Area_To_Decorations_When_Attached_To_Visual_Tree_Works()
+        {
+            var extended = false;
+
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            windowImpl.Setup(w => w.NeedsManagedDecorations).Returns(() => extended);
+            windowImpl.Setup(w => w.RequestedDrawnDecorations).Returns(PlatformRequestedDrawnDecoration.TitleBar);
+
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object)));
+
+            var border = new Border();
+
+            var window = new Window
+            {
+                Content = border
+            };
+
+            border.AttachedToVisualTree +=
+                (_, _) =>
+                {
+                    extended = true;
+                    windowImpl.Object.ExtendClientAreaToDecorationsChanged?.Invoke(true);
+                };
+
+            window.Show();
+        }
+
         public class SizingTests : ScopedTestBase
         {
             [Fact]
@@ -718,7 +772,7 @@ namespace Avalonia.Controls.UnitTests
                     target.Width = 120;
                     target.Height = 70;
 
-                    Dispatcher.UIThread.RunJobs();
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                     Assert.Equal(1, child.MeasureSizes.Count);
                     Assert.Equal(new Size(120, 70), child.MeasureSizes[0]);
@@ -927,8 +981,8 @@ namespace Avalonia.Controls.UnitTests
 
                     // Size before and after DPI change is a real-world example, with size after DPI
                     // change coming from Win32 WM_DPICHANGED.
-                    target.PlatformImpl.ScalingChanged(1.5);
-                    target.PlatformImpl.Resized(
+                    target.PlatformImpl!.ScalingChanged!(1.5);
+                    target.PlatformImpl!.Resized!(
                         new Size(210.66666666666666, 118.66666666666667),
                         WindowResizeReason.DpiChange);
 
@@ -987,7 +1041,7 @@ namespace Avalonia.Controls.UnitTests
                     target.Width = 410;
                     target.LayoutManager.ExecuteLayoutPass();
 
-                    var windowImpl = Mock.Get(target.PlatformImpl);
+                    var windowImpl = Mock.Get(target.PlatformImpl!);
                     windowImpl.Verify(x => x.Resize(new Size(410, 800), WindowResizeReason.Application));
                     Assert.Equal(410, target.Width);
                 }
@@ -1013,7 +1067,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 800), WindowResizeReason.User);
+                    target.PlatformImpl!.Resized!(new Size(410, 800), WindowResizeReason.User);
 
                     Assert.Equal(410, target.Width);
                     Assert.Equal(800, target.Height);
@@ -1040,7 +1094,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(400, 810), WindowResizeReason.User);
+                    target.PlatformImpl!.Resized!(new Size(400, 810), WindowResizeReason.User);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(810, target.Height);
@@ -1068,7 +1122,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 810), WindowResizeReason.Unspecified);
+                    target.PlatformImpl!.Resized!(new Size(410, 810), WindowResizeReason.Unspecified);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
@@ -1144,11 +1198,241 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        public class ForcedDecorationSizingTests : ScopedTestBase
+        {
+            /// <summary>
+            /// Creates a mock IWindowImpl that simulates forced CSD mode:
+            /// NeedsManagedDecorations = true, RequestedDrawnDecorations includes TitleBar + Border,
+            /// but IsClientAreaExtendedToDecorations = false.
+            /// </summary>
+            private static Mock<IWindowImpl> CreateForcedCsdWindowMock(
+                double initialWidth = 800, double initialHeight = 600)
+            {
+                var windowImpl = MockWindowingPlatform.CreateWindowMock(initialWidth, initialHeight);
+
+                windowImpl.Setup(x => x.NeedsManagedDecorations).Returns(true);
+                windowImpl.Setup(x => x.RequestedDrawnDecorations).Returns(
+                    PlatformRequestedDrawnDecoration.TitleBar | PlatformRequestedDrawnDecoration.Border);
+
+                return windowImpl;
+            }
+
+            [Fact]
+            public void ClientSize_Should_Exclude_Decoration_Inset()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    // Verify mock setup
+                    Assert.True(windowImpl.Object.NeedsManagedDecorations);
+                    
+                    target.Show();
+
+                    var host = target.TopLevelHost;
+                    var decorations = host.Decorations;
+
+                    // Debug: verify decorations were created
+                    Assert.NotNull(decorations);
+                    Assert.True(decorations!.TitleBarHeight > 0, 
+                        $"TitleBarHeight was {decorations.TitleBarHeight}");
+                    
+                    var inset = host.DecorationInset;
+                    Assert.NotEqual(default, inset);
+
+                    var expectedClientSize = new Size(
+                        800 - inset.Left - inset.Right,
+                        600 - inset.Top - inset.Bottom);
+                    Assert.Equal(expectedClientSize, target.ClientSize);
+                }
+            }
+
+            [Fact]
+            public void WindowDecorationMargin_Should_Be_Zero_In_Forced_Mode()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    target.Show();
+
+                    Assert.Equal(default(Thickness), target.WindowDecorationMargin);
+                }
+            }
+
+            [Fact]
+            public void HandleResized_Should_Subtract_Inset_From_Platform_Size()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    target.Show();
+
+                    var inset = target.TopLevelHost.DecorationInset;
+
+                    // Simulate a platform resize (e.g. user resize)
+                    target.PlatformImpl!.Resized!.Invoke(new Size(1000, 700), WindowResizeReason.User);
+
+                    var expectedClientSize = new Size(
+                        1000 - inset.Left - inset.Right,
+                        700 - inset.Top - inset.Bottom);
+                    Assert.Equal(expectedClientSize, target.ClientSize);
+                }
+            }
+
+            [Fact]
+            public void Setting_Width_Should_Resize_WindowImpl_With_Inset_Added()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        Width = 400,
+                        Height = 300,
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    target.Show();
+
+                    var inset = target.TopLevelHost.DecorationInset;
+
+                    target.Width = 500;
+                    target.LayoutManager.ExecuteLayoutPass();
+
+                    // Platform should receive full frame size (content + inset)
+                    var expectedPlatformSize = new Size(
+                        500 + inset.Left + inset.Right,
+                        300 + inset.Top + inset.Bottom);
+                    windowImpl.Verify(x => x.Resize(expectedPlatformSize, WindowResizeReason.Layout));
+                }
+            }
+
+            [Fact]
+            public void Child_Should_Be_Measured_With_Content_Size()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var child = new ChildControl();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        Width = 400,
+                        Height = 300,
+                        SizeToContent = SizeToContent.Manual,
+                        Content = child,
+                    };
+
+                    target.Show();
+
+                    Assert.Equal(1, child.MeasureSizes.Count);
+                    Assert.Equal(new Size(400, 300), child.MeasureSizes[0]);
+                }
+            }
+
+            [Fact]
+            public void Width_Height_Should_Not_Be_NaN_After_Show()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    target.Show();
+
+                    Assert.False(double.IsNaN(target.Width));
+                    Assert.False(double.IsNaN(target.Height));
+
+                    var inset = target.TopLevelHost.DecorationInset;
+                    Assert.Equal(800 - inset.Left - inset.Right, target.Width);
+                    Assert.Equal(600 - inset.Top - inset.Bottom, target.Height);
+                }
+            }
+
+            [Fact]
+            public void SizeToContent_Should_Work_In_Forced_Mode()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 300,
+                    };
+
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        Content = child,
+                    };
+
+                    target.Show();
+
+                    Assert.Equal(400, target.Width);
+                    Assert.Equal(300, target.Height);
+                    Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
+                }
+            }
+
+            [Fact]
+            public void User_Resize_Should_Reset_SizeToContent()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 300,
+                    };
+
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        Content = child,
+                    };
+
+                    target.Show();
+                    Assert.Equal(400, target.Width);
+                    Assert.Equal(300, target.Height);
+
+                    var inset = target.TopLevelHost.DecorationInset;
+                    // Platform fires resize with full frame size
+                    var newPlatformWidth = 500 + inset.Left + inset.Right;
+                    var newPlatformHeight = 300 + inset.Top + inset.Bottom;
+                    windowImpl.Object.Resized?.Invoke(
+                        new Size(newPlatformWidth, newPlatformHeight),
+                        WindowResizeReason.User);
+
+                    Assert.Equal(500, target.Width);
+                    Assert.Equal(300, target.Height);
+                    Assert.Equal(SizeToContent.Height, target.SizeToContent);
+                }
+            }
+        }
+
         private static Mock<IWindowImpl> CreateImpl()
         {
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
 
             var windowImpl = new Mock<IWindowImpl>();
             windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
@@ -1166,6 +1450,195 @@ namespace Avalonia.Controls.UnitTests
             {
                 MeasureSizes.Add(availableSize);
                 return base.MeasureOverride(availableSize);
+            }
+        }
+
+        [Fact]
+        public void Show_Should_Apply_Default_Icon_When_No_Custom_Icon_Is_Set()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+
+                // Clear any SetIcon calls from construction.
+                windowImpl.Invocations.Clear();
+
+                target.Show();
+
+                // ShowCore should apply the default icon when no custom icon was set.
+                windowImpl.Verify(x => x.SetIcon(It.IsAny<IWindowIconImpl?>()), Times.AtLeastOnce());
+            }
+        }
+
+        [Fact]
+        public void WindowState_UsableGetter_Setter_Updates_Only_After_Platform_Callback()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            // Simulate a platform where the getter is usable and the setter is accepted
+            var platformState = WindowState.Normal;
+            windowImpl.Setup(x => x.WindowStateGetterIsUsable).Returns(true);
+            windowImpl.Setup(x => x.WindowState).Returns(() => platformState);
+            windowImpl.SetupSet(x => x.WindowState = It.IsAny<WindowState>())
+                .Callback<WindowState>(v =>
+                {
+                    platformState = v;
+                    // Platform accepts the state and fires the callback
+                    windowImpl.Object.WindowStateChanged?.Invoke(v);
+                });
+
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+            using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+                target.Show();
+
+                var raised = new List<WindowState>();
+                target.GetObservable(Window.WindowStateProperty).Skip(1).Subscribe(s => raised.Add(s));
+
+                // Set to Maximized - platform accepts and fires callback
+                target.WindowState = WindowState.Maximized;
+                Assert.Equal(WindowState.Maximized, target.WindowState);
+                Assert.Contains(WindowState.Maximized, raised);
+
+                // Set to FullScreen - platform accepts and fires callback
+                raised.Clear();
+                target.WindowState = WindowState.FullScreen;
+                Assert.Equal(WindowState.FullScreen, target.WindowState);
+                Assert.Contains(WindowState.FullScreen, raised);
+            }
+        }
+
+        [Fact]
+        public void WindowState_UsableGetter_Setter_Raises_Synthetic_Notification_When_Platform_Refuses()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            // Simulate a platform where the getter is usable but refuses state change requests.
+            // Start in Maximized state, then refuse a request to go Normal.
+            var platformState = WindowState.Normal;
+            windowImpl.Setup(x => x.WindowStateGetterIsUsable).Returns(true);
+            windowImpl.Setup(x => x.WindowState).Returns(() => platformState);
+            windowImpl.SetupSet(x => x.WindowState = It.IsAny<WindowState>())
+                .Callback<WindowState>(v =>
+                {
+                    // Platform accepts Maximized but refuses everything else
+                    if (v == WindowState.Maximized)
+                    {
+                        platformState = v;
+                        windowImpl.Object.WindowStateChanged?.Invoke(v);
+                    }
+                    // else: platform refuses, does not change state
+                });
+
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+            using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+                target.Show();
+
+                // First, go to Maximized (accepted by platform)
+                target.WindowState = WindowState.Maximized;
+                Assert.Equal(WindowState.Maximized, target.WindowState);
+
+                var raised = new List<AvaloniaPropertyChangedEventArgs>();
+                target.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == Window.WindowStateProperty)
+                        raised.Add(e);
+                };
+
+                // Now try to go to FullScreen - platform refuses, stays Maximized
+                target.WindowState = WindowState.FullScreen;
+
+                // The getter should still return Maximized because the platform refused
+                Assert.Equal(WindowState.Maximized, target.WindowState);
+
+                // A synthetic notification should have been raised so data bindings can recover
+                Assert.NotEmpty(raised);
+                Assert.Equal(WindowState.Maximized, raised[^1].GetNewValue<WindowState>());
+            }
+        }
+
+        [Fact]
+        public void WindowState_NonUsableGetter_Setter_Updates_Immediately()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            // Legacy behavior: WindowStateGetterIsUsable = false
+            windowImpl.Setup(x => x.WindowStateGetterIsUsable).Returns(false);
+
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+            using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+                target.Show();
+
+                var raised = new List<WindowState>();
+                target.GetObservable(Window.WindowStateProperty).Skip(1).Subscribe(s => raised.Add(s));
+
+                // Set to Maximized - should update immediately regardless of platform behavior
+                target.WindowState = WindowState.Maximized;
+
+                Assert.Equal(WindowState.Maximized, target.WindowState);
+                Assert.Contains(WindowState.Maximized, raised);
+
+                // Verify the setter was forwarded to the platform impl
+                windowImpl.VerifySet(x => x.WindowState = WindowState.Maximized);
+
+                // Platform getter should never be called in legacy mode
+                windowImpl.VerifyGet(x => x.WindowState, Times.Never());
+            }
+        }
+
+        [Fact]
+        public void WindowDecorationsTheme_Should_Apply_To_Decorations()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            windowImpl.Setup(x => x.NeedsManagedDecorations).Returns(true);
+            windowImpl.Setup(x => x.RequestedDrawnDecorations).Returns(
+                PlatformRequestedDrawnDecoration.TitleBar | PlatformRequestedDrawnDecoration.Border);
+
+            var window = new Window(windowImpl.Object);
+
+            var (theme1, content1) = CreateTheme();
+            window.WindowDecorationsTheme = theme1;
+            window.Show();
+
+            var decorations = window.TopLevelHost.Decorations;
+            Assert.NotNull(decorations);
+            Assert.Same(theme1, decorations.Theme);
+            Assert.Same(content1, decorations.Content);
+
+            var (theme2, content2) = CreateTheme();
+            window.WindowDecorationsTheme = theme2;
+
+            Assert.Same(theme2, decorations.Theme);
+            Assert.Same(content2, decorations.Content);
+
+            static (ControlTheme theme, WindowDrawnDecorationsContent content) CreateTheme()
+            {
+                var content = new WindowDrawnDecorationsContent();
+
+                var template = new WindowDrawnDecorationsTemplate
+                {
+                    Content = (IServiceProvider? _) => new TemplateResult<WindowDrawnDecorationsContent>(content, new NameScope())
+                };
+
+                var theme = new ControlTheme(typeof(WindowDrawnDecorations))
+                {
+                    Setters =
+                    {
+                        new Setter(WindowDrawnDecorations.TemplateProperty, template)
+                    }
+                };
+
+                return (theme, content);
             }
         }
 

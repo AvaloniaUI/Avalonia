@@ -49,7 +49,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void DesiredSize_Is_Content_Size_When_Smaller_Than_AvailableSize()
+        public void DesiredSize_Is_Content_Size_Plus_Padding_When_Smaller_Than_AvailableSize()
         {
             var target = new ScrollContentPresenter
             {
@@ -65,7 +65,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Size(16, 16), target.DesiredSize);
+            Assert.Equal(new Size(36, 36), target.DesiredSize);
         }
 
         [Fact]
@@ -224,6 +224,104 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(100, child.Bounds.Width);
+        }
+
+        [Fact]
+        public void Measure_Should_Deflate_AvailableSize_By_Padding()
+        {
+            var child = new TestControl();
+            var target = new ScrollContentPresenter
+            {
+                Padding = new Thickness(10),
+                Content = child
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+
+            Assert.Equal(new Size(80, 80), child.AvailableSize);
+        }
+
+        [Fact]
+        public void Extent_Should_Include_Padding()
+        {
+            var target = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Padding = new Thickness(10),
+                Content = new Border
+                {
+                    Width = 100,
+                    Height = 100
+                }
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(50, 50));
+            target.Arrange(new Rect(0, 0, 50, 50));
+
+            Assert.Equal(new Size(50, 50), target.Viewport);
+            Assert.Equal(new Size(120, 120), target.Extent);
+        }
+
+        [Fact]
+        public void Content_Larger_Than_Viewport_Should_Not_Be_Squashed_By_Padding()
+        {
+            StackPanel content;
+            var target = new ScrollContentPresenter
+            {
+                CanVerticallyScroll = true,
+                Padding = new Thickness(10),
+                Content = content = new StackPanel
+                {
+                    Children =
+                    {
+                        new Border { Height = 50 },
+                        new Border { Height = 50 }
+                    }
+                },
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(50, 50));
+            target.Arrange(new Rect(0, 0, 50, 50));
+
+            Assert.Equal(new Rect(10, 10, 30, 100), content.Bounds);
+            Assert.Equal(new Size(50, 120), target.Extent);
+        }
+
+        [Fact]
+        public void Bottom_Padding_Should_Be_Visible_When_Scrolled_To_End()
+        {
+            StackPanel content;
+            var target = new ScrollContentPresenter
+            {
+                CanVerticallyScroll = true,
+                Padding = new Thickness(10),
+                Content = content = new StackPanel
+                {
+                    Children =
+                    {
+                        new Border { Height = 50 },
+                        new Border { Height = 50 }
+                    }
+                }
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(50, 50));
+            target.Arrange(new Rect(0, 0, 50, 50));
+
+            // Scroll to the end: extent (120) - viewport (50).
+            target.Offset = new Vector(0, 70);
+            target.Arrange(new Rect(0, 0, 50, 50));
+
+            Assert.Equal(new Vector(0, 70), target.Offset);
+
+            // The whole content is scrolled into view and the bottom padding is still visible.
+            Assert.Equal(-60, content.Bounds.Top);
+            Assert.Equal(40, content.Bounds.Bottom);
         }
 
         [Fact]
@@ -446,7 +544,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             // Border20 is at position 0,600 with bottom at Y=620
-            var border20 = target.FindControl<Border>("Border20");
+            var border20 = target.GetControl<Border>("Border20");
             target.BringDescendantIntoView(border20, new Rect(border20.Bounds.Size));
 
             // With viewport Height of 100, border becomes fully visible when alligned from the bottom at Offset Y=520, i.e. 620-100
@@ -458,7 +556,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             // Border20 is at position 0,800 with bottom at Y=820
-            var border40 = target.FindControl<Border>("Border40");
+            var border40 = target.GetControl<Border>("Border40");
             target.BringDescendantIntoView(border40, new Rect(border40.Bounds.Size));
 
             // With viewport Height of 100, border becomes fully visible when alligned from the bottom at Offset Y=720, i.e. 820-100
@@ -502,7 +600,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.UpdateChild();
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(0, 0, 100, 100));
-            var border3 = target.FindControl<Border>("Border3");
+            var border3 = target.GetControl<Border>("Border3");
             target.BringDescendantIntoView(border3, new Rect(border3.Bounds.Size));
 
             // Border3 is still in view, offset hasn't changed

@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -253,7 +251,7 @@ namespace Avalonia.LeakTests
                 Assert.Same(textBox, window.Presenter!.Child);
 
                 // Get the border from the TextBox template.
-                var border = textBox.GetTemplateChildren().FirstOrDefault(x => x.Name == "border");
+                var border = textBox.GetTemplateDescendants().FirstOrDefault(x => x.Name == "border");
 
                 // The TextBox should have subscriptions to its Classes collection from the
                 // default theme.
@@ -294,7 +292,7 @@ namespace Avalonia.LeakTests
                             {
                                 new FuncTreeDataTemplate<Node>(
                                     (x, _) => new TextBlock { Text = x.Name },
-                                    x => x.Children)
+                                    x => x.Children ?? [])
                             },
                             ItemsSource = nodes
                         }
@@ -404,12 +402,12 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
-                var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+                var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
                 var screens = new Mock<IScreenImpl>();
-                screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+                screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
 
                 var impl = new Mock<IWindowImpl>();
-                impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
+                impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns((object?)null);
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
                 impl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
@@ -516,7 +514,7 @@ namespace Avalonia.LeakTests
                 Assert.True(weakMenuItem2.IsAlive);
                 Assert.True(weakContextMenu.IsAlive);
 
-                Mock.Get(window.PlatformImpl).Invocations.Clear();
+                Mock.Get(window.PlatformImpl!).Invocations.Clear();
                 CollectGarbage();
 
                 Assert.False(weakMenuItem1.IsAlive);
@@ -605,7 +603,7 @@ namespace Avalonia.LeakTests
                 Assert.True(weakMenuItem4.IsAlive);
                 Assert.True(weakContextMenu2.IsAlive);
 
-                Mock.Get(window.PlatformImpl).Invocations.Clear();
+                Mock.Get(window.PlatformImpl!).Invocations.Clear();
                 CollectGarbage();
 
                 Assert.False(weakMenuItem1.IsAlive);
@@ -930,7 +928,7 @@ namespace Avalonia.LeakTests
                     window.Content = null;
                     
                     // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
-                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    Mock.Get(window.PlatformImpl!).Invocations.Clear();
                     
                     return (new WeakReference(toolTip), new WeakReference(textBlock));
                 }
@@ -984,7 +982,7 @@ namespace Avalonia.LeakTests
                     window.Content = null;
 
                     // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
-                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    Mock.Get(window.PlatformImpl!).Invocations.Clear();
                     
                     return (new WeakReference(flyout), new WeakReference(textBlock));
                 }
@@ -1049,6 +1047,44 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [ReleaseFact]
+        public void Menu_Is_Freed()
+        {
+            using (Start())
+            {
+                var window = new Window();
+
+                WeakReference Run()
+                {
+                    var menu = new Menu();
+                    window.Content = menu;
+
+                    window.Show();
+
+                    // Do a layout and make sure that Menu gets added to visual tree
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<Menu>(window.Presenter!.Child);
+                    Assert.NotEmpty(window.Presenter.Child.GetVisualChildren());
+
+                    // Clear the content and ensure the Menu is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return new WeakReference(menu);
+                }
+
+                var weakMenu = Run();
+                Assert.True(weakMenu.IsAlive);
+
+                CollectGarbage();
+
+                Assert.False(weakMenu.IsAlive);
+
+                GC.KeepAlive(window);
+            }
+        }
+
         private static FuncControlTemplate CreateWindowTemplate()
         {
             return new FuncControlTemplate<Window>((parent, scope) =>
@@ -1077,7 +1113,8 @@ namespace Avalonia.LeakTests
                 Disposable.Create(Cleanup),
                 UnitTestApplication.Start(TestServices.StyledWindow.With(
                     keyboardDevice: () => new KeyboardDevice(),
-                    inputManager: new InputManager()))
+                    inputManager: new InputManager(),
+                    accessKeyHandler: () => new AccessKeyHandler()))
             };
         }
 
@@ -1093,8 +1130,8 @@ namespace Avalonia.LeakTests
 
         private class Node
         {
-            public string Name { get; set; }
-            public IEnumerable<Node> Children { get; set; }
+            public string? Name { get; set; }
+            public IEnumerable<Node>? Children { get; set; }
         }
 
     }

@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
+using XamlX;
 using XamlX.Ast;
+using XamlX.Emit;
+using XamlX.IL;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
-using XamlX;
-using XamlX.Emit;
-using XamlX.IL;
-
 using XamlIlEmitContext = XamlX.Emit.XamlEmitContextWithLocals<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
-using System.Xml.Linq;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
@@ -157,13 +156,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         {
                             IXamlType targetType = targetTypeResolver();
                             IXamlType? observableType;
-                            if (targetType.GenericTypeDefinition?.Equals(context.Configuration.TypeSystem.FindType("System.IObservable`1")) == true)
+                            var observableOfT = context.GetAvaloniaTypes().IObservableOfT;
+                            if (targetType.GenericTypeDefinition?.Equals(observableOfT) == true)
                             {
                                 observableType = targetType;
                             }
                             else
                             {
-                                observableType = targetType.GetAllInterfaces().FirstOrDefault(i => i.GenericTypeDefinition?.Equals(context.Configuration.TypeSystem.FindType("System.IObservable`1")) ?? false);
+                                observableType = targetType.GetAllInterfaces().FirstOrDefault(i => i.GenericTypeDefinition?.Equals(observableOfT) ?? false);
                             }
 
                             if (observableType != null)
@@ -173,7 +173,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             }
 
                             bool foundTask = false;
-                            var taskType = context.Configuration.TypeSystem.GetType("System.Threading.Tasks.Task`1");
+                            var taskType = context.GetAvaloniaTypes().TaskOfT;
 
                             for (var currentType = targetType; currentType != null; currentType = currentType.BaseType)
                             {
@@ -211,9 +211,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             {
                                 nodes.Add(new XamlIlClrPropertyPathElementNode(clrProperty, propName.AcceptsNull));
                             }
-                            else if (GetAllDefinedMethods(targetType).FirstOrDefault(m => m.Name == propName.PropertyName) is IXamlMethod method)
+                            else if (GetAllDefinedMethods(targetType)
+                                         .Where(p => p.Name == propName.PropertyName)
+                                         .ToArray()
+                                     is { Length: > 0 } methodCandidates)
                             {
-                                nodes.Add(new XamlIlClrMethodPathElementNode(method, context.Configuration.WellKnownTypes.Delegate, propName.AcceptsNull));
+                                var candidate = GetBestCommandMethod(methodCandidates, propName.PropertyName, targetType);
+                                nodes.Add(new XamlIlClrMethodPathElementNode(candidate, context.Configuration.WellKnownTypes.Delegate, propName.AcceptsNull));
                             }
                             else
                             {
@@ -262,7 +266,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                                 currentParamIndex++;
                             }
 
-                            bool isNotifyingCollection = targetType.GetAllInterfaces().Any(i => i.FullName == "System.Collections.Specialized.INotifyCollectionChanged");
+                            bool isNotifyingCollection = targetType.GetAllInterfaces().Any(i => i.Is("System.Collections.Specialized", "INotifyCollectionChanged"));
 
                             nodes.Add(new XamlIlClrIndexerPathElementNode(property, values, string.Join(",", indexer.Arguments), isNotifyingCollection));
                             break;
@@ -351,17 +355,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         break;
                     case BindingExpressionGrammar.NameNode elementName:
                         IXamlType? elementType = null, dataType = null;
+                        (elementType, dataType) = ScopeRegistrationFinder.GetTargetType(context.ParentNodes().Last(), elementName.Name) ?? default;
+
                         foreach (var deferredContent in context.ParentNodes().OfType<NestedScopeMetadataNode>())
                         {
+                            if (!(elementType is null))
+                            {
+                                break;
+                            }
+
                             (elementType, dataType) = ScopeRegistrationFinder.GetTargetType(deferredContent, elementName.Name) ?? default;
                             if (!(elementType is null))
                             {
                                 break;
                             }
-                        }
-                        if (elementType is null)
-                        {
-                            (elementType, dataType) = ScopeRegistrationFinder.GetTargetType(context.ParentNodes().Last(), elementName.Name) ?? default;
                         }
 
                         if (elementType is null)
@@ -433,6 +440,67 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         yield return currentType;
                     }
                 }
+            }
+
+            // Priority:
+            //  1. One parameter method
+            //    1a. Object parameter (amongst several overloads)
+            //    1b. Single method with one parameter
+            //  2. Zero parameters method
+            IXamlMethod GetBestCommandMethod(IXamlMethod[] candidates, string name, IXamlType targetType)
+            {
+                Debug.Assert(candidates.Length > 0);
+
+                IXamlMethod? zeroParamCandidate = null;
+                HashSet<IXamlMethod>? oneParamCandidates = null;
+
+                foreach (var candidate in candidates)
+                {
+                    Debug.Assert(candidate.Name == name);
+
+                    switch (candidate.Parameters.Count)
+                    {
+                        case 0:
+                            zeroParamCandidate ??= candidate;
+                            break;
+
+                        case 1:
+                            // Object parameter always wins
+                            if (candidate.Parameters[0].Is("System", "Object"))
+                                return candidate;
+
+                            // Our candidates are ordered with the most derived class first:
+                            // By adding the first candidate for a given parameter type, we automatically handle overridden or hidden methods.
+                            oneParamCandidates ??= new HashSet<IXamlMethod>(SingleParameterTypeXamlTypeComparer.Instance);
+                            oneParamCandidates.Add(candidate);
+                            break;
+                    }
+                }
+
+                if (oneParamCandidates is not null)
+                {
+                    Debug.Assert(oneParamCandidates.Count > 0);
+
+                    if (oneParamCandidates.Count == 1)
+                        return oneParamCandidates.First();
+
+                    var parameterTypes = oneParamCandidates
+                        .Select(m => $"'{m.Parameters[0].FullName}'")
+                        .OrderBy(s => s, StringComparer.Ordinal)
+                        .ToArray();
+
+                    throw new XamlTransformException(
+                        $"Unable to resolve method of name '{name}' on type '{targetType}'. " +
+                        $"Found {parameterTypes.Length} overloads accepting one parameter: {string.Join(", ", parameterTypes)}. " +
+                        "Expected either a single overload with one parameter, or an overload accepting System.Object.",
+                        lineInfo);
+                }
+
+                return zeroParamCandidate ?? throw new XamlTransformException(
+                    $"Unable to resolve method of name '{name}' on type '{targetType}'. " +
+                    $"Found {candidates.Length} overloads accepting more than one parameter. " +
+                    $"Expected a method with zero or one parameter.",
+                    lineInfo);
             }
         }
 
@@ -508,17 +576,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 // Ignore name registrations, if we are inside of the nested namescope.
                 if (_childScopesStack.Count == 0)
                 {
-                    if (node is AvaloniaNameScopeRegistrationXamlIlNode registration
+                    if (TargetType is null
+                        && node is AvaloniaNameScopeRegistrationXamlIlNode registration
                         && registration.Name is XamlAstTextNode text && text.Text == Name)
                     {
                         TargetType = registration.TargetType;
-                    }
-                    // We are visiting nodes top to bottom.
-                    // If we have already found target type by its name,
-                    // it means all next nodes will be below, and not applicable for data context inheritance.
-                    else if (TargetType is null && node is AvaloniaXamlIlDataContextTypeMetadataNode dataContextTypeMetadata)
-                    {
-                        DataContextType = dataContextTypeMetadata.DataContextType;
+                        DataContextType = _stack
+                            .OfType<AvaloniaXamlIlDataContextTypeMetadataNode>()
+                            .FirstOrDefault()
+                            ?.DataContextType;
                     }
                 }
                 return node;
@@ -563,7 +629,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m.Name == "StreamObservable").MakeGenericMethod(new[] { Type }));
+                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m is { Name: "StreamObservable", IsGenericMethod: true }).MakeGenericMethod(new[] { Type }));
             }
         }
 
@@ -578,7 +644,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m.Name == "StreamTask").MakeGenericMethod(new[] { Type }));
+                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m is { Name: "StreamTask", IsGenericMethod: true }).MakeGenericMethod(new[] { Type }));
             }
         }
 
@@ -753,13 +819,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 IXamlType specificDelegateType;
                 if (Method.ReturnType == context.Configuration.WellKnownTypes.Void && Method.Parameters.Count == 0)
                 {
-                    specificDelegateType = context.Configuration.TypeSystem
-                        .GetType("System.Action");
+                    specificDelegateType = context.Configuration.WellKnownTypes.Action;
                 }
                 else if (Method.ReturnType == context.Configuration.WellKnownTypes.Void && Method.Parameters.Count <= 16)
                 {
-                    specificDelegateType = context.Configuration.TypeSystem
-                        .GetType($"System.Action`{Method.Parameters.Count}")
+                    specificDelegateType = context.Configuration.WellKnownTypes
+                        .GetActionOfT(Method.Parameters.Count)
                         .MakeGenericType(Method.Parameters);
                 }
                 else if (Method.Parameters.Count <= 16)
@@ -767,8 +832,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     List<IXamlType> genericParameters = new();
                     genericParameters.AddRange(Method.Parameters);
                     genericParameters.Add(Method.ReturnType);
-                    specificDelegateType = context.Configuration.TypeSystem
-                        .GetType($"System.Func`{Method.Parameters.Count + 1}")
+                    specificDelegateType = context.Configuration.WellKnownTypes
+                        .GetFuncOfT(Method.Parameters.Count + 1)
                         .MakeGenericType(genericParameters);
                 }
                 else
@@ -837,9 +902,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     .Ldstr(_executeMethod.Name)
                     .Ldnull()
                     .Ldftn(trampolineBuilder.EmitCommandExecuteTrampoline(context, _executeMethod))
-                    .Newobj(context.Configuration.TypeSystem.GetType("System.Action`2")
+                    .Newobj(context.Configuration.WellKnownTypes.GetActionOfT(2)
                         .MakeGenericType(objectType, objectType)
-                        .GetConstructor(new() { objectType, context.Configuration.TypeSystem.GetType("System.IntPtr") }));
+                        .GetConstructor(new() { objectType, context.Configuration.WellKnownTypes.IntPtr }));
 
                 if (_canExecuteMethod is null)
                 {
@@ -850,9 +915,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     codeGen
                         .Ldnull()
                         .Ldftn(trampolineBuilder.EmitCommandCanExecuteTrampoline(context, _canExecuteMethod))
-                        .Newobj(context.Configuration.TypeSystem.GetType("System.Func`3")
+                        .Newobj(context.Configuration.TypeSystem.WellKnownTypes.GetFuncOfT(3)
                             .MakeGenericType(objectType, objectType, context.Configuration.WellKnownTypes.Boolean)
-                            .GetConstructor(new() { objectType, context.Configuration.TypeSystem.GetType("System.IntPtr") }));
+                            .GetConstructor(new() { objectType, context.Configuration.WellKnownTypes.IntPtr }));
                 }
 
                 if (_dependsOnProperties is { Count:> 0 })
@@ -902,7 +967,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                var intType = context.Configuration.TypeSystem.GetType("System.Int32");
+                var intType = context.Configuration.TypeSystem.WellKnownTypes.Int32;
                 context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
                     .Emit(context, codeGen, _property, _values, _indexerKey);
 
@@ -949,7 +1014,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                var intType = context.Configuration.TypeSystem.GetType("System.Int32");
+                var intType = context.Configuration.TypeSystem.WellKnownTypes.Int32;
                 var indices = codeGen.DefineLocal(intType.MakeArrayType(1));
                 codeGen.Ldc_I4(_values.Count)
                     .Newarr(intType)
@@ -982,7 +1047,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m.Name == "TypeCast").MakeGenericMethod(new[] { Type }));
+                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m is { Name: "TypeCast", IsGenericMethod: true }).MakeGenericMethod(new[] { Type }));
             }
         }
 
@@ -1012,14 +1077,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public XamlILNodeEmitResult Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                var intType = context.Configuration.TypeSystem.GetType("System.Int32");
                 var types = context.GetAvaloniaTypes();
 
-                // We're calling the CompiledBindingPathBuilder(int apiVersion) with an apiVersion 
-                // of 1 to indicate that we don't want TemplatedParent compatibility hacks enabled.
-                codeGen
-                    .Ldc_I4(1)
-                    .Newobj(types.CompiledBindingPathBuilder.GetConstructor(new() { intType }));
+                codeGen.Newobj(types.CompiledBindingPathBuilder.GetConstructor());
 
                 foreach (var transform in _transformElements)
                 {
@@ -1051,6 +1111,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         Elements[i] = (IXamlIlBindingPathElementNode)ast.Visit(visitor);
                     }
                 }
+            }
+        }
+
+        private sealed class SingleParameterTypeXamlTypeComparer : IEqualityComparer<IXamlMethod>
+        {
+            public static SingleParameterTypeXamlTypeComparer Instance { get; } = new();
+
+            public bool Equals(IXamlMethod? x, IXamlMethod? y)
+            {
+                Debug.Assert(x is { Parameters.Count: 1 });
+                Debug.Assert(y is { Parameters.Count: 1 });
+
+                return x!.Parameters[0].Equals(y!.Parameters[0]);
+            }
+
+            public int GetHashCode(IXamlMethod obj)
+            {
+                Debug.Assert(obj.Parameters.Count == 1);
+
+                return obj.Parameters[0].GetHashCode();
             }
         }
     }

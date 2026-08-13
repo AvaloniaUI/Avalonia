@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -172,7 +172,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -207,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             clickBorder.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(5, 5), 0,
+                null!, wnd, new Point(5, 5), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -284,6 +284,43 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(splitView.IsPaneOpen);
         }
 
+        [Theory]
+        [InlineData(SplitViewDisplayMode.Overlay)]
+        [InlineData(SplitViewDisplayMode.CompactOverlay)]
+        public void Top_Level_Back_Requested_Should_Not_Be_Handled_When_Pane_Is_Closed(SplitViewDisplayMode displayMode)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow
+                .With(globalClock: new MockGlobalClock()));
+            var wnd = new Window
+            {
+                Width = 1280,
+                Height = 720
+            };
+            var splitView = new SplitView
+            {
+                DisplayMode = displayMode
+            };
+            wnd.Content = splitView;
+            wnd.Show();
+
+            // Pane is closed: the SplitView must ignore the event so back navigation can proceed.
+            Assert.False(splitView.IsPaneOpen);
+
+            var closedArgs = new Interactivity.RoutedEventArgs(TopLevel.BackRequestedEvent);
+            wnd.RaiseEvent(closedArgs);
+
+            Assert.False(closedArgs.Handled);
+
+            // Pane is open: the SplitView should close it and handle the event.
+            splitView.IsPaneOpen = true;
+
+            var openArgs = new Interactivity.RoutedEventArgs(TopLevel.BackRequestedEvent);
+            wnd.RaiseEvent(openArgs);
+
+            Assert.True(openArgs.Handled);
+            Assert.False(splitView.IsPaneOpen);
+        }
+
         [Fact]
         public void With_Default_IsPaneOpen_Value_Should_Have_Closed_Pseudo_Class_Set()
         {
@@ -322,7 +359,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.IsPaneOpen = true;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));
@@ -336,7 +373,7 @@ namespace Avalonia.Controls.UnitTests
             splitView.DisplayMode = SplitViewDisplayMode.Inline;
 
             splitView.RaiseEvent(new PointerReleasedEventArgs(splitView,
-                null, wnd, new Point(1270, 30), 0,
+                null!, wnd, new Point(1270, 30), 0,
                 new PointerPointProperties(),
                 KeyModifiers.None,
                 MouseButton.Left));

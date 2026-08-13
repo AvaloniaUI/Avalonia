@@ -19,9 +19,7 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var conv = new KeySplineTypeConverter();
 
-            var keySpline = (KeySpline)conv.ConvertFrom(input);
-
-            Assert.NotNull(keySpline);
+            var keySpline = Assert.IsAssignableFrom<KeySpline>(conv.ConvertFrom(input));
 
             Assert.Equal(1, keySpline.ControlPointX1);
             Assert.Equal(2, keySpline.ControlPointY1);
@@ -36,7 +34,7 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var conv = new KeySplineTypeConverter();
 
-            Assert.ThrowsAny<Exception>(() => (KeySpline)conv.ConvertFrom(input));
+            Assert.ThrowsAny<Exception>(() => (KeySpline?)conv.ConvertFrom(input));
         }
 
         [Theory]
@@ -132,7 +130,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             // position is what you'd expect at end and beginning
             clock.Step(TimeSpan.Zero);
@@ -187,7 +185,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             // position is what you'd expect at end and beginning
             clock.Step(TimeSpan.Zero);
@@ -252,7 +250,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(10.0, transform.Y, 0.0001);
@@ -301,7 +299,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(50.0, transform.Y, 0.0001);

@@ -59,6 +59,11 @@ public class RuntimeXamlLoaderDocument
     public Uri? BaseUri { get; set; }
 
     /// <summary>
+    /// Path to the XAML document being loaded.
+    /// </summary>
+    public string? Document { get; set; }
+
+    /// <summary>
     /// The optional instance into which the XAML should be loaded.
     /// </summary>
     public object? RootInstance { get; set; }

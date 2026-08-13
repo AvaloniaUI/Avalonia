@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using Avalonia.Input;
 using Avalonia.MicroCom;
-using Avalonia.Platform.Storage;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using FORMATETC = Avalonia.Win32.Interop.UnmanagedMethods.FORMATETC;
 using STGMEDIUM = Avalonia.Win32.Interop.UnmanagedMethods.STGMEDIUM;
@@ -31,9 +30,9 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
             _current = current;
         }
 
-        public FormatEnumerator(IReadOnlyList<DataFormat> dataFormats)
+        public FormatEnumerator(ushort[] formatIds)
         {
-            _formats = dataFormats.Select(OleDataObjectHelper.ToFormatEtc).ToArray();
+            _formats = formatIds.Select(OleDataObjectHelper.ToFormatEtc).ToArray();
             _current = 0;
         }
 
@@ -83,6 +82,9 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
     public bool IsDisposed
         => DataTransfer is null;
 
+    private ushort[] FormatIds
+        => field ??= CalcFormatIds();
+
     public event Action? OnDestroyed;
 
     unsafe int Win32Com.IDataObject.DAdvise(FORMATETC* pFormatetc, int advf, void* adviseSink)
@@ -100,7 +102,7 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
             throw new COMException(nameof(COR_E_OBJECTDISPOSED), unchecked((int)HRESULT.E_NOTIMPL));
 
         if ((DATADIR)direction == DATADIR.DATADIR_GET)
-            return new FormatEnumerator(DataTransfer.Formats);
+            return new FormatEnumerator(FormatIds);
 
         throw new COMException(nameof(HRESULT.E_NOTIMPL), unchecked((int)HRESULT.E_NOTIMPL));
     }
@@ -113,9 +115,18 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
         if (!ValidateFormat(format, out var result, out var dataFormat))
             return result;
 
-        *medium = default;
-        medium->tymed = TYMED.TYMED_HGLOBAL;
-        return OleDataObjectHelper.WriteDataToHGlobal(DataTransfer, dataFormat, ref medium->unionmember);
+        if (format->tymed == TYMED.TYMED_GDI)
+        {
+            *medium = default;
+            medium->tymed = TYMED.TYMED_GDI;
+            return OleDataObjectHelper.WriteDataToGdi(DataTransfer, dataFormat, ref medium->unionmember);
+        }
+        else
+        {
+            *medium = default;
+            medium->tymed = TYMED.TYMED_HGLOBAL;
+            return OleDataObjectHelper.WriteDataToHGlobal(DataTransfer, dataFormat, ref medium->unionmember);
+        }
     }
 
     unsafe uint Win32Com.IDataObject.GetDataHere(FORMATETC* format, STGMEDIUM* medium)
@@ -142,7 +153,8 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
     {
         dataFormat = null;
 
-        if (!format->tymed.HasAllFlags(TYMED.TYMED_HGLOBAL))
+        if (!(format->tymed == TYMED.TYMED_HGLOBAL ||
+            (format->tymed == TYMED.TYMED_GDI && format->cfFormat == (ushort)ClipboardFormat.CF_BITMAP)))
         {
             result = DV_E_TYMED;
             dataFormat = null;
@@ -161,15 +173,39 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
             return false;
         }
 
-        dataFormat = ClipboardFormatRegistry.GetFormatById(format->cfFormat);
-        if (!DataTransfer.Contains(dataFormat))
+        if (!FormatIds.Contains(format->cfFormat))
         {
             result = DV_E_FORMATETC;
             return false;
         }
 
+        dataFormat = ClipboardFormatRegistry.GetOrAddFormat(format->cfFormat);
         result = (uint)HRESULT.S_OK;
         return true;
+    }
+
+    private ushort[] CalcFormatIds()
+    {
+        if (DataTransfer is null)
+            return [];
+
+        var formatIds = new List<ushort>(DataTransfer.Formats.Count);
+
+        foreach (var dataFormat in DataTransfer.Formats)
+        {
+            if (dataFormat.Kind == DataFormatKind.InProcess)
+                continue;
+
+            if (DataFormat.Bitmap.Equals(dataFormat))
+            {
+                // We add extra formats for bitmaps
+                formatIds.AddRange(ClipboardFormatRegistry.ImageFormats.Select(ClipboardFormatRegistry.GetOrAddFormat));
+            }
+            else
+                formatIds.Add(ClipboardFormatRegistry.GetOrAddFormat(dataFormat));
+        }
+
+        return formatIds.ToArray();
     }
 
     unsafe uint Win32Com.IDataObject.SetData(FORMATETC* pformatetc, STGMEDIUM* pmedium, int fRelease)

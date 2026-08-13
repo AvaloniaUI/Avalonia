@@ -23,6 +23,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
-        IRenderRoot? VisualRoot { get; }
+        TopLevel? TopLevel { get; }
     }
 }

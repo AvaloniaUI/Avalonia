@@ -1,7 +1,6 @@
 ﻿using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Markup.Parsers;
 using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -11,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.UnitTests;
 using Xunit;
+using Avalonia.Data.Core.Parsers;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
@@ -62,7 +62,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var observer = Build(data, nameof(TestObject.MethodWithReturnAndParameter));
             var result = await observer.Take(1);
 
-            var callback = (Func<object, int>)result;
+            var callback = (Func<object, int>)result!;
 
             Assert.Equal(1, callback(1));
 
@@ -70,7 +70,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
 
-        private static IObservable<object> Build(object source, string path)
+        private static IObservable<object?> Build(object source, string path)
         {
             var r = new CharacterReader(path);
             var grammar = BindingExpressionGrammar.Parse(ref r).Nodes;

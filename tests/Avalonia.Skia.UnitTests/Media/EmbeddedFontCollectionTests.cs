@@ -82,11 +82,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.Equal("Manrope Light", glyphTypeface.FamilyName);
 
-                Assert.True(glyphTypeface is IGlyphTypeface2);
-
-                var glyphTypeface2 = (IGlyphTypeface2)glyphTypeface;
-
-                Assert.Equal("Manrope", glyphTypeface2.TypographicFamilyName);
+                Assert.Equal("Manrope", glyphTypeface.TypographicFamilyName);
             }
         }
 
@@ -143,14 +139,14 @@ namespace Avalonia.Skia.UnitTests.Media
                 _createSyntheticTypefaces = createSyntheticTypefaces;
             }
 
-            public IDictionary<string, ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>> GlyphTypefaceCache => _glyphTypefaceCache;
+            public IDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> GlyphTypefaceCache => _glyphTypefaceCache;
 
             public override bool TryCreateSyntheticGlyphTypeface(
-               IGlyphTypeface glyphTypeface,
+               GlyphTypeface glyphTypeface,
                FontStyle style, 
                FontWeight weight,
                FontStretch stretch,
-               [NotNullWhen(true)] out IGlyphTypeface? syntheticGlyphTypeface)
+               [NotNullWhen(true)] out GlyphTypeface? syntheticGlyphTypeface)
             {
                 if (!_createSyntheticTypefaces)
                 {

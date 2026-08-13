@@ -1,6 +1,7 @@
-<UserControl xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.TabStripPage"
              xmlns="https://github.com/avaloniaui"
+             Header="TabStrip"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
              x:DataType="viewModels:TabControlPageViewModel">
     <StackPanel Orientation="Vertical" Spacing="4">
@@ -31,4 +32,4 @@
             </TabStrip.ItemTemplate>
         </TabStrip>
     </StackPanel>
-</UserControl>
+</ContentPage>

@@ -13,6 +13,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private int _currentCodeUnitOffset;
         private int _codeUnitLengthOfCurrentCodepoint;
         private Codepoint _currentCodepoint;
+        private IndicConjunctBreakClass _currentIndicConjunctBreakType;
 
         /// <summary>
         /// Will be <see cref="GraphemeBreakClass.Other"/> if invalid data or EOF reached.
@@ -26,6 +27,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             _currentCodeUnitOffset = 0;
             _codeUnitLengthOfCurrentCodepoint = 0;
             _currentCodepoint = Codepoint.ReplacementCodepoint;
+            _currentIndicConjunctBreakType = IndicConjunctBreakClass.None;
             _currentType = GraphemeBreakClass.Other;
         }
 
@@ -83,6 +85,40 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             // Now begin the main state machine.
+
+            var hasIndicConjunctLinker = false;
+            var hasIndicConjunctBase = false;
+
+            // GB9c is stateful: only codepoints already consumed into this cluster
+            // can make a following InCB=Consonant join instead of starting a new cluster.
+            void ConsumeIndicConjunctBreak(IndicConjunctBreakClass indicConjunctBreakType)
+            {
+                switch (indicConjunctBreakType)
+                {
+                    case IndicConjunctBreakClass.Consonant:
+                        hasIndicConjunctBase = true;
+                        hasIndicConjunctLinker = false;
+                        break;
+
+                    case IndicConjunctBreakClass.Linker:
+                        if (hasIndicConjunctBase)
+                        {
+                            hasIndicConjunctLinker = true;
+                        }
+
+                        break;
+
+                    case IndicConjunctBreakClass.Extend:
+                        break;
+
+                    default:
+                        hasIndicConjunctBase = false;
+                        hasIndicConjunctLinker = false;
+                        break;
+                }
+            }
+
+            ConsumeIndicConjunctBreak(_currentIndicConjunctBreakType);
 
             var previousClusterBreakType = _currentType;
 
@@ -204,9 +240,28 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 (1U << (int)GraphemeBreakClass.SpacingMark);
 
             // rules GB9, GB9a
+            // Keep trailers with the current cluster, and feed them into the GB9c
+            // state so InCB=Extend stays transparent between consonants and linkers.
             while (((1U << (int)_currentType) & gb9Mask) != 0U)
             {
+                ConsumeIndicConjunctBreak(_currentIndicConjunctBreakType);
                 ReadNextCodepoint();
+            }
+
+            // GB9c keeps Indic conjunct clusters together once a consonant has been
+            // followed by a linker, with any GB9 extenders allowed on both sides.
+            while (hasIndicConjunctBase &&
+                hasIndicConjunctLinker &&
+                _currentIndicConjunctBreakType == IndicConjunctBreakClass.Consonant)
+            {
+                ConsumeIndicConjunctBreak(_currentIndicConjunctBreakType);
+                ReadNextCodepoint();
+
+                while (((1U << (int)_currentType) & gb9Mask) != 0U)
+                {
+                    ConsumeIndicConjunctBreak(_currentIndicConjunctBreakType);
+                    ReadNextCodepoint();
+                }
             }
 
             Return:
@@ -238,6 +293,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 out _codeUnitLengthOfCurrentCodepoint);
 
             _currentType = _currentCodepoint.GraphemeBreakClass;
+            _currentIndicConjunctBreakType = UnicodeData.GetIndicConjunctBreakClass(_currentCodepoint.Value);
         }
     }
 }

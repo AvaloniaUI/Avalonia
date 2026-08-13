@@ -43,7 +43,7 @@ jobs:
     inputs:
       command: 'test'
       projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
-      arguments: '-l "console;verbosity=detailed"'
+      arguments: '--no-progress'
 
   - script: |
       pkill IntegrationTestApp
@@ -94,6 +94,7 @@ jobs:
     inputs:
       command: 'run'
       projects: 'tests/Avalonia.IntegrationTests.Win32/Avalonia.IntegrationTests.Win32.csproj'
+      arguments: '--no-progress'
 
   - task: VSTest@2
     displayName: 'Run Appium Integration Tests'

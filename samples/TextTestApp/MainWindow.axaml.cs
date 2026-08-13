@@ -223,12 +223,12 @@ namespace TextTestApp
             }
         }
 
-        private IImage CreateGlyphDrawing(IGlyphTypeface glyphTypeface, double emSize, GlyphInfo info)
+        private IImage CreateGlyphDrawing(GlyphTypeface glyphTypeface, double emSize, GlyphInfo info)
         {
             return new DrawingImage { Drawing = new GeometryDrawing { Brush = Brushes.Black, Geometry = GetGlyphOutline(glyphTypeface, emSize, info) } };
         }
 
-        private Geometry GetGlyphOutline(IGlyphTypeface typeface, double emSize, GlyphInfo info)
+        private Geometry GetGlyphOutline(GlyphTypeface typeface, double emSize, GlyphInfo info)
         {
             // substitute for GlyphTypeface.GetGlyphOutline
             return new GlyphRun(typeface, emSize, new[] { '\0' }, [info]).BuildGeometry();
@@ -320,11 +320,17 @@ namespace TextTestApp
 
         private void OnBufferSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            List<Rect> rectangles = new List<Rect>(_buffer.Selection.Count);
+            if (_selectionAdorner is null)
+                return;
 
-            foreach (var row in _buffer.SelectedItems)
-                if (row is Control { Tag: Rect rect })
-                    rectangles.Add(rect);
+            var rectangles = new List<Rect>(_buffer.Selection.Count);
+
+            if (_buffer.SelectedItems is { } selectedItems)
+            {
+                foreach (var row in selectedItems)
+                    if (row is Control { Tag: Rect rect })
+                        rectangles.Add(rect);
+            }
 
             _selectionAdorner.Rectangles = rectangles;
         }

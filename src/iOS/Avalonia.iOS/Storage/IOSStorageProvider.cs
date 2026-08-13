@@ -43,6 +43,12 @@ internal class IOSStorageProvider : IStorageProvider
         }
     }
 
+    public async Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options)
+    {
+        var files = await OpenFilePickerAsync(options).ConfigureAwait(false);
+        return new OpenFilePickerResult { Files = files };
+    }
+
     private async Task<IReadOnlyList<IStorageFile>> OpenImagePickerAsync(FilePickerOpenOptions options)
     {
 #pragma warning disable CA1422 // Validate platform compatibility - we can't use PHImagePicker here.
@@ -232,7 +238,7 @@ internal class IOSStorageProvider : IStorageProvider
     public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
     {
         var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
-        return new SaveFilePickerResult(file);
+        return new SaveFilePickerResult { File = file };
     }
 
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)

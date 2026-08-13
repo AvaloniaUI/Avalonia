@@ -401,7 +401,7 @@ namespace Avalonia.Base.UnitTests.Layout
                 var target = new Canvas();
                 var raised = 0;
 
-                void OnTargetOnEffectiveViewportChanged(object s, EffectiveViewportChangedEventArgs e)
+                void OnTargetOnEffectiveViewportChanged(object? s, EffectiveViewportChangedEventArgs e)
                 {
                     target.EffectiveViewportChanged -= OnTargetOnEffectiveViewportChanged;
                     ++raised;
@@ -460,9 +460,9 @@ namespace Avalonia.Base.UnitTests.Layout
             TestRoot root,
             ScrollViewer scroller,
             Control target,
-            Action<object, EffectiveViewportChangedEventArgs> handler)
+            Action<object?, EffectiveViewportChangedEventArgs> handler)
         {
-            void ViewportChanged(object sender, EffectiveViewportChangedEventArgs e)
+            void ViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
             {
                 handler(sender, e);
             }

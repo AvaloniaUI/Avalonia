@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -19,7 +20,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
-    public class AvaloniaObjectTests_Binding
+    public class AvaloniaObjectTests_Binding : ScopedTestBase
     {
         [Fact]
         public void Bind_Sets_Current_Value()
@@ -858,19 +859,12 @@ namespace Avalonia.Base.UnitTests
         [InlineData(BindingPriority.Style)]
         public void Typed_Bind_Executes_On_UIThread(BindingPriority priority)
         {
-            AsyncContext.Run(async () =>
+            using (UnitTestApplication.Start())
             {
                 var target = new Class1();
                 var source = new Subject<string>();
                 var currentThreadId = Thread.CurrentThread.ManagedThreadId;
                 var raised = 0;
-
-                var dispatcherMock = new Mock<IDispatcherImpl>();
-                dispatcherMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
-                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
-
-                var services = new TestServices(
-                    dispatcherImpl: dispatcherMock.Object);
 
                 target.PropertyChanged += (s, e) =>
                 {
@@ -878,17 +872,15 @@ namespace Avalonia.Base.UnitTests
                     ++raised;
                 };
 
-                using (UnitTestApplication.Start(services))
-                {
-                    target.Bind(Class1.FooProperty, source, priority);
 
-                    await Task.Run(() => source.OnNext("foobar"));
-                    Dispatcher.UIThread.RunJobs();
+                target.Bind(Class1.FooProperty, source, priority);
 
-                    Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
-                    Assert.Equal(1, raised);
-                }
-            });
+                ThreadRunHelper.RunOnDedicatedThreadAndWait(() => source.OnNext("foobar"));
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
+                Assert.Equal(1, raised);
+            }
         }
 
         [Theory]
@@ -896,19 +888,12 @@ namespace Avalonia.Base.UnitTests
         [InlineData(BindingPriority.Style)]
         public void Untyped_Bind_Executes_On_UIThread(BindingPriority priority)
         {
-            AsyncContext.Run(async () =>
+            using (UnitTestApplication.Start())
             {
                 var target = new Class1();
                 var source = new Subject<object>();
                 var currentThreadId = Thread.CurrentThread.ManagedThreadId;
                 var raised = 0;
-
-                var dispatcherMock = new Mock<IDispatcherImpl>();
-                dispatcherMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
-                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
-
-                var services = new TestServices(
-                    dispatcherImpl: dispatcherMock.Object);
 
                 target.PropertyChanged += (s, e) =>
                 {
@@ -916,17 +901,15 @@ namespace Avalonia.Base.UnitTests
                     ++raised;
                 };
 
-                using (UnitTestApplication.Start(services))
-                {
-                    target.Bind(Class1.FooProperty, source, priority);
 
-                    await Task.Run(() => source.OnNext("foobar"));
-                    Dispatcher.UIThread.RunJobs();
+                target.Bind(Class1.FooProperty, source, priority);
 
-                    Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
-                    Assert.Equal(1, raised);
-                }
-            });
+                ThreadRunHelper.RunOnDedicatedThreadAndWait(() => source.OnNext("foobar"));
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
+                Assert.Equal(1, raised);
+            }
         }
 
         [Theory]
@@ -934,59 +917,41 @@ namespace Avalonia.Base.UnitTests
         [InlineData(BindingPriority.Style)]
         public void BindingValue_Bind_Executes_On_UIThread(BindingPriority priority)
         {
-            AsyncContext.Run(async () =>
+            using var _ = UnitTestApplication.Start();
+            var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
+            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+            var raised = 0;
+
+            target.PropertyChanged += (s, e) =>
             {
-                var target = new Class1();
-                var source = new Subject<BindingValue<string>>();
-                var currentThreadId = Thread.CurrentThread.ManagedThreadId;
-                var raised = 0;
+                Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
+                ++raised;
+            };
 
-                var threadingInterfaceMock = new Mock<IDispatcherImpl>();
-                threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
-                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+            target.Bind(Class1.FooProperty, source, priority);
 
-                var services = new TestServices(
-                    dispatcherImpl: threadingInterfaceMock.Object);
+            ThreadRunHelper.RunOnDedicatedThreadAndWait(() => source.OnNext("foobar"));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                target.PropertyChanged += (s, e) =>
-                {
-                    Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
-                    ++raised;
-                };
-
-                using (UnitTestApplication.Start(services))
-                {
-                    target.Bind(Class1.FooProperty, source, priority);
-
-                    await Task.Run(() => source.OnNext("foobar"));
-                    Dispatcher.UIThread.RunJobs();
-
-                    Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
-                    Assert.Equal(1, raised);
-                }
-            });
+            Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
+            Assert.Equal(1, raised);
         }
 
         [Fact]
-        public async Task Bind_With_Scheduler_Executes_On_UI_Thread()
+        [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Explicit threading test")]
+        public void Bind_With_Scheduler_Executes_On_UI_Thread()
         {
+            using var _ = UnitTestApplication.Start();
+
             var target = new Class1();
             var source = new Subject<double>();
-            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+            target.Bind(Class1.QuxProperty, source);
 
-            var threadingInterfaceMock = new Mock<IDispatcherImpl>();
-            threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
-                .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
-
-            var services = new TestServices(
-                dispatcherImpl: threadingInterfaceMock.Object);
-
-            using (UnitTestApplication.Start(services))
-            {
-                target.Bind(Class1.QuxProperty, source);
-
-                await Task.Run(() => source.OnNext(6.7));
-            }
+            ThreadRunHelper.RunOnDedicatedThread(() => source.OnNext(6.7)).GetAwaiter().GetResult();
+            Assert.NotEqual(6.7, target.GetValue(Class1.QuxProperty));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
@@ -1091,7 +1056,11 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
 
-            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value))
+            {
+                Mode = BindingMode.TwoWay,
+                Source = source
+            });
 
             target.DoubleValue = 123.4;
 
@@ -1105,7 +1074,11 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
 
-            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value))
+            {
+                Mode = BindingMode.TwoWay,
+                Source = source
+            });
 
             Assert.False(source.SetterCalled);
         }
@@ -1116,7 +1089,11 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
 
-            target.Bind(Class1.DoubleValueProperty, new Binding("[0]", BindingMode.TwoWay) { Source = source });
+            target.Bind(Class1.DoubleValueProperty, new Binding("[0]")
+            {
+                Mode = BindingMode.TwoWay,
+                Source = source
+            });
 
             Assert.False(source.SetterCalled);
         }
@@ -1127,7 +1104,7 @@ namespace Avalonia.Base.UnitTests
             var target = new TextBlock();
             target.DataContext = null;
 
-            target.Bind(TextBlock.TextProperty, new Binding("Missing", BindingMode.TwoWay));
+            target.Bind(TextBlock.TextProperty, new Binding("Missing") { Mode = BindingMode.TwoWay });
         }
 
         [Fact]
@@ -1136,7 +1113,7 @@ namespace Avalonia.Base.UnitTests
             var target = new TextBlock();
             target.DataContext = null;
 
-            target.Bind(TextBlock.TextProperty, new Binding("[0]", BindingMode.TwoWay));
+            target.Bind(TextBlock.TextProperty, new Binding("[0]") { Mode = BindingMode.TwoWay });
         }
 
         [Theory(Skip = "Will need changes to binding internals in order to pass")]
@@ -1147,7 +1124,11 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
-            var binding = new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source };
+            var binding = new Binding(nameof(source.Value))
+            {
+                Mode = BindingMode.TwoWay,
+                Source = source
+            };
 
             target.Bind(Class1.DoubleValueProperty, binding, priority);
             target.SetValue(Class1.DoubleValueProperty, 123.4, priority - 1);
@@ -1165,7 +1146,11 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
-            var binding1 = new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source };
+            var binding1 = new Binding(nameof(source.Value))
+            {
+                Mode = BindingMode.TwoWay,
+                Source = source
+            };
             var binding2 = new BehaviorSubject<double>(123.4);
             
             target.Bind(Class1.DoubleValueProperty, binding1, priority);
@@ -1182,7 +1167,11 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
 
-            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value))
+            {
+                Mode = BindingMode.TwoWay,
+                Source = source
+            });
             target.SetValue(Class1.DoubleValueProperty, 123.4, BindingPriority.Animation);
 
             // Setter should not be called because the TwoWay binding with Style priority
@@ -1197,7 +1186,11 @@ namespace Avalonia.Base.UnitTests
             var source1 = new TestTwoWayBindingViewModel();
             var source2 = new BehaviorSubject<double>(123.4);
 
-            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source1.Value), BindingMode.TwoWay) { Source = source1 });
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source1.Value))
+            {
+                Mode = BindingMode.TwoWay,
+                Source = source1
+            });
             target.Bind(Class1.DoubleValueProperty, source2, BindingPriority.Animation);
 
             // Setter should not be called because the TwoWay binding with Style priority
@@ -1297,25 +1290,6 @@ namespace Avalonia.Base.UnitTests
         {
             public static readonly StyledProperty<string> BarProperty =
                 AvaloniaProperty.Register<Class2, string>("Bar", "bardefault");
-        }
-
-        private class TestOneTimeBinding : IBinding
-        {
-            private IObservable<object> _source;
-
-            public TestOneTimeBinding(IObservable<object> source)
-            {
-                _source = source;
-            }
-
-            public InstancedBinding Initiate(
-                AvaloniaObject target,
-                AvaloniaProperty? targetProperty,
-                object? anchor = null,
-                bool enableDataValidation = false)
-            {
-                return InstancedBinding.OneTime(_source);
-            }
         }
 
         private class TestStackOverflowViewModel : INotifyPropertyChanged

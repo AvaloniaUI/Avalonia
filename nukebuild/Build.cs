@@ -1,20 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Tools.Npm;
-using Nuke.Common.Utilities;
 using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Serilog.Log;
 using MicroCom.CodeGenerator;
@@ -41,13 +36,16 @@ partial class Build : NukeBuild
 
     [NuGetPackage("Microsoft.DotNet.ApiCompat.Tool", "Microsoft.DotNet.ApiCompat.Tool.dll", Framework = "net8.0")]
     Tool ApiCompatTool;
-    
+
     [NuGetPackage("Microsoft.DotNet.ApiDiff.Tool", "Microsoft.DotNet.ApiDiff.Tool.dll", Framework = "net8.0")]
     Tool ApiDiffTool;
 
     [NuGetPackage("dotnet-ilrepack", "ILRepackTool.dll", Framework = "net8.0")]
     Tool IlRepackTool;
-    
+
+    [NuGetPackage("CycloneDX", "CycloneDX.dll", Framework = "net10.0")]
+    Tool CycloneDxTool;
+
     protected override void OnBuildInitialized()
     {
         Parameters = new BuildParameters(this, ScheduledTargets.Contains(BuildToNuGetCache));
@@ -62,6 +60,7 @@ partial class Build : NukeBuild
             Information("Repository Name: " + Parameters.RepositoryName);
             Information("Repository Branch: " + Parameters.RepositoryBranch);
         }
+
         Information("Configuration: " + Parameters.Configuration);
         Information("IsLocalBuild: " + Parameters.IsLocalBuild);
         Information("IsRunningOnUnix: " + Parameters.IsRunningOnUnix);
@@ -78,8 +77,9 @@ partial class Build : NukeBuild
         void ExecWait(string preamble, string command, string args)
         {
             Console.WriteLine(preamble);
-            Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
+            Process.Start(new ProcessStartInfo(command, args) { UseShellExecute = false }).WaitForExit();
         }
+
         ExecWait("dotnet version:", "dotnet", "--info");
         ExecWait("dotnet workloads:", "dotnet", "workload list");
         Information("Processor count: " + Environment.ProcessorCount);
@@ -104,6 +104,7 @@ partial class Build : NukeBuild
                 .AddProperty("SkipBuildingTests", "True");
         return c;
     }
+
     DotNetBuildSettings ApplySetting(DotNetBuildSettings c, Configure<DotNetBuildSettings> configurator = null) =>
         ApplySettingCore(c).Build.Apply(configurator);
 
@@ -112,6 +113,9 @@ partial class Build : NukeBuild
 
     DotNetTestSettings ApplySetting(DotNetTestSettings c, Configure<DotNetTestSettings> configurator = null) =>
         ApplySettingCore(c).Test.Apply(configurator);
+
+    DotNetRunSettings ApplySetting(DotNetRunSettings c, Configure<DotNetRunSettings> configurator = null) =>
+        ApplySettingCore(c).Run.Apply(configurator);
 
     Target Clean => _ => _.Executes(() =>
     {
@@ -134,19 +138,15 @@ partial class Build : NukeBuild
         }
     });
 
-    Target CompileHtmlPreviewer => _ => _
-        .DependsOn(Clean)
-        .OnlyWhenStatic(() => !Parameters.SkipPreviewer)
+    // Ensure that Bun.Official.Tool is downloaded at least once on CI to work around https://github.com/dotnet/sdk/issues/51831
+    Target InitDnx => _ => _
         .Executes(() =>
         {
-            var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
-
-            NpmTasks.NpmInstall(c => c
-                .SetProcessWorkingDirectory(webappDir)
-                .SetProcessAdditionalArguments("--silent"));
-            NpmTasks.NpmRun(c => c
-                .SetProcessWorkingDirectory(webappDir)
-                .SetCommand("dist"));
+            var process = ProcessTasks.StartProcess(
+                "dnx",
+                "Bun.Unofficial.Tool --yes -- install",
+                $"{RootDirectory}/src/Browser/Avalonia.Browser/webapp");
+            process.AssertZeroExitCode();
         });
 
     Target CompileNative => _ => _
@@ -161,8 +161,7 @@ partial class Build : NukeBuild
         });
 
     Target Compile => _ => _
-        .DependsOn(Clean, CompileNative)
-        .DependsOn(CompileHtmlPreviewer)
+        .DependsOn(Clean, CompileNative, InitDnx)
         .Executes(() =>
         {
             DotNetBuild(c => ApplySetting(c)
@@ -189,7 +188,10 @@ partial class Build : NukeBuild
     {
         RunCoreTest(projectName, (project, tfm) =>
         {
-            DotNetTest(c => ApplySetting(c, project,tfm));
+            // NOTE: Nuke DotNetTest doesn't support Microsoft.Testing.Platform yet.
+            // Issue: https://github.com/nuke-build/nuke/issues/1584.
+            // However, we can easily use DotNetRun instead since MTP projects are executables.
+            DotNetRun(c => ApplySetting(c, project, tfm));
         });
     }
 
@@ -228,6 +230,10 @@ partial class Build : NukeBuild
             {
                 tfm = "net8.0";
             }
+            if (tfm == "$(AvsCurrentWindowsTargetFramework)")
+            {
+                tfm = "net10.0-windows";
+            }
             
             if (tfm.StartsWith("net4")
                 && (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -243,29 +249,27 @@ partial class Build : NukeBuild
         }
     }
 
-    DotNetTestSettings ApplySetting(DotNetTestSettings settings, string project, string tfm) =>
+    DotNetRunSettings ApplySetting(DotNetRunSettings settings, string project, string tfm) =>
         ApplySetting(settings)
         .SetProjectFile(project)
         .SetFramework(tfm)
         .EnableNoBuild()
         .EnableNoRestore()
+        // Disable progress output (works like terminal logger which isn't so nice in CI).
+        // See https://github.com/microsoft/testfx/issues/7056
+        .AddApplicationArguments("--no-progress")
         .When(_ => Parameters.PublishTestResults, _ => _
-            .SetLoggers("trx")
-            .SetResultsDirectory(Parameters.TestResultsRoot));
+            .AddApplicationArguments("--report-trx", "--results-directory", Parameters.TestResultsRoot));
 
     Target RunHtmlPreviewerTests => _ => _
-        .DependsOn(CompileHtmlPreviewer)
-        .OnlyWhenStatic(() => !(Parameters.SkipPreviewer || Parameters.SkipTests))
+        .OnlyWhenStatic(() => !(Parameters.SkipTests))
         .Executes(() =>
         {
-            var webappTestDir = RootDirectory / "tests" / "Avalonia.DesignerSupport.Tests" / "Remote" / "HtmlTransport" / "webapp";
+            var webappTest = RootDirectory / "tests" / "Avalonia.DesignerSupport.Tests";
 
-            NpmTasks.NpmInstall(c => c
-                .SetProcessWorkingDirectory(webappTestDir)
-                .SetProcessAdditionalArguments("--silent"));
-            NpmTasks.NpmRun(c => c
-                .SetProcessWorkingDirectory(webappTestDir)
-                .SetCommand("test"));
+            DotNetMSBuild(o => o
+                .SetProcessWorkingDirectory(webappTest)
+                .SetTargets("BunRunTests"));
         });
 
     Target RunCoreLibsTests => _ => _
@@ -282,6 +286,9 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Headless.NUnit.PerTest.UnitTests");
             RunCoreTest("Avalonia.Headless.XUnit.PerAssembly.UnitTests");
             RunCoreTest("Avalonia.Headless.XUnit.PerTest.UnitTests");
+
+            if (Parameters.IsRunningOnWindows)
+                RunCoreTest("Avalonia.UnitTests.WpfCompare");
         });
 
     Target RunRenderTests => _ => _
@@ -311,7 +318,9 @@ partial class Build : NukeBuild
         });
 
     Target ZipFiles => _ => _
-        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package)
+        // CreateSbom embeds the SBOM into each .nupkg in NugetRoot, so it must run before we zip
+        // that directory - otherwise the zipped NuGet artifacts would omit the embedded SBOM.
+        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package, CreateSbom)
         .Executes(() =>
         {
             var data = Parameters;
@@ -333,7 +342,7 @@ partial class Build : NukeBuild
             BuildTasksPatcher.PatchBuildTasksInPackage(Parameters.NugetIntermediateRoot / "Avalonia.Build.Tasks." +
                                                        Parameters.Version + ".nupkg",
                                                        IlRepackTool);
-            var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
+            var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.json");
             Parameters.NugetRoot.CreateOrCleanDirectory();
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
                 new NumergeNukeLogger()))
@@ -343,15 +352,32 @@ partial class Build : NukeBuild
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.snupkg");
         });
 
+    Target CreateSbom => _ => _
+        .DependsOn(CreateNugetPackages)
+        .Executes(() =>
+        {
+            SbomGenerator.Generate(
+                CycloneDxTool,
+                RootDirectory,
+                Parameters.NugetRoot,
+                Parameters.NugetIntermediateRoot,
+                RootDirectory / "nukebuild" / "numerge.json",
+                Parameters.SbomRoot,
+                Parameters.Version);
+        });
+
     Target DownloadApiBaselinePackages => _ => _
         .DependsOn(CreateNugetPackages)
         .Executes(async () =>
         {
+            var apiDiffPath = Parameters.ArtifactsDir / "api-diff";
+            apiDiffPath.DeleteDirectory();
+
             GlobalDiff = await ApiDiffHelper.DownloadAndExtractPackagesAsync(
                 Directory.EnumerateFiles(Parameters.NugetRoot, "*.nupkg").Select(path => (AbsolutePath)path),
                 NuGetVersion.Parse(Parameters.Version),
                 Parameters.IsReleaseBranch,
-                Parameters.ArtifactsDir / "api-diff" / "assemblies",
+                apiDiffPath / "assemblies",
                 Parameters.ForceApiValidationBaseline is { } forcedBaseline ? NuGetVersion.Parse(forcedBaseline) : null);
         });
 
@@ -409,12 +435,14 @@ partial class Build : NukeBuild
 
     Target CiAzureOSX => _ => _
         .DependsOn(Package)
-        .DependsOn(ZipFiles);
+        .DependsOn(ZipFiles)
+        .DependsOn(CreateSbom);
 
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(VerifyXamlCompilation)
-        .DependsOn(ZipFiles);
+        .DependsOn(ZipFiles)
+        .DependsOn(CreateSbom);
 
     Target BuildToNuGetCache => _ => _
         .DependsOn(CreateNugetPackages)
@@ -428,12 +456,10 @@ partial class Build : NukeBuild
             
             foreach (var path in Parameters.NugetRoot.GlobFiles("*.nupkg"))
             {
+                var packageId = SbomGenerator.ReadPackageId(path);
+
                 using var f = File.Open(path.ToString(), FileMode.Open, FileAccess.Read);
                 using var zip = new ZipArchive(f, ZipArchiveMode.Read);
-                var nuspecEntry = zip.Entries.First(e => e.FullName.EndsWith(".nuspec") && e.FullName == e.Name);
-                var packageId = XDocument.Load(nuspecEntry.Open()).Document.Root
-                    .Elements().First(x => x.Name.LocalName == "metadata")
-                    .Elements().First(x => x.Name.LocalName == "id").Value;
 
                 var packagePath = Path.Combine(
                     globalPackagesFolder,
@@ -460,6 +486,18 @@ partial class Build : NukeBuild
             file.GenerateCppHeader());
     });
 
+    Target GenerateUnicodeData => _ => _.Executes(() =>
+    {
+        var project = RootDirectory / "src" / "tools" / "Avalonia.UnicodeTrieGenerator"
+                      / "Avalonia.UnicodeTrieGenerator.csproj";
+        var output = RootDirectory / "src" / "Avalonia.Base" / "Media" / "TextFormatting" / "Unicode";
+        var cache = RootDirectory / "artifacts" / "ucd-cache";
+
+        DotNetRun(c => ApplySettingCore(c).Run
+            .SetProjectFile(project)
+            .AddApplicationArguments("--output", output, "--cache", cache));
+    });
+
     Target VerifyXamlCompilation => _ => _
         .DependsOn(CreateNugetPackages)
         .Executes(() =>
@@ -481,7 +519,7 @@ partial class Build : NukeBuild
                     .SetProperty("AvaloniaVersion", Parameters.Version)
                     .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
                     .SetPackageDirectory(nugetCacheDirectory)
-                    .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
+                    .SetProjectFile(buildTestsDirectory / "BuildTests.slnx")
                     .SetProcessAdditionalArguments("--nodeReuse:false"));
 
                 // Standard compilation - should have compiled XAML

@@ -7,7 +7,11 @@ namespace Avalonia.Utilities
     /// <summary>
     /// A ref-counted wrapper for a disposable object.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">
+    /// The type of the item being ref-counted. 
+    /// Must be a reference type to avoid issues with copying value types and must be disposable
+    /// to ensure the item is cleaned up when the refcount reaches 0.
+    /// </typeparam>
     internal interface IRef<out T> : IDisposable where T : class
     {
         /// <summary>
@@ -28,6 +32,10 @@ namespace Avalonia.Utilities
         /// <returns>A reference to the value as the new type but sharing the refcount.</returns>
         IRef<TResult> CloneAs<TResult>() where TResult : class;
 
+        /// <summary>
+        /// Gets whether the reference still tracks a valid item.
+        /// </summary>
+        bool IsAlive { get; }
 
         /// <summary>
         /// The current refcount of the object tracked in this reference. For debugging/unit test use only.
@@ -171,6 +179,8 @@ namespace Avalonia.Utilities
 
                 return new Ref<TResult>(item, counter);
             }
+
+            public bool IsAlive => _item is not null;
 
             public int RefCount => _counter?.RefCount ?? throw new ObjectDisposedException("Ref<" + typeof(T) + ">");
         }

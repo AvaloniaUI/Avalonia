@@ -98,7 +98,7 @@ namespace Avalonia.Base.UnitTests.Animation
         [Theory]
         [InlineData(null)] //null value
         [InlineData("stringValue")] //string value
-        public void Invalid_Values_In_Animation_Should_Not_Crash_Animations(object invalidValue)
+        public void Invalid_Values_In_Animation_Should_Not_Crash_Animations(object? invalidValue)
         {
             var keyframe1 = new KeyFrame()
             {
@@ -127,7 +127,7 @@ namespace Avalonia.Base.UnitTests.Animation
             var rect = new Rectangle() { Width = 11, };
 
             var clock = new TestClock();
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(1, rect.Width);
@@ -226,7 +226,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 0.5));
             target.Invocations.Clear();
 
-            var root = (TestRoot)control.Parent;
+            var root = (TestRoot?)control.Parent;
             Assert.NotNull(root);
             root.Child = null;
             control.Opacity = 0.8;
@@ -654,6 +654,533 @@ namespace Avalonia.Base.UnitTests.Animation
             }
         }
 
+        [Fact]
+        public void Changing_SpeedRatio_Keeps_Playback_Time_Constant()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d), },
+                    KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d), },
+                    KeyTime = TimeSpan.FromSeconds(1)
+                };
+
+                var animation = new Avalonia.Animation.Animation()
+                {
+                    Duration = TimeSpan.FromSeconds(1),
+                    Children = { keyframe1, keyframe2 },
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation }, } },
+                    Child = target = new Border { Background = Brushes.Red, }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                clock.Step(TimeSpan.FromSeconds(0.25));
+
+                animation.SpeedRatio = 2;
+                Assert.Equal(0.25, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(0.25));
+                Assert.Equal(0.25, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.25 + 0.125));
+                Assert.Equal(0.5, target.Opacity);
+
+                animation.SpeedRatio = 0.5;
+                Assert.Equal(0.5, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(0.25 + 0.125));
+                Assert.Equal(0.5, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(0.25 + 0.125 + 0.5));
+                Assert.Equal(0.75, target.Opacity);
+
+                animation.SpeedRatio = 1;
+                Assert.Equal(0.75, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(0.25 + 0.125 + 0.5));
+                Assert.Equal(0.75, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.25 + 0.125 + 0.5 + 0.25));
+                Assert.Equal(1, target.Opacity);
+            }
+        }
+
+        [Fact]
+        public void Changing_PlaybackDirection_Keeps_Playback_Time_Constant()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d), },
+                    KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d), },
+                    KeyTime = TimeSpan.FromSeconds(1)
+                };
+
+                var animation = new Avalonia.Animation.Animation()
+                {
+                    Duration = TimeSpan.FromSeconds(1),
+                    Children = { keyframe1, keyframe2 },
+                    PlaybackDirection = PlaybackDirection.Normal
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation }, } },
+                    Child = target = new Border { Background = Brushes.Red, }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+
+                clock.Step(TimeSpan.FromSeconds(0.25));
+                Assert.Equal(0.25, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.3));
+                Assert.Equal(0.3, target.Opacity);
+                animation.PlaybackDirection = PlaybackDirection.Reverse;
+                clock.Step(TimeSpan.FromSeconds(0.3));
+                Assert.Equal(0.3, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.35));
+                Assert.Equal(0.25, target.Opacity);
+            }
+        }
+
+        [Fact]
+        public void Reversing_Direction_Past_Initial_Point_Clamps_To_Initial_Point()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d), },
+                    KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d), },
+                    KeyTime = TimeSpan.FromSeconds(1)
+                };
+
+                var animation = new Avalonia.Animation.Animation()
+                {
+                    Duration = TimeSpan.FromSeconds(1),
+                    Delay = TimeSpan.FromSeconds(0.5),
+                    Children = { keyframe1, keyframe2 },
+                    PlaybackDirection = PlaybackDirection.Normal
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation }, } },
+                    Child = target = new Border { Background = Brushes.Red, }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                Assert.Equal(1, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.5));
+                Assert.Equal(1, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(1));
+                Assert.Equal(0.5, target.Opacity);
+                animation.PlaybackDirection = PlaybackDirection.Reverse;
+                clock.Step(TimeSpan.FromSeconds(1));
+                Assert.Equal(0.5, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(1.2));
+                Assert.Equal(0.3, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(1.5));
+                Assert.Equal(0, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(2));
+                Assert.Equal(0, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(3));
+                Assert.Equal(0, target.Opacity);
+                animation.PlaybackDirection = PlaybackDirection.Normal;
+                clock.Step(TimeSpan.FromSeconds(3));
+                Assert.Equal(0, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(3.5));
+                Assert.Equal(0, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(4));
+                Assert.Equal(0.5, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(4.5));
+                Assert.Equal(1, target.Opacity);
+            }
+        }
+
+        [Fact]
+        public void DelayBetweenIterations_Behind_Initial_Point_Is_In_Front_Of_Iterations()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d), },
+                    KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame()
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d), },
+                    KeyTime = TimeSpan.FromSeconds(1)
+                };
+
+                var animation = new Avalonia.Animation.Animation()
+                {
+                    Duration = TimeSpan.FromSeconds(1),
+                    DelayBetweenIterations = TimeSpan.FromSeconds(0.5),
+                    Children = { keyframe1, keyframe2 },
+                    IterationCount = IterationCount.Infinite,
+                    PlaybackDirection = PlaybackDirection.Normal
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation }, } },
+                    Child = target = new Border { Background = Brushes.Red, }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.1));
+                Assert.Equal(0.1, target.Opacity);
+                animation.PlaybackDirection = PlaybackDirection.Reverse;
+                clock.Step(TimeSpan.FromSeconds(0.1));
+                Assert.Equal(0.1, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 0.1));
+                Assert.Equal(0.9, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 0.9));
+                Assert.Equal(0.1, target.Opacity, 0.000001);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1 + 0.25));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1 + 0.499));
+                Assert.Equal(0, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1 + 0.5));
+                Assert.Equal(1, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(0.2 + 1 + 0.5 + 0.1));
+                Assert.Equal(0.9, target.Opacity);
+            }
+        }
+
+        [Fact]
+        public void Zero_Duration_With_DelayBetweenIterations_Should_Finish_Animation()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d) }, Cue = new Cue(0d)
+                };
+
+                var keyframe2 = new KeyFrame
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d) }, Cue = new Cue(1d)
+                };
+
+                var animation = new Avalonia.Animation.Animation
+                {
+                    Duration = TimeSpan.Zero,
+                    DelayBetweenIterations = TimeSpan.FromSeconds(0.5),
+                    IterationCount = IterationCount.Infinite,
+                    Children = { keyframe1, keyframe2 }
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation } } },
+                    Child = target = new Border { Background = Brushes.Red }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                Assert.False(double.IsNaN(target.Opacity));
+                Assert.Equal(1, target.Opacity);
+                Assert.False(target.IsAnimating(Visual.OpacityProperty));
+
+                clock.Step(TimeSpan.FromSeconds(0.5));
+                Assert.False(double.IsNaN(target.Opacity));
+            }
+        }
+
+        [Fact]
+        public void Setting_Duration_To_Zero_With_DelayBetweenIterations_Should_Finish_Animation()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d) }, KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d) }, KeyTime = TimeSpan.FromSeconds(1)
+                };
+
+                var animation = new Avalonia.Animation.Animation
+                {
+                    Duration = TimeSpan.FromSeconds(1),
+                    DelayBetweenIterations = TimeSpan.FromSeconds(0.5),
+                    IterationCount = IterationCount.Infinite,
+                    Children = { keyframe1, keyframe2 }
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation } } },
+                    Child = target = new Border { Background = Brushes.Red }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                clock.Step(TimeSpan.FromSeconds(0.5));
+                Assert.Equal(0.5, target.Opacity);
+
+                animation.Duration = TimeSpan.Zero;
+
+                clock.Step(TimeSpan.FromSeconds(1));
+                Assert.False(double.IsNaN(target.Opacity));
+                Assert.Equal(1, target.Opacity);
+                Assert.False(target.IsAnimating(Visual.OpacityProperty));
+            }
+        }
+
+        [Fact]
+        public void Reversing_Direction_Past_Initial_Point_Parks_Animation_Until_Resumed()
+        {
+            var keyframe1 = new KeyFrame
+            {
+                Setters = { new Setter(Visual.OpacityProperty, 0d) }, KeyTime = TimeSpan.FromSeconds(0)
+            };
+
+            var keyframe2 = new KeyFrame
+            {
+                Setters = { new Setter(Visual.OpacityProperty, 1d) }, KeyTime = TimeSpan.FromSeconds(1)
+            };
+
+            var animation = new Avalonia.Animation.Animation
+            {
+                Duration = TimeSpan.FromSeconds(1),
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var target = new Border { Background = Brushes.Red };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(target, clock, TestContext.Current.CancellationToken);
+
+            clock.Step(TimeSpan.FromSeconds(0));
+            clock.Step(TimeSpan.FromSeconds(0.5));
+            Assert.Equal(0.5, target.Opacity);
+
+            // Reverse the animation so that it runs back to its initial point, where a limited
+            // number of iterations clamps it. The animation is parked rather than finished: it
+            // stays subscribed, and so RunAsync stays pending, because playback can still be
+            // resumed by changing the direction back.
+            animation.PlaybackDirection = PlaybackDirection.Reverse;
+            clock.Step(TimeSpan.FromSeconds(0.5));
+            clock.Step(TimeSpan.FromSeconds(1));
+            clock.Step(TimeSpan.FromSeconds(10));
+
+            Assert.Equal(0, target.Opacity);
+            Assert.False(animationRun.IsCompleted);
+
+            // Resuming from the parked state runs the animation to its end and completes it.
+            animation.PlaybackDirection = PlaybackDirection.Normal;
+            clock.Step(TimeSpan.FromSeconds(10));
+            clock.Step(TimeSpan.FromSeconds(10.5));
+            Assert.Equal(0.5, target.Opacity);
+
+            clock.Step(TimeSpan.FromSeconds(11));
+            Assert.Equal(1, target.Opacity);
+            Assert.True(animationRun.IsCompleted);
+        }
+
+        [Fact]
+        public void Changing_SpeedRatio_Every_Frame_Should_Not_Lose_Playback_Time()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d) }, KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d) }, KeyTime = TimeSpan.FromSeconds(10)
+                };
+
+                var animation = new Avalonia.Animation.Animation
+                {
+                    Duration = TimeSpan.FromSeconds(10),
+                    IterationCount = IterationCount.Infinite,
+                    Children = { keyframe1, keyframe2 }
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation } } },
+                    Child = target = new Border { Background = Brushes.Red }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+
+                // 60 frames of 1/60th of a second: one second of playback out of a ten second
+                // animation. SpeedRatio stays effectively 1 but is written on every frame, as it
+                // would be when bound to a slider being dragged. Re-anchoring playback time on
+                // each change must not accumulate rounding errors.
+                var frame = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 60);
+                var time = TimeSpan.Zero;
+
+                for (var i = 0; i < 60; i++)
+                {
+                    time += frame;
+                    animation.SpeedRatio = 1d + i * 1e-9;
+                    clock.Step(time);
+                }
+
+                Assert.Equal(0.1, target.Opacity, 0.001);
+            }
+        }
+
+        [Fact]
+        public void Reversing_Infinite_Animation_Past_Initial_Point_Replays_Previous_Iterations()
+        {
+            using (Start())
+            {
+                var keyframe1 = new KeyFrame
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 0d) }, KeyTime = TimeSpan.FromSeconds(0)
+                };
+
+                var keyframe2 = new KeyFrame
+                {
+                    Setters = { new Setter(Visual.OpacityProperty, 1d) }, KeyTime = TimeSpan.FromSeconds(1)
+                };
+
+                var animation = new Avalonia.Animation.Animation
+                {
+                    Duration = TimeSpan.FromSeconds(1),
+                    Delay = TimeSpan.FromSeconds(0.5),
+                    IterationCount = IterationCount.Infinite,
+                    FillMode = FillMode.Both,
+                    Children = { keyframe1, keyframe2 }
+                };
+
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles = { new Style(x => x.OfType<Border>()) { Animations = { animation } } },
+                    Child = target = new Border { Background = Brushes.Red }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                clock.Step(TimeSpan.FromSeconds(0));
+                Assert.Equal(0, target.Opacity);
+
+                // Initial delay, then half of the first iteration.
+                clock.Step(TimeSpan.FromSeconds(1));
+                Assert.Equal(0.5, target.Opacity);
+
+                animation.PlaybackDirection = PlaybackDirection.Reverse;
+                clock.Step(TimeSpan.FromSeconds(1));
+                Assert.Equal(0.5, target.Opacity);
+
+                clock.Step(TimeSpan.FromSeconds(1.25));
+                Assert.Equal(0.25, target.Opacity);
+
+                // Back at the initial point.
+                clock.Step(TimeSpan.FromSeconds(1.5));
+                Assert.Equal(0, target.Opacity);
+
+                // The initial delay is mirrored around the initial point, so crossing it while
+                // reversed takes twice the Delay. Note that a finite animation behaves
+                // differently: it clamps at the initial point instead, and only ever spends
+                // Delay there. See Reversing_Direction_Past_Initial_Point_Clamps_To_Initial_Point.
+                clock.Step(TimeSpan.FromSeconds(2));
+                Assert.Equal(0, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(2.5));
+                Assert.Equal(0, target.Opacity);
+
+                // Past the delay, the iteration before the initial one plays backwards.
+                clock.Step(TimeSpan.FromSeconds(2.75));
+                Assert.Equal(0.75, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(3));
+                Assert.Equal(0.5, target.Opacity);
+                clock.Step(TimeSpan.FromSeconds(3.5));
+                Assert.Equal(1, target.Opacity);
+            }
+        }
+
         private static IDisposable Start()
         {
             var clock = new MockGlobalClock();
@@ -675,8 +1202,8 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         private static Control CreateStyledControl(
-            ITransition transition1 = null,
-            ITransition transition2 = null)
+            ITransition? transition1 = null,
+            ITransition? transition2 = null)
         {
             transition1 = transition1 ?? CreateTarget().Object;
             transition2 = transition2 ?? CreateTransition(Layoutable.WidthProperty).Object;

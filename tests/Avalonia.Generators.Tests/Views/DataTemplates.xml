@@ -3,14 +3,14 @@
         x:Class="Sample.App.DataTemplates">
     <StackPanel>
         <TextBox x:Name="UserNameTextBox"
-                 Watermark="Username input"
-                 UseFloatingWatermark="True" />
+                 Placeholder="Username input"
+                 UseFloatingPlaceholder="True" />
         <ListBox Name="NamedListBox">
             <ListBox.ItemTemplate>
                 <DataTemplate x:Name="NamedDataTemplate">
                     <TextBox x:Name="TemplatedTextBox"
-                             Watermark="Templated input"
-                             UseFloatingWatermark="True" />
+                             Placeholder="Templated input"
+                             UseFloatingPlaceholder="True" />
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

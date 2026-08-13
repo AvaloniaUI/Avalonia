@@ -1,5 +1,6 @@
 ﻿using System;
-using Avalonia.Headless;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -30,8 +31,8 @@ namespace Avalonia.Base.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                .With(fontManagerImpl: new HeadlessFontManagerWithMultipleSystemFontsStub(
-                   installedFontFamilyNames: new string[] { },
-                   defaultFamilyName: null))))
+                   installedFontFamilyNames: [],
+                   defaultFamilyName: null!))))
             {
                 Assert.Throws<InvalidOperationException>(() => FontManager.Current);
             }
@@ -65,12 +66,11 @@ namespace Avalonia.Base.UnitTests.Media
                 }
             };
 
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(fontManagerImpl: new HeadlessFontManagerStub())))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 AvaloniaLocator.CurrentMutable.Bind<FontManagerOptions>().ToConstant(options);
 
-                FontManager.Current.TryMatchCharacter(1, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal,
+                FontManager.Current.TryMatchCharacter('A', FontStyle.Normal, FontWeight.Normal, FontStretch.Normal,
                     FontFamily.Default, null, out var typeface);
 
                 Assert.Equal("MyFont", typeface.FontFamily.Name);
@@ -82,10 +82,59 @@ namespace Avalonia.Base.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(fontManagerImpl: new HeadlessFontManagerWithMultipleSystemFontsStub(
-                    installedFontFamilyNames: new[] { "DejaVu", "Verdana" },
-                    defaultFamilyName: null))))
+                    installedFontFamilyNames: ["DejaVu", "Verdana"],
+                    defaultFamilyName: null!))))
             {
                 Assert.Equal("DejaVu", FontManager.Current.DefaultFontFamily.Name);
+            }
+        }
+
+        [Fact]
+        public async Task TryGetGlyphTypeface_Should_Be_Thread_Safe_For_Embedded_Fonts()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var fontManager = FontManager.Current;
+        
+                const string fontUri =
+                    "resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests#Noto Mono";
+                var collectionKey =
+                    new Uri("resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests");
+
+                // Warm up to validate the font URI is correct.
+                Assert.True(fontManager.TryGetGlyphTypeface(new Typeface(new FontFamily(fontUri)), out _));
+
+                const int iterations = 50;
+                int failures = 0;
+
+                for (int i = 0; i < iterations; i++)
+                {
+                    fontManager.RemoveFontCollection(collectionKey);
+
+                    using var barrier = new Barrier(2);
+                    bool r1 = false, r2 = false;
+
+                    var t1 = Task.Run(() =>
+                    {
+                        barrier.SignalAndWait();
+                        r1 = fontManager.TryGetGlyphTypeface(new Typeface(new FontFamily(fontUri)), out _);
+                    }, TestContext.Current.CancellationToken);
+
+                    var t2 = Task.Run(() =>
+                    {
+                        barrier.SignalAndWait();
+                        r2 = fontManager.TryGetGlyphTypeface(new Typeface(new FontFamily(fontUri)), out _);
+                    }, TestContext.Current.CancellationToken);
+
+                    await Task.WhenAll(t1, t2);
+
+                    if (!r1 || !r2)
+                    {
+                        Interlocked.Increment(ref failures);
+                    }
+                }
+
+                Assert.Equal(0, failures);
             }
         }
     }

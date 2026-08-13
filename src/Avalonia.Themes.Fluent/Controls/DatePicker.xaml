@@ -75,10 +75,12 @@
     <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrush}"/>
-    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource DatePickerBorderThickness}"/>
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="MinWidth" Value="{DynamicResource DatePickerThemeMinWidth}" />
+    <Setter Property="MaxWidth" Value="{DynamicResource DatePickerThemeMaxWidth}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
@@ -91,8 +93,8 @@
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     IsEnabled="{TemplateBinding IsEnabled}"
-                    MinWidth="{DynamicResource DatePickerThemeMinWidth}"
-                    MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
+                    MinWidth="{TemplateBinding MinWidth}"
+                    MaxWidth="{TemplateBinding MaxWidth}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     TemplatedControl.IsTemplateFocusTarget="True">
@@ -143,8 +145,8 @@
 
   <!--WinUI: DatePickerFlyoutPresenter-->
   <ControlTheme x:Key="{x:Type DatePickerPresenter}" TargetType="DatePickerPresenter">
-    <Setter Property="Width" Value="296" />
-    <Setter Property="MinWidth" Value="296" />
+    <Setter Property="Width" Value="{DynamicResource DatePickerPresenterWidth}" />
+    <Setter Property="MinWidth" Value="{DynamicResource DatePickerPresenterWidth}" />
     <Setter Property="MaxHeight" Value="398" />
     <Setter Property="Background" Value="{DynamicResource DatePickerFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerFlyoutPresenterBorderBrush}" />

@@ -35,22 +35,18 @@ namespace Avalonia.Media.TextFormatting
 
                             if (textRunWidth > availableWidth)
                             {
-                                if (shapedRun.IsReversed)
-                                {
-                                    shapedRun.Reverse();
-                                }
-
                                 if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
                                 {
                                     if (isWordEllipsis && measuredLength < textLine.Length)
                                     {
                                         var currentBreakPosition = 0;
 
-                                        var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+                                        var text = currentRun.Text.Span;
+                                        var wordBreaker = new WordBreakEnumerator(text);
 
-                                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext(out var lineBreak))
+                                        while (currentBreakPosition < measuredLength && wordBreaker.MoveNext(out var wordSegment))
                                         {
-                                            var nextBreakPosition = lineBreak.PositionMeasure;
+                                            var nextBreakPosition = wordSegment.Offset + wordSegment.Length;
 
                                             if (nextBreakPosition == 0)
                                             {
@@ -62,6 +58,17 @@ namespace Avalonia.Media.TextFormatting
                                                 break;
                                             }
 
+                                            var firstCodepoint = Codepoint.ReadAt(text, wordSegment.Offset, out _);
+
+                                            if (firstCodepoint.WordBreakClass == WordBreakClass.WSegSpace)
+                                            {
+                                                // UAX #29 allows boundaries on both sides of WSegSpace; use the start
+                                                // to preserve the existing behavior of trimming spaces before the ellipsis.
+                                                currentBreakPosition = wordSegment.Offset;
+
+                                                continue;
+                                            }
+
                                             currentBreakPosition = nextBreakPosition;
                                         }
 
@@ -71,7 +78,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 collapsedLength += measuredLength;
 
-                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, properties.FlowDirection, shapedSymbol);
+                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, shapedSymbol);
                             }
 
                             availableWidth -= textRunWidth;
@@ -84,7 +91,7 @@ namespace Avalonia.Media.TextFormatting
                             //The whole run needs to fit into available space
                             if (drawableRun.Size.Width > availableWidth)
                             {
-                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, properties.FlowDirection, shapedSymbol);
+                                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, shapedSymbol);
                             }
 
                             availableWidth -= drawableRun.Size.Width;

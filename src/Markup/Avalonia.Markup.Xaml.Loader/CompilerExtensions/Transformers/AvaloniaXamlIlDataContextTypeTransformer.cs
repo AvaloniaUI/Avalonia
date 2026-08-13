@@ -140,9 +140,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             IXamlType? itemsCollectionType = null;
-            if (context.GetAvaloniaTypes().IBinding.IsAssignableFrom(parentItemsValue.Type.GetClrType()))
+            if (context.GetAvaloniaTypes().BindingBase.IsAssignableFrom(parentItemsValue.Type.GetClrType()))
             {
-                if (parentItemsValue.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension)
+                if (parentItemsValue.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBinding)
                     && parentItemsValue is XamlMarkupExtensionNode ext && ext.Value is XamlAstConstructableObjectNode parentItemsBinding)
                 {
                     var parentItemsDataContext = context.ParentNodes().SkipWhile(n => n != parentObject).OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
@@ -163,7 +163,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 foreach (var i in GetAllInterfacesIncludingSelf(itemsCollectionType))
                 {
-                    if (i.GenericTypeDefinition?.Equals(context.Configuration.WellKnownTypes.IEnumerableT) == true)
+                    if (i.GenericTypeDefinition?.Equals(context.Configuration.WellKnownTypes.IEnumerableOfT) == true)
                     {
                         return new AvaloniaXamlIlDataContextTypeMetadataNode(on, i.GenericArguments[0]);
                     }
@@ -175,8 +175,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         private static AvaloniaXamlIlDataContextTypeMetadataNode ParseDataContext(AstTransformationContext context, XamlAstConstructableObjectNode on, XamlAstConstructableObjectNode obj)
         {
-            var bindingType = context.GetAvaloniaTypes().IBinding;
-            if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()) && !obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().ReflectionBindingExtension))
+            var bindingType = context.GetAvaloniaTypes().BindingBase;
+            if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()) && 
+                !(obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().ReflectionBindingExtension) ||
+                  obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension)))
             {
                 return new AvaloniaXamlIlDataContextTypeMetadataNode(on, obj.Type.GetClrType());
             }

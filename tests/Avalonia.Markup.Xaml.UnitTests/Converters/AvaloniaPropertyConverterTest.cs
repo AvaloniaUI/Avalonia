@@ -85,8 +85,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         }
 
 
-        
-        private ITypeDescriptorContext CreateContext(Style style = null)
+
+        private ITypeDescriptorContext CreateContext(Style? style = null)
         {
             var tdMock = new Mock<ITypeDescriptorContext>();
             var tr = new Mock<IXamlTypeResolver>();
@@ -99,8 +99,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
                 .Returns(ps.Object);
 
             ps.SetupGet(v => v.Parents)
-                .Returns(new object[] {style});
-            
+                .Returns(style is null? [] : [style]);
+
             tr.Setup(v => v.Resolve(nameof(Class1)))
                 .Returns(typeof(Class1));
             tr.Setup(v => v.Resolve(nameof(AttachedOwner)))

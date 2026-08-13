@@ -40,11 +40,11 @@ internal class UnitTestBuildEngine : IBuildEngine, IDisposable
 
     public bool ContinueOnError { get; }
 
-    public int LineNumberOfTaskNode { get; }
+    public int LineNumberOfTaskNode => 0;
 
-    public int ColumnNumberOfTaskNode { get; }
+    public int ColumnNumberOfTaskNode => 0;
 
-    public string ProjectFileOfTaskNode { get; }
+    public string ProjectFileOfTaskNode => string.Empty;
 
     public IReadOnlyList<UnitTestBuildEngineMessage> Errors => _errors;
 
