@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -12,14 +12,14 @@
              HorizontalContentAlignment="Stretch"
              VerticalContentAlignment="Stretch"
              x:Class="ControlCatalog.Pages.FlexPage">
-  <UserControl.Resources>
+  <ContentPage.Resources>
     <conv:FlexDemoNumberToThicknessConverter x:Key="NumberToThicknessConverter" />
     <DataTemplate x:Key="ItemTemplate"
                   x:DataType="vm:FlexItemViewModel">
       <ListBoxItem Padding="{Binding Value, Converter={StaticResource NumberToThicknessConverter}}"
                    IsSelected="{Binding IsSelected}"
                    Background="{Binding Color}"
-                   Gestures.Tapped="OnItemTapped">
+                   Tapped="OnItemTapped">
         <ListBoxItem.Styles>
           <Style Selector="ListBoxItem:selected">
             <Setter Property="Background" Value="DodgerBlue" />
@@ -30,8 +30,8 @@
                    Text="{Binding Value}" />
       </ListBoxItem>
     </DataTemplate>
-  </UserControl.Resources>
-  <UserControl.Styles>
+  </ContentPage.Resources>
+  <ContentPage.Styles>
     <Style Selector="CheckBox">
       <Setter Property="MinWidth" Value="0" />
       <Setter Property="Padding" Value="8,0,0,0" />
@@ -45,7 +45,7 @@
       <Setter Property="Padding" Value="8,0,0,0" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
-  </UserControl.Styles>
+  </ContentPage.Styles>
 
   <DockPanel Margin="16">
 
@@ -216,4 +216,4 @@
 
 
 
-</UserControl>
+</ContentPage>

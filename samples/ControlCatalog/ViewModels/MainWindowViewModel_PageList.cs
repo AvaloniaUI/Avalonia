@@ -57,6 +57,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("Drag+Drop",() => new DragAndDropPage(), Icons.DragDrop),
             new PageItem("DrawerPage",() => new DrawerDemoPage(), Icons.Drawer),
             new PageItem("Expander",() => new ExpanderPage(), Icons.Expand),
+            new PageItem("Flex View",() => new FlexPage(), Icons.Grid),
             new PageItem("Flyouts",() => new FlyoutsPage(), Icons.Flyout),
             new PageItem("Focus",() => new FocusPage(), Icons.Target),
             new PageItem("Gestures",() => new GesturePage(), Icons.Gesture),

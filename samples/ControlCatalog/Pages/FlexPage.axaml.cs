@@ -4,7 +4,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class FlexPage : UserControl
+    public partial class FlexPage : ContentPage
     {
         public FlexPage()
         {
