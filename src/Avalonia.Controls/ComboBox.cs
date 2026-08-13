@@ -470,10 +470,13 @@ namespace Avalonia.Controls
 
         internal void ItemFocused(ComboBoxItem dropDownItem)
         {
-            if (IsDropDownOpen && dropDownItem.IsFocused && dropDownItem.IsArrangeValid)
+            Dispatcher.Post(() =>
             {
-                dropDownItem.BringIntoView();
-            }
+                if (IsDropDownOpen && dropDownItem.IsFocused && dropDownItem.IsArrangeValid)
+                {
+                    dropDownItem.BringIntoView();
+                }
+            });
         }
 
         private void PopupClosed(object? sender, EventArgs e)

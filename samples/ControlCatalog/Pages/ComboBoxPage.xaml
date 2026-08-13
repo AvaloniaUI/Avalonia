@@ -5,7 +5,8 @@
     xmlns:col="using:System.Collections"
     xmlns:sys="using:System"
     xmlns:viewModels="using:ControlCatalog.ViewModels"
-    x:DataType="viewModels:ComboBoxPageViewModel">
+    x:DataType="viewModels:ComboBoxPageViewModel"
+    Header="ComboBox">
     <StackPanel Orientation="Vertical" Spacing="4">
         <TextBlock Classes="h2">A drop-down list.</TextBlock>
 
