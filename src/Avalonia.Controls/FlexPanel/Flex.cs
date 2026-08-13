@@ -9,8 +9,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines an attached property to control the cross-axis alignment of a specific child in a flex layout.
         /// </summary>
-        public static readonly AttachedProperty<AlignItems?> AlignSelfProperty =
-            AvaloniaProperty.RegisterAttached<Layoutable, AlignItems?>("AlignSelf", typeof(Flex));
+        public static readonly AttachedProperty<FlexAlignItems?> AlignSelfProperty =
+            AvaloniaProperty.RegisterAttached<Layoutable, FlexAlignItems?>("AlignSelf", typeof(Flex));
 
         /// <summary>
         /// Defines an attached property to control the order of a specific child in a flex layout.
@@ -52,7 +52,7 @@ namespace Avalonia.Controls
         /// When omitted, <see cref="FlexPanel.AlignItems"/> in not overridden.
         /// Equivalent to CSS align-self property.
         /// </remarks>
-        public static AlignItems? GetAlignSelf(Layoutable layoutable)
+        public static FlexAlignItems? GetAlignSelf(Layoutable layoutable)
         {
             if (layoutable is null)
             {
@@ -70,7 +70,7 @@ namespace Avalonia.Controls
         /// When omitted, <see cref="FlexPanel.AlignItems"/> in not overridden.
         /// Equivalent to CSS align-self property.
         /// </remarks>
-        public static void SetAlignSelf(Layoutable layoutable, AlignItems? value)
+        public static void SetAlignSelf(Layoutable layoutable, FlexAlignItems? value)
         {
             if (layoutable is null)
             {

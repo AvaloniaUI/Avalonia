@@ -140,12 +140,12 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 100, 50), target.Children[1].Bounds);
         }
 
-        public static TheoryData<FlexDirection, AlignItems> GetAlignItemsValues()
+        public static TheoryData<FlexDirection, FlexAlignItems> GetAlignItemsValues()
         {
-            var data = new TheoryData<FlexDirection, AlignItems>();
+            var data = new TheoryData<FlexDirection, FlexAlignItems>();
             foreach (var direction in Enum.GetValues<FlexDirection>())
             {
-                foreach (var alignment in Enum.GetValues<AlignItems>())
+                foreach (var alignment in Enum.GetValues<FlexAlignItems>())
                 {
                     data.Add(direction, alignment);
                 }
@@ -153,12 +153,12 @@ namespace Avalonia.Controls.UnitTests
             return data;
         }
 
-        public static TheoryData<FlexDirection, JustifyContent> GetJustifyContentValues()
+        public static TheoryData<FlexDirection, FlexJustifyContent> GetJustifyContentValues()
         {
-            var data = new TheoryData<FlexDirection, JustifyContent>();
+            var data = new TheoryData<FlexDirection, FlexJustifyContent>();
             foreach (var direction in Enum.GetValues<FlexDirection>())
             {
-                foreach (var justify in Enum.GetValues<JustifyContent>())
+                foreach (var justify in Enum.GetValues<FlexJustifyContent>())
                 {
                     data.Add(direction, justify);
                 }
@@ -167,7 +167,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory, MemberData(nameof(GetAlignItemsValues))]
-        public void Lays_Out_With_Items_Alignment(FlexDirection direction, AlignItems itemsAlignment)
+        public void Lays_Out_With_Items_Alignment(FlexDirection direction, FlexAlignItems itemsAlignment)
         {
             var target = new FlexPanel()
             {
@@ -200,28 +200,28 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal((direction, itemsAlignment) switch
             {
-                (FlexDirection.Row, AlignItems.FlexStart) => new(0, 0),
-                (FlexDirection.Column, AlignItems.FlexStart) => new(0, 0),
-                (FlexDirection.Row, AlignItems.Center) => new(0, 75),
-                (FlexDirection.Column, AlignItems.Center) => new(75, 0),
-                (FlexDirection.Row, AlignItems.FlexEnd) => new(0, 150),
-                (FlexDirection.Column, AlignItems.FlexEnd) => new(150, 0),
-                (FlexDirection.Row, AlignItems.Stretch) => new(0, 75),
-                (FlexDirection.Column, AlignItems.Stretch) => new(75, 0),
-                (FlexDirection.RowReverse, AlignItems.FlexStart) => new(100, 0),
-                (FlexDirection.ColumnReverse, AlignItems.FlexStart) => new(0, 100),
-                (FlexDirection.RowReverse, AlignItems.Center) => new(100, 75),
-                (FlexDirection.ColumnReverse, AlignItems.Center) => new(75, 100),
-                (FlexDirection.RowReverse, AlignItems.FlexEnd) => new(100, 150),
-                (FlexDirection.ColumnReverse, AlignItems.FlexEnd) => new(150, 100),
-                (FlexDirection.RowReverse, AlignItems.Stretch) => new(100, 75),
-                (FlexDirection.ColumnReverse, AlignItems.Stretch) => new(75, 100),
+                (FlexDirection.Row, FlexAlignItems.FlexStart) => new(0, 0),
+                (FlexDirection.Column, FlexAlignItems.FlexStart) => new(0, 0),
+                (FlexDirection.Row, FlexAlignItems.Center) => new(0, 75),
+                (FlexDirection.Column, FlexAlignItems.Center) => new(75, 0),
+                (FlexDirection.Row, FlexAlignItems.FlexEnd) => new(0, 150),
+                (FlexDirection.Column, FlexAlignItems.FlexEnd) => new(150, 0),
+                (FlexDirection.Row, FlexAlignItems.Stretch) => new(0, 75),
+                (FlexDirection.Column, FlexAlignItems.Stretch) => new(75, 0),
+                (FlexDirection.RowReverse, FlexAlignItems.FlexStart) => new(100, 0),
+                (FlexDirection.ColumnReverse, FlexAlignItems.FlexStart) => new(0, 100),
+                (FlexDirection.RowReverse, FlexAlignItems.Center) => new(100, 75),
+                (FlexDirection.ColumnReverse, FlexAlignItems.Center) => new(75, 100),
+                (FlexDirection.RowReverse, FlexAlignItems.FlexEnd) => new(100, 150),
+                (FlexDirection.ColumnReverse, FlexAlignItems.FlexEnd) => new(150, 100),
+                (FlexDirection.RowReverse, FlexAlignItems.Stretch) => new(100, 75),
+                (FlexDirection.ColumnReverse, FlexAlignItems.Stretch) => new(75, 100),
                 _ => throw new NotImplementedException(),
             }, rowBounds.Position);
         }
 
         [Theory, MemberData(nameof(GetJustifyContentValues))]
-        public void Lays_Out_With_Justify_Content(FlexDirection direction, JustifyContent justify)
+        public void Lays_Out_With_Justify_Content(FlexDirection direction, FlexJustifyContent justify)
         {
             var target = new FlexPanel()
             {
@@ -229,7 +229,7 @@ namespace Avalonia.Controls.UnitTests
                 Height = 200,
                 Direction = direction,
                 JustifyContent = justify,
-                AlignItems = AlignItems.FlexStart,
+                AlignItems = FlexAlignItems.FlexStart,
                 Children =
                 {
                     new Border { Height = 50, Width = 50 },
@@ -246,30 +246,30 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal((direction, justify) switch
             {
-                (FlexDirection.Row, JustifyContent.FlexStart) => new(0, 0),
-                (FlexDirection.Column, JustifyContent.FlexStart) => new(0, 0),
-                (FlexDirection.Row, JustifyContent.Center) => new(50, 0),
-                (FlexDirection.Column, JustifyContent.Center) => new(0, 50),
-                (FlexDirection.Row, JustifyContent.FlexEnd) => new(100, 0),
-                (FlexDirection.Column, JustifyContent.FlexEnd) => new(0, 100),
-                (FlexDirection.Row, JustifyContent.SpaceAround) => new(25, 0),
-                (FlexDirection.Column, JustifyContent.SpaceAround) => new(0, 25),
-                (FlexDirection.Row, JustifyContent.SpaceBetween) => new(0, 0),
-                (FlexDirection.Column, JustifyContent.SpaceBetween) => new(0, 0),
-                (FlexDirection.Row, JustifyContent.SpaceEvenly) => new(33, 0),
-                (FlexDirection.Column, JustifyContent.SpaceEvenly) => new(0, 33),
-                (FlexDirection.RowReverse, JustifyContent.FlexStart) => new(100, 0),
-                (FlexDirection.ColumnReverse, JustifyContent.FlexStart) => new(0, 100),
-                (FlexDirection.RowReverse, JustifyContent.Center) => new(50, 0),
-                (FlexDirection.ColumnReverse, JustifyContent.Center) => new(0, 50),
-                (FlexDirection.RowReverse, JustifyContent.FlexEnd) => new(0, 0),
-                (FlexDirection.ColumnReverse, JustifyContent.FlexEnd) => new(0, 0),
-                (FlexDirection.RowReverse, JustifyContent.SpaceAround) => new(25, 0),
-                (FlexDirection.ColumnReverse, JustifyContent.SpaceAround) => new(0, 25),
-                (FlexDirection.RowReverse, JustifyContent.SpaceBetween) => new(0, 0),
-                (FlexDirection.ColumnReverse, JustifyContent.SpaceBetween) => new(0, 0),
-                (FlexDirection.RowReverse, JustifyContent.SpaceEvenly) => new(33, 0),
-                (FlexDirection.ColumnReverse, JustifyContent.SpaceEvenly) => new(0, 33),
+                (FlexDirection.Row, FlexJustifyContent.FlexStart) => new(0, 0),
+                (FlexDirection.Column, FlexJustifyContent.FlexStart) => new(0, 0),
+                (FlexDirection.Row, FlexJustifyContent.Center) => new(50, 0),
+                (FlexDirection.Column, FlexJustifyContent.Center) => new(0, 50),
+                (FlexDirection.Row, FlexJustifyContent.FlexEnd) => new(100, 0),
+                (FlexDirection.Column, FlexJustifyContent.FlexEnd) => new(0, 100),
+                (FlexDirection.Row, FlexJustifyContent.SpaceAround) => new(25, 0),
+                (FlexDirection.Column, FlexJustifyContent.SpaceAround) => new(0, 25),
+                (FlexDirection.Row, FlexJustifyContent.SpaceBetween) => new(0, 0),
+                (FlexDirection.Column, FlexJustifyContent.SpaceBetween) => new(0, 0),
+                (FlexDirection.Row, FlexJustifyContent.SpaceEvenly) => new(33, 0),
+                (FlexDirection.Column, FlexJustifyContent.SpaceEvenly) => new(0, 33),
+                (FlexDirection.RowReverse, FlexJustifyContent.FlexStart) => new(100, 0),
+                (FlexDirection.ColumnReverse, FlexJustifyContent.FlexStart) => new(0, 100),
+                (FlexDirection.RowReverse, FlexJustifyContent.Center) => new(50, 0),
+                (FlexDirection.ColumnReverse, FlexJustifyContent.Center) => new(0, 50),
+                (FlexDirection.RowReverse, FlexJustifyContent.FlexEnd) => new(0, 0),
+                (FlexDirection.ColumnReverse, FlexJustifyContent.FlexEnd) => new(0, 0),
+                (FlexDirection.RowReverse, FlexJustifyContent.SpaceAround) => new(25, 0),
+                (FlexDirection.ColumnReverse, FlexJustifyContent.SpaceAround) => new(0, 25),
+                (FlexDirection.RowReverse, FlexJustifyContent.SpaceBetween) => new(0, 0),
+                (FlexDirection.ColumnReverse, FlexJustifyContent.SpaceBetween) => new(0, 0),
+                (FlexDirection.RowReverse, FlexJustifyContent.SpaceEvenly) => new(33, 0),
+                (FlexDirection.ColumnReverse, FlexJustifyContent.SpaceEvenly) => new(0, 33),
                 _ => throw new NotImplementedException(),
             }, rowBounds.Position);
         }

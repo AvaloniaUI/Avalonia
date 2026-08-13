@@ -30,20 +30,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="JustifyContent"/> property.
         /// </summary>
-        public static readonly StyledProperty<JustifyContent> JustifyContentProperty =
-            AvaloniaProperty.Register<FlexPanel, JustifyContent>(nameof(JustifyContent));
+        public static readonly StyledProperty<FlexJustifyContent> JustifyContentProperty =
+            AvaloniaProperty.Register<FlexPanel, FlexJustifyContent>(nameof(JustifyContent));
 
         /// <summary>
         /// Defines the <see cref="AlignItems"/> property.
         /// </summary>
-        public static readonly StyledProperty<AlignItems> AlignItemsProperty =
-            AvaloniaProperty.Register<FlexPanel, AlignItems>(nameof(AlignItems), AlignItems.Stretch);
+        public static readonly StyledProperty<FlexAlignItems> AlignItemsProperty =
+            AvaloniaProperty.Register<FlexPanel, FlexAlignItems>(nameof(AlignItems), FlexAlignItems.Stretch);
 
         /// <summary>
         /// Defines the <see cref="AlignContent"/> property.
         /// </summary>
-        public static readonly StyledProperty<AlignContent> AlignContentProperty =
-            AvaloniaProperty.Register<FlexPanel, AlignContent>(nameof(AlignContent), AlignContent.Stretch);
+        public static readonly StyledProperty<FlexAlignContent> AlignContentProperty =
+            AvaloniaProperty.Register<FlexPanel, FlexAlignContent>(nameof(AlignContent), FlexAlignContent.Stretch);
 
         /// <summary>
         /// Defines the <see cref="Wrap"/> property.
@@ -109,10 +109,10 @@ namespace Avalonia.Controls
         /// Typically used to distribute extra free space leftover after flexible lengths and margins have been resolved.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to <see cref="JustifyContent.FlexStart"/>.
+        /// When omitted, it is set to <see cref="FlexJustifyContent.FlexStart"/>.
         /// Equivalent to CSS justify-content property.
         /// </remarks>
-        public JustifyContent JustifyContent
+        public FlexJustifyContent JustifyContent
         {
             get => GetValue(JustifyContentProperty);
             set => SetValue(JustifyContentProperty, value);
@@ -123,10 +123,10 @@ namespace Avalonia.Controls
         /// Similar to <see cref="JustifyContent"/>, but in the perpendicular direction.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to <see cref="AlignItems.Stretch"/>.
+        /// When omitted, it is set to <see cref="FlexAlignItems.Stretch"/>.
         /// Equivalent to CSS align-items property.
         /// </remarks>
-        public AlignItems AlignItems
+        public FlexAlignItems AlignItems
         {
             get => GetValue(AlignItemsProperty);
             set => SetValue(AlignItemsProperty, value);
@@ -139,10 +139,10 @@ namespace Avalonia.Controls
         /// allows controls to be arranged on multiple lines.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to <see cref="AlignContent.Stretch"/>.
+        /// When omitted, it is set to <see cref="FlexAlignContent.Stretch"/>.
         /// Equivalent to CSS align-content property.
         /// </remarks>
-        public AlignContent AlignContent
+        public FlexAlignContent AlignContent
         {
             get => GetValue(AlignContentProperty);
             set => SetValue(AlignContentProperty, value);
@@ -287,7 +287,7 @@ namespace Avalonia.Controls
 
             var (v, spacingV) = GetCrossAxisPosAndSpacing(alignContent, spacing, freeV, linesCount);
 
-            var scaleV = alignContent == AlignContent.Stretch && totalLineV != 0 ? (panelSize.V - totalSpacingV) / totalLineV : 1.0;
+            var scaleV = alignContent == FlexAlignContent.Stretch && totalLineV != 0 ? (panelSize.V - totalSpacingV) / totalLineV : 1.0;
 
             foreach (var line in state.Lines)
             {
@@ -337,14 +337,14 @@ namespace Avalonia.Controls
 
                     var positionV = align switch
                     {
-                        AlignItems.FlexStart => v,
-                        AlignItems.FlexEnd => v + lineV - size.V,
-                        AlignItems.Center => v + (lineV - size.V) / 2,
-                        AlignItems.Stretch => v,
+                        FlexAlignItems.FlexStart => v,
+                        FlexAlignItems.FlexEnd => v + lineV - size.V,
+                        FlexAlignItems.Center => v + (lineV - size.V) / 2,
+                        FlexAlignItems.Stretch => v,
                         _ => throw new InvalidOperationException()
                     };
 
-                    size = size.WithV(align == AlignItems.Stretch ? lineV : size.V);
+                    size = size.WithV(align == FlexAlignItems.Stretch ? lineV : size.V);
                     var position = new Uv(isReverse ? panelSize.U - size.U - u : u, positionV);
                     element.Arrange(new Rect(Uv.ToPoint(position, isColumn), Uv.ToSize(size, isColumn)));
 
@@ -384,67 +384,67 @@ namespace Avalonia.Controls
             return size;
         }
 
-        private static AlignContent DetermineAlignContent(AlignContent currentAlignContent, double freeV, int linesCount)
+        private static FlexAlignContent DetermineAlignContent(FlexAlignContent currentAlignContent, double freeV, int linesCount)
         {
             // Determine AlignContent based on available space and line count
             return currentAlignContent switch
             {
                 // If there's free vertical space, handle distribution based on the content alignment
-                AlignContent.Stretch when freeV > 0.0 => AlignContent.Stretch,
-                AlignContent.SpaceBetween when freeV > 0.0 && linesCount > 1 => AlignContent.SpaceBetween,
-                AlignContent.SpaceAround when freeV > 0.0 && linesCount > 0 => AlignContent.SpaceAround,
-                AlignContent.SpaceEvenly when freeV > 0.0 && linesCount > 0 => AlignContent.SpaceEvenly,
+                FlexAlignContent.Stretch when freeV > 0.0 => FlexAlignContent.Stretch,
+                FlexAlignContent.SpaceBetween when freeV > 0.0 && linesCount > 1 => FlexAlignContent.SpaceBetween,
+                FlexAlignContent.SpaceAround when freeV > 0.0 && linesCount > 0 => FlexAlignContent.SpaceAround,
+                FlexAlignContent.SpaceEvenly when freeV > 0.0 && linesCount > 0 => FlexAlignContent.SpaceEvenly,
                 
                 // Default alignments when there's no free space or not enough lines
-                AlignContent.Stretch => AlignContent.FlexStart,
-                AlignContent.SpaceBetween => AlignContent.FlexStart,
-                AlignContent.SpaceAround => AlignContent.Center,
-                AlignContent.SpaceEvenly => AlignContent.Center,
-                AlignContent.FlexStart or AlignContent.Center or AlignContent.FlexEnd => currentAlignContent,
+                FlexAlignContent.Stretch => FlexAlignContent.FlexStart,
+                FlexAlignContent.SpaceBetween => FlexAlignContent.FlexStart,
+                FlexAlignContent.SpaceAround => FlexAlignContent.Center,
+                FlexAlignContent.SpaceEvenly => FlexAlignContent.Center,
+                FlexAlignContent.FlexStart or FlexAlignContent.Center or FlexAlignContent.FlexEnd => currentAlignContent,
                 
                 _ => throw new InvalidOperationException($"Unsupported AlignContent value: {currentAlignContent}")
             };
         }
         
-        private static (double v, double spacingV) GetCrossAxisPosAndSpacing(AlignContent alignContent, Uv spacing, 
+        private static (double v, double spacingV) GetCrossAxisPosAndSpacing(FlexAlignContent alignContent, Uv spacing, 
             double freeV, int linesCount)
         {
             return alignContent switch
             {
-                AlignContent.FlexStart => (0.0, spacing.V),
-                AlignContent.FlexEnd => (freeV, spacing.V),
-                AlignContent.Center => (freeV / 2, spacing.V),
-                AlignContent.Stretch => (0.0, spacing.V),
+                FlexAlignContent.FlexStart => (0.0, spacing.V),
+                FlexAlignContent.FlexEnd => (freeV, spacing.V),
+                FlexAlignContent.Center => (freeV / 2, spacing.V),
+                FlexAlignContent.Stretch => (0.0, spacing.V),
                 
-                AlignContent.SpaceBetween when linesCount > 1 => (0.0, spacing.V + freeV / (linesCount - 1)),
-                AlignContent.SpaceBetween => (0.0, spacing.V),
+                FlexAlignContent.SpaceBetween when linesCount > 1 => (0.0, spacing.V + freeV / (linesCount - 1)),
+                FlexAlignContent.SpaceBetween => (0.0, spacing.V),
                 
-                AlignContent.SpaceAround when linesCount > 0 =>  (freeV / linesCount / 2, spacing.V + freeV / linesCount),
-                AlignContent.SpaceAround => (freeV / 2, spacing.V),
+                FlexAlignContent.SpaceAround when linesCount > 0 =>  (freeV / linesCount / 2, spacing.V + freeV / linesCount),
+                FlexAlignContent.SpaceAround => (freeV / 2, spacing.V),
                 
-                AlignContent.SpaceEvenly => (freeV / (linesCount + 1), spacing.V + freeV / (linesCount + 1)),
+                FlexAlignContent.SpaceEvenly => (freeV / (linesCount + 1), spacing.V + freeV / (linesCount + 1)),
                 
                 _ => throw new InvalidOperationException($"Unsupported AlignContent value: {alignContent}")
             };
         }
         
-        private static (double u, double spacingU) GetMainAxisPosAndSpacing(JustifyContent justifyContent, FlexLine line, 
+        private static (double u, double spacingU) GetMainAxisPosAndSpacing(FlexJustifyContent justifyContent, FlexLine line, 
             Uv spacing, double remainingFreeU, int itemsCount)
         {
             return line.Grow > 0 ? (0.0, spacing.U) : justifyContent switch
             {
-                JustifyContent.FlexStart => (0.0, spacing.U),
-                JustifyContent.FlexEnd => (remainingFreeU, spacing.U),
-                JustifyContent.Center => (remainingFreeU / 2, spacing.U),
+                FlexJustifyContent.FlexStart => (0.0, spacing.U),
+                FlexJustifyContent.FlexEnd => (remainingFreeU, spacing.U),
+                FlexJustifyContent.Center => (remainingFreeU / 2, spacing.U),
                 
-                JustifyContent.SpaceBetween when itemsCount > 1 => (0.0, spacing.U + remainingFreeU / (itemsCount - 1)),
-                JustifyContent.SpaceBetween => (0.0, spacing.U),
+                FlexJustifyContent.SpaceBetween when itemsCount > 1 => (0.0, spacing.U + remainingFreeU / (itemsCount - 1)),
+                FlexJustifyContent.SpaceBetween => (0.0, spacing.U),
                 
-                JustifyContent.SpaceAround when itemsCount > 0 => (remainingFreeU / itemsCount / 2, spacing.U + remainingFreeU / itemsCount),
-                JustifyContent.SpaceAround => (remainingFreeU / 2, spacing.U),
+                FlexJustifyContent.SpaceAround when itemsCount > 0 => (remainingFreeU / itemsCount / 2, spacing.U + remainingFreeU / itemsCount),
+                FlexJustifyContent.SpaceAround => (remainingFreeU / 2, spacing.U),
                 
-                JustifyContent.SpaceEvenly when itemsCount > 0 =>  (remainingFreeU / (itemsCount + 1), spacing.U + remainingFreeU / (itemsCount + 1)), 
-                JustifyContent.SpaceEvenly => (remainingFreeU / 2, spacing.U),
+                FlexJustifyContent.SpaceEvenly when itemsCount > 0 =>  (remainingFreeU / (itemsCount + 1), spacing.U + remainingFreeU / (itemsCount + 1)), 
+                FlexJustifyContent.SpaceEvenly => (remainingFreeU / 2, spacing.U),
                 
                 _ => throw new InvalidOperationException($"Unsupported JustifyContent value: {justifyContent}")
             };

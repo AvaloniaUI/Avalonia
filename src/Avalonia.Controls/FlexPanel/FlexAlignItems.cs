@@ -6,7 +6,7 @@ namespace Avalonia.Controls
     /// Defines the alignment mode along the cross-axis of <see cref="FlexPanel"/> child items.
     /// </summary>
     [SuppressMessage("Naming", "CA1717:Only FlagsAttribute enums should have plural names")]
-    public enum AlignItems
+    public enum FlexAlignItems
     {
         /// <summary>
         /// Items are aligned to the cross-axis start margin edge of the line.

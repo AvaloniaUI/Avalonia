@@ -8,14 +8,14 @@ namespace ControlCatalog.ViewModels
 {
     public sealed class FlexItemViewModel : ViewModelBase
     {
-        internal const AlignItems AlignSelfAuto = (AlignItems)(-1);
+        internal const FlexAlignItems AlignSelfAuto = (FlexAlignItems)(-1);
 
-        private AlignItems _alignSelf;
+        private FlexAlignItems _alignSelf;
 
         private bool _isSelected;
         private bool _isVisible = true;
 
-        private AlignItems _alignSelfItem = AlignSelfAuto;
+        private FlexAlignItems _alignSelfItem = AlignSelfAuto;
         private int _order;
         private double _shrink = 1.0;
         private double _grow;
@@ -28,7 +28,7 @@ namespace ControlCatalog.ViewModels
         {
             Value = value;
 
-            _alignSelf = AlignSelfItem == AlignSelfAuto ? default(AlignItems) : AlignSelfItem;
+            _alignSelf = AlignSelfItem == AlignSelfAuto ? default(FlexAlignItems) : AlignSelfItem;
 
             var color = Random.Shared.Next();
 
@@ -51,7 +51,7 @@ namespace ControlCatalog.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isVisible, value);
         }
 
-        public AlignItems AlignSelfItem
+        public FlexAlignItems AlignSelfItem
         {
             get => _alignSelfItem;
             set
@@ -61,7 +61,7 @@ namespace ControlCatalog.ViewModels
             }
         }
 
-        public AlignItems? AlignSelf => _alignSelf;
+        public FlexAlignItems? AlignSelf => _alignSelf;
 
         public int Order
         {

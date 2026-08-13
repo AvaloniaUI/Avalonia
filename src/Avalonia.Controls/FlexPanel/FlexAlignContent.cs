@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines the alignment mode of the lines inside a <see cref="FlexPanel"/> along the cross-axis. 
     /// </summary>
-    public enum AlignContent
+    public enum FlexAlignContent
     {
         /// <summary>
         /// Lines are packed toward the start of the container.

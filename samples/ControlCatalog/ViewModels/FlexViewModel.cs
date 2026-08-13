@@ -14,9 +14,9 @@ namespace ControlCatalog.ViewModels
         private readonly ObservableCollection<FlexItemViewModel> _numbers;
 
         private FlexDirection _direction = FlexDirection.Row;
-        private JustifyContent _justifyContent = JustifyContent.FlexStart;
-        private AlignItems _alignItems = AlignItems.FlexStart;
-        private AlignContent _alignContent = AlignContent.FlexStart;
+        private FlexJustifyContent _justifyContent = FlexJustifyContent.FlexStart;
+        private FlexAlignItems _alignItems = FlexAlignItems.FlexStart;
+        private FlexAlignContent _alignContent = FlexAlignContent.FlexStart;
         private FlexWrap _wrap = FlexWrap.Wrap;
 
         private int _columnSpacing = 64;
@@ -38,11 +38,11 @@ namespace ControlCatalog.ViewModels
 
         public IEnumerable DirectionValues { get; } = Enum.GetValues(typeof(FlexDirection));
 
-        public IEnumerable JustifyContentValues { get; } = Enum.GetValues(typeof(JustifyContent));
+        public IEnumerable JustifyContentValues { get; } = Enum.GetValues(typeof(FlexJustifyContent));
 
-        public IEnumerable AlignItemsValues { get; } = Enum.GetValues(typeof(AlignItems));
+        public IEnumerable AlignItemsValues { get; } = Enum.GetValues(typeof(FlexAlignItems));
 
-        public IEnumerable AlignContentValues { get; } = Enum.GetValues(typeof(AlignContent));
+        public IEnumerable AlignContentValues { get; } = Enum.GetValues(typeof(FlexAlignContent));
 
         public IEnumerable WrapValues { get; } = Enum.GetValues(typeof(FlexWrap));
 
@@ -52,7 +52,7 @@ namespace ControlCatalog.ViewModels
 
         public IEnumerable VerticalAlignmentValues { get; } = Enum.GetValues(typeof(VerticalAlignment));
 
-        public IEnumerable AlignSelfValues { get; } = Enum.GetValues(typeof(AlignItems)).Cast<AlignItems>().Prepend(FlexItemViewModel.AlignSelfAuto);
+        public IEnumerable AlignSelfValues { get; } = Enum.GetValues(typeof(FlexAlignItems)).Cast<FlexAlignItems>().Prepend(FlexItemViewModel.AlignSelfAuto);
         
         public FlexDirection Direction
         {
@@ -60,19 +60,19 @@ namespace ControlCatalog.ViewModels
             set => this.RaiseAndSetIfChanged(ref _direction, value);
         }
 
-        public JustifyContent JustifyContent
+        public FlexJustifyContent JustifyContent
         {
             get => _justifyContent;
             set => this.RaiseAndSetIfChanged(ref _justifyContent, value);
         }
 
-        public AlignItems AlignItems
+        public FlexAlignItems AlignItems
         {
             get => _alignItems;
             set => this.RaiseAndSetIfChanged(ref _alignItems, value);
         }
 
-        public AlignContent AlignContent
+        public FlexAlignContent AlignContent
         {
             get => _alignContent;
             set => this.RaiseAndSetIfChanged(ref _alignContent, value);

@@ -4,7 +4,7 @@
     /// <summary>
     /// Describes the main-axis alignment of items inside a <see cref="FlexPanel"/> line.
     /// </summary>
-    public enum JustifyContent
+    public enum FlexJustifyContent
     {
         /// <summary>
         /// Child items are packed toward the start of the line.
