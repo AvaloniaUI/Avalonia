@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Avalonia.Media.Fonts.Tables;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
@@ -18,10 +20,18 @@ namespace Avalonia.Media.Fonts
         // Make this internal for testing purposes
         internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache = new();
 
+        // Cache of resolved script/culture fallback family names. A non-null value is the preferred
+        // fallback family for that script bucket: a Tier B hint that is still re-checked for coverage
+        // per codepoint, and which does NOT by itself suppress a platform call. A null value is a
+        // *negative* entry that prevents repeated platform-fallback calls for the same script bucket.
+        private readonly ConcurrentDictionary<ScriptFallbackKey, string?> _scriptFallbackCache = new();
+
         private readonly object _fontFamiliesLock = new();
         private volatile FontFamily[] _fontFamilies = Array.Empty<FontFamily>();
         private readonly IFontManagerImpl _fontManagerImpl;
         private readonly IAssetLoader _assetLoader;
+
+        private readonly record struct ScriptFallbackKey(Script Script, string? CultureName);
 
         protected FontCollectionBase()
         {
@@ -37,59 +47,422 @@ namespace Avalonia.Media.Fonts
 
         public virtual bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
             string? familyName, CultureInfo? culture, out Typeface match)
+            => TryMatchCharacter(codepoint, style, weight, stretch, familyName, culture, Script.Unknown, out match);
+
+        /// <summary>
+        /// Character-to-typeface match with an optional shaping-capability constraint. When
+        /// <paramref name="shapingScript"/> is a complex script, only candidates that can shape it
+        /// (<see cref="GlyphTypeface.CanShapeScript"/>) are considered; <see cref="Script.Unknown"/>
+        /// imposes no constraint and is identical to the public overload.
+        /// </summary>
+        internal bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
+            string? familyName, CultureInfo? culture, Script shapingScript, out Typeface match)
         {
             match = default;
 
             var key = new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch };
+            var cp = new Codepoint((uint)codepoint);
+            var script = cp.Script;
+            var refinedScript = FontFallbackScriptHints.RefineWithCulture(cp, culture);
+            var scriptKey = new ScriptFallbackKey(refinedScript, culture?.Name);
 
-            //If a font family is defined we try to find a match inside that family first
-            if (familyName != null && _glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
+            // --- Tier A: requested family, coverage-checked, culture-compatible ---
+            if (familyName != null &&
+                _glyphTypefaceCache.TryGetValue(familyName, out var requestedFamily) &&
+                TryGetCoveringMatchForFamily(requestedFamily, key, codepoint, culture, shapingScript, out var requestedGlyphTypeface) &&
+                IsCultureCompatible(requestedGlyphTypeface, culture, script))
             {
-                if (TryGetNearestMatch(glyphTypefaces, key, out var glyphTypeface))
-                {
-                    if (glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
-                    {
-                        match = new Typeface(new FontFamily(null, Key.AbsoluteUri + "#" + glyphTypeface.FamilyName), style, weight, stretch);
+                match = BuildTypefaceWithSynthesis(requestedGlyphTypeface, key);
+                return true;
+            }
 
-                        return true;
-                    }
+            // --- Tier B: cached script/culture resolution ---
+            if (FontFallbackScriptHints.IsLocaleSensitive(refinedScript) || culture != null)
+            {
+                if (_scriptFallbackCache.TryGetValue(scriptKey, out var cachedFamily) &&
+                    cachedFamily != null &&
+                    !string.Equals(cachedFamily, familyName, StringComparison.OrdinalIgnoreCase) &&
+                    _glyphTypefaceCache.TryGetValue(cachedFamily, out var cachedTypefaces) &&
+                    TryGetCoveringMatchForFamily(cachedTypefaces, key, codepoint, culture, shapingScript, out var cachedGlyphTypeface))
+                {
+                    match = BuildTypefaceWithSynthesis(cachedGlyphTypeface, key);
+                    return true;
                 }
             }
 
-            return TryMatchInAnyFamily(isLastResort: false, out match) ||
-                   TryMatchInAnyFamily(isLastResort: true, out match);
-
-            bool TryMatchInAnyFamily(bool isLastResort, out Typeface match)
+            // --- Tier C: deterministic cache sweep (non last-resort), culture-scored ---
+            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, shapingScript, isLastResort: false, out var bestGt, out var bestFamilyName))
             {
-                //Try to find a match in any font family
-                foreach (var pair in _glyphTypefaceCache)
+                // The sweep returns the nearest cached key for the winning family. A codepoint the
+                // bucket family can't cover (e.g. the Simplified-only 华 when the bucket is a JP font)
+                // lands here, so the exact-key upgrade is needed here too: otherwise a Bold face cached
+                // for an earlier run is rendered for a Normal request.
+                bestGt = PreferExactKey(bestGt, key, codepoint, culture, shapingScript);
+
+                if (FontFallbackScriptHints.IsLocaleSensitive(refinedScript) || culture != null)
                 {
-                    if (pair.Key == familyName)
-                    {
-                        //We already tried this before
-                        continue;
-                    }
-
-                    if (TryGetNearestMatchCore(pair.Value, key, isLastResort, out var glyphTypeface))
-                    {
-                        if (glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _))
-                        {
-                            var platformTypeface = glyphTypeface.PlatformTypeface;
-
-                            // Found a match
-                            match = new Typeface(new FontFamily(null, Key.AbsoluteUri + "#" + glyphTypeface.FamilyName),
-                                platformTypeface.Style,
-                                platformTypeface.Weight,
-                                platformTypeface.Stretch);
-
-                            return true;
-                        }
-                    }
+                    _scriptFallbackCache.TryAdd(scriptKey, bestFamilyName);
                 }
 
-                match = default;
+                match = BuildTypefaceWithSynthesis(bestGt, key);
+                return true;
+            }
+
+            // --- Tier D: platform fallback ---
+            // Only a *negative* cache entry (the platform had no font for this script bucket)
+            // suppresses a retry. A *positive* entry must not: it records a preferred family for the
+            // bucket, but that family may not cover THIS codepoint - e.g. 中 (U+4E2D) resolves to a CJK
+            // font that lacks the Simplified-only 华 (U+534E) - and the platform resolves per codepoint,
+            // so it may still place a codepoint the bucket's font cannot. Reaching Tier D already means
+            // no cached family covered this codepoint.
+            // Skipped for shaping-constrained queries: the platform match is not capability-checked,
+            // and the caller's unconstrained pass already covers the platform path (so the negative
+            // cache stays consistent with unconstrained lookups).
+            if (shapingScript == Script.Unknown)
+            {
+                var hasCacheEntry = _scriptFallbackCache.TryGetValue(scriptKey, out var cachedFamily);
+                var platformAlreadyAttempted = hasCacheEntry && cachedFamily is null;
+
+                if (!platformAlreadyAttempted &&
+                    TryMatchCharacterFromPlatform(codepoint, key, familyName, culture, out var platformGt))
+                {
+                    // Keep any existing positive hint (TryAdd won't overwrite); registering the match
+                    // lets later lookups for this codepoint be served by Tier C without the platform.
+                    _scriptFallbackCache.TryAdd(scriptKey, platformGt.FamilyName);
+                    match = BuildTypefaceWithSynthesis(platformGt, key);
+                    return true;
+                }
+
+                // Record a negative only when nothing was cached for the bucket yet, so a positive hint
+                // for one codepoint isn't downgraded to a negative by another the platform can't place.
+                if (!hasCacheEntry)
+                {
+                    _scriptFallbackCache.TryAdd(scriptKey, null);
+                }
+            }
+
+            // --- Tier E: last-resort cache sweep ---
+            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, shapingScript, isLastResort: true, out var lrGt, out _))
+            {
+                match = BuildTypefaceWithSynthesis(lrGt, key);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryMatchInCache(
+            int codepoint,
+            FontCollectionKey key,
+            string? skipFamilyName,
+            CultureInfo? culture,
+            Script script,
+            Script refinedScript,
+            Script shapingScript,
+            bool isLastResort,
+            [NotNullWhen(true)] out GlyphTypeface? bestGlyphTypeface,
+            [NotNullWhen(true)] out string? bestFamilyName)
+        {
+            bestGlyphTypeface = null;
+            bestFamilyName = null;
+
+            // Iterate the sorted family snapshot for deterministic order.
+            var snapshot = _fontFamilies;
+            var bestScore = int.MinValue;
+
+            for (var i = 0; i < snapshot.Length; i++)
+            {
+                var familyName = snapshot[i].Name;
+
+                if (skipFamilyName != null && string.Equals(familyName, skipFamilyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
+                {
+                    continue;
+                }
+
+                if (!TryGetCoveringMatch(glyphTypefaces, key, codepoint, isLastResort, shapingScript, out var candidate))
+                {
+                    continue;
+                }
+
+                var score = ScoreCandidate(candidate, key, culture, script, refinedScript);
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestGlyphTypeface = candidate;
+                    bestFamilyName = familyName;
+                }
+            }
+
+            return bestGlyphTypeface != null;
+        }
+
+        private static int ScoreCandidate(
+            GlyphTypeface candidate,
+            FontCollectionKey requestedKey,
+            CultureInfo? culture,
+            Script script,
+            Script refinedScript)
+        {
+            var score = 0;
+
+            // Exact culture match in the font's name table.
+            if (culture != null && candidate.FamilyNames.ContainsKey(culture))
+            {
+                score += 8;
+            }
+            else if (culture != null)
+            {
+                var parent = culture.Parent;
+
+                if (parent != null && parent != CultureInfo.InvariantCulture && candidate.FamilyNames.ContainsKey(parent))
+                {
+                    score += 4;
+                }
+            }
+
+            // Self-declared culture coverage via OS/2 codepage bits or meta dlng/slng.
+            if (culture != null && FontFallbackScriptHints.IsFontCompatibleWithCulture(candidate, culture))
+            {
+                score += 4;
+            }
+
+            // Font's primary script aligns with the requested script — ask the font directly.
+            if (FontFallbackScriptHints.IsLocaleSensitive(refinedScript))
+            {
+                if (candidate.SupportsScript(refinedScript))
+                {
+                    score += 2;
+                }
+                else if (refinedScript != script && candidate.SupportsScript(script))
+                {
+                    score += 1;
+                }
+            }
+
+            if (candidate.ToFontCollectionKey() == requestedKey)
+            {
+                score += 1;
+            }
+
+            return score;
+        }
+
+        private static bool IsCultureCompatible(GlyphTypeface candidate, CultureInfo? culture, Script script)
+        {
+            // If no culture or codepoint is locale-insensitive, the candidate is fine.
+            if (culture == null || !FontFallbackScriptHints.IsLocaleSensitive(script))
+            {
+                return true;
+            }
+
+            // Positive signal from the font's own self-declaration (OS/2 codepage bits or meta dlng/slng).
+            // When the font declares coverage we accept it as compatible regardless of localized names.
+            if (FontFallbackScriptHints.IsFontCompatibleWithCulture(candidate, culture))
+            {
+                return true;
+            }
+
+            // If the font has no localized family names at all, treat as compatible (no negative signal).
+            if (candidate.FamilyNames.Count == 0)
+            {
+                return true;
+            }
+
+            if (candidate.FamilyNames.ContainsKey(culture))
+            {
+                return true;
+            }
+
+            var parent = culture.Parent;
+
+            if (parent != null && parent != CultureInfo.InvariantCulture && candidate.FamilyNames.ContainsKey(parent))
+            {
+                return true;
+            }
+
+            // The font advertises localized names but not for this culture — reject so Tier C can score.
+            return false;
+        }
+
+        private Typeface BuildTypefaceWithSynthesis(GlyphTypeface glyphTypeface, FontCollectionKey requestedKey)
+        {
+            var matchedKey = glyphTypeface.ToFontCollectionKey();
+
+            // The fallback search already found a font face that maps the codepoint. Synthesis
+            // (re-loading the stream with FontSimulations) is unsafe here: with .ttc collections
+            // the platform may resolve a different face from the same stream (e.g. asking for an
+            // oblique simulation of "Yu Gothic UI" returns "Yu Gothic Medium"). Accept the matched
+            // glyph typeface as-is and pre-cache it under the requested key so later
+            // GlyphTypeface lookups via the returned Typeface short-circuit through the cache.
+            if (matchedKey != requestedKey)
+            {
+                TryAddGlyphTypeface(glyphTypeface.FamilyName, requestedKey, glyphTypeface);
+            }
+
+            return new Typeface(
+                new FontFamily(null, Key.AbsoluteUri + "#" + glyphTypeface.FamilyName),
+                requestedKey.Style,
+                requestedKey.Weight,
+                requestedKey.Stretch);
+        }
+
+        /// <summary>
+        /// Hook for platform-backed collections (e.g. <see cref="SystemFontCollection"/>) to consult
+        /// the underlying font manager for a fallback typeface. Invoked at most once per
+        /// (script-bucket, culture) pair from <see cref="FontCollectionBase.TryMatchCharacter(int, FontStyle, FontWeight, FontStretch, string?, CultureInfo?, out Typeface)"/>.
+        /// </summary>
+        protected virtual bool TryMatchCharacterFromPlatform(
+            int codepoint,
+            FontCollectionKey key,
+            string? familyName,
+            CultureInfo? culture,
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        {
+            glyphTypeface = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Resolves a covering face for a single family at the requested key. Takes the cheap cached
+        /// covering match first (an exact-key hit needs nothing more) and only escalates to the exact
+        /// key when that match differs in any axis, so a Bold (or Italic, or Condensed) face cached for
+        /// one run is not reused for a differently-keyed request of the same family.
+        /// </summary>
+        private bool TryGetCoveringMatchForFamily(
+            ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
+            FontCollectionKey key,
+            int codepoint,
+            CultureInfo? culture,
+            Script shapingScript,
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        {
+            if (!TryGetCoveringMatch(glyphTypefaces, key, codepoint, isLastResort: false, shapingScript, out glyphTypeface))
+            {
                 return false;
             }
+
+            glyphTypeface = PreferExactKey(glyphTypeface, key, codepoint, culture, shapingScript);
+            return true;
+        }
+
+        /// <summary>
+        /// When <paramref name="glyphTypeface"/> differs from the requested <paramref name="key"/> in
+        /// any axis (style, weight or stretch), asks the platform for the exact-key face of the same
+        /// family - the only source of a key the cache lacks - via <see cref="TryMatchCharacterFromPlatform"/>,
+        /// and returns it when it is an exact, shapeable match; otherwise returns the input unchanged.
+        /// The platform is consulted only on a mismatch, and a collection without one keeps the
+        /// neighbouring match. This guards every key axis, not just weight.
+        /// </summary>
+        private GlyphTypeface PreferExactKey(
+            GlyphTypeface glyphTypeface,
+            FontCollectionKey key,
+            int codepoint,
+            CultureInfo? culture,
+            Script shapingScript)
+        {
+            // The platform's character match, biased by the family already resolved, yields that family
+            // at the requested key when it has that face (MatchCharacter covers the codepoint, so no
+            // extra coverage check is needed). Accept it only when it is the exact key and can shape.
+            if (glyphTypeface.ToFontCollectionKey() != key &&
+                TryMatchCharacterFromPlatform(codepoint, key, glyphTypeface.FamilyName, culture, out var exact) &&
+                exact.ToFontCollectionKey() == key &&
+                CanShape(exact, shapingScript))
+            {
+                return exact;
+            }
+
+            return glyphTypeface;
+        }
+
+        /// <summary>
+        /// Picks a variant of the family that both is close to the requested key and actually maps
+        /// the requested codepoint. Falls back through the existing weight/stretch search but
+        /// filters every candidate through the font's character-to-glyph map.
+        /// </summary>
+        // A candidate satisfies a shaping-capability constraint when it can shape the requested
+        // script; Script.Unknown means no constraint (the historical, unconstrained behaviour).
+        private static bool CanShape(GlyphTypeface glyphTypeface, Script shapingScript)
+            => shapingScript == Script.Unknown || glyphTypeface.CanShapeScript(shapingScript);
+
+        private static bool TryGetCoveringMatch(
+            ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
+            FontCollectionKey key,
+            int codepoint,
+            bool isLastResort,
+            Script shapingScript,
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        {
+            // Exact key first.
+            if (glyphTypefaces.TryGetValue(key, out glyphTypeface) &&
+                glyphTypeface != null &&
+                glyphTypeface.IsLastResort == isLastResort &&
+                glyphTypeface.CharacterToGlyphMap.TryGetGlyph(codepoint, out _) &&
+                CanShape(glyphTypeface, shapingScript))
+            {
+                return true;
+            }
+
+            GlyphTypeface? coveringNearest = null;
+            int coveringDistance = int.MaxValue;
+
+            var keys = glyphTypefaces.Keys.ToArray();
+
+            Array.Sort(keys);
+
+            foreach (var candidateKey in keys)
+            {
+                if (!glyphTypefaces.TryGetValue(candidateKey, out var candidate) ||
+                    candidate == null ||
+                    candidate.IsLastResort != isLastResort)
+                {
+                    continue;
+                }
+
+                if (!candidate.CharacterToGlyphMap.TryGetGlyph(codepoint, out _) ||
+                    !CanShape(candidate, shapingScript))
+                {
+                    continue;
+                }
+
+                var distance = KeyDistance(candidateKey, key);
+
+                if (distance < coveringDistance)
+                {
+                    coveringDistance = distance;
+                    coveringNearest = candidate;
+                }
+            }
+
+            glyphTypeface = coveringNearest;
+
+            return glyphTypeface != null;
+        }
+
+        private static int KeyDistance(FontCollectionKey a, FontCollectionKey b)
+        {
+            var weightDelta = (int)a.Weight - (int)b.Weight;
+
+            if (weightDelta < 0)
+            {
+                weightDelta = -weightDelta;
+            }
+
+            var stretchDelta = (int)a.Stretch - (int)b.Stretch;
+
+            if (stretchDelta < 0)
+            {
+                stretchDelta = -stretchDelta;
+            }
+
+            var styleDelta = a.Style == b.Style ? 0 : 1;
+
+            return weightDelta + stretchDelta * 100 + styleDelta * 10_000;
         }
 
         public virtual bool TryCreateSyntheticGlyphTypeface(

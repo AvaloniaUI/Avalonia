@@ -12,8 +12,8 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
-using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 using CoreAnimation;
 using Foundation;
@@ -161,6 +161,7 @@ namespace Avalonia.iOS
             private readonly IStorageProvider? _storageProvider;
             private readonly IClipboard? _clipboard;
             private readonly IInputPane? _inputPane;
+            private readonly IOSPlatformFeedback _feedback;
             private IDisposable? _paddingInsets;
 
             public AvaloniaView View => _view;
@@ -180,6 +181,7 @@ namespace Avalonia.iOS
                 _clipboard = new Input.Platform.Clipboard(new Clipboard.ClipboardImpl(UIPasteboard.General));
                 _inputPane = UIKitInputPane.Instance;
 #endif
+                _feedback = new IOSPlatformFeedback(view);
                 _insetsManager = new InsetsManager();
                 _insetsManager.DisplayEdgeToEdgeChanged += (_, edgeToEdge) =>
                 {
@@ -252,8 +254,13 @@ namespace Avalonia.iOS
 
             public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
-            public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+            public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
             {
+                if (themeVariant is null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is PlatformSettings settings)
+                {
+                    settings.OnColorValuesChanged();
+                }
+
 #if !TVOS
                 // TODO adjust status bar depending on full screen mode.
                 if ((OperatingSystem.IsIOSVersionAtLeast(13)
@@ -313,6 +320,11 @@ namespace Avalonia.iOS
                 if (featureType == typeof(IScreenImpl))
                 {
                     return (iOSScreens)AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();
+                }
+
+                if (featureType == typeof(IPlatformFeedback))
+                {
+                    return _feedback;
                 }
 
                 return null;

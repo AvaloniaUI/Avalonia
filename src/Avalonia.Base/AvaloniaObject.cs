@@ -463,39 +463,12 @@ namespace Avalonia
             IObservable<object?> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            return TryBindStyledPropertyUntyped(property, source, priority)
-                ?? _values.AddBinding(property, source, priority);
-        }
-
-        // Non-generic path extracted to avoid unnecessary generic code duplication
-        private BindingExpressionBase? TryBindStyledPropertyUntyped(
-            AvaloniaProperty property,
-            IObservable<object?> source,
-            BindingPriority priority)
-        {
-            Debug.Assert(!property.IsDirect);
             ThrowHelper.ThrowIfNull(property, nameof(property));
             ThrowHelper.ThrowIfNull(source, nameof(source));
             VerifyAccess();
             ValidatePriority(priority);
 
-            if (source is BindingBase b)
-            {
-                if (b.CreateInstance(this, property, null) is not UntypedBindingExpressionBase expression)
-                    throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
-
-                if (priority != expression.Priority)
-                {
-                    throw new NotSupportedException(
-                        $"The binding priority passed to AvaloniaObject.Bind ('{priority}') " +
-                        "conflicts with the binding priority of the provided binding expression " +
-                        $" ({expression.Priority}').");
-                }
-
-                return GetValueStore().AddBinding(property, expression);
-            }
-
-            return null;
+            return _values.AddBinding(property, source, priority);
         }
 
         /// <summary>
@@ -557,36 +530,13 @@ namespace Avalonia
             DirectPropertyBase<T> property,
             IObservable<object?> source)
         {
-            AvaloniaProperty untypedProperty = property;
-
-            return TryBindDirectPropertyUntyped(ref untypedProperty, source)
-                ?? _values.AddBinding((DirectPropertyBase<T>)untypedProperty, source);
-        }
-
-        // Non-generic path extracted to avoid unnecessary generic code duplication
-        private BindingExpressionBase? TryBindDirectPropertyUntyped(
-            ref AvaloniaProperty property,
-            IObservable<object?> source)
-        {
-            Debug.Assert(property.IsDirect);
             ThrowHelper.ThrowIfNull(property, nameof(property));
             VerifyAccess();
 
-            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirectUntyped(this, property);
+            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
+            ThrowIfReadOnly(property);
 
-            if (property.IsReadOnly)
-            {
-                throw new ArgumentException($"The property {property.Name} is readonly.");
-            }
-
-            if (source is BindingBase b)
-            {
-                if (b.CreateInstance(this, property, null) is not UntypedBindingExpressionBase expression)
-                    throw new NotSupportedException($"Binding returned unsupported {nameof(BindingExpressionBase)}.");
-                return GetValueStore().AddBinding(property, expression);
-            }
-
-            return null;
+            return _values.AddBinding(property, source);
         }
 
         /// <summary>
@@ -606,11 +556,7 @@ namespace Avalonia
             VerifyAccess();
 
             property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
-
-            if (property.IsReadOnly)
-            {
-                throw new ArgumentException($"The property {property.Name} is readonly.");
-            }
+            ThrowIfReadOnly(property);
 
             return _values.AddBinding(property, source);
         }
@@ -632,11 +578,7 @@ namespace Avalonia
             VerifyAccess();
 
             property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
-
-            if (property.IsReadOnly)
-            {
-                throw new ArgumentException($"The property {property.Name} is readonly.");
-            }
+            ThrowIfReadOnly(property);
 
             return _values.AddBinding(property, source);
         }
@@ -937,6 +879,14 @@ namespace Avalonia
         {
             if (priority < BindingPriority.Animation || priority >= BindingPriority.Inherited)
                 ThrowInvalidPriority(priority);
+        }
+
+        private static void ThrowIfReadOnly(AvaloniaProperty property)
+        {
+            if (property.IsReadOnly)
+            {
+                throw new ArgumentException($"The property {property.Name} is readonly.");
+            }
         }
 
         private static void ThrowInvalidPriority(BindingPriority priority)

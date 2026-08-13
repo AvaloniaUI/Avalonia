@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -42,6 +43,25 @@ namespace Avalonia.Controls.UnitTests
             };
 
             Assert.Equal(new Vector(10, 10), target.Offset);
+        }
+
+        [Fact]
+        public void Setting_Offset_To_NaN_Does_Not_Cause_Infinite_Coerce_Recursion()
+        {
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = "Foo",
+                Extent = new Size(100, 100),
+                Viewport = new Size(10, 10),
+            };
+
+            InitializeScrollViewer(target);
+
+            target.Offset = new Vector(0, double.NaN);
+
+            Assert.False(double.IsNaN(target.Offset.X));
+            Assert.False(double.IsNaN(target.Offset.Y));
         }
 
         [Fact]
@@ -252,6 +272,69 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, raised);
             Assert.Equal(new Vector(20, 20), target.Offset); 
+        }
+
+        [Fact]
+        public void Padding_Should_Be_Included_In_Extent()
+        {
+            const int itemCount = 19;
+            const double itemHeight = 32;
+            const double padding = 50;
+            const double viewportHeight = 200;
+
+            var content = new StackPanel();
+
+            for (var i = 0; i < itemCount; ++i)
+            {
+                content.Children.Add(new Border { Height = itemHeight });
+            }
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Padding = new Thickness(padding),
+                Height = viewportHeight,
+                Content = content
+            };
+
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(viewportHeight, target.Viewport.Height);
+            Assert.Equal(itemCount * itemHeight + 2 * padding, target.Extent.Height);
+
+            // The content is arranged below the top padding and isn't squashed by it.
+            Assert.Equal(padding, content.Bounds.Top);
+            Assert.Equal(itemCount * itemHeight, content.Bounds.Height);
+
+            target.ScrollToEnd();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(itemCount * itemHeight + 2 * padding - viewportHeight, target.Offset.Y);
+
+            // Once scrolled to the end, the last item is fully visible and the bottom padding is still displayed below it.
+            Assert.Equal(viewportHeight - padding, content.Bounds.Bottom);
+        }
+
+        [Fact]
+        public void Padding_Should_Not_Make_Content_Scrollable_When_ScrollViewer_Is_Sized_To_Content()
+        {
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Padding = new Thickness(50),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                Content = new Border { Width = 100, Height = 100 },
+            };
+
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // The padding is included in the desired size, so the content still fits exactly.
+            Assert.Equal(new Size(200, 200), target.Bounds.Size);
+            Assert.Equal(new Size(200, 200), target.Viewport);
+            Assert.Equal(new Size(200, 200), target.Extent);
         }
 
         [Fact]
@@ -501,6 +584,55 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, panel.ArrangeOverrideCalls);
         }
 
+        [Fact]
+        public void Focus_KeyInput_Should_Scroll()
+        {
+            var panel = new Panel
+            {
+                Width = 100_000,
+                Height = 100_000,
+            };
+            var target = new ScrollViewer
+            {
+                Content = panel,
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+            };
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Page down and page up
+            KeyDown(target, Key.PageDown);
+            Assert.Equal(new(0, target.Viewport.Height), target.Offset);
+            KeyDown(target, Key.PageUp);
+            Assert.Equal(new(0, 0), target.Offset);
+
+            // Per-line scrolling in all directions with arrow keys
+            KeyDown(target, Key.Down);
+            Assert.Equal(new(0, target.SmallChange.Height), target.Offset);
+            KeyDown(target, Key.Right);
+            Assert.Equal(new(target.SmallChange.Width, target.SmallChange.Height), target.Offset);
+            KeyDown(target, Key.Up);
+            Assert.Equal(new(ScrollViewer.DefaultSmallChange, 0), target.Offset);
+            KeyDown(target, Key.Left);
+            Assert.Equal(new(0, 0), target.Offset);
+
+            // Scrolling horizontally with a right-to-left flow direction
+            target.FlowDirection = FlowDirection.RightToLeft;
+            KeyDown(target, Key.Left);
+            Assert.Equal(new(target.SmallChange.Width, 0), target.Offset);
+            KeyDown(target, Key.Right);
+            Assert.Equal(new(0, 0), target.Offset);
+        }
+
+        private static void KeyDown(IInputElement target, Key key)
+        {
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = key,
+            });
+        }
+
         public class TestPanel : Panel
         {
             public int DesiredWidth { get; set; }
@@ -556,6 +688,7 @@ namespace Avalonia.Controls.UnitTests
                     new ScrollContentPresenter
                     {
                         Name = "PART_ContentPresenter",
+                        [~ScrollContentPresenter.PaddingProperty] = control[~ScrollViewer.PaddingProperty],
                     }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
