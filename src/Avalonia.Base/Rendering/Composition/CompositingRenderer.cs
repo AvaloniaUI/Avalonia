@@ -9,7 +9,6 @@ using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.HitTesting;
 using Avalonia.Threading;
-using Microsoft.VisualBasic;
 
 namespace Avalonia.Rendering.Composition;
 

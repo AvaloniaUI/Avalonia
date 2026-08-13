@@ -5,5 +5,5 @@ namespace Avalonia.Media
     /// </summary>
     /// <param name="VisualHit">Gets the <see cref="Visual"/> that is returned from a hit test result.</param>
     /// <param name="IntersectionResult">Gets the <see cref="IntersectionResult"/> value of the hit test.</param>
-    public record class GeometryHitTestResult(Visual? VisualHit, IntersectionResult IntersectionResult);
+    public record class GeometryHitTestResult(Visual VisualHit, IntersectionResult IntersectionResult);
 }
