@@ -40,12 +40,15 @@ namespace Avalonia.DesignerSupport
                 var localAsm = assemblyPath != null ? Assembly.LoadFrom(Path.GetFullPath(assemblyPath)) : null;
                 var useCompiledBindings = localAsm?.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .FirstOrDefault(a => a.Key == "AvaloniaUseCompiledBindingsByDefault")?.Value;
+                var createSourceInfo = localAsm?.GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .FirstOrDefault(a => a.Key == "AvaloniaXamlCreateSourceInfo")?.Value;
 
                 var loaded = loader.Load(new RuntimeXamlLoaderDocument(baseUri, stream), new RuntimeXamlLoaderConfiguration
                 {
                     LocalAssembly = localAsm,
                     DesignMode = true,
-                    UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue) && parsedValue
+                    UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue) && parsedValue,
+                    CreateSourceInfo = bool.TryParse(createSourceInfo, out var parsedCreateSourceInfo) && parsedCreateSourceInfo
                 });
 
                 var control = Design.CreatePreviewWithControl(loaded);
