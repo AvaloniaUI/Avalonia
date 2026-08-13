@@ -49,8 +49,7 @@ namespace Avalonia.Controls.Primitives
 
         private readonly System.Globalization.Calendar _calendar = new GregorianCalendar();
 
-        private CalendarWeekNumberLabel[] _weekNumberLabels = Array.Empty<CalendarWeekNumberLabel>();
-        private CalendarWeekNumberLabel? _weekNumberHeaderLabel;
+        private PooledList<ContentControl> _weekNumberLabels = new PooledList<ContentControl>(Calendar.RowsPerMonth);
 
         internal Calendar? Owner { get; set; }
         internal CalendarDayButton? CurrentButton { get; set; }
@@ -64,9 +63,9 @@ namespace Avalonia.Controls.Primitives
         }
 
         public static readonly StyledProperty<ITemplate<Control>?> DayTitleTemplateProperty =
-                AvaloniaProperty.Register<CalendarItem, ITemplate<Control>?>(
-                    nameof(DayTitleTemplate),
-                    defaultBindingMode: BindingMode.OneTime);
+            AvaloniaProperty.Register<CalendarItem, ITemplate<Control>?>(
+                nameof(DayTitleTemplate),
+                defaultBindingMode: BindingMode.OneTime);
 
         public ITemplate<Control>? DayTitleTemplate
         {
@@ -214,20 +213,28 @@ namespace Avalonia.Controls.Primitives
 
                 // Week-number cells — added after existing cells to preserve child indices 0–48.
                 // Header placeholder (row 0, col 0)
-                _weekNumberHeaderLabel = new CalendarWeekNumberLabel();
-                _weekNumberHeaderLabel.IsHeader = true;
-                _weekNumberHeaderLabel.SetValue(Grid.RowProperty, 0);
-                _weekNumberHeaderLabel.SetValue(Grid.ColumnProperty, 0);
-                children.Add(_weekNumberHeaderLabel);
+                if (DayTitleTemplate?.Build() is ContentControl _weekNumberHeaderLabel)
+                {
+                    _weekNumberHeaderLabel.Classes.Add("CalendarWeekHeader");
+                    _weekNumberHeaderLabel.SetValue(Grid.RowProperty, 0);
+                    _weekNumberHeaderLabel.SetValue(Grid.ColumnProperty, 0);
+                    _weekNumberHeaderLabel.Bind(ContentControl.ContentProperty,
+                        Resources.GetResourceObservable("StringWeekNumberHeaderLabel"));
+                    children.Add(_weekNumberHeaderLabel);
+                }
 
+                _weekNumberLabels.Clear();
+                
                 // Data labels (rows 1–6, col 0)
-                _weekNumberLabels = new CalendarWeekNumberLabel[Calendar.RowsPerMonth - 1];
                 for (int i = 1; i < Calendar.RowsPerMonth; i++)
                 {
-                    var label = new CalendarWeekNumberLabel();
+                    var label = new ContentControl()
+                    {
+                        Classes = { "CalendarWeekNumber" }
+                    };
                     label.SetValue(Grid.RowProperty, i);
                     label.SetValue(Grid.ColumnProperty, 0);
-                    _weekNumberLabels[i - 1] = label;
+                    _weekNumberLabels.Add(label);
                     children.Add(label);
                 }
 
@@ -620,7 +627,7 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateWeekNumberLabels(DateTime firstDayOfMonth)
         {
-            if (_weekNumberLabels.Length == 0)
+            if (_weekNumberLabels.Count == 0)
                 return;
 
             int lastMonthToDisplay = PreviousMonthDays(firstDayOfMonth);
@@ -629,22 +636,16 @@ namespace Avalonia.Controls.Primitives
                 : firstDayOfMonth;
 
             bool show = Owner?.IsWeekNumberVisible ?? false;
-            var rule = Owner?.WeekNumberRule ?? (CalendarWeekNumberRule)DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule;
+            var rule = Owner?.WeekNumberRule ?? DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule;
             var firstDayOfWeek = Owner?.FirstDayOfWeek ?? DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
 
             PseudoClasses.Set(":hasweeknumbers", show);
 
-            for (int i = 0; i < _weekNumberLabels.Length; i++)
+            for (int i = 0; i < _weekNumberLabels.Count; i++)
             {
                 DateTime firstDayOfRow = _calendar.AddDays(firstDateDisplayed, i * NumberOfDaysPerWeek);
                 _weekNumberLabels[i].Content = DateTimeHelper.GetWeekOfYear(firstDayOfRow, rule, firstDayOfWeek).ToString();
                 _weekNumberLabels[i].IsVisible = show;
-            }
-
-            if (_weekNumberHeaderLabel != null)
-            {
-                _weekNumberHeaderLabel.Content = Owner?.WeekNumberHeader;
-                _weekNumberHeaderLabel.IsVisible = show;
             }
         }
 

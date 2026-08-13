@@ -135,8 +135,7 @@
                           DisplayDateStart="{TemplateBinding DisplayDateStart}"
                           DisplayDateEnd="{TemplateBinding DisplayDateEnd}"
                           IsWeekNumberVisible="{TemplateBinding IsWeekNumberVisible}"
-                          WeekNumberRule="{TemplateBinding WeekNumberRule}"
-                          WeekNumberHeader="{TemplateBinding WeekNumberHeader}" />
+                          WeekNumberRule="{TemplateBinding WeekNumberRule}" />
               </Popup>
             </Grid>
           </Panel>

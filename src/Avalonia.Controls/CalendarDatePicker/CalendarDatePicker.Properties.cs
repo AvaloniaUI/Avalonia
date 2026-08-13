@@ -159,14 +159,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="WeekNumberRule"/> property.
         /// </summary>
-        public static readonly StyledProperty<CalendarWeekNumberRule> WeekNumberRuleProperty =
+        public static readonly StyledProperty<CalendarWeekRule> WeekNumberRuleProperty =
             Calendar.WeekNumberRuleProperty.AddOwner<CalendarDatePicker>();
-
-        /// <summary>
-        /// Defines the <see cref="WeekNumberHeader"/> property.
-        /// </summary>
-        public static readonly StyledProperty<object?> WeekNumberHeaderProperty =
-            Calendar.WeekNumberHeaderProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Gets a collection of dates that are marked as not selectable.
@@ -417,17 +411,10 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc cref="Calendar.WeekNumberRule"/>
-        public CalendarWeekNumberRule WeekNumberRule
+        public CalendarWeekRule WeekNumberRule
         {
             get => GetValue(WeekNumberRuleProperty);
             set => SetValue(WeekNumberRuleProperty, value);
-        }
-
-        /// <inheritdoc cref="Calendar.WeekNumberHeader"/>
-        public object? WeekNumberHeader
-        {
-            get => GetValue(WeekNumberHeaderProperty);
-            set => SetValue(WeekNumberHeaderProperty, value);
         }
     }
 }

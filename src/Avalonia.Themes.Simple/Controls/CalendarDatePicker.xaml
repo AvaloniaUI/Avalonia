@@ -130,8 +130,7 @@
                       SelectedDate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedDate,
                                                      Mode=TwoWay}"
                       IsWeekNumberVisible="{TemplateBinding IsWeekNumberVisible}"
-                      WeekNumberRule="{TemplateBinding WeekNumberRule}"
-                      WeekNumberHeader="{TemplateBinding WeekNumberHeader}" />
+                      WeekNumberRule="{TemplateBinding WeekNumberRule}" />
           </Popup>
         </Grid>
       </ControlTemplate>
