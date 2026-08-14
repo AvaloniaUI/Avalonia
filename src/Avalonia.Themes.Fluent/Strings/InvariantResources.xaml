@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
   <!-- Calendar -->
-  <x:String x:Key="StringCalendarWeekNumberHeader">{}</x:String> <!-- The {} creates an empty string -->
+  <x:String x:Key="StringCalendarWeekNumberHeader"> </x:String> <!-- Just one whitespace to preserve the resource -->
   <!-- DatePicker -->
   <x:String x:Key="StringDatePickerDayText">day</x:String>
   <x:String x:Key="StringDatePickerMonthText">month</x:String>
