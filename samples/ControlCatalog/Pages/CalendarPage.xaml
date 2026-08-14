@@ -22,7 +22,7 @@
         <Calendar SelectionMode="SingleDate" />
       </StackPanel>
       <StackPanel>
-        <TextBlock Text="Disabled" />
+        <TextBlock Text="Disabled"/>
         <Calendar IsEnabled="False" />
       </StackPanel>
       <StackPanel>

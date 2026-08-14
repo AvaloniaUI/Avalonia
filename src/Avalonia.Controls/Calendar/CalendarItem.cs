@@ -169,7 +169,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the Grid that hosts the week number labels when in month mode.
         /// </summary>
-        internal Grid? WeekNumberLabels { get; set; }
+        private Grid? WeekNumberLabels { get; set; }
         
         private void PopulateGrids()
         {

@@ -113,8 +113,8 @@
                 <ContentControl Name="WeekNumberHeader" 
                                 Grid.Row="1"
                                 Content="{DynamicResource StringCalendarWeekNumberHeader}"
-                                Margin="0, 4"
                                 FontSize="9.5"
+                                MinWidth="20"
                                 VerticalAlignment="Top"
                                 VerticalContentAlignment="Center"
                                 HorizontalContentAlignment="Center"
@@ -124,6 +124,7 @@
                       Grid.Row="1"
                       Grid.Column="0"
                       IsVisible="False"
+                      MinWidth="20"
                       Margin="6,-1,6,6"
                       VerticalAlignment="Stretch">
                   <Grid.RowDefinitions>
