@@ -92,7 +92,7 @@ public class WaylandPlatformOptions
     public Action<Exception>? ExternalGLibMainLoopExceptionLogger { get; set; }
 
     ///<summary>
-    ///The App or client ID that the Wayland App should use
+    ///The App or client ID that the Wayland App should use.
     ///</summary>
     public string? AppId { get; set; }
 
