@@ -6,6 +6,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -353,6 +354,40 @@ namespace Avalonia.Controls
             set => SetValue(HeaderBackgroundProperty, value);
         }
 
+        /// <summary>
+        /// Defines the <see cref="IsWeekNumberVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsWeekNumberVisibleProperty =
+            AvaloniaProperty.Register<Calendar, bool>(nameof(IsWeekNumberVisible));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether week numbers are shown in the month view.
+        /// </summary>
+        public bool IsWeekNumberVisible
+        {
+            get => GetValue(IsWeekNumberVisibleProperty);
+            set => SetValue(IsWeekNumberVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="WeekNumberRule"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CalendarWeekRule> WeekNumberRuleProperty =
+            AvaloniaProperty.Register<Calendar, CalendarWeekRule>(
+                nameof(WeekNumberRule),
+                defaultValue: (CalendarWeekRule)DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule);
+
+        /// <summary>
+        /// Gets or sets the rule used to determine the first week of the year for week number display.
+        /// The default is taken from the current culture. Use <see cref="CalendarWeekNumberRule.Iso"/>
+        /// for ISO 8601 week numbering.
+        /// </summary>
+        public CalendarWeekRule WeekNumberRule
+        {
+            get => GetValue(WeekNumberRuleProperty);
+            set => SetValue(WeekNumberRuleProperty, value);
+        }
+        
         public static readonly StyledProperty<CalendarMode> DisplayModeProperty =
             AvaloniaProperty.Register<Calendar, CalendarMode>(
                 nameof(DisplayMode),
