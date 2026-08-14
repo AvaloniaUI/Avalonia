@@ -23,6 +23,7 @@ namespace Avalonia.FreeDesktop
         private (int, int, byte[]) _icon;
 
         private string? _sysTrayServiceName;
+        private bool _sysTrayServiceNameOwned;
         private string? _tooltipText;
         private bool _isDisposed;
         private bool _serviceConnected;
@@ -52,8 +53,8 @@ namespace Avalonia.FreeDesktop
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusMenuPath, _connection);
 
+            // Note: the object is only exported from CreateTrayIcon, once the name is owned.
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
-            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
             _statusNotifierItemDbusObj.ActivationDelegate += () => OnClicked?.Invoke();
 
             WatchAsync();
@@ -93,6 +94,11 @@ namespace Avalonia.FreeDesktop
                     OnOwnerChanged(owner);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // Cancelled by Dispose. Can't be filtered on _isDisposed: the continuation
+                // is posted to the dispatcher and runs after Dispose has completed.
+            }
             catch (Exception e) when (!_isDisposed)
             {
                 Logger.TryGet(LogEventLevel.Error, "DBUS")
@@ -110,8 +116,6 @@ namespace Avalonia.FreeDesktop
                 _serviceConnected = true;
                 _statusNotifierWatcher = new StatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
 
-                DestroyTrayIcon();
-
                 if (_isVisible)
                     CreateTrayIcon();
             }
@@ -124,25 +128,45 @@ namespace Avalonia.FreeDesktop
 
         private async void CreateTrayIcon()
         {
-            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierWatcher is null)
+            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _statusNotifierWatcher is null)
                 return;
 
+            try
+            {
+                // Reused for the lifetime of the icon: a new instance id looks like a new item to the host.
+                if (_sysTrayServiceName is null)
+                {
 #if NET5_0_OR_GREATER
-            var pid = Environment.ProcessId;
+                    var pid = Environment.ProcessId;
 #else
-            var pid = Process.GetCurrentProcess().Id;
+                    var pid = Process.GetCurrentProcess().Id;
 #endif
-            var tid = s_trayIconInstanceId++;
+                    var tid = s_trayIconInstanceId++;
+                    _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
+                }
 
-            _connection.RemoveMethodHandler(_statusNotifierItemDbusObj!.Path);
-            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
+                if (!_sysTrayServiceNameOwned)
+                {
+                    // Set before awaiting, so that a concurrent hide queues its ReleaseName instead of skipping it.
+                    _sysTrayServiceNameOwned = true;
+                    await _connection.RequestNameAsync(_sysTrayServiceName);
+                }
 
-            _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
-            await _connection.RequestNameAsync(_sysTrayServiceName);
-            await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+                // Exported only while the name is owned: a host scanning the bus would otherwise find the
+                // object under the unique connection name and register a second, duplicate item.
+                _connection.AddMethodHandler(_statusNotifierItemDbusObj);
 
-            _statusNotifierItemDbusObj!.SetTitleAndTooltip(_tooltipText);
-            _statusNotifierItemDbusObj.SetIcon(_icon);
+                await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+
+                _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
+                _statusNotifierItemDbusObj.SetIcon(_icon);
+            }
+            catch (Exception e)
+            {
+                if (!_isDisposed)
+                    Logger.TryGet(LogEventLevel.Error, "DBUS")
+                        ?.Log(this, "Unable to register the system tray icon.\n{Exception}", e);
+            }
         }
 
         private void DestroyTrayIcon()
@@ -150,14 +174,28 @@ namespace Avalonia.FreeDesktop
             if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _sysTrayServiceName is null)
                 return;
 
-            _connection!.ReleaseNameAsync(_sysTrayServiceName);
             _connection.RemoveMethodHandler(_statusNotifierItemDbusObj.Path);
+        }
+
+        /// <summary>
+        /// Releasing the name is what makes a host drop the item, unexporting the object isn't observable.
+        /// Call after <see cref="DestroyTrayIcon"/>, and not when the watcher merely goes away: the object
+        /// must never be exported while the name is unowned.
+        /// </summary>
+        private void ReleaseTrayServiceName()
+        {
+            if (_connection is null || _sysTrayServiceName is null || !_sysTrayServiceNameOwned)
+                return;
+
+            _sysTrayServiceNameOwned = false;
+            _connection.ReleaseNameAsync(_sysTrayServiceName);
         }
 
         public void Dispose()
         {
             IsActive = false;
             DestroyTrayIcon();
+            ReleaseTrayServiceName();
             (MenuExporter as IDisposable)?.Dispose();
             _watchCts?.Cancel();
             _isDisposed = true;
@@ -215,6 +253,7 @@ namespace Avalonia.FreeDesktop
                     break;
                 case false when _isVisible:
                     DestroyTrayIcon();
+                    ReleaseTrayServiceName();
                     break;
             }
 
