@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Avalonia.OpenGL;
 
 // XxxPlatformOptions are deliberately in global Avalonia namespace
@@ -13,6 +14,19 @@ namespace Avalonia;
 /// </summary>
 public class WaylandPlatformOptions
 {
+    /// <summary>
+    /// The application ID reported to the compositor via <c>xdg_toplevel.set_app_id</c> for every
+    /// window. It is the Wayland counterpart of <c>X11PlatformOptions.WmClass</c> and should match
+    /// the basename of the application's <c>.desktop</c> file without the extension
+    /// (e.g. <c>org.example.MyApp</c> for <c>org.example.MyApp.desktop</c>), as required by the
+    /// freedesktop.org Desktop Entry Specification.
+    /// The compositor uses this value to associate the window with its desktop entry, which is what
+    /// provides the icon and the display name shown in docks, task switchers and window lists, and
+    /// to group the application's windows together.
+    /// Defaults to the entry assembly name; when it can't be determined, no app id is set at all.
+    /// </summary>
+    public string? AppId { get; set; }
+
     /// <summary>
     /// The name of the Wayland display to connect to (e.g. <c>wayland-0</c>). When <c>null</c>,
     /// the <c>WAYLAND_DISPLAY</c> environment variable is used. Ignored when <see cref="DisplayFd"/> is set.
@@ -90,4 +104,16 @@ public class WaylandPlatformOptions
     /// Only used when <see cref="UseGLibMainLoop"/> is enabled.
     /// </summary>
     public Action<Exception>? ExternalGLibMainLoopExceptionLogger { get; set; }
+
+    public WaylandPlatformOptions()
+    {
+        try
+        {
+            AppId = Assembly.GetEntryAssembly()?.GetName().Name;
+        }
+        catch
+        {
+            //
+        }
+    }
 }

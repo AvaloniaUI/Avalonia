@@ -646,6 +646,10 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
             throw new AvaloniaWaylandException("Expected at least one wl_output at this point");
         _pendingBatch = new();
         _xdgTopLevel = XdgSurface!.GetToplevel(new TopLevelListener(this));
+        // The app id ties the window to its .desktop entry (icon, name, grouping).
+        // It's connection state, so it's (re-)sent for every toplevel on every connect.
+        if (Globals.AppId is { Length: > 0 } appId)
+            _xdgTopLevel.SetAppId(appId);
         if (!_csdSticky && Globals.XdgDecorationManager is { } decoMgr)
         {
             _decoration = decoMgr.GetToplevelDecoration(

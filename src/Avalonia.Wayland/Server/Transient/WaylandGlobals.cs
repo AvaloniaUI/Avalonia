@@ -50,6 +50,13 @@ class WaylandGlobals
     /// </summary>
     public ZxdgDecorationManagerV1? XdgDecorationManager { get; }
 
+    /// <summary>
+    /// The value from <see cref="WaylandPlatformOptions.AppId"/>, applied to every xdg_toplevel via
+    /// <c>xdg_toplevel.set_app_id</c> when it's connected. <c>null</c> or empty means the request
+    /// isn't sent at all, leaving the compositor's default (no app id) in place.
+    /// </summary>
+    public string? AppId { get; }
+
     public bool HasFractionalScaling => FractionalScaleManager != null && Viewporter != null;
 
     class RegistryListener(WaylandGlobals p) : NWayland.Protocols.Wayland.WlRegistry.Listener
@@ -130,6 +137,7 @@ class WaylandGlobals
     {
         Connection = connection;
         Worker = worker;
+        AppId = platformOptions.AppId;
         InputDispatcher = new WaylandInputDispatcher(this);
         Outputs = new WaylandOutputsTracker(outputsSink);
         Registry = connection.Display.GetRegistry(new RegistryListener(this), connection.Queue);
