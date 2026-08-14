@@ -379,9 +379,12 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the rule used to determine the first week of the year for week number display.
-        /// The default is taken from the current culture. Use <see cref="CalendarWeekNumberRule.Iso"/>
-        /// for ISO 8601 week numbering.
+        /// The default is taken from the current culture.
         /// </summary>
+        /// <remarks>
+        /// Use <c>WeekNumberRule</c> = <see cref="CalendarWeekRule.FirstFourDayWeek"/> in combination with <c>FirstDayOfWeek</c> = <see cref="DayOfWeek.Monday"/>
+        /// for ISO 8601 week numbering. (see also: <see cref="ISOWeek"/>)
+        /// </remarks>
         public CalendarWeekRule WeekNumberRule
         {
             get => GetValue(WeekNumberRuleProperty);
@@ -2244,6 +2247,8 @@ namespace Avalonia.Controls
             DisplayDateProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateChanged(e));
             DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateStartChanged(e));
             DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateEndChanged(e));
+            IsWeekNumberVisibleProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
+            WeekNumberRuleProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
             KeyDownEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyDown(e));
             KeyUpEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyUp(e));
         }
