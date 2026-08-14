@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -627,6 +627,8 @@ namespace Avalonia.Controls.Primitives
             if (WeekNumberLabels is null || WeekNumberLabels.Children.Count == 0)
                 return;
             
+            UpdateWeekNumberLabelsVisibility();
+            
             int lastMonthToDisplay = PreviousMonthDays(firstDayOfMonth);
             DateTime firstDateDisplayed = DateTimeHelper.CompareYearMonth(firstDayOfMonth, DateTime.MinValue) > 0
                 ? _calendar.AddDays(firstDayOfMonth, -lastMonthToDisplay)
@@ -634,13 +636,31 @@ namespace Avalonia.Controls.Primitives
 
             var rule = Owner?.WeekNumberRule ?? DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule;
             var firstDayOfWeek = Owner?.FirstDayOfWeek ?? DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
-            
-            for (int i = 0; i < WeekNumberLabels.Children.Count; i++)
+
+            // We have 6 rows with weeks. The ControlTheme may have added more children to the Grid (Header, Background, ...).
+            // We only want to update the last 6 children of the Grid, which are the week number labels.
+            var startIndex = WeekNumberLabels.Children.Count - (Calendar.RowsPerMonth - 1);
+            for (int i = startIndex; i < WeekNumberLabels.Children.Count; i++)
             {
-                DateTime firstDayOfRow = _calendar.AddDays(firstDateDisplayed, i * NumberOfDaysPerWeek);
+                var daysToAdd = (i - startIndex) * NumberOfDaysPerWeek;
+                DateTime firstDayOfRow = _calendar.AddDays(firstDateDisplayed, daysToAdd);
 
                 var label = WeekNumberLabels.Children[i] as ContentControl;
                 label?.Content = DateTimeHelper.GetWeekOfYear(firstDayOfRow, rule, firstDayOfWeek, _calendar);
+            }
+        }
+
+        /// <summary>
+        /// Updates the visibility of the week number labels based on the <see cref="Calendar.IsWeekNumberVisible"/> property
+        /// and the <see cref="Calendar.DisplayMode"/>.
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        internal void UpdateWeekNumberLabelsVisibility()
+        {
+            if (WeekNumberLabels is not null && Owner is not null)
+            {
+                WeekNumberLabels.IsVisible =
+                    Owner.IsWeekNumberVisible && Owner.DisplayMode == CalendarMode.Month;
             }
         }
 

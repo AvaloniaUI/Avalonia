@@ -459,6 +459,7 @@ namespace Avalonia.Controls
                         }
                 }
             }
+            monthControl?.UpdateWeekNumberLabelsVisibility();
             OnDisplayModeChanged(new CalendarModeChangedEventArgs((CalendarMode)e.OldValue, mode));
         }
         private static bool IsValidDisplayMode(CalendarMode mode)

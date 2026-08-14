@@ -110,16 +110,6 @@
                   </Button>
                 </Grid>
 
-                <ContentControl Name="WeekNumberHeader" 
-                                Grid.Row="1"
-                                Content="{DynamicResource StringCalendarWeekNumberHeader}"
-                                FontSize="9.5"
-                                MinWidth="20"
-                                VerticalAlignment="Top"
-                                VerticalContentAlignment="Center"
-                                HorizontalContentAlignment="Center"
-                                IsVisible="False" />
-                
                 <Grid Name="PART_ElementWeekNumberLabels" 
                       Grid.Row="1"
                       Grid.Column="0"
@@ -136,6 +126,12 @@
                     <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
                     <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
                   </Grid.RowDefinitions>
+                  <!-- week number header -->
+                  <ContentControl Content="{DynamicResource StringCalendarWeekNumberHeader}"
+                                  FontSize="9.5"
+                                  VerticalAlignment="Top"
+                                  VerticalContentAlignment="Center"
+                                  HorizontalContentAlignment="Center" />
                 </Grid>
 
                 <Grid Name="PART_MonthView"
@@ -211,16 +207,12 @@
     
     <Style Selector="^:hasweeknumbers">
       <Style Selector="^ /template/ Grid#PART_ElementWeekNumberLabels">
-        <Setter Property="IsVisible" Value="True" />
         <Style Selector="^ ContentControl">
           <Setter Property="FontSize" Value="9.5" />
           <Setter Property="HorizontalContentAlignment" Value="Center" />
           <Setter Property="VerticalAlignment" Value="Stretch" />
           <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-      </Style>
-      <Style Selector="^ /template/ ContentControl#WeekNumberHeader">
-        <Setter Property="IsVisible" Value="True" />
       </Style>
     </Style>
   </ControlTheme>

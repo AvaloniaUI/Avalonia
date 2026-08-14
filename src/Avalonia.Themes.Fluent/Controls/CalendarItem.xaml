@@ -123,24 +123,13 @@
                     IsVisible="{Binding #PART_MonthView.IsVisible}" 
                     Grid.Row="1" 
                     Grid.Column="1" />
-            <!-- Header for the Weeks. -->
-            <ContentControl Name="WeekNumberHeader" 
-                            Grid.Row="1"
-                            Content="{DynamicResource StringCalendarWeekNumberHeader}"
-                            Height="38"
-                            MinWidth="38"
-                            FontSize="{DynamicResource CalendarWeekNumberFontSize}"
-                            VerticalAlignment="Top"
-                            VerticalContentAlignment="Center"
-                            HorizontalContentAlignment="Center"
-                            IsVisible="False" />
             <!-- The below Grid will be feed by the week numbers -->
             <Grid Name="PART_ElementWeekNumberLabels"
                   Grid.Row="1"
                   Grid.Column="0"
+                  MinWidth="38"
                   IsVisible="False">
               <Grid.RowDefinitions>
-                <!--This should always be the week day names??-->
                 <RowDefinition Height="38" />
                 <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
                 <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
@@ -149,6 +138,13 @@
                 <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
                 <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
               </Grid.RowDefinitions>
+              <!-- Header for the Weeks. -->
+              <ContentControl Name="WeekNumberHeader" 
+                              Grid.Row="0"
+                              Content="{DynamicResource StringCalendarWeekNumberHeader}"
+                              FontSize="{DynamicResource CalendarWeekNumberFontSize}"
+                              VerticalContentAlignment="Center"
+                              HorizontalContentAlignment="Center" />
             </Grid>
             <Grid Name="PART_MonthView" 
                   Grid.Column="1" 
@@ -204,16 +200,13 @@
       <Setter Property="Stroke" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
     </Style>
     <Style Selector="^:hasweeknumbers">
+      <Setter Property="MinWidth" Value="332" />
       <Style Selector="^ /template/ Grid#PART_ElementWeekNumberLabels">
-        <Setter Property="IsVisible" Value="True" />
         <Style Selector="^ ContentControl">
           <Setter Property="FontSize" Value="{DynamicResource CalendarWeekNumberFontSize}" />
           <Setter Property="HorizontalContentAlignment" Value="Center" />
           <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-      </Style>
-      <Style Selector="^ /template/ ContentControl#WeekNumberHeader">
-        <Setter Property="IsVisible" Value="True" />
       </Style>
     </Style>
   </ControlTheme>
