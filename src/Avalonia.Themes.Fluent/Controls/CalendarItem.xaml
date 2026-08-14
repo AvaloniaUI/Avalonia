@@ -76,7 +76,12 @@
                  basically...MinWidth of DayItem = 40, 40 * 7 = 280 + margins/padding = ~294
                  Viewport height is set from # of rows displayed (2-8) in Month mode, = ~290 for 6 weeks (+ day names)
                  -->
-          <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ColumnDefinitions="Auto, *" RowDefinitions="40,*" MinWidth="294">
+          <Grid VerticalAlignment="Stretch" 
+                HorizontalAlignment="Stretch" 
+                ColumnDefinitions="Auto, *" 
+                RowDefinitions="40,*" 
+                MinWidth="294"
+                Grid.IsSharedSizeScope="True" >
             <Grid ColumnDefinitions="5*,*,*"
                   Grid.ColumnSpan="2">
               <Button Name="PART_HeaderButton"
@@ -130,11 +135,21 @@
                             HorizontalContentAlignment="Center"
                             IsVisible="False" />
             <!-- The below Grid will be feed by the week numbers -->
-            <Grid Name="PART_ElementWeekNumberColumn"
+            <Grid Name="PART_ElementWeekNumberLabels"
                   Grid.Row="1"
                   Grid.Column="0"
-                  IsVisible="False"
-                  RowDefinitions="38,*,*,*,*,*,*" />
+                  IsVisible="False">
+              <Grid.RowDefinitions>
+                <!--This should always be the week day names??-->
+                <RowDefinition Height="38" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+              </Grid.RowDefinitions>
+            </Grid>
             <Grid Name="PART_MonthView" 
                   Grid.Column="1" 
                   Grid.Row="1" 
@@ -143,12 +158,12 @@
               <Grid.RowDefinitions>
                 <!--This should always be the week day names??-->
                 <RowDefinition Height="38" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
               </Grid.RowDefinitions>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -189,7 +204,7 @@
       <Setter Property="Stroke" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
     </Style>
     <Style Selector="^:hasweeknumbers">
-      <Style Selector="^ /template/ Grid#PART_ElementWeekNumberColumn">
+      <Style Selector="^ /template/ Grid#PART_ElementWeekNumberLabels">
         <Setter Property="IsVisible" Value="True" />
         <Style Selector="^ ContentControl">
           <Setter Property="FontSize" Value="{DynamicResource CalendarWeekNumberFontSize}" />

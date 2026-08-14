@@ -120,7 +120,7 @@
                                 HorizontalContentAlignment="Center"
                                 IsVisible="False" />
                 
-                <Grid Name="PART_ElementWeekNumberColumn" 
+                <Grid Name="PART_ElementWeekNumberLabels" 
                       Grid.Row="1"
                       Grid.Column="0"
                       IsVisible="False"
@@ -209,7 +209,7 @@
     </Style>
     
     <Style Selector="^:hasweeknumbers">
-      <Style Selector="^ /template/ Grid#PART_ElementWeekNumberColumn">
+      <Style Selector="^ /template/ Grid#PART_ElementWeekNumberLabels">
         <Setter Property="IsVisible" Value="True" />
         <Style Selector="^ ContentControl">
           <Setter Property="FontSize" Value="9.5" />

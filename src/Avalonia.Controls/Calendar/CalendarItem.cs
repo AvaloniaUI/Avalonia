@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Primitives
     [TemplatePart(PART_ElementNextButton,       typeof(Button))]
     [TemplatePart(PART_ElementPreviousButton,   typeof(Button))]
     [TemplatePart(PART_ElementYearView,         typeof(Grid))]
-    [TemplatePart(PART_ElementWeekNumberColumn, typeof(Panel))]
+    [TemplatePart(PART_ElementWeekNumberLabels, typeof(Grid))]
     [PseudoClasses(":calendardisabled", ":hasweeknumbers")]
     public sealed class CalendarItem : TemplatedControl
     {
@@ -38,7 +38,7 @@ namespace Avalonia.Controls.Primitives
         private const string PART_ElementNextButton = "PART_NextButton";
         private const string PART_ElementMonthView = "PART_MonthView";
         private const string PART_ElementYearView = "PART_YearView";
-        private const string PART_ElementWeekNumberColumn = "PART_ElementWeekNumberColumn";
+        private const string PART_ElementWeekNumberLabels = "PART_ElementWeekNumberLabels";
 
         private Button? _headerButton;
         private Button? _nextButton;
@@ -276,7 +276,7 @@ namespace Avalonia.Controls.Primitives
             NextButton = e.NameScope.Find<Button>(PART_ElementNextButton);
             MonthView = e.NameScope.Find<Grid>(PART_ElementMonthView);
             YearView = e.NameScope.Find<Grid>(PART_ElementYearView);
-            WeekNumberLabels = e.NameScope.Find<Grid>(PART_ElementWeekNumberColumn);
+            WeekNumberLabels = e.NameScope.Find<Grid>(PART_ElementWeekNumberLabels);
             
             if (Owner != null)
             {
@@ -619,6 +619,10 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         private void UpdateWeekNumberLabels(DateTime firstDayOfMonth)
         {
+            // first set the pseudo classes
+            bool show = Owner?.IsWeekNumberVisible ?? false;
+            PseudoClasses.Set(":hasweeknumbers", show);
+            
             // if we don't have a week number labels grid, or it has no children, then we don't need to update
             if (WeekNumberLabels is null || WeekNumberLabels.Children.Count == 0)
                 return;
@@ -628,11 +632,8 @@ namespace Avalonia.Controls.Primitives
                 ? _calendar.AddDays(firstDayOfMonth, -lastMonthToDisplay)
                 : firstDayOfMonth;
 
-            bool show = Owner?.IsWeekNumberVisible ?? false;
             var rule = Owner?.WeekNumberRule ?? DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule;
             var firstDayOfWeek = Owner?.FirstDayOfWeek ?? DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
-
-            PseudoClasses.Set(":hasweeknumbers", show);
             
             for (int i = 0; i < WeekNumberLabels.Children.Count; i++)
             {
