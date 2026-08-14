@@ -660,7 +660,7 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         if (_title != null)
             _xdgTopLevel.SetTitle(_title);
 
-        SetAppID(globals.WlAppId);
+        SetAppId(globals.WlAppId);
 
         // Re-apply cached min/max if they were ever set on a previous
         // (now-dead) connection. The OnConnected commit below will
@@ -708,9 +708,9 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         _xdgTopLevel?.SetTitle(title ?? string.Empty);
     }
 
-    private void SetAppID(string? appId)
+    private void SetAppId(string? appId)
     {
-        var id = appId ?? Process.GetCurrentProcess().ProcessName;
+        var id = string.IsNullOrWhiteSpace(appId) ? Process.GetCurrentProcess().ProcessName : appId;
         if (_xdgTopLevel is null)
             return;
         _xdgTopLevel.SetAppId(id);
