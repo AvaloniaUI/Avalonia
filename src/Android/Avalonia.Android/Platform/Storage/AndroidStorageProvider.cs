@@ -62,10 +62,32 @@ internal class AndroidStorageProvider : IStorageProvider
         //     to read or write files in your application-specific directories [...]"
         // Consequently, we don't try to check for that permission here anymore.
 
-        var javaFile = new JavaFile(androidUriPath);
-        if (javaFile.Exists() && javaFile.IsFile)
+        // Handle file:// URI using Java.IO.File
+        if (filePath.Scheme == "file" && androidUri.Path is not null)
         {
-            return new BclStorageFile(new System.IO.FileInfo(javaFile.AbsolutePath));
+            var javaFile = new JavaFile(androidUri.Path);
+            if (javaFile.Exists() && javaFile.IsFile)
+            {
+                return new BclStorageFile(new System.IO.FileInfo(javaFile.AbsolutePath));
+            }
+            return null;
+        }
+    
+        // Handle content:// URI using ContentResolver
+        if (filePath.Scheme == "content" && _activity.ContentResolver is not null)
+        {
+            try
+            {
+                using var stream = _activity.ContentResolver.OpenInputStream(androidUri);
+                if (stream is not null)
+                {
+                    return new AndroidStorageFile(_activity, androidUri);
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         return null;
