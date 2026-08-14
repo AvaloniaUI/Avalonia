@@ -14,23 +14,23 @@
         </Style>
       </WrapPanel.Styles>
       <StackPanel>
-        <TextBlock Text="SelectionMode: None"/>
+        <TextBlock Text="SelectionMode: None" />
         <Calendar SelectionMode="None" />
       </StackPanel>
       <StackPanel>
-        <TextBlock Text="SelectionMode: SingleDate"/>
+        <TextBlock Text="SelectionMode: SingleDate" />
         <Calendar SelectionMode="SingleDate" />
       </StackPanel>
       <StackPanel>
-        <TextBlock Text="Disabled"/>
+        <TextBlock Text="Disabled" />
         <Calendar IsEnabled="False" />
       </StackPanel>
       <StackPanel>
-        <TextBlock Text="SelectionMode: SingleRange"/>
+        <TextBlock Text="SelectionMode: SingleRange" />
         <Calendar SelectionMode="SingleRange" />
       </StackPanel>
       <StackPanel>
-        <TextBlock Text="SelectionMode: MultipleRange"/>
+        <TextBlock Text="SelectionMode: MultipleRange" />
         <Calendar SelectionMode="MultipleRange" />
       </StackPanel>
       <StackPanel>
@@ -39,14 +39,23 @@
                   AllowTapRangeSelection="True" />
       </StackPanel>
       <StackPanel>
-        <TextBlock Text="DisplayDates"/>
+        <TextBlock Text="DisplayDates" />
         <Calendar Name="DisplayDatesCalendar"
                   SelectionMode="SingleDate" />
       </StackPanel>
       <StackPanel>
-        <TextBlock Text="BlackoutDates"/>
+        <TextBlock Text="BlackoutDates" />
         <Calendar Name="BlackoutDatesCalendar"
                   SelectionMode="SingleDate" />
+      </StackPanel>
+      <StackPanel>
+        <TextBlock Text="WeekNumbers" />
+        <Calendar Name="WeekNumbers"
+                  IsWeekNumberVisible="True">
+          <Calendar.Resources>
+            <x:String x:Key="StringCalendarWeekNumberHeader">#</x:String>
+          </Calendar.Resources>
+        </Calendar>
       </StackPanel>
     </WrapPanel>
   </StackPanel>
