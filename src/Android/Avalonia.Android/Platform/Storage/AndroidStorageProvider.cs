@@ -7,6 +7,7 @@ using Android;
 using Android.App;
 using Android.Content;
 using Android.Provider;
+using AndroidX.DocumentFile.Provider;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using AndroidUri = Android.Net.Uri;
@@ -62,7 +63,6 @@ internal class AndroidStorageProvider : IStorageProvider
         //     to read or write files in your application-specific directories [...]"
         // Consequently, we don't try to check for that permission here anymore.
 
-        // Handle file:// URI using Java.IO.File
         if (filePath.Scheme == "file" && androidUri.Path is not null)
         {
             var javaFile = new JavaFile(androidUri.Path);
@@ -72,9 +72,7 @@ internal class AndroidStorageProvider : IStorageProvider
             }
             return null;
         }
-    
-        // Handle content:// URI using ContentResolver
-        if (filePath.Scheme == "content" && _activity.ContentResolver is not null)
+        else if (filePath.Scheme == "content" && _activity.ContentResolver is not null)
         {
             try
             {
@@ -111,10 +109,43 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        var javaFile = new JavaFile(androidUriPath);
-        if (javaFile.Exists() && javaFile.IsDirectory)
+        if (folderPath.Scheme == "file" && androidUri.Path is not null)
         {
-            return new BclStorageFolder(new System.IO.DirectoryInfo(javaFile.AbsolutePath));
+            var javaFile = new JavaFile(androidUri.Path);
+            if (javaFile.Exists() && javaFile.IsDirectory)
+            {
+                return new BclStorageFolder(new System.IO.DirectoryInfo(javaFile.AbsolutePath));
+            }
+            return null;
+        }
+        else if (folderPath.Scheme == "content")
+        {
+            try
+            {
+                if (OperatingSystem.IsAndroidVersionAtLeast(21))
+                {
+                    if (DocumentsContract.IsTreeUri(androidUri))
+                    {
+                        var docId = DocumentsContract.GetTreeDocumentId(androidUri);
+                        if (!string.IsNullOrEmpty(docId))
+                        {
+                            return new AndroidStorageFolder(_activity, androidUri, false);
+                        }
+                    }
+                    else
+                    {
+                        var documentFile = DocumentFile.FromSingleUri(_activity, androidUri);
+                        if (documentFile is not null && documentFile.Exists() && documentFile.IsDirectory)
+                        {
+                            return new AndroidStorageFolder(_activity, androidUri, false);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         return null;

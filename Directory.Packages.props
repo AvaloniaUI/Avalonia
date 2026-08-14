@@ -69,6 +69,7 @@
     <PackageVersion Include="Tmds.DBus.Generator" Version="0.94.1" />
     <PackageVersion Include="Xamarin.AndroidX.AppCompat" Version="1.7.1.3" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.2" />
+    <PackageVersion Include="Xamarin.AndroidX.DocumentFile" Version="1.1.0.3" />
     <PackageVersion Include="Xamarin.AndroidX.Window" Version="1.5.1.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="Xunit.StaFact" Version="3.0.13" />
