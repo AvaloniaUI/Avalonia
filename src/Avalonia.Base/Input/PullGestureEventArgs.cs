@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Input
@@ -12,8 +11,8 @@ namespace Avalonia.Input
         private static int _nextId = 1;
 
         internal static int GetNextFreeId() => _nextId++;
-        
-        public PullGestureEventArgs(int id, Vector delta, PullDirection pullDirection) : base(Gestures.PullGestureEvent)
+
+        public PullGestureEventArgs(int id, Vector delta, PullDirection pullDirection) : base(InputElement.PullGestureEvent)
         {
             Id = id;
             Delta = delta;
@@ -26,7 +25,7 @@ namespace Avalonia.Input
         public int Id { get; }
         public PullDirection PullDirection { get; }
 
-        public PullGestureEndedEventArgs(int id, PullDirection pullDirection) : base(Gestures.PullGestureEndedEvent)
+        public PullGestureEndedEventArgs(int id, PullDirection pullDirection) : base(InputElement.PullGestureEndedEvent)
         {
             Id = id;
             PullDirection = pullDirection;

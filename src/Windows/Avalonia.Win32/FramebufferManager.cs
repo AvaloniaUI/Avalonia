@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Internal;
 using Avalonia.Win32.Interop;

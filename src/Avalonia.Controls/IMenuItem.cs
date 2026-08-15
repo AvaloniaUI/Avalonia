@@ -1,15 +1,11 @@
-﻿using Avalonia.Metadata;
-
-namespace Avalonia.Controls
+﻿namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a <see cref="MenuItem"/>.
     /// </summary>
     internal interface IMenuItem : IMenuElement
     {
-        /// <summary>
-        /// Gets or sets a value that indicates whether the item has a submenu.
-        /// </summary>
+        /// <inheritdoc cref="MenuItem.HasSubMenu"/>
         bool HasSubMenu { get; }
 
         /// <summary>
@@ -17,21 +13,13 @@ namespace Avalonia.Controls
         /// </summary>
         bool IsPointerOverSubMenu { get; }
 
-        /// <summary>
-        /// Gets or sets a value that indicates whether the submenu of the <see cref="MenuItem"/> is
-        /// open.
-        /// </summary>
+        /// <inheritdoc cref="MenuItem.IsSubMenuOpen"/>
         bool IsSubMenuOpen { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value that indicates the submenu that this <see cref="MenuItem"/> is
-        /// within should not close when this item is clicked.
-        /// </summary>
+        /// <inheritdoc cref="MenuItem.StaysOpenOnClick"/>
         bool StaysOpenOnClick { get; set; }
 
-        /// <summary>
-        /// Gets a value that indicates whether the <see cref="MenuItem"/> is a top-level main menu item.
-        /// </summary>
+        /// <inheritdoc cref="MenuItem.IsTopLevel"/>
         bool IsTopLevel { get; }
 
         /// <summary>
@@ -39,22 +27,15 @@ namespace Avalonia.Controls
         /// </summary>
         IMenuElement? Parent { get; }
 
-        /// <summary>
-        /// Gets toggle type of the menu item.
-        /// </summary>
+        /// <inheritdoc cref="MenuItem.ToggleType"/>
         MenuItemToggleType ToggleType { get; }
-        
-        /// <summary>
-        /// Gets menu item group name when <see cref="ToggleType"/> is <see cref="MenuItemToggleType.Radio"/>.
-        /// </summary>
+
+        /// <inheritdoc cref="MenuItem.GroupName"/>
         string? GroupName { get; }
-        
-        /// <summary>
-        /// Gets or sets if menu item is checked when <see cref="ToggleType"/> is
-        /// <see cref="MenuItemToggleType.CheckBox"/> or <see cref="MenuItemToggleType.Radio"/>.
-        /// </summary>
+
+        /// <inheritdoc cref="MenuItem.IsChecked"/>
         bool IsChecked { get; set; }
-        
+
         /// <summary>
         /// Raises a click event on the menu item.
         /// </summary>

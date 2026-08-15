@@ -1,0 +1,191 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.LAvenirAppPage">
+
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="LAvenirBg" Color="#f6f6f8"/>
+    <SolidColorBrush x:Key="LAvenirDark" Color="#131022"/>
+    <SolidColorBrush x:Key="LAvenirSurface" Color="#1a1836"/>
+    <SolidColorBrush x:Key="LAvenirPrimary" Color="#4b2bee"/>
+    <SolidColorBrush x:Key="LAvenirMuted" Color="#94a3b8"/>
+    <SolidColorBrush x:Key="LAvenirBorder" Color="#2d2b4a"/>
+  </UserControl.Resources>
+
+  <DockPanel>
+    <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="300">
+      <StackPanel Margin="16" Spacing="16">
+
+        <TextBlock Text="L'Avenir Restaurant" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="DrawerPage flyout menu, TabbedPage bottom tabs, and NavigationPage push for dish detail." />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="A restaurant app showcasing DrawerPage + NavigationPage + TabbedPage working together. Flyout drawer provides navigation, TabbedPage has bottom tabs (Menu, Reservations, Profile), and dish detail pushes via NavigationPage." />
+
+        <Separator />
+
+        <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. DrawerPage is the root container" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. Detail = NavigationPage with TabbedPage" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. Hamburger icon opens the drawer" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="4. Tap menu item card → push dish detail" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="5. Drawer items close drawer + pop to root" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="Key Code" FontSize="13" FontWeight="SemiBold" />
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8">
+          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     FontSize="10" TextWrapping="Wrap"
+                     Text="// DrawerPage + NavigationPage&#xA;drawerPage.Detail = navPage;&#xA;&#xA;// Push TabbedPage as root&#xA;navPage.Push(tabbedPage);&#xA;&#xA;// Tap dish → push detail&#xA;navPage.Push(detailPage);&#xA;&#xA;// Drawer → close + pop&#xA;drawerPage.IsOpen = false;&#xA;navPage.PopToRootAsync();" />
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+      <DrawerPage x:Name="DrawerPageControl"
+                   Background="{StaticResource LAvenirBg}"
+                   DrawerBackground="{StaticResource LAvenirDark}"
+                   DrawerLength="260">
+        <DrawerPage.Resources>
+          <SolidColorBrush x:Key="NavigationControlNavBarBackground" Color="#f6f6f8"/>
+        </DrawerPage.Resources>
+        <DrawerPage.DrawerHeader>
+          <StackPanel Background="{StaticResource LAvenirDark}" Spacing="12" Margin="0,0,0,8">
+            <TextBlock Text="L'AVENIR"
+                       Foreground="{StaticResource LAvenirPrimary}"
+                       FontSize="22" FontWeight="Black"
+                       Margin="20,20,20,0" />
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="20,0,20,8">
+              <Border Width="44" Height="44" CornerRadius="22"
+                      ClipToBounds="True">
+                <Border.Background>
+                  <ImageBrush Source="avares://ControlCatalog/Assets/Restaurant/user_avatar.jpg"
+                              Stretch="UniformToFill"/>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="Alexander Koch" FontSize="15" FontWeight="SemiBold" Foreground="White"/>
+                <TextBlock Text="Good Evening" FontSize="11" Foreground="{StaticResource LAvenirMuted}"/>
+              </StackPanel>
+            </StackPanel>
+          </StackPanel>
+        </DrawerPage.DrawerHeader>
+        <DrawerPage.Drawer>
+          <ContentPage Background="Transparent">
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                <Border Height="1" Background="{StaticResource LAvenirBorder}" Margin="16,0"/>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="Settings" Margin="8,8,8,0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="{StaticResource LAvenirMuted}"
+                              Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+                    <TextBlock Text="Account Settings" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+
+              <StackPanel Spacing="2" Margin="8,4">
+                <Button Classes="drawerItem drawerItemSelected" Click="OnMenuItemClick" Tag="Home" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
+                    <TextBlock Text="Home" FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="Reservations" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
+                    <TextBlock Text="My Reservations" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="Favorites" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
+                    <TextBlock Text="Favorite Dishes" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="Offers" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+                    <TextBlock Text="Special Offers" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="GiftCards" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 00-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 12 7.4l3.38 4.6L17 10.83 14.92 8H20v6z"/>
+                    <TextBlock Text="Gift Cards" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+            </DockPanel>
+          </ContentPage>
+        </DrawerPage.Drawer>
+        <DrawerPage.DrawerFooter>
+          <StackPanel Background="{StaticResource LAvenirDark}" Spacing="4" Margin="0,8,0,0">
+            <Border Height="1" Background="{StaticResource LAvenirBorder}" Margin="16,0"/>
+            <Button Classes="drawerItem" Margin="8,4">
+              <StackPanel Orientation="Horizontal" Spacing="14">
+                <PathIcon Width="20" Height="20" Foreground="White"
+                          Data="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"/>
+                <TextBlock Text="Log Out" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
+            <TextBlock Text="v2.4.0  &#169; L'Avenir"
+                       FontSize="10" Foreground="#555555"
+                       Margin="20,0,20,12"/>
+          </StackPanel>
+        </DrawerPage.DrawerFooter>
+        <DrawerPage.Content>
+          <NavigationPage x:Name="NavPage"
+                          Background="{StaticResource LAvenirBg}"
+                          BarHeight="52">
+            <NavigationPage.Resources>
+              <SolidColorBrush x:Key="NavigationBarBackground" Color="#f6f6f8" />
+              <SolidColorBrush x:Key="NavigationBarForeground" Color="#1e293b" />
+            </NavigationPage.Resources>
+          </NavigationPage>
+        </DrawerPage.Content>
+      </DrawerPage>
+    </Border>
+  </DockPanel>
+
+  <UserControl.Styles>
+    <Style Selector="Button.drawerItem">
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="Padding" Value="16,10"/>
+      <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="Button.drawerItem /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.drawerItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#1AFFFFFF"/>
+    </Style>
+    <Style Selector="Button.drawerItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#33FFFFFF"/>
+    </Style>
+    <Style Selector="Button.drawerItemSelected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#4b2bee"/>
+    </Style>
+    <Style Selector="Button.drawerItemSelected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#3d22cc"/>
+    </Style>
+    <Style Selector="Button.drawerItemSelected:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#3518b0"/>
+    </Style>
+  </UserControl.Styles>
+</UserControl>

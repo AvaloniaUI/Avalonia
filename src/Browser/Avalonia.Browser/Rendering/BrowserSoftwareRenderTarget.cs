@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Reactive;
 #pragma warning disable CS0169
@@ -38,8 +38,9 @@ partial class BrowserSoftwareRenderTarget : BrowserRenderTarget, IFramebufferPla
             _fb = null;
         }
 
-        public ILockedFramebuffer Lock()
+        public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo sceneInfo, out FramebufferLockProperties properties)
         {
+            properties = default;
             var (size, scaling) = _parent._sizeGetter();
             _parent.UpdateSize(size);
             

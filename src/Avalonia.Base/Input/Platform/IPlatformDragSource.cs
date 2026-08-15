@@ -3,11 +3,11 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Input.Platform
 {
-    [NotClientImplementable]
+    [PrivateApi]
     public interface IPlatformDragSource
     {
         Task<DragDropEffects> DoDragDropAsync(
-            PointerEventArgs triggerEvent,
+            PointerPressedEventArgs triggerEvent,
             IDataTransfer dataTransfer,
             DragDropEffects allowedEffects);
     }

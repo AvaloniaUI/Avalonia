@@ -1,26 +1,53 @@
 ﻿using System;
+using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
     /// A controls that enables easy control over text selection using touch based input
     /// </summary>
+    [TemplatePart("PART_Indicator", typeof(Border))]
     public class TextSelectionHandle : Thumb
     {
-        internal SelectionHandleType SelectionHandleType { get; set; }
+        internal SelectionHandleType SelectionHandleType
+        {
+            get => field;
+            set
+            {
+                field = value;
+                UpdateHandleClasses();
+            }
+        }
 
-        private Point _startPosition;
+        internal bool IsRtl
+        {
+            get => field;
+            set
+            {
+                field = value;
+                UpdateHandleClasses();
+            }
+        }
 
-        internal Point IndicatorPosition => IsDragging ? _startPosition.WithX(_startPosition.X) + _delta : Bounds.Position.WithX(Bounds.Position.X).WithY(Bounds.Y);
+        internal Point IndicatorPosition
+        {
+            get
+            {
+                var topLeft = GetTopLeft();
+                return topLeft.WithX(topLeft.X + GetIndicatorOffset());
+            }
+        }
 
         internal bool IsDragging { get; private set; }
+        internal bool NeedsIndicatorUpdate { get; set; }
 
+        private Point _startPosition;
         private Vector _delta;
         private Point? _lastPoint;
-        private TranslateTransform? _transform;
+        private Border? _indicator;
+        private Point? _lastRequestedPosition;
 
         static TextSelectionHandle()
         {
@@ -29,29 +56,50 @@ namespace Avalonia.Controls.Primitives
             DragCompletedEvent.AddClassHandler<TextSelectionHandle>((x, e) => x.OnDragCompleted(e), RoutingStrategies.Bubble);
         }
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnAttachedToVisualTree(e);
+            base.OnApplyTemplate(e);
 
-            if (_transform == null)
+            if (_indicator != null)
             {
-                _transform = new TranslateTransform();
+                _indicator.LayoutUpdated -= Indicator_LayoutUpdated;
             }
 
-            RenderTransform = _transform;
+            _indicator = e.NameScope.Get<Border>("PART_Indicator");
+
+            if (_indicator != null)
+            {
+                _indicator.LayoutUpdated += Indicator_LayoutUpdated;
+            }
+
+            UpdateHandleClasses();
+        }
+
+        protected override void OnSizeChanged(SizeChangedEventArgs e)
+        {
+            base.OnSizeChanged(e);
+
+            if (_lastRequestedPosition.HasValue)
+            {
+                SetTopLeft(_lastRequestedPosition.Value);
+                _lastRequestedPosition = null;
+                NeedsIndicatorUpdate = false;
+            }
         }
 
         protected override void OnLoaded(RoutedEventArgs args)
         {
             base.OnLoaded(args);
 
-            InvalidateMeasure();
+            UpdateHandleClasses();
+
+            InvalidateVisual();
         }
         protected override void OnDragStarted(VectorEventArgs e)
         {
             base.OnDragStarted(e);
 
-            _startPosition = Bounds.Position;
+            _startPosition = GetTopLeft();
             _delta = default;
             IsDragging = true;
         }
@@ -59,52 +107,50 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDragDelta(VectorEventArgs e)
         {
             base.OnDragDelta(e);
+            var newDelta = e.Vector;
 
-            _delta = e.Vector;
-            UpdateTextSelectionHandlePosition();
+            if (!e.Handled && Math.Abs((newDelta - _delta).Length) > 0)
+            {
+                _delta = newDelta;
+                var point = _startPosition + _delta;
+                Canvas.SetTop(this, point.Y);
+                Canvas.SetLeft(this, point.X);
+            }
         }
 
         protected override void OnDragCompleted(VectorEventArgs e)
         {
-            base.OnDragCompleted(e);
             IsDragging = false;
-
             _startPosition = default;
-        }
+            base.OnDragCompleted(e);
 
-        private void UpdateTextSelectionHandlePosition()
-        {
-            SetTopLeft(IndicatorPosition);
         }
 
         protected override void ArrangeCore(Rect finalRect)
         {
-            base.ArrangeCore(finalRect);
+            UpdateHandleClasses();
 
-            if (_transform != null)
+            base.ArrangeCore(finalRect);
+        }
+
+        private void Indicator_LayoutUpdated(object? sender, EventArgs e)
+        {
+            if (NeedsIndicatorUpdate && _lastRequestedPosition is not null)
             {
-                if (SelectionHandleType == SelectionHandleType.Caret)
-                {
-                    HasMirrorTransform = true;
-                    _transform.X = Bounds.Width / 2 * -1;
-                }
-                else if (SelectionHandleType == SelectionHandleType.Start)
-                {
-                    HasMirrorTransform = true;
-                    _transform.X = Bounds.Width * -1;
-                }
-                else
-                {
-                    HasMirrorTransform = false;
-                    _transform.X = 0;
-                }
+                SetTopLeft(_lastRequestedPosition.Value);
+
+                NeedsIndicatorUpdate = !(_indicator?.IsArrangeValid ?? true);
             }
         }
 
         internal void SetTopLeft(Point point)
         {
+            if (_indicator == null || NeedsIndicatorUpdate)
+            {
+                _lastRequestedPosition = point;
+            }
             Canvas.SetTop(this, point.Y);
-            Canvas.SetLeft(this, point.X);
+            Canvas.SetLeft(this, point.X - GetIndicatorOffset());
         }
 
         internal Point GetTopLeft()
@@ -134,6 +180,9 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
+            if (e.Pointer.Captured != this)
+                return;
+
             VectorEventArgs ev;
 
             if (!_lastPoint.HasValue)
@@ -163,8 +212,9 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            e.Handled = true;
             PseudoClasses.Add(":pressed");
+            e.Pointer.Capture(this);
+            var point = e.GetPosition(this);
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -184,6 +234,34 @@ namespace Avalonia.Controls.Primitives
             }
 
             PseudoClasses.Remove(":pressed");
+            e.Pointer.Capture(null);
+        }
+
+        internal double GetIndicatorOffset()
+        {
+            return _indicator?.Bounds.Center.X ?? SelectionHandleType switch
+            {
+                SelectionHandleType.Caret => Bounds.Width / 2,
+                SelectionHandleType.Start => IsRtl ? 0 : Bounds.Width,
+                SelectionHandleType.End => IsRtl ? Bounds.Width : 0,
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        private void UpdateHandleClasses()
+        {
+            PseudoClasses.Remove(":caret");
+            PseudoClasses.Remove(":start");
+            PseudoClasses.Remove(":end");
+
+            PseudoClasses.Add(":" + (SelectionHandleType switch
+            {
+                SelectionHandleType.Caret => "caret",
+                SelectionHandleType.Start => IsRtl ? "end" : "start",
+                SelectionHandleType.End => IsRtl ? "start" : "end",
+                _ => throw new NotImplementedException(),
+            }));
+            InvalidateVisual();
         }
     }
 }

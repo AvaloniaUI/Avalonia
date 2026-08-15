@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages;
 
-public partial class DataValidationPage : UserControl
+public partial class DataValidationPage : ContentPage
 {
     public DataValidationPage()
     {

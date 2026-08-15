@@ -18,12 +18,12 @@ internal interface IRadioButton : ILogical
 internal class RadioButtonGroupManager
 {
     private static readonly RadioButtonGroupManager s_default = new();
-    private static readonly ConditionalWeakTable<IRenderRoot, RadioButtonGroupManager> s_registeredVisualRoots = new();
+    private static readonly ConditionalWeakTable<object, RadioButtonGroupManager> s_registeredVisualRoots = new();
 
     private readonly Dictionary<string, List<WeakReference<IRadioButton>>> _registeredGroups = new();
     private bool _ignoreCheckedChanges;
 
-    public static RadioButtonGroupManager GetOrCreateForRoot(IRenderRoot? root)
+    public static RadioButtonGroupManager GetOrCreateForRoot(object? root)
     {
         if (root == null)
             return s_default;
@@ -39,6 +39,23 @@ internal class RadioButtonGroupManager
             {
                 group = new List<WeakReference<IRadioButton>>();
                 _registeredGroups.Add(groupName, group);
+            }
+
+            int i = 0;
+            while (i < group.Count)
+            {
+                if (!group[i].TryGetTarget(out var current))
+                {
+                    group.RemoveAt(i);
+                    continue;
+                }
+
+                if (current == radioButton)
+                {
+                    return;
+                }
+
+                i++;
             }
 
             group.Add(new WeakReference<IRadioButton>(radioButton));

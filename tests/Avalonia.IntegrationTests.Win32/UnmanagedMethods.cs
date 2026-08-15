@@ -13,6 +13,9 @@ internal static partial class UnmanagedMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
 
+    [LibraryImport("user32.dll")]
+    public static partial int GetSystemMetrics(int nIndex);
+
     public struct RECT
     {
         public int left;
@@ -20,4 +23,6 @@ internal static partial class UnmanagedMethods
         public int right;
         public int bottom;
     }
+
+    public const int SM_CMONITORS = 80;
 }

@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ContentPageFirstLookPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock Text="ContentPage is the fundamental page type. It hosts a single piece of content and integrates with NavigationPage, TabbedPage, and CarouselPage. The Header property sets the navigation bar title."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+
+        <Separator />
+
+        <TextBlock Text="Navigation" FontWeight="SemiBold" />
+        <Button Content="Push Page" HorizontalAlignment="Stretch" Click="OnPush" />
+        <Button Content="Pop Page" HorizontalAlignment="Stretch" Click="OnPop" />
+        <Button Content="Pop to Root" HorizontalAlignment="Stretch" Click="OnPopToRoot" />
+
+        <Separator />
+
+        <TextBlock Text="Key Properties" FontWeight="SemiBold" />
+        <TextBlock Text="• Header: nav bar title (string or Control)" FontSize="12" Opacity="0.8" TextWrapping="Wrap" />
+        <TextBlock Text="• Content: any Avalonia control" FontSize="12" Opacity="0.8" TextWrapping="Wrap" />
+        <TextBlock Text="• Background: page background brush" FontSize="12" Opacity="0.8" TextWrapping="Wrap" />
+        <TextBlock Text="• HorizontalContentAlignment" FontSize="12" Opacity="0.8" />
+        <TextBlock Text="• VerticalContentAlignment" FontSize="12" Opacity="0.8" />
+        <TextBlock Text="• AutomaticallyApplySafeAreaPadding" FontSize="12" Opacity="0.8" />
+
+        <Separator />
+
+        <TextBlock x:Name="StatusText"
+                   Text="Depth: 1 | Current: Root Page"
+                   FontSize="11"
+                   Opacity="0.7" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>

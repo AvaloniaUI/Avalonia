@@ -193,7 +193,7 @@ internal class ServerCompositionVisualCache
         // Render to layer if needed
         if (!_dirtyRectTracker.IsEmpty)
         {
-            using var ctx = _layer.CreateDrawingContext(false);
+            using var ctx = _layer.CreateDrawingContext();
             using (_needsFullReRender ? null : _dirtyRectTracker.BeginDraw(ctx))
             {
                 ctx.Clear(Colors.Transparent);

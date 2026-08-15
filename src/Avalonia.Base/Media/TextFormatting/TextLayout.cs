@@ -14,6 +14,7 @@ namespace Avalonia.Media.TextFormatting
         private readonly TextTrimming _textTrimming;
         private readonly TextLine[] _textLines;
         private readonly CachedMetrics _metrics = new();
+        private readonly TextRunCache? _textRunCache;
 
         private int _textSourceLength;
 
@@ -36,6 +37,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="maxLines">The maximum number of text lines.</param>
         /// <param name="fontFeatures">Optional list of turned on/off features.</param>
         /// <param name="textStyleOverrides">The text style overrides.</param>
+        /// <param name="textRunCache">An optional cache for shaped text runs to avoid redundant shaping.</param>
         public TextLayout(
             string? text,
             Typeface typeface,
@@ -52,7 +54,8 @@ namespace Avalonia.Media.TextFormatting
             double letterSpacing = 0,
             int maxLines = 0,
             FontFeatureCollection? fontFeatures = null,
-            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null)
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null,
+            TextRunCache? textRunCache = null)
         {
             _paragraphProperties =
                 CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
@@ -68,7 +71,38 @@ namespace Avalonia.Media.TextFormatting
 
             MaxLines = maxLines;
 
+            _textRunCache = textRunCache;
+
             _textLines = CreateTextLines();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextLayout" /> class.
+        /// </summary>
+        /// <remarks>
+        /// This overload is provided for binary compatibility. New code should use the overload that accepts a <see cref="TextRunCache"/>.
+        /// </remarks>
+        public TextLayout(
+            string? text,
+            Typeface typeface,
+            double fontSize,
+            IBrush? foreground,
+            TextAlignment textAlignment,
+            TextWrapping textWrapping,
+            TextTrimming? textTrimming,
+            TextDecorationCollection? textDecorations,
+            FlowDirection flowDirection,
+            double maxWidth,
+            double maxHeight,
+            double lineHeight,
+            double letterSpacing,
+            int maxLines,
+            FontFeatureCollection? fontFeatures,
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides)
+            : this(text, typeface, fontSize, foreground, textAlignment, textWrapping, textTrimming,
+                textDecorations, flowDirection, maxWidth, maxHeight, lineHeight, letterSpacing,
+                maxLines, fontFeatures, textStyleOverrides, null)
+        {
         }
 
         /// <summary>
@@ -80,13 +114,15 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <param name="maxLines">The maximum number of text lines.</param>
+        /// <param name="textRunCache">An optional cache for shaped text runs to avoid redundant shaping.</param>
         public TextLayout(
             ITextSource textSource,
             TextParagraphProperties paragraphProperties,
             TextTrimming? textTrimming = null,
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
-            int maxLines = 0)
+            int maxLines = 0,
+            TextRunCache? textRunCache = null)
         {
             _textSource = textSource;
 
@@ -100,7 +136,26 @@ namespace Avalonia.Media.TextFormatting
 
             MaxLines = maxLines;
 
+            _textRunCache = textRunCache;
+
             _textLines = CreateTextLines();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextLayout" /> class.
+        /// </summary>
+        /// <remarks>
+        /// This overload is provided for binary compatibility. New code should use the overload that accepts a <see cref="TextRunCache"/>.
+        /// </remarks>
+        public TextLayout(
+            ITextSource textSource,
+            TextParagraphProperties paragraphProperties,
+            TextTrimming? textTrimming,
+            double maxWidth,
+            double maxHeight,
+            int maxLines)
+            : this(textSource, paragraphProperties, textTrimming, maxWidth, maxHeight, maxLines, null)
+        {
         }
 
         /// <summary>
@@ -527,7 +582,7 @@ namespace Avalonia.Media.TextFormatting
                 while (true)
                 {
                     var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth,
-                        _paragraphProperties, previousLine?.TextLineBreak) as TextLineImpl;
+                        _paragraphProperties, previousLine?.TextLineBreak, _textRunCache) as TextLineImpl;
 
                     if (textLine is null)
                     {
@@ -548,7 +603,7 @@ namespace Avalonia.Media.TextFormatting
 
                     //Fulfill max height constraint
                     if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight)
-                        && Height + textLine.Height > MaxHeight)
+                        && MathUtilities.GreaterThan(Height + textLine.Height, MaxHeight))
                     {
                         if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
                         {
@@ -602,20 +657,32 @@ namespace Avalonia.Media.TextFormatting
 
                 if (_paragraphProperties.TextAlignment == TextAlignment.Justify)
                 {
+                    // Justify fills each line to the column width, which is MaxWidth for both
+                    // wrapped and non-wrapped text. Targeting the widest produced line instead
+                    // (the previous behaviour for wrapping) leaves wrapped text short of the
+                    // margin, since the full non-last lines already equal that width. When
+                    // MaxWidth is infinite there is no column to fill, so skip.
                     var justificationWidth = MaxWidth;
 
-                    if (_paragraphProperties.TextWrapping != TextWrapping.NoWrap)
-                    {
-                        justificationWidth = WidthIncludingTrailingWhitespace;
-                    }
-
-                    if (justificationWidth > 0)
+                    if (!double.IsInfinity(justificationWidth) && justificationWidth > 0)
                     {
                         var justificationProperties = new InterWordJustification(justificationWidth);
 
                         for (var i = 0; i < textLines.Count; i++)
                         {
                             var line = textLines[i];
+
+                            // Only width-driven wrapped lines are stretched to the column. Skip
+                            // the last line of the layout, any line ended by a newline
+                            // (NewLineLength > 0), and any line ended by a source-provided required
+                            // break (TextEndOfLine) - these stay start-aligned per standard
+                            // typographic convention.
+                            if (i == textLines.Count - 1
+                                || line.NewLineLength > 0
+                                || line.TextLineBreak?.TextEndOfLine != null)
+                            {
+                                continue;
+                            }
 
                             line.Justify(justificationProperties);
                         }
@@ -627,7 +694,6 @@ namespace Avalonia.Media.TextFormatting
             finally
             {
                 objectPool.TextLines.Return(ref textLines);
-                objectPool.VerifyAllReturned();
             }
         }
 

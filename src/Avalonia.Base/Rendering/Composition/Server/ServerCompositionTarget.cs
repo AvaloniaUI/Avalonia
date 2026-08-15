@@ -4,10 +4,12 @@ using System.Diagnostics;
 using System.Threading;
 using Avalonia.Collections.Pooled;
 using Avalonia.Diagnostics;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
 
@@ -20,7 +22,7 @@ namespace Avalonia.Rendering.Composition.Server
     internal partial class ServerCompositionTarget : IDisposable
     {
         private readonly ServerCompositor _compositor;
-        private readonly Func<IEnumerable<object>> _surfaces;
+        private readonly Func<IEnumerable<IPlatformRenderSurface>> _surfaces;
         private CompositionTargetOverlays _overlays;
         private static long s_nextId = 1;
         private IRenderTarget? _renderTarget;
@@ -39,16 +41,28 @@ namespace Avalonia.Rendering.Composition.Server
         public int RenderedVisuals { get; set; }
         public int VisitedVisuals { get; set; }
 
-        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces,
-            DiagnosticTextRenderer? diagnosticTextRenderer)
+        internal PixelSize PixelSize => Avalonia.PixelSize.FromSizeCeiling(Size, Scaling);
+        
+        /// <summary>
+        /// Returns true if the target is enabled and has pending work but its render target was not ready.
+        /// </summary>
+        internal bool IsWaitingForReadyRenderTarget { get; private set; }
+        
+        /// <summary>
+        /// Returns true if the target's render target is waiting for a render loop wakeup
+        /// (i.e. the platform will call Wakeup() when ready, no need to keep polling).
+        /// </summary>
+        internal bool IsWaitingForRenderLoopWakeup { get; private set; }
+
+        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<IPlatformRenderSurface>> surfaces)
             : base(compositor)
         {
             _compositor = compositor;
             _surfaces = surfaces;
-            _overlays = new CompositionTargetOverlays(this, diagnosticTextRenderer);
+            _overlays = new CompositionTargetOverlays(this);
             var platformRender = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
-            if (platformRender?.SupportsRegions == true && compositor.Options.UseRegionDirtyRectClipping != false)
+            if (platformRender?.SupportsRegions == true && compositor.Options.UseRegionDirtyRectClipping == true)
             {
                 var maxRects = compositor.Options.MaxDirtyRects ?? 8;
                 DirtyRects = maxRects <= 0
@@ -125,13 +139,16 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void Render()
         {
+            IsWaitingForReadyRenderTarget = false;
+            IsWaitingForRenderLoopWakeup = false;
+            
             if (_disposed)
                 return;
 
             if (Root == null) 
                 return;
 
-            if (_renderTarget?.IsCorrupted == true)
+            if (_renderTarget?.PlatformRenderTargetState.IsCorrupted == true)
             {
                 _layer?.Dispose();
                 _layer = null;
@@ -142,10 +159,20 @@ namespace Avalonia.Rendering.Composition.Server
 
             try
             {
-                _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+                if (_renderTarget == null)
+                {
+                    if (!_compositor.IsReadyToCreateRenderTarget(_surfaces()))
+                    {
+                        IsWaitingForReadyRenderTarget = IsEnabled;
+                        return;
+                    }
+
+                    _renderTarget = _compositor.CreateRenderTarget(_surfaces());
+                }
             }
             catch (RenderTargetNotReadyException)
             {
+                IsWaitingForReadyRenderTarget = IsEnabled;
                 return;
             }
             catch (RenderTargetCorruptedException)
@@ -160,17 +187,37 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (!_redrawRequested)
                 return;
-
-            var renderTargetWithProperties = _renderTarget as IRenderTarget2;
-
             
+            if (!_renderTarget.PlatformRenderTargetState.IsReady)
+            {
+                IsWaitingForReadyRenderTarget = IsEnabled;
+                IsWaitingForRenderLoopWakeup = IsEnabled && _renderTarget.PlatformRenderTargetState.WillWakeUpRenderLoopWhenReady;
+                return;
+            }
+
             var needLayer = _overlays.RequireLayer // Check if we don't need overlays
                             // Check if render target can be rendered to directly and preserves the previous frame
-                            || !(renderTargetWithProperties?.Properties.RetainsPreviousFrameContents == true
-                                && renderTargetWithProperties?.Properties.IsSuitableForDirectRendering == true);
+                            || !(_renderTarget.Properties.RetainsPreviousFrameContents
+                                 && _renderTarget.Properties.IsSuitableForDirectRendering);
+
+            IDrawingContextImpl renderTargetContext;
+            RenderTargetDrawingContextProperties properties;
+            try
+            {
+                renderTargetContext =
+                    _renderTarget.CreateDrawingContext(new(PixelSize, Scaling, Size, TransparencyLevel), out properties);
+            }
+            catch (RenderTargetNotReadyException)
+            {
+                IsWaitingForReadyRenderTarget = IsEnabled;
+                return;
+            }
+            catch (RenderTargetCorruptedException)
+            {
+                return;
+            }
             
-            using (var renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(
-                       this.PixelSize, out var properties))
+            using (renderTargetContext)
             using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
             {
                 var fullRedraw = false;
@@ -207,7 +254,7 @@ namespace Avalonia.Rendering.Composition.Server
                     DirtyRects.FinalizeFrame(renderBounds);
                     if (_layer != null)
                     {
-                        using (var context = _layer.CreateDrawingContext(false))
+                        using (var context = _layer.CreateDrawingContext())
                             RenderRootToContextWithClip(context, Root);
 
                         renderTargetContext.Clear(Colors.Transparent);
@@ -266,18 +313,37 @@ namespace Avalonia.Rendering.Composition.Server
             if (_disposed)
                 return;
             _disposed = true;
-            using (_compositor.RenderInterface.EnsureCurrent())
-            {
-                if (_layer != null)
-                {
-                    _layer.Dispose();
-                    _layer = null;
-                }
-
-                _renderTarget?.Dispose();
-                _renderTarget = null;
-            }
+            ResetRenderTarget();
             _compositor.RemoveCompositionTarget(this);
+        }
+
+        public void ResetRenderTarget()
+        {
+            if (_layer == null && _renderTarget == null)
+                return;
+            try
+            {
+                using (_compositor.RenderInterface.EnsureCurrent())
+                {
+                    if (_layer != null)
+                    {
+                        _layer.Dispose();
+                        _layer = null;
+                    }
+                    _renderTarget?.Dispose();
+                    _renderTarget = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Unable to make the render interface current: {Error}", ex);
+                // Set to null for now
+                // TODO: Check per-platform to make sure that it's safe to dispose anyay
+                _layer = null;
+                _renderTarget = null;
+                
+            }
+
         }
 
         public void AddVisual(ServerCompositionVisual visual)
@@ -291,5 +357,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (_attachedVisuals.Remove(visual) && IsEnabled)
                 visual.Deactivate();
         }
+
+        public void RequestFullRedraw() => _redrawRequested = true;
     }
 }

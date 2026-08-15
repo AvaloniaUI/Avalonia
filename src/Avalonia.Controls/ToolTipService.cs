@@ -14,10 +14,11 @@ namespace Avalonia.Controls
         private readonly IDisposable _subscriptions;
 
         private Control? _tipControl;
+        private bool _pointerOverTip;
+        private bool _pointerOverOwner;
+        private int _pendingCloseId;
         private long _lastTipCloseTime;
         private DispatcherTimer? _timer;
-        private ulong _lastTipEventTime;
-        private ulong _lastWindowEventTime;
 
         public ToolTipService(IInputManager inputManager)
         {
@@ -30,6 +31,7 @@ namespace Avalonia.Controls
         public void Dispose()
         {
             StopTimer();
+            CancelPendingClose();
             _subscriptions.Dispose();
         }
 
@@ -37,15 +39,35 @@ namespace Avalonia.Controls
         {
             if (e is RawPointerEventArgs pointerEvent)
             {
-                bool isTooltipEvent = false;
-                if (_tipControl?.GetValue(ToolTip.ToolTipProperty) is { } currentTip && e.Root == currentTip.PopupHost)
+                var currentTip = _tipControl?.GetValue(ToolTip.ToolTipProperty);
+
+                // The input root of the tip itself, for popup windows only, not overlays.
+                var tipPopupInputRoot = (currentTip?.PopupHost as Visual)?.GetInputRoot() is { } root &&
+                                   root.RootElement != _tipControl?.VisualRoot ?
+                    root :
+                    null;
+
+                var isTipEvent = tipPopupInputRoot is not null && e.Root == tipPopupInputRoot;
+                var isTipOwnerWindowEvent = e.Root.RootElement == _tipControl?.VisualRoot;
+
+                if (isTipEvent || isTipOwnerWindowEvent)
                 {
-                    isTooltipEvent = true;
-                    _lastTipEventTime = pointerEvent.Timestamp;
-                }
-                else if (e.Root == _tipControl?.VisualRoot)
-                {
-                    _lastWindowEventTime = pointerEvent.Timestamp;
+                    // The pointer is on one of the two windows (tip or owner) involved: remember which one, and cancel any
+                    // close scheduled by a previous LeaveWindow on the other one.
+                    if (pointerEvent.Type != RawPointerEventType.LeaveWindow)
+                    {
+                        _pointerOverTip = isTipEvent;
+                        _pointerOverOwner = isTipOwnerWindowEvent;
+                        CancelPendingClose();
+                    }
+                    else if (isTipEvent)
+                    {
+                        _pointerOverTip = false;
+                    }
+                    else
+                    {
+                        _pointerOverOwner = false;
+                    }
                 }
 
                 switch (pointerEvent.Type)
@@ -53,10 +75,24 @@ namespace Avalonia.Controls
                     case RawPointerEventType.Move:
                         Update(pointerEvent.Root, pointerEvent.InputHitTestResult.element as Visual);
                         break;
-                    case RawPointerEventType.LeaveWindow when (e.Root == _tipControl?.VisualRoot && _lastTipEventTime != e.Timestamp) || (isTooltipEvent && _lastWindowEventTime != e.Timestamp):
-                        ClearTip();
-                        _tipControl = null;
+
+                    case RawPointerEventType.LeaveWindow:
+                        if ((isTipEvent && !_pointerOverOwner) || (isTipOwnerWindowEvent && !_pointerOverTip))
+                        {
+                            if (tipPopupInputRoot is not null)
+                            {
+                                // The pointer is leaving one of the two windows, but there's a chance it's going to
+                                // the other one. Schedule a close and cancel it if we receive another event.
+                                SchedulePendingClose();
+                            }
+                            else
+                            {
+                                CloseCurrentTip();
+                            }
+                        }
+
                         break;
+
                     case RawPointerEventType.LeftButtonDown:
                     case RawPointerEventType.RightButtonDown:
                     case RawPointerEventType.MiddleButtonDown:
@@ -70,6 +106,7 @@ namespace Avalonia.Controls
                 {
                     StopTimer();
                     _tipControl?.ClearValue(ToolTip.IsOpenProperty);
+                    _pointerOverTip = false;
                 }
             }
         }
@@ -78,7 +115,7 @@ namespace Avalonia.Controls
         {
             var currentToolTip = _tipControl?.GetValue(ToolTip.ToolTipProperty);
 
-            if (root == currentToolTip?.PopupHost?.HostedVisualTreeRoot)
+            if (root == currentToolTip?.PopupHost?.HostedVisualTreeRoot?.GetInputRoot())
             {
                 // Don't update while the pointer is over a tooltip
                 return;
@@ -110,6 +147,35 @@ namespace Avalonia.Controls
 
             OnTipControlChanged(_tipControl, newControl);
             _tipControl = newControl;
+            _pointerOverTip = false;
+            _pointerOverOwner = false;
+        }
+
+        private void SchedulePendingClose()
+        {
+            var control = _tipControl;
+            var closeId = ++_pendingCloseId;
+
+            // Post below input priority: any pointer event is processed before this callback and gets a chance to cancel it.
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    if (_pendingCloseId == closeId && _tipControl == control)
+                        CloseCurrentTip();
+                },
+                DispatcherPriority.Background);
+        }
+
+        private void CancelPendingClose()
+            => ++_pendingCloseId;
+
+        private void CloseCurrentTip()
+        {
+            StopTimer();
+            _tipControl?.ClearValue(ToolTip.IsOpenProperty);
+            _tipControl = null;
+            _pointerOverTip = false;
+            _pointerOverOwner = false;
         }
 
         private void ServiceEnabledChanged(AvaloniaPropertyChangedEventArgs<bool> args)

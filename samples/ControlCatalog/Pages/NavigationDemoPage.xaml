@@ -1,0 +1,14 @@
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="Navigation Page"
+             x:Class="ControlCatalog.Pages.NavigationDemoPage">
+  <Grid>
+    <NavigationPage x:Name="SampleNav">
+      <NavigationPage.Styles>
+        <Style Selector="NavigationPage#SampleNav /template/ Border#PART_NavigationBar">
+          <Setter Property="Background" Value="Transparent" />
+        </Style>
+      </NavigationPage.Styles>
+    </NavigationPage>
+</Grid>
+</ContentPage>

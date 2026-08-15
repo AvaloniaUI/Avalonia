@@ -13,19 +13,20 @@ public class XEmbedPlug : IDisposable
     private Color _backgroundColor;
     private readonly X11Info _x11;
     private readonly X11Window.XEmbedClientWindowMode _mode;
+    private readonly AvaloniaX11Platform _platform;
 
     private XEmbedPlug(IntPtr? parentXid)
     {
-        var platform = AvaloniaLocator.Current.GetRequiredService<AvaloniaX11Platform>();
+        _platform = AvaloniaLocator.Current.GetRequiredService<AvaloniaX11Platform>();
         _mode = new X11Window.XEmbedClientWindowMode();
-        _root = new EmbeddableControlRoot(new X11Window(platform, null, _mode));
+        _root = new EmbeddableControlRoot(new X11Window(_platform, null, _mode));
         _root.Prepare();
-        _x11 = platform.Info;
+        _x11 = _platform.Info;
         if (parentXid.HasValue)
-            XLib.XReparentWindow(platform.Display, Handle, parentXid.Value, 0, 0);
+            XLib.XReparentWindow(_platform.Display, Handle, parentXid.Value, 0, 0);
         
         // Make sure that the newly created XID is visible for other clients
-        XLib.XSync(platform.Display, false);
+        XLib.XSync(_platform.Display, false);
     }
 
     private EmbeddableControlRoot Root
@@ -60,8 +61,7 @@ public class XEmbedPlug : IDisposable
 
     public void ProcessInteractiveResize(PixelSize size)
     {
-        
-        var events = (IX11PlatformDispatcher)AvaloniaLocator.Current.GetRequiredService<IDispatcherImpl>();
+        var events = _platform.DispatcherImpl;
         events.EventDispatcher.DispatchX11Events(CancellationToken.None);
         _mode.ProcessInteractiveResize(size);
         Dispatcher.UIThread.RunJobs(DispatcherPriority.UiThreadRender);

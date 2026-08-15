@@ -1,5 +1,6 @@
-<UserControl x:Class="ControlCatalog.Pages.TextBlockPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.TextBlockPage"
              xmlns="https://github.com/avaloniaui"
+             Header="TextBlock"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StackPanel>
     <TextBlock Classes="h2">A control that can display text</TextBlock>
@@ -118,15 +119,20 @@
         </StackPanel>
       </Border>
       <Border>
-        <SelectableTextBlock Margin="10" TextWrapping="Wrap">
-          This <Span FontWeight="Bold">is</Span> a
-          <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
-          with <Span TextDecorations="Underline">several</Span>
-          <Span FontStyle="Italic">Span</Span> elements,
-          <Span Foreground="Blue">
-            using a <Bold>variety</Bold> of <Italic>styles</Italic>
-          </Span>.
-        </SelectableTextBlock>
+        <StackPanel Spacing="8">
+          <SelectableTextBlock Margin="10" TextWrapping="Wrap">
+            This <Span FontWeight="Bold">is</Span> a
+            <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
+            with <Span TextDecorations="Underline">several</Span>
+            <Span FontStyle="Italic">Span</Span> elements,
+            <Span Foreground="Blue">
+              using a <Bold>variety</Bold> of <Italic>styles</Italic>
+            </Span>.
+          </SelectableTextBlock>
+          <SelectableTextBlock Text="Left aligned text" TextAlignment="Left" />
+          <SelectableTextBlock Text="Center aligned text" TextAlignment="Center" />
+          <SelectableTextBlock Text="Right aligned text and wrap text" TextAlignment="Right" TextWrapping="Wrap" />
+        </StackPanel>
       </Border>
       <Border>
         <TextBlock FontFamily="Times New Roman">
@@ -137,4 +143,4 @@
       </Border>
     </WrapPanel>
   </StackPanel>
-</UserControl>
+</ContentPage>

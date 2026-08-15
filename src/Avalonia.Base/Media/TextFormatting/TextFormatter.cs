@@ -42,6 +42,27 @@
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null);
 
         /// <summary>
+        /// Formats a text line with an optional <see cref="TextRunCache"/> to avoid redundant shaping
+        /// when only the paragraph width changes.
+        /// </summary>
+        /// <param name="textSource">The text source.</param>
+        /// <param name="firstTextSourceIndex">The first character index to start the text line from.</param>
+        /// <param name="paragraphWidth">A <see cref="double"/> value that specifies the width of the paragraph that the line fills.</param>
+        /// <param name="paragraphProperties">A <see cref="TextParagraphProperties"/> value that represents paragraph properties,
+        /// such as TextWrapping, TextAlignment, or TextStyle.</param>
+        /// <param name="previousLineBreak">A <see cref="TextLineBreak"/> value that specifies the text formatter state,
+        /// in terms of where the previous line in the paragraph was broken by the text formatting process.</param>
+        /// <param name="textRunCache">A <see cref="TextRunCache"/> that caches shaped text runs.</param>
+        /// <returns>The formatted line.</returns>
+        public virtual TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
+            TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak,
+            TextRunCache? textRunCache)
+        {
+            return FormatLine(textSource, firstTextSourceIndex, paragraphWidth,
+                paragraphProperties, previousLineBreak);
+        }
+
+        /// <summary>
         /// Creates a shaped symbol.
         /// </summary>
         /// <param name="textRun">The symbol run to shape.</param>

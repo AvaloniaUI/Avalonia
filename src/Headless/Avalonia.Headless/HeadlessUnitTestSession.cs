@@ -16,7 +16,7 @@ namespace Avalonia.Headless;
 /// <summary>
 /// Headless unit test session that needs to be used by the actual testing framework.
 /// All UI tests are supposed to be executed from one of the <see cref="Dispatch"/> methods to keep execution flow on the UI thread.
-/// Disposing unit test session stops internal dispatcher loop. 
+/// Disposing unit test session stops internal dispatcher loop.
 /// </summary>
 public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 {
@@ -54,19 +54,19 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
         {
             action();
             return Task.FromResult(0);
-        }, false ,cancellationToken);
+        }, true ,cancellationToken);
     }
 
     /// <inheritdoc cref="DispatchCore{TResult}"/>
     public Task<TResult> Dispatch<TResult>(Func<TResult> action, CancellationToken cancellationToken)
     {
-        return DispatchCore(() => Task.FromResult(action()), false, cancellationToken);
+        return DispatchCore(() => Task.FromResult(action()), true, cancellationToken);
     }
 
     /// <inheritdoc cref="DispatchCore{TResult}"/>
     public Task<TResult> Dispatch<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken)
     {
-        return DispatchCore(action, false, cancellationToken);
+        return DispatchCore(action, true, cancellationToken);
     }
 
     /// <summary>
@@ -96,11 +96,25 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
             using var globalCts = token.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
             using var localCts = cancellationToken.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
 
+            IDisposable application = null!;
             try
             {
-                using var application = _isolated
+                application = _isolated
                     ? EnsureIsolatedApplication()
                     : EnsureSharedApplication();
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+                return; // Exit the dispatcher action if application initialization fails
+            }
+
+            bool shouldCancel = false;
+            Exception? caught = null;
+            TResult result = default!;
+
+            try
+            {
                 var task = action();
                 if (task.Status != TaskStatus.RanToCompletion)
                 {
@@ -110,22 +124,45 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 
                     if (cts.IsCancellationRequested)
                     {
-                        tcs.TrySetCanceled(cts.Token);
-                        return;
+                        shouldCancel = true;
                     }
-
-                    var frame = new DispatcherFrame();
-                    using var innerCts = cts.Token.Register(() => frame.Continue = false, true);
-                    Dispatcher.UIThread.PushFrame(frame);
+                    else
+                    {
+                        var frame = new DispatcherFrame();
+                        using var innerCts = cts.Token.Register(() => frame.Continue = false, true);
+                        Dispatcher.UIThread.PushFrame(frame);
+                        result = task.GetAwaiter().GetResult();
+                    }
                 }
-
-                var result = task.GetAwaiter().GetResult();
-                tcs.TrySetResult(result);
+                else
+                {
+                    result = task.GetAwaiter().GetResult();
+                }
             }
             catch (Exception ex)
             {
-                tcs.TrySetException(ex);
+                caught = ex;
             }
+            finally
+            {
+                try
+                {
+                    application.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    // Cleanup runs before the TCS is completed, so its failure must be
+                    // reported by this work item instead of escaping the consumer loop.
+                    caught = ex;
+                }
+            }
+
+            if (caught != null)
+                tcs.TrySetException(caught);
+            else if (shouldCancel)
+                tcs.TrySetCanceled(cts.Token);
+            else
+                tcs.TrySetResult(result);
         }, executionContext));
         return tcs.Task;
     }
@@ -145,8 +182,14 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 
         return Disposable.Create(() =>
         {
-            Dispatcher.UIThread.RunJobs();
-            SynchronizationContext.SetSynchronizationContext(oldContext);
+            try
+            {
+                Dispatcher.UIThread.RunJobs();
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(oldContext);
+            }
         });
     }
 
@@ -167,12 +210,25 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 
         return Disposable.Create(() =>
         {
-            ((ToolTipService?)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
-            (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
-            Dispatcher.ResetForUnitTests();
-            scope.Dispose();
-            Dispatcher.ResetBeforeUnitTests();
-            SynchronizationContext.SetSynchronizationContext(oldContext);
+            try
+            {
+                ((ToolTipService?)AvaloniaLocator.Current.GetService<IToolTipService>())?.Dispose();
+                (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
+                Dispatcher.ResetForUnitTests();
+            }
+            finally
+            {
+                // Cleanup jobs can throw, but the ambient state still belongs to this dispatch.
+                try
+                {
+                    scope.Dispose();
+                }
+                finally
+                {
+                    Dispatcher.ResetBeforeUnitTests();
+                    SynchronizationContext.SetSynchronizationContext(oldContext);
+                }
+            }
         });
     }
 
@@ -193,7 +249,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
+    /// Creates instance of <see cref="HeadlessUnitTestSession"/>.
     /// </summary>
     /// <param name="entryPointType">
     /// Parameter from which <see cref="AppBuilder"/> should be created.
@@ -209,7 +265,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
+    /// Creates instance of <see cref="HeadlessUnitTestSession"/>.
     /// </summary>
     /// <param name="entryPointType">
     /// Parameter from which <see cref="AppBuilder"/> should be created.
@@ -236,9 +292,12 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
                 // If windowing subsystem wasn't initialized by user, force headless with default parameters.
                 if (appBuilder.WindowingSubsystemName != "Headless")
                 {
-                    appBuilder = appBuilder
-                        .UseHeadless(new AvaloniaHeadlessPlatformOptions())
-                        .UseHarfBuzz();
+                    appBuilder = appBuilder.UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                }
+
+                if (appBuilder.TextShapingSubsystemInitializer is null)
+                {
+                    appBuilder = appBuilder.UseHarfBuzz();
                 }
 
                 // ReSharper disable once AccessToModifiedClosure
@@ -261,7 +320,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
                     }
                     else
                     {
-                        action();   
+                        action();
                     }
                 }
                 catch (OperationCanceledException)
@@ -275,7 +334,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Creates a session from AvaloniaTestApplicationAttribute attribute or reuses any existing.
-    /// If AvaloniaTestApplicationAttribute doesn't exist, empty application is used. 
+    /// If AvaloniaTestApplicationAttribute doesn't exist, empty application is used.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2072",
         Justification = "AvaloniaTestApplicationAttribute attribute should preserve type information.")]

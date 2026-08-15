@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> BorderThicknessProperty =
-            AvaloniaProperty.Register<Border, Thickness>(nameof(BorderThickness));
+            AvaloniaProperty.Register<Border, Thickness>(nameof(BorderThickness), validate: MarginProperty.ValidateValue);
 
         /// <summary>
         /// Defines the <see cref="CornerRadius"/> property.

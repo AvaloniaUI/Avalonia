@@ -2,6 +2,7 @@ using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -61,6 +62,7 @@ namespace Avalonia.Controls.Primitives
         {
             ParentTopLevel = parent;
             impl.SetWindowManagerAddShadowHint(WindowManagerAddShadowHint);
+            impl.SetHitTestVisible(IsHitTestVisible);
         }
 
         /// <summary>
@@ -189,7 +191,7 @@ namespace Avalonia.Controls.Primitives
             return new Size(width, height);
         }
 
-        protected sealed override Size ArrangeSetBounds(Size size)
+        private protected sealed override Size ArrangeSetBounds(Size size)
         {
             if (_popupSize != size)
             {
@@ -213,6 +215,14 @@ namespace Avalonia.Controls.Primitives
             if (change.Property == WindowManagerAddShadowHintProperty)
             {
                 PlatformImpl?.SetWindowManagerAddShadowHint(change.GetNewValue<bool>());
+            }
+            else if (change.Property == TopmostProperty)
+            {
+                PlatformImpl?.SetTopmost(change.GetNewValue<bool>());
+            }
+            else if (change.Property == IsHitTestVisibleProperty)
+            {
+                PlatformImpl?.SetHitTestVisible(change.GetNewValue<bool>());
             }
         }
     }

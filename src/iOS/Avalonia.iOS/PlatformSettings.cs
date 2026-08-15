@@ -98,4 +98,9 @@ internal class PlatformSettings : DefaultPlatformSettings
 
         return scaledSize;
     }
+
+    internal void OnColorValuesChanged()
+    {
+        OnColorValuesChanged(GetColorValues());
+    }
 }

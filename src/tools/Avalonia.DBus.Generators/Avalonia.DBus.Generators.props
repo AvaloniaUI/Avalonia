@@ -1,0 +1,6 @@
+<Project>
+    <ItemGroup>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="DBusGeneratorMode" />
+        <CompilerVisibleProperty Include="AvDBusInternal" />
+    </ItemGroup>
+</Project>

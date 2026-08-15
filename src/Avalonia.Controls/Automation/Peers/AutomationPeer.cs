@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Automation.Provider;
+using Avalonia.Metadata;
 
 namespace Avalonia.Automation.Peers
 {
@@ -48,6 +49,7 @@ namespace Avalonia.Automation.Peers
         TitleBar,
         Separator,
         Expander,
+        ScrollViewer,
     }
 
     public enum AutomationLandmarkType
@@ -205,7 +207,7 @@ namespace Avalonia.Automation.Peers
         ///   </item>
         /// </list>
         /// </remarks>
-        public string GetClassName() => GetClassNameCore() ?? string.Empty;
+        public string GetClassName() => GetClassNameOverrideCore() ?? string.Empty;
 
         /// <summary>
         /// Gets the automation peer for the label that is targeted to the element.
@@ -284,11 +286,28 @@ namespace Avalonia.Automation.Peers
         public string GetHelpText() => GetHelpTextCore() ?? string.Empty;
 
         /// <summary>
+        /// Gets text that provides a placeholder for the element that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityPlaceholderValue</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string GetPlaceholderText() => GetPlaceholderTextCore() ?? string.Empty;
+
+        /// <summary>
         /// Gets the control type for the element that is associated with the UI Automation peer.
         /// </summary>
         /// <remarks>
         /// Gets the type of the element.
-        /// 
+        ///
         /// <list type="table">
         ///   <item>
         ///     <term>Windows</term>
@@ -319,6 +338,41 @@ namespace Avalonia.Automation.Peers
         /// </remarks>
         public int GetHeadingLevel() => GetHeadingLevelCore();
 
+
+        /// <summary>
+        /// Gets the item type that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ItemTypePropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string? GetItemType() => GetItemTypeCore();
+
+        /// <summary>
+        /// Gets the item status that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ItemStatusPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string? GetItemStatus() => GetItemStatusCore();
+
         /// <summary>
         /// Gets the <see cref="AutomationPeer"/> that is the parent of this <see cref="AutomationPeer"/>.
         /// </summary>
@@ -346,13 +400,36 @@ namespace Avalonia.Automation.Peers
         ///     <term>Windows</term>
         ///     <description>No mapping, but used internally to translate coordinates.</description>
         ///   </item>
+        /// </list>
+        /// </remarks>
+        [PrivateApi]
+        public AutomationPeer? GetVisualRoot() => GetVisualRootCore();
+
+        /// <summary>
+        /// Gets the <see cref="AutomationPeer"/> that is the root of this <see cref="AutomationPeer"/>'s
+        /// visual tree.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
         ///   <item>
         ///     <term>macOS</term>
         ///     <description><c>NSAccessibilityProtocol.accessibilityTopLevelUIElement</c></description>
         ///   </item>
         /// </list>
         /// </remarks>
-        public AutomationPeer? GetVisualRoot() => GetVisualRootCore();
+        [PrivateApi]
+        public AutomationPeer? GetAutomationRoot() => GetAutomationRootCore();
+
+        /// <summary>
+        /// Converts a rectangle in the peer's coordinate space, as returned by
+        /// <see cref="GetBoundingRectangle"/>, to screen coordinates; returns null if the peer is
+        /// not currently hosted in a rendered visual tree.
+        /// </summary>
+        /// <param name="rect">
+        /// A rectangle in the peer's own coordinate space, as returned by
+        /// <see cref="GetBoundingRectangle"/>.
+        /// </param>
+        public Rect? ToScreen(Rect rect) => ToScreenCore(rect);
 
         /// <summary>
         /// Gets a value that indicates whether the element that is associated with this automation
@@ -544,6 +621,7 @@ namespace Avalonia.Automation.Peers
                 AutomationControlType.HeaderItem => "header item",
                 AutomationControlType.TitleBar => "title bar",
                 AutomationControlType.Expander => "group",
+                AutomationControlType.ScrollViewer => "scroll viewer",
                 AutomationControlType.None => (GetLandmarkType()?.ToString() ?? controlType.ToString()).ToLowerInvariant(),
                 _ => controlType.ToString().ToLowerInvariant(),
             };
@@ -560,8 +638,11 @@ namespace Avalonia.Automation.Peers
         protected abstract AutomationPeer? GetLabeledByCore();
         protected abstract string? GetNameCore();
         protected virtual string? GetHelpTextCore() => null;
+        protected virtual string? GetPlaceholderTextCore() => null;
         protected virtual AutomationLandmarkType? GetLandmarkTypeCore() => null;
         protected virtual int GetHeadingLevelCore() => 0;
+        protected virtual string? GetItemTypeCore() => null;
+        protected virtual string? GetItemStatusCore() => null;
         protected abstract AutomationPeer? GetParentCore();
         protected abstract bool HasKeyboardFocusCore();
         protected abstract bool IsContentElementCore();
@@ -578,7 +659,12 @@ namespace Avalonia.Automation.Peers
             return GetAutomationControlTypeCore();
         }
 
-        protected virtual AutomationPeer? GetVisualRootCore()
+        protected virtual string GetClassNameOverrideCore()
+        {
+            return GetClassNameCore();
+        }
+
+        private protected virtual AutomationPeer? GetAutomationRootCore()
         {
             var peer = this;
             var parent = peer.GetParent();
@@ -591,6 +677,10 @@ namespace Avalonia.Automation.Peers
 
             return peer;
         }
+
+        private protected virtual AutomationPeer? GetVisualRootCore() => GetAutomationRootCore();
+
+        private protected virtual Rect? ToScreenCore(Rect rect) => null;
 
 
         protected virtual bool IsContentElementOverrideCore()

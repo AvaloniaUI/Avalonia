@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls.Primitives;
@@ -7,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Harfbuzz;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -272,11 +274,53 @@ namespace Avalonia.Controls.UnitTests
             Assert.NotEqual(previousOffset, panel.Offset);
         }
 
+        [Fact]
+        public void SetInitialFocus_Should_Focus_Day_Selector_For_Day_First_Locale()
+        {
+            var previousCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                // en-GB uses dd/MM/yyyy — day appears first in the short date pattern
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-GB");
+
+                using (UnitTestApplication.Start(FocusServices))
+                {
+                    var presenter = new DatePickerPresenter { Template = CreatePickerTemplate() };
+                    var root = new TestRoot(presenter);
+                    root.LayoutManager.ExecuteInitialLayoutPass();
+
+                    // Trigger InitPicker again now that the visual tree is fully connected,
+                    // so SetInitialFocus can successfully call Focus().
+                    presenter.Date = new DateTimeOffset(2024, 6, 15, 0, 0, 0, TimeSpan.Zero);
+
+                    var daySelector = presenter
+                        .GetVisualDescendants()
+                        .OfType<DateTimePickerPanel>()
+                        .First(p => p.Name == "PART_DaySelector");
+
+                    Assert.Same(daySelector, root.FocusManager.GetFocusedElement());
+                }
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = previousCulture;
+            }
+        }
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new HarfBuzzTextShaper(),
             renderInterface: new HeadlessPlatformRenderInterface());
+
+        private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new HarfBuzzTextShaper(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
+            inputManager: new InputManager());
 
         private static IControlTemplate CreateTemplate()
         {

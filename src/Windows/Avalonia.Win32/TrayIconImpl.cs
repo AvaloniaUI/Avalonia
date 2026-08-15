@@ -231,7 +231,7 @@ namespace Avalonia.Win32
             var _trayMenu = new TrayPopupRoot
             {
                 Name = "AvaloniaTrayPopupRoot_" + _tooltipText,
-                SystemDecorations = SystemDecorations.None,
+                WindowDecorations = WindowDecorations.None,
                 SizeToContent = SizeToContent.WidthAndHeight,
                 Background = null,
                 TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },

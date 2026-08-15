@@ -74,6 +74,9 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         return null;
     }
 
+    public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+        => throw new NotSupportedException();
+
     public static KeyboardDevice Keyboard => s_keyboard ??
         throw new InvalidOperationException("BrowserWindowingPlatform not registered.");
 
@@ -94,15 +97,17 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
             .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
             .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
             .Bind<IActivatableLifetime>().ToSingleton<BrowserActivatableLifetime>();
+        
         if (IsManagedDispatcherEnabled)
         {
             EventGrouperDispatchQueue = new();
-            AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToConstant(
-                new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
+            Dispatcher.InitializeUIThreadDispatcher(
+                new ManagedDispatcherImpl(
+                    new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
         }
         else
         {
-            AvaloniaLocator.CurrentMutable.Bind<IDispatcherImpl>().ToSingleton<BrowserDispatcherImpl>();
+            Dispatcher.InitializeUIThreadDispatcher(new BrowserDispatcherImpl());
         }
 
         // GC thread is the same as the main one when MT is disabled

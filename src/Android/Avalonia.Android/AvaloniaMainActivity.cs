@@ -44,7 +44,4 @@ public class AvaloniaMainActivity : AvaloniaActivity
             activatableLifetime.CurrentMainActivity = null;
         }
     }
-
-    protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<Application>().UseAndroid();
-    protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 }

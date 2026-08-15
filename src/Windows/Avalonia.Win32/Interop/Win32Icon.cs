@@ -16,15 +16,6 @@ internal class Win32Icon : IDisposable
         Handle = CreateIcon(bitmap, hotSpot);
     }
     
-    public Win32Icon(IBitmapImpl bitmap, PixelPoint hotSpot = default)
-    {
-        using var memoryStream = new MemoryStream();
-        bitmap.Save(memoryStream);
-        memoryStream.Position = 0;
-        using var bmp = new Bitmap(memoryStream);
-        Handle = CreateIcon(bmp, hotSpot);
-    }
-
     public Win32Icon(byte[] iconData, PixelSize size = default)
     {
         _bytes = iconData;

@@ -105,12 +105,11 @@ public partial class XYFocus
     
     private static bool IsOccluded(InputElement element, Rect elementBounds)
     {
-        // if (element is CHyperlink hyperlink)
-        // {
-        //     element = hyperlink.GetContainingFrameworkElement();
-        // }
-
-        var root = (InputElement)element.GetVisualRoot()!;
+        // TODO: The check for bounds is no longer correct
+        
+        var root = (InputElement?)element.VisualRoot;
+        if (root == null)
+            return true;
         
         // Check if the element is within the visible area of the window
         var visibleBounds = new Rect(0, 0, root.Bounds.Width, root.Bounds.Height);

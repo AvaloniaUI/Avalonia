@@ -228,7 +228,7 @@ namespace Avalonia.Platform
             (T?)context.GetFeature(typeof(T));
     }
 
-    public interface IDrawingContextLayerImpl : IRenderTargetBitmapImpl
+    public interface IDrawingContextLayerImpl : IBitmapImpl
     {
         /// <summary>
         /// Does optimized blit with Src blend mode.
@@ -240,6 +240,16 @@ namespace Avalonia.Platform
         /// Returns true if layer supports optimized blit.
         /// </summary>
         bool CanBlit { get; }
+        
+        /// <summary>
+        /// Indicates if the render target is no longer usable and needs to be recreated
+        /// </summary>
+        bool IsCorrupted { get; }
+        
+        /// <summary>
+        /// Creates drawing context. It matches the properties of the original drawing context this layer was created from.
+        /// </summary>
+        IDrawingContextImpl CreateDrawingContext();
     }
 
     public interface IDrawingContextLayerWithRenderContextAffinityImpl : IDrawingContextLayerImpl

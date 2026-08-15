@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -8,9 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Data.Core.ExpressionNodes.Reflection;
 using Avalonia.Data.Core.Plugins;
-using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.Parsers;
@@ -25,7 +22,6 @@ namespace Avalonia.Data.Core.Parsers;
 /// can then be converted into <see cref="ExpressionNode"/> instances. It supports property access,
 /// indexers, AvaloniaProperty access, stream bindings, type casts, and logical operators.
 /// </remarks>
-[RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
 internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : ExpressionVisitor
 {
@@ -149,17 +145,11 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
                  instanceType.GetGenericTypeDefinition() == typeof(Task<>) &&
                  genericArg.IsAssignableFrom(instanceType.GetGenericArguments()[0])))
             {
-                var builderMethod = typeof(CompiledBindingPathBuilder)
-                    .GetMethod(nameof(CompiledBindingPathBuilder.StreamTask))!
-                    .MakeGenericMethod(genericArg);
-                return Add(instance, node, x => builderMethod.Invoke(x, null));
+                return Add(instance, node, x => x.StreamTask());
             }
-            else if (typeof(IObservable<>).MakeGenericType(genericArg).IsAssignableFrom(instance?.Type))
+            else if (instanceType is not null && ObservableStreamPlugin.MatchesType(instanceType))
             {
-                var builderMethod = typeof(CompiledBindingPathBuilder)
-                    .GetMethod(nameof(CompiledBindingPathBuilder.StreamObservable))!
-                    .MakeGenericMethod(genericArg);
-                return Add(instance, node, x => builderMethod.Invoke(x, null));
+                return Add(instance, node, x => x.StreamObservable());
             }
         }
         else if (method == BindingExpressionVisitorMembers.CreateDelegateMethod)
@@ -194,18 +184,12 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
             if (!node.Type.IsValueType && !node.Operand.Type.IsValueType &&
                 (node.Type.IsAssignableFrom(node.Operand.Type) || node.Operand.Type.IsAssignableFrom(node.Type)))
             {
-                var castMethod = typeof(CompiledBindingPathBuilder)
-                    .GetMethod(nameof(CompiledBindingPathBuilder.TypeCast))!
-                    .MakeGenericMethod(node.Type);
-                return Add(node.Operand, node, x => castMethod.Invoke(x, null));
+                return Add(node.Operand, node, x => x.TypeCast(node.Type));
             }
         }
         else if (node.NodeType == ExpressionType.TypeAs)
         {
-            var castMethod = typeof(CompiledBindingPathBuilder)
-                .GetMethod(nameof(CompiledBindingPathBuilder.TypeCast))!
-                .MakeGenericMethod(node.Type);
-            return Add(node.Operand, node, x => castMethod.Invoke(x, null));
+            return Add(node.Operand, node, x => x.TypeCast(node.Type));
         }
 
         throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
@@ -319,29 +303,14 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
         }
     }
 
-    private static Func<object, object>? CreateGetter(PropertyInfo info)
+    private static Func<object, object?>? CreateGetter(PropertyInfo info)
     {
-        if (info.GetMethod == null)
-            return null;
-        var target = Expression.Parameter(typeof(object), "target");
-        return Expression.Lambda<Func<object, object>>(
-                Expression.Convert(Expression.Call(Expression.Convert(target, info.DeclaringType!), info.GetMethod),
-                    typeof(object)),
-                target)
-            .Compile();
+        return info.CanRead ? info.GetValue : null;
     }
 
     private static Action<object, object?>? CreateSetter(PropertyInfo info)
     {
-        if (info.SetMethod == null)
-            return null;
-        var target = Expression.Parameter(typeof(object), "target");
-        var value = Expression.Parameter(typeof(object), "value");
-        return Expression.Lambda<Action<object, object?>>(
-                Expression.Call(Expression.Convert(target, info.DeclaringType!), info.SetMethod,
-                    Expression.Convert(value, info.SetMethod.GetParameters()[0].ParameterType)),
-                target, value)
-            .Compile();
+        return info.CanWrite ? info.SetValue : null;
     }
 
     private static T GetValue<T>(Expression expr)

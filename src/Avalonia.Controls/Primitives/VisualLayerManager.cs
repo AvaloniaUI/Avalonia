@@ -3,26 +3,50 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class VisualLayerManager : Decorator
+    /// <summary>
+    /// A control that manages multiple layers such as adorners, overlays, text selectors, and popups.
+    /// </summary>
+    public sealed class VisualLayerManager : Decorator
     {
         private const int AdornerZIndex = int.MaxValue - 100;
-        private const int ChromeZIndex = int.MaxValue - 99;
-        private const int LightDismissOverlayZIndex = int.MaxValue - 98;
-        private const int OverlayZIndex = int.MaxValue - 97;
+        private const int OverlayZIndex = int.MaxValue - 98;
+        private const int LightDismissOverlayZIndex = int.MaxValue - 97;
         private const int TextSelectorLayerZIndex = int.MaxValue - 96;
+        private const int PopupOverlayZIndex = int.MaxValue - 95;
 
         private ILogicalRoot? _logicalRoot;
         private readonly List<Control> _layers = new();
+        private OverlayLayer? _overlayLayer;
 
-        public static readonly StyledProperty<ChromeOverlayLayer?> ChromeOverlayLayerProperty =
-            AvaloniaProperty.Register<VisualLayerManager, ChromeOverlayLayer?>(nameof(ChromeOverlayLayer));
+        /// <summary>
+        /// Gets or sets a value indicating whether an <see cref="Avalonia.Controls.Primitives.AdornerLayer"/> is
+        /// created for this <see cref="VisualLayerManager"/>. When enabled, the adorner layer is added to the
+        /// visual tree, providing a dedicated layer for rendering adorners.
+        /// </summary>
+        public bool EnableAdornerLayer { get; set; } = true;
 
-        public bool IsPopup { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether an <see cref="Avalonia.Controls.Primitives.OverlayLayer"/> is
+        /// created for this <see cref="VisualLayerManager"/>. When enabled, the overlay layer is added to the
+        /// visual tree, providing a dedicated layer for rendering overlay visuals.
+        /// </summary>
+        public bool EnableOverlayLayer { get; set; }
 
-        public AdornerLayer AdornerLayer
+        internal bool EnablePopupOverlayLayer { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a <see cref="Avalonia.Controls.Primitives.TextSelectorLayer"/> is
+        /// created for this <see cref="VisualLayerManager"/>. When enabled, the overlay layer is added to the
+        /// visual tree, providing a dedicated layer for rendering text selection handles.
+        /// </summary>
+        public bool EnableTextSelectorLayer { get; set; }
+
+        internal AdornerLayer? AdornerLayer
         {
             get
             {
+                if (!EnableAdornerLayer)
+                    return null;
                 var rv = FindLayer<AdornerLayer>();
                 if (rv == null)
                     AddLayer(rv = new AdornerLayer(), AdornerZIndex);
@@ -30,47 +54,46 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031",
-            Justification = "A hack to make ChromeOverlayLayer lazily creatable. It is expected that GetValue(ChromeOverlayLayerProperty) alone won't work.")]
-        public ChromeOverlayLayer ChromeOverlayLayer
+        internal PopupOverlayLayer? PopupOverlayLayer
         {
             get
             {
-                var current = GetValue(ChromeOverlayLayerProperty);
-
-                if (current is null)
-                {
-                    var chromeOverlayLayer = new ChromeOverlayLayer();
-                    AddLayer(chromeOverlayLayer, ChromeZIndex);
-
-                    SetValue(ChromeOverlayLayerProperty, chromeOverlayLayer);
-
-                    current = chromeOverlayLayer;
-                }
-
-                return current;
-            }
-        }
-
-        public OverlayLayer? OverlayLayer
-        {
-            get
-            {
-                if (IsPopup)
+                if (!EnablePopupOverlayLayer)
                     return null;
-                var rv = FindLayer<OverlayLayer>();
+                var rv = FindLayer<PopupOverlayLayer>();
                 if (rv == null)
-                    AddLayer(rv = new OverlayLayer(), OverlayZIndex);
+                    AddLayer(rv = new PopupOverlayLayer(), PopupOverlayZIndex);
                 return rv;
             }
         }
-
-        public TextSelectorLayer? TextSelectorLayer
+        
+        internal OverlayLayer? OverlayLayer
         {
             get
             {
-                if (IsPopup)
+                if (!EnableOverlayLayer)
+                    return null;
+                if (_overlayLayer == null)
+                {
+                    _overlayLayer = new OverlayLayer();
+                    var adorner = new AdornerLayer();
+                    _overlayLayer.AdornerLayer = adorner;
+                    
+                    var panel = new Panel();
+                    panel.Children.Add(_overlayLayer);
+                    panel.Children.Add(adorner);
+                    
+                    AddLayer(panel, OverlayZIndex);
+                }
+                return _overlayLayer;
+            }
+        }
+
+        internal TextSelectorLayer? TextSelectorLayer
+        {
+            get
+            {
+                if (!EnableTextSelectorLayer)
                     return null;
                 var rv = FindLayer<TextSelectorLayer>();
                 if (rv == null)
@@ -79,7 +102,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public LightDismissOverlayLayer LightDismissOverlayLayer
+        internal LightDismissOverlayLayer LightDismissOverlayLayer
         {
             get
             {

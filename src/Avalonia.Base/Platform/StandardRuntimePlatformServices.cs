@@ -1,7 +1,4 @@
 using System.Reflection;
-using Avalonia.Compatibility;
-using Avalonia.Platform.Internal;
-using Avalonia.Platform.Interop;
 
 namespace Avalonia.Platform;
 

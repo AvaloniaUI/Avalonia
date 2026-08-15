@@ -39,6 +39,7 @@ namespace Avalonia.Android.Platform
                 return;
 
             var mimeTypes = dataTransfer.Formats
+                .Where(f => f.Kind != DataFormatKind.InProcess)
                 .Select(AndroidDataFormatHelper.DataFormatToMimeType)
                 .ToArray();
 
@@ -80,6 +81,9 @@ namespace Avalonia.Android.Platform
             // Create the item from the first format returning a supported value.
             foreach (var dataFormat in item.Formats)
             {
+                if (dataFormat.Kind == DataFormatKind.InProcess)
+                    continue;
+
                 hasFormats = true;
 
                 if (DataFormat.Text.Equals(dataFormat))

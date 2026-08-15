@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageCustomizationPage">
+
+  <UserControl.Styles>
+    <Style Selector="TabbedPage TabControl">
+      <Setter Property="Background" Value="{DynamicResource CustomBarBackgroundBrush}" />
+    </Style>
+    <Style Selector="TabbedPage TabItem">
+      <Setter Property="Foreground" Value="{DynamicResource CustomUnselectedTabForegroundBrush}" />
+    </Style>
+    <Style Selector="TabbedPage TabItem:selected">
+      <Setter Property="Foreground" Value="{DynamicResource CustomSelectedTabForegroundBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Tab Customization" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Placement" FontSize="13" FontWeight="SemiBold" />
+        <ComboBox x:Name="PlacementCombo" SelectedIndex="0"
+                  SelectionChanged="OnPlacementChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Top" />
+          <ComboBoxItem Content="Bottom" />
+          <ComboBoxItem Content="Left" />
+          <ComboBoxItem Content="Right" />
+        </ComboBox>
+
+        <Separator />
+
+        <CheckBox x:Name="ShowIconsCheck" Content="Show Icons"
+                  IsCheckedChanged="OnShowIconsChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Bar Background" FontSize="13" FontWeight="SemiBold" />
+        <ComboBox x:Name="BarBgCombo" SelectedIndex="0"
+                  SelectionChanged="OnBarBgChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Default (theme)" />
+          <ComboBoxItem Content="Blue (#1565C0)" />
+          <ComboBoxItem Content="Green (#2E7D32)" />
+          <ComboBoxItem Content="Purple (#6A1B9A)" />
+          <ComboBoxItem Content="Dark (#212121)" />
+        </ComboBox>
+
+        <TextBlock Text="Selected Tab Color" FontSize="13" FontWeight="SemiBold" />
+        <ComboBox x:Name="SelectedColorCombo" SelectedIndex="0"
+                  SelectionChanged="OnSelectedColorChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Default (accent)" />
+          <ComboBoxItem Content="Red (#E53935)" />
+          <ComboBoxItem Content="Orange (#F57C00)" />
+          <ComboBoxItem Content="Teal (#00796B)" />
+          <ComboBoxItem Content="Pink (#E91E63)" />
+        </ComboBox>
+
+        <TextBlock Text="Unselected Tab Color" FontSize="13" FontWeight="SemiBold" />
+        <ComboBox x:Name="UnselectedColorCombo" SelectedIndex="0"
+                  SelectionChanged="OnUnselectedColorChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Default (theme)" />
+          <ComboBoxItem Content="Gray (#757575)" />
+          <ComboBoxItem Content="Light gray (#BDBDBD)" />
+          <ComboBoxItem Content="White 60%" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Disabled Tabs" FontSize="13" FontWeight="SemiBold" />
+        <CheckBox x:Name="Tab0Check" Content="Home" IsChecked="True"
+                  IsCheckedChanged="OnTabEnabledChanged" Tag="0" />
+        <CheckBox x:Name="Tab1Check" Content="Search" IsChecked="True"
+                  IsCheckedChanged="OnTabEnabledChanged" Tag="1" />
+        <CheckBox x:Name="Tab2Check" Content="Settings" IsChecked="True"
+                  IsCheckedChanged="OnTabEnabledChanged" Tag="2" />
+
+        <Separator />
+
+        <CheckBox x:Name="KeyboardCheck" Content="Keyboard Navigation" IsChecked="True"
+                  IsCheckedChanged="OnKeyboardChanged" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Top">
+        <ContentPage x:Name="HomePage" Header="Home">
+          <StackPanel Margin="16" Spacing="8">
+            <TextBlock Text="Home" FontSize="24" FontWeight="Bold" />
+            <TextBlock Text="Your personalized dashboard" TextWrapping="Wrap" Opacity="0.7" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage x:Name="SearchPage" Header="Search">
+          <StackPanel Margin="16" Spacing="8">
+            <TextBlock Text="Search" FontSize="24" FontWeight="Bold" />
+            <TextBox PlaceholderText="Type to search..." />
+            <TextBlock Text="Search results will appear here." Opacity="0.7" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage x:Name="SettingsPage" Header="Settings">
+          <StackPanel Margin="16" Spacing="8">
+            <TextBlock Text="Settings" FontSize="24" FontWeight="Bold" />
+            <CheckBox Content="Enable notifications" />
+            <CheckBox Content="Dark mode" />
+            <CheckBox Content="Auto-save" IsChecked="True" />
+          </StackPanel>
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </DockPanel>
+</UserControl>

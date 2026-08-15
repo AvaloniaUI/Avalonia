@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
 
@@ -148,6 +149,19 @@ namespace Avalonia.VisualTree
         /// <returns>First ancestor of given type.</returns>
         public static T? FindAncestorOfType<T>(this Visual? visual, bool includeSelf = false) where T : class
         {
+            return FindAncestorOfType<T>(visual, includeSelf, predicate: null);
+        }
+
+        /// <summary>
+        /// Finds first ancestor of given type that matches a predicate.
+        /// </summary>
+        /// <typeparam name="T">Ancestor type.</typeparam>
+        /// <param name="visual">The visual.</param>
+        /// <param name="includeSelf">If given visual should be included in search.</param>
+        /// <param name="predicate">The predicate that the ancestor must match.</param>
+        /// <returns>First ancestor of given type.</returns>
+        public static T? FindAncestorOfType<T>(this Visual? visual, bool includeSelf, Predicate<T>? predicate) where T : class
+        {
             if (visual is null)
             {
                 return null;
@@ -159,7 +173,10 @@ namespace Avalonia.VisualTree
             {
                 if (parent is T result)
                 {
-                    return result;
+                    if (predicate == null || predicate(result))
+                    {
+                        return result;
+                    }
                 }
 
                 parent = parent.VisualParent;
@@ -177,17 +194,30 @@ namespace Avalonia.VisualTree
         /// <returns>First descendant of given type.</returns>
         public static T? FindDescendantOfType<T>(this Visual? visual, bool includeSelf = false) where T : class
         {
+            return FindDescendantOfType<T>(visual, includeSelf, predicate: null);
+        }
+
+        /// <summary>
+        /// Finds first descendant of given type that matches given predicate.
+        /// </summary>
+        /// <typeparam name="T">Descendant type.</typeparam>
+        /// <param name="visual">The visual.</param>
+        /// <param name="includeSelf">If given visual should be included in search.</param>
+        /// <param name="predicate">The predicate that the descendant must match.</param>
+        /// <returns>First descendant of given type that matches given predicate.</returns>
+        public static T? FindDescendantOfType<T>(this Visual? visual, bool includeSelf, Predicate<T>? predicate) where T : class
+        {
             if (visual is null)
             {
                 return null;
             }
 
-            if (includeSelf && visual is T result)
+            if (includeSelf && visual is T result && (predicate == null || predicate(result)))
             {
                 return result;
             }
 
-            return FindDescendantOfTypeCore<T>(visual);
+            return FindDescendantOfTypeCore<T>(visual, predicate);
         }
 
         /// <summary>
@@ -289,6 +319,19 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
+        /// Gets the first visual in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <returns>A <see cref="GeometryHitTestResult"/> containing the visual intersecting the requested geometry and intersection details, or null if no intersection.</returns>
+        public static GeometryHitTestResult? GetVisualAt(this Visual visual, Geometry geometry)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            return visual.GetVisualAt(geometry, x => x.IsVisible);
+        }
+
+        /// <summary>
         /// Gets the first visual in the visual tree whose bounds contain a point.
         /// </summary>
         /// <param name="visual">The root visual to test.</param>
@@ -302,21 +345,36 @@ namespace Avalonia.VisualTree
         {
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
-            var root = visual.GetVisualRoot();
-
-            if (root is null)
+            var source = visual.GetPresentationSource();
+            if (source is null)
             {
                 return null;
             }
 
-            var rootPoint = visual.TranslatePoint(p, (Visual)root);
+            return source.HitTester.HitTestFirst(p, visual, filter);
+        }
 
-            if (rootPoint.HasValue)
+        /// <summary>
+        /// Gets the first visual in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>A <see cref="GeometryHitTestResult"/> containing the visual intersecting the requested geometry and intersection details, or null if no intersection.</returns>
+        public static GeometryHitTestResult? GetVisualAt(this Visual visual, Geometry geometry, Func<Visual, bool> filter)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            var source = visual.GetPresentationSource();
+            if (source is null)
             {
-                return root.HitTester.HitTestFirst(rootPoint.Value, visual, filter);
+                return null;
             }
 
-            return null;
+            return source.HitTester.HitTestFirst(geometry, visual, filter);
         }
 
         /// <summary>
@@ -332,6 +390,21 @@ namespace Avalonia.VisualTree
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             return visual.GetVisualsAt(p, x => x.IsVisible);
+        }
+
+        /// <summary>
+        /// Enumerates the visible visuals in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <returns>The visuals intersecting the requested geometry with intersection details.</returns>
+        public static IEnumerable<GeometryHitTestResult> GetVisualsAt(
+            this Visual visual,
+            Geometry geometry)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            return visual.GetVisualsAt(geometry, x => x.IsVisible);
         }
 
         /// <summary>
@@ -351,14 +424,41 @@ namespace Avalonia.VisualTree
         {
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
-            var root = visual.GetVisualRoot();
+            var source = visual.GetPresentationSource();
 
-            if (root is null)
+            if (source is null)
             {
                 return Array.Empty<Visual>();
             }
 
-            return root.HitTester.HitTest(p, visual, filter);
+            return source.HitTester.HitTest(p, visual, filter);
+        }
+
+        /// <summary>
+        /// Enumerates the visible visuals in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visuals intersecting the requested geometry with intersection details.</returns>
+        public static IEnumerable<GeometryHitTestResult> GetVisualsAt(
+            this Visual visual,
+            Geometry geometry,
+            Func<Visual, bool> filter)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            var source = visual.GetPresentationSource();
+
+            if (source is null)
+            {
+                return Array.Empty<GeometryHitTestResult>();
+            }
+
+            return source.HitTester.HitTest(geometry, visual, filter);
         }
 
         /// <summary>
@@ -368,7 +468,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual children.</returns>
         public static IEnumerable<Visual> GetVisualChildren(this Visual visual)
         {
-            return visual.VisualChildren;
+            return visual.TypedVisualChildren;
         }
 
         /// <summary>
@@ -378,7 +478,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual's ancestors.</returns>
         public static IEnumerable<Visual> GetVisualDescendants(this Visual visual)
         {
-            foreach (Visual child in visual.VisualChildren)
+            foreach (Visual child in visual.TypedVisualChildren)
             {
                 yield return child;
 
@@ -427,19 +527,26 @@ namespace Avalonia.VisualTree
             return visual.VisualParent as T;
         }
 
-        /// <summary>
-        /// Gets the root visual for an <see cref="Visual"/>.
-        /// </summary>
-        /// <param name="visual">The visual.</param>
-        /// <returns>
-        /// The root visual or null if the visual is not rooted.
-        /// </returns>
-        public static IRenderRoot? GetVisualRoot(this Visual visual)
-        {
-            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
-            return visual as IRenderRoot ?? visual.VisualRoot;
-        }
+        public static IPresentationSource? GetPresentationSource(this Visual visual) => visual.PresentationSource;
+
+        // TODO: Verify all usages, this is no longer necessary a TopLevel
+        internal static Visual? GetVisualRoot(this Visual visual) => visual.PresentationSource?.RootVisual;
+
+        internal static ILayoutRoot? GetLayoutRoot(this Visual visual) => visual.PresentationSource?.LayoutRoot;
+
+        /// <summary>
+        /// Gets the layout manager for the visual's presentation source, or null if the visual is not attached to a visual root.
+        /// </summary>
+        public static ILayoutManager? GetLayoutManager(this Visual visual) =>
+            visual.PresentationSource?.LayoutRoot.LayoutManager;
+
+        /// <summary>
+        /// Attempts to obtain platform settings from the visual's root.
+        /// This will return null if the visual is not attached to a visual root.
+        /// </summary>
+        public static IPlatformSettings? GetPlatformSettings(this Visual visual) =>
+            visual.GetPresentationSource()?.PlatformSettings;
 
         /// <summary>
         /// Returns a value indicating whether this control is attached to a visual root.
@@ -485,21 +592,19 @@ namespace Avalonia.VisualTree
                 .Select(x => x.Element!);
         }
 
-        private static T? FindDescendantOfTypeCore<T>(Visual visual) where T : class
+        private static T? FindDescendantOfTypeCore<T>(Visual visual, Predicate<T>? predicate) where T : class
         {
-            var visualChildren = visual.VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
-
-            for (var i = 0; i < visualChildrenCount; i++)
+            foreach (var child in visual.TypedVisualChildren)
             {
-                Visual child = visualChildren[i];
-
                 if (child is T result)
                 {
-                    return result;
+                    if (predicate == null || predicate(result))
+                    {
+                        return result;
+                    }
                 }
 
-                var childResult = FindDescendantOfTypeCore<T>(child);
+                var childResult = FindDescendantOfTypeCore<T>(child, predicate);
 
                 if (!(childResult is null))
                 {

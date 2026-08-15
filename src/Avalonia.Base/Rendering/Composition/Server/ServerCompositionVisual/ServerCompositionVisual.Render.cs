@@ -94,7 +94,8 @@ partial class ServerCompositionVisual
             
             if (visual.Opacity != 1)
             {
-                _opacityStack.Push(effectiveOpacity);
+                _opacityStack.Push(_opacity);
+                _opacity = effectiveOpacity;
                 _canvas.PushOpacity(visual.Opacity, visual._transformedSubTreeBounds.Value.ToRect());
             }
 
@@ -110,7 +111,7 @@ partial class ServerCompositionVisual
                 _walkContext.PushClip(effectiveClip);
 
             if (visual.ClipToBounds)
-                _canvas.PushClip(new Rect(0, 0, visual.Size.X, visual.Size.Y));
+                visual.PushClipToBounds(_canvas);
 
             if (visual.Clip != null)
                 _canvas.PushGeometryClip(visual.Clip);
@@ -191,7 +192,12 @@ partial class ServerCompositionVisual
                 if (visual.RenderOptions != default)
                     _canvas.PopRenderOptions();
             }
-            
+
+            // A cached visual is always a leaf in the walk (children are skipped), so its
+            // PreSubgraph/PostSubgraph are adjacent. Reset here so the flag never leaks into a
+            // later sibling and causes its effect/mask/options pushes to be left unpopped.
+            _usedCache = false;
+
             // If we are rendering to bitmap cache, PreSubgraph skipped those for the root visual
             if (!bitmapCacheRoot)
             {

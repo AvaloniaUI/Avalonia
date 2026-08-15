@@ -6,27 +6,27 @@ using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using Avalonia.Media.TextFormatting.Unicode;
 using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
+using Avalonia.FreeDesktop.DBusIme.IBus.DBus;
 
 
 namespace Avalonia.FreeDesktop.DBusIme.IBus
 {
     internal class IBusX11TextInputMethod : DBusTextInputMethodBase
     {
-        private OrgFreedesktopIBusServiceProxy? _service;
-        private OrgFreedesktopIBusInputContextProxy? _context;
+        private Service? _service;
+        private InputContext? _context;
         private string _preeditText = "";
         private int _preeditCursor;
         private int _insideReset;
 
-        public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
+        public IBusX11TextInputMethod(DBusConnection connection) : base(connection, "org.freedesktop.portal.IBus") { }
 
         protected override async Task<bool> Connect(string name)
         {
-            var portal = new OrgFreedesktopIBusPortalProxy(Connection, name, "/org/freedesktop/IBus");
+            var portal = new Portal(Connection, name, "/org/freedesktop/IBus");
             var path = await portal.CreateInputContextAsync(GetAppName());
-            _service = new OrgFreedesktopIBusServiceProxy(Connection, name, path);
-            _context = new OrgFreedesktopIBusInputContextProxy(Connection, name, path);
+            _service = new Service(Connection, name, path);
+            _context = new InputContext(Connection, name, path);
             AddDisposable(await _context.WatchCommitTextAsync(OnCommitText));
             AddDisposable(await _context.WatchForwardKeyEventAsync(OnForwardKey));
             AddDisposable(await _context.WatchUpdatePreeditTextAsync(OnUpdatePreedit));
@@ -36,23 +36,23 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             return true;
         }
 
-        private void OnHidePreedit(Exception? obj)
+        private void OnHidePreedit()
         {
             if (Client?.SupportsPreedit != true || string.IsNullOrEmpty(_preeditText))
             {
                 return;
             }
-            
+
             _preeditText = "";
-                
+
             Client?.SetPreeditText(_preeditText, 0);
         }
 
-        private void OnShowPreedit(Exception? obj)
+        private void OnShowPreedit()
         {
         }
 
-        private void OnUpdatePreedit(Exception? arg1, (VariantValue Text, uint CursorPos, bool Visible) preeditComponents)
+        private void OnUpdatePreedit((VariantValue Text, uint CursorPos, bool Visible) preeditComponents)
         {
             string? preeditText;
             
@@ -80,14 +80,8 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             Client.SetPreeditText(_preeditText, _preeditCursor);
         }
 
-        private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
+        private void OnForwardKey((uint keyval, uint keycode, uint state) k)
         {
-            if (e is not null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnForwardKey failed: {e}");
-                return;
-            }
-
             var state = (IBusModifierMask)k.state;
             KeyModifiers mods = default;
             if (state.HasAllFlags(IBusModifierMask.ControlMask))
@@ -106,7 +100,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             });
         }
 
-        private void OnCommitText(Exception? e, VariantValue variantItem)
+        private void OnCommitText(VariantValue variantItem)
         {
             if (_insideReset > 0)
             {
@@ -114,11 +108,6 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                 // Thankfully the signal is sent _during_ Reset call processing,
                 // so it arrives on-the-wire before Reset call result, so we can
                 // check if we have any pending Reset calls and ignore the signal here
-                return;
-            }
-            if (e is not null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitText failed: {e}");
                 return;
             }
 

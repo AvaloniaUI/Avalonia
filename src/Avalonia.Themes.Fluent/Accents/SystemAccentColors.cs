@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Themes.Fluent.Accents;
 
@@ -120,7 +121,7 @@ internal sealed class SystemAccentColors : ResourceProvider
         return owner switch
         {
             Application app => app.PlatformSettings,
-            Visual visual => TopLevel.GetTopLevel(visual)?.PlatformSettings,
+            Visual visual => visual.GetPlatformSettings(),
             _ => null
         };
     }

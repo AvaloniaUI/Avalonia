@@ -24,6 +24,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             lineBreak = default;
 
+            if (_text.IsEmpty)
+            {
+                return false;
+            }
+
             if (_state.Current.EndOfText)
             {
                 return false;
@@ -71,7 +76,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.CarriageReturn:
                 case LineBreakClass.LineFeed:
                     {
-                        if (state.Previous.LineBreakClass == LineBreakClass.CarriageReturn)
+                        if (state.PreviousClass == LineBreakClass.CarriageReturn)
                         {
                             positionMeasure = FindPriorNonWhitespace(text, state.Previous.Start);
                         }
@@ -122,28 +127,68 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         private static LineBreak? ExecuteRules(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            foreach (var rule in s_rules)
+            // Rules are invoked directly (not through a delegate array) so the JIT can
+            // inline trivial early-exit rules and eliminate per-rule indirect-call
+            // overhead. Order is significant: LB21a must run before LB21.
+            RuleResult res;
+
+            if ((res = RegionalIndicator(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB03(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB04(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB05(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB06(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB07(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB08(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB08a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB09(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB10(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB11(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB12(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB12a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB13(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB14(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB15a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB15b(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB15c(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB15d(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB16(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB17(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB18(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB19(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB20(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB20a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB21a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB21(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB21b(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB22(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB23(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB23a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB24(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB25(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB26(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB27(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB28(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB28a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB29(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB30(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB30a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB30b(text, ref state)) != RuleResult.Pass) goto Done;
+            res = LB31(text, ref state); // always returns MayBreak
+
+        Done:
+            switch (res)
             {
-                var res = rule.Invoke(text, ref state);
-
-                switch (res)
-                {
-                    case RuleResult.Pass:
-                        continue;
-                    case RuleResult.NoBreak:
-                        return null;
-                    case RuleResult.MayBreak:
-                    case RuleResult.MustBreak:
-                        return GetLineBreak(text, state, IsBreakClass(state.Current.LineBreakClass));
-                    default:
-                        throw new InvalidOperationException("Invalid state.");
-                }
+                case RuleResult.NoBreak:
+                    return null;
+                case RuleResult.MayBreak:
+                case RuleResult.MustBreak:
+                    return GetLineBreak(text, state, IsBreakClass(state.Current.LineBreakClass));
+                default:
+                    return null;
             }
-
-            return null;
         }
 
-        private static RuleResult QuotationAndRegionalIndicator(ReadOnlySpan<char> text, ref LineBreakState state)
+        private static RuleResult RegionalIndicator(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             if (state.Current.Inherited)
             {
@@ -158,24 +203,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 }
             }
 
-            switch (state.Current.LineBreakClass)
-            {
-                case LineBreakClass.Quotation:
-                    {
-                        if (++state.Quotation % 2 == 0)
-                        {
-                            state.Quotation -= 2;
-                        }
-                        break;
-                    }
-            }
-
             return RuleResult.Pass;
         }
 
         /// <summary>
         /// LB3: Always break at the end of text.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB03(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             if (state.Current.EndOfText)
@@ -189,6 +223,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB4: Always break after hard line breaks.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB04(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // BK !
@@ -208,7 +243,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             switch (state.Current.LineBreakClass)
             {
                 case LineBreakClass.CarriageReturn:
-                    if (state.Next(text).LineBreakClass == LineBreakClass.LineFeed)
+                    if (state.NextClass == LineBreakClass.LineFeed)
                     {
                         return RuleResult.NoBreak; // CR × LF
                     }
@@ -226,11 +261,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB6: Do not break before hard line breaks.
         /// </summary>
-        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB06(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × ( BK | CR | LF | NL )
-            if (IsBreakClass(state.Next(text).LineBreakClass))
+            if (IsBreakClass(state.NextClass))
             {
                 return RuleResult.NoBreak;
             }
@@ -241,11 +276,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB7: Do not break before spaces or zero width space.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB07(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × SP
             // × ZW
-            switch (state.Next(text).LineBreakClass)
+            switch (state.NextClass)
             {
                 case LineBreakClass.Space:
                 case LineBreakClass.ZWSpace:
@@ -263,7 +299,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         private static RuleResult LB08(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            if (state.LastBeforeSpace.LineBreakClass == LineBreakClass.ZWSpace && state.Next(text).LineBreakClass != LineBreakClass.Space)
+            if (state.LastBeforeSpace.LineBreakClass == LineBreakClass.ZWSpace && state.NextClass != LineBreakClass.Space)
             {
                 return RuleResult.MayBreak;
             }
@@ -274,6 +310,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB8a: Do not break after a zero width joiner.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB08a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // ZWJ ×
@@ -302,7 +339,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 return RuleResult.Pass;
             }
 
-            switch (state.Next(text).LineBreakClass)
+            switch (state.NextClass)
             {
                 case LineBreakClass.CombiningMark:
                 case LineBreakClass.ZWJ:
@@ -338,9 +375,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB11: Do not break before or after Word joiner and related characters.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB11(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            if (state.Next(text).LineBreakClass == LineBreakClass.WordJoiner /* × WJ */
+            if (state.NextClass == LineBreakClass.WordJoiner /* × WJ */
                 || state.Current.LineBreakClass == LineBreakClass.WordJoiner /* WJ × */)
             {
                 return RuleResult.NoBreak;
@@ -352,6 +390,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB12: Do not break after NBSP and related characters.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB12(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // GL ×
@@ -369,13 +408,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private static RuleResult LB12a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // [^SP BA HY] × GL
-            if (state.Next(text).LineBreakClass == LineBreakClass.Glue)
+            if (state.NextClass == LineBreakClass.Glue)
             {
                 switch (state.Current.LineBreakClass)
                 {
                     case LineBreakClass.Space:
                     case LineBreakClass.BreakAfter:
                     case LineBreakClass.Hyphen:
+                    case LineBreakClass.UnambiguousHyphen:
                         return RuleResult.Pass;
                     default:
                         return RuleResult.NoBreak;
@@ -388,13 +428,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB13: Do not break before ‘]’ or ‘!’ or ‘;’ or ‘/’, even after spaces.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB13(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × CL
             // × CP
             // × EX
             // × SY
-            switch (state.Next(text).LineBreakClass)
+            switch (state.NextClass)
             {
                 case LineBreakClass.ClosePunctuation:
                 case LineBreakClass.CloseParenthesis:
@@ -409,6 +450,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB14: Do not break after ‘[’, even after spaces.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB14(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // OP SP* ×
@@ -427,60 +469,36 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private static RuleResult LB15a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // (sot | BK | CR | LF | NL | OP | QU | GL | SP | ZW) [\p{Pi}&QU] SP* ×
-            if (state.Quotation > 0 && state.LastBeforeWhitespace.Codepoint.GeneralCategory == GeneralCategory.InitialPunctuation && 
+            if (state.LastBeforeWhitespace.Codepoint.GeneralCategory == GeneralCategory.InitialPunctuation &&
                 state.LastBeforeWhitespace.LineBreakClass == LineBreakClass.Quotation)
             {
-                //at the start of the line
-                if (state.Current.StartOfText)
-                {
-                    return RuleResult.NoBreak;
-                }
-
-                //at the start of the line
-                if (IsBreakClass(state.Previous.LineBreakClass))
-                {
-                    return RuleResult.NoBreak;
-                }
-
-                if (state.Current.Inherited)
-                {
-                    //LineBreakClass.Glue
-                    return RuleResult.NoBreak;
-                }
-
-                //after a space
-                switch (state.Current.LineBreakClass)
-                {
-                    case LineBreakClass.Glue:
-                    case LineBreakClass.Space:
-                    case LineBreakClass.ZWSpace:
-                        return RuleResult.NoBreak;
-                }
-
-                //after a space
-                switch (state.Previous.LineBreakClass)
-                {
-                    case LineBreakClass.Glue:
-                    case LineBreakClass.Space:
-                    case LineBreakClass.ZWSpace:
-                        return RuleResult.NoBreak;
-                }
-
-                // after opening punctuation
-                switch (LineBreakState.Before(text, state.LastBeforeWhitespace).LineBreakClass)
-                {
-                    case LineBreakClass.OpenPunctuation:                  
-                        return RuleResult.NoBreak;
-                }
-
-                // after an unresolved quotation mark
-                if (state.Quotation - 1 > 0)
+                if (IsStartLike(LineBreakState.Before(text, state.LastBeforeWhitespace)))
                 {
                     return RuleResult.NoBreak;
                 }
             }
 
-            return RuleResult.Pass;         
+            return RuleResult.Pass;
+
+            static bool IsStartLike(BreakUnit unit)
+            {
+                if ((unit.StartOfText && unit.Length == 0) || IsBreakClass(unit.LineBreakClass))
+                {
+                    return true;
+                }
+
+                switch (unit.LineBreakClass)
+                {
+                    case LineBreakClass.OpenPunctuation:
+                    case LineBreakClass.Quotation:
+                    case LineBreakClass.Glue:
+                    case LineBreakClass.Space:
+                    case LineBreakClass.ZWSpace:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
         }
 
         /// <summary>
@@ -490,7 +508,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private static RuleResult LB15b(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × [\p{Pf}&QU] ( SP | GL | WJ | CL | QU | CP | EX | IS | SY | BK | CR | LF | NL | ZW | eot)
-            if (state.Next(text).Codepoint.GeneralCategory == GeneralCategory.FinalPunctuation && (state.Next(text).LineBreakClass == LineBreakClass.Quotation))
+            if (state.Next(text).Codepoint.GeneralCategory == GeneralCategory.FinalPunctuation && (state.NextClass == LineBreakClass.Quotation))
             {
                 var after = LineBreakState.After(text, state.Next(text));
 
@@ -531,7 +549,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             // SP ÷ IS NU
             if (state.Current.LineBreakClass == LineBreakClass.Space)
             {
-                switch (state.Next(text).LineBreakClass)
+                switch (state.NextClass)
                 {
                     case LineBreakClass.InfixNumeric when LineBreakState.After(text, state.Next(text)).LineBreakClass == LineBreakClass.Numeric:
                         {
@@ -546,10 +564,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB15d: Otherwise, do not break before ‘;’, ‘,’, or ‘.’, even after spaces.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB15d(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × IS
-            if (state.Next(text).LineBreakClass == LineBreakClass.InfixNumeric)
+            if (state.NextClass == LineBreakClass.InfixNumeric)
             {
                 return RuleResult.NoBreak;
             }
@@ -607,6 +626,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB18: Break after spaces.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB18(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // SP ÷
@@ -619,56 +639,48 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
-        /// LB19: Do not break before or after quotation marks, such as ‘ ” ’.
+        /// LB19: Do not break before or after quotation marks.
         /// </summary>
         private static RuleResult LB19(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             var next = state.Next(text);
-     
-            if (next.LineBreakClass == LineBreakClass.Quotation)
-            {
-                // × [QU - \p{Pi}]
-                if (next.Codepoint.GeneralCategory != GeneralCategory.InitialPunctuation)
-                {
-                    return RuleResult.NoBreak;
-                }
 
-                //[^$EastAsian] × QU
-                if (!state.LastBeforeWhitespace.Codepoint.IsEastAsian)
-                {
-                    return RuleResult.NoBreak;
-                }
-
-                var after = LineBreakState.After(text, next);
-
-                //× QU ( [^$EastAsian] | eot )
-                if(!after.Codepoint.IsEastAsian || after.EndOfText)
-                {
-                    return RuleResult.NoBreak;
-                }
-            }
-
-            // [QU - \p{Pf}] ×
-            if (state.LastBeforeWhitespace.LineBreakClass == LineBreakClass.Quotation && state.LastBeforeWhitespace.Codepoint.GeneralCategory != GeneralCategory.InitialPunctuation)
+            if (next.LineBreakClass == LineBreakClass.Quotation &&
+                next.Codepoint.GeneralCategory != GeneralCategory.InitialPunctuation)
             {
                 return RuleResult.NoBreak;
             }
 
-            if(state.LastBeforeSpace.LineBreakClass == LineBreakClass.Quotation)
+            if (state.Current.LineBreakClass == LineBreakClass.Quotation &&
+                state.Current.Codepoint.GeneralCategory != GeneralCategory.FinalPunctuation)
             {
-                //QU × [^$EastAsian]
-                if (!state.Next(text).Codepoint.IsEastAsian)
+                return RuleResult.NoBreak;
+            }
+
+            if (!state.Current.Codepoint.IsEastAsian && next.LineBreakClass == LineBreakClass.Quotation)
+            {
+                return RuleResult.NoBreak;
+            }
+
+            if (next.LineBreakClass == LineBreakClass.Quotation)
+            {
+                var after = LineBreakState.After(text, next);
+
+                if (after.EndOfText || !after.Codepoint.IsEastAsian)
                 {
                     return RuleResult.NoBreak;
                 }
+            }
 
-                var before = LineBreakState.Before(text, state.LastBeforeSpace);
+            if (state.Current.LineBreakClass == LineBreakClass.Quotation && !next.Codepoint.IsEastAsian)
+            {
+                return RuleResult.NoBreak;
+            }
 
-                //( sot | [^$EastAsian] ) QU ×
-                if (before.StartOfText || !before.Codepoint.IsEastAsian)
-                {
-                    return RuleResult.NoBreak;
-                }               
+            if (((state.Previous.StartOfText && state.Previous.Length == 0) || !state.Previous.Codepoint.IsEastAsian) &&
+                state.Current.LineBreakClass == LineBreakClass.Quotation)
+            {
+                return RuleResult.NoBreak;
             }
 
             return RuleResult.Pass;
@@ -677,11 +689,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB20: Break before and after unresolved CB.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB20(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // ÷ CB
             // CB ÷
-            if ((state.Current.LineBreakClass == LineBreakClass.ContingentBreak) || (state.Next(text).LineBreakClass == LineBreakClass.ContingentBreak))
+            if ((state.Current.LineBreakClass == LineBreakClass.ContingentBreak) || (state.NextClass == LineBreakClass.ContingentBreak))
             {
                 return RuleResult.MayBreak;
             }
@@ -694,10 +707,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         private static RuleResult LB20a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            // (sot | BK | CR | LF | NL | SP | ZW | CB | GL)(HY | [\u2010]) × AL
-            if (IsMatch(state.Previous) && state.Next(text).LineBreakClass == LineBreakClass.Alphabetic)
+            var current = state.Current.Inherited ? state.LastBeforeWhitespace : state.Current;
+            var previous = state.Current.Inherited ? LineBreakState.Before(text, current) : state.Previous;
+
+            // (sot | BK | CR | LF | NL | SP | ZW | CB | GL)(HY | HH) × (AL | HL)
+            if (IsMatch(previous) && state.NextClass is LineBreakClass.Alphabetic or LineBreakClass.HebrewLetter)
             {
-                if (state.LastBeforeWhitespace.LineBreakClass == LineBreakClass.Hyphen || state.LastBeforeWhitespace.Codepoint.Value == 8208)
+                if (current.LineBreakClass is LineBreakClass.Hyphen or LineBreakClass.UnambiguousHyphen)
                 {
                     return RuleResult.NoBreak;
                 }
@@ -707,7 +723,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             static bool IsMatch(BreakUnit unit)
             {
-                if (unit.StartOfText)
+                if (unit.StartOfText && unit.Length == 0)
                 {
                     return true;
                 }
@@ -736,10 +752,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private static RuleResult LB21(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × (BA | HY | NS)
-            switch (state.Next(text).LineBreakClass)
+            switch (state.NextClass)
             {
                 // [21.01]
                 case LineBreakClass.BreakAfter:
+                // [21.02]
+                case LineBreakClass.UnambiguousHyphen:
                 // [21.01]
                 case LineBreakClass.Hyphen:
                 // [21.01]
@@ -756,17 +774,16 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return RuleResult.Pass;
         }
 
-
         /// <summary>
         /// LB21a: Don't break after Hebrew + Hyphen.
         /// </summary>
         private static RuleResult LB21a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            if(state.Next(text).LineBreakClass != LineBreakClass.HebrewLetter)
+            if(state.NextClass != LineBreakClass.HebrewLetter)
             {
-                // [21.1] HL(HY|NonEastAsianBA) × [^HL]
-                if (state.Previous.LineBreakClass == LineBreakClass.HebrewLetter
-                    && state.Current.LineBreakClass is LineBreakClass.Hyphen or LineBreakClass.BreakAfter && !state.Current.Codepoint.IsEastAsian)
+                // [21.1] HL(HY|HH) × [^HL]
+                if (state.PreviousClass == LineBreakClass.HebrewLetter
+                    && state.Current.LineBreakClass is LineBreakClass.Hyphen or LineBreakClass.UnambiguousHyphen)
                 {
                     return RuleResult.NoBreak;
                 }
@@ -778,10 +795,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB21b: Don’t break between Solidus and Hebrew letters.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB21b(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // [21.2] SY × HL
-            if ((state.Current.LineBreakClass == LineBreakClass.BreakSymbols) && (state.Next(text).LineBreakClass == LineBreakClass.HebrewLetter))
+            if ((state.Current.LineBreakClass == LineBreakClass.BreakSymbols) && (state.NextClass == LineBreakClass.HebrewLetter))
             {
                 return RuleResult.NoBreak;
             }
@@ -792,10 +810,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB22: Do not break before ellipses.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB22(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × IN
-            if (state.Next(text).LineBreakClass == LineBreakClass.Inseparable)
+            if (state.NextClass == LineBreakClass.Inseparable)
             {
                 return RuleResult.NoBreak;
             }
@@ -814,7 +833,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.HebrewLetter:
                     {
                         // (AL | HL) × NU
-                        if (state.Next(text).LineBreakClass == LineBreakClass.Numeric)
+                        if (state.NextClass == LineBreakClass.Numeric)
                         {
                             return RuleResult.NoBreak;
                         }
@@ -825,7 +844,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.Numeric:
                     {
                         // NU × (AL | HL)
-                        if (state.Next(text).LineBreakClass is LineBreakClass.Alphabetic or LineBreakClass.HebrewLetter)
+                        if (state.NextClass is LineBreakClass.Alphabetic or LineBreakClass.HebrewLetter)
                         {
                             return RuleResult.NoBreak;
                         }
@@ -838,40 +857,35 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return RuleResult.Pass;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsIdEbEm(LineBreakClass cls)
+       => cls == LineBreakClass.Ideographic || cls == LineBreakClass.EBase || cls == LineBreakClass.EModifier;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsPrPo(LineBreakClass cls)
+            => cls == LineBreakClass.PrefixNumeric || cls == LineBreakClass.PostfixNumeric;
+
         /// <summary>
         /// LB23a: Do not break between numeric prefixes and ideographs, or between
         /// ideographs and numeric postfixes.
         /// </summary>
         private static RuleResult LB23a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            // PR × (ID | EB | EM)
-            if ((state.Current.LineBreakClass == LineBreakClass.PrefixNumeric)
-                && IsMatch(state.Next(text).LineBreakClass))
+            var currentClass = state.Current.LineBreakClass;
+            var nextClass = state.NextClass;
+
+            // LB23a: PR × (ID | EB | EM)
+            if (currentClass == LineBreakClass.PrefixNumeric && IsIdEbEm(nextClass))
             {
                 return RuleResult.NoBreak;
             }
-
-            // (ID | EB | EM) × PO
-            if ((state.Next(text).LineBreakClass == LineBreakClass.PostfixNumeric)
-                && IsMatch(state.Current.LineBreakClass))
+            //  (ID | EB | EM) × PO
+            if (nextClass == LineBreakClass.PostfixNumeric && IsIdEbEm(currentClass))
             {
                 return RuleResult.NoBreak;
             }
 
             return RuleResult.Pass;
-
-            static bool IsMatch(LineBreakClass cls)
-            {
-                switch (cls)
-                {
-                    case LineBreakClass.Ideographic:
-                    case LineBreakClass.EBase:
-                    case LineBreakClass.EModifier:
-                        return true;
-                }
-
-                return false;
-            }
         }
 
         /// <summary>
@@ -880,15 +894,16 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         private static RuleResult LB24(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            // (PR | PO) × (AL | HL)
-            if (state.Current.LineBreakClass is LineBreakClass.PrefixNumeric or LineBreakClass.PostfixNumeric
-                && state.Next(text).LineBreakClass is LineBreakClass.Alphabetic or LineBreakClass.HebrewLetter)
+            var currentClass = state.Current.LineBreakClass;
+            var nextClass = state.NextClass;
+
+            // LB24: (PR | PO) × (AL | HL); 
+            if (IsPrPo(currentClass) && (nextClass == LineBreakClass.Alphabetic || nextClass == LineBreakClass.HebrewLetter))
             {
                 return RuleResult.NoBreak;
             }
             // (AL | HL) × (PR | PO)
-            if (state.Current.LineBreakClass is LineBreakClass.Alphabetic or LineBreakClass.HebrewLetter
-                && state.Next(text).LineBreakClass is LineBreakClass.PrefixNumeric or LineBreakClass.PostfixNumeric)
+            if ((currentClass == LineBreakClass.Alphabetic || currentClass == LineBreakClass.HebrewLetter) && IsPrPo(nextClass))
             {
                 return RuleResult.NoBreak;
             }
@@ -896,13 +911,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return RuleResult.Pass;
         }
 
-
         /// <summary>
         /// LB25: Do not break between the following pairs of classes relevant to numbers
         /// </summary>
         private static RuleResult LB25(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            switch (state.Next(text).LineBreakClass)
+            switch (state.NextClass)
             {
                 // [25.06] NU(SY|IS)* x PR
                 case LineBreakClass.PrefixNumeric:
@@ -912,7 +926,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             // [25.04] NU(SY|IS)* CP × PR
                             case LineBreakClass.CloseParenthesis:
                                 {
-                                    switch (state.Previous.LineBreakClass)
+                                    switch (state.PreviousClass)
                                     {
                                         case LineBreakClass.Numeric:
                                             {
@@ -941,7 +955,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             case LineBreakClass.BreakSymbols:
                             case LineBreakClass.InfixNumeric:
                                 {
-                                    if (state.Previous.LineBreakClass == LineBreakClass.Numeric)
+                                    if (state.PreviousClass == LineBreakClass.Numeric)
                                     {
                                         return RuleResult.NoBreak;
                                     }
@@ -951,7 +965,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             // [25.03] NU(SY|IS)* CL × PR
                             case LineBreakClass.ClosePunctuation:
                                 {
-                                    switch (state.Previous.LineBreakClass)
+                                    switch (state.PreviousClass)
                                     {
                                         case LineBreakClass.Numeric:
                                             {
@@ -960,7 +974,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                                         case LineBreakClass.BreakSymbols:
                                         case LineBreakClass.InfixNumeric:
                                             {
-                                                if (state.Previous.LineBreakClass == LineBreakClass.Numeric)
+                                                if (state.PreviousClass == LineBreakClass.Numeric)
                                                 {
                                                     return RuleResult.NoBreak;
                                                 }
@@ -987,7 +1001,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             case LineBreakClass.BreakSymbols:
                             case LineBreakClass.InfixNumeric:
                                 {
-                                    if (state.Previous.LineBreakClass == LineBreakClass.Numeric)
+                                    if (state.PreviousClass == LineBreakClass.Numeric)
                                     {
                                         return RuleResult.NoBreak;
                                     }
@@ -1006,7 +1020,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             // [25.01] NU(SY|IS)* CL × PO
                             case LineBreakClass.ClosePunctuation:
                                 {
-                                    switch (state.Previous.LineBreakClass)
+                                    switch (state.PreviousClass)
                                     {
                                         case LineBreakClass.Numeric:
                                             {
@@ -1015,7 +1029,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                                         case LineBreakClass.BreakSymbols:
                                         case LineBreakClass.InfixNumeric:
                                             {
-                                                if (state.Previous.LineBreakClass == LineBreakClass.Numeric)
+                                                if (state.PreviousClass == LineBreakClass.Numeric)
                                                 {
                                                     return RuleResult.NoBreak;
                                                 }
@@ -1034,7 +1048,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             case LineBreakClass.BreakSymbols:
                             case LineBreakClass.InfixNumeric:
                                 {
-                                    if (state.Previous.LineBreakClass == LineBreakClass.Numeric)
+                                    if (state.PreviousClass == LineBreakClass.Numeric)
                                     {
                                         return RuleResult.NoBreak;
                                     }
@@ -1049,7 +1063,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             if (state.Current.LineBreakClass == LineBreakClass.PrefixNumeric)
             {
-                switch (state.Next(text).LineBreakClass)
+                switch (state.NextClass)
                 {
                     case LineBreakClass.OpenPunctuation:
                         {
@@ -1079,7 +1093,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             if (state.Current.LineBreakClass == LineBreakClass.PostfixNumeric)
             {
-                switch (state.Next(text).LineBreakClass)
+                switch (state.NextClass)
                 {
                     case LineBreakClass.OpenPunctuation:
                         {
@@ -1114,7 +1128,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.Hyphen:
                 case LineBreakClass.InfixNumeric:
                     {
-                        if (state.Next(text).LineBreakClass == LineBreakClass.Numeric)
+                        if (state.NextClass == LineBreakClass.Numeric)
                         {
                             return RuleResult.NoBreak;
                         }
@@ -1135,7 +1149,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.JL:
                     {
                         // JL × (JL | JV | H2 | H3)
-                        switch (state.Next(text).LineBreakClass)
+                        switch (state.NextClass)
                         {
                             case LineBreakClass.JL:
                             case LineBreakClass.JV:
@@ -1150,7 +1164,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.H2:
                     {
                         // (JV | H2) × (JV | JT)
-                        switch (state.Next(text).LineBreakClass)
+                        switch (state.NextClass)
                         {
                             case LineBreakClass.JV:
                             case LineBreakClass.JT:
@@ -1162,7 +1176,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.H3:
                     {
                         // (JT | H3) × JT
-                        if (state.Next(text).LineBreakClass == LineBreakClass.JT)
+                        if (state.NextClass == LineBreakClass.JT)
                         {
                             return RuleResult.NoBreak;
                         }
@@ -1187,7 +1201,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.H3:
                     {
                         // (JL | JV | JT | H2 | H3) × PO
-                        if (state.Next(text).LineBreakClass == LineBreakClass.PostfixNumeric)
+                        if (state.NextClass == LineBreakClass.PostfixNumeric)
                         {
                             return RuleResult.NoBreak;
                         }
@@ -1196,7 +1210,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.PrefixNumeric:
                     {
                         // PR × (JL | JV | JT | H2 | H3)
-                        switch (state.Next(text).LineBreakClass)
+                        switch (state.NextClass)
                         {
                             case LineBreakClass.JL:
                             case LineBreakClass.JV:
@@ -1224,7 +1238,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 case LineBreakClass.Alphabetic:
                 case LineBreakClass.HebrewLetter:
                     {
-                        switch (state.Next(text).LineBreakClass)
+                        switch (state.NextClass)
                         {
                             case LineBreakClass.Alphabetic:
                             case LineBreakClass.HebrewLetter:
@@ -1245,29 +1259,32 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         private static RuleResult LB28a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
+            var current = state.Current.Inherited ? state.LastBeforeWhitespace : state.Current;
+            var previous = state.Current.Inherited ? LineBreakState.Before(text, current) : state.Previous;
+
             // [28.11] AP × (AK | DottedCircle | AS)
-            if ((state.Current.LineBreakClass == LineBreakClass.AksaraPrebase) && isMatch(state.Next(text)))
+            if ((current.LineBreakClass == LineBreakClass.AksaraPrebase) && isMatch(state.Next(text)))
             {
                 return RuleResult.NoBreak;
             }
 
             // [28.12] (AK | DottedCircle | AS) × (VF | VI)
-            if (isMatch(state.LastBeforeWhitespace)
-                && ((state.Next(text).LineBreakClass == LineBreakClass.ViramaFinal) || (state.Next(text).LineBreakClass == LineBreakClass.Virama)))
+            if (isMatch(current)
+                && ((state.NextClass == LineBreakClass.ViramaFinal) || (state.NextClass == LineBreakClass.Virama)))
             {
                 return RuleResult.NoBreak;
             }
 
             // [28.13] (AK | DottedCircle| AS) VI × (AK | DottedCircle)
-            if (isMatch(state.Previous)
-                && state.Current.LineBreakClass == LineBreakClass.Virama
-                && ((state.Next(text).LineBreakClass == LineBreakClass.Aksara) || (state.Next(text).Codepoint == DotCircle)))
+            if (isMatch(previous)
+                && current.LineBreakClass == LineBreakClass.Virama
+                && ((state.NextClass == LineBreakClass.Aksara) || (state.Next(text).Codepoint == DotCircle)))
             {
                 return RuleResult.NoBreak;
             }
 
             // [28.14] (AK | DottedCircle | AS) × (AK | DottedCircle | AS) VF
-            if (isMatch(state.LastBeforeWhitespace)
+            if (isMatch(current)
                 && isMatch(state.Next(text))
                 && (LineBreakState.After(text, state.Next(text)).LineBreakClass == LineBreakClass.ViramaFinal))
             {
@@ -1286,11 +1303,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB29: Do not break between numeric punctuation and alphabetics (“e.g.”).
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB29(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // IS × (AL | HL)
             if ((state.Current.LineBreakClass == LineBreakClass.InfixNumeric)
-              && ((state.Next(text).LineBreakClass == LineBreakClass.Alphabetic) || (state.Next(text).LineBreakClass == LineBreakClass.HebrewLetter)))
+              && ((state.NextClass == LineBreakClass.Alphabetic) || (state.NextClass == LineBreakClass.HebrewLetter)))
             {
                 return RuleResult.NoBreak;
             }
@@ -1323,7 +1341,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     // [CP-[\p{ea=F}\p{ea=W}\p{ea=H}]] × (AL | HL | NU)
                     if (!state.Current.Codepoint.IsEastAsian)
                     {
-                        switch (state.Next(text).LineBreakClass)
+                        switch (state.NextClass)
                         {
                             case LineBreakClass.Alphabetic:
                             case LineBreakClass.HebrewLetter:
@@ -1348,7 +1366,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <returns></returns>
         private static RuleResult LB30a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            if (state.RegionalIndicator > 0 && state.Next(text).LineBreakClass == LineBreakClass.RegionalIndicator)
+            if (state.RegionalIndicator > 0 && state.NextClass == LineBreakClass.RegionalIndicator)
             {
                 if (state.RegionalIndicator + 1 == 2)
                 {
@@ -1365,8 +1383,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <returns></returns>
         private static RuleResult LB30b(ReadOnlySpan<char> text, ref LineBreakState state)
         {
+            var current = state.Current.Inherited ? state.Previous : state.Current;
+
             // EB × EM
-            if ((state.Current.LineBreakClass == LineBreakClass.EBase) && (state.Next(text).LineBreakClass == LineBreakClass.EModifier))
+            if ((current.LineBreakClass == LineBreakClass.EBase) && (state.NextClass == LineBreakClass.EModifier))
             {
                 return RuleResult.NoBreak;
             }
@@ -1379,9 +1399,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
             // codepoints with Line_Break=ID in some blocks are also assigned the
             // Extended_Pictographic property. Those blocks are intended for future
             // allocation of emoji characters.
-            if (state.Next(text).LineBreakClass == LineBreakClass.EModifier &&
-                state.Current.Codepoint.GraphemeBreakClass == GraphemeBreakClass.ExtendedPictographic &&
-                state.Current.Codepoint.GeneralCategory == GeneralCategory.Unassigned)
+            if (state.NextClass == LineBreakClass.EModifier &&
+                current.Codepoint.GraphemeBreakClass == GraphemeBreakClass.ExtendedPictographic &&
+                current.Codepoint.GeneralCategory == GeneralCategory.Unassigned)
             {
                 return RuleResult.NoBreak;
             }
@@ -1392,6 +1412,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB31: Break everywhere else.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB31(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             return RuleResult.MayBreak;
@@ -1446,11 +1467,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     return LineBreakClass.Alphabetic;
                 }
 
-                if (cp.Value == 327685)
-                {
-                    return LineBreakClass.Alphabetic;
-                }
-
                 // LB 1
                 // ==========================================
                 // Resolved Original    General_Category
@@ -1493,20 +1509,49 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         private ref struct LineBreakState
         {
-            private BreakUnit? _next;
+            // _next is resolved lazily on first Read; subsequent Reads eagerly
+            // pre-peek so that NextClass is a plain field load inside every rule
+            // (avoiding the 28-byte BreakUnit copy that state.NextClass
+            // would otherwise incur per call).
+            private BreakUnit _next;
+            private bool _hasNext;
+            private LineBreakClass _nextClass;
+
             private BreakUnit _previous;
+            private LineBreakClass _previousClass;
 
             public LineBreakState()
             {
-                _next = null;
+                _hasNext = false;
+                _next = default;
+                _nextClass = LineBreakClass.Unknown;
 
                 _previous = s_sot;
+                _previousClass = s_sot.LineBreakClass;
                 Current = s_sot;
                 LastBeforeSpace = s_sot;
                 LastBeforeWhitespace = s_sot;
             }
 
             public BreakUnit Current { get; set; }
+
+            /// <summary>
+            /// Cached LineBreakClass of the previous BreakUnit. Updated whenever
+            /// <see cref="Previous"/> would be reassigned (in <see cref="Read"/>
+            /// or via the Ignored/Inherited fall-through in the getter).
+            /// </summary>
+            public LineBreakClass PreviousClass
+            {
+                get
+                {
+                    if (_previous.Ignored || _previous.Inherited)
+                    {
+                        _previous = LastBeforeWhitespace;
+                        _previousClass = LastBeforeWhitespace.LineBreakClass;
+                    }
+                    return _previousClass;
+                }
+            }
 
             public BreakUnit Previous
             {
@@ -1515,6 +1560,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     if (_previous.Ignored || _previous.Inherited)
                     {
                         _previous = LastBeforeWhitespace;
+                        _previousClass = LastBeforeWhitespace.LineBreakClass;
                     }
 
                     return _previous;
@@ -1523,8 +1569,22 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             public BreakUnit Next(ReadOnlySpan<char> text)
             {
-                return _next ??= Peek(text);
+                if (!_hasNext)
+                {
+                    _next = Peek(text);
+                    _nextClass = _next.LineBreakClass;
+                    _hasNext = true;
+                }
+                return _next;
             }
+
+            /// <summary>
+            /// Cached LineBreakClass of the next BreakUnit. Faster than
+            /// <c>state.NextClass</c> because it avoids the
+            /// BreakUnit struct copy. Read is responsible for ensuring _hasNext
+            /// is set before any rule sees this property.
+            /// </summary>
+            public LineBreakClass NextClass => _nextClass;
 
             public static BreakUnit After(ReadOnlySpan<char> text, BreakUnit current)
             {
@@ -1552,19 +1612,22 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             public void IgnoreNext(ReadOnlySpan<char> text)
             {
-                _next = Next(text) with { Ignored = true };
+                var n = Next(text) with { Ignored = true };
+                _next = n;
+                _nextClass = n.LineBreakClass;
+                _hasNext = true;
             }
 
             public void ReplaceNext(BreakUnit next)
             {
-                _next = next;   
+                _next = next;
+                _nextClass = next.LineBreakClass;
+                _hasNext = true;
             }
 
             public int Position { get; private set; }
 
             public int RegionalIndicator { get; set; }
-
-            public int Quotation { get; set; }
 
             public BreakUnit LastBeforeWhitespace { get; set; }
 
@@ -1603,28 +1666,42 @@ namespace Avalonia.Media.TextFormatting.Unicode
             public BreakUnit Read(ReadOnlySpan<char> text)
             {
                 _previous = Current;
+                _previousClass = Current.LineBreakClass;
 
                 var next = Next(text);
-
-                if (!next.Codepoint.IsWhiteSpace)
-                {
-                    LastBeforeWhitespace = next;
-                }
-
-                if (next.LineBreakClass != LineBreakClass.Space)
-                {
-                    LastBeforeSpace = next;
-                }
 
                 Current = next;
 
                 Position += next.Length;
 
-                _next = null;
+                // Eagerly peek the new "next" so the cached _nextClass is valid
+                // for every rule in the upcoming ExecuteRules pass.
+                _next = Peek(text);
+                _nextClass = _next.LineBreakClass;
+                _hasNext = true;
+
+                // LB9 ignored marks do not become the prior item for the next real boundary.
+                if (_previous.Ignored || _previous.Inherited)
+                {
+                    _previous = LastBeforeWhitespace;
+                    _previousClass = LastBeforeWhitespace.LineBreakClass;
+                }
 
                 if (Current.Ignored)
                 {
                     Current = Current with { LineBreakClass = Previous.LineBreakClass, Inherited = true };
+                }
+
+                var current = Current.Inherited ? Previous : Current;
+
+                if (!Current.Codepoint.IsWhiteSpace)
+                {
+                    LastBeforeWhitespace = current;
+                }
+
+                if (Current.LineBreakClass != LineBreakClass.Space)
+                {
+                    LastBeforeSpace = current;
                 }
 
                 return next;
@@ -1652,50 +1729,5 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         private delegate RuleResult BreakUnitDelegate(ReadOnlySpan<char> text, ref LineBreakState state);
-
-        private static readonly BreakUnitDelegate[] s_rules = [
-            QuotationAndRegionalIndicator,
-            LB03,
-            LB04,
-            LB05,
-            LB06,
-            LB07,
-            LB08,
-            LB08a,
-            LB09,
-            LB10,
-            LB11,
-            LB12,
-            LB12a,
-            LB13,
-            LB14,
-            LB15a,
-            LB15b,
-            LB15c,
-            LB15d,
-            LB16,
-            LB17,
-            LB18,
-            LB19,
-            LB20,
-            LB20a,
-            LB21a, // Must be before LB21
-            LB21,
-            LB21b,
-            LB22,
-            LB23,
-            LB23a,
-            LB24,
-            LB25,
-            LB26,
-            LB27,
-            LB28,
-            LB28a,
-            LB29,
-            LB30,
-            LB30a,
-            LB30b,
-            LB31,
-        ];
     }
 }

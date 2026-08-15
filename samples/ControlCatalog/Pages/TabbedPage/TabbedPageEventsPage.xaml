@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageEventsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Actions" FontWeight="SemiBold" FontSize="13" />
+        <Button Content="Select Next Tab" HorizontalAlignment="Stretch" Click="OnSelectNext" />
+        <Button Content="Select Previous Tab" HorizontalAlignment="Stretch" Click="OnSelectPrevious" />
+
+        <Separator />
+
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Left" Text="Event Log" FontWeight="SemiBold" FontSize="13"
+                     VerticalAlignment="Center" />
+          <Button DockPanel.Dock="Right" Content="Clear" Click="OnClearLog"
+                  HorizontalAlignment="Right" Padding="8,2" FontSize="11" />
+        </DockPanel>
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8" MinHeight="120" MaxHeight="300">
+          <ScrollViewer x:Name="LogScrollViewer" VerticalScrollBarVisibility="Auto">
+            <TextBlock x:Name="EventLog"
+                       Text=""
+                       FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                       FontSize="11"
+                       TextWrapping="Wrap" />
+          </ScrollViewer>
+        </Border>
+
+        <Separator />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="SelectionChanged fires when the selected tab changes. NavigatedTo/NavigatedFrom are page lifecycle events that fire on the outgoing and incoming pages." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <!-- Pages configured in code-behind so lifecycle events are subscribed before NavigatedTo fires. -->
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Bottom" />
+    </Border>
+  </DockPanel>
+</UserControl>

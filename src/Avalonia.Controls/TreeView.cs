@@ -9,6 +9,7 @@ using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -168,7 +169,7 @@ namespace Avalonia.Controls
             item.IsExpanded = true;
 
             if (item.Presenter?.Panel is null)
-                (this.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+                this.GetLayoutManager()?.ExecuteLayoutPass();
 
             if (item.Presenter?.Panel is { } panel)
             {
@@ -550,7 +551,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             if (e.NavigationMethod == NavigationMethod.Directional)
             {
@@ -681,6 +682,11 @@ namespace Avalonia.Controls
                         ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
                         ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
                         eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true });
+
+                    if (eventArgs is PointerEventArgs)
+                    {
+                        container.PerformFeedback(FeedbackAction.Click);
+                    }
 
                     eventArgs.Handled = true;
                     return true;

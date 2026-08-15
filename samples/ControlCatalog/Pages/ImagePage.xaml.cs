@@ -5,7 +5,7 @@ using Avalonia.Media.Imaging;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ImagePage : UserControl
+    public partial class ImagePage : ContentPage
     {
         public ImagePage()
         {

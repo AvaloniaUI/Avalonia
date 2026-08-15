@@ -90,7 +90,7 @@ namespace Avalonia.Win32
             return rv;
         }
 
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
         {
             return new CursorImpl(new Win32Icon(cursor, hotSpot));
         }

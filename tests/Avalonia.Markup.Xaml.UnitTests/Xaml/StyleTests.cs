@@ -788,5 +788,25 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal("Cannot add a Style without selector to a ControlTheme. Line 5, position 14.", exception.Message);
         }
+
+        [Fact]
+        public void Selector_Should_Not_Resolve_To_MarkupExtension_Type()
+        {
+            using var _ = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var style = (Style)AvaloniaRuntimeXamlLoader.Load(
+                $"""
+                <Style xmlns='https://github.com/avaloniaui'
+                        xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'
+                        Selector='u|TestSelectorControl'>
+                </Style>
+                """);
+
+            Assert.NotNull(style.Selector);
+
+            var targetType = style.Selector.TargetType;
+
+            Assert.NotEqual(typeof(TestSelectorControlExtension), targetType);
+        }
     }
 }

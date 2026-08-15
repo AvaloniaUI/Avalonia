@@ -642,7 +642,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Layout(Control c)
         {
-            ((ILayoutRoot)c.GetVisualRoot()!).LayoutManager.ExecuteLayoutPass();
+            c.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private class Item

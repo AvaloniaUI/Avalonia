@@ -329,7 +329,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.ApplyTemplate();
 
-                var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
+                var popup = (Popup)target.GetTemplateDescendants().First(x => x.Name == "popup");
                 popup.Open();
 
                 var popupRoot = (Control)popup.Host!;
@@ -420,7 +420,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.ApplyTemplate();
 
-                var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
+                var popup = (Popup)target.GetTemplateDescendants().First(x => x.Name == "popup");
                 popup.Open();
 
                 var popupRoot = (Control)popup.Host!;
@@ -515,7 +515,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.ApplyTemplate();
 
-                var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
+                var popup = (Popup)target.GetTemplateDescendants().First(x => x.Name == "popup");
                 popup.Open();
 
                 var popupRoot = (Control)popup.Host!;
@@ -607,7 +607,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 window.Content = border;
 
                 hitTester.Setup(x =>
-                    x.HitTestFirst(new Point(10, 15), window, It.IsAny<Func<Visual, bool>>()))
+                    x.HitTestFirst(new Point(10, 15), (Visual)window.VisualRoot!, It.IsAny<Func<Visual, bool>>()))
                     .Returns(border);
 
                 border.PointerPressed += (s, e) =>
@@ -657,13 +657,22 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 button.Focus();
 
-                var inputRoot = Assert.IsAssignableFrom<IInputRoot>(popup.Host);
+                var inputRoot = ((Visual)popup.Host!).GetInputRoot();
 
-                var focusManager = inputRoot.FocusManager!;
+                var focusManager = inputRoot!.FocusManager!;
                 Assert.Same(button, focusManager.GetFocusedElement());
 
                 //Ensure focus remains in the popup
-                inputRoot.KeyboardNavigationHandler!.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+#pragma warning disable CS0618 // Type or member is obsolete
+                var handler = popup.Host switch
+                {
+                    PopupRoot popupRoot => popupRoot.Tests_KeyboardNavigationHandler,
+                    OverlayPopupHost overlayPopupHost => overlayPopupHost.Tests_KeyboardNavigationHandler,
+                    _ => throw new InvalidOperationException("Unknown popup host type")
+                };
+                
+                handler.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Same(textBox, focusManager.GetFocusedElement());
 
                 popup.Close();
@@ -702,9 +711,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 button.Focus();
 
-                var inputRoot = Assert.IsAssignableFrom<IInputRoot>(popup.Host);
+                var inputRoot = ((Visual)popup.Host!).GetInputRoot();
 
-                var focusManager = inputRoot.FocusManager!;
+                var focusManager = inputRoot!.FocusManager!;
                 Assert.Same(button, focusManager.GetFocusedElement());
 
                 border1.Child = null;
@@ -1170,7 +1179,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var ev = new PointerPressedEventArgs(
                     popupContent,
                     pointer,
-                    (PopupRoot)popupContent.VisualRoot!,
+                    (PopupRoot)TopLevel.GetTopLevel(popupContent)!,
                     new Point(50 , 50),
                     0,
                     new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
@@ -1307,6 +1316,48 @@ namespace Avalonia.Controls.UnitTests.Primitives
             result.ApplyTemplate();
 
             return result;
+        }
+
+        [Fact]
+        public void Popup_IsHitTestVisible_Defaults_To_True()
+        {
+            using (CreateServices())
+            {
+                Assert.True(new Popup().IsHitTestVisible);
+            }
+        }
+
+        [Fact]
+        public void Popup_Forwards_IsHitTestVisible_To_Host_On_Open()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup { IsHitTestVisible = false };
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.Open();
+
+                Assert.False(target.Host!.IsHitTestVisible);
+            }
+        }
+
+        [Fact]
+        public void Popup_Forwards_IsHitTestVisible_Changes_To_Open_Host()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.Open();
+                Assert.True(target.Host!.IsHitTestVisible);
+
+                target.IsHitTestVisible = false;
+
+                Assert.False(target.Host!.IsHitTestVisible);
+            }
         }
 
         [Fact]

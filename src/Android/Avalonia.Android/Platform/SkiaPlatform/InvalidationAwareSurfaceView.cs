@@ -38,6 +38,9 @@ namespace Avalonia.Android
 
         protected override void Dispose(bool disposing)
         {
+            if (disposing)
+                Holder?.RemoveCallback(this);
+
             ReleaseNativeWindowHandle();
             base.Dispose(disposing);
         }

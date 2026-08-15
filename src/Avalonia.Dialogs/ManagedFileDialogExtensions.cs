@@ -6,9 +6,7 @@ using Avalonia.Platform.Storage;
 
 namespace Avalonia.Dialogs
 {
-#if NET6_0_OR_GREATER
     [SupportedOSPlatform("windows"), SupportedOSPlatform("macos"), SupportedOSPlatform("linux")]
-#endif
     public static class ManagedFileDialogExtensions
     {
         internal class ManagedStorageProviderFactory : IStorageProviderFactory

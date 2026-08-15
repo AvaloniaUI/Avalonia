@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls.Documents;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls;
 
@@ -125,7 +126,7 @@ public static class TextScaling
     public static double GetScaledFontSize(Visual visual, double baseFontSize)
     {
         if (double.IsNaN(baseFontSize) || baseFontSize <= 0 || !GetIsEnabled(visual) || 
-            (GetCustomTextScaler(visual) ?? TopLevel.GetTopLevel(visual)?.PlatformSettings) is not { } scaler)
+            (GetCustomTextScaler(visual) ?? visual.GetPlatformSettings()) is not { } scaler)
         {
             return baseFontSize;
         }

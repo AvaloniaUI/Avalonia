@@ -8,6 +8,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -377,7 +378,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             {
                 //Go through two cycles of buffer swapping (there are render artifacts otherwise)
                 for (var c = 0; c < 2; c++)
-                    using (CreateGlRenderTarget().BeginDraw())
+                    using (CreateGlRenderTarget().BeginDraw(new IRenderTarget.RenderTargetSceneInfo(PixelSize, 1, CompositionTransparencyLevel.None)))
                     {
                         _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG,
                             initialBufferSwappingColorB, initialBufferSwappingColorA);
@@ -406,6 +407,9 @@ namespace Avalonia.LinuxFramebuffer.Output
             {
                 _parent = parent;
             }
+
+            public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
+
             public void Dispose()
             {
                 // We are wrapping GBM buffer chain associated with CRTC, and don't free it on a whim
@@ -508,7 +512,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 public bool IsYFlipped => false;
             }
 
-            public IGlPlatformSurfaceRenderingSession BeginDraw()
+            public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 var clearContext = _parent._deferredContext.MakeCurrent(_parent._eglSurface);
                 var gl = _parent._deferredContext.GlInterface;

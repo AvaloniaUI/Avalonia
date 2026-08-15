@@ -1,3 +1,4 @@
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Transform;
 using XamlX.TypeSystem;
 
@@ -28,6 +29,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             AddExtra(ClrPropertyEmitter);
             AddExtra(AccessorFactoryEmitter);
             AddExtra(TrampolineBuilder);
+            AddExtra(new AvaloniaXamlIlWellKnownTypes(TypeSystem));
         }
     }
 }

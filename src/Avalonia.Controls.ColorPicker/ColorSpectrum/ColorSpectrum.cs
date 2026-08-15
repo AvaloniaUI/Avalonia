@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Collections.Pooled;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -197,6 +198,11 @@ namespace Avalonia.Controls.Primitives
             base.OnDetachedFromVisualTree(e);
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ColorSpectrumAutomationPeer(this);
+        }
+
         /// <summary>
         /// Explicitly unregisters all events connected in OnApplyTemplate().
         /// </summary>
@@ -348,7 +354,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
             if (_selectionEllipsePanel != null &&
@@ -363,7 +369,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
             if (_selectionEllipsePanel != null &&
@@ -397,6 +403,8 @@ namespace Avalonia.Controls.Primitives
         {
             if (change.Property == ColorProperty)
             {
+                _oldColor = change.GetOldValue<Color>();
+
                 // If we're in the process of internally updating the color,
                 // then we don't want to respond to the Color property changing.
                 if (!_updatingColor)
@@ -410,9 +418,8 @@ namespace Avalonia.Controls.Primitives
 
                     UpdateEllipse();
                     UpdateBitmapSources();
+                    RaiseColorChanged();
                 }
-
-                _oldColor = change.GetOldValue<Color>();
             }
             else if (change.Property == HsvColorProperty)
             {

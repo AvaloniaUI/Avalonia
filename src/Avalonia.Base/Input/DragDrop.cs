@@ -127,7 +127,7 @@ namespace Avalonia.Input
         /// <seealso cref="DataTransfer"/>
         /// </summary>
         public static Task<DragDropEffects> DoDragDropAsync(
-            PointerEventArgs triggerEvent,
+            PointerPressedEventArgs triggerEvent,
             IDataTransfer dataTransfer,
             DragDropEffects allowedEffects)
         {
