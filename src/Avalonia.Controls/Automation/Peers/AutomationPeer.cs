@@ -577,9 +577,32 @@ namespace Avalonia.Automation.Peers
         public event EventHandler<AutomationPropertyChangedEventArgs>? PropertyChanged;
 
         /// <summary>
+        /// Occurs when the text selection (or caret position, for a collapsed selection) of an
+        /// <see cref="Provider.ITextProvider"/> peer has changed.
+        /// </summary>
+        public event EventHandler? TextSelectionChanged;
+
+        /// <summary>
+        /// Occurs when the text content of an <see cref="Provider.ITextProvider"/> peer has
+        /// changed.
+        /// </summary>
+        public event EventHandler? TextChanged;
+
+        /// <summary>
         /// Raises an event to notify the automation client the children of the peer have changed.
         /// </summary>
         protected void RaiseChildrenChangedEvent() => ChildrenChanged?.Invoke(this, EventArgs.Empty);
+
+        /// <summary>
+        /// Raises an event to notify the automation client that the text selection or caret
+        /// position has changed.
+        /// </summary>
+        protected void RaiseTextSelectionChangedEvent() => TextSelectionChanged?.Invoke(this, EventArgs.Empty);
+
+        /// <summary>
+        /// Raises an event to notify the automation client that the text content has changed.
+        /// </summary>
+        protected void RaiseTextChangedEvent() => TextChanged?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Raises an event to notify the automation client of a changed property value.

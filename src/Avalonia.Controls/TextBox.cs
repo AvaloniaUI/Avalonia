@@ -370,6 +370,12 @@ namespace Avalonia.Controls
         }
 
         private TextPresenter? _presenter;
+
+        /// <summary>
+        /// Gives the automation peer access to the text layout/hit-testing surface.
+        /// </summary>
+        internal TextPresenter? Presenter => _presenter;
+
         private ScrollViewer? _scrollViewer;
         private readonly TextBoxTextInputMethodClient _imClient = new();
         private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;

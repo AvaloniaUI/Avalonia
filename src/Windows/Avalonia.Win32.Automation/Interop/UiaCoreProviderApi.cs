@@ -87,5 +87,15 @@ namespace Avalonia.Win32.Automation.Interop
 
         [LibraryImport("UIAutomationCore.dll", StringMarshalling = StringMarshalling.Utf8)]
         public static partial int UiaDisconnectProvider(IRawElementProviderSimple? provider);
+
+        /// <summary>
+        /// Gets the reserved COM value UI Automation clients (e.g. NVDA) expect back from
+        /// <c>ITextRangeProvider.GetAttributeValue</c> for an attribute the control doesn't
+        /// support. Returning a plain sentinel like <c>-1</c> instead is read by at least NVDA as
+        /// a real (truthy) attribute value rather than "not supported" — e.g. for the hyperlink
+        /// attribute, that gets a plain TextBox announced as a link.
+        /// </summary>
+        [LibraryImport("UIAutomationCore.dll", StringMarshalling = StringMarshalling.Utf8)]
+        public static partial int UiaGetReservedNotSupportedValue(out IntPtr punkNotSupportedValue);
     }
 }

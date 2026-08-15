@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 // ReSharper disable InconsistentNaming
 
 namespace Avalonia.Win32.Automation.Marshalling;
@@ -15,6 +16,8 @@ namespace Avalonia.Win32.Automation.Marshalling;
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
 internal unsafe partial struct SafeArrayRef
 {
+    private static readonly ComWrappers s_comWrappers = new StrategyBasedComWrappers();
+
     private SAFEARRAY* _ptr;
 
     internal struct SAFEARRAY
@@ -160,7 +163,10 @@ internal unsafe partial struct SafeArrayRef
         });
     }
 
-    public static bool TryCreate(IEnumerable? managed, [NotNullWhen(true)] out SafeArrayRef? safearray, out VarEnum varEnum)
+    public static bool TryCreate(IEnumerable? managed, [NotNullWhen(true)] out SafeArrayRef? safearray, out VarEnum varEnum) =>
+        TryCreate(managed, elementType: null, out safearray, out varEnum);
+
+    public static bool TryCreate(IEnumerable? managed, Type? elementType, [NotNullWhen(true)] out SafeArrayRef? safearray, out VarEnum varEnum)
     {
         safearray = default;
         varEnum = default;
@@ -178,13 +184,13 @@ internal unsafe partial struct SafeArrayRef
                 List<T> list => CollectionsMarshal.AsSpan(list),
                 _ => collection.ToArray()
             };
-            return CreateFromSpan<T>(collectionSpan, varEnum);
+            return CreateFromSpan<T>(collectionSpan, varEnum, iid: null);
         }
 
-        static SafeArrayRef CreateFromSpan<T>(ReadOnlySpan<T> span, VarEnum varEnum)
+        static SafeArrayRef CreateFromSpan<T>(ReadOnlySpan<T> span, VarEnum varEnum, Guid? iid)
         {
             var bound = new SAFEARRAYBOUND { cElements = (uint)span.Length, lLbound = 0 };
-            var safearray = SafeArrayCreate(varEnum, 1, bound);
+            var safearray = iid is { } guid ? SafeArrayCreateEx(varEnum, 1, bound, &guid) : SafeArrayCreate(varEnum, 1, bound);
             if (span.Length == 0)
             {
                 return new SafeArrayRef
@@ -224,7 +230,7 @@ internal unsafe partial struct SafeArrayRef
                     pointers[i] = Marshal.StringToBSTR(strings[i]);
                 }
 
-                return CreateFromSpan<IntPtr>(pointers.AsSpan(0, strings.Count), varEnum);
+                return CreateFromSpan<IntPtr>(pointers.AsSpan(0, strings.Count), varEnum, iid: null);
             }
             finally
             {
@@ -243,7 +249,7 @@ internal unsafe partial struct SafeArrayRef
                     shorts[i] = bools[i] ? ComVariant.VARIANT_TRUE : ComVariant.VARIANT_FALSE;
                 }
 
-                return CreateFromSpan<short>(shorts.AsSpan(0, bools.Count), varEnum);
+                return CreateFromSpan<short>(shorts.AsSpan(0, bools.Count), varEnum, iid: null);
             }
             finally
             {
@@ -251,7 +257,7 @@ internal unsafe partial struct SafeArrayRef
             }
         }
 
-        static SafeArrayRef CreateFromObjects(IReadOnlyList<object> objects, VarEnum varEnum)
+        static SafeArrayRef CreateFromObjects(IReadOnlyList<object> objects, VarEnum varEnum, Type? elementType)
         {
             Debug.Assert(varEnum == VarEnum.VT_UNKNOWN); // other types not supported yet
             var pointers = ArrayPool<IntPtr>.Shared.Rent(objects.Count);
@@ -259,13 +265,25 @@ internal unsafe partial struct SafeArrayRef
             {
                 for (int i = 0; i < objects.Count; i++)
                 {
-                    if (ComWrappers.TryGetComInstance(objects[i], out var pointer))
-                    {
-                        pointers[i] = pointer;
-                    }
+                    // TryGetComInstance only returns a wrapper that already exists; it does NOT
+                    // create one. For objects that have never previously been exposed to COM
+                    // (e.g. a freshly constructed ITextRangeProvider, unlike long-lived cached
+                    // AutomationNode instances that are usually already wrapped via prior tree
+                    // navigation), this silently failed and left `pointers[i]` as uninitialized
+                    // garbage from the (unzeroed) ArrayPool rental, corrupting the SAFEARRAY and
+                    // crashing native UIA code that later reads it. Always get-or-create instead.
+                    pointers[i] = s_comWrappers.GetOrCreateComInterfaceForObject(
+                        objects[i], CreateComInterfaceFlags.None);
                 }
 
-                return CreateFromSpan<IntPtr>(pointers, varEnum);
+                // Tag the array with the element interface's IID (FADF_HAVEIID) via
+                // SafeArrayCreateEx rather than a plain SafeArrayCreate. Without it, native code
+                // marshaling the array across a process boundary (e.g. UIA delivering it to an
+                // out-of-process client such as NVDA) doesn't know which interface each raw
+                // IUnknown* element pointer actually is, which crashes when it tries to build a
+                // proxy for it.
+                var iid = elementType?.GUID;
+                return CreateFromSpan<IntPtr>(pointers.AsSpan(0, objects.Count), varEnum, iid);
             }
             finally
             {
@@ -295,7 +313,7 @@ internal unsafe partial struct SafeArrayRef
 
             IReadOnlyList<string> strings => CreateFromStrings(strings, varEnum = VarEnum.VT_BSTR),
 
-            IReadOnlyList<object> objects => CreateFromObjects(objects, varEnum = VarEnum.VT_UNKNOWN),
+            IReadOnlyList<object> objects => CreateFromObjects(objects, varEnum = VarEnum.VT_UNKNOWN, elementType),
             
             _ => null
         };
@@ -305,6 +323,9 @@ internal unsafe partial struct SafeArrayRef
 
     [LibraryImport("oleaut32.dll")]
     private static unsafe partial SAFEARRAY* SafeArrayCreate(VarEnum vt, uint cDims, in SAFEARRAYBOUND rgsabound);
+
+    [LibraryImport("oleaut32.dll")]
+    private static unsafe partial SAFEARRAY* SafeArrayCreateEx(VarEnum vt, uint cDims, in SAFEARRAYBOUND rgsabound, Guid* pvExtra);
 
     [LibraryImport("oleaut32.dll")]
     private static unsafe partial void SafeArrayDestroy(SAFEARRAY* array);

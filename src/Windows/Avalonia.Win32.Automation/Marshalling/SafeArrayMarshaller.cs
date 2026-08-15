@@ -10,7 +10,7 @@ internal static class SafeArrayMarshaller<T> where T : notnull
 {
     public static SafeArrayRef ConvertToUnmanaged(T[]? managed) =>
         managed is null ? new SafeArrayRef()
-        : SafeArrayRef.TryCreate(managed, out var result, out _) ? result.Value
+        : SafeArrayRef.TryCreate(managed, typeof(T), out var result, out _) ? result.Value
         : throw new NotImplementedException($"SafeArray marshalling for '{managed?.GetType().Name}' is not implemented.");
 
     public static T[]? ConvertToManaged(SafeArrayRef unmanaged) => SafeArrayRef.ToArray<T>(unmanaged);

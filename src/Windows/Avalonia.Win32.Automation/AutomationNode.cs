@@ -66,6 +66,8 @@ namespace Avalonia.Win32.Automation
             s_nodes.Add(peer, this);
             peer.ChildrenChanged += OnPeerChildrenChanged;
             peer.PropertyChanged += OnPeerPropertyChanged;
+            peer.TextSelectionChanged += OnPeerTextSelectionChanged;
+            peer.TextChanged += OnPeerTextChanged;
 
             if (Peer.GetProvider<AAP.IEmbeddedRootProvider>() is { } embeddedRoot)
                 embeddedRoot.FocusChanged += OnEmbeddedRootFocusChanged;
@@ -99,6 +101,7 @@ namespace Avalonia.Win32.Automation
                 UiaPatternId.ScrollItem => this,
                 UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
                 UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
+                UiaPatternId.Text => ThisIfPeerImplementsProvider<AAP.ITextProvider>(),
                 UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
                 UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
                 _ => null,
@@ -196,21 +199,9 @@ namespace Avalonia.Win32.Automation
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
         void IInvokeProvider.Invoke() => InvokeSync((AAP.IInvokeProvider x) => x.Invoke());
 
-        protected void InvokeSync(Action action)
-        {
-            if (Dispatcher.UIThread.CheckAccess())
-                action();
-            else
-                Dispatcher.UIThread.InvokeAsync(action).Wait();
-        }
+        protected void InvokeSync(Action action) => Win32DispatcherHelper.InvokeSync(action);
 
-        protected T InvokeSync<T>(Func<T> func)
-        {
-            if (Dispatcher.UIThread.CheckAccess())
-                return func();
-            else
-                return Dispatcher.UIThread.InvokeAsync(func).Result;
-        }
+        protected T InvokeSync<T>(Func<T> func) => Win32DispatcherHelper.InvokeSync(func);
 
         protected void InvokeSync<TInterface>(Action<TInterface> action)
         {
@@ -271,6 +262,20 @@ namespace Avalonia.Win32.Automation
                 (int)UiaEventId.LiveRegionChanged);
         }
 
+        protected void RaiseTextSelectionChanged()
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(
+                this,
+                (int)UiaEventId.Text_TextSelectionChanged);
+        }
+
+        protected void RaiseTextChanged()
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(
+                this,
+                (int)UiaEventId.Text_TextChanged);
+        }
+
         private RootAutomationNode? GetRoot()
         {
             Dispatcher.UIThread.VerifyAccess();
@@ -298,6 +303,10 @@ namespace Avalonia.Win32.Automation
                 RaiseLiveRegionChanged();
             }
         }
+
+        private void OnPeerTextSelectionChanged(object? sender, EventArgs e) => RaiseTextSelectionChanged();
+
+        private void OnPeerTextChanged(object? sender, EventArgs e) => RaiseTextChanged();
 
         private void OnEmbeddedRootFocusChanged(object? sender, EventArgs e)
         {
