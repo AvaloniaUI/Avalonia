@@ -19,6 +19,8 @@ namespace Avalonia.Android.Platform.Storage;
 internal class AndroidStorageProvider : IStorageProvider
 {
     public static ReadOnlySpan<byte> AndroidKey => "android"u8;
+    private const string ContentUriScheme = "content";
+    private const string FileUriScheme = "file";
     private readonly Activity _activity;
 
     public AndroidStorageProvider(Activity activity)
@@ -63,7 +65,7 @@ internal class AndroidStorageProvider : IStorageProvider
         //     to read or write files in your application-specific directories [...]"
         // Consequently, we don't try to check for that permission here anymore.
 
-        if (filePath.Scheme == "file" && androidUri.Path is not null)
+        if (filePath.Scheme == FileUriScheme && androidUri.Path is not null)
         {
             var javaFile = new JavaFile(androidUri.Path);
             if (javaFile.Exists() && javaFile.IsFile)
@@ -72,7 +74,7 @@ internal class AndroidStorageProvider : IStorageProvider
             }
             return null;
         }
-        else if (filePath.Scheme == "content" && _activity.ContentResolver is not null)
+        else if (filePath.Scheme == ContentUriScheme && _activity.ContentResolver is not null)
         {
             try
             {
@@ -109,7 +111,7 @@ internal class AndroidStorageProvider : IStorageProvider
             return null;
         }
 
-        if (folderPath.Scheme == "file" && androidUri.Path is not null)
+        if (folderPath.Scheme == FileUriScheme && androidUri.Path is not null)
         {
             var javaFile = new JavaFile(androidUri.Path);
             if (javaFile.Exists() && javaFile.IsDirectory)
@@ -118,7 +120,7 @@ internal class AndroidStorageProvider : IStorageProvider
             }
             return null;
         }
-        else if (folderPath.Scheme == "content")
+        else if (folderPath.Scheme == ContentUriScheme)
         {
             try
             {
