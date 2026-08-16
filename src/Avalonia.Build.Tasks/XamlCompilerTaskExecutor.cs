@@ -157,9 +157,12 @@ namespace Avalonia.Build.Tasks
                 var arg1 = new CustomAttributeArgument(strType, "AvaloniaUseCompiledBindingsByDefault");
                 var arg2 = new CustomAttributeArgument(strType, defaultCompileBindings.ToString());
                 asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg1, arg2 } });
-                var arg3 = new CustomAttributeArgument(strType, "AvaloniaXamlCreateSourceInfo");
-                var arg4 = new CustomAttributeArgument(strType, createSourceInfo.ToString());
-                asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg3, arg4 } });
+                if (createSourceInfo)
+                {
+                    var arg3 = new CustomAttributeArgument(strType, "AvaloniaXamlCreateSourceInfo");
+                    var arg4 = new CustomAttributeArgument(strType, createSourceInfo.ToString());
+                    asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg3, arg4 } });
+                }
             }
 
             TypeDefinition AddClass(string name, TypeAttributes extraAttributes = 0)
