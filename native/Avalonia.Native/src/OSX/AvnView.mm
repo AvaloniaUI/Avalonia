@@ -78,7 +78,17 @@
     [self setLayerContentsRedrawPolicy: NSViewLayerContentsRedrawDuringViewResize];
 
     _parent = parent;
-    _area = nullptr;
+
+    // NSTrackingInVisibleRect makes AppKit follow the visible bounds of the view.
+    // Because of this, the tracking area does not need to change on resize.
+    // Do not remove and add the area again on each live-resize tick. If you do, AppKit
+    // queues synthetic enter and exit events with stale locations. These events corrupt
+    // the pointer position after a resize and force it to the top left.
+    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved |
+        NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag | NSTrackingInVisibleRect;
+    _area = [[NSTrackingArea alloc] initWithRect:NSZeroRect options:options owner:self userInfo:nullptr];
+    [self addTrackingArea:_area];
+
     _lastPixelSize.Height = 100;
     _lastPixelSize.Width = 100;
     [self registerForDraggedTypes: @[@"public.data", GetAvnCustomDataType()]];
@@ -126,24 +136,11 @@
 {
     [super setFrameSize:newSize];
 
-    if(_area != nullptr)
-    {
-        [self removeTrackingArea:_area];
-        _area = nullptr;
-    }
-
     auto parent = _parent.tryGet();
     if (parent == nullptr)
     {
         return;
     }
-
-    NSRect rect = NSZeroRect;
-    rect.size = newSize;
-
-    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag;
-    _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
-    [self addTrackingArea:_area];
 
     parent->UpdateCursor();
 
@@ -256,8 +253,12 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         return;
     }
 
-    NSPoint eventLocation = [event locationInWindow];
-    
+    // AppKit synthesizes enter and exit events for the tracked geometry.
+    // They can have stale locations. Use the current pointer location instead.
+    NSPoint eventLocation = event.type == NSEventTypeMouseEntered || event.type == NSEventTypeMouseExited
+        ? [[self window] mouseLocationOutsideOfEventStream]
+        : [event locationInWindow];
+
     auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
     
     auto localPoint = NSMakePoint(eventLocation.x - viewLocation.x, viewLocation.y - eventLocation.y);
@@ -390,7 +391,11 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt);
     }
 
-    [super mouseMoved:event];
+    // Forward only real mouse-moved events up the responder chain. Synthetic enter and
+    // exit events can have stale locations. If these events go up the chain as mouseMoved:,
+    // the window frame tracks the mouse at an incorrect position.
+    if (event.type == NSEventTypeMouseMoved)
+        [super mouseMoved:event];
 }
 
 - (BOOL) resignFirstResponder
@@ -558,7 +563,10 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (void)mouseEntered:(NSEvent *)event
 {
-    [self mouseEvent:event withType:Move];
+    // If the pointer is not inside the view, the enter event is false. Ignore it.
+    NSPoint location = [self convertPoint:[[self window] mouseLocationOutsideOfEventStream] fromView:nil];
+    if (NSPointInRect(location, self.bounds))
+        [self mouseEvent:event withType:Move];
     [super mouseEntered:event];
 }
 
