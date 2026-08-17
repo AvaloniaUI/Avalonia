@@ -1915,6 +1915,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void AutoScrollToSelectedItem_Scrolls_Synchronously_When_Laid_Out()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                ItemsSource = items,
+            };
+
+            var raised = false;
+
+            Prepare(target);
+            target.AddHandler(Control.RequestBringIntoViewEvent, (_, _) => raised = true);
+            target.SelectedIndex = 2;
+
+            Assert.True(raised);
+        }
+
+        [Fact]
         public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
         {
             using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
