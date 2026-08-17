@@ -215,6 +215,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ItemTemplate_Can_Be_Changed_Virtualizing()
+        {
+            using var app = Start();
+
+            var itemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+            var target = CreateTarget(
+                itemsSource: new[] { "Foo" },
+                itemTemplate: new FuncDataTemplate<string>((_, __) => new Canvas()),
+                itemsPanel: itemsPanel);
+
+            var container = GetContainer(target);
+
+            Assert.IsType<Canvas>(container.Child);
+
+            target.ItemTemplate = new FuncDataTemplate<string>((_, __) => new Border());
+            Layout(target);
+
+            container = GetContainer(target);
+
+            Assert.IsType<Border>(container.Child);
+        }
+
+        [Fact]
         public void ItemContainerTheme_Can_Be_Cleared()
         {
             using var app = Start();

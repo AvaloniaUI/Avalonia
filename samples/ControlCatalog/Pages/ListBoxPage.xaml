@@ -43,9 +43,18 @@
     </StackPanel>
     <ListBox ItemsSource="{Binding Items}"
              Selection="{Binding Selection}"
-             DisplayMemberBinding="{Binding (viewModels:ItemModel).ID, StringFormat='{}Item {0:N0}'}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
              SelectionMode="{Binding SelectionMode^}"
-             WrapSelection="{Binding WrapSelection}"/>
+             WrapSelection="{Binding WrapSelection}">
+      <ListBox.ItemTemplate>
+        <DataTemplate DataType="viewModels:ItemModel"
+                      EnableVirtualization="True"
+                      MaxPoolSizePerKey="10">
+          <Border BorderBrush="Gray" BorderThickness="0.5" Padding="4" Margin="2">
+            <TextBlock Text="{Binding ID, StringFormat='{}Item {0:N0}'}" />
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
   </DockPanel>
 </ContentPage>

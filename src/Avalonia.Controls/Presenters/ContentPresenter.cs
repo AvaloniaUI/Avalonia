@@ -10,8 +10,6 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Platform;
-using Avalonia.Styling;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Presenters
@@ -177,6 +175,7 @@ namespace Avalonia.Controls.Presenters
         private Control? _child;
         private bool _createdChild;
         private IRecyclingDataTemplate? _recyclingDataTemplate;
+        private int _batchUpdateDepth;
         private (bool IsSet, object? Value) _overrideDataContext;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
 
@@ -422,6 +421,47 @@ namespace Avalonia.Controls.Presenters
         internal IContentPresenterHost? Host { get; private set; }
 
         /// <summary>
+        /// Begins a batch update, during which changes to <see cref="Content"/> and
+        /// <see cref="ContentTemplate"/> do not rebuild the child. Call <see cref="EndBatchUpdate"/> to
+        /// apply them together.
+        /// </summary>
+        /// <remarks>
+        /// Batches nest: the child is rebuilt once, when the outermost batch ends. An
+        /// <see cref="EndBatchUpdate"/> without a matching call here does nothing.
+        /// <para>
+        /// A batch only suppresses rebuilds between property assignments, not across a layout pass:
+        /// <see cref="Control.ApplyTemplate"/> is called from measure and does not consult the batch, so
+        /// a batch left open is applied by the next measure rather than stranding the child.
+        /// </para>
+        /// </remarks>
+        internal void BeginBatchUpdate()
+        {
+            ++_batchUpdateDepth;
+        }
+
+        /// <summary>
+        /// Ends a batch update started by <see cref="BeginBatchUpdate"/>, applying the changes made
+        /// during it. Has no effect if no batch is open, or if an outer batch is still open.
+        /// </summary>
+        internal void EndBatchUpdate()
+        {
+            if (_batchUpdateDepth == 0 || --_batchUpdateDepth > 0)
+                return;
+
+            if (((ILogical)this).IsAttachedToLogicalTree)
+            {
+                UpdateChild();
+            }
+
+            // ContentChanged returned early for every change made during the batch, so the state that
+            // depends on Content was never refreshed. Do it here, once, for the whole batch - without
+            // this, a container prepared through a batch keeps the ":empty" it was constructed with
+            // while holding content, and never invalidates its measure.
+            UpdatePseudoClasses();
+            InvalidateMeasure();
+        }
+
+        /// <summary>
         /// Sets the <see cref="Content"/> and <see cref="StyledElement.DataContext"/> properties atomically,
         /// ensuring that the content's DataContext is never temporarily set to an incorrect value.
         /// </summary>
@@ -503,13 +543,13 @@ namespace Avalonia.Controls.Presenters
         {
             var contentTemplate = ContentTemplate;
             var oldChild = Child;
+
             var newChild = CreateChild(content, oldChild, contentTemplate);
             var logicalChildren = GetEffectiveLogicalChildren();
 
             // Remove the old child if we're not recycling it.
             if (newChild != oldChild)
             {
-
                 if (oldChild != null)
                 {
                     VisualChildren.Remove(oldChild);
@@ -637,6 +677,8 @@ namespace Avalonia.Controls.Presenters
                             : FuncDataTemplate.Default
                     );
 
+                // Use instance-based recycling (IRecyclingDataTemplate)
+                // Container-level virtualization handles pooling via VirtualizingStackPanel
                 if (dataTemplate is IRecyclingDataTemplate rdt)
                 {
                     var toRecycle = rdt == _recyclingDataTemplate ? oldChild : null;
@@ -749,6 +791,11 @@ namespace Avalonia.Controls.Presenters
         private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
             _createdChild = false;
+
+            // Don't update child if we're in batch update mode - EndBatchUpdate applies it, along with
+            // the UpdatePseudoClasses/InvalidateMeasure skipped by this early return.
+            if (_batchUpdateDepth > 0)
+                return;
 
             if (((ILogical)this).IsAttachedToLogicalTree)
             {
