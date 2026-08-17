@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -150,10 +151,10 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
-        [Win32Fact("Relies on an installed font family to back the alias")]
+        [Fact]
         public void Should_Cache_Synthetic_Match_Under_Requested_Family_Name()
         {
-            var fontManager = new AliasFontManagerImpl(alias: "MyAlias", target: "Arial");
+            var fontManager = new AliasFontManagerImpl(alias: "MyAlias");
 
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
             {
@@ -193,17 +194,21 @@ namespace Avalonia.Skia.UnitTests.Media
         /// <c>&lt;alias name="arial" to="sans-serif"/&gt;</c> in <c>/system/etc/fonts.xml</c>).
         /// Such a family cannot be found again by the family-name search, so nothing repairs a
         /// missing cache entry.
+        ///
+        /// The alias is backed by an embedded test font rather than an installed one, so the test
+        /// runs identically on every platform.
         /// </summary>
         private sealed class AliasFontManagerImpl : IFontManagerImpl
         {
+            private const string EmbeddedFonts =
+                "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests";
+
             private readonly IFontManagerImpl _inner = new FontManagerImpl();
             private readonly string _alias;
-            private readonly string _target;
 
-            public AliasFontManagerImpl(string alias, string target)
+            public AliasFontManagerImpl(string alias)
             {
                 _alias = alias;
-                _target = target;
             }
 
             /// <summary>Number of typefaces created from a stream, i.e. of synthetic emboldenings.</summary>
@@ -217,15 +222,26 @@ namespace Avalonia.Skia.UnitTests.Media
             public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
                 FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
             {
-                // The alias always resolves to the regular face of the target family, never to the
+                // The alias always resolves to the regular face of the backing font, never to the
                 // requested weight — exactly what a platform alias does.
                 if (string.Equals(familyName, _alias, StringComparison.OrdinalIgnoreCase))
                 {
-                    return _inner.TryCreateGlyphTypeface(
-                        _target, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out platformTypeface);
+                    using var stream = OpenBackingFont();
+
+                    return _inner.TryCreateGlyphTypeface(stream, FontSimulations.None, out platformTypeface);
                 }
 
-                return _inner.TryCreateGlyphTypeface(familyName, style, weight, stretch, out platformTypeface);
+                platformTypeface = null;
+
+                return false;
+            }
+
+            private static Stream OpenBackingFont()
+            {
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+                var fontAsset = FontFamilyLoader.LoadFontAssets(new Uri(EmbeddedFonts, UriKind.Absolute)).First();
+
+                return assetLoader.Open(fontAsset);
             }
 
             public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations,
