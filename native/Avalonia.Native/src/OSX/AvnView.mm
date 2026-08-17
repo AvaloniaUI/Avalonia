@@ -391,9 +391,8 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt);
     }
 
-    // Forward only real mouse-moved events up the responder chain. Synthetic enter and
-    // exit events can have stale locations. If these events go up the chain as mouseMoved:,
-    // the window frame tracks the mouse at an incorrect position.
+    // This handler is shared by all mouse event types. Only real mouse-moved
+    // events must continue up the responder chain as mouseMoved:
     if (event.type == NSEventTypeMouseMoved)
         [super mouseMoved:event];
 }
