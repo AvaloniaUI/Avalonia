@@ -10,9 +10,9 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Platform;
-using Avalonia.Styling;
+using Avalonia.Rendering.Composition;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Presenters
     /// Presents a single item of data inside a <see cref="TemplatedControl"/> template.
     /// </summary>
     [PseudoClasses(":empty")]
-    public class ContentPresenter : Control
+    public class ContentPresenter : Control, IVisualWithRoundRectClip
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -129,7 +129,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<int> MaxLinesProperty =
             TextBlock.MaxLinesProperty.AddOwner<ContentPresenter>();
-                
+
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
@@ -179,6 +179,7 @@ namespace Avalonia.Controls.Presenters
         private IRecyclingDataTemplate? _recyclingDataTemplate;
         private (bool IsSet, object? Value) _overrideDataContext;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
+        private CompositionBorderVisual? _borderVisual;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -479,6 +480,9 @@ namespace Avalonia.Controls.Presenters
                 case nameof(BorderThickness):
                     _layoutThickness = null;
                     break;
+                case nameof(CornerRadius):
+                    _borderVisual?.CornerRadius = CornerRadius;
+                    break;
             }
         }
 
@@ -621,13 +625,13 @@ namespace Avalonia.Controls.Presenters
         }
 
         private Control? CreateChild(object? content, Control? oldChild, IDataTemplate? template)
-        {            
+        {
             var newChild = content as Control;
 
             // We want to allow creating Child from the Template, if Content is null.
             // But it's important to not use DataTemplates, otherwise we will break content presenters in many places,
             // otherwise it will blow up every ContentPresenter without Content set.
-            if ((newChild == null 
+            if ((newChild == null
                 && (content != null || template != null)) || (newChild is { } && template is { }))
             {
                 var dataTemplate = this.FindDataTemplate(content, template) ??
@@ -671,7 +675,10 @@ namespace Avalonia.Controls.Presenters
 
         internal Size ArrangeOverrideImpl(Size finalSize, Vector offset)
         {
-            if (Child == null) return finalSize;
+            if (Child == null)
+            {
+                return finalSize;
+            }
 
             var useLayoutRounding = UseLayoutRounding;
             var scale = LayoutHelper.GetLayoutScale(this);
@@ -796,5 +803,15 @@ namespace Avalonia.Controls.Presenters
                 DebugDisplayHelper.AppendOptionalValue(builder, nameof(Content), Content, true);
             }
         }
+
+        private protected override CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
+        {
+            return _borderVisual = new CompositionBorderVisual(compositor, this)
+            {
+                CornerRadius = CornerRadius
+            };
+        }
+
+        public CornerRadius ClipToBoundsRadius => CornerRadius;
     }
 }
