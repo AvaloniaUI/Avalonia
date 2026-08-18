@@ -12,6 +12,9 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.UISettings")
         && WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.AccessibilitySettings"));
 
+    private static readonly Lazy<bool> s_globalizationSupported = new(() =>
+        WinRTApiInformation.IsTypePresent("Windows.System.UserProfile.GlobalizationPreferences"));
+
     private string? _lastLanguage;
 
     public override Size GetTapSize(PointerType type)
@@ -44,10 +47,10 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
             return base.GetColorValues();
         }
 
-        var uiSettings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
+        using var uiSettings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
         var accent = uiSettings.GetColorValue(UIColorType.Accent).ToAvalonia();
 
-        var accessibilitySettings = NativeWinRTMethods.CreateInstance<IAccessibilitySettings>("Windows.UI.ViewManagement.AccessibilitySettings");
+        using var accessibilitySettings = NativeWinRTMethods.CreateInstance<IAccessibilitySettings>("Windows.UI.ViewManagement.AccessibilitySettings");
         if (accessibilitySettings.HighContrast == 1)
         {
             // Windows 11 has 4 different high contrast schemes:
@@ -98,24 +101,20 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         }
     }
 
-    private unsafe string QueryPreferredApplicationLanguage()
+    private string QueryPreferredApplicationLanguage()
     {
-        // A copy of https://github.com/dotnet/runtime/blob/6550ccf7827cdc363035f8927f68a34edb01bf22/src/libraries/System.Private.CoreLib/src/System/Globalization/CultureInfo.Windows.cs#L20
-        // .NET BCL already reads GetUserPreferredUILanguages as a default value of CultureInfo.CurrentUICulture.
-        // Unfortunately, CultureInfo.CurrentUICulture is mutable, and BCL doesn't expose static default value.
-
-        const uint MUI_LANGUAGE_NAME = 0x8;    // Use ISO language (culture) name convention
-        uint langCount = 0;
-        uint bufLen = 0;
-
-        if (GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &langCount, null, &bufLen))
+        // `GetUserPreferredUILanguages`win32 API doesn't seem to respect Win11 "Preferred Languages" setting.
+        // While GlobalizationPreferences works fine.
+        if (s_globalizationSupported.Value)
         {
-            var languages = bufLen <= 256 ? stackalloc char[(int)bufLen] : new char[bufLen];
-            fixed (char* pLanguages = languages)
+            using var globalizationPreferences = NativeWinRTMethods.CreateActivationFactory<IGlobalizationPreferencesStatics>("Windows.System.UserProfile.GlobalizationPreferences");
+            var languages = globalizationPreferences.Languages;
+            if (languages.Size > 0)
             {
-                if (GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &langCount, pLanguages, &bufLen))
+                using var languageHString = new HStringInterop(languages.GetAt(0));
+                if (languageHString.Value is { } language)
                 {
-                    return languages.ToString();
+                    return language;
                 }
             }
         }
