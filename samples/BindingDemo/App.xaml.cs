@@ -24,6 +24,7 @@ namespace BindingDemo
         public static AppBuilder BuildAvaloniaApp()
           => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .WithDataAnnotationsValidation()
 #if DEBUG
                 .WithDeveloperTools()
 #endif

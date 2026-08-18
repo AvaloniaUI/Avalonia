@@ -92,6 +92,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("TransitioningContentControl",() => new TransitioningContentControlPage(), Icons.Transition),
             new PageItem("TreeView",() => new TreeViewPage(), Icons.Tree),
             new PageItem("Viewbox",() => new ViewboxPage(), Icons.Viewbox),
+            new PageItem("WrapPanel",() => new WrapPanelPage(), Icons.Layout),
             new PageItem("Native Embed",() => new NativeEmbedPage(), Icons.Puzzle),
             new PageItem("Window Customizations",() => new WindowCustomizationsPage(), Icons.Window),
             new PageItem("HeaderedContentControl",() => new HeaderedContentPage(), Icons.Header),
