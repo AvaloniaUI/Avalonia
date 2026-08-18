@@ -601,16 +601,36 @@ namespace Avalonia.Media.TextFormatting
 
                     _textSourceLength += textLine.Length;
 
-                    //Fulfill max height constraint
+                    // Whether this freshly fetched candidate line represents real, visible content rather
+                    // than just a trailing line-break sentinel (some text sources emit an explicit
+                    // TextEndOfLine/TextEndOfParagraph run object at end-of-text with no visible content).
+                    var hasRealContent = textLine.Length > textLine.NewLineLength;
+
+                    //Fulfill max height constraint. The mere existence of this next candidate line (which
+                    //hasn't been added yet) proves there is more content than fits, so the previously added
+                    //line needs a trailing ellipsis.
                     if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight)
                         && MathUtilities.GreaterThan(Height + textLine.Height, MaxHeight))
                     {
-                        if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
+                        if (_textTrimming != TextTrimming.None && hasRealContent)
                         {
-                            var collapsedLine =
-                                previousLine.Collapse(GetCollapsingProperties(MaxWidth));
+                            textLines[textLines.Count - 1] = CollapseForTruncation(
+                                (TextLineImpl)textLines[textLines.Count - 1],
+                                MaxWidth);
+                        }
 
-                            textLines[textLines.Count - 1] = collapsedLine;
+                        break;
+                    }
+
+                    //Fulfill max lines constraint. Mirrors the MaxHeight check above: the next candidate
+                    //line's existence proves the previously added (Max-th) line hides real content.
+                    if (MaxLines > 0 && textLines.Count >= MaxLines)
+                    {
+                        if (_textTrimming != TextTrimming.None && hasRealContent)
+                        {
+                            textLines[textLines.Count - 1] = CollapseForTruncation(
+                                (TextLineImpl)textLines[textLines.Count - 1],
+                                MaxWidth);
                         }
 
                         break;
@@ -628,17 +648,6 @@ namespace Avalonia.Media.TextFormatting
                     UpdateMetrics(textLine, ref first);
 
                     previousLine = textLine;
-
-                    //Fulfill max lines constraint
-                    if (MaxLines > 0 && textLines.Count >= MaxLines)
-                    {
-                        if (textLine.TextLineBreak is { IsSplit: true })
-                        {
-                            textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(WidthIncludingTrailingWhitespace));
-                        }
-
-                        break;
-                    }
 
                     if (textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
                     {
@@ -747,6 +756,50 @@ namespace Avalonia.Media.TextFormatting
 
             return _textTrimming.CreateCollapsingProperties(
                 new TextCollapsingCreateInfo(width, _paragraphProperties.DefaultTextRunProperties, _paragraphProperties.FlowDirection));
+        }
+
+        private TextLineImpl CollapseForTruncation(TextLineImpl line, double width)
+        {
+            var collapsingProperties = GetCollapsingProperties(width);
+
+            if (collapsingProperties is null)
+            {
+                return line;
+            }
+
+            // For the known ellipsis types we can always force a trailing ellipsis onto the
+            // line: this method is only ever called on a line that has already been checked
+            // for its own width overflow when it was added, so a plain (non-forced) collapse
+            // attempt at the same width would always be a no-op here. Unknown/custom
+            // TextCollapsingProperties can't be forced, so fall back to a plain collapse
+            // attempt for those.
+            TextCollapsingProperties forceProperties = collapsingProperties switch
+            {
+                TextTrailingCharacterEllipsis => new ForcedTrailingCollapseProperties(collapsingProperties, false),
+                TextTrailingWordEllipsis => new ForcedTrailingCollapseProperties(collapsingProperties, true),
+                _ => collapsingProperties
+            };
+
+            return (TextLineImpl)line.Collapse(forceProperties);
+        }
+
+        private sealed class ForcedTrailingCollapseProperties : TextCollapsingProperties
+        {
+            private readonly TextCollapsingProperties _inner;
+            private readonly bool _isWordEllipsis;
+
+            public ForcedTrailingCollapseProperties(TextCollapsingProperties inner, bool isWordEllipsis)
+            {
+                _inner = inner;
+                _isWordEllipsis = isWordEllipsis;
+            }
+
+            public override double Width => _inner.Width;
+            public override TextRun Symbol => _inner.Symbol;
+            public override FlowDirection FlowDirection => _inner.FlowDirection;
+
+            public override TextRun[]? Collapse(TextLine textLine) =>
+                TextEllipsisHelper.Collapse(textLine, this, _isWordEllipsis, forceCollapse: true);
         }
 
         public void Dispose()
