@@ -464,10 +464,11 @@ public class BackdropCompositionTests : TestBase
         h.Root.Children.Add(h.Rect(Colors.Red, 0, 0, 100, 200));
         h.Root.Children.Add(h.Rect(Colors.Blue, 100, 0, 100, 200));
 
-        // A bare container (no own content) derives its backdrop region from its children's union.
+        // Subtree mode lets a bare container (no own content) derive its backdrop region from its children.
         var container = h.Compositor.CreateContainerVisual();
         container.ClipToBounds = false;
         container.BackdropEffect = Blur(8);
+        container.BackdropEffectBounds = BackdropEffectBounds.Subtree;
         container.Offset = new Vector3D(40, 40, 0);
         container.Children.Add(h.Rect(Colors.Transparent, 0, 0, 120, 120));
         h.Root.Children.Add(container);
@@ -475,6 +476,7 @@ public class BackdropCompositionTests : TestBase
         // A sibling container with the same backdrop but no children: null subtree bounds => no AABB, no draw.
         var empty = h.Compositor.CreateContainerVisual();
         empty.BackdropEffect = Blur(8);
+        empty.BackdropEffectBounds = BackdropEffectBounds.Subtree;
         h.Root.Children.Add(empty);
 
         h.Frame();
@@ -602,6 +604,11 @@ public class BackdropCompositionTests : TestBase
         {
             Margin = new Thickness(40),
             Background = new SolidColorBrush(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF)),
+            BoxShadow = new BoxShadows(new BoxShadow
+            {
+                Blur = 20,
+                Color = Colors.Black
+            }),
             BackdropEffect = new BlurEffect { Radius = 10 },
             BackdropEffectCache = new RetainedBackdropEffectCacheMode()
         };
@@ -627,6 +634,11 @@ public class BackdropCompositionTests : TestBase
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 timer.TriggerTick();
             }
+
+            // The shadow expands the draw-list/subtree bounds, but the default backdrop mode is constrained
+            // to the Border's 120x120 layout box.
+            Assert.Equal(new LtrbPixelRect(40, 40, 160, 160),
+                frosted.CompositionVisual!.Server.BackdropState!.Aabb!.Value);
         }
 
         // The scene rendered through the compositor: red content shows through the frosted overlay.

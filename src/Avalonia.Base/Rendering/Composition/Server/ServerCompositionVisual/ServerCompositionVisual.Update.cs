@@ -88,7 +88,8 @@ internal partial class ServerCompositionVisual
 
             // Same reason for a backdrop: its output region is a function of its subtree bounds, so a
             // descendant-driven bounds change must emit the backdrop's own old∪new bounds.
-            if (node is { _needsBoundingBoxUpdate: true } && node.BackdropEffect.IsSupportedBackdropEffect())
+            if (node is { _needsBoundingBoxUpdate: true, BackdropEffectBounds: BackdropEffectBounds.Subtree }
+                && node.BackdropEffect.IsSupportedBackdropEffect())
                 node._isDirtyForRender = true;
 
             // Retained backdrop capture, before this node's own/descendant damage (old-bounds emission and
@@ -304,7 +305,7 @@ internal partial class ServerCompositionVisual
         private void CheckRetainedBackdropStaleAabb(ServerCompositionVisual node)
         {
             var record = node.BackdropState;
-            if (record is not { IsRetained: true })
+            if (record is not { IsRetained: true } || node.BackdropEffectBounds != BackdropEffectBounds.Subtree)
                 return;
 
             LtrbPixelRect? fresh = null;

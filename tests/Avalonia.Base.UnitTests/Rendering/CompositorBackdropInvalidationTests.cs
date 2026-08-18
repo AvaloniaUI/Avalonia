@@ -261,6 +261,83 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
         Assert.Equal(new LtrbPixelRect(100, 100, 150, 150), record.Aabb!.Value);
     }
 
+    [Fact]
+    public void Layout_Bounds_Are_Default_And_Ignore_Descendant_Bounds()
+    {
+        using var s = new CompositorTestServices();
+        var c = s.Compositor;
+        var backdrop = Panel(c);
+        backdrop.Size = new Vector(40, 50);
+        backdrop.BackdropEffect = Blur(5);
+
+        var child = c.CreateSolidColorVisual();
+        child.Size = new Vector(100, 120);
+        backdrop.Children.Add(child);
+        ElementComposition.SetElementChildVisual(s.TopLevel, backdrop);
+        s.RunJobs();
+        s.RunJobs();
+
+        var record = backdrop.Server.BackdropState!;
+        Assert.Equal(BackdropEffectBounds.Layout, backdrop.BackdropEffectBounds);
+        Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), record.Aabb!.Value);
+
+        // A descendant-only bounds change does not resize or fully re-ingest a layout-bounds backdrop.
+        record.RetainedInputDirtyArea = null;
+        child.Size = new Vector(130, 140);
+        s.RunJobs();
+
+        Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), record.Aabb!.Value);
+        Assert.Null(record.RetainedInputDirtyArea);
+    }
+
+    [Fact]
+    public void Subtree_Bounds_Use_Descendant_Bounds()
+    {
+        using var s = new CompositorTestServices();
+        var c = s.Compositor;
+        var backdrop = Panel(c);
+        backdrop.Size = new Vector(40, 50);
+        backdrop.BackdropEffect = Blur(5);
+        backdrop.BackdropEffectBounds = BackdropEffectBounds.Subtree;
+
+        var child = c.CreateSolidColorVisual();
+        child.Size = new Vector(100, 120);
+        backdrop.Children.Add(child);
+        ElementComposition.SetElementChildVisual(s.TopLevel, backdrop);
+        s.RunJobs();
+        s.RunJobs();
+
+        Assert.Equal(new LtrbPixelRect(0, 0, 100, 120), backdrop.Server.BackdropState!.Aabb!.Value);
+    }
+
+    [Fact]
+    public void Switching_Bounds_Mode_Recomputes_Aabb_And_Retained_Input()
+    {
+        using var s = new CompositorTestServices();
+        var c = s.Compositor;
+        var backdrop = Panel(c);
+        backdrop.Size = new Vector(40, 50);
+        backdrop.BackdropEffect = Blur(5);
+
+        var child = c.CreateSolidColorVisual();
+        child.Size = new Vector(20, 30);
+        child.Offset = new Vector3D(60, 70, 0);
+        backdrop.Children.Add(child);
+        ElementComposition.SetElementChildVisual(s.TopLevel, backdrop);
+        s.RunJobs();
+        s.RunJobs();
+
+        var record = backdrop.Server.BackdropState!;
+        Assert.Equal(new LtrbPixelRect(0, 0, 40, 50), record.Aabb!.Value);
+        record.RetainedInputDirtyArea = null;
+
+        backdrop.BackdropEffectBounds = BackdropEffectBounds.Subtree;
+        s.RunJobs();
+
+        Assert.Equal(new LtrbPixelRect(60, 70, 80, 100), record.Aabb!.Value);
+        Assert.Equal(new LtrbRect(60, 70, 80, 100), record.RetainedInputDirtyArea!.Value);
+    }
+
     // cacheSelector: 0 => Default (null), 1 => retained, 2 => volatile
     [Theory]
     [InlineData(5.0, 0, true)]
@@ -417,6 +494,7 @@ public class CompositorBackdropInvalidationTests : CompositorTestsBase
     {
         var v = Panel(c);
         v.BackdropEffect = Blur(5);
+        v.BackdropEffectBounds = BackdropEffectBounds.Subtree;
         return v;
     }
 

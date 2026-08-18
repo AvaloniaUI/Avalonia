@@ -24,9 +24,9 @@ internal sealed class ServerCompositionVisualBackdropState
     public LtrbPixelRect? Aabb { get; set; }
 
     /// <summary>
-    /// Composed transform mapping the visual's <see cref="ServerCompositionVisual._transformedSubTreeBounds"/>
-    /// (i.e. parent-local space) into host space. Stashed for the walk-time stale-AABB check; ancestor
-    /// transforms are only rewritten by the pre-walk passes, so it stays valid for the whole frame.
+    /// Composed transform mapping the visual's parent-local space into host space. Stashed for the walk-time
+    /// stale-AABB check; ancestor transforms are only rewritten by the pre-walk passes, so it stays valid for
+    /// the whole frame.
     /// </summary>
     public Matrix VisualToHostTransform { get; set; } = Matrix.Identity;
 
@@ -138,6 +138,26 @@ partial class ServerCompositionVisual
         UpdateBackdropRegistration();
     }
 
+    private LtrbPixelRect? ComputeBackdropAabb(Matrix parentToHostTransform)
+    {
+        LtrbRect? hostRect;
+        if (BackdropEffectBounds == BackdropEffectBounds.Layout)
+        {
+            if (!Visible || Size.X <= 0 || Size.Y <= 0)
+                return null;
+
+            var layoutBounds = new LtrbRect(0, 0, Size.X, Size.Y);
+            var localToHost = _ownTransform is { } ownTransform
+                ? ownTransform * parentToHostTransform
+                : parentToHostTransform;
+            hostRect = layoutBounds.TransformToAABB(localToHost);
+        }
+        else
+            hostRect = _transformedSubTreeBounds?.TransformToAABB(parentToHostTransform);
+
+        return hostRect is { IsZeroSize: false } bounds ? LtrbPixelRect.FromRectUnscaled(bounds) : null;
+    }
+
     // Called from OnCacheModeChanging, before Cache is reset to null. If this node was a cache boundary
     // its descendant backdrops were stopping here; removing the boundary lets them propagate upwards again.
     private void Backdrop_OnCacheModeChanging()
@@ -228,14 +248,9 @@ partial class ServerCompositionVisual
         var contentToHost = _ownTransform.HasValue ? _ownTransform.Value * transform : transform;
         record.HostSpaceSamplingRadius = radius * Math.Sqrt(Math.Abs(contentToHost.GetDeterminant()));
 
-        // Build the pixel-aligned host-space AABB from the last completed walk's transformed subtree bounds.
-        LtrbPixelRect? newAabb = null;
-        if (_transformedSubTreeBounds.HasValue)
-        {
-            var hostRect = _transformedSubTreeBounds.Value.TransformToAABB(transform);
-            if (!hostRect.IsZeroSize)
-                newAabb = LtrbPixelRect.FromRectUnscaled(hostRect);
-        }
+        // Build the pixel-aligned host-space AABB from either the visual's layout box or the last completed
+        // walk's transformed subtree bounds.
+        var newAabb = ComputeBackdropAabb(transform);
 
         var hostChanged = !ReferenceEquals(record.Host, host);
         var aabbChanged = record.Aabb != newAabb;

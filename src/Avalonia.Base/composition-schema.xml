@@ -35,6 +35,7 @@
         <Property Name="OpacityMaskBrush" ClientName="OpacityMaskBrushTransportField" Type="Avalonia.Media.IBrush?" Private="true"  />
         <Property Name="Effect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
         <Property Name="BackdropEffect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
+        <Property Name="BackdropEffectBounds" Type="Avalonia.Media.BackdropEffectBounds" Internal="true" />
         <Property Name="BackdropEffectCache" Type="CompositionBackdropEffectCacheMode?" Internal="true" />
         <Property Name="RenderOptions" Type="Avalonia.Media.RenderOptions" />
         <Property Name="TextOptions" Type="Avalonia.Media.TextOptions" />
