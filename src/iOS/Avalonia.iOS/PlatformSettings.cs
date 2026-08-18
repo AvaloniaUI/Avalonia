@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Foundation;
 using UIKit;
 
 namespace Avalonia.iOS;
@@ -9,6 +10,12 @@ namespace Avalonia.iOS;
 internal class PlatformSettings : DefaultPlatformSettings
 {
     private PlatformColorValues? _lastColorValues;
+    private string? _lastLanguage;
+
+    public PlatformSettings()
+    {
+        NSLocale.Notifications.ObserveCurrentLocaleDidChange(OnPreferredLanguageChanged);
+    }
 
     public override PlatformColorValues GetColorValues()
     {
@@ -65,5 +72,24 @@ internal class PlatformSettings : DefaultPlatformSettings
     internal void OnColorValuesChanged()
     {
         OnColorValuesChanged(GetColorValues());
+    }
+
+    public override string PreferredApplicationLanguage =>
+        _lastLanguage ??= QueryPreferredApplicationLanguage();
+
+    private string QueryPreferredApplicationLanguage() =>
+        NSLocale.PreferredLanguages is [{ Length: > 0 } language, ..]
+            ? language
+            : base.PreferredApplicationLanguage;
+
+    private void OnPreferredLanguageChanged(object? sender, NSNotificationEventArgs args)
+    {
+        var oldLanguage = _lastLanguage;
+        _lastLanguage = null;
+
+        if (oldLanguage != PreferredApplicationLanguage)
+        {
+            OnPreferredApplicationLanguageChanged();
+        }
     }
 }
