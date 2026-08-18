@@ -144,7 +144,7 @@ Example: MyApp.Presentation.*, MyApp.Presentation.Views;MyApp.Presentation.Contr
 
   <BoolProperty Name="AvaloniaPropertyGeneratorIsEnabled"
               DisplayName="Use Property Generator"
-              Description="Enable/Disable the Avalonia Property Source Generator ([StyledProperty]/[DirectProperty]/[AttachedProperty])"
+              Description="Enable/Disable the Avalonia Property Source Generator ([GeneratedStyledProperty]/[GeneratedDirectProperty]/[GeneratedAttachedProperty])"
               Category="PropertyGenerator" />
 
 </Rule>

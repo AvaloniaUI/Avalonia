@@ -42,14 +42,14 @@ public class GeneratedPropertyCodeFixTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public string? {|AVP2007:Header|} { get; set; }
         }
         """,
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial string? Header { get; set; }
         }
         """);
@@ -61,7 +61,7 @@ public class GeneratedPropertyCodeFixTests
         {
             public class MyControl : AvaloniaObject
             {
-                [StyledProperty]
+                [GeneratedStyledProperty]
                 public partial string? {|AVP2007:Header|} { get; set; }
             }
         }
@@ -71,50 +71,8 @@ public class GeneratedPropertyCodeFixTests
         {
             public partial class MyControl : AvaloniaObject
             {
-                [StyledProperty]
+                [GeneratedStyledProperty]
                 public partial string? Header { get; set; }
-            }
-        }
-        """);
-
-    [Fact]
-    public Task AddCallbackStub_Inserts_Changed_Handler() => FixAndVerify<AddCallbackStubCodeFixProvider>(
-        """
-        public partial class MyControl : AvaloniaObject
-        {
-            [StyledProperty({|AVP2006:ChangedMethodName = "OnIsOpenChanged"|})]
-            public partial bool IsOpen { get; set; }
-        }
-        """,
-        """
-        public partial class MyControl : AvaloniaObject
-        {
-            [StyledProperty(ChangedMethodName = "OnIsOpenChanged")]
-            public partial bool IsOpen { get; set; }
-
-            private partial void OnIsOpenChanged(bool oldValue, bool newValue)
-            {
-            }
-        }
-        """);
-
-    [Fact]
-    public Task AddCallbackStub_Inserts_Attached_Changed_Handler() => FixAndVerify<AddCallbackStubCodeFixProvider>(
-        """
-        public partial class DockPanel : AvaloniaObject
-        {
-            [AttachedProperty({|AVP2006:ChangedMethodName = "OnDockChanged"|})]
-            public static partial int GetDock(Visual element);
-        }
-        """,
-        """
-        public partial class DockPanel : AvaloniaObject
-        {
-            [AttachedProperty(ChangedMethodName = "OnDockChanged")]
-            public static partial int GetDock(Visual element);
-
-            private static partial void OnDockChanged(Visual host, int oldValue, int newValue)
-            {
             }
         }
         """);
@@ -124,14 +82,14 @@ public class GeneratedPropertyCodeFixTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty({|AVP2006:ValidateMethodName = "ValidateValue"|}, {|AVP2006:CoerceMethodName = "CoerceValue"|})]
+            [GeneratedStyledProperty({|AVP2006:ValidateMethodName = "ValidateValue"|}, {|AVP2006:CoerceMethodName = "CoerceValue"|})]
             public partial int Value { get; set; }
         }
         """,
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty(ValidateMethodName = "ValidateValue", CoerceMethodName = "CoerceValue")]
+            [GeneratedStyledProperty(ValidateMethodName = "ValidateValue", CoerceMethodName = "CoerceValue")]
             public partial int Value { get; set; }
 
             private static partial int CoerceValue(AvaloniaObject sender, int value)

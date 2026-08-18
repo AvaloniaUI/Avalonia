@@ -14,7 +14,7 @@ namespace Avalonia;
 /// </para>
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property, Inherited = false)]
-public sealed class DirectPropertyAttribute : Attribute
+public sealed class GeneratedDirectPropertyAttribute : Attribute
 {
     /// <summary>
     /// Re-owns an existing direct property from the specified base type instead of registering a new property.

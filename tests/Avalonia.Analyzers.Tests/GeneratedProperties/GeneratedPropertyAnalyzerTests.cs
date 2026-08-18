@@ -34,13 +34,13 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty(DefaultValue = 100)]
+            [GeneratedStyledProperty(DefaultValue = 100)]
             public partial int Width { get; set; }
 
-            [DirectProperty]
+            [GeneratedDirectProperty]
             public partial string Text { get; set; } = "";
 
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             public static partial int GetRow(Visual element);
         }
         """);
@@ -50,12 +50,12 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty(ChangedMethodName = nameof(OnIsOpenChanged))]
-            public partial bool IsOpen { get; set; }
+            [GeneratedStyledProperty(ValidateMethodName = nameof(ValidateValue), CoerceMethodName = nameof(CoerceValue))]
+            public partial int Value { get; set; }
 
-            private partial void OnIsOpenChanged(bool oldValue, bool newValue)
-            {
-            }
+            private static partial bool ValidateValue(int value) => value >= 0;
+
+            private static partial int CoerceValue(AvaloniaObject sender, int value) => value;
         }
         """);
 
@@ -64,7 +64,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial string? {|AVP2001:Header|} { get; set; }
         }
         """);
@@ -81,7 +81,7 @@ public class GeneratedPropertyAnalyzerTests
         public static partial class Helper
         {
             // AddOwner<T> requires generic host parameter, which is not possible in this context (static class) 
-            [AttachedProperty(AddOwnerFrom = typeof(BasePanel))]
+            [GeneratedAttachedProperty(AddOwnerFrom = typeof(BasePanel))]
             public static partial int {|AVP2001:GetRow|}(Visual element);
         }
         """);
@@ -91,7 +91,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public static partial class Helper
         {
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             public static partial int GetRow(Visual element);
         }
         """);
@@ -108,7 +108,7 @@ public class GeneratedPropertyAnalyzerTests
         public partial class MyControl : RangeBase
         {
             // AddOwner() doesn't have inherits argument.
-            [StyledProperty(AddOwnerFrom = typeof(RangeBase), {|AVP2002:Inherits = true|})]
+            [GeneratedStyledProperty(AddOwnerFrom = typeof(RangeBase), {|AVP2002:Inherits = true|})]
             public partial double Value { get; set; }
         }
         """);
@@ -118,8 +118,8 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty]
-            [DirectProperty]
+            [GeneratedStyledProperty]
+            [GeneratedDirectProperty]
             public partial string? {|AVP2002:Header|} { get; set; }
         }
         """);
@@ -129,7 +129,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty({|AVP2003:DefaultValue = "text"|})]
+            [GeneratedStyledProperty({|AVP2003:DefaultValue = "text"|})]
             public partial int Value { get; set; }
         }
         """);
@@ -139,7 +139,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [DirectProperty({|AVP2003:UnsetValue = "text"|})]
+            [GeneratedDirectProperty({|AVP2003:UnsetValue = "text"|})]
             public partial int Value { get; set; }
         }
         """);
@@ -154,7 +154,7 @@ public class GeneratedPropertyAnalyzerTests
 
         public partial class MyControl : EmptyBase
         {
-            [StyledProperty({|AVP2004:AddOwnerFrom = typeof(EmptyBase)|})]
+            [GeneratedStyledProperty({|AVP2004:AddOwnerFrom = typeof(EmptyBase)|})]
             public partial double Value { get; set; }
         }
         """);
@@ -165,13 +165,13 @@ public class GeneratedPropertyAnalyzerTests
         public partial class RangeBase : AvaloniaObject
         {
             // Source property itself is source-generated.
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial double Value { get; set; }
         }
 
         public partial class MyControl : RangeBase
         {
-            [StyledProperty(AddOwnerFrom = typeof(RangeBase))]
+            [GeneratedStyledProperty(AddOwnerFrom = typeof(RangeBase))]
             public new partial double Value { get; set; }
         }
         """);
@@ -181,13 +181,13 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class TextBase : AvaloniaObject
         {
-            [DirectProperty]
+            [GeneratedDirectProperty]
             public partial string? Text { get; set; }
         }
 
         public partial class MyControl : TextBase
         {
-            [DirectProperty(AddOwnerFrom = typeof(TextBase))]
+            [GeneratedDirectProperty(AddOwnerFrom = typeof(TextBase))]
             public new partial string? Text { get; set; }
         }
         """);
@@ -197,13 +197,13 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class BasePanel : AvaloniaObject
         {
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             public static partial int GetRow(Visual element);
         }
 
         public partial class MyPanel : BasePanel
         {
-            [AttachedProperty(AddOwnerFrom = typeof(BasePanel))]
+            [GeneratedAttachedProperty(AddOwnerFrom = typeof(BasePanel))]
             public static partial int GetRow(Visual element);
         }
         """);
@@ -213,14 +213,14 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class RangeBase : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial double Value { get; set; }
         }
 
         public partial class MyControl : RangeBase
         {
             // Source generated property exists but its value type is 'double', not 'int'.
-            [StyledProperty({|AVP2004:AddOwnerFrom = typeof(RangeBase)|})]
+            [GeneratedStyledProperty({|AVP2004:AddOwnerFrom = typeof(RangeBase)|})]
             public new partial int Value { get; set; }
         }
         """);
@@ -230,7 +230,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class Grid : AvaloniaObject
         {
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             public static partial int {|AVP2005:Row|}(Visual element);
         }
         """);
@@ -241,7 +241,7 @@ public class GeneratedPropertyAnalyzerTests
         public partial class Grid : AvaloniaObject
         {
             // GetRow expected to be static
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             public partial int {|AVP2005:GetRow|}(Visual element);
         }
         """);
@@ -251,8 +251,8 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty({|AVP2006:ChangedMethodName = "OnIsOpenChanged"|})]
-            public partial bool IsOpen { get; set; }
+            [GeneratedStyledProperty({|AVP2006:CoerceMethodName = "CoerceValue"|})]
+            public partial int Value { get; set; }
         }
         """);
 
@@ -261,13 +261,11 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty({|AVP2006:ChangedMethodName = nameof(OnIsOpenChanged)|})]
-            public partial bool IsOpen { get; set; }
+            [GeneratedStyledProperty({|AVP2006:ValidateMethodName = nameof(ValidateValue)|})]
+            public partial int Value { get; set; }
 
-            // 'int' instead of 'bool'
-            private partial void OnIsOpenChanged(int oldValue, int newValue)
-            {
-            }
+            // 'string' instead of 'int'
+            private static partial bool ValidateValue(string value) => true;
         }
         """);
 
@@ -276,10 +274,10 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty({|AVP2006:ChangedMethodName = nameof(OnIsOpenChanged)|})]
-            public partial bool IsOpen { get; set; }
+            [GeneratedStyledProperty({|AVP2006:ValidateMethodName = nameof(ValidateValue)|})]
+            public partial int Value { get; set; }
 
-            private partial void OnIsOpenChanged(bool oldValue, bool newValue);
+            private static partial bool ValidateValue(int value);
         }
         """);
 
@@ -288,8 +286,8 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty({|AVP2006:ChangedMethodName = "not a name"|})]
-            public partial bool IsOpen { get; set; }
+            [GeneratedStyledProperty({|AVP2006:CoerceMethodName = "not a name"|})]
+            public partial int Value { get; set; }
         }
         """);
 
@@ -298,7 +296,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public string? {|AVP2007:Header|} { get; set; }
         }
         """);
@@ -308,7 +306,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public class MyControl : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial string? {|AVP2007:Header|} { get; set; }
         }
         """);
@@ -319,7 +317,7 @@ public class GeneratedPropertyAnalyzerTests
         public partial class MyControl : AvaloniaObject
         {
             // Partial properties require C# 13; below that the generator can't emit.
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial string? {|AVP2007:Header|} { get; set; }
         }
         """,
@@ -330,7 +328,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial string? Header { get; set; }
         }
         """,
@@ -341,7 +339,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public static partial string? {|AVP2008:Header|} { get; set; }
         }
         """);
@@ -352,7 +350,7 @@ public class GeneratedPropertyAnalyzerTests
         public partial class MyControl : AvaloniaObject
         {
             // Styled properties are never truly readonly.
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial string? {|AVP2008:Header|} { get; }
         }
         """);
@@ -363,7 +361,7 @@ public class GeneratedPropertyAnalyzerTests
         public partial class MyControl : AvaloniaObject
         {
             // Styled properties are never truly readonly.
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial bool {|AVP2101:IsPressed|} { get; private set; }
         }
         """);
@@ -374,7 +372,7 @@ public class GeneratedPropertyAnalyzerTests
         public partial class MyControl : AvaloniaObject
         {
             // Direct properties can actually be read-only.
-            [DirectProperty]
+            [GeneratedDirectProperty]
             public partial int SelectedIndex { get; private set; } = -1;
         }
         """);
@@ -386,7 +384,7 @@ public class GeneratedPropertyAnalyzerTests
         {
             // This code will generate HeaderPropertyProperty definition.
             // if user really needs it, they can suppress the warning.
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial string? {|AVP2100:HeaderProperty|} { get; set; }
         }
         """);
@@ -396,7 +394,7 @@ public class GeneratedPropertyAnalyzerTests
         """
         public partial class Grid : AvaloniaObject
         {
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             public static partial int {|AVP2100:GetRowProperty|}(Visual element);
         }
         """);

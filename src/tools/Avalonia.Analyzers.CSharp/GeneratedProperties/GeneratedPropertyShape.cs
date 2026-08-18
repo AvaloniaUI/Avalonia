@@ -35,9 +35,9 @@ internal enum PropertyDefects
 /// </summary>
 internal static class GeneratedPropertyShape
 {
-    public const string StyledAttributeMetadataName = "Avalonia.StyledPropertyAttribute";
-    public const string DirectAttributeMetadataName = "Avalonia.DirectPropertyAttribute";
-    public const string AttachedAttributeMetadataName = "Avalonia.AttachedPropertyAttribute";
+    public const string StyledAttributeMetadataName = "Avalonia.GeneratedStyledPropertyAttribute";
+    public const string DirectAttributeMetadataName = "Avalonia.GeneratedDirectPropertyAttribute";
+    public const string AttachedAttributeMetadataName = "Avalonia.GeneratedAttachedPropertyAttribute";
 
     public const string AvaloniaObjectMetadataName = "Avalonia.AvaloniaObject";
 

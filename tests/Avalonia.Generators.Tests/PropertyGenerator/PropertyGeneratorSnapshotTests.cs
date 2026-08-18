@@ -12,7 +12,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial string? Header { get; set; }
         }
         """,
@@ -24,7 +24,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty(DefaultValue = 100)]
+            [GeneratedStyledProperty(DefaultValue = 100)]
             public partial int Width { get; set; }
         }
         """);
@@ -35,13 +35,13 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty(DefaultValue = 100)]
+            [GeneratedStyledProperty(DefaultValue = 100)]
             public partial double Width { get; set; }
 
-            [StyledProperty(DefaultValue = double.NaN)]
+            [GeneratedStyledProperty(DefaultValue = double.NaN)]
             public partial double Height { get; set; }
 
-            [StyledProperty(DefaultValue = "")]
+            [GeneratedStyledProperty(DefaultValue = "")]
             public partial object? Tag { get; set; }
         }
         """);
@@ -57,7 +57,7 @@ public class PropertyGeneratorSnapshotTests
                 PaddingProperty.OverrideDefaultValue<MyControl>(new Thickness(4));
             }
 
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial Thickness Padding { get; set; }
         }
         """);
@@ -68,7 +68,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty(Inherits = true, DefaultBindingMode = BindingMode.TwoWay)]
+            [GeneratedStyledProperty(Inherits = true, DefaultBindingMode = BindingMode.TwoWay)]
             public partial double FontSize { get; set; }
         }
         """);
@@ -79,7 +79,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty(ValidateMethodName = nameof(ValidateValue), CoerceMethodName = nameof(CoerceValue), DefaultValue = 0)]
+            [GeneratedStyledProperty(ValidateMethodName = nameof(ValidateValue), CoerceMethodName = nameof(CoerceValue), DefaultValue = 0)]
             public partial int Value { get; set; }
 
             private static partial bool ValidateValue(int value) => value >= 0;
@@ -106,7 +106,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : RangeBase
         {
-            [StyledProperty(AddOwnerFrom = typeof(RangeBase))]
+            [GeneratedStyledProperty(AddOwnerFrom = typeof(RangeBase))]
             public new partial double Value { get; set; }
         }
         """);
@@ -129,7 +129,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : RangeBase
         {
-            [StyledProperty(AddOwnerFrom = typeof(RangeBase), DefaultValue = 1.0, CoerceMethodName = nameof(CoerceValue), EnableDataValidation = true)]
+            [GeneratedStyledProperty(AddOwnerFrom = typeof(RangeBase), DefaultValue = 1.0, CoerceMethodName = nameof(CoerceValue), EnableDataValidation = true)]
             public new partial double Value { get; set; }
 
             private static partial double CoerceValue(AvaloniaObject sender, double value) => value < 0 ? 0 : value;
@@ -143,13 +143,13 @@ public class PropertyGeneratorSnapshotTests
         public partial class RangeBase : AvaloniaObject
         {
             // The AddOwner source is itself source-generated.
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial double Value { get; set; }
         }
 
         public partial class MyControl : RangeBase
         {
-            [StyledProperty(AddOwnerFrom = typeof(RangeBase))]
+            [GeneratedStyledProperty(AddOwnerFrom = typeof(RangeBase))]
             public new partial double Value { get; set; }
         }
         """,
@@ -161,7 +161,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial bool IsPressed { get; private set; }
         }
         """);
@@ -172,7 +172,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [DirectProperty]
+            [GeneratedDirectProperty]
             public partial string Text { get; set; } = "";
         }
         """);
@@ -185,7 +185,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [DirectProperty]
+            [GeneratedDirectProperty]
             public partial string? Text { get; set; }
         }
         """, languageVersion: LanguageVersion.CSharp13);
@@ -196,7 +196,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [DirectProperty]
+            [GeneratedDirectProperty]
             public partial int SelectedIndex { get; private set; }
 
             public void Select(int index) => SelectedIndex = index;
@@ -212,7 +212,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [DirectProperty]
+            [GeneratedDirectProperty]
             public partial IEnumerable? Items { get; set; } = new AvaloniaList<object>();
         }
         """);
@@ -223,7 +223,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [DirectProperty]
+            [GeneratedDirectProperty]
             public partial int SelectedIndex { get; private set; } = -1;
 
             public void Select(int index) => SelectedIndex = index;
@@ -231,17 +231,13 @@ public class PropertyGeneratorSnapshotTests
         """);
 
     [Fact]
-    public void Direct_UnsetChanged() => AssertGeneratedCode("Direct_UnsetChanged", """
+    public void Direct_Unset() => AssertGeneratedCode("Direct_Unset", """
         namespace TestNs;
 
         public partial class MyControl : AvaloniaObject
         {
-            [DirectProperty(UnsetValue = -1, ChangedMethodName = nameof(OnCountChanged))]
+            [GeneratedDirectProperty(UnsetValue = -1)]
             public partial int Count { get; set; } = -1;
-
-            private partial void OnCountChanged(int oldValue, int newValue)
-            {
-            }
         }
         """);
 
@@ -265,7 +261,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [DirectProperty(AddOwnerFrom = typeof(TextBase))]
+            [GeneratedDirectProperty(AddOwnerFrom = typeof(TextBase))]
             public partial string Text { get; set; } = "";
         }
         """);
@@ -276,7 +272,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class Grid : AvaloniaObject
         {
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             public static partial int GetRow(Visual element);
         }
         """);
@@ -287,10 +283,10 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class Grid : AvaloniaObject
         {
-            [AttachedProperty(DefaultValue = 1)]
+            [GeneratedAttachedProperty(DefaultValue = 1)]
             public static partial int GetRowSpan(Visual element);
 
-            [AttachedProperty(Inherits = true)]
+            [GeneratedAttachedProperty(Inherits = true)]
             public static partial double GetFontSize(Visual element);
         }
         """);
@@ -301,7 +297,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class Grid : AvaloniaObject
         {
-            [AttachedProperty(ValidateMethodName = nameof(ValidateOrder), CoerceMethodName = nameof(CoerceOrder), DefaultValue = 0)]
+            [GeneratedAttachedProperty(ValidateMethodName = nameof(ValidateOrder), CoerceMethodName = nameof(CoerceOrder), DefaultValue = 0)]
             public static partial int GetOrder(Visual element);
 
             private static partial bool ValidateOrder(int value) => value >= 0;
@@ -316,7 +312,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class Host : AvaloniaObject
         {
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             internal static partial bool GetIsHosted(Visual element);
         }
         """);
@@ -327,7 +323,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class ToolTip : AvaloniaObject
         {
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             public static partial string? GetTip(Visual element);
         }
         """);
@@ -338,7 +334,7 @@ public class PropertyGeneratorSnapshotTests
 
         public static partial class ScrollHelper
         {
-            [AttachedProperty(DefaultValue = false)]
+            [GeneratedAttachedProperty(DefaultValue = false)]
             public static partial bool GetIsScrollTarget(Visual element);
         }
         """,
@@ -356,7 +352,7 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyPanel : BasePanel
         {
-            [AttachedProperty(AddOwnerFrom = typeof(BasePanel), DefaultValue = 2)]
+            [GeneratedAttachedProperty(AddOwnerFrom = typeof(BasePanel), DefaultValue = 2)]
             public static partial int GetRow(Visual element);
         }
         """);
@@ -369,7 +365,7 @@ public class PropertyGeneratorSnapshotTests
         {
             public partial class MyControl : AvaloniaObject
             {
-                [StyledProperty]
+                [GeneratedStyledProperty]
                 public partial string? Header { get; set; }
             }
         }
@@ -380,7 +376,7 @@ public class PropertyGeneratorSnapshotTests
     public void GlobalNamespace() => AssertGeneratedCode("GlobalNamespace", """
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial string? Header { get; set; }
         }
         """,
@@ -393,7 +389,7 @@ public class PropertyGeneratorSnapshotTests
         public partial class MyControl<T> : AvaloniaObject
             where T : class
         {
-            [StyledProperty]
+            [GeneratedStyledProperty]
             public partial T? Item { get; set; }
         }
         """,
@@ -405,21 +401,17 @@ public class PropertyGeneratorSnapshotTests
 
         public partial class MyControl : AvaloniaObject
         {
-            [StyledProperty(ChangedMethodName = nameof(OnFlagChanged))]
+            [GeneratedStyledProperty]
             public partial bool First { get; set; }
 
-            [StyledProperty(ChangedMethodName = nameof(OnFlagChanged))]
+            [GeneratedStyledProperty]
             public partial bool Second { get; set; }
 
-            [DirectProperty]
+            [GeneratedDirectProperty]
             public partial string Text { get; set; } = "";
 
-            [AttachedProperty]
+            [GeneratedAttachedProperty]
             public static partial int GetOrder(Visual element);
-
-            private partial void OnFlagChanged(bool oldValue, bool newValue)
-            {
-            }
         }
         """);
 }

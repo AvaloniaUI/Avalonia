@@ -11,11 +11,6 @@ namespace TestNs
         public static readonly global::Avalonia.StyledProperty<bool> FirstProperty =
             global::Avalonia.AvaloniaProperty.Register<global::TestNs.MyControl, bool>(nameof(First));
 
-        private static readonly global::System.IDisposable _firstChangedReg =
-            global::Avalonia.AvaloniaObjectExtensions.AddClassHandler<global::TestNs.MyControl, bool>(
-                FirstProperty.Changed,
-                static (sender, e) => sender.OnFlagChanged(e.OldValue.GetValueOrDefault()!, e.NewValue.GetValueOrDefault()!));
-
         public partial bool First
         {
             get => GetValue(FirstProperty);
@@ -27,11 +22,6 @@ namespace TestNs
         /// </summary>
         public static readonly global::Avalonia.StyledProperty<bool> SecondProperty =
             global::Avalonia.AvaloniaProperty.Register<global::TestNs.MyControl, bool>(nameof(Second));
-
-        private static readonly global::System.IDisposable _secondChangedReg =
-            global::Avalonia.AvaloniaObjectExtensions.AddClassHandler<global::TestNs.MyControl, bool>(
-                SecondProperty.Changed,
-                static (sender, e) => sender.OnFlagChanged(e.OldValue.GetValueOrDefault()!, e.NewValue.GetValueOrDefault()!));
 
         public partial bool Second
         {
@@ -65,7 +55,5 @@ namespace TestNs
         /// </summary>
         public static void SetOrder(global::Avalonia.Visual element, int value)
             => element.SetValue(OrderProperty, value);
-
-        private partial void OnFlagChanged(bool oldValue, bool newValue);
     }
 }

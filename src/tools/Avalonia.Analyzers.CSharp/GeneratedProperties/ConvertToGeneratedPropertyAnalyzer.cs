@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Avalonia.Analyzers.GeneratedProperties;
 
 /// <summary>
-/// Flags Avalonia property declarations that could be rewritten with the [StyledProperty]/[DirectProperty]/[AttachedProperty].
+/// Flags Avalonia property declarations that could be rewritten with the [GeneratedStyledProperty]/[GeneratedDirectProperty]/[GeneratedAttachedProperty].
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
@@ -206,9 +206,9 @@ public sealed class ConvertToGeneratedPropertyAnalyzer : DiagnosticAnalyzer
 
     private static string GetAttributeName(GeneratedPropertyKind kind) => kind switch
     {
-        GeneratedPropertyKind.Styled => "StyledProperty",
-        GeneratedPropertyKind.Direct => "DirectProperty",
-        _ => "AttachedProperty",
+        GeneratedPropertyKind.Styled => "GeneratedStyledProperty",
+        GeneratedPropertyKind.Direct => "GeneratedDirectProperty",
+        _ => "GeneratedAttachedProperty",
     };
 
     private sealed class PropertyTypeSymbols(

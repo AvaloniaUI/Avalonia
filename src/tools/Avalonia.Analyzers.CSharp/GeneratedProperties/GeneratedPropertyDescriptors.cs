@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 namespace Avalonia.Analyzers.GeneratedProperties;
 
 /// <summary>
-/// Diagnostics for [StyledProperty]/[DirectProperty]/[AttachedProperty] misuse.
+/// Diagnostics for [GeneratedStyledProperty]/[GeneratedDirectProperty]/[GeneratedAttachedProperty] misuse.
 /// </summary>
 internal static class GeneratedPropertyDescriptors
 {
@@ -106,7 +106,7 @@ internal static class GeneratedPropertyDescriptors
     public static readonly DiagnosticDescriptor StyledNonPublicSetter = new(
         DiagnosticIds.GeneratedPropertyStyledNonPublicSetter,
         "Non-public setter on a styled property is not read-only",
-        "The non-public setter of styled property '{0}' only restricts the CLR accessor; the property can still be set through SetValue, styles and bindings. Use [DirectProperty] with a non-public setter for true read-only behavior.",
+        "The non-public setter of styled property '{0}' only restricts the CLR accessor; the property can still be set through SetValue, styles and bindings. Use [GeneratedDirectProperty] with a non-public setter for true read-only behavior.",
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true);

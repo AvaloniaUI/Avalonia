@@ -16,19 +16,19 @@ namespace ControlCatalog.Pages
         private Point _cursorPoint;
         private Geometry _smileGeometry;
 
-        [StyledProperty(DefaultValue = 1.0d)]
+        [GeneratedStyledProperty(DefaultValue = 1.0d)]
         public partial double Scale { get; set; }
 
         /// <summary>
         /// Rotation, measured in Radians!
         /// </summary>
-        [StyledProperty(CoerceMethodName = nameof(CoerceRotation))]
+        [GeneratedStyledProperty(CoerceMethodName = nameof(CoerceRotation))]
         public partial double Rotation { get; set; }
 
-        [StyledProperty]
+        [GeneratedStyledProperty]
         public partial double ViewportCenterY { get; set; }
 
-        [StyledProperty]
+        [GeneratedStyledProperty]
         public partial double ViewportCenterX { get; set; }
 
         private IPen _pen;

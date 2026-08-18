@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Avalonia.Generators.PropertyGenerator;
 
 /// <summary>
-/// Generates AvaloniaProperty registrations for partial members with [StyledProperty], [DirectProperty] or [AttachedProperty].
+/// Generates AvaloniaProperty registrations for partial members with [GeneratedStyledProperty], [GeneratedDirectProperty] or [GeneratedAttachedProperty].
 /// </summary>
 [Generator(LanguageNames.CSharp)]
 public sealed class AvaloniaPropertyIncrementalGenerator : IIncrementalGenerator

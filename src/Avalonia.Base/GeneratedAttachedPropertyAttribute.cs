@@ -13,7 +13,7 @@ namespace Avalonia;
 /// </para>
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-public sealed class AttachedPropertyAttribute : Attribute
+public sealed class GeneratedAttachedPropertyAttribute : Attribute
 {
     /// <summary>
     /// Re-owns an existing attached property from the specified base type instead of registering a new property.
@@ -40,6 +40,7 @@ public sealed class AttachedPropertyAttribute : Attribute
     /// Cannot be used with <see cref="AddOwnerFrom"/>. 
     /// </remarks>
     public bool Inherits { get; set; }
+
     /// <summary>
     /// The name of the validation method, with signature
     /// <c>static bool {Method}(T value)</c>. Pass via <c>nameof(...)</c>.

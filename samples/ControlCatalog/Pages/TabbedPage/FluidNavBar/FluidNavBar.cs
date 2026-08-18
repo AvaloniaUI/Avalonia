@@ -54,22 +54,22 @@ namespace ControlCatalog.Pages
         private readonly Stopwatch _clock = Stopwatch.StartNew();
         private bool _animating;
 
-        [StyledProperty]
+        [GeneratedStyledProperty]
         public partial IReadOnlyList<FluidNavItem> Items { get; set; }
 
-        [StyledProperty]
+        [GeneratedStyledProperty]
         public partial int SelectedIndex { get; set; }
 
-        [StyledProperty]
+        [GeneratedStyledProperty]
         public partial Color BarColor { get; set; }
 
-        [StyledProperty]
+        [GeneratedStyledProperty]
         public partial Color ButtonColor { get; set; }
 
-        [StyledProperty]
+        [GeneratedStyledProperty]
         public partial Color ActiveIconColor { get; set; }
 
-        [StyledProperty]
+        [GeneratedStyledProperty]
         public partial Color InactiveIconColor { get; set; }
 
         public event EventHandler<int>? SelectionChanged;

@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Avalonia.Analyzers.GeneratedProperties;
 
 /// <summary>
-/// Reports diagnostics for [StyledProperty]/[DirectProperty]/[AttachedProperty] misuse.
+/// Reports diagnostics for [GeneratedStyledProperty]/[GeneratedDirectProperty]/[GeneratedAttachedProperty] misuse.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer

@@ -14,7 +14,7 @@ namespace Avalonia;
 /// </para>
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property, Inherited = false)]
-public sealed class StyledPropertyAttribute : Attribute
+public sealed class GeneratedStyledPropertyAttribute : Attribute
 {
     /// <summary>
     /// Re-owns an existing styled property from the specified base type instead of registering a new property.
@@ -46,6 +46,7 @@ public sealed class StyledPropertyAttribute : Attribute
     /// Whether the property is interested in data validation.
     /// </summary>
     public bool EnableDataValidation { get; set; }
+
     /// <summary>
     /// The name of the validation method, with signature
     /// <c>static bool {Method}(T value)</c>.
