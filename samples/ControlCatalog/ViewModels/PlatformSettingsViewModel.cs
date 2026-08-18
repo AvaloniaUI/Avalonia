@@ -16,14 +16,29 @@ public class PlatformSettingsViewModel : ViewModelBase
     public PlatformSettingsViewModel()
     {
         _platformSettings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-        
+
         if (_platformSettings != null)
         {
             _colorValues = _platformSettings.GetColorValues();
             _preferredLanguage = _platformSettings.PreferredApplicationLanguage;
-            
+        }
+    }
+
+    public void Subscribe()
+    {
+        if (_platformSettings != null)
+        {
             _platformSettings.ColorValuesChanged += OnColorValuesChanged;
             _platformSettings.PreferredApplicationLanguageChanged += OnPreferredLanguageChanged;
+        }
+    }
+
+    public void Unsubscribe()
+    {
+        if (_platformSettings != null)
+        {
+            _platformSettings.ColorValuesChanged -= OnColorValuesChanged;
+            _platformSettings.PreferredApplicationLanguageChanged -= OnPreferredLanguageChanged;
         }
     }
 
@@ -74,4 +89,3 @@ public class PlatformSettingsViewModel : ViewModelBase
 
     public string DoubleTapTimeMouse => _platformSettings?.GetDoubleTapTime(PointerType.Mouse).ToString() ?? "Not available";
 }
-
