@@ -77,12 +77,6 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(Placement), defaultValue: PlacementMode.Bottom);
 
         /// <summary>
-        /// Defines the <see cref="PlacementMode"/> property.
-        /// </summary>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
-
-        /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
         /// </summary>
         public static readonly StyledProperty<Rect?> PlacementRectProperty =
@@ -165,7 +159,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static Popup()
         {
-            IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>((x, e) => x.ChildChanged(e));
             IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));
         }
@@ -182,7 +175,7 @@ namespace Avalonia.Controls.Primitives
 
         internal event EventHandler<CancelEventArgs>? Closing;
 
-        public IPopupHost? Host => _openState?.PopupHost;
+        internal IPopupHost? Host => _openState?.PopupHost;
 
         /// <summary>
         /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
@@ -275,14 +268,6 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(PlacementGravityProperty);
             set => SetValue(PlacementGravityProperty, value);
-        }
-
-        /// <inheritdoc cref="Placement"/>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public PlacementMode PlacementMode
-        {
-            get => GetValue(PlacementProperty);
-            set => SetValue(PlacementProperty, value);
         }
 
         /// <summary>
@@ -465,12 +450,13 @@ namespace Avalonia.Controls.Primitives
 
             UpdateHostSizing(popupHost, topLevel, placementTarget);
             popupHost.Topmost = Topmost;
+            popupHost.IsHitTestVisible = IsHitTestVisible;
             popupHost.SetChild(Child);
             ((ISetLogicalParent)popupHost).SetParent(this);
 
             if (InheritsTransform)
             {
-                TransformTrackingHelper.Track(placementTarget, PlacementTargetTransformChanged)
+                TransformTrackingHelper.Track(placementTarget, true, PlacementTargetTransformChanged)
                     .DisposeWith(handlerCleanup);
             }
             else
@@ -690,7 +676,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         var newTarget = change.GetNewValue<Control?>() ?? this.FindLogicalAncestorOfType<Control>();
 
-                        if (newTarget is null || newTarget.GetVisualRoot() != _openState.TopLevel)
+                        if (newTarget is null || TopLevel.GetTopLevel(newTarget) != _openState.TopLevel)
                         {
                             Close();
                             return;
@@ -704,6 +690,10 @@ namespace Avalonia.Controls.Primitives
                 else if (change.Property == TopmostProperty)
                 {
                     _openState.PopupHost.Topmost = change.GetNewValue<bool>();
+                }
+                else if (change.Property == IsHitTestVisibleProperty)
+                {
+                    _openState.PopupHost.IsHitTestVisible = change.GetNewValue<bool>();
                 }
             }
         }

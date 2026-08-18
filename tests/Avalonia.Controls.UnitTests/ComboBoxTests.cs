@@ -19,7 +19,7 @@ namespace Avalonia.Controls.UnitTests
     public class ComboBoxTests : ScopedTestBase
     {
         MouseTestHelper _helper = new MouseTestHelper();
-        
+
         [Fact]
         public void Clicking_On_Control_Toggles_IsDropDownOpen()
         {
@@ -81,7 +81,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var root = new TestRoot(target);
                 target.ApplyTemplate();
-                ((Control)target.Presenter).ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
                 target.Focus();
                 Assert.Equal(target.SelectedIndex, -1);
                 Assert.True(target.IsFocused);
@@ -117,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var root = new TestRoot(target);
                 target.ApplyTemplate();
-                ((Control)target.Presenter).ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
                 target.Focus();
                 Assert.Equal(target.SelectedIndex, -1);
                 Assert.True(target.IsFocused);
@@ -166,9 +166,10 @@ namespace Avalonia.Controls.UnitTests
 
             var root = new TestRoot { Child = target };
             target.ApplyTemplate();
-            ((Control)target.Presenter).ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+            Assert.NotNull(rectangle);
             Assert.True(((ILogical)target).IsAttachedToLogicalTree);
             Assert.True(((ILogical)rectangle).IsAttachedToLogicalTree);
 
@@ -196,13 +197,14 @@ namespace Avalonia.Controls.UnitTests
                         new Popup
                         {
                             Name = "PART_Popup",
+                            [!!Popup.IsOpenProperty] = parent[!!ComboBox.IsDropDownOpenProperty],
                             Child = new ScrollViewer
                             {
                                 Name = "PART_ScrollViewer",
                                 Content = new ItemsPresenter
                                 {
                                     Name = "PART_ItemsPresenter",
-                                    ItemsPanel = new FuncTemplate<Panel>(() => new VirtualizingStackPanel()),
+                                    ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
                                 }.RegisterInNameScope(scope)
                             }.RegisterInNameScope(scope)
                         }.RegisterInNameScope(scope),
@@ -213,6 +215,48 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
             });
+        }
+
+        [Fact]
+        public void Reopening_DropDown_Focuses_Selected_Item_After_Scrolled_To_Top()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                keyboardDevice: () => new KeyboardDevice(),
+                keyboardNavigation: () => new KeyboardNavigationHandler()));
+
+            var target = new ComboBox { Template = GetTemplate() };
+
+            for (var i = 0; i < 100; ++i)
+            {
+                var item = new ComboBoxItem { Content = $"Item {i}" };
+                target.Items.Add(item);
+            }
+
+            var selectedItem = target.Items[60] as ComboBoxItem;
+            Assert.True(selectedItem != null);
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            var scrollViewer = target.GetVisualDescendants().OfType<ScrollViewer>().First();
+            Assert.True(scrollViewer != null);
+
+            target.SelectedItem = selectedItem;
+            target.Focus();
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            scrollViewer.ScrollToHome();
+            target.IsDropDownOpen = false;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(selectedItem.IsFocused && selectedItem.IsVisible);
         }
 
         [Fact]
@@ -234,7 +278,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot { Child = panel = new StackPanel { Children = { target, other } } };
 
                 target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
 
                 other.Focus();
 
@@ -379,16 +423,38 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
-                
+                target.Presenter!.ApplyTemplate();
+
                 var exception = new System.InvalidCastException("failed validation");
                 var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
                 target.Bind(ComboBox.SelectedItemProperty, textObservable);
 
                 Assert.True(DataValidationErrors.GetHasErrors(target));
-                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(target));
             }
-            
+
+        }
+
+        [Fact]
+        public void Text_Validation()
+        {
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate(),
+                };
+
+                target.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
+
+                var exception = new System.InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                target.Bind(ComboBox.TextProperty, textObservable);
+
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(target));
+            }
         }
 
         [Fact]
@@ -403,8 +469,8 @@ namespace Avalonia.Controls.UnitTests
 
                 window.KeyDown += (s, e) =>
                  {
-                     if (e.Handled == false 
-                     && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == true 
+                     if (e.Handled == false
+                     && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == true
                      && e.Key == Key.F4 )
                      {
                          e.Handled = true;
@@ -473,7 +539,7 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedIndex = 0;
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
-
+            Assert.NotNull(rectangle);
             Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
         }
 
@@ -488,7 +554,7 @@ namespace Avalonia.Controls.UnitTests
             };
             var target = new ComboBox
             {
-                Items = 
+                Items =
                 {
                     new ComboBoxItem()
                     {
@@ -503,11 +569,12 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedIndex = 0;
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+            Assert.NotNull(rectangle);
             Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
 
             parentContent.FlowDirection = FlowDirection.RightToLeft;
             target.FlowDirection = FlowDirection.RightToLeft;
-            
+
             Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
         }
 
@@ -539,6 +606,7 @@ namespace Avalonia.Controls.UnitTests
                 target.SelectedIndex = 0;
 
                 var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+                Assert.NotNull(rectangle);
                 Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
 
                 parentContent.FlowDirection = FlowDirection.RightToLeft;
@@ -546,7 +614,7 @@ namespace Avalonia.Controls.UnitTests
                 var popup = target.GetVisualDescendants().OfType<Popup>().First();
                 popup.PlacementTarget = new Window();
                 popup.Open();
-                
+
                 Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
             }
         }
@@ -562,10 +630,10 @@ namespace Avalonia.Controls.UnitTests
                 SelectionBoxItemTemplate = selectionBoxItemTemplate,
                 ItemTemplate = itemTemplate,
             };
-            
+
             Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
         }
-        
+
         [Fact]
         public void SelectionBoxItemTemplate_Inherits_From_ItemTemplate_When_NotSet()
         {
@@ -575,7 +643,7 @@ namespace Avalonia.Controls.UnitTests
                 ItemsSource = new []{ "Foo" },
                 ItemTemplate = itemTemplate,
             };
-            
+
             Assert.Equal(itemTemplate, target.SelectionBoxItemTemplate);
         }
 
@@ -593,9 +661,9 @@ namespace Avalonia.Controls.UnitTests
             };
 
             Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
-            
+
             target.ItemTemplate = itemTemplate2;
-            
+
             Assert.Equal(selectionBoxItemTemplate, target.SelectionBoxItemTemplate);
         }
 
@@ -807,14 +875,17 @@ namespace Avalonia.Controls.UnitTests
             keyboardNavHandler.SetOwner(root);
 
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
 
-            var containerPanel = target.GetTemplateChildren().OfType<Panel>().FirstOrDefault(x => x.Name == "container");
+            var containerPanel = target.GetTemplateDescendants().OfType<Panel>().FirstOrDefault(x => x.Name == "container");
             var editableTextBox = containerPanel?.GetVisualDescendants().OfType<TextBox>().FirstOrDefault(x => x.Name == "PART_EditableTextBox");
             var popup = containerPanel?.GetVisualDescendants().OfType<Popup>().FirstOrDefault(x => x.Name == "PART_Popup");
             var popupScrollViewer = popup?.Child as ScrollViewer;
             var scrollViewerItemsPresenter = popupScrollViewer?.Content as ItemsPresenter;
             var popupVirtualizingStackPanel = scrollViewerItemsPresenter?.GetVisualDescendants().OfType<VirtualizingStackPanel>().FirstOrDefault();
+
+            Assert.NotNull(editableTextBox);
+            Assert.NotNull(scrollViewerItemsPresenter);
             Assert.NotNull(popupVirtualizingStackPanel);
 
             //force the popup to render the ComboBoxItem(s) as they are what get set as "focused" if this test fails

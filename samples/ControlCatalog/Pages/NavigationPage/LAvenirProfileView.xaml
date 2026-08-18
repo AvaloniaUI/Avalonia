@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.LAvenirProfileView">
+  <StackPanel VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              Spacing="12">
+
+    <Border Width="72" Height="72" CornerRadius="36"
+            Background="#1A4B2BEE"
+            HorizontalAlignment="Center">
+      <TextBlock Text="AK" FontSize="24" FontWeight="Bold"
+                 Foreground="#4B2BEE"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"/>
+    </Border>
+
+    <TextBlock Text="Alexander Koch" FontSize="20" FontWeight="Bold"
+               Foreground="#1E293B" HorizontalAlignment="Center"/>
+
+    <TextBlock Text="alexander@lavenir.com" FontSize="13"
+               Foreground="#94A3B8" HorizontalAlignment="Center"/>
+
+    <Border Height="8"/>
+
+    <Border CornerRadius="999" Background="#1A4B2BEE"
+            Padding="16,8" HorizontalAlignment="Center">
+      <TextBlock Text="Gold Member" FontSize="12" FontWeight="SemiBold"
+                 Foreground="#4B2BEE"/>
+    </Border>
+
+  </StackPanel>
+</UserControl>

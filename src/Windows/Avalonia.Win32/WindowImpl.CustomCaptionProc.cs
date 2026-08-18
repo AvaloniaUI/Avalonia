@@ -18,36 +18,24 @@ namespace Avalonia.Win32
             // Get the window rectangle.
             GetWindowRect(hWnd, out var rcWindow);
 
-            var scaling = (uint)(RenderScaling * StandardDpi);
-            var relativeScaling = RenderScaling / PrimaryScreenRenderScaling;
-
             // Get the frame rectangle, adjusted for the style without a caption.
             var rcFrame = new RECT();
             var borderThickness = new RECT();
-            if (Win32Platform.WindowsVersion < PlatformConstants.Windows10_1607)
+
+            var isMaximized = GetWindowPlacement(hWnd, out var placement) && placement.ShowCmd == ShowWindowCommand.ShowMaximized;
+            if (!isMaximized)
             {
-                AdjustWindowRectEx(ref rcFrame, (uint)(WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION), false, 0);
+                var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+                if (style.HasAllFlags(WindowStyles.WS_THICKFRAME))
+                {
+                    var adjuster = CreateWindowRectAdjuster();
+                    adjuster.Adjust(ref rcFrame, style & ~WindowStyles.WS_CAPTION, 0);
+                    adjuster.Adjust(ref borderThickness, style, 0);
 
-                rcFrame.top = (int)(rcFrame.top * relativeScaling);
-                rcFrame.right = (int)(rcFrame.right * relativeScaling);
-                rcFrame.left = (int)(rcFrame.left * relativeScaling);
-                rcFrame.bottom = (int)(rcFrame.bottom * relativeScaling);
-
-                AdjustWindowRectEx(ref borderThickness, (uint)GetStyle(), false, 0);
-
-                borderThickness.top = (int)(borderThickness.top * relativeScaling);
-                borderThickness.right = (int)(borderThickness.right * relativeScaling);
-                borderThickness.left = (int)(borderThickness.left * relativeScaling);
-                borderThickness.bottom = (int)(borderThickness.bottom * relativeScaling);
+                    borderThickness.left *= -1;
+                    borderThickness.top *= -1;
+                }
             }
-            else
-            {
-                AdjustWindowRectExForDpi(ref rcFrame, WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION, false, 0, scaling);
-                AdjustWindowRectExForDpi(ref borderThickness, GetStyle(), false, 0, scaling);
-            }
-
-            borderThickness.left *= -1;
-            borderThickness.top *= -1;
 
             if (_extendTitleBarHint >= 0)
             {
@@ -236,7 +224,39 @@ namespace Avalonia.Win32
         private HitTestValues HitTestVisual(IntPtr lParam)
         {
             var position = PointToClient(PointFromLParam(lParam));
-            if (_owner is Window window)
+            
+            // First, check new cross-platform ElementRole via chrome hit-test
+            if (_owner is IInputRoot inputRoot)
+            {
+                var chromeRole = inputRoot.HitTestChromeElement(position);
+                if (chromeRole.HasValue)
+                {
+                    return chromeRole.Value switch
+                    {
+                        // DecorationsElement/User = interactive chrome element (e.g., caption button)
+                        // — signal to redirect NC input to client input.
+                        WindowDecorationsElementRole.DecorationsElement => HitTestValues.HTCLIENT,
+                        WindowDecorationsElementRole.User => HitTestValues.HTCLIENT,
+                        WindowDecorationsElementRole.TitleBar => HitTestValues.HTCAPTION,
+                        WindowDecorationsElementRole.ResizeN => HitTestValues.HTTOP,
+                        WindowDecorationsElementRole.ResizeS => HitTestValues.HTBOTTOM,
+                        WindowDecorationsElementRole.ResizeE => HitTestValues.HTRIGHT,
+                        WindowDecorationsElementRole.ResizeW => HitTestValues.HTLEFT,
+                        WindowDecorationsElementRole.ResizeNE => HitTestValues.HTTOPRIGHT,
+                        WindowDecorationsElementRole.ResizeNW => HitTestValues.HTTOPLEFT,
+                        WindowDecorationsElementRole.ResizeSE => HitTestValues.HTBOTTOMRIGHT,
+                        WindowDecorationsElementRole.ResizeSW => HitTestValues.HTBOTTOMLEFT,
+                        WindowDecorationsElementRole.CloseButton => HitTestValues.HTCLOSE,
+                        WindowDecorationsElementRole.MinimizeButton => HitTestValues.HTMINBUTTON,
+                        WindowDecorationsElementRole.MaximizeButton => HitTestValues.HTMAXBUTTON,
+                        WindowDecorationsElementRole.FullScreenButton => HitTestValues.HTCLIENT,
+                        _ => HitTestValues.HTNOWHERE
+                    };
+                }
+            }
+            
+            // Fall back to Win32-specific NonClientHitTestResult attached property
+            if (_owner?.RootElement is {} window)
             {
                 var visual = window.GetVisualAt(position, x =>
                 {

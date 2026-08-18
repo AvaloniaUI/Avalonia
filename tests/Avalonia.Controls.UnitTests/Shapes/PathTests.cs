@@ -88,6 +88,7 @@ namespace Avalonia.Controls.UnitTests.Shapes
 
             target.Measure(new Size(500, 500));
 
+            Assert.NotNull(target.RenderedGeometry);
             Assert.Null(target.RenderedGeometry.Transform);
         }
 
@@ -109,12 +110,15 @@ namespace Avalonia.Controls.UnitTests.Shapes
             target.Measure(new Size(500, 500));
             target.Arrange(new Rect(0, 0, 500, 500));
 
+            Assert.NotNull(target.RenderedGeometry);
+
             if (expectedScaleX == 1 && expectedScaleY == 1)
             {
                 Assert.Null(target.RenderedGeometry.Transform);
             }
             else
             {
+                Assert.NotNull(target.RenderedGeometry.Transform);
                 Assert.Equal(Matrix.CreateScale(expectedScaleX, expectedScaleY), target.RenderedGeometry.Transform.Value);
             }
         }
@@ -135,6 +139,8 @@ namespace Avalonia.Controls.UnitTests.Shapes
             target.Arrange(new Rect(0, 0, 400, 400));
 
             Assert.Equal(new Rect(0, 0, 100, 200), geometry.Rect);
+            Assert.NotNull(target.RenderedGeometry);
+            Assert.NotNull(target.RenderedGeometry.Transform);
             Assert.Equal(Matrix.CreateScale(2, 2), target.RenderedGeometry.Transform.Value);
             Assert.Equal(new Rect(0, 0, 400, 400), target.Bounds);
         }
@@ -153,6 +159,8 @@ namespace Avalonia.Controls.UnitTests.Shapes
             target.Measure(new Size(200, 200));
             target.Arrange(new Rect(0, 0, 200, 200));
 
+            Assert.NotNull(target.RenderedGeometry);
+            Assert.NotNull(target.RenderedGeometry.Transform);
             Assert.Equal(Matrix.CreateScale(2, 2), target.RenderedGeometry.Transform.Value);
 
             target.Measure(new Size(300, 300));
@@ -173,6 +181,8 @@ namespace Avalonia.Controls.UnitTests.Shapes
 
             target.Measure(new Size(200, 200));
             target.Arrange(new Rect(0, 0, 200, 200));
+            Assert.NotNull(target.RenderedGeometry);
+            Assert.NotNull(target.RenderedGeometry.Transform);
             Assert.Equal(Matrix.CreateScale(2, 2), target.RenderedGeometry.Transform.Value);
 
             target.Arrange(new Rect(0, 0, 300, 300));

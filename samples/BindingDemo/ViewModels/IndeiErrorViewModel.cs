@@ -9,7 +9,7 @@ namespace BindingDemo.ViewModels
     {
         private int _maximum = 10;
         private int _value;
-        private string _valueError;
+        private string? _valueError;
 
         public IndeiErrorViewModel()
         {
@@ -34,16 +34,16 @@ namespace BindingDemo.ViewModels
             set { this.RaiseAndSetIfChanged(ref _value, value); }
         }
 
-        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+        public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
-        public IEnumerable GetErrors(string propertyName)
+        public IEnumerable GetErrors(string? propertyName)
         {
             switch (propertyName)
             {
                 case nameof(Value):
                     return new[] { _valueError };
                 default:
-                    return null;
+                    return Array.Empty<string>();
             }
         }
 

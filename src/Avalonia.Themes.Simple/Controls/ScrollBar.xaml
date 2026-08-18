@@ -1,11 +1,38 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <MenuFlyout x:Key="SimpleVerticalScrollBarContextFlyout">
+    <MenuItem Header="{DynamicResource StringScrollBarScrollHere}" Command="{Binding $parent[ScrollBar].ScrollHere}" AutomationProperties.AutomationId="ScrollHere" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarTop}" Command="{Binding $parent[ScrollBar].ScrollToHome}" AutomationProperties.AutomationId="Top" />
+    <MenuItem Header="{DynamicResource StringScrollBarBottom}" Command="{Binding $parent[ScrollBar].ScrollToEnd}" AutomationProperties.AutomationId="Bottom" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarPageUp}" Command="{Binding $parent[ScrollBar].PageUp}" AutomationProperties.AutomationId="PageUp" />
+    <MenuItem Header="{DynamicResource StringScrollBarPageDown}" Command="{Binding $parent[ScrollBar].PageDown}" AutomationProperties.AutomationId="PageDown" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollUp}" Command="{Binding $parent[ScrollBar].LineUp}" AutomationProperties.AutomationId="ScrollUp" />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollDown}" Command="{Binding $parent[ScrollBar].LineDown}" AutomationProperties.AutomationId="ScrollDown" />
+  </MenuFlyout>
+
+  <MenuFlyout x:Key="SimpleHorizontalScrollBarContextFlyout">
+    <MenuItem Header="{DynamicResource StringScrollBarScrollHere}" Command="{Binding $parent[ScrollBar].ScrollHere}" AutomationProperties.AutomationId="ScrollHere" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarLeftEdge}" Command="{Binding $parent[ScrollBar].ScrollToHome}" AutomationProperties.AutomationId="LeftEdge" />
+    <MenuItem Header="{DynamicResource StringScrollBarRightEdge}" Command="{Binding $parent[ScrollBar].ScrollToEnd}" AutomationProperties.AutomationId="RightEdge" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarPageLeft}" Command="{Binding $parent[ScrollBar].PageLeft}" AutomationProperties.AutomationId="PageLeft" />
+    <MenuItem Header="{DynamicResource StringScrollBarPageRight}" Command="{Binding $parent[ScrollBar].PageRight}" AutomationProperties.AutomationId="PageRight" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollLeft}" Command="{Binding $parent[ScrollBar].LineLeft}" AutomationProperties.AutomationId="ScrollLeft" />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollRight}" Command="{Binding $parent[ScrollBar].LineRight}" AutomationProperties.AutomationId="ScrollRight" />
+  </MenuFlyout>
+
   <ControlTheme x:Key="{x:Type ScrollBar}"
                 TargetType="ScrollBar">
     <Setter Property="Cursor" Value="Arrow" />
 
     <Style Selector="^:horizontal">
+      <Setter Property="ContextFlyout" Value="{StaticResource SimpleHorizontalScrollBarContextFlyout}" />
       <Setter Property="Height" Value="{DynamicResource ScrollBarThickness}" />
       <Setter Property="Template">
         <ControlTemplate>
@@ -18,7 +45,8 @@
                             MinWidth="{DynamicResource ScrollBarThickness}"
                             VerticalAlignment="Center"
                             Classes="repeat"
-                            Focusable="False">
+                            Focusable="False"
+                            AutomationProperties.Name="Column left">
                 <Path Data="M 4 0 L 4 8 L 0 4 Z" />
               </RepeatButton>
               <Track Grid.Row="1"
@@ -33,14 +61,17 @@
                 <Track.DecreaseButton>
                   <RepeatButton Name="PART_PageUpButton"
                                 Classes="repeattrack"
-                                Focusable="False" />
+                                Focusable="False"
+                                AutomationProperties.Name="Page left"/>
                 </Track.DecreaseButton>
                 <Track.IncreaseButton>
                   <RepeatButton Name="PART_PageDownButton"
                                 Classes="repeattrack"
-                                Focusable="False" />
+                                Focusable="False"
+                                AutomationProperties.Name="Page right"/>
                 </Track.IncreaseButton>
-                <Thumb Name="thumb" />
+                <Thumb Name="thumb"
+                       AutomationProperties.Name="Position"/>
               </Track>
               <RepeatButton Name="PART_LineDownButton"
                             Grid.Row="2"
@@ -48,7 +79,8 @@
                             MinWidth="{DynamicResource ScrollBarThickness}"
                             VerticalAlignment="Center"
                             Classes="repeat"
-                            Focusable="False">
+                            Focusable="False"
+                            AutomationProperties.Name="Column right">
                 <Path Data="M 0 0 L 4 4 L 0 8 Z" />
               </RepeatButton>
             </Grid>
@@ -57,6 +89,7 @@
       </Setter>
     </Style>
     <Style Selector="^:vertical">
+      <Setter Property="ContextFlyout" Value="{StaticResource SimpleVerticalScrollBarContextFlyout}" />
       <Setter Property="Width" Value="{DynamicResource ScrollBarThickness}" />
       <Setter Property="Template">
         <ControlTemplate>
@@ -68,7 +101,8 @@
                             MinHeight="{DynamicResource ScrollBarThickness}"
                             HorizontalAlignment="Center"
                             Classes="repeat"
-                            Focusable="False">
+                            Focusable="False"
+                            AutomationProperties.Name="Line up">
                 <Path Data="M 0 4 L 8 4 L 4 0 Z" />
               </RepeatButton>
               <Track Grid.Row="1"
@@ -84,14 +118,17 @@
                 <Track.DecreaseButton>
                   <RepeatButton Name="PART_PageUpButton"
                                 Classes="repeattrack"
-                                Focusable="False" />
+                                Focusable="False"
+                                AutomationProperties.Name="Page up"/>
                 </Track.DecreaseButton>
                 <Track.IncreaseButton>
                   <RepeatButton Name="PART_PageDownButton"
                                 Classes="repeattrack"
-                                Focusable="False" />
+                                Focusable="False"
+                                AutomationProperties.Name="Page down"/>
                 </Track.IncreaseButton>
-                <Thumb Name="thumb" />
+                <Thumb Name="thumb"
+                       AutomationProperties.Name="Position"/>
               </Track>
               <RepeatButton Name="PART_LineDownButton"
                             Grid.Row="2"
@@ -99,7 +136,8 @@
                             MinHeight="{DynamicResource ScrollBarThickness}"
                             HorizontalAlignment="Center"
                             Classes="repeat"
-                            Focusable="False">
+                            Focusable="False"
+                            AutomationProperties.Name="Line down">
                 <Path Data="M 0 0 L 4 4 L 8 0 Z" />
               </RepeatButton>
             </Grid>

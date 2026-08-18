@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -20,9 +21,9 @@ public static class HeadlessWindowExtensions
     /// <returns>Bitmap with last rendered frame. Null, if nothing was rendered.</returns>
     public static WriteableBitmap? CaptureRenderedFrame(this TopLevel topLevel)
     {
-        Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        return topLevel.GetLastRenderedFrame();
+        WriteableBitmap? bitmap = null;
+        topLevel.RunJobsOnImpl(w => bitmap = w.GetLastRenderedFrame());
+        return bitmap;
     }
 
     /// <summary>
@@ -42,13 +43,6 @@ public static class HeadlessWindowExtensions
     }
 
     /// <summary>
-    /// Simulates a keyboard press on the headless window/toplevel.
-    /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyPressQwerty alternatively.")]
-    public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyPress(topLevel, key, modifiers, PhysicalKey.None, null);
-
-    /// <summary>
     /// Simulates keyboard press on the headless window/toplevel.
     /// </summary>
     public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey,
@@ -60,13 +54,6 @@ public static class HeadlessWindowExtensions
     /// </summary>
     public static void KeyPressQwerty(this TopLevel topLevel, PhysicalKey physicalKey, RawInputModifiers modifiers) =>
         RunJobsOnImpl(topLevel, w => w.KeyPress(physicalKey.ToQwertyKey(), modifiers, physicalKey, physicalKey.ToQwertyKeySymbol()));
-
-    /// <summary>
-    /// Simulates a keyboard release on the headless window/toplevel.
-    /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyReleaseQwerty alternatively.")]
-    public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyRelease(topLevel, key, modifiers, PhysicalKey.None, null);
 
     /// <summary>
     /// Simulates keyboard release on the headless window/toplevel.
@@ -124,30 +111,66 @@ public static class HeadlessWindowExtensions
     /// <summary>
     /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
     /// </summary>
-    [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
-    public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataObject data,
-        DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
-        RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
-
-    /// <summary>
-    /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
-    /// </summary>
     public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataTransfer data,
         DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
 
+    /// <summary>
+    /// Returns the popups currently open directly above this toplevel, in z-order (bottom to top).
+    /// For popups nested in another popup, call this method on that popup's toplevel.
+    /// </summary>
+    /// <remarks>
+    /// Only popups hosted in dedicated headless top-levels are returned, which requires disabling
+    /// <see cref="AvaloniaHeadlessPlatformOptions.OverlayPopups"/>. Popups hosted in the overlay
+    /// layer are part of the parent's visual tree and are not tracked by the platform.
+    /// </remarks>
+    public static IReadOnlyList<TopLevel> GetOpenPopups(this TopLevel topLevel) =>
+        GetImpl(topLevel).GetOpenPopups();
+
+    /// <summary>
+    /// Changes the render scaling (DPI) of the headless window/toplevel.
+    /// This simulates a DPI change, triggering scaling changed notifications and a layout pass.
+    /// </summary>
+    /// <param name="topLevel">The target headless top level.</param>
+    /// <param name="scaling">The new render scaling factor. Must be greater than zero.</param>
+    public static void SetRenderScaling(this TopLevel topLevel, double scaling) =>
+        RunJobsOnImpl(topLevel, w => w.SetRenderScaling(scaling));
+
     private static void RunJobsOnImpl(this TopLevel topLevel, Action<IHeadlessWindow> action)
     {
-        Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        Dispatcher.UIThread.RunJobs();
+        RunJobsAndRender();
         action(GetImpl(topLevel));
-        Dispatcher.UIThread.RunJobs();
+        RunJobsAndRender();
+
+        static void RunJobsAndRender()
+        {
+            var dispatcher = Dispatcher.UIThread;
+
+            // Run jobs and render frames until everything is stable.
+            // We use a simple approach: run jobs, render, and repeat until
+            // there are no more pending jobs. The render timer tick can schedule
+            // new jobs, so we loop until stable.
+            for (var i = 0; i < 10; i++)
+            {
+                dispatcher.RunJobs();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+
+                if (!dispatcher.HasJobsWithPriority(DispatcherPriority.MinimumActiveValue))
+                    return;
+            }
+
+            // Final attempt: run remaining jobs without rendering
+            dispatcher.RunJobs();
+        }
     }
 
     private static IHeadlessWindow GetImpl(this TopLevel topLevel)
     {
-        return topLevel.PlatformImpl as IHeadlessWindow ??
-               throw new InvalidOperationException("TopLevel must be a headless window.");
+        return topLevel.PlatformImpl switch
+        {
+            null => throw new ObjectDisposedException(topLevel.GetType().Name),
+            IHeadlessWindow headless => headless,
+            _ => throw new InvalidOperationException("TopLevel must be a headless window.")
+        };
     }
 }

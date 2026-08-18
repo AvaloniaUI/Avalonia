@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PipsPagerGettingStartedPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Getting Started" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="PipsPager lets users navigate a paginated collection using configurable dot indicators with optional navigation buttons." />
+        <Separator />
+        <TextBlock Text="Features" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Configurable maximum visible pips" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Automatic scrolling for large collections" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Horizontal and Vertical orientation" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Previous/Next navigation buttons" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Customizable pips and buttons" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <StackPanel Spacing="24" Margin="24">
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="Default" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="5" />
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="Without Navigation Buttons" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="10"
+                   IsPreviousButtonVisible="False"
+                   IsNextButtonVisible="False"
+                   MaxVisiblePips="5" />
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Text="Vertical" FontWeight="SemiBold" FontSize="14" />
+        <PipsPager NumberOfPages="5" Orientation="Vertical" />
+      </StackPanel>
+
+    </StackPanel>
+  </DockPanel>
+</UserControl>

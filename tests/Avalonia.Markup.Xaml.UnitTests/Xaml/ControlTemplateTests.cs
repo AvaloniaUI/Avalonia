@@ -43,11 +43,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = (Button)window.Content;
+                var button = (Button)window.Content!;
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
                 var listBoxHierarchyLine = button.GetVisualChildren().ElementAt(0) as ListBoxHierarchyLine;
+                Assert.NotNull(listBoxHierarchyLine);
+                Assert.NotNull(listBoxHierarchyLine.LineDashStyle);
+                Assert.NotNull(listBoxHierarchyLine.LineDashStyle.Dashes);
                 Assert.Equal(1, listBoxHierarchyLine.LineDashStyle.Offset);
                 Assert.Equal(2, listBoxHierarchyLine.LineDashStyle.Dashes.Count);
                 Assert.Equal(2, listBoxHierarchyLine.LineDashStyle.Dashes[0]);
@@ -74,12 +77,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = (Button)window.Content;
+                var button = (Button)window.Content!;
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                var presenter = button.Presenter;
+                var presenter = button.Presenter!;
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
@@ -108,12 +111,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = (Button)window.Content;
+                var button = (Button)window.Content!;
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
                 var presenter = button.Presenter;
+                Assert.NotNull(presenter);
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
@@ -139,12 +143,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = (Button)window.Content;
+                var button = (Button)window.Content!;
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
                 var presenter = button.Presenter;
+                Assert.NotNull(presenter);
                 Assert.Equal(Dock.Top, DockPanel.GetDock(presenter));
 
                 var diagnostic = presenter.GetDiagnostic(DockPanel.DockProperty);
@@ -173,12 +178,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = (Button)window.Content;
+                var button = (Button)window.Content!;
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
                 var presenter = button.Presenter;
+                Assert.NotNull(presenter);
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
@@ -207,12 +213,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = (Button)window.Content;
+                var button = (Button)window.Content!;
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
                 var presenter = button.Presenter;
+                Assert.NotNull(presenter);
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
@@ -238,12 +245,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = (Button)window.Content;
+                var button = (Button)window.Content!;
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
                 var presenter = button.Presenter;
+                Assert.NotNull(presenter);
                 Assert.Equal("Foo", presenter.Content);
 
                 var diagnostic = presenter.GetDiagnostic(ContentPresenter.ContentProperty);
@@ -263,7 +271,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 ";
             var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
 
-            var parent = (ContentControl)template.Build(new ContentControl()).Result;
+            var parent = (ContentControl)template.Build(new ContentControl())!.Result;
 
             Assert.Equal("parent", parent.Name);
 
@@ -288,7 +296,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal(typeof(ContentControl), template.TargetType);
 
-            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl()).Result);
+            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl())!.Result);
         }
 
         [Fact]
@@ -305,7 +313,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal(typeof(ContentControl), template.TargetType);
 
-            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl()).Result);
+            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl())!.Result);
         }
 
 
@@ -322,7 +330,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 ";
             var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
 
-            var panel = (Panel)template.Build(new ContentControl()).Result;
+            var panel = (Panel)template.Build(new ContentControl())!.Result;
 
             Assert.Equal(2, panel.Children.Count);
 
@@ -439,8 +447,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal(RuntimeXamlDiagnosticSeverity.Info, warning.Severity);
             Assert.Contains("'PART_MainContentBorder'", warning.Title);
         }
-
-#nullable enable
 
         [Fact]
         public void Custom_ControlTemplate_Allows_TemplateBindings()

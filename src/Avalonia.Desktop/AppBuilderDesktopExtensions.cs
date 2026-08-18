@@ -1,5 +1,4 @@
-using Avalonia.Compatibility;
-using Avalonia.Controls;
+using System;
 using Avalonia.Logging;
 
 namespace Avalonia
@@ -8,6 +7,9 @@ namespace Avalonia
     {
         public static AppBuilder UsePlatformDetect(this AppBuilder builder)
         {
+            // Always load HarfBuzz on desktop platforms
+            LoadHarfBuzz(builder);
+
             // We don't have the ability to load every assembly right now, so we are
             // stuck with manual configuration here
             // Helpers are extracted to separate methods to take the advantage of the fact
@@ -15,17 +17,17 @@ namespace Avalonia
             // Additionally, by having a hard reference to each assembly,
             // we verify that the assemblies are in the final .deps.json file
             //  so .NET Core knows where to load the assemblies from.
-            if (OperatingSystemEx.IsWindows())
+            if (OperatingSystem.IsWindows())
             {
                 LoadWin32(builder);
                 LoadSkia(builder);
             }
-            else if(OperatingSystemEx.IsMacOS())
+            else if (OperatingSystem.IsMacOS())
             {
                 LoadAvaloniaNative(builder);
                 LoadSkia(builder);
             }
-            else if (OperatingSystemEx.IsLinux())
+            else if (OperatingSystem.IsLinux())
             {
                 LoadX11(builder);
                 LoadSkia(builder);
@@ -49,5 +51,8 @@ namespace Avalonia
 
         static void LoadSkia(AppBuilder builder)
              => builder.UseSkia();
+
+        static void LoadHarfBuzz(AppBuilder builder)
+             => builder.UseHarfBuzz();
     }
 }

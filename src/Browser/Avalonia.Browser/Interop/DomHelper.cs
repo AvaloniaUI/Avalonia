@@ -1,4 +1,4 @@
-﻿﻿using System.Runtime.InteropServices.JavaScript;
+﻿using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;

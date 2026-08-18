@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.RetroGamingProfileView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Avatar section -->
+      <StackPanel HorizontalAlignment="Center" Spacing="8" Margin="16,24,16,16">
+        <Border Width="70" Height="70"
+                Background="#2d1b4e"
+                BorderBrush="#ad2bee" BorderThickness="2"
+                ClipToBounds="True" HorizontalAlignment="Center">
+          <Border.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/RetroGaming/hero.jpg"
+                        Stretch="UniformToFill"/>
+          </Border.Background>
+        </Border>
+
+        <TextBlock Text="PLAYER 1"
+                   FontFamily="Courier New, monospace" FontSize="12" FontWeight="Bold"
+                   Foreground="#e0d0ff" HorizontalAlignment="Center"/>
+
+        <TextBlock Text="LV. 42  ■ 4,520 XP"
+                   FontFamily="Courier New, monospace" FontSize="9"
+                   Foreground="#ffff00" HorizontalAlignment="Center"/>
+      </StackPanel>
+
+      <!-- Stats grid -->
+      <Grid ColumnDefinitions="*,*,*" Margin="16,0,16,16">
+        <Border Grid.Column="0" Background="#2d1b4e"
+                BorderBrush="#ad2bee" BorderThickness="1"
+                Margin="0,0,0,0" Padding="8,10">
+          <StackPanel HorizontalAlignment="Center">
+            <TextBlock Text="42" FontFamily="Courier New, monospace"
+                       FontSize="14" FontWeight="Bold" Foreground="#00ffff"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="GAMES" FontFamily="Courier New, monospace"
+                       FontSize="8" Foreground="#7856a8"
+                       HorizontalAlignment="Center"/>
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Background="#2d1b4e"
+                BorderBrush="#ad2bee" BorderThickness="1"
+                Margin="4,0,0,0" Padding="8,10">
+          <StackPanel HorizontalAlignment="Center">
+            <TextBlock Text="128" FontFamily="Courier New, monospace"
+                       FontSize="14" FontWeight="Bold" Foreground="#00ffff"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="HOURS" FontFamily="Courier New, monospace"
+                       FontSize="8" Foreground="#7856a8"
+                       HorizontalAlignment="Center"/>
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Background="#2d1b4e"
+                BorderBrush="#ad2bee" BorderThickness="1"
+                Margin="4,0,0,0" Padding="8,10">
+          <StackPanel HorizontalAlignment="Center">
+            <TextBlock Text="3" FontFamily="Courier New, monospace"
+                       FontSize="14" FontWeight="Bold" Foreground="#00ffff"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="TROPHIES" FontFamily="Courier New, monospace"
+                       FontSize="8" Foreground="#7856a8"
+                       HorizontalAlignment="Center"/>
+          </StackPanel>
+        </Border>
+      </Grid>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

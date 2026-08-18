@@ -2,15 +2,10 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Platform;
 
-public interface IReadableBitmapImpl
+[PrivateApi]
+public interface IReadableBitmapImpl : IBitmapImpl
 {
     PixelFormat? Format { get; }
-    ILockedFramebuffer Lock();
-}
-
-//TODO12: Remove me once we can change IReadableBitmapImpl
-[Unstable]
-public interface IReadableBitmapWithAlphaImpl : IReadableBitmapImpl
-{
     AlphaFormat? AlphaFormat { get; }
+    ILockedFramebuffer Lock();
 }

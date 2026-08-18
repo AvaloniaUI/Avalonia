@@ -1,11 +1,12 @@
 using System;
 using System.ComponentModel;
 using Avalonia.Controls;
+using Avalonia.Input;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ContextMenuPage : UserControl
+    public partial class ContextMenuPage : ContentPage
     {
         public ContextMenuPage()
         {

@@ -11,19 +11,19 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     public class SampleTemplatedObject : StyledElement
     {
         [Content] public List<SampleTemplatedObject> Content { get; set; } = new List<SampleTemplatedObject>();
-        public string Foo { get; set; }
+        public string? Foo { get; set; }
     }
     
     public class SampleTemplatedObjectTemplate
     {
         [Content]
         [TemplateContent(TemplateResultType = typeof(SampleTemplatedObject))]
-        public object Content { get; set; }
+        public object? Content { get; set; }
     }
 
     public class SampleTemplatedObjectContainer
     {
-        public SampleTemplatedObjectTemplate Template { get; set; }
+        public SampleTemplatedObjectTemplate? Template { get; set; }
     }
     
     public class GenericTemplateTests : XamlTestBase
@@ -50,7 +50,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var container =
                     (SampleTemplatedObjectContainer)AvaloniaRuntimeXamlLoader.Load(xaml,
                         typeof(GenericTemplateTests).Assembly);
-                var res = TemplateContent.Load<SampleTemplatedObject>(container.Template.Content);
+                var res = TemplateContent.Load<SampleTemplatedObject>(container.Template!.Content)!;
                 Assert.Equal(res.Result, res.NameScope.Find("root"));
                 Assert.Equal(res.Result.Content[0], res.NameScope.Find("child1"));
                 Assert.Equal(res.Result.Content[1], res.NameScope.Find("child2"));

@@ -45,7 +45,7 @@
       </ComboBox>
 
       <Label Grid.Column="0" Grid.Row="8">SystemDecorations</Label>
-      <ComboBox Name="CurrentSystemDecorations" Grid.Column="1" Grid.Row="8"  SelectedIndex="{Binding SystemDecorations}">
+      <ComboBox Name="CurrentSystemDecorations" Grid.Column="1" Grid.Row="8"  SelectedIndex="{Binding WindowDecorations}">
         <ComboBoxItem Name="SystemDecorationsNone">None</ComboBoxItem>
         <ComboBoxItem Name="SystemDecorationsBorderOnly">BorderOnly</ComboBoxItem>
         <ComboBoxItem Name="SystemDecorationsFull">Full</ComboBoxItem>

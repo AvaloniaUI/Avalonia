@@ -37,14 +37,17 @@
                DisplayMemberBinding="{Binding Name}"
                ItemsSource="{Binding Pages}"
                SelectedItem="{Binding SelectedPage}"
-               SelectionChanged="Pager_SelectionChanged">
+               SelectionChanged="Pager_SelectionChanged"
+               AutomationProperties.LandmarkType="Navigation">
         <ListBox.ItemsPanel>
           <ItemsPanelTemplate>
             <StackPanel/>
           </ItemsPanelTemplate>
         </ListBox.ItemsPanel>
       </ListBox>
-      <Decorator Name="PagerContent"/>
+      <Decorator Name="PagerContent"
+                 AutomationProperties.AccessibilityView="Control"
+                 AutomationProperties.LandmarkType="Main"/>
     </DockPanel>
     
   </DockPanel>

@@ -1,0 +1,239 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.EcoTrackerCommunityView">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Leaderboard section -->
+      <StackPanel Margin="16,20,16,0" Spacing="10">
+        <TextBlock Text="Leaderboard"
+                   FontSize="16" FontWeight="SemiBold"
+                   Foreground="#1A2E1C"/>
+
+        <!-- #1 Alex Green - Gold -->
+        <Border CornerRadius="10" Background="White" Padding="12">
+          <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+            <TextBlock Text="#1"
+                       FontSize="14" FontWeight="Bold"
+                       Foreground="#FFD700"
+                       VerticalAlignment="Center"
+                       Width="30"/>
+            <Border Grid.Column="1"
+                    Width="36" Height="36" CornerRadius="18"
+                    Background="#1E2E7D32"
+                    VerticalAlignment="Center">
+              <TextBlock Text="AL"
+                         FontSize="12" FontWeight="Bold"
+                         Foreground="#2E7D32"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Grid.Column="2"
+                       Text="Alex Green"
+                       FontSize="14" FontWeight="SemiBold"
+                       Foreground="#1A2E1C"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="3"
+                       Text="1,240 pts"
+                       FontSize="13" FontWeight="Bold"
+                       Foreground="#4CAF50"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- #2 Sam Rivers - Silver -->
+        <Border CornerRadius="10" Background="White" Padding="12">
+          <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+            <TextBlock Text="#2"
+                       FontSize="14" FontWeight="Bold"
+                       Foreground="#C0C0C0"
+                       VerticalAlignment="Center"
+                       Width="30"/>
+            <Border Grid.Column="1"
+                    Width="36" Height="36" CornerRadius="18"
+                    Background="#1E2E7D32"
+                    VerticalAlignment="Center">
+              <TextBlock Text="SR"
+                         FontSize="12" FontWeight="Bold"
+                         Foreground="#2E7D32"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Grid.Column="2"
+                       Text="Sam Rivers"
+                       FontSize="14" FontWeight="SemiBold"
+                       Foreground="#1A2E1C"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="3"
+                       Text="1,180 pts"
+                       FontSize="13" FontWeight="Bold"
+                       Foreground="#4CAF50"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- #3 Jordan Leaf - Bronze -->
+        <Border CornerRadius="10" Background="White" Padding="12">
+          <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+            <TextBlock Text="#3"
+                       FontSize="14" FontWeight="Bold"
+                       Foreground="#CD7F32"
+                       VerticalAlignment="Center"
+                       Width="30"/>
+            <Border Grid.Column="1"
+                    Width="36" Height="36" CornerRadius="18"
+                    Background="#1E2E7D32"
+                    VerticalAlignment="Center">
+              <TextBlock Text="JL"
+                         FontSize="12" FontWeight="Bold"
+                         Foreground="#2E7D32"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Grid.Column="2"
+                       Text="Jordan Leaf"
+                       FontSize="14" FontWeight="SemiBold"
+                       Foreground="#1A2E1C"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="3"
+                       Text="1,050 pts"
+                       FontSize="13" FontWeight="Bold"
+                       Foreground="#4CAF50"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- #4 Casey Woods - Muted -->
+        <Border CornerRadius="10" Background="White" Padding="12">
+          <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+            <TextBlock Text="#4"
+                       FontSize="14" FontWeight="Bold"
+                       Foreground="#90A4AE"
+                       VerticalAlignment="Center"
+                       Width="30"/>
+            <Border Grid.Column="1"
+                    Width="36" Height="36" CornerRadius="18"
+                    Background="#1E2E7D32"
+                    VerticalAlignment="Center">
+              <TextBlock Text="CW"
+                         FontSize="12" FontWeight="Bold"
+                         Foreground="#2E7D32"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Grid.Column="2"
+                       Text="Casey Woods"
+                       FontSize="14" FontWeight="SemiBold"
+                       Foreground="#1A2E1C"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="3"
+                       Text="980 pts"
+                       FontSize="13" FontWeight="Bold"
+                       Foreground="#4CAF50"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- #5 Morgan Sky - Muted -->
+        <Border CornerRadius="10" Background="White" Padding="12">
+          <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+            <TextBlock Text="#5"
+                       FontSize="14" FontWeight="Bold"
+                       Foreground="#90A4AE"
+                       VerticalAlignment="Center"
+                       Width="30"/>
+            <Border Grid.Column="1"
+                    Width="36" Height="36" CornerRadius="18"
+                    Background="#1E2E7D32"
+                    VerticalAlignment="Center">
+              <TextBlock Text="MS"
+                         FontSize="12" FontWeight="Bold"
+                         Foreground="#2E7D32"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Grid.Column="2"
+                       Text="Morgan Sky"
+                       FontSize="14" FontWeight="SemiBold"
+                       Foreground="#1A2E1C"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="3"
+                       Text="920 pts"
+                       FontSize="13" FontWeight="Bold"
+                       Foreground="#4CAF50"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+      </StackPanel>
+
+      <!-- Active Challenges section -->
+      <StackPanel Margin="16,20,16,20" Spacing="10">
+        <TextBlock Text="Active Challenges"
+                   FontSize="16" FontWeight="SemiBold"
+                   Foreground="#1A2E1C"/>
+
+        <!-- Zero Waste Week -->
+        <Border CornerRadius="12" Background="White" Padding="14">
+          <StackPanel Spacing="6">
+            <TextBlock Text="Zero Waste Week"
+                       FontSize="15" FontWeight="SemiBold"
+                       Foreground="#1A2E1C"/>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <TextBlock Text="142 participants"
+                         FontSize="12"
+                         Foreground="#90A4AE"/>
+              <TextBlock Text="3 days left"
+                         FontSize="12" FontWeight="SemiBold"
+                         Foreground="#FF9800"/>
+            </StackPanel>
+            <Border CornerRadius="8"
+                    Background="#144CAF50"
+                    Padding="16,6"
+                    HorizontalAlignment="Left"
+                    Margin="0,4,0,0">
+              <TextBlock Text="Join Challenge"
+                         FontSize="12" FontWeight="SemiBold"
+                         Foreground="#2E7D32"/>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <!-- Bike to Work -->
+        <Border CornerRadius="12" Background="White" Padding="14">
+          <StackPanel Spacing="6">
+            <TextBlock Text="Bike to Work"
+                       FontSize="15" FontWeight="SemiBold"
+                       Foreground="#1A2E1C"/>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <TextBlock Text="89 participants"
+                         FontSize="12"
+                         Foreground="#90A4AE"/>
+              <TextBlock Text="5 days left"
+                         FontSize="12" FontWeight="SemiBold"
+                         Foreground="#FF9800"/>
+            </StackPanel>
+            <Border CornerRadius="8"
+                    Background="#144CAF50"
+                    Padding="16,6"
+                    HorizontalAlignment="Left"
+                    Margin="0,4,0,0">
+              <TextBlock Text="Join Challenge"
+                         FontSize="12" FontWeight="SemiBold"
+                         Foreground="#2E7D32"/>
+            </Border>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

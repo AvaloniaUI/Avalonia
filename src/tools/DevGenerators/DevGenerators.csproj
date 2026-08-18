@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\Shared\SourceGeneratorAttributes.cs" />
     <Compile Include="..\..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>

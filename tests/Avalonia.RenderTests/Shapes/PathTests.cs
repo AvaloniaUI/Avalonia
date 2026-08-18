@@ -4,11 +4,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Shapes
-#endif
 {
     using System.Threading.Tasks;
     using Avalonia.Collections;
@@ -457,7 +453,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             };
 
             await RenderToFile(target);
-            CompareImages();
+            CompareImages(gpuAllowedError: 0.05);
         }
 
         [Fact]

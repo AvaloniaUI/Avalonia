@@ -84,14 +84,8 @@ namespace CrossUI
     }
 }
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests.CrossUI
 {
-#else
-namespace Avalonia.Direct2D1.RenderTests.CrossUI
-{
-#endif
-
     class AvaloniaCrossControl : Control
     {
         private readonly CrossControl _src;

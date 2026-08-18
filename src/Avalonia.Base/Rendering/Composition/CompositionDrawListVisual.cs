@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -25,6 +26,10 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         get => _drawList;
         set
         {
+            // Nothing to do
+            if (value == null && _drawList == null)
+                return;
+            
             _drawList?.Dispose();
             _drawList = value;
             _drawListChanged = true;
@@ -46,6 +51,7 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
     internal CompositionDrawListVisual(Compositor compositor, ServerCompositionDrawListVisual server, Visual visual) : base(compositor, server)
     {
         Visual = visual;
+        CustomHitTestCountInSubTree = visual is ICustomHitTest ? 1 : 0;
     }
 
     internal override bool HitTest(Point pt)
@@ -59,5 +65,18 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         }
 
         return DrawList?.HitTest(pt) ?? false;
+    }
+
+    internal override IntersectionResult HitTest(Geometry geometry)
+    {
+        var custom = Visual as ICustomHitTest;
+        if (DrawList == null && custom == null)
+            return IntersectionResult.Empty;
+        if (custom != null)
+        {
+            return custom.HitTest(geometry);
+        }
+
+        return DrawList?.HitTest(geometry) ?? IntersectionResult.Empty;
     }
 }

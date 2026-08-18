@@ -303,7 +303,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class PrefixConverter : IValueConverter
         {
-            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 if (value != null && parameter != null)
                 {
@@ -313,12 +313,12 @@ namespace Avalonia.Markup.UnitTests.Data
                 return null;
             }
 
-            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 if (value != null && parameter != null)
                 {
-                    var s = value.ToString();
-                    var prefix = parameter.ToString();
+                    var s = value.ToString() ?? string.Empty;
+                    var prefix = parameter.ToString() ?? string.Empty;
 
                     if (s.StartsWith(prefix) == true)
                     {
@@ -334,9 +334,9 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private class MultiConverter : IMultiValueConverter
         {
-            public List<object> Values { get; } = new();
+            public List<object?> Values { get; } = new();
 
-            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
             {
                 Values.AddRange(values);
                 return values.FirstOrDefault();

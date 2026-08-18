@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
+using Avalonia.Metal;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
-using Avalonia.Media.Imaging;
+using Avalonia.Skia.Metal;
 using Avalonia.Skia.Vulkan;
 using Avalonia.Vulkan;
 using SkiaSharp;
-using Avalonia.Media.TextFormatting;
-using Avalonia.Metal;
-using Avalonia.Skia.Metal;
 
 namespace Avalonia.Skia
 {
@@ -20,10 +20,12 @@ namespace Avalonia.Skia
     internal class PlatformRenderInterface : IPlatformRenderInterface
     {
         private readonly long? _maxResourceBytes;
+        private readonly bool? _useStencilBuffers;
 
-        public PlatformRenderInterface(long? maxResourceBytes = null)
+        public PlatformRenderInterface(long? maxResourceBytes = null, bool? useStencilBuffers = null)
         {
             _maxResourceBytes = maxResourceBytes;
+            _useStencilBuffers = useStencilBuffers;
             DefaultPixelFormat = SKImageInfo.PlatformColorType.ToPixelFormat();
         }
 
@@ -35,11 +37,11 @@ namespace Avalonia.Skia
             if (graphicsContext is ISkiaGpu skiaGpu)
                 return new SkiaContext(skiaGpu);
             if (graphicsContext is IGlContext gl)
-                return new SkiaContext(new GlSkiaGpu(gl, _maxResourceBytes));
+                return new SkiaContext(new GlSkiaGpu(gl, _maxResourceBytes, _useStencilBuffers));
             if (graphicsContext is IMetalDevice metal)
-                return new SkiaContext(new SkiaMetalGpu(metal, _maxResourceBytes));
+                return new SkiaContext(new SkiaMetalGpu(metal, _maxResourceBytes, _useStencilBuffers));
             if (graphicsContext is IVulkanPlatformGraphicsContext vulkanContext)
-                return new SkiaContext(new VulkanSkiaGpu(vulkanContext, _maxResourceBytes));
+                return new SkiaContext(new VulkanSkiaGpu(vulkanContext, _maxResourceBytes, _useStencilBuffers));
             throw new ArgumentException("Graphics context of type is not supported");
         }
 
@@ -81,7 +83,7 @@ namespace Avalonia.Skia
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            if (glyphRun.GlyphTypeface is not GlyphTypefaceImpl glyphTypeface)
+            if (glyphRun.GlyphTypeface.PlatformTypeface is not SkiaTypeface glyphTypeface)
             {
                 throw new InvalidOperationException("PlatformImpl can't be null.");
             }
@@ -205,7 +207,7 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+        public IGlyphRunImpl CreateGlyphRun(GlyphTypeface glyphTypeface, double fontRenderingEmSize, 
             IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
             return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin);

@@ -76,7 +76,11 @@ namespace Avalonia.Styling
         /// <param name="owner">The owner style.</param>
         public abstract string ToString(Style? owner);
 
-        /// <inheritdoc cref="ToString(Style?)"/>
+        /// <summary>
+        /// Gets a string representing the selector, with the nesting separator (`^`) replaced with
+        /// the parent selector.
+        /// </summary>
+        /// <param name="owner">The owner style.</param>
         /// <param name="hasNext">Whether there is a selector that comes after this one.</param>
         internal virtual string ToString(Style? owner, bool hasNext) => ToString(owner);
 

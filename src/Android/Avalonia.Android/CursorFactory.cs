@@ -5,7 +5,7 @@ namespace Avalonia.Android
 {
     internal class CursorFactory : ICursorFactory
     {
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => CursorImpl.ZeroCursor;
+        public ICursorImpl CreateCursor(Avalonia.Media.Imaging.Bitmap cursor, PixelPoint hotSpot) => CursorImpl.ZeroCursor;
 
         public ICursorImpl GetCursor(StandardCursorType cursorType) => CursorImpl.ZeroCursor;
 

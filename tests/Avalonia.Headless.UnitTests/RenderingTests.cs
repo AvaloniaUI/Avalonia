@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
@@ -12,7 +11,7 @@ namespace Avalonia.Headless.UnitTests;
 public class RenderingTests
 {
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [AvaloniaFact]
 #endif
@@ -37,11 +36,11 @@ public class RenderingTests
 
         var frame = window.CaptureRenderedFrame();
 
-        Assert.NotNull(frame);
+        AssertHelper.NotNull(frame);
     }
 
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [AvaloniaFact]
 #endif
@@ -73,11 +72,11 @@ public class RenderingTests
 
         var frame = window.CaptureRenderedFrame();
 
-        Assert.NotNull(frame);
+        AssertHelper.NotNull(frame);
     }
     
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [AvaloniaFact]
 #endif
@@ -104,11 +103,11 @@ public class RenderingTests
 
         var frame = window.CaptureRenderedFrame();
 
-        Assert.NotNull(frame);
+        AssertHelper.NotNull(frame);
     }
 
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [AvaloniaFact]
 #endif
@@ -136,13 +135,13 @@ public class RenderingTests
         window.Show();
 
         var frame = window.CaptureRenderedFrame();
-        Assert.NotNull(frame);
+        AssertHelper.NotNull(frame);
     }
 
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
-    [AvaloniaFact(Timeout = 10000)]
+    [AvaloniaFact]
 #endif
     public async Task Should_Render_To_A_Compositor_Snapshot_Capture()
     {
@@ -161,13 +160,75 @@ public class RenderingTests
 
         window.Show();
 
+        Dispatcher.UIThread.RunJobs();
+
         var compositionVisual = ElementComposition.GetElementVisual(window)!;
         var snapshot = await compositionVisual.Compositor.CreateCompositionVisualSnapshot(compositionVisual, 1);
 
-        Assert.NotNull(snapshot);
-        // ReSharper disable CompareOfFloatsByEqualityOperator
-        Assert.True(100 == snapshot.Size.Width);
-        Assert.True(100 == snapshot.Size.Height);
-        // ReSharper restore CompareOfFloatsByEqualityOperator
+        AssertHelper.NotNull(snapshot);
+        AssertHelper.Equal(100, snapshot.Size.Width);
+        AssertHelper.Equal(100, snapshot.Size.Height);
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Should_Change_Render_Scaling()
+    {
+        var window = new Window
+        {
+            Content = new Border
+            {
+                Background = Brushes.Red
+            },
+            Width = 100,
+            Height = 100,
+        };
+
+        window.Show();
+
+        var frameBefore = window.CaptureRenderedFrame();
+        AssertHelper.NotNull(frameBefore);
+
+        var sizeBefore = frameBefore!.PixelSize;
+
+        window.SetRenderScaling(2.0);
+
+        AssertHelper.Equal(2.0, window.RenderScaling);
+
+        var frameAfter = window.CaptureRenderedFrame();
+        AssertHelper.NotNull(frameAfter);
+
+        var sizeAfter = frameAfter!.PixelSize;
+
+        AssertHelper.Equal(sizeBefore.Width * 2, sizeAfter.Width);
+        AssertHelper.Equal(sizeBefore.Height * 2, sizeAfter.Height);
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Should_Keep_Client_Size_After_Scaling_Change()
+    {
+        var window = new Window
+        {
+            Width = 200,
+            Height = 150
+        };
+
+        window.Show();
+        window.CaptureRenderedFrame();
+
+        var clientSizeBefore = window.ClientSize;
+
+        window.SetRenderScaling(2.0);
+        window.CaptureRenderedFrame();
+
+        AssertHelper.Equal(clientSizeBefore.Width, window.ClientSize.Width);
+        AssertHelper.Equal(clientSizeBefore.Height, window.ClientSize.Height);
     }
 }

@@ -156,11 +156,5 @@ namespace Avalonia.Controls.Generators
         /// <see cref="NeedsContainer(object, int, out object?)"/> returned false for the item.
         /// </remarks>
         public void ClearItemContainer(Control container) => _owner.ClearItemContainer(container);
-
-        [Obsolete("Use ItemsControl.ContainerFromIndex"), EditorBrowsable(EditorBrowsableState.Never)]
-        public Control? ContainerFromIndex(int index) => _owner.ContainerFromIndex(index);
-
-        [Obsolete("Use ItemsControl.IndexFromContainer"), EditorBrowsable(EditorBrowsableState.Never)]
-        public int IndexFromContainer(Control container) => _owner.IndexFromContainer(container);
     }
 }

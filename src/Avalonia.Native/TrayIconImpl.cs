@@ -4,8 +4,6 @@ using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 
-#nullable enable
-
 namespace Avalonia.Native
 {
     internal class TrayIconImpl : ITrayIconWithIsTemplateImpl

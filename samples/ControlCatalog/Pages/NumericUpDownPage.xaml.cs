@@ -9,7 +9,7 @@ using MiniMvvm;
 
 namespace ControlCatalog.Pages
 {
-    public partial class NumericUpDownPage : UserControl
+    public partial class NumericUpDownPage : ContentPage
     {
         public NumericUpDownPage()
         {
@@ -71,7 +71,7 @@ namespace ControlCatalog.Pages
                 if (_spinnerLocations == null)
                 {
                     _spinnerLocations = new List<Location>();
-                    foreach (Location value in Enum.GetValues(typeof(Location)))
+                    foreach (var value in Enum.GetValues<Location>())
                     {
                         _spinnerLocations.Add(value);
                     }

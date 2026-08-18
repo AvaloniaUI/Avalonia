@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IResourceHost2, IApplicationPlatformEvents, IOptionalFeatureProvider
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IResourceHost, IOptionalFeatureProvider
     {
         /// <summary>
         /// The application-global data templates.
@@ -43,7 +43,6 @@ namespace Avalonia
         private Action<IReadOnlyList<IStyle>>? _stylesRemoved;
         private IApplicationLifetime? _applicationLifetime;
         private bool _setupCompleted;
-        private EventHandler<ResourcesChangedToken>? _resourcesChanged2;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -54,22 +53,13 @@ namespace Avalonia
         /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
             ThemeVariantScope.ActualThemeVariantProperty.AddOwner<Application>();
-        
+
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
             ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
-
-        event EventHandler<ResourcesChangedToken>? IResourceHost2.ResourcesChanged2
-        {
-            add => _resourcesChanged2 += value;
-            remove => _resourcesChanged2 -= value;
-        }
-
-        [Obsolete("Use Application.Current.TryGetFeature<IActivatableLifetime>() instead.")]
-        public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
 
         /// <inheritdoc/>
         public event EventHandler? ActualThemeVariantChanged;
@@ -101,7 +91,7 @@ namespace Avalonia
             get => GetValue(RequestedThemeVariantProperty);
             set => SetValue(RequestedThemeVariantProperty, value);
         }
-        
+
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031", Justification = "This property is supposed to be a styled readonly property.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030", Justification = "False positive.")]
@@ -184,8 +174,8 @@ namespace Avalonia
         /// Currently supported lifetimes are:
         /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
         /// - <see cref="ISingleViewApplicationLifetime"/>
-        /// - <see cref="IControlledApplicationLifetime"/> 
-        /// - <see cref="IActivatableApplicationLifetime"/> 
+        /// - <see cref="ISingleTopLevelApplicationLifetime"/>
+        /// - <see cref="IControlledApplicationLifetime"/>
         /// </summary>
         public IApplicationLifetime? ApplicationLifetime
         {
@@ -211,7 +201,7 @@ namespace Avalonia
         /// as specific top levels might have different settings set-up. 
         /// </remarks>
         public IPlatformSettings? PlatformSettings => this.TryGetFeature<IPlatformSettings>();
-        
+
         event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
             add => _stylesAdded += value;
@@ -228,7 +218,7 @@ namespace Avalonia
         /// Initializes the application by loading XAML etc.
         /// </summary>
         public virtual void Initialize() { }
-        
+
         /// <inheritdoc/>
         public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
@@ -239,14 +229,7 @@ namespace Avalonia
 
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e)
         {
-            _resourcesChanged2?.Invoke(this, ResourcesChangedToken.Create());
             ResourcesChanged?.Invoke(this, e);
-        }
-
-        void IResourceHost2.NotifyHostedResourcesChanged(ResourcesChangedToken token)
-        {
-            _resourcesChanged2?.Invoke(this, token);
-            ResourcesChanged?.Invoke(this, ResourcesChangedEventArgs.Empty);
         }
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
@@ -279,7 +262,7 @@ namespace Avalonia
                 .Bind<IGlobalStyles>().ToConstant(this)
                 .Bind<IThemeVariantHost>().ToConstant(this)
                 .Bind<IInputManager>().ToConstant(InputManager)
-                .Bind< IToolTipService>().ToConstant(new ToolTipService(InputManager))
+                .Bind<IToolTipService>().ToConstant(new ToolTipService(InputManager))
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
 
@@ -296,11 +279,6 @@ namespace Avalonia
 
         public virtual void OnFrameworkInitializationCompleted()
         {
-        }
-        
-        void IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
-        {
-            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
         }
 
         private string? _name;
@@ -352,20 +330,28 @@ namespace Avalonia
 
             if (change.Property == RequestedThemeVariantProperty)
             {
-                if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
-                    SetValue(ActualThemeVariantProperty, themeVariant);
-                else
-                    ClearValue(ActualThemeVariantProperty);
+                if (change.GetNewValue<ThemeVariant>() is { } themeVariant)
+                {
+                    if (themeVariant == ThemeVariant.Default)
+                    {
+                        ClearValue(ActualThemeVariantProperty);
+                    }
+                    else
+                    {
+                        SetValue(ActualThemeVariantProperty, themeVariant);
+                    }
+                }
             }
             else if (change.Property == ActualThemeVariantProperty)
             {
                 ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        
+
         private void OnColorValuesChanged(object? sender, PlatformColorValues e)
         {
-            SetValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant, BindingPriority.Template);
+            if ((RequestedThemeVariant ?? ThemeVariant.Default) == ThemeVariant.Default)
+                SetValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant);
         }
     }
 }

@@ -132,8 +132,8 @@ namespace Avalonia.Base.UnitTests
             child.PropertyChanged += (s, e) =>
                 raised = s == child &&
                          e.Property == Class1.BazProperty &&
-                         (string)e.OldValue == "bazdefault" &&
-                         (string)e.NewValue == "changed" &&
+                         (string?)e.OldValue == "bazdefault" &&
+                         (string?)e.NewValue == "changed" &&
                          e.Priority == BindingPriority.Inherited;
 
             child.Parent = parent;
@@ -156,8 +156,8 @@ namespace Avalonia.Base.UnitTests
             child.PropertyChanged += (s, e) =>
                 raised = s == child &&
                          e.Property == Class1.BazProperty &&
-                         (string)e.OldValue == "bazdefault" &&
-                         (string)e.NewValue == "changed2" &&
+                         (string?)e.OldValue == "bazdefault" &&
+                         (string?)e.NewValue == "changed2" &&
                          e.Priority == BindingPriority.Inherited;
 
             child.Parent = parent;
@@ -178,8 +178,8 @@ namespace Avalonia.Base.UnitTests
             child.PropertyChanged += (s, e) =>
                 raised = s == child &&
                          e.Property == AttachedOwner.AttachedProperty &&
-                         (string)e.OldValue == null &&
-                         (string)e.NewValue == "changed";
+                         (string?)e.OldValue == null &&
+                         (string?)e.NewValue == "changed";
 
             child.Parent = parent;
 
@@ -216,8 +216,8 @@ namespace Avalonia.Base.UnitTests
             child.PropertyChanged += (s, e) =>
                 raised = s == child &&
                          e.Property == Class1.BazProperty &&
-                         (string)e.OldValue == "bazdefault" &&
-                         (string)e.NewValue == "changed";
+                         (string?)e.OldValue == "bazdefault" &&
+                         (string?)e.NewValue == "changed";
             child.Parent = parent;
 
             parent.SetValue(Class1.BazProperty, "changed");
@@ -237,8 +237,8 @@ namespace Avalonia.Base.UnitTests
             child.PropertyChanged += (s, e) =>
                 raised = s == child &&
                          e.Property == AttachedOwner.AttachedProperty &&
-                         (string)e.OldValue == null &&
-                         (string)e.NewValue == "changed";
+                         (string?)e.OldValue == null &&
+                         (string?)e.NewValue == "changed";
             child.Parent = parent;
 
             parent.SetValue(AttachedOwner.AttachedProperty, "changed");
@@ -260,8 +260,8 @@ namespace Avalonia.Base.UnitTests
             child.PropertyChanged += (s, e) =>
                 raised = s == child &&
                          e.Property == Class1.BazProperty &&
-                         (string)e.OldValue == "changed" &&
-                         (string)e.NewValue == "bazdefault";
+                         (string?)e.OldValue == "changed" &&
+                         (string?)e.NewValue == "bazdefault";
 
             parent.ClearValue(Class1.BazProperty);
 
@@ -379,9 +379,9 @@ namespace Avalonia.Base.UnitTests
                 FooProperty.OverrideDefaultValue(typeof(Class2), "foooverride");
             }
 
-            public Class1 Parent
+            public Class1? Parent
             {
-                get { return (Class1)InheritanceParent; }
+                get { return (Class1?)InheritanceParent; }
                 set { InheritanceParent = value; }
             }
         }

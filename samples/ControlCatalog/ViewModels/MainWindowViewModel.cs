@@ -1,22 +1,20 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Chrome;
 using Avalonia.Dialogs;
-using Avalonia.Platform;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 using Avalonia;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    class MainWindowViewModel : ViewModelBase
+    partial class MainWindowViewModel : ViewModelBase
     {
         private WindowState _windowState;
         private WindowState[] _windowStates = Array.Empty<WindowState>();
-        private ExtendClientAreaChromeHints _chromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
         private bool _extendClientAreaEnabled;
-        private bool _systemTitleBarEnabled;
-        private bool _preferSystemChromeEnabled;
         private double _titleBarHeight;
         private bool _isSystemBarVisible;
         private bool _displayEdgeToEdge;
@@ -24,6 +22,7 @@ namespace ControlCatalog.ViewModels
         private bool _canResize;
         private bool _canMinimize;
         private bool _canMaximize;
+        private int _selectedDecorationIndex;
 
         public MainWindowViewModel()
         {
@@ -51,65 +50,18 @@ namespace ControlCatalog.ViewModels
                 WindowState.FullScreen,
             };
 
-            PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName is nameof(SystemTitleBarEnabled) or nameof(PreferSystemChromeEnabled))
-                    {
-                        var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
-
-                        if (SystemTitleBarEnabled)
-                        {
-                            hints |= ExtendClientAreaChromeHints.SystemChrome;
-                        }
-                        if (PreferSystemChromeEnabled)
-                        {
-                            hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
-                        }
-                        ChromeHints = hints;
-                    }
-                };
-
-            SystemTitleBarEnabled = true;
             TitleBarHeight = -1;
             CanResize = true;
             CanMinimize = true;
             CanMaximize = true;
+
+            Filter();
         }        
         
-        public ExtendClientAreaChromeHints ChromeHints
-        {
-            get { return _chromeHints; }
-            set { RaiseAndSetIfChanged(ref _chromeHints, value); }
-        }
-
         public bool ExtendClientAreaEnabled
         {
             get { return _extendClientAreaEnabled; }
-            set
-            {
-                if (RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value) && !value)
-                {
-                    SystemTitleBarEnabled = true;
-                }
-            }
-        }
-
-        public bool SystemTitleBarEnabled
-        {
-            get { return _systemTitleBarEnabled; }
-            set
-            {
-                if (RaiseAndSetIfChanged(ref _systemTitleBarEnabled, value) && !value)
-                {
-                    TitleBarHeight = -1;
-                }
-            }
-        }
-
-        public bool PreferSystemChromeEnabled
-        {
-            get { return _preferSystemChromeEnabled; }
-            set { RaiseAndSetIfChanged(ref _preferSystemChromeEnabled, value); }
+            set { RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
         }
 
         public double TitleBarHeight
@@ -166,6 +118,61 @@ namespace ControlCatalog.ViewModels
             set { RaiseAndSetIfChanged(ref _canMaximize, value); }
         }
 
+        public int SelectedDecorationIndex
+        {
+            get { return _selectedDecorationIndex; }
+            set { RaiseAndSetIfChanged(ref _selectedDecorationIndex, value); }
+        }
+
+        public TitleBarDecorations TitleBarDecorations
+        {
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        } = TitleBarDecorations.All;
+
+        public bool ShowTitle
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.Title);
+            set => SetTitleBarDecoration(TitleBarDecorations.Title, value);
+        }
+
+        public bool ShowFullScreenButton
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.FullScreenButton);
+            set => SetTitleBarDecoration(TitleBarDecorations.FullScreenButton, value);
+        }
+
+        public bool ShowMinimizeButton
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.MinimizeButton);
+            set => SetTitleBarDecoration(TitleBarDecorations.MinimizeButton, value);
+        }
+
+        public bool ShowMaximizeButton
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.MaximizeButton);
+            set => SetTitleBarDecoration(TitleBarDecorations.MaximizeButton, value);
+        }
+
+        public bool ShowCloseButton
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.CloseButton);
+            set => SetTitleBarDecoration(TitleBarDecorations.CloseButton, value);
+        }
+
+        private bool HasTitleBarDecoration(TitleBarDecorations decoration)
+            => (TitleBarDecorations & decoration) != 0;
+
+        private void SetTitleBarDecoration(TitleBarDecorations decoration, bool value, [CallerMemberName] string? propertyName = null)
+        {
+            var newDecorations = value ? TitleBarDecorations | decoration : TitleBarDecorations & ~decoration;
+            if (newDecorations == TitleBarDecorations)
+                return;
+
+            TitleBarDecorations = newDecorations;
+            RaisePropertyChanged(propertyName);
+            RaisePropertyChanged(nameof(TitleBarDecorations));
+        }
 
         public MiniCommand AboutCommand { get; }
 
@@ -181,6 +188,15 @@ namespace ControlCatalog.ViewModels
         {
             get => _validatedDateExample;
             set => RaiseAndSetIfChanged(ref _validatedDateExample, value);
+        }
+
+        public Win32Properties.WindowCornerPreference[] Win32WindowCornerPreferences { get; } =
+            Enum.GetValues<Win32Properties.WindowCornerPreference>();
+
+        public Win32Properties.WindowCornerPreference Win32WindowCornerPreference
+        {
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
     }
 }

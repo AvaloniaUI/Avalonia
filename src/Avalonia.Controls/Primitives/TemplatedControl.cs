@@ -89,6 +89,12 @@ namespace Avalonia.Controls.Primitives
             TextElement.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="LetterSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextElement.LetterSpacingProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
         /// Defines the <see cref="Padding"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> PaddingProperty =
@@ -243,6 +249,15 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets the letter spacing for the control's text content.
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the padding placed between the border of the control and its content.
         /// </summary>
         public Thickness Padding
@@ -302,7 +317,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (VisualChildren.Count > 0)
                 {
-                    foreach (var child in this.GetTemplateChildren())
+                    foreach (var child in this.GetTemplateDescendants())
                     {
                         child.TemplatedParent = null;
                         ((ISetLogicalParent)child).SetParent(null);
@@ -335,11 +350,11 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         protected override Control GetTemplateFocusTarget()
         {
-            foreach (Control child in this.GetTemplateChildren())
+            foreach (var child in this.GetTemplateDescendants())
             {
-                if (GetIsTemplateFocusTarget(child))
+                if (child is Control control && GetIsTemplateFocusTarget(control))
                 {
-                    return child;
+                    return control;
                 }
             }
 
@@ -347,7 +362,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc />
-        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedToken token)
+        internal sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             var count = VisualChildren.Count;
 
@@ -355,11 +370,11 @@ namespace Avalonia.Controls.Primitives
             {
                 if (VisualChildren[i] is ILogical logical)
                 {
-                    logical.NotifyResourcesChanged(token);
+                    logical.NotifyResourcesChanged(e);
                 }
             }
 
-            base.NotifyChildResourcesChanged(token);
+            base.NotifyChildResourcesChanged(e);
         }
 
         /// <inheritdoc/>

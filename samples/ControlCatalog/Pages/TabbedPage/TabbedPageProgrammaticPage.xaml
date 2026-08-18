@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageProgrammaticPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Programmatic Selection" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Current Tab" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock x:Name="CurrentTabLabel" FontSize="13" Opacity="0.7" Text="Index 2 | Music" />
+
+        <Separator />
+
+        <TextBlock Text="Jump To" FontWeight="SemiBold" FontSize="13" />
+        <WrapPanel Orientation="Horizontal">
+          <Button Content="Tab 0" Margin="0,0,8,8" Click="OnJumpTo" Tag="0" />
+          <Button Content="Tab 1" Margin="0,0,8,8" Click="OnJumpTo" Tag="1" />
+          <Button Content="Tab 2" Margin="0,0,8,8" Click="OnJumpTo" Tag="2" />
+          <Button Content="Tab 3" Margin="0,0,0,8" Click="OnJumpTo" Tag="3" />
+        </WrapPanel>
+
+        <TextBlock Text="Navigate" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Content="&lt; Previous" Click="OnPrevious" />
+          <Button Content="Next &gt;" Click="OnNext" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="SelectionChanged Log" FontWeight="SemiBold" FontSize="13" />
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8" MinHeight="80">
+          <TextBlock x:Name="SelectionLog"
+                     FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     FontSize="11" Opacity="0.7"
+                     TextWrapping="Wrap" />
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs" SelectedIndex="2"
+                  SelectionChanged="OnSelectionChanged">
+        <ContentPage Header="Photos">
+          <TextBlock Text="Photos" FontSize="24" FontWeight="Bold"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+        <ContentPage Header="Videos">
+          <TextBlock Text="Videos" FontSize="24" FontWeight="Bold"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+        <ContentPage Header="Music">
+          <TextBlock Text="Music" FontSize="24" FontWeight="Bold"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+        <ContentPage Header="Podcasts">
+          <TextBlock Text="Podcasts" FontSize="24" FontWeight="Bold"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </DockPanel>
+</UserControl>

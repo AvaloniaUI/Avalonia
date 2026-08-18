@@ -4,13 +4,13 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
+using Avalonia.FreeDesktop.DBus;
 
 namespace Avalonia.FreeDesktop
 {
     internal class DBusPlatformSettings : DefaultPlatformSettings
     {
-        private readonly OrgFreedesktopPortalSettingsProxy? _settings;
+        private readonly Settings? _settings;
 
         private PlatformColorValues? _lastColorValues;
         private PlatformThemeVariant? _themeVariant;
@@ -21,7 +21,7 @@ namespace Avalonia.FreeDesktop
             if (DBusHelper.DefaultConnection is not { } conn)
                 return;
 
-            _settings = new OrgFreedesktopPortalSettingsProxy(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            _settings = new Settings(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
             _ = TryGetInitialValuesAsync();
         }
@@ -30,55 +30,60 @@ namespace Avalonia.FreeDesktop
 
         private async Task TryGetInitialValuesAsync()
         {
-            _themeVariant = await TryGetThemeVariantAsync();
-            _accentColor = await TryGetAccentColorAsync();
-            _lastColorValues = BuildPlatformColorValues();
-            if (_lastColorValues is not null)
-                Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
+            if (_settings is { } settings)
+            {
+                _themeVariant = await TryGetThemeVariantAsync(settings);
+                _accentColor = await TryGetAccentColorAsync(settings);
+                _lastColorValues = BuildPlatformColorValues();
+                if (_lastColorValues is not null)
+                    Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
+            }
         }
 
-        private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
+        internal void OnRequestDefaultThemeVariant()
+        {
+            _ = TryGetInitialValuesAsync();
+        }
+
+        private static async Task<PlatformThemeVariant?> TryGetThemeVariantAsync(Settings settings)
         {
             try
             {
-                var version = await _settings!.GetVersionPropertyAsync();
+                var version = await settings.GetVersionAsync();
                 VariantValue value;
                 if (version >= 2)
-                    value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
+                    value = await settings.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
                     // Unpack nested Variant
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetVariantValue();
+                    value = (await settings.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetVariantValue();
                 return ToColorScheme(value.GetUInt32());
             }
-            catch (DBusException)
+            catch (DBusExceptionBase)
             {
                 return null;
             }
         }
 
-        private async Task<Color?> TryGetAccentColorAsync()
+        private static async Task<Color?> TryGetAccentColorAsync(Settings settings)
         {
             try
             {
-                var version = await _settings!.GetVersionPropertyAsync();
+                var version = await settings.GetVersionAsync();
                 VariantValue value;
                 if (version >= 2)
-                    value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "accent-color");
+                    value = await settings.ReadOneAsync("org.freedesktop.appearance", "accent-color");
                 else
-                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color");
+                    value = await settings.ReadAsync("org.freedesktop.appearance", "accent-color");
                 return ToAccentColor(value);
             }
-            catch (DBusException)
+            catch (DBusExceptionBase)
             {
                 return null;
             }
         }
 
-        private void SettingsChangedHandler(Exception? exception, (string Namespace, string Key, VariantValue Value) tuple)
+        private void SettingsChangedHandler((string Namespace, string Key, VariantValue Value) tuple)
         {
-            if (exception is not null)
-                return;
-
             switch (tuple)
             {
                 case ("org.freedesktop.appearance", "color-scheme", var colorScheme):

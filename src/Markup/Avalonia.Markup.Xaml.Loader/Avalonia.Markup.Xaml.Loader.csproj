@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <IsAotCompatible>false</IsAotCompatible>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL;XAML_RUNTIME_LOADER</DefineConstants>
@@ -9,10 +9,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="../../Avalonia.Base/Diagnostics/TrimmingMessages.cs" Link="Diagnostics/AvaloniaTrimmingMessages.cs" />
   </ItemGroup>
 
   <Import Project="IncludeXamlIlSre.props" />

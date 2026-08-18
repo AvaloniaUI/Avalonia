@@ -6,3 +6,5 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Markup.Data")]
 
 [assembly: TypeForwardedTo(typeof(CultureInfoIetfLanguageTagConverter))]
+[assembly: TypeForwardedTo(typeof(MultiBinding))]
+[assembly: TypeForwardedTo(typeof(RelativeSource))]

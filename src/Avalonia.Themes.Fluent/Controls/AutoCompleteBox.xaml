@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:generic="using:System.Collections.Generic"
                     x:ClassModifier="internal">
@@ -20,11 +20,12 @@
       </AutoCompleteBox>
     </Border>
   </Design.PreviewWith>
-  
+
     <ControlTheme x:Key="{x:Type AutoCompleteBox}" TargetType="AutoCompleteBox">
       <Setter Property="VerticalAlignment" Value="Top" />
       <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
       <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+      <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
       <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
       <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
       <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -34,7 +35,8 @@
         <ControlTemplate>
           <Grid Name="PART_LayoutRoot">
             <TextBox Name="PART_TextBox"
-                     Watermark="{TemplateBinding Watermark}"
+                     PlaceholderText="{TemplateBinding PlaceholderText}"
+                     PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                      Width="{TemplateBinding Width}"
                      Foreground="{TemplateBinding Foreground}"
                      Background="{TemplateBinding Background}"
@@ -50,9 +52,9 @@
                      InnerLeftContent="{TemplateBinding InnerLeftContent}"
                      InnerRightContent="{TemplateBinding InnerRightContent}"
                      />
-            <Popup Name="PART_Popup" 
+            <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
-                   MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}" 
+                   MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
                    IsLightDismissEnabled="True"
                    PlacementTarget="{TemplateBinding}">
@@ -66,12 +68,13 @@
                          BorderThickness="0"
                          Background="Transparent"
                          ItemTemplate="{TemplateBinding ItemTemplate}"
-                         Margin="{DynamicResource AutoCompleteListPadding}" />
+                         Margin="{DynamicResource AutoCompleteListPadding}"
+                         ScrollViewer.IsScrollChainingEnabled="False" />
               </Border>
             </Popup>
           </Grid>
         </ControlTemplate>
       </Setter>
     </ControlTheme>
-  
+
 </ResourceDictionary>

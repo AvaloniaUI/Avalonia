@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -15,13 +14,6 @@ public partial class MainWindow : Window
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
-    }
-
-    /// <inheritdoc/>
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        this.AttachDevTools();
-        base.OnLoaded(e);
     }
 
     public void Open(object sender, RoutedEventArgs e)

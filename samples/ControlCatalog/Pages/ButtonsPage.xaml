@@ -1,8 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="Buttons"
              x:Class="ControlCatalog.Pages.ButtonsPage">
 
-  <UserControl.Resources>
+  <ContentPage.Resources>
 
     <MenuFlyout x:Key="SharedMenuFlyout"
                 Placement="Bottom">
@@ -16,9 +17,9 @@
       <MenuItem Header="Item 3" />
     </MenuFlyout>
 
-  </UserControl.Resources>
+  </ContentPage.Resources>
       
-  <UserControl.Styles >
+  <ContentPage.Styles >
 
     <Style Selector="Border.header-border">
       <Setter Property="Background">
@@ -45,7 +46,7 @@
       <Setter Property="Margin" Value="0,0,0,15" />
     </Style>
 
-  </UserControl.Styles>
+  </ContentPage.Styles>
 
   <!-- Styles and overall page design based on AcrylicPage -->
 
@@ -91,6 +92,8 @@
             </Button.Styles>
           </Button>
           <Button Classes="accent">Accent</Button>
+          <Button LetterSpacing="0">Normal Spacing</Button>
+          <Button LetterSpacing="2.0">Loose Spacing</Button>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
@@ -105,6 +108,8 @@
                   IsEnabled="False">Disabled</Button>
           <Button BorderBrush="{DynamicResource SystemAccentColor}"
                   KeyboardNavigation.IsTabStop="False">IsTabStop=False</Button>
+          <Button LetterSpacing="-0.5">Tight Spacing</Button>
+          <Button LetterSpacing="4.0">E X T R A   L O O S E</Button>
         </StackPanel>
       </StackPanel>
     </Border>
@@ -284,4 +289,4 @@
     </Border>
 
   </StackPanel>
-</UserControl>
+</ContentPage>

@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Text.RegularExpressions;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class FontManagerImpl : IFontManagerImpl, IFontManagerImpl2
+    internal class FontManagerImpl : IFontManagerImpl
     {
         private SKFontManager _skFontManager = SKFontManager.Default;
 
@@ -34,46 +33,26 @@ namespace Avalonia.Skia
 
         [ThreadStatic] private static string[]? t_languageTagBuffer;
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight, FontStretch fontStretch, CultureInfo? culture, out Typeface fontKey)
-        {
-            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out SKTypeface? skTypeface))
-            {
-                fontKey = default;
-
-                return false;
-            }
-
-            fontKey = new Typeface(
-                skTypeface.FamilyName, 
-                skTypeface.FontStyle.Slant.ToAvalonia(), 
-                (FontWeight)skTypeface.FontStyle.Weight, 
-                (FontStretch)skTypeface.FontStyle.Width);
-
-            skTypeface.Dispose();
-
-            return true;
-
-        }
-
         public bool TryMatchCharacter(
             int codepoint,
             FontStyle fontStyle,
             FontWeight fontWeight,
             FontStretch fontStretch,
+            string? familyName,
             CultureInfo? culture,
-            [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            [NotNullWhen(returnValue: true)] out IPlatformTypeface? platformTypeface)
         {
-            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, culture, out SKTypeface? skTypeface))
+            if (!TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName, culture, out SKTypeface? skTypeface))
             {
-                glyphTypeface = null;
+                platformTypeface = null;
 
                 return false;
             }
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
+            platformTypeface = new SkiaTypeface(skTypeface, FontSimulations.None);
 
             return true;
+
         }
 
         private bool TryMatchCharacter(
@@ -81,6 +60,7 @@ namespace Avalonia.Skia
             FontStyle fontStyle,
             FontWeight fontWeight,
             FontStretch fontStretch,
+            string? familyName,
             CultureInfo? culture,
             [NotNullWhen(true)] out SKTypeface? skTypeface)
         {
@@ -110,15 +90,15 @@ namespace Avalonia.Skia
             t_languageTagBuffer ??= new string[1];
             t_languageTagBuffer[0] = culture.Name;
 
-            skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
+            skTypeface = _skFontManager.MatchCharacter(string.IsNullOrEmpty(familyName) ? null : familyName, skFontStyle, t_languageTagBuffer, codepoint);
 
             return skTypeface != null;
         }
 
         public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
         {
-            glyphTypeface = null;
+            platformTypeface = null;
 
             var fontStyle = new SKFontStyle((SKFontStyleWeight)weight, (SKFontStyleWidth)stretch, style.ToSkia());
 
@@ -141,23 +121,23 @@ namespace Avalonia.Skia
                 fontSimulations |= FontSimulations.Oblique;
             }
 
-            glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+            platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
 
             return true;
         }
 
-        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+        public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
         {
             var skTypeface = SKTypeface.FromStream(stream);
 
             if (skTypeface != null)
             {
-                glyphTypeface = new GlyphTypefaceImpl(skTypeface, fontSimulations);
+                platformTypeface = new SkiaTypeface(skTypeface, fontSimulations);
 
                 return true;
             }
 
-            glyphTypeface = null;
+            platformTypeface = null;
 
             return false;
         }

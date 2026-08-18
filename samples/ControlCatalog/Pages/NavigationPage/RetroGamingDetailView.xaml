@@ -1,0 +1,229 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.RetroGamingDetailView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Hero image area (240px) -->
+      <Border x:Name="DetailHeroBorder" Height="240" ClipToBounds="True">
+        <Panel>
+          <!-- Background image (set from code-behind) -->
+          <Border x:Name="DetailHeroImageBorder" HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"/>
+          <!-- Pixel decorations -->
+          <Canvas Width="220" Height="150" HorizontalAlignment="Right">
+            <Border Canvas.Left="20"  Canvas.Top="20"  Width="8"  Height="8"  Background="#00ffff"/>
+            <Border Canvas.Left="30"  Canvas.Top="12"  Width="8"  Height="8"  Background="#00ffff"/>
+            <Border Canvas.Left="30"  Canvas.Top="20"  Width="8"  Height="8"  Background="#00ffff"/>
+            <Border Canvas.Left="40"  Canvas.Top="20"  Width="8"  Height="8"  Background="#00ffff"/>
+            <Border Canvas.Left="30"  Canvas.Top="28"  Width="8"  Height="8"  Background="#00ffff"/>
+            <Border Canvas.Left="80"  Canvas.Top="35"  Width="12" Height="12" Background="#ad2bee"/>
+            <Border Canvas.Left="92"  Canvas.Top="22"  Width="12" Height="12" Background="#ad2bee"/>
+            <Border Canvas.Left="104" Canvas.Top="35"  Width="12" Height="12" Background="#ad2bee"/>
+            <Border Canvas.Left="92"  Canvas.Top="47"  Width="12" Height="12" Background="#ad2bee"/>
+            <Border Canvas.Left="150" Canvas.Top="18"  Width="10" Height="10" Background="#ffff00"/>
+            <Border Canvas.Left="150" Canvas.Top="42"  Width="10" Height="10" Background="#ffff00"/>
+            <Border Canvas.Left="165" Canvas.Top="30"  Width="8"  Height="8"  Background="#ff4466"/>
+            <Border Canvas.Left="190" Canvas.Top="15"  Width="6"  Height="6"  Background="#00ffff"/>
+            <Border Canvas.Left="200" Canvas.Top="25"  Width="4"  Height="4"  Background="#ad2bee"/>
+            <Border Canvas.Left="180" Canvas.Top="60"  Width="8"  Height="8"  Background="#ffff00"/>
+          </Canvas>
+          <!-- Gradient overlay -->
+          <Border>
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,40%" EndPoint="0%,100%">
+                <GradientStop Color="#00000000" Offset="0"/>
+                <GradientStop Color="#C8120a1f" Offset="1"/>
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <!-- Title at bottom -->
+          <TextBlock x:Name="DetailTitleText"
+                     Text="GAME TITLE"
+                     FontFamily="Courier New, monospace" FontSize="20" FontWeight="Bold"
+                     Foreground="#00ffff"
+                     VerticalAlignment="Bottom" Margin="16,0,16,12"/>
+        </Panel>
+      </Border>
+
+      <!-- Meta badges row -->
+      <StackPanel Orientation="Horizontal" Spacing="8" Margin="16,12,16,0">
+        <Border Background="#3300ffff" BorderBrush="#00ffff" BorderThickness="1" Padding="8,3">
+          <TextBlock Text="⭐ 4.5 / 5" FontFamily="Courier New, monospace"
+                     FontSize="9" FontWeight="Bold" Foreground="#00ffff"/>
+        </Border>
+        <Border Background="#337856a8" BorderBrush="#7856a8" BorderThickness="1" Padding="8,3">
+          <TextBlock Text="YEAR 1992" FontFamily="Courier New, monospace"
+                     FontSize="9" FontWeight="Bold" Foreground="#7856a8"/>
+        </Border>
+        <Border Background="#33ad2bee" BorderBrush="#ad2bee" BorderThickness="1" Padding="8,3">
+          <TextBlock Text="ACTION" FontFamily="Courier New, monospace"
+                     FontSize="9" FontWeight="Bold" Foreground="#ad2bee"/>
+        </Border>
+      </StackPanel>
+
+      <!-- Info row: pixel avatar + mission briefing -->
+      <Grid ColumnDefinitions="80,*" Margin="16,14,16,0">
+        <!-- Pixel avatar -->
+        <Border Width="72" Height="80"
+                BorderBrush="#ad2bee" BorderThickness="2"
+                Background="#2d1b4e">
+          <Grid RowDefinitions="22,26,18,*">
+            <Border Grid.Row="0" Width="22" Height="20" Background="#00ffff"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Border Grid.Row="1" Width="30" Height="24" Background="#ad2bee"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Border Width="11" Height="14" Background="#7856a8"/>
+              <Border Width="11" Height="14" Background="#7856a8"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Description -->
+        <StackPanel Grid.Column="1" Spacing="6" Margin="12,0,0,0">
+          <TextBlock Text="MISSION BRIEFING"
+                     FontFamily="Courier New, monospace" FontSize="9" FontWeight="Bold"
+                     Foreground="#ffff00"/>
+          <TextBlock Text="A legendary ninja warrior awakens in a&#10;cyberpunk city 100 years in the future.&#10;Defeat the Neon Corporation to restore&#10;honor to the ancient clan."
+                     FontFamily="Courier New, monospace" FontSize="9" LineHeight="16"
+                     Foreground="#e0d0ff" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Grid>
+
+      <!-- INSERT COIN button -->
+      <Button HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center"
+              Margin="16,16,16,0" Padding="0,14" CornerRadius="0"
+              Classes="retro-primary-btn">
+        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+          <PathIcon Width="14" Height="14" Foreground="White"
+                    Data="M7.97,16L5,19C4.67,19.3 4.23,19.5 3.75,19.5A1.75,1.75 0 0,1 2,17.75V17.5L3,10.12C3.21,7.81 5.14,6 7.5,6H16.5C18.86,6 20.79,7.81 21,10.12L22,17.5V17.75A1.75,1.75 0 0,1 20.25,19.5C19.77,19.5 19.33,19.3 19,19L16.03,16H7.97M7,9V11H5V13H7V15H9V13H11V11H9V9H7M14.5,12A1.5,1.5 0 0,0 13,13.5A1.5,1.5 0 0,0 14.5,15A1.5,1.5 0 0,0 16,13.5A1.5,1.5 0 0,0 14.5,12M17.5,9A1.5,1.5 0 0,0 16,10.5A1.5,1.5 0 0,0 17.5,12A1.5,1.5 0 0,0 19,10.5A1.5,1.5 0 0,0 17.5,9Z"/>
+          <TextBlock Text="INSERT COIN"
+                     FontFamily="Courier New, monospace" FontSize="11" FontWeight="Bold"
+                     Foreground="White"/>
+        </StackPanel>
+      </Button>
+
+      <!-- Community Score -->
+      <TextBlock Text="COMMUNITY SCORE"
+                 FontFamily="Courier New, monospace" FontSize="9" FontWeight="Bold"
+                 Foreground="#ffff00" Margin="16,20,16,8"/>
+
+      <StackPanel Spacing="5" Margin="16,0,16,0">
+        <!-- 5 star: 60% -->
+        <Grid ColumnDefinitions="32,*,32">
+          <TextBlock Text="5 ★" FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"/>
+          <Grid Grid.Column="1" ColumnDefinitions="60*,40*">
+            <Border Height="6" Background="#ad2bee"/>
+            <Border Grid.Column="1" Height="6" Background="#502d1b4e"/>
+          </Grid>
+          <TextBlock Grid.Column="2" Text="60%"
+                     FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"
+                     HorizontalAlignment="Right"/>
+        </Grid>
+        <!-- 4 star: 25% -->
+        <Grid ColumnDefinitions="32,*,32">
+          <TextBlock Text="4 ★" FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"/>
+          <Grid Grid.Column="1" ColumnDefinitions="25*,75*">
+            <Border Height="6" Background="#ad2bee"/>
+            <Border Grid.Column="1" Height="6" Background="#502d1b4e"/>
+          </Grid>
+          <TextBlock Grid.Column="2" Text="25%"
+                     FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"
+                     HorizontalAlignment="Right"/>
+        </Grid>
+        <!-- 3 star: 10% -->
+        <Grid ColumnDefinitions="32,*,32">
+          <TextBlock Text="3 ★" FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"/>
+          <Grid Grid.Column="1" ColumnDefinitions="10*,90*">
+            <Border Height="6" Background="#ad2bee"/>
+            <Border Grid.Column="1" Height="6" Background="#502d1b4e"/>
+          </Grid>
+          <TextBlock Grid.Column="2" Text="10%"
+                     FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"
+                     HorizontalAlignment="Right"/>
+        </Grid>
+        <!-- 2 star: 3% -->
+        <Grid ColumnDefinitions="32,*,32">
+          <TextBlock Text="2 ★" FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"/>
+          <Grid Grid.Column="1" ColumnDefinitions="3*,97*">
+            <Border Height="6" Background="#ad2bee"/>
+            <Border Grid.Column="1" Height="6" Background="#502d1b4e"/>
+          </Grid>
+          <TextBlock Grid.Column="2" Text="3%"
+                     FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"
+                     HorizontalAlignment="Right"/>
+        </Grid>
+        <!-- 1 star: 2% -->
+        <Grid ColumnDefinitions="32,*,32">
+          <TextBlock Text="1 ★" FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"/>
+          <Grid Grid.Column="1" ColumnDefinitions="2*,98*">
+            <Border Height="6" Background="#ad2bee"/>
+            <Border Grid.Column="1" Height="6" Background="#502d1b4e"/>
+          </Grid>
+          <TextBlock Grid.Column="2" Text="2%"
+                     FontFamily="Courier New, monospace" FontSize="8"
+                     Foreground="#7856a8" VerticalAlignment="Center"
+                     HorizontalAlignment="Right"/>
+        </Grid>
+      </StackPanel>
+
+      <!-- Metadata footer -->
+      <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+            Margin="16,16,16,24">
+        <Border Grid.Row="0" Grid.Column="0" Background="#2d1b4e"
+                BorderBrush="#ad2bee" BorderThickness="1"
+                Padding="10,8" Margin="0,0,4,0">
+          <StackPanel Spacing="2">
+            <TextBlock Text="DEVELOPER" FontFamily="Courier New, monospace"
+                       FontSize="7" Foreground="#7856a8"/>
+            <TextBlock Text="PixelForge" FontFamily="Courier New, monospace"
+                       FontSize="9" FontWeight="Bold" Foreground="#e0d0ff"/>
+          </StackPanel>
+        </Border>
+        <Border Grid.Row="0" Grid.Column="1" Background="#2d1b4e"
+                BorderBrush="#ad2bee" BorderThickness="1"
+                Padding="10,8" Margin="4,0,0,0">
+          <StackPanel Spacing="2">
+            <TextBlock Text="PUBLISHER" FontFamily="Courier New, monospace"
+                       FontSize="7" Foreground="#7856a8"/>
+            <TextBlock Text="RetroSoft" FontFamily="Courier New, monospace"
+                       FontSize="9" FontWeight="Bold" Foreground="#e0d0ff"/>
+          </StackPanel>
+        </Border>
+        <Border Grid.Row="1" Grid.Column="0" Background="#2d1b4e"
+                BorderBrush="#ad2bee" BorderThickness="1"
+                Padding="10,8" Margin="0,4,4,0">
+          <StackPanel Spacing="2">
+            <TextBlock Text="SIZE" FontFamily="Courier New, monospace"
+                       FontSize="7" Foreground="#7856a8"/>
+            <TextBlock Text="12 MB" FontFamily="Courier New, monospace"
+                       FontSize="9" FontWeight="Bold" Foreground="#e0d0ff"/>
+          </StackPanel>
+        </Border>
+        <Border Grid.Row="1" Grid.Column="1" Background="#2d1b4e"
+                BorderBrush="#ad2bee" BorderThickness="1"
+                Padding="10,8" Margin="4,4,0,0">
+          <StackPanel Spacing="2">
+            <TextBlock Text="PLAYERS" FontFamily="Courier New, monospace"
+                       FontSize="7" Foreground="#7856a8"/>
+            <TextBlock Text="1-2 CO-OP" FontFamily="Courier New, monospace"
+                       FontSize="9" FontWeight="Bold" Foreground="#e0d0ff"/>
+          </StackPanel>
+        </Border>
+      </Grid>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

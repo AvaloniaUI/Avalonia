@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Browser.Interop;
 using Avalonia.Platform;
 
@@ -60,12 +59,17 @@ internal class BrowserPlatformSettings : DefaultPlatformSettings
         OnColorValuesChanged(GetColorValues());
     }
 
+    public void OnColorValuesChanged()
+    {
+        OnColorValuesChanged(GetColorValues());
+    }
+
     public void OnPreferredLanguageChanged(string? language)
     {
         if (language is not null && _lastLanguage != language)
         {
             _lastLanguage = language;
-            OnPreferredApplicationLanguageChanged();   
+            OnPreferredApplicationLanguageChanged();
         }
     }
 

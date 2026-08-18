@@ -2,10 +2,12 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Subjects;
+using Avalonia.Animation;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
@@ -57,6 +59,28 @@ namespace Avalonia.Controls.UnitTests
             var child = GetContainerTextBlock(target.GetRealizedContainers().Single());
 
             Assert.Equal("Foo", child.Text);
+        }
+
+        [Fact]
+        public void ViewportFraction_Defaults_To_One()
+        {
+            using var app = Start();
+            var target = new Carousel();
+
+            Assert.Equal(1d, target.ViewportFraction);
+        }
+
+        [Fact]
+        public void ViewportFraction_Coerces_Invalid_Values_To_One()
+        {
+            using var app = Start();
+            var target = new Carousel();
+
+            target.ViewportFraction = 0;
+            Assert.Equal(1d, target.ViewportFraction);
+
+            target.ViewportFraction = double.NaN;
+            Assert.Equal(1d, target.ViewportFraction);
         }
 
         [Fact]
@@ -147,8 +171,7 @@ namespace Avalonia.Controls.UnitTests
             target.ItemsSource = null;
             Layout(target);
 
-            var numChildren = target.GetRealizedContainers().Count();
-
+            Assert.Empty(target.GetRealizedContainers());
             Assert.Equal(-1, target.SelectedIndex);
         }
 
@@ -257,7 +280,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Bind(ComboBox.SelectedItemProperty, textObservable);
 
                 Assert.True(DataValidationErrors.GetHasErrors(target));
-                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(target));
             }
         }
 
@@ -326,6 +349,204 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, target.SelectedIndex);
         }
 
+        public class WrapSelectionTests : ScopedTestBase
+        {
+            [Fact]
+            public void Next_Loops_When_WrapSelection_Is_True()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var target = new Carousel
+                {
+                    Template = CarouselTemplate(),
+                    ItemsSource = items,
+                    WrapSelection = true,
+                    SelectedIndex = 2
+                };
+
+                Prepare(target);
+
+                target.Next();
+                Layout(target);
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+
+            [Fact]
+            public void Previous_Loops_When_WrapSelection_Is_True()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var target = new Carousel
+                {
+                    Template = CarouselTemplate(),
+                    ItemsSource = items,
+                    WrapSelection = true,
+                    SelectedIndex = 0
+                };
+
+                Prepare(target);
+
+                target.Previous();
+                Layout(target);
+
+                Assert.Equal(2, target.SelectedIndex);
+            }
+
+            [Fact]
+            public void Next_Does_Not_Loop_When_WrapSelection_Is_False()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var target = new Carousel
+                {
+                    Template = CarouselTemplate(),
+                    ItemsSource = items,
+                    WrapSelection = false,
+                    SelectedIndex = 2
+                };
+
+                Prepare(target);
+
+                target.Next();
+                Layout(target);
+
+                Assert.Equal(2, target.SelectedIndex);
+            }
+
+            [Fact]
+            public void Previous_Does_Not_Loop_When_WrapSelection_Is_False()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var target = new Carousel
+                {
+                    Template = CarouselTemplate(),
+                    ItemsSource = items,
+                    WrapSelection = false,
+                    SelectedIndex = 0
+                };
+
+                Prepare(target);
+
+                target.Previous();
+                Layout(target);
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+
+
+        [Fact]
+        public void Right_Arrow_Navigates_To_Next_With_Horizontal_PageSlide()
+        {
+            using var app = Start();
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                PageTransition = new PageSlide(TimeSpan.FromMilliseconds(100), PageSlide.SlideAxis.Horizontal),
+            };
+
+            Prepare(target);
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Right });
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Down_Arrow_Navigates_To_Next_With_Vertical_PageSlide()
+        {
+            using var app = Start();
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                PageTransition = new PageSlide(TimeSpan.FromMilliseconds(100), PageSlide.SlideAxis.Vertical),
+            };
+
+            Prepare(target);
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Down });
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Home_Navigates_To_First_Item()
+        {
+            using var app = Start();
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                SelectedIndex = 2,
+            };
+
+            Prepare(target);
+            Layout(target);
+            Assert.Equal(2, target.SelectedIndex);
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Home });
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void End_Navigates_To_Last_Item()
+        {
+            using var app = Start();
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+            };
+
+            Prepare(target);
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.End });
+            Assert.Equal(2, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Wrong_Axis_Arrow_Is_Ignored()
+        {
+            using var app = Start();
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                PageTransition = new PageSlide(TimeSpan.FromMilliseconds(100), PageSlide.SlideAxis.Horizontal),
+            };
+
+            Prepare(target);
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Down });
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Left_Arrow_Wraps_With_WrapSelection()
+        {
+            using var app = Start();
+            var target = new Carousel
+            {
+                Template = CarouselTemplate(),
+                ItemsSource = new[] { "Foo", "Bar", "Baz" },
+                PageTransition = new PageSlide(TimeSpan.FromMilliseconds(100), PageSlide.SlideAxis.Horizontal),
+                WrapSelection = true,
+            };
+
+            Prepare(target);
+            Assert.Equal(0, target.SelectedIndex);
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Left });
+            Assert.Equal(2, target.SelectedIndex);
+        }
+
         private static IDisposable Start() => UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
         private static void Prepare(Carousel target)
@@ -336,7 +557,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Layout(Carousel target)
         {
-            ((ILayoutRoot)target.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
+            target.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private static IControlTemplate CarouselTemplate()
@@ -371,7 +592,7 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        private static TextBlock GetContainerTextBlock(object control)
+        private static TextBlock GetContainerTextBlock(object? control)
         {
             var contentPresenter = Assert.IsType<ContentPresenter>(control);
             return Assert.IsType<TextBlock>(contentPresenter.Child);

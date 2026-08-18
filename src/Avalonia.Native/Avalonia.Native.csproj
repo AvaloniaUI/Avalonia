@@ -1,16 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackAvaloniaNative Condition="'$(PackAvaloniaNative)' == ''">$([MSBuild]::IsOSPlatform(OSX))</PackAvaloniaNative>
-    <IsPackable>$(PackAvaloniaNative)</IsPackable>
-    <IsPackable Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'True'">true</IsPackable>
-    <IsPackable Condition="'$(ForcePackAvaloniaNative)' == 'True'">True</IsPackable>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseMicroComGeneratorRoslyn>true</UseMicroComGeneratorRoslyn>
+
+    <!-- Include libAvaloniaNative.dylib, only if we are on macOS host or dylib was manually copied -->
+    <AvaloniaNativeDylibPath>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../../Build/Products/Release/libAvalonia.Native.OSX.dylib))</AvaloniaNativeDylibPath>
+    <IncludeAvaloniaDylib Condition="'$(IncludeAvaloniaDylib)' == '' AND Exists($(AvaloniaNativeDylibPath))">true</IncludeAvaloniaDylib>
+    <IncludeAvaloniaDylib Condition="'$(IncludeAvaloniaDylib)' == ''">$([MSBuild]::IsOSPlatform(OSX))</IncludeAvaloniaDylib>
+
+    <!-- It only makes sense to pack Avalonia.Native, if it includes dylib, of if it was enforced -->
+    <IsPackable>$(IncludeAvaloniaDylib)</IsPackable>
+    <IsPackable Condition="'$(ForcePackAvaloniaNative)' == 'True'">True</IsPackable>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(PackAvaloniaNative)' == 'true'">
-    <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
+  <ItemGroup Condition="'$(IncludeAvaloniaDylib)' == 'true'">
+    <Content Include="$(AvaloniaNativeDylibPath)">
       <Link>libAvaloniaNative.dylib</Link>
       <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
       <Pack>true</Pack>
@@ -21,10 +27,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-    <PackageReference Include="MicroCom.CodeGenerator.MSBuild" Version="0.11.0" PrivateAssets="all" />
-    <MicroComIdl Include="avn.idl" CSharpInteropPath="Interop.Generated.cs" />
+    <MicroComIdl Include="avn.idl" />
   </ItemGroup>
 
+  <Import Project="..\..\build\MicroCOM.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

@@ -62,12 +62,10 @@ namespace Avalonia.Rendering.Composition.Expressions
                     var arg = arguments[c].Type;
                     if (parameter != arg)
                     {
-                        var canCast = (parameter == VariantType.Double && arg == VariantType.Scalar)
-                                      || (parameter == VariantType.Vector3D && arg == VariantType.Vector3)
+                        var canCast =  (parameter == VariantType.Vector3D && arg == VariantType.Vector3)
                                       || (parameter == VariantType.Vector && arg == VariantType.Vector2)
                                       || (anyCast && (
-                                          (arg == VariantType.Double && parameter == VariantType.Scalar)
-                                          || (arg == VariantType.Vector3D && parameter == VariantType.Vector3)
+                                          (arg == VariantType.Vector3D && parameter == VariantType.Vector3)
                                           || (arg == VariantType.Vector && parameter == VariantType.Vector2)
                                       ));
                         if (!canCast)
@@ -112,7 +110,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         static readonly Dictionary<Type, VariantType> TypeMap = new Dictionary<Type, VariantType>
         {
             [typeof(bool)] = VariantType.Boolean,
-            [typeof(float)] = VariantType.Scalar,
+            [typeof(float)] = VariantType.Double,
             [typeof(double)] = VariantType.Double,
             [typeof(Vector2)] = VariantType.Vector2,
             [typeof(Vector)] = VariantType.Vector,
@@ -122,8 +120,16 @@ namespace Avalonia.Rendering.Composition.Expressions
             [typeof(Matrix3x2)] = VariantType.Matrix3x2,
             [typeof(Matrix4x4)] = VariantType.Matrix4x4,
             [typeof(Quaternion)] = VariantType.Quaternion,
-            [typeof(Color)] = VariantType.Color
+            [typeof(Color)] = VariantType.Color,
+            [typeof(RelativePoint)] = VariantType.RelativePoint,
+            [typeof(RelativeScalar)] = VariantType.RelativeScalar,
+            [typeof(RelativeUnit)] = VariantType.RelativeUnit
         };
+
+        public void Add(string name, Func<ExpressionVariant> cb)
+        {
+            Add(name, _ => cb());
+        }
 
         public void Add<T1>(string name, Func<T1, ExpressionVariant> cb) where T1 : struct
         {

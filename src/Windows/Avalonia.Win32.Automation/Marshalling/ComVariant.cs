@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Win32.Automation.Marshalling;
 
-#if NET7_0_OR_GREATER
 // Oversimplified ComVariant implementation based on https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Runtime/InteropServices/Marshalling/ComVariant.cs
 // Available 
 [StructLayout(LayoutKind.Explicit)]
@@ -40,9 +39,17 @@ internal struct ComVariant : IDisposable
     // Most of the data types in the Variant are carried in _typeUnion
     [FieldOffset(0)] private TypeUnion _typeUnion;
 
+    // Decimal is the largest data type and it needs to use the space that is normally unused in
+    // TypeUnion._wReserved1, etc. Hence, it is declared to completely overlap with TypeUnion. A
+    // Decimal does not use the first two bytes, and so TypeUnion._vt can still be used to encode the
+    // type. (Win32 automation is Windows-only, i.e. always little-endian, so TypeUnion's field order
+    // already lines up with Decimal._flags and no big-endian special-casing is required.)
+    [FieldOffset(0)] private decimal _decimal;
+
     [StructLayout(LayoutKind.Sequential)]
     private struct TypeUnion
     {
+        // The layout of _wReserved1 and _vt fields needs to match Decimal._flags.
         public ushort _vt;
         public ushort _wReserved1;
         public ushort _wReserved2;
@@ -162,6 +169,15 @@ internal struct ComVariant : IDisposable
             variant.VarType = VarEnum.VT_R8;
             variant._typeUnion._unionTypes._r8 = (double)value;
         }
+        else if (value is decimal)
+        {
+            // Set the value first and then the type, as the decimal storage overlaps the whole
+            // variant (including the type discriminator, which lands in decimal's unused first two
+            // bytes). NumericUpDown.Value is a decimal?, so its automation property-changed events
+            // arrive here; without this branch they throw and crash the app (#21491).
+            variant._decimal = (decimal)value;
+            variant.VarType = VarEnum.VT_DECIMAL;
+        }
         else if (value is DateTime)
         {
             variant.VarType = VarEnum.VT_DATE;
@@ -261,6 +277,8 @@ internal struct ComVariant : IDisposable
             // floating
             VarEnum.VT_R4 => _typeUnion._unionTypes._r4,
             VarEnum.VT_R8 => _typeUnion._unionTypes._r8,
+            // decimal
+            VarEnum.VT_DECIMAL => GetDecimal(),
             // date
             VarEnum.VT_DATE => DateTime.FromOADate(_typeUnion._unionTypes._date),
             // string
@@ -298,6 +316,19 @@ internal struct ComVariant : IDisposable
     }
 
     /// <summary>
+    /// Read the <see cref="decimal"/> stored in a <see cref="VarEnum.VT_DECIMAL"/> variant. The
+    /// decimal storage overlaps the entire variant, so the type discriminator currently sits in the
+    /// decimal's otherwise-unused first two bytes; clear it on a copy (by setting the type to
+    /// <see cref="VarEnum.VT_EMPTY"/>) so the VT_DECIMAL flag doesn't leak into the returned value.
+    /// </summary>
+    private readonly decimal GetDecimal()
+    {
+        var copy = this;
+        copy.VarType = VarEnum.VT_EMPTY;
+        return copy._decimal;
+    }
+
+    /// <summary>
     /// The type of the data stored in this <see cref="ComVariant"/>.
     /// </summary>
     public VarEnum VarType
@@ -306,4 +337,3 @@ internal struct ComVariant : IDisposable
         private set => _typeUnion._vt = (ushort)value;
     }
 }
-#endif

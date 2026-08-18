@@ -116,7 +116,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Value = 50
             };
 
-            Track track = null;
+            Track? track = null;
 
             var target = new TestRange()
             {
@@ -157,7 +157,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Bind(TestRange.ValueProperty, new Binding("Value") { Mode = BindingMode.TwoWay });
 
             target.ApplyTemplate();
-            track.Measure(new Size(100, 0));
+            track!.Measure(new Size(100, 0));
             track.Arrange(new Rect(0, 0, 100, 0));
 
             Assert.Equal(1, viewModel.SetterInvokedCount);
@@ -218,7 +218,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             private double _value;
 
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
             public double Value
             {

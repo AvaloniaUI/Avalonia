@@ -198,6 +198,12 @@ namespace Avalonia.Controls
             set
             {
                 if (_extData == null) { _extData = new ExtendedData(); }
+                //  otherwise the outgoing definitions stay registered with their shared size
+                //  group and keep contributing to its minimum.
+                if (_extData.ColumnDefinitions is { } oldDefinitions && !ReferenceEquals(oldDefinitions, value))
+                {
+                    oldDefinitions.Parent = null;
+                }
                 _extData.ColumnDefinitions = value;
                 _extData.ColumnDefinitions.Parent = this;
                 InvalidateMeasure();
@@ -220,6 +226,12 @@ namespace Avalonia.Controls
             set
             {
                 if (_extData == null) { _extData = new ExtendedData(); }
+                //  otherwise the outgoing definitions stay registered with their shared size
+                //  group and keep contributing to its minimum.
+                if (_extData.RowDefinitions is { } oldDefinitions && !ReferenceEquals(oldDefinitions, value))
+                {
+                    oldDefinitions.Parent = null;
+                }
                 _extData.RowDefinitions = value;
                 _extData.RowDefinitions.Parent = this;
                 InvalidateMeasure();
@@ -946,11 +958,11 @@ namespace Avalonia.Controls
             {
                 if (isRows)
                 {
-                    minSizes[PrivateCells[i].RowIndex] = DefinitionsV[PrivateCells[i].RowIndex].MinSize;
+                    minSizes[PrivateCells[i].RowIndex] = DefinitionsV[PrivateCells[i].RowIndex].RawMinSize;
                 }
                 else
                 {
-                    minSizes[PrivateCells[i].ColumnIndex] = DefinitionsU[PrivateCells[i].ColumnIndex].MinSize;
+                    minSizes[PrivateCells[i].ColumnIndex] = DefinitionsU[PrivateCells[i].ColumnIndex].RawMinSize;
                 }
 
                 i = PrivateCells[i].Next;
@@ -2117,7 +2129,7 @@ namespace Avalonia.Controls
             {
                 // DpiScale dpiScale = GetDpi();
                 // double dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
-                var dpi = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
+                var dpi = this.GetLayoutRoot()?.LayoutScaling ?? 1.0;
                 double[] roundingErrors = RoundingErrors;
                 double roundedTakenSize = 0;
 
@@ -2276,25 +2288,6 @@ namespace Avalonia.Controls
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Sorts row/column indices by rounding error if layout rounding is applied.
-        /// </summary>
-        /// <param name="x">Index, rounding error pair</param>
-        /// <param name="y">Index, rounding error pair</param>
-        /// <returns>1 if x.Value > y.Value, 0 if equal, -1 otherwise</returns>
-        private static int CompareRoundingErrors(KeyValuePair<int, double> x, KeyValuePair<int, double> y)
-        {
-            if (x.Value < y.Value)
-            {
-                return -1;
-            }
-            else if (x.Value > y.Value)
-            {
-                return 1;
-            }
-            return 0;
         }
 
         /// <summary>
@@ -2979,88 +2972,6 @@ namespace Avalonia.Controls
                             result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
                         }
                     }
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// StarDistributionOrderIndexComparer.
-        /// </summary>
-        private class StarDistributionOrderIndexComparer : IComparer
-        {
-            private readonly IReadOnlyList<DefinitionBase> definitions;
-
-            internal StarDistributionOrderIndexComparer(IReadOnlyList<DefinitionBase> definitions)
-            {
-                this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
-            }
-
-            public int Compare(object? x, object? y)
-            {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase? definitionX = null;
-                DefinitionBase? definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// DistributionOrderComparer.
-        /// </summary>
-        private class DistributionOrderIndexComparer : IComparer
-        {
-            private readonly IReadOnlyList<DefinitionBase> definitions;
-
-            internal DistributionOrderIndexComparer(IReadOnlyList<DefinitionBase> definitions)
-            {
-                this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
-            }
-
-            public int Compare(object? x, object? y)
-            {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase? definitionX = null;
-                DefinitionBase? definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    double xprime = definitionX.SizeCache - definitionX.MinSizeForArrange;
-                    double yprime = definitionY.SizeCache - definitionY.MinSizeForArrange;
-                    result = xprime.CompareTo(yprime);
                 }
 
                 return result;

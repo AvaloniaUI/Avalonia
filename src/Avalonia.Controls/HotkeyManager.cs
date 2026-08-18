@@ -38,8 +38,18 @@ namespace Avalonia.Controls
 
             public bool CanExecute(object? parameter)
             {
-                if (reference.Target is { } target)
+                if (reference.Target is InputElement target)
                 {
+                    var current = target as Visual;
+                    while (current != null && current is not TopLevel)
+                    {
+                        if (!current.IsVisible)
+                        {
+                            return false;
+                        }
+                        current = current.VisualParent;
+                    }
+                    
                     if (target is ICommandSource commandSource && commandSource.Command is { } command)
                     {
                         return commandSource.IsEffectivelyEnabled
@@ -159,7 +169,7 @@ namespace Avalonia.Controls
                 new Manager(control).Init();
             });
         }
-        public static void SetHotKey(AvaloniaObject target, KeyGesture value) => target.SetValue(HotKeyProperty, value);
+        public static void SetHotKey(AvaloniaObject target, KeyGesture? value) => target.SetValue(HotKeyProperty, value);
         public static KeyGesture? GetHotKey(AvaloniaObject target) => target.GetValue(HotKeyProperty);
     }
 }

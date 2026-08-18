@@ -1,5 +1,3 @@
-
-
 #nullable enable
 
 using System;
@@ -8,10 +6,12 @@ using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -39,7 +39,7 @@ namespace Avalonia
         /// </summary>
         public static readonly DirectProperty<Visual, Rect> BoundsProperty =
             AvaloniaProperty.RegisterDirect<Visual, Rect>(nameof(Bounds), o => o.Bounds);
-        
+
         /// <summary>
         /// Defines the <see cref="ClipToBounds"/> property.
         /// </summary>
@@ -51,7 +51,7 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<Geometry?> ClipProperty =
             AvaloniaProperty.Register<Visual, Geometry?>(nameof(Clip));
-        
+
         /// <summary>
         /// Defines the <see cref="IsVisible"/> property.
         /// </summary>
@@ -69,7 +69,13 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<IBrush?> OpacityMaskProperty =
             AvaloniaProperty.Register<Visual, IBrush?>(nameof(OpacityMask));
-        
+
+        /// <summary>
+        /// Defines the <see cref="CacheMode"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CacheMode?> CacheModeProperty = AvaloniaProperty.Register<Visual, CacheMode?>(
+            nameof(CacheMode));
+
         /// <summary>
         /// Defines the <see cref="Effect"/> property.
         /// </summary>
@@ -113,17 +119,19 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<int> ZIndexProperty =
             AvaloniaProperty.Register<Visual, int>(nameof(ZIndex));
-        
+
         private static readonly WeakEvent<IAffectsRender, EventArgs> InvalidatedWeakEvent =
             WeakEvent.Register<IAffectsRender>(
                 (s, h) => s.Invalidated += h,
                 (s, h) => s.Invalidated -= h);
 
         private Rect _bounds;
-        private IRenderRoot? _visualRoot;
+        internal IPresentationSource? PresentationSource { get; private set; }
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
+        private RenderOptions _renderOptions;
+        private TextOptions _textOptions;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -148,16 +156,14 @@ namespace Avalonia
         /// </summary>
         public Visual()
         {
-            _visualRoot = this as IRenderRoot;
-
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
 
-            var visualChildren = new AvaloniaList<Visual>();
+            var visualChildren = new SafeEnumerableAvaloniaList<Visual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validator = this;
             visualChildren.CollectionChanged += VisualChildrenChanged;
-            VisualChildren = visualChildren;
+            TypedVisualChildren = visualChildren;
         }
 
         /// <summary>
@@ -201,7 +207,12 @@ namespace Avalonia
         /// Gets a value indicating whether this control and all its parents are visible.
         /// </summary>
         public bool IsEffectivelyVisible { get; private set; } = true;
-        
+
+        /// <summary>
+        /// Raised when <see cref="IsEffectivelyVisible"/> changes.
+        /// </summary>
+        internal event EventHandler? IsEffectivelyVisibleChanged;
+
         /// <summary>
         /// Updates the <see cref="IsEffectivelyVisible"/> property based on the parent's
         /// <see cref="IsEffectivelyVisible"/>.
@@ -215,16 +226,13 @@ namespace Avalonia
                 return;
 
             IsEffectivelyVisible = isEffectivelyVisible;
+            IsEffectivelyVisibleChanged?.Invoke(this, EventArgs.Empty);
 
-            // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
+            // PERF-SENSITIVE: This is called on entire hierarchy and using LINQ
             // will cause extra allocations and overhead.
-            
-            var children = VisualChildren;
 
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (int i = 0; i < children.Count; ++i)
+            foreach (var child in TypedVisualChildren)
             {
-                var child = children[i];
                 child.UpdateIsEffectivelyVisible(isEffectivelyVisible);
             }
         }
@@ -255,7 +263,16 @@ namespace Avalonia
             get { return GetValue(OpacityMaskProperty); }
             set { SetValue(OpacityMaskProperty, value); }
         }
-        
+
+        /// <summary>
+        /// Gets or sets the cache mode of the visual.
+        /// </summary>
+        public CacheMode? CacheMode
+        {
+            get => GetValue(CacheModeProperty);
+            set => SetValue(CacheModeProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets the effect of the control.
         /// </summary>
@@ -269,8 +286,8 @@ namespace Avalonia
         /// <summary>
         /// Gets or sets a value indicating whether to apply mirror transform on this control.
         /// </summary>
-        public bool HasMirrorTransform 
-        { 
+        public bool HasMirrorTransform
+        {
             get { return _hasMirrorTransform; }
             protected set { SetAndRaise(HasMirrorTransformProperty, ref _hasMirrorTransform, value); }
         }
@@ -317,23 +334,45 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the control's child visuals.
+        /// /// Gets the control's child visuals, strongly-typed, to avoid interface calls and enumerator boxing.
         /// </summary>
-        protected internal IAvaloniaList<Visual> VisualChildren { get; }
+        internal SafeEnumerableAvaloniaList<Visual> TypedVisualChildren { get; }
+
+        protected internal IAvaloniaList<Visual> VisualChildren => TypedVisualChildren;
 
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
-        protected internal IRenderRoot? VisualRoot => _visualRoot;
+        protected internal Visual? VisualRoot => PresentationSource?.RootVisual;
 
-        internal RenderOptions RenderOptions { get; set; }
+        internal IInputRoot? GetInputRoot() => PresentationSource?.InputRoot;
+
+        internal RenderOptions RenderOptions
+        {
+            get => _renderOptions;
+            set
+            {
+                _renderOptions = value;
+                InvalidateVisual();
+            }
+        }
+
+        internal TextOptions TextOptions
+        {
+            get => _textOptions;
+            set
+            {
+                _textOptions = value;
+                InvalidateVisual();
+            }
+        }
 
         internal bool HasNonUniformZIndexChildren { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this control is attached to a visual root.
         /// </summary>
-        internal bool IsAttachedToVisualTree => VisualRoot != null;
+        internal bool IsAttachedToVisualTree => this.PresentationSource != null;
 
         /// <summary>
         /// Gets the control's parent visual.
@@ -376,7 +415,7 @@ namespace Avalonia
         /// </summary>
         public void InvalidateVisual()
         {
-            VisualRoot?.Renderer.AddDirty(this);
+            PresentationSource?.Renderer.AddDirty(this);
         }
 
         /// <summary>
@@ -413,8 +452,8 @@ namespace Avalonia
                         sender.InvalidateVisual();
                     }
                 });
-            
-            
+
+
             var invalidateAndSubscribeObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
                 static e =>
                 {
@@ -466,22 +505,22 @@ namespace Avalonia
             if (change.Property == IsVisibleProperty)
             {
                 UpdateIsEffectivelyVisible(VisualParent?.IsEffectivelyVisible ?? true);
-            } 
+            }
             else if (change.Property == FlowDirectionProperty)
             {
                 InvalidateMirrorTransform();
 
-                foreach (var child in VisualChildren)
+                foreach (var child in TypedVisualChildren)
                 {
                     child.InvalidateMirrorTransform();
                 }
             }
         }
- 
+
         protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
-            VisualRoot?.Renderer.RecalculateChildren(this);
+            PresentationSource?.Renderer.RecalculateChildren(this);
         }
 
         /// <summary>
@@ -493,12 +532,8 @@ namespace Avalonia
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Attached to visual tree");
 
-            _visualRoot = e.Root;
+            PresentationSource = e.PresentationSource;
             RootedVisualChildrenCount++;
-            if (_visualParent is null)
-            {
-                throw new InvalidOperationException("Visual was attached to the root without being added to the visual parent first.");
-            }
 
             if (RenderTransform is IMutableTransform mutableTransform)
             {
@@ -506,27 +541,29 @@ namespace Avalonia
             }
 
             EnableTransitions();
-            if (_visualRoot.Renderer is IRendererWithCompositor compositingRenderer)
+            if (PresentationSource.Renderer is IRendererWithCompositor compositingRenderer)
             {
                 AttachToCompositor(compositingRenderer.Compositor);
             }
             InvalidateMirrorTransform();
-            UpdateIsEffectivelyVisible(_visualParent.IsEffectivelyVisible);
+            UpdateIsEffectivelyVisible(_visualParent?.IsEffectivelyVisible ?? true);
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
-            
-            _visualRoot.Renderer.RecalculateChildren(_visualParent);
-            
-            if (ZIndex != 0)
-                _visualParent.HasNonUniformZIndexChildren = true;
-            
-            var visualChildren = VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
 
-            for (var i = 0; i < visualChildrenCount; i++)
+            if (_visualParent != null)
             {
-                if (visualChildren[i] is { } child && child._visualRoot != e.Root) // child may already have been attached within an event handler
+                PresentationSource.Renderer.RecalculateChildren(_visualParent);
+
+                if (ZIndex != 0)
+                    _visualParent.HasNonUniformZIndexChildren = true;
+            }
+
+            foreach (var child in TypedVisualChildren)
+            {
+                // An event handler may have modified the children: skip a child which has already been attached, or
+                // which has been removed from this visual (we're enumerating a snapshot of the collection).
+                if (child.PresentationSource != e.PresentationSource && child.VisualParent == this)
                 {
                     child.OnAttachedToVisualTreeCore(e);
                 }
@@ -541,8 +578,7 @@ namespace Avalonia
         protected virtual void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Detached from visual tree");
-
-            _visualRoot = this as IRenderRoot;
+            
             RootedVisualChildrenCount--;
 
             if (RenderTransform is IMutableTransform mutableTransform)
@@ -556,14 +592,15 @@ namespace Avalonia
             DetachFromCompositor();
 
             DetachedFromVisualTree?.Invoke(this, e);
-            e.Root.Renderer.AddDirty(this);
+            PresentationSource?.Renderer.AddDirty(this);
+            
+            PresentationSource = null;
 
-            var visualChildren = VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
-
-            for (var i = 0; i < visualChildrenCount; i++)
+            foreach (var child in TypedVisualChildren)
             {
-                if (visualChildren[i] is { } child)
+                // A child removed within an event handler has already been detached by the removal itself:
+                // don't detach it a second time (we're enumerating a snapshot of the collection).
+                if (child.PresentationSource is not null)
                 {
                     child.OnDetachedFromVisualTreeCore(e);
                 }
@@ -617,7 +654,7 @@ namespace Avalonia
                 {
                     newTransform.Changed += sender.RenderTransformChanged;
                 }
-                
+
                 sender.InvalidateVisual();
             }
         }
@@ -651,9 +688,9 @@ namespace Avalonia
             var parent = sender?.VisualParent;
             if (sender?.ZIndex != 0 && parent is Visual parentVisual)
                 parentVisual.HasNonUniformZIndexChildren = true;
-            
+
             sender?.InvalidateVisual();
-            parent?.VisualRoot?.Renderer.RecalculateChildren(parent);
+            parent?.PresentationSource?.Renderer.RecalculateChildren(parent);
         }
 
         /// <summary>
@@ -681,17 +718,15 @@ namespace Avalonia
             var old = _visualParent;
             _visualParent = value;
 
-            if (_visualRoot is not null && old is not null)
+            if (PresentationSource is not null && old is not null)
             {
-                var e = new VisualTreeAttachmentEventArgs(old, _visualRoot);
+                var e = new VisualTreeAttachmentEventArgs(old, PresentationSource);
                 OnDetachedFromVisualTreeCore(e);
             }
 
-            if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
+            if (_visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.FindAncestorOfType<IRenderRoot>() ??
-                    throw new AvaloniaInternalException("Visual is atached to visual tree but root could not be found.");
-                var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
+                var e = new VisualTreeAttachmentEventArgs(_visualParent, _visualParent.PresentationSource!);
                 OnAttachedToVisualTreeCore(e);
             }
 
@@ -721,7 +756,7 @@ namespace Avalonia
                     break;
             }
         }
-        
+
         private static void SetVisualParent(IList children, Visual? parent)
         {
             var count = children.Count;
@@ -729,7 +764,7 @@ namespace Avalonia
             for (var i = 0; i < count; i++)
             {
                 var visual = (Visual) children[i]!;
-                
+
                 visual.SetVisualParent(parent);
             }
         }
@@ -738,12 +773,11 @@ namespace Avalonia
         {
             base.OnTemplatedParentControlThemeChanged();
 
-            var count = VisualChildren.Count;
             var templatedParent = TemplatedParent;
 
-            for (var i = 0; i < count; ++i)
+            foreach (var visualChild in TypedVisualChildren)
             {
-                if (VisualChildren[i] is StyledElement child &&
+                if (visualChild is StyledElement child &&
                     child.TemplatedParent == templatedParent)
                 {
                     child.OnTemplatedParentControlThemeChanged();
@@ -776,6 +810,27 @@ namespace Avalonia
             bool shouldApplyMirrorTransform = thisShouldBeMirrored != parentShouldBeMirrored;
 
             HasMirrorTransform = shouldApplyMirrorTransform;
+        }
+
+        internal void SetPresentationSourceForRootVisual(IPresentationSource? presentationSource)
+        {
+            if(presentationSource == PresentationSource)
+                return;
+            
+            if (PresentationSource != null)
+            {
+                if (presentationSource != null)
+                    throw new InvalidOperationException(
+                        "Visual is already attached to a presentation source. Only one presentation source can be attached to a visual tree.");
+                OnDetachedFromVisualTreeCore(new(null, PresentationSource));
+            }
+
+            PresentationSource = presentationSource;
+            if(PresentationSource != null)
+            {
+                var e = new VisualTreeAttachmentEventArgs(null, PresentationSource);
+                OnAttachedToVisualTreeCore(e);
+            }
         }
     }
 }

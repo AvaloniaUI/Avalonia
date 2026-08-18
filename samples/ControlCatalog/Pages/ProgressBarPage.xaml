@@ -1,4 +1,8 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ControlCatalog.Pages.ProgressBarPage">
+<ContentPage Theme="{StaticResource ScrollPage}"
+             xmlns="https://github.com/avaloniaui" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+             Header="ProgressBar"
+             x:Class="ControlCatalog.Pages.ProgressBarPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">A progress bar control</TextBlock>
     <StackPanel Spacing="5">
@@ -18,10 +22,10 @@
       <CheckBox x:Name="isIndeterminate" Margin="10,16,0,0" Content="Toggle Indeterminate" />
       <StackPanel Orientation="Horizontal" Margin="0,16,0,0" HorizontalAlignment="Center" Spacing="16">
         <StackPanel Spacing="16">
-          <ProgressBar IsIndeterminate="{Binding #isIndeterminate.IsChecked}" ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #hprogress.Value}" 
+          <ProgressBar IsIndeterminate="{Binding #isIndeterminate.IsChecked}" ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #hprogress.Value}"
                        Minimum="{Binding #minimum.Value}" Maximum="{Binding #maximum.Value}" ProgressTextFormat="{Binding #stringFormat.Text}"/>
         </StackPanel>
-        <ProgressBar IsIndeterminate="{Binding #isIndeterminate.IsChecked}" ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #vprogress.Value}" Orientation="Vertical" 
+        <ProgressBar IsIndeterminate="{Binding #isIndeterminate.IsChecked}" ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #vprogress.Value}" Orientation="Vertical"
                      Minimum="{Binding #minimum.Value}" Maximum="{Binding #maximum.Value}" ProgressTextFormat="{Binding #stringFormat.Text}"/>
       </StackPanel>
       <StackPanel Margin="16">
@@ -36,4 +40,4 @@
       </StackPanel>
     </StackPanel>
   </StackPanel>
-</UserControl>
+</ContentPage>

@@ -22,6 +22,7 @@ namespace Avalonia.Base.UnitTests.Collections
             Assert.NotNull(tracker.Args);
             Assert.Equal(NotifyCollectionChangedAction.Add, tracker.Args.Action);
             Assert.Equal(-1, tracker.Args.NewStartingIndex);
+            Assert.NotNull(tracker.Args.NewItems);
             Assert.Equal(1, tracker.Args.NewItems.Count);
             Assert.Equal(new KeyValuePair<string, string>("foo", "bar"), tracker.Args.NewItems[0]);
         }
@@ -48,6 +49,7 @@ namespace Avalonia.Base.UnitTests.Collections
             Assert.NotNull(tracker.Args);
             Assert.Equal(NotifyCollectionChangedAction.Add, tracker.Args.Action);
             Assert.Equal(-1, tracker.Args.NewStartingIndex);
+            Assert.NotNull(tracker.Args.NewItems);
             Assert.Equal(1, tracker.Args.NewItems.Count);
             Assert.Equal(new KeyValuePair<string, string>("foo", "bar"), tracker.Args.NewItems[0]);
         }
@@ -64,6 +66,7 @@ namespace Avalonia.Base.UnitTests.Collections
             Assert.NotNull(tracker.Args);
             Assert.Equal(NotifyCollectionChangedAction.Replace, tracker.Args.Action);
             Assert.Equal(-1, tracker.Args.NewStartingIndex);
+            Assert.NotNull(tracker.Args.NewItems);
             Assert.Equal(1, tracker.Args.NewItems.Count);
             Assert.Equal(new KeyValuePair<string, string>("foo", "bar"), tracker.Args.NewItems[0]);
         }
@@ -103,6 +106,7 @@ namespace Avalonia.Base.UnitTests.Collections
             Assert.NotNull(tracker.Args);
             Assert.Equal(NotifyCollectionChangedAction.Remove, tracker.Args.Action);
             Assert.Equal(-1, tracker.Args.OldStartingIndex);
+            Assert.NotNull(tracker.Args.OldItems);
             Assert.Equal(1, tracker.Args.OldItems.Count);
             Assert.Equal(new KeyValuePair<string, string>("foo", "bar"), tracker.Args.OldItems[0]);
         }
@@ -142,6 +146,7 @@ namespace Avalonia.Base.UnitTests.Collections
             Assert.NotNull(tracker.Args);
             Assert.Equal(NotifyCollectionChangedAction.Remove, tracker.Args.Action);
             Assert.Equal(-1, tracker.Args.OldStartingIndex);
+            Assert.NotNull(tracker.Args.OldItems);
             Assert.Equal(2, tracker.Args.OldItems.Count);
             Assert.Equal(new KeyValuePair<string, string>("foo", "bar"), tracker.Args.OldItems[0]);
         }
@@ -164,7 +169,7 @@ namespace Avalonia.Base.UnitTests.Collections
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var target = new AvaloniaDictionary<string, string>(null, null);
+                var target = new AvaloniaDictionary<string, string>(null!, null);
             });
         }
 

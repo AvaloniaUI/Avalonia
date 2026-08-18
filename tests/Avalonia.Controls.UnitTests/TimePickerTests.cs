@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -30,7 +31,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 TimeSpan value = TimeSpan.FromHours(10);
                 timePicker.SelectedTime = value;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.True(handled);
             }
         }
@@ -49,15 +50,11 @@ namespace Avalonia.Controls.UnitTests
 
                 var desc = timePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
-                Grid container = null;
 
-                Assert.True(desc.ElementAt(1) is Button);
+                var button = Assert.IsAssignableFrom<Button>(desc.ElementAt(1));
+                var container = Assert.IsAssignableFrom<Grid>(button.Content);
 
-                container = (desc.ElementAt(1) as Button).Content as Grid;
-                Assert.True(container != null);
-
-                var periodTextHost = container.Children[6] as Border;
-                Assert.True(periodTextHost != null);
+                var periodTextHost = Assert.IsAssignableFrom<Border>(container.Children[6]);
                 Assert.True(periodTextHost.IsVisible);
 
                 timePicker.ClockIdentifier = "24HourClock";
@@ -79,15 +76,11 @@ namespace Avalonia.Controls.UnitTests
 
                 var desc = timePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
-                Grid container = null;
 
-                Assert.True(desc.ElementAt(1) is Button);
+                var button = Assert.IsAssignableFrom<Button>(desc.ElementAt(1));
+                var container = Assert.IsAssignableFrom<Grid>(button.Content);
 
-                container = (desc.ElementAt(1) as Button).Content as Grid;
-                Assert.True(container != null);
-
-                var periodTextHost = container.Children[4] as Border;
-                Assert.True(periodTextHost != null);
+                var periodTextHost = Assert.IsAssignableFrom<Border>(container.Children[4]);
                 Assert.True(periodTextHost.IsVisible);
 
                 timePicker.UseSeconds = false;
@@ -117,9 +110,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(desc.ElementAt(2) is Popup);
                 var popup = (Popup)desc.ElementAt(2);
 
-                Assert.True(popup.Child is TimePickerPresenter);
-                var timePickerPresenter = (TimePickerPresenter)popup.Child;
-
+                var timePickerPresenter = Assert.IsAssignableFrom<TimePickerPresenter>(popup.Child);
                 var panel = (Panel)timePickerPresenter.VisualChildren[0];
                 var acceptBtn = (Button)panel.VisualChildren[0];
 
@@ -169,22 +160,16 @@ namespace Avalonia.Controls.UnitTests
 
                 var desc = timePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
-                Grid container = null;
 
-                Assert.True(desc.ElementAt(1) is Button);
+                var button = Assert.IsAssignableFrom<Button>(desc.ElementAt(1));
+                var container = Assert.IsAssignableFrom<Grid>(button.Content);
 
-                container = (desc.ElementAt(1) as Button).Content as Grid;
-                Assert.True(container != null);
-
-                var hourTextHost = container.Children[0] as Border;
-                Assert.True(hourTextHost != null);
-                var hourText = hourTextHost.Child as TextBlock;
-                var minuteTextHost = container.Children[2] as Border;
-                Assert.True(minuteTextHost != null);
-                var minuteText = minuteTextHost.Child as TextBlock;
-                var secondTextHost = container.Children[4] as Border;
-                Assert.True(secondTextHost != null);
-                var secondText = secondTextHost.Child as TextBlock;
+                var hourTextHost = Assert.IsAssignableFrom<Border>(container.Children[0]);
+                var hourText = Assert.IsAssignableFrom<TextBlock>(hourTextHost.Child);
+                var minuteTextHost = Assert.IsAssignableFrom<Border>(container.Children[2]);
+                var minuteText = Assert.IsAssignableFrom<TextBlock>(minuteTextHost.Child);
+                var secondTextHost = Assert.IsAssignableFrom<Border>(container.Children[4]);
+                var secondText = Assert.IsAssignableFrom<TextBlock>(secondTextHost.Child);
 
                 TimeSpan ts = TimeSpan.FromHours(10);
                 timePicker.SelectedTime = ts;
@@ -214,15 +199,11 @@ namespace Avalonia.Controls.UnitTests
                 var desc = timePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1); //Should be layoutroot grid & button
 
-                Assert.True(desc.ElementAt(1) is Button);
+                var button = Assert.IsAssignableFrom<Button>(desc.ElementAt(1));
+                var container = Assert.IsAssignableFrom<Grid>(button.Content);
 
-                var container = (desc.ElementAt(1) as Button).Content as Grid;
-                Assert.True(container != null);
-
-                var periodTextHost = container.Children[6] as Border;
-                Assert.NotNull(periodTextHost);
-                var periodText = periodTextHost.Child as TextBlock;
-                Assert.NotNull(periodTextHost);
+                var periodTextHost = Assert.IsAssignableFrom<Border>(container.Children[6]);
+                var periodText = Assert.IsAssignableFrom<TextBlock>(periodTextHost.Child);
 
                 TimeSpan ts = TimeSpan.FromHours(10);
                 timePicker.SelectedTime = ts;
@@ -269,7 +250,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(DataValidationErrors.GetHasErrors(timePicker));
 
-                Dispatcher.UIThread.RunJobs();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 timePicker.SelectedTime = new TimeSpan(11, 12, 13);
                 Assert.True(handled);
             }
@@ -312,7 +293,7 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             renderInterface: new HeadlessPlatformRenderInterface());
 
         private static IControlTemplate CreateTemplate(bool includePopup = false)

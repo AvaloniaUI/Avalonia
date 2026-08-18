@@ -31,10 +31,10 @@ namespace Avalonia.Base.UnitTests.Logging
                         calledTimes++;
                     }
                 });
-                var panel = window.FindControl<Panel>("panel");
-                var rect = window.FindControl<Rectangle>("rect");
+                var panel = window.GetControl<Panel>("panel");
+                var rect = window.GetControl<Rectangle>("rect");
                 window.ApplyTemplate();
-                ((Control)window.Presenter).ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 panel.Children.Remove(rect);
                 Assert.Equal(0, calledTimes);
             }
@@ -63,7 +63,7 @@ namespace Avalonia.Base.UnitTests.Logging
                 });
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 window.ApplyTemplate();
-                ((Control)window.Presenter).ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 Assert.Equal(1, calledTimes);
             }
         }

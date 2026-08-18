@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Numerics;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Collections.Pooled;
-using Avalonia.VisualTree;
+using Avalonia.Media;
+using Avalonia.Platform;
+using Avalonia.Rendering.Composition.HitTesting;
 
 namespace Avalonia.Rendering.Composition
 {
@@ -11,6 +12,9 @@ namespace Avalonia.Rendering.Composition
     /// </summary>
     internal partial class CompositionTarget
     {
+        private readonly PooledList<CompositionVisual> _hitTestChildCandidates = [];
+        private bool _hitTestChildCandidatesInUse;
+
         partial void OnRootChanged()
         {
             if (Root != null)
@@ -22,99 +26,212 @@ namespace Avalonia.Rendering.Composition
             if (Root != null)
                 Root.Root = null;
         }
-        
+
         /// <summary>
-        /// Attempts to perform a hit-tst
+        /// Attempts to perform a hit-test.
         /// </summary>
-        /// <returns></returns>
-        public PooledList<CompositionVisual>? TryHitTest(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter)
+        /// <returns>A list of visuals hit during the test.</returns>
+        public PooledList<(IntersectionResult, CompositionVisual)>? TryHitTest<THitTester, T>(
+            T input,
+            CompositionVisual? root,
+            Func<CompositionVisual, bool>? filter)
+            where THitTester : struct, ICompositionHitTester<T>
         {
-            point *= Scaling;
-            Server.Readback.NextRead();
+            Server.Compositor.Readback.NextRead();
+
             root ??= Root;
             if (root == null)
                 return null;
-            var res = new PooledList<CompositionVisual>();
-            HitTestCore(root, point, res, filter);
+
+            // Need to convert transform the point using visual's readback since HitTestCore will use its inverse matrix
+            // NOTE: it can technically break hit-testing of the root visual itself if it has a non-identity transform,
+            // need to investigate that possibility later. We might want a separate mode for root hit-testing.
+            var readback = root.TryGetValidReadback();
+            if (readback == null)
+                return null;
+
+            var parentInput = THitTester.Transform(input, in readback.Matrix);
+
+            var res = new PooledList<(IntersectionResult, CompositionVisual)>();
+            HitTestCore<THitTester, T>(root, parentInput, res, filter);
             return res;
         }
 
-        /// <summary>
-        /// Attempts to transform a point to a particular CompositionVisual coordinate space
-        /// </summary>
-        /// <returns></returns>
-        public Point? TryTransformToVisual(CompositionVisual visual, Point point)
+        private PooledList<CompositionVisual> RentHitTestChildCandidates(out bool releaseToField)
         {
-            if (visual.Root != this)
-                return null;
-            var v = visual;
-            var m = Matrix.Identity;
-            while (v != null)
+            if (!_hitTestChildCandidatesInUse)
             {
-                if (!TryGetInvertedTransform(v, out var cm))
-                    return null;
-                m = m * cm;
-                v = v.Parent;
+                _hitTestChildCandidatesInUse = true;
+                releaseToField = true;
+                _hitTestChildCandidates.Clear();
+                return _hitTestChildCandidates;
             }
 
-            return point * m;
+            releaseToField = false;
+            return [];
         }
 
-        static bool TryGetInvertedTransform(CompositionVisual visual, out Matrix matrix)
+        private void ReleaseHitTestChildCandidates(PooledList<CompositionVisual> candidates, bool releaseToField)
         {
-            var m = visual.TryGetServerGlobalTransform();
-            if (m == null)
+            if (releaseToField)
             {
-                matrix = default;
-                return false;
+                candidates.Clear();
+                _hitTestChildCandidatesInUse = false;
             }
-
-            var m33 = m.Value;
-            return m33.TryInvert(out matrix);
+            else
+            {
+                candidates.Dispose();
+            }
         }
 
-        static bool TryTransformTo(CompositionVisual visual, Point globalPoint, out Point v)
-        {
-            v = default;
-            if (TryGetInvertedTransform(visual, out var m))
-            {
-                v = globalPoint * m;
-                return true;
-            }
-
-            return false;
-        }
-        
-        void HitTestCore(CompositionVisual visual, Point globalPoint, PooledList<CompositionVisual> result,
+        private void HitTestCore<THitTester, T>(
+            CompositionVisual visual,
+            T parentInput,
+            PooledList<(IntersectionResult, CompositionVisual)> result,
             Func<CompositionVisual, bool>? filter)
+            where THitTester : struct, ICompositionHitTester<T>
         {
-            if (visual.Visible == false)
-                return;
-            
-            if (filter != null && !filter(visual))
-                return;
-            
-            if (!TryTransformTo(visual, globalPoint, out var point))
+            if (!HitTestVisual<THitTester, T>(visual, parentInput, filter, out var input))
                 return;
 
-            if (visual.ClipToBounds
-                && (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y))
-                return;
-
-            if (visual.Clip?.FillContains(point) == false)
-                return;
-            
             // Inspect children
             if (visual is CompositionContainerVisual cv)
-                for (var c = cv.Children.Count - 1; c >= 0; c--)
-                {
-                    var ch = cv.Children[c];
-                    HitTestCore(ch, globalPoint, result, filter);
-                }
-            
+                HitTestChildren<THitTester, T>(cv, input, result, filter);
+
             // Hit-test the current node
-            if (visual.HitTest(point)) 
-                result.Add(visual);
+            if (THitTester.HitTest(visual, input) is IntersectionResult intersectionResult && intersectionResult > IntersectionResult.Empty)
+                result.Add((intersectionResult, visual));
+        }
+
+        private void HitTestChildren<THitTester, T>(CompositionContainerVisual visual, T input, PooledList<(IntersectionResult, CompositionVisual)> result, Func<CompositionVisual, bool>? filter)
+            where THitTester : struct, ICompositionHitTester<T>
+        {
+            if (visual.Children.Count >= CompositionContainerVisual.HitTestAabbTreeThreshold)
+            {
+                var candidates = RentHitTestChildCandidates(out var releaseToField);
+                try
+                {
+                    if (visual.TryQueryHitTestChildren<THitTester, T>(input, candidates))
+                    {
+                        foreach (var child in candidates)
+                            HitTestCore<THitTester, T>(child, input, result, filter);
+                        return;
+                    }
+                }
+                finally
+                {
+                    ReleaseHitTestChildCandidates(candidates, releaseToField);
+                }
+            }
+
+            for (var c = visual.Children.Count - 1; c >= 0; c--)
+                HitTestCore<THitTester, T>(visual.Children[c], input, result, filter);
+        }
+
+        private static bool HitTestVisual<THitTester, T>(
+            CompositionVisual visual,
+            T parentInput,
+            Func<CompositionVisual, bool>? filter,
+            [MaybeNullWhen(false)] out T input)
+            where THitTester : struct, ICompositionHitTester<T>
+        {
+            input = default;
+
+            if (!visual.Visible)
+                return false;
+
+            if (filter != null && !filter(visual))
+                return false;
+
+            var readback = visual.TryGetValidReadback();
+            if (readback == null)
+                return false;
+
+            if (!visual.DisableSubTreeBoundsHitTestOptimization &&
+                (readback.TransformedSubtreeBounds is not { } transformedSubtreeBounds ||
+                 !THitTester.TransformedSubTreeBoundsMatch(transformedSubtreeBounds, parentInput)))
+                return false;
+
+            if (!readback.Matrix.TryInvert(out var invMatrix))
+                return false;
+
+            input = THitTester.Transform(parentInput, in invMatrix);
+
+            if (visual.ClipToBounds && !THitTester.ClippedBoundsMatch(visual, input))
+                return false;
+
+            if (visual.Clip is { } clip && !THitTester.ClipMatches(clip, input))
+                return false;
+
+            return true;
+        }
+
+        public CompositionVisual? TryHitTestFirst<THitTester, T>(
+            T input,
+            CompositionVisual? root,
+            Func<CompositionVisual, bool>? filter,
+            Func<CompositionVisual, bool>? resultFilter, out IntersectionResult intersectionResult)
+            where THitTester : struct, ICompositionHitTester<T>
+        {
+            Server.Compositor.Readback.NextRead();
+
+            intersectionResult = IntersectionResult.NotCalculated;
+
+            root ??= Root;
+            if (root == null)
+                return null;
+
+            // Need to convert transform the point using visual's readback since HitTestCore will use its inverse matrix
+            // NOTE: it can technically break hit-testing of the root visual itself if it has a non-identity transform,
+            // need to investigate that possibility later. We might want a separate mode for root hit-testing.
+            var readback = root.TryGetValidReadback();
+            if (readback == null)
+                return null;
+
+            var parentInput = THitTester.Transform(input, in readback.Matrix);
+
+            return HitTestFirstCore<THitTester, T>(root, parentInput, filter, resultFilter, out intersectionResult);
+        }
+
+        internal CompositionVisual? HitTestFirstCore<THitTester, T>(
+            CompositionVisual visual,
+            T parentInput,
+            Func<CompositionVisual, bool>? filter,
+            Func<CompositionVisual, bool>? resultFilter, out IntersectionResult intersectionResult)
+            where THitTester : struct, ICompositionHitTester<T>
+        {
+            intersectionResult = IntersectionResult.NotCalculated;
+
+            if (!HitTestVisual<THitTester, T>(visual, parentInput, filter, out var input))
+                return null;
+
+            if (visual is CompositionContainerVisual cv)
+            {
+                var queriedIndexedChildren = false;
+                if (cv.Children.Count >= CompositionContainerVisual.HitTestAabbTreeThreshold)
+                {
+                    if (cv.TryQueryFirstHitTestChild<THitTester, T>(this, input, filter, resultFilter, out var hit, out intersectionResult))
+                    {
+                        queriedIndexedChildren = true;
+                        if (hit != null)
+                            return hit;
+                    }
+                }
+
+                if (!queriedIndexedChildren)
+                {
+                    for (var c = cv.Children.Count - 1; c >= 0; c--)
+                    {
+                        var hit = HitTestFirstCore<THitTester, T>(cv.Children[c], input, filter, resultFilter, out intersectionResult);
+                        if (hit != null)
+                            return hit;
+                    }
+                }
+            }
+
+            intersectionResult = THitTester.HitTest(visual, input);
+
+            return intersectionResult > IntersectionResult.Empty && (resultFilter == null || resultFilter(visual)) ? visual : null;
         }
 
         /// <summary>

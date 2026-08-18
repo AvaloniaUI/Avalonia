@@ -5,7 +5,7 @@ using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ColorPickerPage : UserControl
+    public partial class ColorPickerPage : ContentPage
     {
         public ColorPickerPage()
         {

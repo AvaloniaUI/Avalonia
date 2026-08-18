@@ -1,10 +1,10 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<TabbedPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:pages="using:ControlCatalog.Pages"
              x:Class="ControlCatalog.Pages.ScrollViewerPage"
+             Header="ScrollViewer"
              x:DataType="pages:ScrollViewerPageViewModel">
-  <TabControl>
-    <TabItem Header="ScrollViewer">
+    <ContentPage Theme="{StaticResource ScrollPage}" Header="ScrollViewer">
       <StackPanel Orientation="Vertical"
                   Spacing="20">
         <TextBlock TextWrapping="Wrap"
@@ -51,8 +51,8 @@
           </ScrollViewer>
         </Grid>
       </StackPanel>
-    </TabItem>
-    <TabItem Header="Snapping">
+    </ContentPage>
+    <ContentPage Theme="{StaticResource ScrollPage}" Header="Snapping">
       <StackPanel Orientation="Vertical"
                   Spacing="4">
         <TextBlock TextWrapping="Wrap"
@@ -267,6 +267,5 @@
           </Border>
         </Grid>
       </StackPanel>
-    </TabItem>
-  </TabControl>  
-</UserControl>
+    </ContentPage> 
+</TabbedPage>

@@ -6,8 +6,7 @@ using Avalonia.Rendering.Composition;
 
 namespace Avalonia.OpenGL;
 
-//TODO12: Make private and expose IBitmapImpl-based import API for composition visuals
-[NotClientImplementable]
+[PrivateApi]
 public interface IGlContextExternalObjectsFeature
 {
     IReadOnlyList<string> SupportedImportableExternalImageTypes { get; }
@@ -26,8 +25,7 @@ public interface IGlContextExternalObjectsFeature
     public byte[]? DeviceUuid { get; }
 }
 
-//TODO12: Make private and expose IBitmapImpl-based import API for composition visuals
-[NotClientImplementable]
+[PrivateApi]
 public interface IGlExternalSemaphore : IDisposable
 {
     void WaitSemaphore(IGlExternalImageTexture texture);
@@ -36,12 +34,13 @@ public interface IGlExternalSemaphore : IDisposable
     void SignalTimelineSemaphore(IGlExternalImageTexture texture, ulong value);
 }
 
+[PrivateApi]
 public interface IGlExportableExternalSemaphore : IGlExternalSemaphore
 {
     IPlatformHandle GetHandle();
 }
 
-[NotClientImplementable]
+[PrivateApi]
 public interface IGlExternalImageTexture : IDisposable
 {
     void AcquireKeyedMutex(uint key);
@@ -56,6 +55,7 @@ public interface IGlExternalImageTexture : IDisposable
     PlatformGraphicsExternalImageProperties Properties { get; }
 }
 
+[PrivateApi]
 public interface IGlExportableExternalImageTexture : IGlExternalImageTexture
 {
     IPlatformHandle GetHandle();

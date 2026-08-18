@@ -22,9 +22,10 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 new ValueSpan<TextRunProperties>(13, 2, new GenericTextRunProperties(typeface, backgroundBrush: Brushes.Aqua)),
             };
 
-            FormattedTextSource textSource = new FormattedTextSource(text, defaultTextRunProperties, textStyleOverrides);
-            TextRun textRun = textSource.GetTextRun(0);
+            var textSource = new FormattedTextSource(text, defaultTextRunProperties, textStyleOverrides);
+            var textRun = textSource.GetTextRun(0);
 
+            Assert.NotNull(textRun);
             Assert.Equal(2, textRun.Length);
             Assert.Equal("He", textRun.Text.ToString());
         }

@@ -4,11 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Shapes
-#endif
 {
     public class EllipseTests : TestBase
     {
@@ -55,7 +51,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             RenderOptions.SetEdgeMode(target, EdgeMode.Aliased);
 
             await RenderToFile(target);
-            CompareImages();
+            CompareImages(gpuAllowedError: 0.05);
         }
 
         [Fact]

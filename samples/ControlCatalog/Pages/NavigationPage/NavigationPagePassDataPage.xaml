@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPagePassDataPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="280">
+      <StackPanel Margin="12" Spacing="16">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <!-- Pass Method -->
+        <TextBlock Text="Pass Method" FontSize="13" FontWeight="SemiBold" />
+        <ComboBox x:Name="MethodCombo"
+                  SelectedIndex="0"
+                  SelectionChanged="OnMethodChanged"
+                  HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Constructor" />
+          <ComboBoxItem Content="DataContext" />
+        </ComboBox>
+
+        <Separator />
+        <TextBlock Text="How It Works" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock x:Name="MethodDescription"
+                   Text="Data is passed as a constructor argument to the detail page. The page stores the contact and displays its properties directly."
+                   TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
+
+        <Separator />
+
+        <!-- Navigation Log -->
+        <TextBlock Text="Navigation Log" FontSize="13" FontWeight="SemiBold" />
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8" MaxHeight="200">
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <TextBlock x:Name="NavigationLog"
+                       FontSize="11" Opacity="0.8" TextWrapping="Wrap" />
+          </ScrollViewer>
+        </Border>
+
+        <Separator />
+
+        <Button Content="Pop"
+                HorizontalAlignment="Stretch"
+                Click="OnPop" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>

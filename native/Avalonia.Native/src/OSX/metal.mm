@@ -87,11 +87,12 @@ public:
         return (__bridge void*) queue;
     }
     
-    HRESULT ImportIOSurface(void *handle, AvnPixelFormat pixelFormat, IAvnMetalTexture **ppv) override { 
+    HRESULT ImportIOSurface(void *handle, AvnPixelFormat pixelFormat, IAvnMetalTexture **ppv) override {
+        START_COM_ARP_CALL;
         auto surf = (IOSurfaceRef)handle;
         auto width = IOSurfaceGetWidth(surf);
         auto height = IOSurfaceGetHeight(surf);
-        
+
         auto desc = [MTLTextureDescriptor new];
         if(pixelFormat == kAvnRgba8888)
             desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
@@ -106,13 +107,12 @@ public:
         desc.mipmapLevelCount = 1;
         desc.sampleCount = 1;
         desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
-        
+
         auto texture = [device newTextureWithDescriptor:desc iosurface:surf plane:0];
         if(texture == nullptr)
             return E_FAIL;
         *ppv = new AvnMetalTexture(texture);
         return S_OK;
-        
     }
     
     HRESULT ImportSharedEvent(void *mtlSharedEventInstance, IAvnMTLSharedEvent**ppv) override {
@@ -132,11 +132,12 @@ public:
     
     HRESULT SignalOrWait(IAvnMTLSharedEvent *ev, uint64_t value, bool wait)
     {
+        START_ARP_CALL;
         if (@available(macOS 12.0, *))
         {
             auto e = dynamic_cast<AvnMTLSharedEvent*>(ev);
             if(e == nullptr)
-                return E_FAIL;;
+                return E_FAIL;
             auto buf = [queue commandBuffer];
             if(wait)
                 [buf encodeWaitForEvent:e->GetEvent() value:value];
@@ -180,12 +181,13 @@ class AvnMetalRenderSession : public ComSingleObject<IAvnMetalRenderingSession, 
     CAMetalLayer* _layer;
     AvnPixelSize _size;
     double _scaling;
+    bool _presentWithTransaction;
 public:
     FORWARD_IUNKNOWN()
 
-    AvnMetalRenderSession(AvnMetalDevice* device, CAMetalLayer* layer, id <CAMetalDrawable> drawable, const AvnPixelSize &size, double scaling)
+    AvnMetalRenderSession(AvnMetalDevice* device, CAMetalLayer* layer, id <CAMetalDrawable> drawable, const AvnPixelSize &size, double scaling, bool presentWithTransaction)
             : _drawable(drawable), _size(size), _scaling(scaling), _queue(device->queue),
-            _texture([drawable texture]) {
+            _texture([drawable texture]), _presentWithTransaction(presentWithTransaction) {
         _layer = layer;
     }
 
@@ -204,9 +206,21 @@ public:
 
     ~AvnMetalRenderSession()
     {
+        START_ARP_CALL;
         auto buffer = [_queue commandBuffer];
-        [buffer presentDrawable: _drawable];
-        [buffer commit];
+        if(_presentWithTransaction)
+        {
+            [buffer commit];
+            [buffer waitUntilScheduled];
+            [_drawable present];
+            // Restore the default asynchronous presentation for the off-thread render loop.
+            _layer.presentsWithTransaction = NO;
+        }
+        else
+        {
+            [buffer presentDrawable: _drawable];
+            [buffer commit];
+        }
     }
 };
 
@@ -227,7 +241,9 @@ public:
     }
 
     HRESULT BeginDrawing(IAvnMetalRenderingSession **ret) override {
-        if([NSThread isMainThread])
+        START_COM_ARP_CALL;
+        bool onMainThread = [NSThread isMainThread];
+        if(onMainThread)
         {
             // Flush all existing rendering
             auto buffer = [_device->queue commandBuffer];
@@ -237,15 +253,21 @@ public:
             _scaling= PendingScaling;
             CGSize layerSize = {(CGFloat)_size.Width, (CGFloat)_size.Height};
 
+            [CATransaction begin];
+            [CATransaction setDisableActions:YES];
             [_layer setDrawableSize: layerSize];
+            _layer.presentsWithTransaction = YES;
+            [CATransaction commit];
         }
         auto drawable = [_layer nextDrawable];
         if(drawable == nil)
         {
-            ret = nil;
+            if(onMainThread)
+                _layer.presentsWithTransaction = NO;
+            *ret = nullptr;
             return E_FAIL;
         }
-        *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling);
+        *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling, onMainThread);
         return 0;
     }
 };
@@ -289,7 +311,7 @@ class AvnMetalDisplay : public ComSingleObject<IAvnMetalDisplay, &IID_IAvnMetalD
 public:
     FORWARD_IUNKNOWN()
     HRESULT CreateDevice(IAvnMetalDevice **ret) override {
-
+        START_COM_ARP_CALL;
         auto device = MTLCreateSystemDefaultDevice();
         if(device == nil) {
             ret = nil;
@@ -301,7 +323,7 @@ public:
     }
 };
 
-static AvnMetalDisplay* _display = new AvnMetalDisplay();
+static ComStaticPtr<AvnMetalDisplay> _display(comnew<AvnMetalDisplay>());
 
 extern IAvnMetalDisplay* GetMetalDisplay()
 {

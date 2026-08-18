@@ -5,20 +5,18 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Controls
-#endif
 {
     public class ImageTests : TestBase
     {
         private readonly Bitmap _bitmap;
+        private readonly Bitmap _bitmap2;
 
         public ImageTests()
             : base(@"Controls\Image")
         {
             _bitmap = new Bitmap(Path.Combine(OutputPath, "test.png"));
+            _bitmap2 = new Bitmap(Path.Combine(OutputPath, "test2.png"));
         }
 
         [Fact]
@@ -108,6 +106,69 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     }
                 }
             };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Image_Rotated_EdgeMode_Unspecified()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(32, 32),
+                Width = 200,
+                Height = 200,
+                Child = new Image
+                {
+                    Source = _bitmap2,
+                    Stretch = Stretch.Uniform,
+                    RenderTransform = new RotateTransform(30),
+                }
+            };
+            RenderOptions.SetEdgeMode(target, EdgeMode.Unspecified);
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Image_Rotated_EdgeMode_Antialias()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(32, 32),
+                Width = 200,
+                Height = 200,
+                Child = new Image
+                {
+                    Source = _bitmap2,
+                    Stretch = Stretch.Uniform,
+                    RenderTransform = new RotateTransform(30),
+                }
+            };
+            RenderOptions.SetEdgeMode(target, EdgeMode.Antialias);
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Image_Rotated_EdgeMode_Aliased()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(32, 32),
+                Width = 200,
+                Height = 200,
+                Child = new Image
+                {
+                    Source = _bitmap2,
+                    Stretch = Stretch.Uniform,
+                    RenderTransform = new RotateTransform(30),
+                }
+            };
+            RenderOptions.SetEdgeMode(target, EdgeMode.Aliased);
 
             await RenderToFile(target);
             CompareImages();
