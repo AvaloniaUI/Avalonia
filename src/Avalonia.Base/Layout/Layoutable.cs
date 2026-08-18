@@ -788,6 +788,26 @@ namespace Avalonia.Layout
 
             if (this.GetLayoutRoot() is {} r)
             {
+                // A measure/arrange invalidation raised while we were detached could not be
+                // registered with a layout manager, and it cannot be raised again now: both
+                // InvalidateMeasure and InvalidateArrange no-op once Is*Valid is false. Register
+                // the outstanding invalidation, otherwise the control keeps a stale layout until
+                // an unrelated pass happens to reach it. Same idea as AncestorBecameVisible.
+                //
+                // Only for controls that have already been laid out once: a control that has
+                // never been measured gets laid out by its parent, and the layout manager
+                // couldn't measure it on its own anyway - it has no constraint to measure with.
+                if (!IsMeasureValid && _previousMeasure.HasValue)
+                {
+                    r.LayoutManager.InvalidateMeasure(this);
+                    InvalidateVisual();
+                }
+                else if (!IsArrangeValid && _previousArrange.HasValue)
+                {
+                    r.LayoutManager.InvalidateArrange(this);
+                    InvalidateVisual();
+                }
+
                 if (_layoutUpdated is object)
                 {
                     r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
