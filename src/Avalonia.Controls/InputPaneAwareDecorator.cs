@@ -1,4 +1,5 @@
-﻿using Avalonia.Animation;
+﻿using System.Diagnostics.CodeAnalysis;
+using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Platform;
 
@@ -22,10 +23,7 @@ namespace Avalonia.Controls
             (o, x) => o.Behavior = x);
 
         private static readonly StyledProperty<double> CurrentInputPanePaddingProperty = AvaloniaProperty.Register<InputPaneAwareDecorator, double>(
-            nameof(CurrentInputPanePadding), coerce: (o, x) =>
-            {
-                return x;
-            });
+            nameof(CurrentInputPanePadding));
 
         /// <summary>
         /// Gets or sets how the view reacts to the input pane state. 
@@ -80,17 +78,17 @@ namespace Avalonia.Controls
             EnsureInputPanePaddingApplied();
         }
 
+        [UnconditionalSuppressMessage("AvaloniaProperty", "AVP1012")]
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
             _inputPane?.StateChanged -= InputPaneAwareView_StateChanged;
             _inputPane = null;
             SetCurrentValue(PaddingProperty, default);
-#pragma warning disable AVP1012 // An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values
             CurrentInputPanePadding = 0;
-#pragma warning restore AVP1012 // An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values
         }
 
+        [UnconditionalSuppressMessage("AvaloniaProperty", "AVP1012")]
         private void EnsureInputPanePaddingApplied()
         {
             SetCurrentValue(PaddingProperty, default);
@@ -104,15 +102,12 @@ namespace Avalonia.Controls
                 var translatedRect = Bounds.TransformToAABB(transformMatrix);
 
                 var intersect = occludedRect.Intersect(translatedRect);
-
-#pragma warning disable AVP1012 // An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values
                 CurrentInputPanePadding = intersect.Height;
             }
             else
             {
                 CurrentInputPanePadding = 0;
             }
-#pragma warning restore AVP1012 // An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values
         }
 
         private void InputPaneAwareView_StateChanged(object? sender, InputPaneStateEventArgs e)
