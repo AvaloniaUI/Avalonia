@@ -1642,6 +1642,98 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        public class TitleBarDecorationsTests : ScopedTestBase
+        {
+            private static Window CreateWindowWithDrawnDecorations(PlatformAllowedWindowActions allowedActions = PlatformAllowedWindowActions.All)
+            {
+                var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                windowImpl.Setup(x => x.NeedsManagedDecorations).Returns(true);
+                windowImpl.Setup(x => x.RequestedDrawnDecorations).Returns(
+                    PlatformRequestedDrawnDecoration.TitleBar | PlatformRequestedDrawnDecoration.Border);
+                windowImpl.Setup(x => x.AllowedWindowActions).Returns(allowedActions);
+
+                return new Window(windowImpl.Object);
+            }
+
+            private static void AssertClassDecorations(WindowDrawnDecorations drawnDecorations, TitleBarDecorations expected)
+            {
+                AssertClassDecoration(TitleBarDecorations.Title, ":has-title");
+                AssertClassDecoration(TitleBarDecorations.MinimizeButton, ":has-minimize");
+                AssertClassDecoration(TitleBarDecorations.MaximizeButton, ":has-maximize");
+                AssertClassDecoration(TitleBarDecorations.CloseButton, ":has-close");
+                AssertClassDecoration(TitleBarDecorations.FullScreenButton, ":has-fullscreen");
+
+                void AssertClassDecoration(TitleBarDecorations decoration, string className)
+                    => Assert.Equal(expected.HasFlag(decoration), drawnDecorations.Classes.Contains(className));
+            }
+
+            [Fact]
+            public void All_Decorations_Should_Be_Visible_By_Default()
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                var window = CreateWindowWithDrawnDecorations();
+                window.Show();
+
+                var decorations = window.TopLevelHost.Decorations;
+                Assert.NotNull(decorations);
+                Assert.Equal(TitleBarDecorations.All, decorations.TitleBarDecorations);
+                AssertClassDecorations(decorations, TitleBarDecorations.All);
+            }
+
+            [Fact]
+            public void Decorations_Set_Before_Show_Should_Apply_Correct_Classes()
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                const TitleBarDecorations decorations = TitleBarDecorations.Title | TitleBarDecorations.CloseButton;
+
+                var window = CreateWindowWithDrawnDecorations();
+                WindowDrawnDecorations.SetTitleBarDecorations(window, decorations);
+                window.Show();
+
+                var drawnDecorations = window.TopLevelHost.Decorations;
+                Assert.NotNull(drawnDecorations);
+                Assert.Equal(decorations, drawnDecorations.TitleBarDecorations);
+                AssertClassDecorations(drawnDecorations, decorations);
+            }
+
+            [Fact]
+            public void Decorations_Set_After_Show_Should_Apply_Correct_Classes()
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                var window = CreateWindowWithDrawnDecorations();
+                window.Show();
+
+                var drawnDecorations = window.TopLevelHost.Decorations;
+                Assert.NotNull(drawnDecorations);
+
+                WindowDrawnDecorations.SetTitleBarDecorations(window, TitleBarDecorations.None);
+                AssertClassDecorations(drawnDecorations, TitleBarDecorations.None);
+
+                WindowDrawnDecorations.SetTitleBarDecorations(window, TitleBarDecorations.MinimizeButton);
+                AssertClassDecorations(drawnDecorations, TitleBarDecorations.MinimizeButton);
+            }
+
+            [Fact]
+            public void Decorations_Should_Not_Show_Buttons_Unsupported_By_The_Platform()
+            {
+                using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+                var window = CreateWindowWithDrawnDecorations(PlatformAllowedWindowActions.Minimize);
+                window.Show();
+
+                var decorations = window.TopLevelHost.Decorations;
+                Assert.NotNull(decorations);
+
+                // Maximize and fullscreen are requested, but not allowed by the platform.
+                AssertClassDecorations(
+                    decorations,
+                    TitleBarDecorations.Title | TitleBarDecorations.MinimizeButton | TitleBarDecorations.CloseButton);
+            }
+        }
+
         private class TopmostWindow : Window
         {
             static TopmostWindow()
