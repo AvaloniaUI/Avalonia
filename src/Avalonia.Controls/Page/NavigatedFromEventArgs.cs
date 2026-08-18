@@ -19,7 +19,7 @@ namespace Avalonia.Controls
             NavigationType = navigationType;
         }
 
-        public NavigatedFromEventArgs(Page? previousPage, NavigationType navigationType, object? parameter) : this(previousPage, navigationType)
+        public NavigatedFromEventArgs(Page? destinationPage, NavigationType navigationType, object? parameter) : this(destinationPage, navigationType)
         {
             Parameter = parameter;
         }
