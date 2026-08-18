@@ -17,6 +17,7 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
     private TimeSpan _doubleTapTime = TimeSpan.FromMilliseconds(500);
     private Size _doubleTapSize = new Size(16,16);
     private Size _tapSize = new Size(10,10);
+    private string? _latestLanguage;
 
     public AndroidPlatformSettings()
     {
@@ -24,6 +25,7 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
         if (global::Android.App.Application.Context is { } context)
         {
             GetInputConfigValues(context);
+            QueryPreferredApplicationLanguage(context);
         }
     }
 
@@ -31,6 +33,8 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
     {
         return _latestValues;
     }
+
+    public override string PreferredApplicationLanguage => _latestLanguage ?? base.PreferredApplicationLanguage;
 
     public override TimeSpan GetDoubleTapTime(PointerType type)
     {
@@ -110,6 +114,14 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
         GetInputConfigValues(context);
 
         OnColorValuesChanged(_latestValues);
+
+        var oldLanguage = _latestLanguage;
+        _latestLanguage = QueryPreferredApplicationLanguage(context);
+
+        if (oldLanguage is not null && oldLanguage != _latestLanguage)
+        {
+            OnPreferredApplicationLanguageChanged();
+        }
     }
 
     private void GetInputConfigValues(Context context)
@@ -129,6 +141,12 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
             size = config.ScaledTouchSlop * 2 / scaling;
             _tapSize = new Size(size, size);
         }
+    }
+
+    private string? QueryPreferredApplicationLanguage(Context? context)
+    {
+        var locale = context?.Resources?.Configuration?.Locales?.Get(0);
+        return locale?.ToLanguageTag() is { Length: > 0 } tag ? tag : null;
     }
 
     private static ColorContrastPreference IsHighContrast(Context context)
