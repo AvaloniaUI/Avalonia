@@ -74,7 +74,6 @@ internal static class PropertyGenModelBuilder
             DefaultBindingMode: args.DefaultBindingMode,
             Inherits: args.Inherits,
             EnableDataValidation: args.EnableDataValidation,
-            ChangedMethodName: args.ChangedMethodName,
             ValidateMethodName: args.ValidateMethodName,
             CoerceMethodName: args.CoerceMethodName);
     }
@@ -107,7 +106,6 @@ internal static class PropertyGenModelBuilder
             DefaultBindingMode: args.DefaultBindingMode,
             Inherits: args.Inherits,
             EnableDataValidation: false,
-            ChangedMethodName: args.ChangedMethodName,
             ValidateMethodName: args.ValidateMethodName,
             CoerceMethodName: args.CoerceMethodName);
     }

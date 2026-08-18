@@ -46,14 +46,6 @@ public sealed class StyledPropertyAttribute : Attribute
     /// Whether the property is interested in data validation.
     /// </summary>
     public bool EnableDataValidation { get; set; }
-
-    /// <summary>
-    /// The name of the change handler to wire up, with signature
-    /// <c>void {Method}(T oldValue, T newValue)</c>.
-    /// The generator emits a <c>private partial</c> declaration for the method.
-    /// </summary>
-    public string? ChangedMethodName { get; set; }
-
     /// <summary>
     /// The name of the validation method, with signature
     /// <c>static bool {Method}(T value)</c>.

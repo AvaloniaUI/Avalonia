@@ -19,8 +19,6 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
 
     private enum CallbackShape
     {
-        Changed,
-        AttachedChanged,
         Validate,
         Coerce,
     }
@@ -106,7 +104,7 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
 
         if (defects == PropertyDefects.None && languageVersionOk)
         {
-            CheckCallbacks(context, property, attribute, args, property.Type, hostType: null);
+            CheckCallbacks(context, property, attribute, args, property.Type);
         }
 
         if (property.Name.EndsWith(PropertySuffix, StringComparison.Ordinal) &&
@@ -158,7 +156,7 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
 
         if (defects == PropertyDefects.None && languageVersionOk)
         {
-            CheckCallbacks(context, method, attribute, args, method.ReturnType, method.Parameters[0].Type);
+            CheckCallbacks(context, method, attribute, args, method.ReturnType);
         }
 
         if (GeneratedPropertyShape.TryGetAttachedName(method, out var attachedName) &&
@@ -292,28 +290,20 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
         ISymbol member,
         AttributeData attribute,
         GeneratedPropertyAttributeArgs args,
-        ITypeSymbol valueType,
-        ITypeSymbol? hostType)
+        ITypeSymbol valueType)
     {
         var containingType = member.ContainingType;
-
-        if (args.ChangedMethodName is { } changed)
-        {
-            var shape = hostType is null ? CallbackShape.Changed : CallbackShape.AttachedChanged;
-            CheckCallback(context, member, attribute, nameof(GeneratedPropertyAttributeArgs.ChangedMethodName),
-                changed, shape, containingType, valueType, hostType);
-        }
 
         if (args.ValidateMethodName is { } validate)
         {
             CheckCallback(context, member, attribute, nameof(GeneratedPropertyAttributeArgs.ValidateMethodName),
-                validate, CallbackShape.Validate, containingType, valueType, hostType: null);
+                validate, CallbackShape.Validate, containingType, valueType);
         }
 
         if (args.CoerceMethodName is { } coerce)
         {
             CheckCallback(context, member, attribute, nameof(GeneratedPropertyAttributeArgs.CoerceMethodName),
-                coerce, CallbackShape.Coerce, containingType, valueType, hostType: null);
+                coerce, CallbackShape.Coerce, containingType, valueType);
         }
     }
 
@@ -325,15 +315,14 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
         string methodName,
         CallbackShape shape,
         INamedTypeSymbol containingType,
-        ITypeSymbol valueType,
-        ITypeSymbol? hostType)
+        ITypeSymbol valueType)
     {
-        if (IsCallbackImplemented(context.Compilation, containingType, methodName, shape, valueType, hostType))
+        if (IsCallbackImplemented(context.Compilation, containingType, methodName, shape, valueType))
         {
             return;
         }
 
-        var signature = RenderCallbackSignature(methodName, shape, valueType, hostType);
+        var signature = RenderCallbackSignature(methodName, shape, valueType);
         var properties = ImmutableDictionary<string, string?>.Empty
             .Add(GeneratedPropertyDescriptors.Properties.MethodName, methodName)
             .Add(GeneratedPropertyDescriptors.Properties.Signature, signature);
@@ -350,14 +339,13 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol containingType,
         string methodName,
         CallbackShape shape,
-        ITypeSymbol valueType,
-        ITypeSymbol? hostType)
+        ITypeSymbol valueType)
     {
         foreach (var candidate in containingType.GetMembers(methodName).OfType<IMethodSymbol>())
         {
             if (candidate.Arity != 0 ||
-                candidate.IsStatic == (shape == CallbackShape.Changed) ||
-                !ParametersMatch(compilation, candidate, shape, valueType, hostType) ||
+                !candidate.IsStatic ||
+                !ParametersMatch(compilation, candidate, shape, valueType) ||
                 !ReturnMatches(candidate, shape, valueType))
             {
                 continue;
@@ -376,23 +364,13 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
         Compilation compilation,
         IMethodSymbol candidate,
         CallbackShape shape,
-        ITypeSymbol valueType,
-        ITypeSymbol? hostType)
+        ITypeSymbol valueType)
     {
         var comparer = SymbolEqualityComparer.Default;
         var parameters = candidate.Parameters;
 
         return shape switch
         {
-            CallbackShape.Changed =>
-                parameters.Length == 2 &&
-                comparer.Equals(parameters[0].Type, valueType) &&
-                comparer.Equals(parameters[1].Type, valueType),
-            CallbackShape.AttachedChanged =>
-                parameters.Length == 3 &&
-                comparer.Equals(parameters[0].Type, hostType) &&
-                comparer.Equals(parameters[1].Type, valueType) &&
-                comparer.Equals(parameters[2].Type, valueType),
             CallbackShape.Validate =>
                 parameters.Length == 1 &&
                 comparer.Equals(parameters[0].Type, valueType),
@@ -406,25 +384,16 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
 
     private static bool ReturnMatches(IMethodSymbol candidate, CallbackShape shape, ITypeSymbol valueType) => shape switch
     {
-        CallbackShape.Changed or CallbackShape.AttachedChanged => candidate.ReturnsVoid,
         CallbackShape.Validate => candidate.ReturnType.SpecialType == SpecialType.System_Boolean,
         CallbackShape.Coerce => SymbolEqualityComparer.Default.Equals(candidate.ReturnType, valueType),
         _ => false,
     };
 
-    private static string RenderCallbackSignature(
-        string methodName,
-        CallbackShape shape,
-        ITypeSymbol valueType,
-        ITypeSymbol? hostType)
+    private static string RenderCallbackSignature(string methodName, CallbackShape shape, ITypeSymbol valueType)
     {
         var value = valueType.ToDisplayString(s_typeFormatWithNullable);
         return shape switch
         {
-            CallbackShape.Changed =>
-                $"private partial void {methodName}({value} oldValue, {value} newValue)",
-            CallbackShape.AttachedChanged =>
-                $"private static partial void {methodName}({hostType!.ToDisplayString(s_typeFormatWithNullable)} host, {value} oldValue, {value} newValue)",
             CallbackShape.Validate =>
                 $"private static partial bool {methodName}({value} value)",
             CallbackShape.Coerce =>
@@ -474,7 +443,6 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
     private static IEnumerable<(string ParameterName, string? MethodName)> EnumerateCallbacks(
         GeneratedPropertyAttributeArgs args)
     {
-        yield return (nameof(GeneratedPropertyAttributeArgs.ChangedMethodName), args.ChangedMethodName);
         yield return (nameof(GeneratedPropertyAttributeArgs.ValidateMethodName), args.ValidateMethodName);
         yield return (nameof(GeneratedPropertyAttributeArgs.CoerceMethodName), args.CoerceMethodName);
     }

@@ -201,8 +201,7 @@ internal static class GeneratedPropertyShape
             defects |= PropertyDefects.AddOwnerSourceMissing;
         }
 
-        if (IsInvalidCallbackName(args.ChangedMethodName) ||
-            IsInvalidCallbackName(args.ValidateMethodName) ||
+        if (IsInvalidCallbackName(args.ValidateMethodName) ||
             IsInvalidCallbackName(args.CoerceMethodName))
         {
             defects |= PropertyDefects.InvalidCallbackName;

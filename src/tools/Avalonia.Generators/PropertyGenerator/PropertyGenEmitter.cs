@@ -68,7 +68,6 @@ internal static class PropertyGenEmitter
                 EmitFieldDoc(builder, indent, $"Defines the <see cref=\"{property.Name}\"/> property.");
                 Line(builder, indent, $"{property.MemberAccessibility} static readonly global::Avalonia.StyledProperty<{property.ValueTypeRef}> {property.Name}Property =");
                 Line(builder, indent + 1, RenderStyledRegistration(type, property) + ";");
-                EmitChangedRegistration(builder, indent, type, property, ref firstMember);
                 StartMember(builder, indent, ref firstMember);
                 Line(builder, indent, $"{property.MemberAccessibility} {property.InheritanceModifiers}partial {property.ValueTypeRef} {property.Name}");
                 Line(builder, indent, "{");
@@ -81,7 +80,6 @@ internal static class PropertyGenEmitter
                 EmitFieldDoc(builder, indent, $"Defines the <see cref=\"{property.Name}\"/> property.");
                 Line(builder, indent, $"{property.MemberAccessibility} static readonly global::Avalonia.DirectProperty<{type.OwnerTypeRef}, {property.ValueTypeRef}> {property.Name}Property =");
                 Line(builder, indent + 1, RenderDirectRegistration(type, property) + ";");
-                EmitChangedRegistration(builder, indent, type, property, ref firstMember);
                 StartMember(builder, indent, ref firstMember);
                 // C# 14 uses the field keyword; C# 13 has no field keyword, so emit a named backing field.
                 var backingField = useFieldKeyword ? "field" : $"_{Camel(property.Name)}";
@@ -100,7 +98,6 @@ internal static class PropertyGenEmitter
                 EmitFieldDoc(builder, indent, $"Defines the <c>{property.Name}</c> attached property.");
                 Line(builder, indent, $"{property.MemberAccessibility} static readonly global::Avalonia.AttachedProperty<{property.ValueTypeRef}> {property.Name}Property =");
                 Line(builder, indent + 1, RenderAttachedRegistration(type, property) + ";");
-                EmitChangedRegistration(builder, indent, type, property, ref firstMember);
                 StartMember(builder, indent, ref firstMember);
                 Line(builder, indent, $"{property.MemberAccessibility} {property.InheritanceModifiers}static partial {property.ValueTypeRef} Get{property.Name}({property.HostTypeRef} {property.HostParamName})");
                 Line(builder, indent + 1, $"=> {property.HostParamName}.GetValue({property.Name}Property);");
@@ -210,32 +207,6 @@ internal static class PropertyGenEmitter
             : $"new global::Avalonia.StyledPropertyMetadata<{property.ValueTypeRef}>({string.Join(", ", arguments)})";
     }
 
-    private static void EmitChangedRegistration(
-        StringBuilder builder,
-        int indent,
-        TypeDeclarationModel type,
-        PropertyGenModel property,
-        ref bool firstMember)
-    {
-        if (property.ChangedMethodName is not { } method)
-        {
-            return;
-        }
-
-        // The subscription is stored in a static field so it runs exactly once per closed type;
-        // it must be emitted after the {Name}Property field it reads (static initializer order).
-        var target = property.Kind == GeneratedPropertyKind.Attached ? property.HostTypeRef : type.OwnerTypeRef;
-        var invocation = property.Kind == GeneratedPropertyKind.Attached
-            ? $"{method}(sender, e.OldValue.GetValueOrDefault()!, e.NewValue.GetValueOrDefault()!)"
-            : $"sender.{method}(e.OldValue.GetValueOrDefault()!, e.NewValue.GetValueOrDefault()!)";
-
-        StartMember(builder, indent, ref firstMember);
-        Line(builder, indent, $"private static readonly global::System.IDisposable _{Camel(property.Name)}ChangedReg =");
-        Line(builder, indent + 1, $"global::Avalonia.AvaloniaObjectExtensions.AddClassHandler<{target}, {property.ValueTypeRef}>(");
-        Line(builder, indent + 2, $"{property.Name}Property.Changed,");
-        Line(builder, indent + 2, $"static (sender, e) => {invocation});");
-    }
-
     private static void EmitCallbackDeclarations(
         StringBuilder builder,
         int indent,
@@ -248,14 +219,6 @@ internal static class PropertyGenEmitter
 
         foreach (var property in properties)
         {
-            if (property.ChangedMethodName is { } changed)
-            {
-                var declaration = property.Kind == GeneratedPropertyKind.Attached
-                    ? $"private static partial void {changed}({property.HostTypeRef} host, {property.ValueTypeRef} oldValue, {property.ValueTypeRef} newValue);"
-                    : $"private partial void {changed}({property.ValueTypeRef} oldValue, {property.ValueTypeRef} newValue);";
-                EmitOnce(builder, indent, declaration, emitted, ref firstMember);
-            }
-
             if (property.ValidateMethodName is { } validate)
             {
                 EmitOnce(builder, indent,

@@ -11,7 +11,6 @@ internal sealed class GeneratedPropertyAttributeArgs
     public int? DefaultBindingMode { get; private set; }
     public bool Inherits { get; private set; }
     public bool EnableDataValidation { get; private set; }
-    public string? ChangedMethodName { get; private set; }
     public string? ValidateMethodName { get; private set; }
     public string? CoerceMethodName { get; private set; }
 
@@ -40,9 +39,6 @@ internal sealed class GeneratedPropertyAttributeArgs
                     break;
                 case nameof(EnableDataValidation):
                     args.EnableDataValidation = value.Value is true;
-                    break;
-                case nameof(ChangedMethodName):
-                    args.ChangedMethodName = value.Value as string;
                     break;
                 case nameof(ValidateMethodName):
                     args.ValidateMethodName = value.Value as string;

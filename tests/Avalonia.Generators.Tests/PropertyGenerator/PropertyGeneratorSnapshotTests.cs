@@ -74,21 +74,6 @@ public class PropertyGeneratorSnapshotTests
         """);
 
     [Fact]
-    public void Styled_Changed() => AssertGeneratedCode("Styled_Changed", """
-        namespace TestNs;
-
-        public partial class MyControl : AvaloniaObject
-        {
-            [StyledProperty(ChangedMethodName = nameof(OnIsOpenChanged))]
-            public partial bool IsOpen { get; set; }
-
-            private partial void OnIsOpenChanged(bool oldValue, bool newValue)
-            {
-            }
-        }
-        """);
-
-    [Fact]
     public void Styled_ValidateCoerce() => AssertGeneratedCode("Styled_ValidateCoerce", """
         namespace TestNs;
 
@@ -307,21 +292,6 @@ public class PropertyGeneratorSnapshotTests
 
             [AttachedProperty(Inherits = true)]
             public static partial double GetFontSize(Visual element);
-        }
-        """);
-
-    [Fact]
-    public void Attached_Changed() => AssertGeneratedCode("Attached_Changed", """
-        namespace TestNs;
-
-        public partial class DockPanel : AvaloniaObject
-        {
-            [AttachedProperty(ChangedMethodName = nameof(OnDockChanged))]
-            public static partial int GetDock(Visual element);
-
-            private static partial void OnDockChanged(Visual host, int oldValue, int newValue)
-            {
-            }
         }
         """);
 

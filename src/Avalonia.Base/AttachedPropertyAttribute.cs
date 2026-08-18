@@ -40,14 +40,6 @@ public sealed class AttachedPropertyAttribute : Attribute
     /// Cannot be used with <see cref="AddOwnerFrom"/>. 
     /// </remarks>
     public bool Inherits { get; set; }
-
-    /// <summary>
-    /// The name of the static change handler to wire up, with signature
-    /// <c>static void {Method}(THost host, T oldValue, T newValue)</c>.
-    /// The generator emits a <c>private static partial</c> declaration for the method.
-    /// </summary>
-    public string? ChangedMethodName { get; set; }
-
     /// <summary>
     /// The name of the validation method, with signature
     /// <c>static bool {Method}(T value)</c>. Pass via <c>nameof(...)</c>.

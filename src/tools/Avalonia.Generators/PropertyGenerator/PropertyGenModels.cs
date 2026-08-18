@@ -36,7 +36,6 @@ internal sealed record PropertyGenModel(
     int? DefaultBindingMode,
     bool Inherits,
     bool EnableDataValidation,
-    string? ChangedMethodName,
     string? ValidateMethodName,
     string? CoerceMethodName);
 
