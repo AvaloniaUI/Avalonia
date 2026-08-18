@@ -894,7 +894,7 @@ namespace Avalonia.Controls
 
                 if (previousPage != null)
                 {
-                    var navigatingArgs = new NavigatingFromEventArgs(page, NavigationType.Push);
+                    var navigatingArgs = new NavigatingFromEventArgs(page, NavigationType.Push, parameter);
                     await previousPage.SendNavigatingAsync(navigatingArgs);
 
                     if (navigatingArgs.Cancel)
@@ -905,9 +905,9 @@ namespace Avalonia.Controls
 
                 await AwaitPageTransitionAsync();
 
-                previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Push));
-                page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push));
-                Pushed?.Invoke(this, new NavigationEventArgs(page, NavigationType.Push));
+                previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Push, parameter));
+                page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push, parameter));
+                Pushed?.Invoke(this, new NavigationEventArgs(page, NavigationType.Push, parameter));
             }
             finally
             {
@@ -916,7 +916,7 @@ namespace Avalonia.Controls
 
         }
 
-        public async Task PushAsyncPrivate(Page page, IPageTransition? transition, object? parameter)
+        private async Task PushAsyncPrivate(Page page, IPageTransition? transition, object? parameter)
         {
             if (_isNavigating)
                 return;
@@ -949,6 +949,7 @@ namespace Avalonia.Controls
         /// Pushes <paramref name="page"/> onto the navigation stack asynchronously using <paramref name="transition"/>.
         /// </summary>
         public Task PushAsync(Page page, IPageTransition? transition) => PushAsyncPrivate(page, transition, null);
+        public Task PushAsync(Page page, IPageTransition? transition, object parameter) => PushAsyncPrivate(page, transition, parameter);
 
         public Task PushAsync<T>() where T : Page, new()
         {
@@ -1231,7 +1232,8 @@ namespace Avalonia.Controls
                 _overrideTransition = null;
             }
         }
-        public async Task PushModalAsyncPrivate(Page page, object? parameter)
+
+        private async Task PushModalAsyncPrivate(Page page, object? parameter)
         {
             ArgumentNullException.ThrowIfNull(page);
             if (_isNavigating)
@@ -1323,7 +1325,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public async Task PushModalAsyncPrivate(Page page, IPageTransition? transition, object? parameter)
+        private async Task PushModalAsyncPrivate(Page page, IPageTransition? transition, object? parameter)
         {
             if (_isNavigating)
                 return;
@@ -1353,6 +1355,7 @@ namespace Avalonia.Controls
         /// Pushes <paramref name="page"/> as a modal page using <paramref name="transition"/>.
         /// </summary>
         public Task PushModalAsync(Page page, IPageTransition? transition) => PushModalAsyncPrivate(page, transition, null);
+        public Task PushModalAsync(Page page, IPageTransition? transition, object parameter) => PushModalAsyncPrivate(page, transition, parameter);
 
         public Task PushModalAsync<T>() where T : Page, new()
         {
@@ -1764,7 +1767,7 @@ namespace Avalonia.Controls
             ArgumentNullException.ThrowIfNull(page);
             if (StackDepth == 0)
             {
-                await PushAsync(page);
+                await PushAsyncPrivate(page, null, parameter);
                 return;
             }
             if (ReferenceEquals(page, CurrentPage))
@@ -1814,7 +1817,7 @@ namespace Avalonia.Controls
             _hasOverrideTransition = true;
             try
             {
-                await ReplaceAsync(page);
+                await ReplaceAsyncPrivate(page, parameter);
             }
             finally
             {
@@ -1836,6 +1839,7 @@ namespace Avalonia.Controls
         /// Replaces the top page with <paramref name="page"/> using <paramref name="transition"/>.
         /// </summary>
         public Task ReplaceAsync(Page page, IPageTransition? transition) => ReplaceAsyncPrivate(page, transition, null);
+        public Task ReplaceAsync(Page page, IPageTransition? transition, object parameter) => ReplaceAsyncPrivate(page, transition, parameter);
 
         public Task ReplaceAsync<T>() where T : Page, new()
         {

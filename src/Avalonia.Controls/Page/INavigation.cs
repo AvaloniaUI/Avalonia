@@ -45,6 +45,7 @@ namespace Avalonia.Controls
         /// Pushes <paramref name="page"/> using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task PushAsync(Page page, IPageTransition? transition);
+        Task PushAsync(Page page, IPageTransition? transition, object parameter);
         Task PushAsync<T>(IPageTransition? transition) where T : Page, new();
         Task PushAsync<T>(IPageTransition? transition, object parameter) where T : Page, new();
 
@@ -89,6 +90,7 @@ namespace Avalonia.Controls
         /// Replaces the current top page with <paramref name="page"/> using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task ReplaceAsync(Page page, IPageTransition? transition);
+        Task ReplaceAsync(Page page, IPageTransition? transition, object parameter);
         Task ReplaceAsync<T>(IPageTransition? transition) where T : Page, new();
         Task ReplaceAsync<T>(IPageTransition? transition, object parameter) where T : Page, new();
 
@@ -103,6 +105,7 @@ namespace Avalonia.Controls
         /// Pushes <paramref name="page"/> as a modal using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task PushModalAsync(Page page, IPageTransition? transition);
+        Task PushModalAsync(Page page, IPageTransition? transition, object parameter);
         Task PushModalAsync<T>(IPageTransition? transition) where T : Page, new();
         Task PushModalAsync<T>(IPageTransition? transition, object parameter) where T : Page, new();
 
