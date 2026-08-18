@@ -180,11 +180,11 @@ namespace Avalonia
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
 
-            var visualChildren = new AvaloniaList<Visual>();
+            var visualChildren = new SafeEnumerableAvaloniaList<Visual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validator = this;
             visualChildren.CollectionChanged += VisualChildrenChanged;
-            VisualChildren = visualChildren;
+            TypedVisualChildren = visualChildren;
         }
 
         /// <summary>
@@ -249,15 +249,11 @@ namespace Avalonia
             IsEffectivelyVisible = isEffectivelyVisible;
             IsEffectivelyVisibleChanged?.Invoke(this, EventArgs.Empty);
 
-            // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
+            // PERF-SENSITIVE: This is called on entire hierarchy and using LINQ
             // will cause extra allocations and overhead.
 
-            var children = VisualChildren;
-
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (int i = 0; i < children.Count; ++i)
+            foreach (var child in TypedVisualChildren)
             {
-                var child = children[i];
                 child.UpdateIsEffectivelyVisible(isEffectivelyVisible);
             }
         }
@@ -387,9 +383,11 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the control's child visuals.
+        /// /// Gets the control's child visuals, strongly-typed, to avoid interface calls and enumerator boxing.
         /// </summary>
-        protected internal IAvaloniaList<Visual> VisualChildren { get; }
+        internal SafeEnumerableAvaloniaList<Visual> TypedVisualChildren { get; }
+
+        protected internal IAvaloniaList<Visual> VisualChildren => TypedVisualChildren;
 
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
@@ -561,7 +559,7 @@ namespace Avalonia
             {
                 InvalidateMirrorTransform();
 
-                foreach (var child in VisualChildren)
+                foreach (var child in TypedVisualChildren)
                 {
                     child.InvalidateMirrorTransform();
                 }
@@ -610,12 +608,11 @@ namespace Avalonia
                     _visualParent.HasNonUniformZIndexChildren = true;
             }
 
-            var visualChildren = VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
-
-            for (var i = 0; i < visualChildrenCount; i++)
+            foreach (var child in TypedVisualChildren)
             {
-                if (visualChildren[i] is { } child && child.PresentationSource != e.PresentationSource) // child may already have been attached within an event handler
+                // An event handler may have modified the children: skip a child which has already been attached, or
+                // which has been removed from this visual (we're enumerating a snapshot of the collection).
+                if (child.PresentationSource != e.PresentationSource && child.VisualParent == this)
                 {
                     child.OnAttachedToVisualTreeCore(e);
                 }
@@ -648,12 +645,11 @@ namespace Avalonia
             
             PresentationSource = null;
 
-            var visualChildren = VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
-
-            for (var i = 0; i < visualChildrenCount; i++)
+            foreach (var child in TypedVisualChildren)
             {
-                if (visualChildren[i] is { } child)
+                // A child removed within an event handler has already been detached by the removal itself:
+                // don't detach it a second time (we're enumerating a snapshot of the collection).
+                if (child.PresentationSource is not null)
                 {
                     child.OnDetachedFromVisualTreeCore(e);
                 }
@@ -826,12 +822,11 @@ namespace Avalonia
         {
             base.OnTemplatedParentControlThemeChanged();
 
-            var count = VisualChildren.Count;
             var templatedParent = TemplatedParent;
 
-            for (var i = 0; i < count; ++i)
+            foreach (var visualChild in TypedVisualChildren)
             {
-                if (VisualChildren[i] is StyledElement child &&
+                if (visualChild is StyledElement child &&
                     child.TemplatedParent == templatedParent)
                 {
                     child.OnTemplatedParentControlThemeChanged();

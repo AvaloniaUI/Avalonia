@@ -251,6 +251,13 @@ namespace Avalonia.Controls
                 var orientation = Orientation;
                 var u = _realizedElements!.StartU;
 
+                // Collection changes before the realized range make its exact position unstable
+                // until the next measure. ScrollIntoView can intentionally defer that measure
+                // while waiting for an updated viewport, so use the same position estimate used
+                // when realizing an element instead of arranging the range at NaN.
+                if (double.IsNaN(u))
+                    u = GetOrEstimateElementU(_realizedElements.FirstIndex);
+
                 for (var i = 0; i < _realizedElements.Count; ++i)
                 {
                     var e = _realizedElements.Elements[i];

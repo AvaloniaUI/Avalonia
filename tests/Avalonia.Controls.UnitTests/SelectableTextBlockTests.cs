@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -49,6 +50,46 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData(TextAlignment.Center)]
+        [InlineData(TextAlignment.Right)]
+        public void Dragging_Selection_Should_Reach_End_Of_Text_When_Text_Is_Aligned(TextAlignment textAlignment)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Width = 200,
+                    Text = "Aligned text",
+                    TextAlignment = textAlignment
+                };
+
+                var root = new TestRoot(target)
+                {
+                    ClientSize = new Size(300, 100)
+                };
+
+                root.Measure(root.ClientSize);
+                root.Arrange(new Rect(root.ClientSize));
+                root.ExecuteInitialLayoutPass();
+
+                var firstCharacterBounds = target.TextLayout.HitTestTextPosition(0);
+                var lastCharacterBounds = target.TextLayout.HitTestTextPosition(target.Text!.Length - 1);
+                var mouse = new MouseTestHelper();
+                var startPoint = new Point(
+                    firstCharacterBounds.X + firstCharacterBounds.Width / 2,
+                    firstCharacterBounds.Y + firstCharacterBounds.Height / 2);
+                var endPoint = new Point(
+                    Math.Min(target.Bounds.Width - 1, lastCharacterBounds.Right + 10),
+                    lastCharacterBounds.Y + lastCharacterBounds.Height / 2);
+
+                mouse.Down(target, position: target.TranslatePoint(startPoint, root));
+                mouse.Move(target, position: target.TranslatePoint(endPoint, root).GetValueOrDefault());
+
+                Assert.Equal(target.Text!.Length, Math.Max(target.SelectionStart, target.SelectionEnd));
+            }
+        }
+
         [Fact]
         public void SelectionForeground_Should_Not_Reset_Run_Typeface_And_Style()
         {
@@ -95,5 +136,91 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Inlines_Changes_Should_Update_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock();
+                target.Inlines!.Add(new Run("foo"));
+                target.SelectionEnd = 3;
+
+                var selectedTextChanged = false;
+                target.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == SelectableTextBlock.SelectedTextProperty)
+                    {
+                        selectedTextChanged = true;
+                    }
+                };
+
+                target.Inlines.Add(new Run("bar"));
+
+                Assert.True(selectedTextChanged);
+
+                target.SelectionStart = 6;
+                target.SelectionEnd = 0;
+                target.Inlines.RemoveAt(1);
+
+                Assert.Equal(3, target.SelectionStart);
+                Assert.Equal(0, target.SelectionEnd);
+
+                target.SelectionStart = 0;
+                target.SelectionEnd = 3;
+
+                target.Inlines[0] = new Run("a");
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(1, target.SelectionEnd);
+                Assert.Equal("a", target.SelectedText);
+            }
+        }
+
+        [Fact]
+        public void Text_Changes_Should_Update_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Text = "foo",
+                    SelectionEnd = 3
+                };
+
+                var selectedTextChanged = false;
+                target.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == SelectableTextBlock.SelectedTextProperty)
+                    {
+                        selectedTextChanged = true;
+                    }
+                };
+
+                target.Text = "a";
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(1, target.SelectionEnd);
+                Assert.True(selectedTextChanged);
+            }
+        }
+
+        [Fact]
+        public void CoerceCaretIndex_OnTextChanged()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Text = "foo",
+                    SelectionStart = 3,
+                    SelectionEnd = 3
+                };
+
+                target.Text = "a";
+
+                Assert.Equal(1, target.SelectionStart);
+                Assert.Equal(1, target.SelectionEnd);
+            }
+        }
     }
 }

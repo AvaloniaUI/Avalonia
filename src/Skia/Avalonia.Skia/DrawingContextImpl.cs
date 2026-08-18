@@ -1440,7 +1440,7 @@ namespace Avalonia.Skia
             }
             else
             {
-                tileBrushImage = (tileBrush as IImageBrush)?.Source?.Bitmap?.Item as IDrawableBitmapImpl;
+                tileBrushImage = (tileBrush as IImageBrush)?.Source?.GetBitmap() as IDrawableBitmapImpl;
             }
 
             if (tileBrush != null && tileBrushImage != null)

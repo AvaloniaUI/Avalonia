@@ -13,8 +13,7 @@ namespace ControlCatalog.ViewModels
     {
         public CursorPageViewModel()
         {
-            StandardCursors = Enum.GetValues(typeof(StandardCursorType))
-                .Cast<StandardCursorType>()
+            StandardCursors = Enum.GetValues<StandardCursorType>()
                 .Select(x => new StandardCursorModel(x))
                 .ToList();
 

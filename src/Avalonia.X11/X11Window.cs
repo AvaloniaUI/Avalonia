@@ -66,6 +66,7 @@ namespace Avalonia.X11
         private bool _disabled;
         private TransparencyHelper? _transparencyHelper;
         private WindowActivationTrackingHelper? _activationTracker;
+        private X11Window? _transientParent;
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
         private bool _useCompositorDrivenRenderWindowResize = false;
@@ -595,6 +596,16 @@ namespace Avalonia.X11
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
                 MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+            else if (ev.type == XEventName.EnterNotify)
+            {
+                if (ev.CrossingEvent.detail is
+                    NotifyDetail.NotifyNonlinear or
+                    NotifyDetail.NotifyNonlinearVirtual or
+                    NotifyDetail.NotifyVirtual)
+                {
+                    MouseEvent(RawPointerEventType.Move, ref ev, ev.CrossingEvent.state);
+                }
+            }
             else if (ev.type == XEventName.PropertyNotify)
             {
                 OnPropertyChange(ev.PropertyEvent.atom, ev.PropertyEvent.state == 0);
@@ -1125,6 +1136,22 @@ namespace Avalonia.X11
                     atSpiServer.RemoveWindow(atSpiPeer);
             }
 
+            // If we're closing the active window, speculatively hand activation back to its owner so an
+            // awaited ShowDialog() sees the owner as active immediately, instead of waiting for the
+            // asynchronous activation notification (auto-corrected later if the guess is wrong).
+            // Mirroring win32's BeforeCloseCleanup, the owner has to be re-enabled before it's activated:
+            // while it's still modally disabled the activation would be swallowed by
+            // ActivateTransientChildIfNeeded. The managed layer sets the final enabled state afterwards.
+            // Only speculate when there's a root _NET_ACTIVE_WINDOW notification to auto-correct against.
+            if (_handle != IntPtr.Zero
+                && _transientParent is { } parent && parent._handle != IntPtr.Zero
+                && _activationTracker?.IsActive == true
+                && _platform.ActiveWindowTracker.TracksRootActiveWindow)
+            {
+                parent.SetEnabled(true);
+                parent.SetActiveSpeculatively();
+            }
+
             // Before doing anything else notify the TopLevel that ITopLevelImpl is no longer valid
             if (_handle != IntPtr.Zero)
                 Closed?.Invoke();
@@ -1201,12 +1228,20 @@ namespace Avalonia.X11
             return false;
         }
 
+        private void SetActiveSpeculatively() => _activationTracker?.SetActiveSpeculatively();
+
         public void SetParent(IWindowImpl? parent)
         {
             if (parent == null || parent.Handle == null || parent.Handle.Handle == IntPtr.Zero)
+            {
+                _transientParent = null;
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms.WM_TRANSIENT_FOR);
+            }
             else
+            {
+                _transientParent = parent as X11Window;
                 XSetTransientForHint(_x11.Display, _handle, parent.Handle.Handle);
+            }
         }
 
         public void Show(bool activate, bool isDialog)
@@ -1652,6 +1687,34 @@ namespace Avalonia.X11
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
+        }
+
+        public void SetHitTestVisible(bool isHitTestVisible)
+        {
+            if (!_x11.HasXFixes)
+                return;
+
+            // An empty input region makes the server route pointer input to whatever is behind
+            // the window. None (0) restores the default input shape, i.e. the whole window.
+            var region = IntPtr.Zero;
+            if (!isHitTestVisible)
+            {
+                var rect = default(XRectangle);
+                region = XFixesCreateRegion(_x11.Display, &rect, 0);
+            }
+
+            XFixesSetWindowShapeRegion(_x11.Display, _handle, ShapeKind.ShapeInput, 0, 0, region);
+
+            // The render window is a child of _handle when a GPU backend is in use. Shaping the
+            // parent alone doesn't take the child out of the input hierarchy, so it would keep
+            // capturing the pointer.
+            if (_renderHandle != _handle)
+                XFixesSetWindowShapeRegion(_x11.Display, _renderHandle, ShapeKind.ShapeInput, 0, 0, region);
+
+            if (region != IntPtr.Zero)
+                XFixesDestroyRegion(_x11.Display, region);
+
+            XFlush(_x11.Display);
         }
 
         public WindowTransparencyLevel TransparencyLevel =>
