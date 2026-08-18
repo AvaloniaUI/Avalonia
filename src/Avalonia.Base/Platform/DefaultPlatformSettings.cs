@@ -43,7 +43,7 @@ namespace Avalonia.Platform
             AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
 
         public virtual string PreferredApplicationLanguage =>
-            CultureInfo.CurrentUICulture.Name;
+            CultureInfo.InstalledUICulture.Name;
 
         public virtual PlatformColorValues GetColorValues()
         {
