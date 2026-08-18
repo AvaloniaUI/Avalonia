@@ -1340,7 +1340,7 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern int GetUserDefaultLocaleName(char* lpLocaleName, int cchLocaleName);
+        public static extern bool GetUserPreferredUILanguages(uint dwFlags, uint* pulNumLanguages, char* pwszLanguagesBuffer, uint* pcchLanguagesBuffer);
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);

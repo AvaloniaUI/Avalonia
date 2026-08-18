@@ -34,27 +34,9 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
 
     public override TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
 
-    public override string PreferredApplicationLanguage
-    {
-        get
-        {
-            if (_lastLanguage is null)
-            {
-                unsafe
-                {
-                    const int LOCALE_NAME_MAX_LENGTH = 85;
-                    var buffer = stackalloc char[LOCALE_NAME_MAX_LENGTH];
-                    var length = GetUserDefaultLocaleName(buffer, LOCALE_NAME_MAX_LENGTH);
-                    _lastLanguage = length > 0
-                        ? new string(buffer, 0, length - 1)
-                        : base.PreferredApplicationLanguage;
-                }
-            }
+    public override string PreferredApplicationLanguage =>
+        _lastLanguage ??= QueryPreferredApplicationLanguage();
 
-            return _lastLanguage;
-        }
-    }
-    
     public override PlatformColorValues GetColorValues()
     {
         if (!s_uiSettingsSupported.Value)
@@ -114,5 +96,30 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         {
             OnPreferredApplicationLanguageChanged();
         }
+    }
+
+    private unsafe string QueryPreferredApplicationLanguage()
+    {
+        // A copy of https://github.com/dotnet/runtime/blob/6550ccf7827cdc363035f8927f68a34edb01bf22/src/libraries/System.Private.CoreLib/src/System/Globalization/CultureInfo.Windows.cs#L20
+        // .NET BCL already reads GetUserPreferredUILanguages as a default value of CultureInfo.CurrentUICulture.
+        // Unfortunately, CultureInfo.CurrentUICulture is mutable, and BCL doesn't expose static default value.
+
+        const uint MUI_LANGUAGE_NAME = 0x8;    // Use ISO language (culture) name convention
+        uint langCount = 0;
+        uint bufLen = 0;
+
+        if (GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &langCount, null, &bufLen))
+        {
+            var languages = bufLen <= 256 ? stackalloc char[(int)bufLen] : new char[bufLen];
+            fixed (char* pLanguages = languages)
+            {
+                if (GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &langCount, pLanguages, &bufLen))
+                {
+                    return languages.ToString();
+                }
+            }
+        }
+
+        return base.PreferredApplicationLanguage;
     }
 }
