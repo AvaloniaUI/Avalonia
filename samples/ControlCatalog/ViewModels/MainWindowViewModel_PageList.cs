@@ -1,17 +1,11 @@
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Dialogs;
 using System;
-using System.ComponentModel.DataAnnotations;
-using Avalonia;
-using MiniMvvm;
-using Avalonia.Collections;
-using ControlCatalog.Pages;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
+using Avalonia.Collections;
+using Avalonia.Controls;
+using ControlCatalog.Pages;
 
 namespace ControlCatalog.ViewModels
 {
@@ -26,77 +20,77 @@ namespace ControlCatalog.ViewModels
 
         private List<PageItem> _items = new()
         {
-            new PageItem("Composition", () => new CompositionPage(), Icons.Layers),
-            new PageItem("Accelerator", () => new AcceleratorPage(), Icons.Keyboard),
-            new PageItem("Acrylic", () => new AcrylicPage(), Icons.Blur),
-            new PageItem("AdornerLayer", () => new AdornerLayerPage(), Icons.Sparkle),
-            new PageItem("AutoCompleteBox",() => new AutoCompleteBoxPage(), Icons.TextInput),
-            new PageItem("Border",() => new BorderPage(), Icons.Border),
-            new PageItem("BitmapCache",() => new BitmapCachePage(), Icons.Lightning),
-            new PageItem("Buttons",() => new ButtonsPage(), Icons.CursorClick),
-            new PageItem("ButtonSpinner",() => new ButtonSpinnerPage(), Icons.Spinner),
-            new PageItem("Calendar",() => new CalendarPage(), Icons.Calendar),
-            new PageItem("Canvas",() => new CanvasPage(), Icons.Canvas),
-            new PageItem("CommandBar",() => new CommandBarPage(), Icons.Terminal),
-            new PageItem("Carousel",() => new Pages.CarouselPage(), Icons.Slides),
-            new PageItem("CarouselPage",() => new CarouselDemoPage(), Icons.Slides),
-            new PageItem("CheckBox",() => new CheckBoxPage(), Icons.Checkbox),
-            new PageItem("Clipboard",() => new ClipboardPage(), Icons.Clipboard),
-            new PageItem("ColorPicker",() => new ColorPickerPage(), Icons.Palette),
-            new PageItem("ComboBox",() => new ComboBoxPage(), Icons.Dropdown),
-            new PageItem("Container Queries",() => new ContainerQueryPage(), Icons.Container),
-            new PageItem("ContentPage",() => new ContentDemoPage(), Icons.Document),
-            new PageItem("ContextFlyout",() => new ContextFlyoutPage(), Icons.Menu),
-            new PageItem("ContextMenu",() => new ContextMenuPage(), Icons.Menu),
-            new PageItem("Cursor",() => new CursorPage(), Icons.Cursor),
-            new PageItem("Custom Drawing",() => new CustomDrawing(), Icons.Brush),
-            new PageItem("Data Validation",() => new DataValidationPage(), Icons.Shield),
-            new PageItem("Date/Time Picker",() => new DateTimePickerPage(), Icons.Clock),
-            new PageItem("CalendarDatePicker",() => new CalendarDatePickerPage(), Icons.Calendar),
-            new PageItem("Dialogs",() => new DialogsPage(), Icons.Dialog),
-            new PageItem("Drag+Drop",() => new DragAndDropPage(), Icons.DragDrop),
-            new PageItem("DrawerPage",() => new DrawerDemoPage(), Icons.Drawer),
-            new PageItem("Expander",() => new ExpanderPage(), Icons.Expand),
-            new PageItem("Flyouts",() => new FlyoutsPage(), Icons.Flyout),
-            new PageItem("Focus",() => new FocusPage(), Icons.Target),
-            new PageItem("Gestures",() => new GesturePage(), Icons.Gesture),
-            new PageItem("Image",() => new ImagePage(), Icons.Image),
-            new PageItem("Label",() => new LabelsPage(), Icons.Tag),
-            new PageItem("LayoutTransformControl",() => new LayoutTransformControlPage(), Icons.Transform),
-            new PageItem("ListBox",() => new ListBoxPage(), Icons.List),
-            new PageItem("Menu",() => new MenuPage(), Icons.Menu),
-            new PageItem("NavigationPage",() => new NavigationDemoPage(), Icons.Navigation),
-            new PageItem("Notifications",() => new NotificationsPage(), Icons.Bell),
-            new PageItem("NumericUpDown",() => new NumericUpDownPage(), Icons.Number),
-            new PageItem("OpenGL",() => new OpenGlPage(), Icons.Cube3D),
-            new PageItem("OpenGL Lease",() => new OpenGlLeasePage(), Icons.Cube3D),
-            new PageItem("PipsPager",() => new PipsPagerPage(), Icons.HorizontalDots),
-            new PageItem("Platform Information",() => new PlatformInfoPage(), Icons.Info),
-            new PageItem("Pointers",() => new PointersPage(), Icons.Cursor),
-            new PageItem("ProgressBar",() => new ProgressBarPage(), Icons.Progress),
-            new PageItem("RadioButton",() => new RadioButtonPage(), Icons.Radio),
-            new PageItem("RefreshContainer",() => new RefreshContainerPage(), Icons.Refresh),
-            new PageItem("RelativePanel",() => new RelativePanelPage(), Icons.Layout),
-            new PageItem("ScrollViewer",() => new ScrollViewerPage(), Icons.Scroll),
-            new PageItem("Slider",() => new SliderPage(), Icons.Tune),
-            new PageItem("SplitView",() => new SplitViewPage(), Icons.Split),
-            new PageItem("TabbedPage",() => new TabbedDemoPage(), Icons.Tab),
-            new PageItem("TabControl",() => new TabControlPage(), Icons.Tab),
-            new PageItem("TabStrip",() => new TabStripPage(), Icons.Tab),
-            new PageItem("TableView",() => new TableViewPage(), Icons.Grid),
-            new PageItem("TextBox",() => new TextBoxPage(), Icons.TextInput),
-            new PageItem("TextBlock",() => new TextBlockPage(), Icons.TextInput),
-            new PageItem("Theme Variants",() => new ThemePage(), Icons.Theme),
-            new PageItem("ToggleSwitch",() => new ToggleSwitchPage(), Icons.Toggle),
-            new PageItem("ToolTip",() => new ToolTipPage(), Icons.Tooltip),
-            new PageItem("TransitioningContentControl",() => new TransitioningContentControlPage(), Icons.Transition),
-            new PageItem("TreeView",() => new TreeViewPage(), Icons.Tree),
-            new PageItem("Viewbox",() => new ViewboxPage(), Icons.Viewbox),
-            new PageItem("WrapPanel",() => new WrapPanelPage(), Icons.Layout),
-            new PageItem("Native Embed",() => new NativeEmbedPage(), Icons.Puzzle),
-            new PageItem("Window Customizations",() => new WindowCustomizationsPage(), Icons.Window),
-            new PageItem("HeaderedContentControl",() => new HeaderedContentPage(), Icons.Header),
-            new PageItem("Screens",() => new ScreenPage(), Icons.Monitor),
+            new PageItem<CompositionPage>("Composition", Icons.Layers),
+            new PageItem<AcceleratorPage>("Accelerator", Icons.Keyboard),
+            new PageItem<AcrylicPage>("Acrylic", Icons.Blur),
+            new PageItem<AdornerLayerPage>("AdornerLayer", Icons.Sparkle),
+            new PageItem<AutoCompleteBoxPage>("AutoCompleteBox", Icons.TextInput),
+            new PageItem<BorderPage>("Border", Icons.Border),
+            new PageItem<BitmapCachePage>("BitmapCache", Icons.Lightning),
+            new PageItem<ButtonsPage>("Buttons", Icons.CursorClick),
+            new PageItem<ButtonSpinnerPage>("ButtonSpinner", Icons.Spinner),
+            new PageItem<CalendarPage>("Calendar", Icons.Calendar),
+            new PageItem<CanvasPage>("Canvas", Icons.Canvas),
+            new PageItem<CommandBarPage>("CommandBar", Icons.Terminal),
+            new PageItem<Pages.CarouselPage>("Carousel", Icons.Slides),
+            new PageItem<CarouselDemoPage>("CarouselPage", Icons.Slides),
+            new PageItem<CheckBoxPage>("CheckBox", Icons.Checkbox),
+            new PageItem<ClipboardPage>("Clipboard", Icons.Clipboard),
+            new PageItem<ColorPickerPage>("ColorPicker", Icons.Palette),
+            new PageItem<ComboBoxPage>("ComboBox", Icons.Dropdown),
+            new PageItem<ContainerQueryPage>("Container Queries", Icons.Container),
+            new PageItem<ContentDemoPage>("ContentPage", Icons.Document),
+            new PageItem<ContextFlyoutPage>("ContextFlyout", Icons.Menu),
+            new PageItem<ContextMenuPage>("ContextMenu", Icons.Menu),
+            new PageItem<CursorPage>("Cursor", Icons.Cursor),
+            new PageItem<CustomDrawing>("Custom Drawing", Icons.Brush),
+            new PageItem<DataValidationPage>("Data Validation", Icons.Shield),
+            new PageItem<DateTimePickerPage>("Date/Time Picker", Icons.Clock),
+            new PageItem<CalendarDatePickerPage>("CalendarDatePicker", Icons.Calendar),
+            new PageItem<DialogsPage>("Dialogs", Icons.Dialog),
+            new PageItem<DragAndDropPage>("Drag+Drop", Icons.DragDrop),
+            new PageItem<DrawerDemoPage>("DrawerPage", Icons.Drawer),
+            new PageItem<ExpanderPage>("Expander", Icons.Expand),
+            new PageItem<FlyoutsPage>("Flyouts", Icons.Flyout),
+            new PageItem<FocusPage>("Focus", Icons.Target),
+            new PageItem<GesturePage>("Gestures", Icons.Gesture),
+            new PageItem<ImagePage>("Image", Icons.Image),
+            new PageItem<LabelsPage>("Label", Icons.Tag),
+            new PageItem<LayoutTransformControlPage>("LayoutTransformControl", Icons.Transform),
+            new PageItem<ListBoxPage>("ListBox", Icons.List),
+            new PageItem<MenuPage>("Menu", Icons.Menu),
+            new PageItem<NavigationDemoPage>("NavigationPage", Icons.Navigation),
+            new PageItem<NotificationsPage>("Notifications", Icons.Bell),
+            new PageItem<NumericUpDownPage>("NumericUpDown", Icons.Number),
+            new PageItem<OpenGlPage>("OpenGL", Icons.Cube3D),
+            new PageItem<OpenGlLeasePage>("OpenGL Lease", Icons.Cube3D),
+            new PageItem<PipsPagerPage>("PipsPager", Icons.HorizontalDots),
+            new PageItem<PlatformInfoPage>("Platform Information", Icons.Info),
+            new PageItem<PointersPage>("Pointers", Icons.Cursor),
+            new PageItem<ProgressBarPage>("ProgressBar", Icons.Progress),
+            new PageItem<RadioButtonPage>("RadioButton", Icons.Radio),
+            new PageItem<RefreshContainerPage>("RefreshContainer", Icons.Refresh),
+            new PageItem<RelativePanelPage>("RelativePanel", Icons.Layout),
+            new PageItem<ScrollViewerPage>("ScrollViewer", Icons.Scroll),
+            new PageItem<SliderPage>("Slider", Icons.Tune),
+            new PageItem<SplitViewPage>("SplitView", Icons.Split),
+            new PageItem<TabbedDemoPage>("TabbedPage", Icons.Tab),
+            new PageItem<TabControlPage>("TabControl", Icons.Tab),
+            new PageItem<TabStripPage>("TabStrip", Icons.Tab),
+            new PageItem<TableViewPage>("TableView", Icons.Grid),
+            new PageItem<TextBoxPage>("TextBox", Icons.TextInput),
+            new PageItem<TextBlockPage>("TextBlock", Icons.TextInput),
+            new PageItem<ThemePage>("Theme Variants", Icons.Theme),
+            new PageItem<ToggleSwitchPage>("ToggleSwitch", Icons.Toggle),
+            new PageItem<ToolTipPage>("ToolTip", Icons.Tooltip),
+            new PageItem<TransitioningContentControlPage>("TransitioningContentControl", Icons.Transition),
+            new PageItem<TreeViewPage>("TreeView", Icons.Tree),
+            new PageItem<ViewboxPage>("Viewbox", Icons.Viewbox),
+            new PageItem<WrapPanelPage>("WrapPanel", Icons.Layout),
+            new PageItem<NativeEmbedPage>("Native Embed", Icons.Puzzle),
+            new PageItem<WindowCustomizationsPage>("Window Customizations", Icons.Window),
+            new PageItem<HeaderedContentPage>("HeaderedContentControl", Icons.Header),
+            new PageItem<ScreenPage>("Screens", Icons.Monitor),
         };
 
         public AvaloniaList<PageItem> Pages { get; } = new AvaloniaList<PageItem>();
@@ -195,22 +189,26 @@ namespace ControlCatalog.ViewModels
 
             var item = Pages[pageIndex];
 
-            if (item != null)
+            if (item != null && _currentItem != item)
             {
-                var view = item.Factory();
-                if (view is Page page && view.GetType() != Navigator.NavigationStack.LastOrDefault()?.GetType())
-                {
-                    _currentItem = item;
-                    await Navigator.ReplaceAsync(page);
-                }
+                _currentItem = item;
+
+                await item.Navigate(Navigator);
             }
         }
     }
 
-    class PageItem(string header, Func<object> factory, string? iconData = null)
+    internal class PageItem<T>(string header, string? iconData = null) : PageItem(header, iconData) where T : Page, new ()
+    {
+        public override Task Navigate(INavigation navigation)
+        {
+            return navigation.ReplaceAsync<T>();
+        }
+    }
+
+    internal class PageItem(string header, string? iconData = null)
     {
         public string Header { get; } = header;
-        public Func<object> Factory { get; } = factory;
         public string? IconData { get; } = iconData;
         private string SearchKey { get; } = CreateSearchKey(header);
 
@@ -245,5 +243,7 @@ namespace ControlCatalog.ViewModels
 
             return builder.ToString();
         }
+
+        public async virtual Task Navigate(INavigation navigation) { }
     }
 }

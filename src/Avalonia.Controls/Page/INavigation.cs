@@ -38,11 +38,15 @@ namespace Avalonia.Controls
         /// Pushes <paramref name="page"/> using the host's default transition.
         /// </summary>
         Task PushAsync(Page page);
+        Task PushAsync<T>() where T : Page, new();
+        Task PushAsync<T>(object parameter) where T : Page, new();
 
         /// <summary>
         /// Pushes <paramref name="page"/> using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task PushAsync(Page page, IPageTransition? transition);
+        Task PushAsync<T>(IPageTransition? transition) where T : Page, new();
+        Task PushAsync<T>(IPageTransition? transition, object parameter) where T : Page, new();
 
         /// <summary>
         /// Pops the top page using the host's default transition.
@@ -78,21 +82,29 @@ namespace Avalonia.Controls
         /// Replaces the current top page with <paramref name="page"/> using the host's default transition.
         /// </summary>
         Task ReplaceAsync(Page page);
+        Task ReplaceAsync<T>() where T : Page, new();
+        Task ReplaceAsync<T>(object parameter) where T : Page, new();
 
         /// <summary>
         /// Replaces the current top page with <paramref name="page"/> using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task ReplaceAsync(Page page, IPageTransition? transition);
+        Task ReplaceAsync<T>(IPageTransition? transition) where T : Page, new();
+        Task ReplaceAsync<T>(IPageTransition? transition, object parameter) where T : Page, new();
 
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal using the host's modal transition.
         /// </summary>
         Task PushModalAsync(Page page);
+        Task PushModalAsync<T>() where T : Page, new();
+        Task PushModalAsync<T>(object parameter) where T : Page, new();
 
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task PushModalAsync(Page page, IPageTransition? transition);
+        Task PushModalAsync<T>(IPageTransition? transition) where T : Page, new();
+        Task PushModalAsync<T>(IPageTransition? transition, object parameter) where T : Page, new();
 
         /// <summary>
         /// Pops the top modal page using the host's modal transition.

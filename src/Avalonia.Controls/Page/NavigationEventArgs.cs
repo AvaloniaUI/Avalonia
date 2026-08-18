@@ -1,4 +1,5 @@
 using System;
+using System.Reflection.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -18,6 +19,11 @@ namespace Avalonia.Controls
             NavigationType = navigationType;
         }
 
+        public NavigationEventArgs(Page? previousPage, NavigationType navigationType, object? parameter) : this(previousPage, navigationType)
+        {
+            Parameter = parameter;
+        }
+
         /// <summary>
         /// Gets the page involved in the navigation operation.
         /// </summary>
@@ -27,5 +33,7 @@ namespace Avalonia.Controls
         /// Gets the type of navigation that triggered this event.
         /// </summary>
         public NavigationType NavigationType { get; }
+
+        public object? Parameter { get; }
     }
 }
