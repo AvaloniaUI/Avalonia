@@ -8,11 +8,13 @@ namespace Avalonia.Native;
 internal class NativePlatformSettings : DefaultPlatformSettings
 {
     private readonly IAvnPlatformSettings _platformSettings;
+    private string? _lastLanguage;
 
     public NativePlatformSettings(IAvnPlatformSettings platformSettings)
     {
         _platformSettings = platformSettings;
         platformSettings.RegisterColorsChange(new ColorsChangeCallback(this));
+        platformSettings.RegisterLanguageChange(new LanguageChangeCallback(this));
     }
 
     public override PlatformColorValues GetColorValues()
@@ -51,6 +53,26 @@ internal class NativePlatformSettings : DefaultPlatformSettings
         OnColorValuesChanged(GetColorValues());
     }
 
+    public override string PreferredApplicationLanguage =>
+        _lastLanguage ??= QueryPreferredApplicationLanguage();
+
+    private void OnPreferredLanguageChanged()
+    {
+        var oldLanguage = _lastLanguage;
+        _lastLanguage = null;
+
+        if (oldLanguage != PreferredApplicationLanguage)
+        {
+            OnPreferredApplicationLanguageChanged();
+        }
+    }
+
+    private string QueryPreferredApplicationLanguage()
+    {
+        using var language = _platformSettings.PreferredLanguage;
+        return language?.String is { Length: > 0 } value ? value : base.PreferredApplicationLanguage;
+    }
+
     private class ColorsChangeCallback : NativeCallbackBase, IAvnActionCallback
     {
         private readonly NativePlatformSettings _settings;
@@ -63,6 +85,21 @@ internal class NativePlatformSettings : DefaultPlatformSettings
         public void Run()
         {
             _settings.OnColorValuesChanged();
+        }
+    }
+
+    private class LanguageChangeCallback : NativeCallbackBase, IAvnActionCallback
+    {
+        private readonly NativePlatformSettings _settings;
+
+        public LanguageChangeCallback(NativePlatformSettings settings)
+        {
+            _settings = settings;
+        }
+
+        public void Run()
+        {
+            _settings.OnPreferredLanguageChanged();
         }
     }
 }
