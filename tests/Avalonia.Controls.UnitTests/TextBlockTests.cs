@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Documents;
+﻿using System.Text;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
@@ -613,6 +614,395 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Rect(default, expectedSize), target.Bounds);
         }
+
+        [Fact]
+        public void TextBlock_With_Wrap_MaxLines_CharacterEllipsis_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 106;
+            var unbounded = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 2);
+
+            var truncated = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 2,
+                Width = width,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+
+            truncated.Measure(Size.Infinity);
+            truncated.Arrange(new Rect(0, 0, width, truncated.DesiredSize.Height));
+
+            Assert.Equal(2, truncated.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(truncated, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Wrap_CharacterEllipsis_And_Height_Limit_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 180;
+
+            var unbounded = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 3);
+
+            var lineHeight = unbounded.TextLayout.TextLines[0].Height;
+            var constrainedHeight = lineHeight * 1.25;
+            var target = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Width = width,
+                Height = constrainedHeight,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, constrainedHeight));
+
+            Assert.True(target.TextLayout.TextLines.Count < unbounded.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(target, target.TextLayout.TextLines.Count - 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Wrap_MaxLines_WordEllipsis_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 106;
+            var unbounded = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 2);
+
+            var truncated = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.WordEllipsis,
+                MaxLines = 2,
+                Width = width,
+            };
+
+            truncated.Measure(Size.Infinity);
+            truncated.Arrange(new Rect(0, 0, width, truncated.DesiredSize.Height));
+
+            Assert.Equal(2, truncated.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(truncated, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Wrap_WordEllipsis_And_Height_Limit_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 180;
+            var unbounded = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 3);
+
+            var lineHeight = unbounded.TextLayout.TextLines[0].Height;
+            var constrainedHeight = lineHeight * 1.25;
+            var target = new TextBlock
+            {
+                Text = LongLoremText,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.WordEllipsis,
+                Width = width,
+                Height = constrainedHeight,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, constrainedHeight));
+
+            Assert.True(target.TextLayout.TextLines.Count < unbounded.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(target, target.TextLayout.TextLines.Count - 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_MaxLines_When_Text_Fully_Fits_Should_Not_Show_Ellipsis()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock
+            {
+                Text = "first line\r\nsecond line",
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 2,
+                Width = 200,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 200, target.DesiredSize.Height));
+
+            Assert.Equal(2, target.TextLayout.TextLines.Count);
+            Assert.DoesNotContain("…", GetLineText(target, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Overflow_And_MaxLines_Should_Not_Produce_Double_Ellipsis()
+        {
+            // A single very long word that overflows the width on line 1, which is also MaxLines = 1.
+            // The overflow path collapses the line first; the MaxLines path must not re-collapse it.
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 80;
+            var target = new TextBlock
+            {
+                Text = "AAAAAAAAAAAAAAAAAAAAAAAAA BBBBBBBBBBBBBBBBBBBBBBBBB CCCCCCCCCCCCCCCCCCCCC",
+                TextWrapping = TextWrapping.NoWrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 1,
+                Width = width,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, target.DesiredSize.Height));
+
+            var lastLineText = GetLineText(target, 0);
+
+            // Must contain exactly one ellipsis, not two.
+            Assert.Contains("…", lastLineText);
+            Assert.False(lastLineText.Contains("……"), $"Double ellipsis found in: {lastLineText}");
+        }
+
+        [Fact]
+        public void TextBlock_With_Overflow_And_MaxHeight_Should_Not_Produce_Double_Ellipsis()
+        {
+            // Height-based counterpart of TextBlock_With_Overflow_And_MaxLines_Should_Not_Produce_Double_Ellipsis:
+            // a line that already overflowed (and was collapsed with an ellipsis) is later re-collapsed by
+            // the MaxHeight path via CollapseForTruncation. This must not produce a second ellipsis.
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 20;
+            var target = new TextBlock
+            {
+                Text = "AAAAAAAAAAAAAAAAAAAAAAAAA\r\nsecond line\r\nthird line",
+                TextWrapping = TextWrapping.NoWrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Width = width,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, target.DesiredSize.Height));
+
+            var lineHeight = target.TextLayout.TextLines[0].Height;
+
+            target.Height = lineHeight * 1.25;
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, target.Height));
+
+            var lastLineText = GetLineText(target, target.TextLayout.TextLines.Count - 1);
+
+            // Must contain exactly one ellipsis, not two.
+            Assert.Contains("…", lastLineText);
+            Assert.False(lastLineText.Contains("……"), $"Double ellipsis found in: {lastLineText}");
+        }
+
+        [Fact]
+        public void TextBlock_With_MaxLines_And_Hidden_Content_After_NewLine_Should_Show_Ellipsis()
+        {
+            // When MaxLines hides content that follows a hard paragraph break, an ellipsis must still
+            // appear on the last visible line so the user knows content was truncated.
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var unbounded = new TextBlock
+            {
+                Text = "first line\r\nsecond line\r\nthird line",
+                Width = 200,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, 200, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count >= 3);
+
+            var target = new TextBlock
+            {
+                Text = "first line\r\nsecond line\r\nthird line",
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 2,
+                Width = 200,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 200, target.DesiredSize.Height));
+
+            Assert.Equal(2, target.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(target, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_MaxLines_And_Hidden_Content_After_NewLine_Should_Show_Ellipsis_WordEllipsis()
+        {
+            // WordEllipsis variant of the test above: it takes a different code path in
+            // TextEllipsisHelper.Collapse (word-boundary search) and must be verified separately.
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var unbounded = new TextBlock
+            {
+                Text = "first line\r\nsecond line\r\nthird line",
+                Width = 200,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, 200, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count >= 3);
+
+            var target = new TextBlock
+            {
+                Text = "first line\r\nsecond line\r\nthird line",
+                TextTrimming = TextTrimming.WordEllipsis,
+                MaxLines = 2,
+                Width = 200,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 200, target.DesiredSize.Height));
+
+            Assert.Equal(2, target.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(target, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_MaxHeight_And_Hidden_Content_After_NewLine_Should_Show_Ellipsis()
+        {
+            // Height-based counterpart of TextBlock_With_MaxLines_And_Hidden_Content_After_NewLine_Should_Show_Ellipsis:
+            // when a Height limit (rather than MaxLines) hides content that follows a hard paragraph break, an
+            // ellipsis must still appear on the last visible line.
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var unbounded = new TextBlock
+            {
+                Text = "first line\r\nsecond line\r\nthird line",
+                Width = 200,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, 200, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count >= 3);
+
+            var lineHeight = unbounded.TextLayout.TextLines[0].Height;
+
+            var target = new TextBlock
+            {
+                Text = "first line\r\nsecond line\r\nthird line",
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Width = 200,
+                Height = lineHeight * 2,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 200, target.Height));
+
+            Assert.Equal(2, target.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(target, 1));
+        }
+
+        [Fact]
+        public void TextBlock_With_Rtl_Wrap_MaxLines_CharacterEllipsis_Should_Show_Ellipsis_On_Last_Line()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            const double width = 120;
+            var unbounded = new TextBlock
+            {
+                Text = LongArabicText,
+                FlowDirection = FlowDirection.RightToLeft,
+                TextWrapping = TextWrapping.Wrap,
+                Width = width,
+            };
+
+            unbounded.Measure(Size.Infinity);
+            unbounded.Arrange(new Rect(0, 0, width, unbounded.DesiredSize.Height));
+
+            Assert.True(unbounded.TextLayout.TextLines.Count > 2);
+
+            var target = new TextBlock
+            {
+                Text = LongArabicText,
+                FlowDirection = FlowDirection.RightToLeft,
+                TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 2,
+                Width = width,
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, width, target.DesiredSize.Height));
+
+            Assert.Equal(2, target.TextLayout.TextLines.Count);
+            Assert.Contains("…", GetLineText(target, 1));
+        }
+
+        private static string GetLineText(TextBlock textBlock, int lineIndex)
+        {
+            var text = new StringBuilder();
+
+            foreach (var run in textBlock.TextLayout.TextLines[lineIndex].TextRuns)
+            {
+                text.Append(run.Text.ToString());
+            }
+
+            return text.ToString();
+        }
+
+        private const string LongLoremText =
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. " +
+            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. " +
+            "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.";
+
+        private const string LongArabicText =
+            "مرحبا بكم في اختبار التخطيط للنصوص الطويلة التي تلتف عبر عدة أسطر للتحقق من سلوك علامة الحذف عند الاقتصاص.";
 
         private class TestTextBlock : TextBlock
         {
