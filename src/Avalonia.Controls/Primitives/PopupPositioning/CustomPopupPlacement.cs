@@ -8,9 +8,10 @@ public record CustomPopupPlacement
     private PopupGravity _gravity;
     private PopupAnchor _anchor;
 
-    internal CustomPopupPlacement(Size popupSize, Visual target)
+    internal CustomPopupPlacement(Size popupSize, Thickness deflate, Visual target)
     {
         PopupSize = popupSize;
+        Deflate = deflate;
         Target = target;
     }
 
@@ -18,6 +19,12 @@ public record CustomPopupPlacement
     /// The <see cref="Size"/> of the <see cref="Popup"/> control.
     /// </summary>
     public Size PopupSize { get; }
+
+    /// <summary>
+    /// Gets or sets how far to deflate <see cref="PopupSize"/> when positioning the popup.
+    /// </summary>
+    /// <inheritdoc cref="PopupPositionerParameters.Deflate"/>
+    public Thickness Deflate { get; }
 
     /// <summary>
     /// Placement target of the popup.

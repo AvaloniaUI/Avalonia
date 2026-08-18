@@ -31,6 +31,7 @@ namespace Avalonia.Controls.Primitives
 
         private PopupPositionRequest? _popupPositionRequest;
         private Size _popupSize;
+        private Thickness _childMargin;
         private bool _needsUpdate;
 
         /// <summary>
@@ -38,14 +39,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static PopupRoot()
         {
-            BackgroundProperty.OverrideDefaultValue(typeof(PopupRoot), Brushes.White);            
+            BackgroundProperty.OverrideDefaultValue(typeof(PopupRoot), Brushes.White);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PopupRoot"/> class.
         /// </summary>
         public PopupRoot(TopLevel parent, IPopupImpl impl)
-            : this(parent, impl,null)
+            : this(parent, impl, null)
         {
         }
 
@@ -68,7 +69,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        public new IPopupImpl? PlatformImpl => (IPopupImpl?)base.PlatformImpl;               
+        public new IPopupImpl? PlatformImpl => (IPopupImpl?)base.PlatformImpl;
 
         /// <summary>
         /// Gets or sets a transform that will be applied to the popup.
@@ -134,7 +135,7 @@ namespace Avalonia.Controls.Primitives
             {
                 _needsUpdate = false;
                 PlatformImpl?.PopupPositioner?
-                    .Update(ParentTopLevel, _popupPositionRequest, _popupSize, FlowDirection);
+                    .Update(ParentTopLevel, _popupPositionRequest, _popupSize, _childMargin, FlowDirection);
             }
         }
 
@@ -150,7 +151,7 @@ namespace Avalonia.Controls.Primitives
         public void TakeFocus() => PlatformImpl?.TakeFocus();
 
         Visual IPopupHost.HostedVisualTreeRoot => this;
-        
+
         protected override Size MeasureOverride(Size availableSize)
         {
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
@@ -193,9 +194,23 @@ namespace Avalonia.Controls.Primitives
 
         private protected sealed override Size ArrangeSetBounds(Size size)
         {
+            var reposition = false;
+
+            var newMargin = Presenter?.Child?.Margin ?? default;
+            if (newMargin != _childMargin)
+            {
+                _childMargin = newMargin;
+                reposition = true;
+            }
+
             if (_popupSize != size)
             {
                 _popupSize = size;
+                reposition = true;
+            }
+
+            if (reposition)
+            {
                 _needsUpdate = true;
                 UpdatePosition();
             }
