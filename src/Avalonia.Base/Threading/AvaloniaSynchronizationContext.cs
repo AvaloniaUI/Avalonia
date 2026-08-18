@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Utilities;
 
 namespace Avalonia.Threading
@@ -13,6 +14,9 @@ namespace Avalonia.Threading
         private readonly NonPumpingLockHelper.IHelperImpl? _nonPumpingHelper =
             AvaloniaLocator.Current.GetService<NonPumpingLockHelper.IHelperImpl>();
         private readonly Dispatcher _dispatcher;
+
+        private readonly object _taskSchedulerLock = new();
+        private TaskScheduler? _taskScheduler;
 
         // This constructor is here to enforce STA behavior for unit tests
         internal AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority, bool isStaThread)
@@ -81,6 +85,31 @@ namespace Avalonia.Threading
                 && _dispatcher.DisabledProcessingCount > 0)
                 return _nonPumpingHelper.Wait(waitHandles, waitAll, millisecondsTimeout);
             return base.Wait(waitHandles, waitAll, millisecondsTimeout);
+        }
+
+        /// <summary>
+        /// Gets a <see cref="TaskScheduler"/> associated with this <see cref="AvaloniaSynchronizationContext"/>.
+        /// </summary>
+        public TaskScheduler ToTaskScheduler()
+        {
+            lock (_taskSchedulerLock)
+            {
+                if (_taskScheduler == null)
+                {
+                    var prevContext = Current;
+                    SetSynchronizationContext(this);
+                    try
+                    {
+                        _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                    }
+                    finally
+                    {
+                        SetSynchronizationContext(prevContext);
+                    }
+                }
+
+                return _taskScheduler;
+            }
         }
 
         public record struct RestoreContext : IDisposable

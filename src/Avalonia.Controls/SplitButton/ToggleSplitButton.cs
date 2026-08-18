@@ -1,5 +1,6 @@
 ﻿using System;
 
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -65,12 +66,19 @@ namespace Avalonia.Controls
         /// </remarks>
         protected override Type StyleKeyOverride => typeof(SplitButton);
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new ToggleSplitButtonAutomationPeer(this);
+
         /// <summary>
         /// Toggles the <see cref="IsChecked"/> property between true and false.
         /// </summary>
         protected void Toggle()
         {
             SetCurrentValue(IsCheckedProperty, !IsChecked);
+        }
+
+        internal void ToggleForAutomation()
+        {
+            OnClickPrimary(null);
         }
 
         /// <inheritdoc/>

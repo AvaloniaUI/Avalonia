@@ -295,12 +295,25 @@ namespace Avalonia.Controls
         {
             PageNavigationSystemBackButtonPressedEvent.AddClassHandler<DrawerPage>((sender, eventArgs) =>
             {
+                if (eventArgs.Handled)
+                    return;
+
                 if (sender.IsOpen
                     && sender.DrawerBehavior != DrawerBehavior.Locked
                     && sender.DrawerBehavior != DrawerBehavior.Disabled)
                 {
                     sender.IsOpen = false;
                     eventArgs.Handled = true;
+                }
+                else
+                {
+                    var pageEvent = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                    sender.CurrentPage?.RaiseEvent(pageEvent);
+
+                    if (pageEvent.Handled)
+                    {
+                        eventArgs.Handled = true;
+                    }
                 }
             });
         }

@@ -43,6 +43,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         MandatoryBreak, //BK
         ConditionalJapaneseStarter, //CJ
         CarriageReturn, //CR
+        UnambiguousHyphen, //HH
         LineFeed, //LF
         NextLine, //NL
         ComplexContext, //SA

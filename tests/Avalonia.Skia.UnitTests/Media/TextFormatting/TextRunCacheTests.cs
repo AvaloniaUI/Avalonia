@@ -227,6 +227,234 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        // Regression tests for the double-reorder bug (commit 2837a287):
+        // When shaped runs with shared ShapedBuffer backing arrays were cached, the old
+        // BidiReorderer.Reverse() call on a non-owning copy mutated the same backing array
+        // that the cached run referenced.  On the next layout the cache returned the already-
+        // reversed buffer but with IsReversed=false, causing BidiReorderer to reverse it a
+        // second time – putting glyphs back in logical (wrong visual) order for RTL runs.
+
+        [Fact]
+        public void Bidi_Cache_Hit_Does_Not_Double_Reorder_RTL_Glyph_Clusters()
+        {
+            using (Start())
+            {
+                // LTR paragraph containing an Arabic RTL island followed by Latin text.
+                // "Hello مرحبا World" – the Arabic word is at source indices 6-10.
+                var text = "Hello \u0645\u0631\u062D\u0628\u0627 World";
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                using var cache = new TextRunCache();
+
+                // Cache miss: shapes and caches.
+                var lineMiss = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    paragraphProperties, null, cache);
+
+                Assert.NotNull(lineMiss);
+
+                // Cache hit: must not double-reverse the RTL run's glyph buffer.
+                var lineHit = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    paragraphProperties, null, cache);
+
+                Assert.NotNull(lineHit);
+                Assert.Equal(lineMiss!.TextRuns.Count, lineHit!.TextRuns.Count);
+
+                for (var i = 0; i < lineMiss.TextRuns.Count; i++)
+                {
+                    var missRun = lineMiss.TextRuns[i] as ShapedTextRun;
+                    var hitRun  = lineHit.TextRuns[i] as ShapedTextRun;
+
+                    if (missRun == null || hitRun == null)
+                        continue;
+
+                    Assert.Equal(missRun.BidiLevel, hitRun.BidiLevel);
+                    Assert.Equal(missRun.ShapedBuffer.IsLeftToRight, hitRun.ShapedBuffer.IsLeftToRight);
+                    Assert.Equal(missRun.ShapedBuffer.Length, hitRun.ShapedBuffer.Length);
+
+                    // For RTL runs the shaper produces glyphs in descending cluster order
+                    // (visual right-to-left).  Double-reversal would flip them back to
+                    // ascending order (logical), causing wrong rendering.
+                    if (!missRun.ShapedBuffer.IsLeftToRight && missRun.ShapedBuffer.Length > 1)
+                    {
+                        var missFirst = missRun.ShapedBuffer[0].GlyphCluster;
+                        var missLast  = missRun.ShapedBuffer[missRun.ShapedBuffer.Length - 1].GlyphCluster;
+                        Assert.True(missFirst >= missLast,
+                            $"Cache-miss RTL run: expected descending clusters but got first={missFirst} last={missLast}");
+
+                        var hitFirst = hitRun.ShapedBuffer[0].GlyphCluster;
+                        var hitLast  = hitRun.ShapedBuffer[hitRun.ShapedBuffer.Length - 1].GlyphCluster;
+                        Assert.True(hitFirst >= hitLast,
+                            $"Cache-hit RTL run: expected descending clusters but got first={hitFirst} last={hitLast}");
+
+                        // The individual cluster values must be identical between miss and hit.
+                        Assert.Equal(missFirst, hitFirst);
+                        Assert.Equal(missLast,  hitLast);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Bidi_Cache_Hit_Matches_No_Cache_For_Pure_RTL_Paragraph()
+        {
+            using (Start())
+            {
+                // Paragraph-level RTL: all text is Arabic so the resolved flow direction is RTL.
+                // "مرحبا بالعالم" (Hello World in Arabic)
+                var text = "\u0645\u0631\u062D\u0628\u0627 \u0628\u0627\u0644\u0639\u0627\u0644\u0645";
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                // Reference: formatted without any cache.
+                var lineNoCache = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    paragraphProperties, null, null);
+
+                Assert.NotNull(lineNoCache);
+
+                using var cache = new TextRunCache();
+
+                var lineMiss = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    paragraphProperties, null, cache);
+
+                var lineHit = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    paragraphProperties, null, cache);
+
+                Assert.NotNull(lineMiss);
+                Assert.NotNull(lineHit);
+                Assert.Equal(lineNoCache!.Length, lineHit!.Length);
+                Assert.Equal(lineNoCache.TextRuns.Count, lineHit.TextRuns.Count);
+
+                for (var i = 0; i < lineNoCache.TextRuns.Count; i++)
+                {
+                    var refRun = lineNoCache.TextRuns[i] as ShapedTextRun;
+                    var hitRun = lineHit.TextRuns[i] as ShapedTextRun;
+
+                    if (refRun == null || hitRun == null)
+                        continue;
+
+                    Assert.Equal(refRun.BidiLevel, hitRun.BidiLevel);
+                    Assert.Equal(refRun.ShapedBuffer.IsLeftToRight, hitRun.ShapedBuffer.IsLeftToRight);
+                    Assert.Equal(refRun.ShapedBuffer.Length, hitRun.ShapedBuffer.Length);
+
+                    // Glyph cluster values must be identical: no double-reversal allowed.
+                    for (var j = 0; j < refRun.ShapedBuffer.Length; j++)
+                    {
+                        Assert.Equal(refRun.ShapedBuffer[j].GlyphCluster,
+                                     hitRun.ShapedBuffer[j].GlyphCluster);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void TextLayout_Recreated_From_Cache_With_Bidi_Has_Same_Glyph_Order()
+        {
+            using (Start())
+            {
+                // Mixed LTR/RTL text used for two successive TextLayout instances that share a cache.
+                // Before the fix, the second instance would double-reverse RTL glyph buffers.
+                var text = "Hello \u0645\u0631\u062D\u0628\u0627 World";
+
+                using var cache = new TextRunCache();
+
+                using var layout1 = new TextLayout(text, Typeface.Default, 12,
+                    textRunCache: cache);
+
+                // Second layout: triggers cache-hit path – previously double-reordered RTL runs.
+                using var layout2 = new TextLayout(text, Typeface.Default, 12,
+                    textRunCache: cache);
+
+                Assert.Equal(layout1.TextLines.Count, layout2.TextLines.Count);
+
+                for (var lineIdx = 0; lineIdx < layout1.TextLines.Count; lineIdx++)
+                {
+                    var line1 = layout1.TextLines[lineIdx];
+                    var line2 = layout2.TextLines[lineIdx];
+
+                    Assert.Equal(line1.Length, line2.Length);
+                    Assert.Equal(line1.TextRuns.Count, line2.TextRuns.Count);
+
+                    for (var i = 0; i < line1.TextRuns.Count; i++)
+                    {
+                        var run1 = line1.TextRuns[i] as ShapedTextRun;
+                        var run2 = line2.TextRuns[i] as ShapedTextRun;
+
+                        if (run1 == null || run2 == null)
+                            continue;
+
+                        Assert.Equal(run1.BidiLevel, run2.BidiLevel);
+                        Assert.Equal(run1.ShapedBuffer.IsLeftToRight, run2.ShapedBuffer.IsLeftToRight);
+                        Assert.Equal(run1.ShapedBuffer.Length, run2.ShapedBuffer.Length);
+
+                        for (var j = 0; j < run1.ShapedBuffer.Length; j++)
+                        {
+                            Assert.Equal(run1.ShapedBuffer[j].GlyphCluster,
+                                         run2.ShapedBuffer[j].GlyphCluster);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Bidi_Cache_Hit_With_Wrapping_Does_Not_Double_Reorder()
+        {
+            using (Start())
+            {
+                // Wrapped bidi text so the Wrap path through FormatLineFromCache is exercised.
+                var text = "Hello \u0645\u0631\u062D\u0628\u0627 World and more text to force wrapping";
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var wrappingProperties = new GenericTextParagraphProperties(
+                    FlowDirection.LeftToRight, TextAlignment.Left, true, false,
+                    defaultProperties, TextWrapping.Wrap, 0, 0, 0);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                using var cache = new TextRunCache();
+
+                // Cache miss pass.
+                var misLines = FormatAllLines(formatter, textSource, 80.0, wrappingProperties, cache);
+
+                // Cache hit pass.
+                var hitLines = FormatAllLines(formatter, textSource, 80.0, wrappingProperties, cache);
+
+                Assert.Equal(misLines.Length, hitLines.Length);
+
+                for (var lineIdx = 0; lineIdx < misLines.Length; lineIdx++)
+                {
+                    var missLine = misLines[lineIdx];
+                    var hitLine  = hitLines[lineIdx];
+
+                    Assert.Equal(missLine.Length, hitLine.Length);
+                    Assert.Equal(missLine.TextRuns.Count, hitLine.TextRuns.Count);
+
+                    for (var i = 0; i < missLine.TextRuns.Count; i++)
+                    {
+                        var missRun = missLine.TextRuns[i] as ShapedTextRun;
+                        var hitRun  = hitLine.TextRuns[i] as ShapedTextRun;
+
+                        if (missRun == null || hitRun == null)
+                            continue;
+
+                        Assert.Equal(missRun.BidiLevel, hitRun.BidiLevel);
+                        Assert.Equal(missRun.ShapedBuffer.IsLeftToRight, hitRun.ShapedBuffer.IsLeftToRight);
+                        Assert.Equal(missRun.ShapedBuffer.Length, hitRun.ShapedBuffer.Length);
+
+                        for (var j = 0; j < missRun.ShapedBuffer.Length; j++)
+                        {
+                            Assert.Equal(missRun.ShapedBuffer[j].GlyphCluster,
+                                         hitRun.ShapedBuffer[j].GlyphCluster);
+                        }
+                    }
+                }
+            }
+        }
+
         [Fact]
         public void Dispose_Releases_Cache_Entries()
         {

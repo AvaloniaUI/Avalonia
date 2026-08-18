@@ -48,5 +48,11 @@ namespace Avalonia.Automation
         /// by the <see cref="AutomationPeer.GetHeadingLevel"/> method.
         /// </summary>
         public static AutomationProperty HeadingLevelProperty { get; } = new AutomationProperty();
+
+        /// <summary>
+        /// Identifies the automation ID property. The automation ID property value is returned
+        /// by the <see cref="AutomationPeer.GetAutomationId"/> method.
+        /// </summary>
+        public static AutomationProperty AutomationIdProperty { get; } = new AutomationProperty();
     }
 }

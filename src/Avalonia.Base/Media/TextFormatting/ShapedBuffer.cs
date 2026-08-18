@@ -1,23 +1,136 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
     public sealed class ShapedBuffer : IReadOnlyList<GlyphInfo>, IDisposable
     {
-        private GlyphInfo[]? _rentedBuffer;
+        /// <summary>
+        /// Disposable wrapper around an <see cref="ArrayPool{T}"/>-rented array.
+        /// Combined with <see cref="IRef{T}"/> this gives <see cref="ShapedBuffer"/>
+        /// shared, ref-counted ownership of its glyph and cluster-cache storage so
+        /// that <see cref="Split"/> and <see cref="WithBidiLevel"/> can safely alias
+        /// the same backing arrays.
+        /// </summary>
+        internal sealed class PooledArray<T> : IDisposable
+        {
+            private T[]? _array;
+            private int _generation;
+
+            public PooledArray(int minLength)
+            {
+                _array = ArrayPool<T>.Shared.Rent(minLength);
+            }
+
+            public T[] Array => _array ?? throw new ObjectDisposedException(nameof(PooledArray<T>));
+
+            /// <summary>
+            /// Monotonically increasing version stamp. Bumped whenever the underlying
+            /// data is mutated so siblings sharing this holder can detect that any
+            /// cache derived from the data is stale and must be rebuilt.
+            /// </summary>
+            public int Generation => Volatile.Read(ref _generation);
+
+            public void BumpGeneration() => Interlocked.Increment(ref _generation);
+
+            public void Dispose()
+            {
+                var arr = Interlocked.Exchange(ref _array, null);
+                if (arr is not null)
+                {
+                    ArrayPool<T>.Shared.Return(arr);
+                }
+            }
+        }
+
+        // Ref-counted handle to the pooled GlyphInfo[] that backs _glyphInfos.
+        // Null when the buffer was constructed over caller-owned storage
+        // (e.g. an externally allocated array for the empty-line synthetic run).
+        // Split children and WithBidiLevel aliases clone this ref so the array
+        // survives until every observer has been disposed.
+        private IRef<PooledArray<GlyphInfo>>? _glyphRef;
         private ArraySlice<GlyphInfo> _glyphInfos;
+
+        // Lazily-computed cluster-width cache. MeasureLength and metrics
+        // queries both fold multi-glyph clusters and accumulate per-cluster
+        // advances — the result depends only on the shaped glyphs and the
+        // text, both immutable for a given ShapedBuffer instance.
+        //
+        // To make wrap-time splits cheap, the cache is shared by reference
+        // across split halves: when this buffer was produced by Split, the
+        // arrays point at the parent's cache and _clusterStartIdx is the offset
+        // at which this buffer's first cluster lives. That keeps post-split
+        // wrap iterations O(1) per query instead of re-walking glyphs.
+        //
+        // _clusterPrefix[i] = sum of cluster advances [0..i) in logical order
+        // over the full source buffer (parent's view); width of this sub-buffer
+        // is `_clusterPrefix[_clusterStartIdx + _clusterCount] - _clusterPrefix[_clusterStartIdx]`.
+        // _clusterStartChars[i] = char offset into the parent's Text where the
+        // i-th cluster begins; this sub-buffer's start char in parent space is
+        // `_clusterStartChars[_clusterStartIdx]`.
+        //
+        // Fast path: when every cluster is exactly one character wide (the
+        // common Latin / single-codepoint case where bufferLength == Text.Length
+        // == clusters), the start-chars array is omitted entirely because
+        // `startChars[k] == k` is implicit. In that mode `_clusterStartChars`
+        // is null but `_clusterPrefix` is still populated. This is detected
+        // during cache build and preserved across <see cref="Split"/>.
+        //
+        // Sums in this prefix are in logical (not visual) order, which can
+        // differ by ULPs from a visual-order sum for RTL buffers. Consumers
+        // comparing layout dimensions should use tolerant equality.
+        //
+        // Pooling: the cache arrays are rented from ArrayPool<T>.Shared in
+        // EnsureClusterCache. Ownership follows the same pattern as
+        // _rentedBuffer for the glyph-info array: only the buffer that rented
+        // the array tracks it in _rentedClusterPrefix / _rentedClusterStartChars
+        // and returns it on Dispose. Split children copy the data-array
+        // references via _clusterPrefix / _clusterStartChars but leave the
+        // _rented* handles null, so they don't return arrays they don't own.
+        // The pool may hand back larger arrays than requested — we always read
+        // through bounded indices (_clusterStartIdx + [0.._clusterCount]) so the
+        // unused tail is harmless.
+        // Pooling: the cluster-cache arrays are reached through ref-counted
+        // <see cref="IRef{PooledArray}"/> handles. The hot-path read fields
+        // <c>_clusterPrefix</c> and <c>_clusterStartChars</c> alias the rented
+        // arrays directly so measure/split loops stay indirection-free. Split
+        // children and <see cref="WithBidiLevel"/> aliases clone the refs, so the
+        // arrays survive until every sibling is disposed; the pool may hand back
+        // larger arrays than requested so we always read through bounded indices
+        // (_clusterStartIdx + [0.._clusterCount]).
+        private double[]? _clusterPrefix;
+        private int[]? _clusterStartChars;
+        private IRef<PooledArray<double>>? _prefixRef;
+        private IRef<PooledArray<int>>? _startsRef;
+        private int _clusterStartIdx;
+        private int _clusterCount;
+
+        // Generation observed on the shared glyph holder when this buffer's
+        // cluster cache was built. If the holder's current generation differs,
+        // a sibling has mutated the glyph array since and we must rebuild.
+        // Zero is the initial value for both fields, so a freshly populated
+        // cache against an unmutated holder matches without extra bookkeeping.
+        private int _cacheGeneration;
+
+        // Guard so Dispose is idempotent. Multiple Dispose calls (e.g. via
+        // cache eviction overlapping with TextLine teardown) only release the
+        // ref-counted handles once.
+        private bool _disposed;
+
+        private static readonly int[] s_emptyStartChars = new[] { 0 };
+        private static readonly double[] s_emptyPrefix = new[] { 0d };
 
         public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
             Text = text;
-            _rentedBuffer = ArrayPool<GlyphInfo>.Shared.Rent(bufferLength);
-            _glyphInfos = new ArraySlice<GlyphInfo>(_rentedBuffer, 0, bufferLength);      
+            _glyphRef = RefCountable.Create(new PooledArray<GlyphInfo>(bufferLength));
+            _glyphInfos = new ArraySlice<GlyphInfo>(_glyphRef.Item.Array, 0, bufferLength);
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
@@ -30,6 +143,44 @@ namespace Avalonia.Media.TextFormatting
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
+        }
+
+        /// <summary>
+        /// Internal constructor used by <see cref="Split"/> and <see cref="WithBidiLevel"/> to
+        /// alias the source buffer's pooled glyph storage and (optionally) cluster cache.
+        /// Each non-null ref is <see cref="IRef{T}.Clone"/>d so the underlying arrays survive
+        /// until every sibling has been disposed. When <paramref name="sourcePrefixRef"/>
+        /// is null the alias starts without a cluster cache and will build its own lazily.
+        /// </summary>
+        private ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos,
+            GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel,
+            IRef<PooledArray<GlyphInfo>>? sourceGlyphRef,
+            IRef<PooledArray<double>>? sourcePrefixRef,
+            IRef<PooledArray<int>>? sourceStartsRef,
+            int clusterStartIdx, int clusterCount, int sourceCacheGeneration)
+        {
+            Text = text;
+            _glyphInfos = glyphInfos;
+            GlyphTypeface = glyphTypeface;
+            FontRenderingEmSize = fontRenderingEmSize;
+            BidiLevel = bidiLevel;
+            _glyphRef = sourceGlyphRef?.Clone();
+
+            if (sourcePrefixRef is not null)
+            {
+                _prefixRef = sourcePrefixRef.Clone();
+                _clusterPrefix = _prefixRef.Item.Array;
+
+                if (sourceStartsRef is not null)
+                {
+                    _startsRef = sourceStartsRef.Clone();
+                    _clusterStartChars = _startsRef.Item.Array;
+                }
+
+                _clusterStartIdx = clusterStartIdx;
+                _clusterCount = clusterCount;
+                _cacheGeneration = sourceCacheGeneration;
+            }
         }
 
         /// <summary>
@@ -55,7 +206,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// The buffer's bidi level.
         /// </summary>
-        public sbyte BidiLevel { get; private set; }
+        public sbyte BidiLevel { get; }
 
         /// <summary>
         /// The buffer's reading direction.
@@ -66,23 +217,38 @@ namespace Avalonia.Media.TextFormatting
         /// The text that is represended by this buffer.
         /// </summary>
         public ReadOnlyMemory<char> Text { get; }
-        
-        /// <summary>
-        /// Reverses the buffer.
-        /// </summary>
-        public void Reverse()
-        {
-            _glyphInfos.Span.Reverse();
-        }
 
         public void Dispose()
         {
-            if (_rentedBuffer is not null)
+            if (_disposed)
             {
-                ArrayPool<GlyphInfo>.Shared.Return(_rentedBuffer);
-                _rentedBuffer = null;
-                _glyphInfos = ArraySlice<GlyphInfo>.Empty; // ensure we don't misuse the returned array
+                return;
             }
+            _disposed = true;
+
+            _glyphRef?.Dispose();
+            _glyphRef = null;
+            _glyphInfos = ArraySlice<GlyphInfo>.Empty; // ensure we don't misuse a returned array
+
+            ReleaseClusterCacheRefs();
+            _clusterPrefix = null;
+            _clusterStartChars = null;
+            _clusterStartIdx = 0;
+            _clusterCount = 0;
+        }
+
+        /// <summary>
+        /// Releases this buffer's ref-counted handles to the cluster-cache arrays
+        /// (if any). The underlying arrays are only returned to the pool when the
+        /// last sibling releases its handle, so this is safe to call from both
+        /// <see cref="Dispose"/> and <see cref="InvalidateClusterCache"/>.
+        /// </summary>
+        private void ReleaseClusterCacheRefs()
+        {
+            _prefixRef?.Dispose();
+            _prefixRef = null;
+            _startsRef?.Dispose();
+            _startsRef = null;
         }
 
         public GlyphInfo this[int index]
@@ -90,12 +256,328 @@ namespace Avalonia.Media.TextFormatting
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _glyphInfos[index];
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _glyphInfos[index] = value;
+            set
+            {
+                _glyphInfos[index] = value;
+                // Bump the shared glyph generation so any sibling that built a
+                // cluster cache against the pre-mutation glyphs will detect the
+                // mismatch on its next EnsureClusterCache call and rebuild.
+                _glyphRef?.Item.BumpGeneration();
+                InvalidateClusterCache();
+            }
+        }
+
+        /// <summary>
+        /// Test hook: indicates that the cluster cache is using the
+        /// one-char-per-cluster fast path (no <c>_clusterStartChars</c> allocation).
+        /// Materialises the cache as a side effect, so call after the buffer is
+        /// fully populated.
+        /// </summary>
+        internal bool IsClusterCacheSimple
+        {
+            get
+            {
+                EnsureClusterCache();
+                return _clusterStartChars is null;
+            }
+        }
+
+        /// <summary>
+        /// Test hook: exposes the backing cluster-prefix array reference so unit
+        /// tests can assert that <see cref="Split"/> / <see cref="WithBidiLevel"/>
+        /// aliases share the parent's cache rather than rebuilding their own.
+        /// Returns null when no cache has been built yet.
+        /// </summary>
+        internal double[]? ClusterPrefix => _clusterPrefix;
+
+        /// <summary>
+        /// Returns the total advance of all glyphs in the buffer (i.e. the buffer's
+        /// rendered width). Cached after first access; the value is summed in
+        /// logical cluster order, which can differ by ULPs from a visual-order sum
+        /// on RTL buffers — fine for layout but tests should use FP-tolerant equality.
+        /// </summary>
+        internal double TotalGlyphAdvance
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                var prefix = EnsureClusterCache();
+                var start = _clusterStartIdx;
+                return prefix[start + _clusterCount] - prefix[start];
+            }
+        }
+
+        /// <summary>
+        /// Returns the character length of the first logical cluster in this buffer.
+        /// Used by <c>MeasureLength</c> to satisfy the "include at least one cluster"
+        /// rule when even the first cluster does not fit the paragraph width.
+        /// </summary>
+        internal int FirstClusterCharLength
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                EnsureClusterCache();
+
+                if (_clusterCount == 0)
+                {
+                    return 0;
+                }
+                var starts = _clusterStartChars;
+                if (starts is null)
+                {
+                    // Simple mode: every cluster is one character wide.
+                    return 1;
+                }
+                var startIdx = _clusterStartIdx;
+                return starts[startIdx + 1] - starts[startIdx];
+            }
+        }
+
+        /// <summary>
+        /// Ensures the cluster cache is built in <em>logical</em> order. LTR buffers store glyphs
+        /// in ascending cluster order so logical order is the same as visual order
+        /// (walk forward from index 0). RTL buffers store glyphs in descending cluster
+        /// order — visual order is reverse-logical — so logical order means walking
+        /// the underlying array backwards. The output `prefix` and `startChars` are
+        /// always in logical order: `startChars[0] == 0`, `startChars[count] == Text.Length`,
+        /// and `prefix[count]` equals the total advance.
+        /// </summary>
+        private double[] EnsureClusterCache()
+        {
+            var currentGeneration = _glyphRef?.Item.Generation ?? 0;
+            if (_clusterPrefix is not null)
+            {
+                if (_cacheGeneration == currentGeneration)
+                {
+                    return _clusterPrefix;
+                }
+                // A sibling mutated the shared glyph array since this cache was
+                // built — drop the stale view (releasing our refs; other
+                // siblings keep their clones alive) and rebuild below against
+                // the current glyph data.
+                InvalidateClusterCache();
+            }
+
+            var glyphInfos = _glyphInfos.Span;
+            var bufferLength = _glyphInfos.Length;
+
+            if (bufferLength == 0)
+            {
+                _clusterCount = 0;
+                _clusterStartChars = s_emptyStartChars;
+                _cacheGeneration = currentGeneration;
+                return _clusterPrefix = s_emptyPrefix;
+            }
+
+            var isLtr = IsLeftToRight;
+            var step = isLtr ? 1 : -1;
+            var start = isLtr ? 0 : bufferLength - 1;
+            var end = isLtr ? bufferLength : -1;
+
+            var baseCluster = glyphInfos[start].GlyphCluster;
+            var textLength = Text.Length;
+
+            // First pass: count clusters by counting cluster-id transitions in
+            // logical order. Also track whether this is the "simple" case where
+            // bufferLength == textLength == clusters and cluster ids are exactly
+            // baseCluster + logicalIndex — i.e. one glyph per cluster, one char
+            // per cluster. The check piggybacks the existing iteration so it adds
+            // a few cheap comparisons but no allocations.
+            var clusters = 1;
+            var canBeSimple = bufferLength == textLength;
+            // Logical index 0 trivially matches: glyphInfos[start].GlyphCluster - baseCluster == 0.
+
+            {
+                var prevId = glyphInfos[start].GlyphCluster;
+                var logicalIndex = 1;
+                for (var j = start + step; j != end; j += step, logicalIndex++)
+                {
+                    var id = glyphInfos[j].GlyphCluster;
+                    if (id != prevId)
+                    {
+                        clusters++;
+                        prevId = id;
+                    }
+                    if (canBeSimple && id - baseCluster != logicalIndex)
+                    {
+                        canBeSimple = false;
+                    }
+                }
+            }
+
+            var simple = canBeSimple && clusters == bufferLength;
+
+            // Rent (possibly oversized) ref-counted holders from the shared pools.
+            // Split children / WithBidiLevel aliases will Clone these refs so the
+            // arrays survive until every sibling has released them.
+            var prefixHolder = new PooledArray<double>(clusters + 1);
+            _prefixRef = RefCountable.Create(prefixHolder);
+            var prefix = prefixHolder.Array;
+
+            int[]? startChars = null;
+            if (!simple)
+            {
+                var startsHolder = new PooledArray<int>(clusters + 1);
+                _startsRef = RefCountable.Create(startsHolder);
+                startChars = startsHolder.Array;
+            }
+
+            // Pool-provided arrays come pre-populated with old data; the first
+            // prefix slot must be zero (the loop below overwrites every other
+            // slot we read, and startChars[0] is set explicitly when needed).
+            prefix[0] = 0d;
+
+            var clusterIndex = 0;
+            var currentClusterId = baseCluster;
+            var currentWidth = 0d;
+            if (!simple)
+            {
+                startChars![0] = 0;
+            }
+
+            for (var j = start; j != end; j += step)
+            {
+                var info = glyphInfos[j];
+
+                if (info.GlyphCluster != currentClusterId)
+                {
+                    prefix[clusterIndex + 1] = prefix[clusterIndex] + currentWidth;
+                    if (!simple)
+                    {
+                        // Cluster IDs increase in logical order in both directions: for LTR
+                        // we walk forward over ascending IDs; for RTL we walk backward over
+                        // (visually descending = logically ascending) IDs.
+                        startChars![clusterIndex + 1] = info.GlyphCluster - baseCluster;
+                    }
+                    clusterIndex++;
+                    currentClusterId = info.GlyphCluster;
+                    currentWidth = info.GlyphAdvance;
+                }
+                else
+                {
+                    currentWidth += info.GlyphAdvance;
+                }
+            }
+
+            // Close the final cluster.
+            prefix[clusterIndex + 1] = prefix[clusterIndex] + currentWidth;
+            if (!simple)
+            {
+                startChars![clusterIndex + 1] = textLength;
+            }
+
+            _clusterCount = clusters;
+            _clusterStartChars = startChars;
+            _clusterPrefix = prefix;
+            _cacheGeneration = currentGeneration;
+            return prefix;
+        }
+
+        /// <summary>
+        /// Returns the cluster index (relative to this sub-buffer's cache view) at
+        /// which a logical text-character offset lands. Split methods snap their
+        /// boundaries to whole clusters, so this is an exact match in the cluster
+        /// starts table.
+        /// </summary>
+        private int FindClusterOffsetForSplit(int splitCharCount)
+        {
+            var starts = _clusterStartChars;
+            if (starts is null)
+            {
+                // Simple mode: cluster index == char offset within this sub-buffer.
+                return splitCharCount;
+            }
+
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var targetChar = starts[startIdx] + splitCharCount;
+
+            // Binary search for the first cluster whose start char >= targetChar.
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi) >> 1;
+                if (starts[startIdx + mid] < targetChar)
+                {
+                    lo = mid + 1;
+                }
+                else
+                {
+                    hi = mid;
+                }
+            }
+            return lo;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void InvalidateClusterCache()
+        {
+            // Releasing our refs is safe even when siblings hold clones — the
+            // underlying pool arrays survive until the last ref is disposed.
+            // After invalidation a fresh cache will be rented on the next
+            // EnsureClusterCache call (independent from any sibling's view).
+            ReleaseClusterCacheRefs();
+            _clusterPrefix = null;
+            _clusterStartChars = null;
+            _clusterStartIdx = 0;
+            _clusterCount = 0;
         }
 
         public IEnumerator<GlyphInfo> GetEnumerator() => _glyphInfos.GetEnumerator();
 
-        internal void ResetBidiLevel(sbyte paragraphEmbeddingLevel) => BidiLevel = paragraphEmbeddingLevel;
+        /// <summary>
+        /// Creates a view of this buffer that reports the given <paramref name="paragraphEmbeddingLevel"/>
+        /// as its <see cref="BidiLevel"/> while sharing the same underlying glyphs.
+        /// Used for trailing-whitespace handling where the visual direction follows the paragraph.
+        /// </summary>
+        internal ShapedBuffer WithBidiLevel(sbyte paragraphEmbeddingLevel)
+        {
+            if (BidiLevel == paragraphEmbeddingLevel)
+            {
+                return this;
+            }
+
+            // If we already have a populated cluster cache, hand the alias its
+            // own clones of the ref-counted holders so it can read the prefix
+            // sums without rebuilding. BidiLevel only affects how callers
+            // interpret the buffer, not the shaper's glyph order, so the
+            // logical-order prefix sums are identical.
+            IRef<PooledArray<double>>? prefixRef = null;
+            IRef<PooledArray<int>>? startsRef = null;
+            var startIdx = 0;
+            var count = 0;
+            if (_prefixRef is not null)
+            {
+                prefixRef = _prefixRef;
+                startsRef = _startsRef;
+                startIdx = _clusterStartIdx;
+                count = _clusterCount;
+            }
+
+            return new ShapedBuffer(
+                Text, _glyphInfos, GlyphTypeface, FontRenderingEmSize, paragraphEmbeddingLevel,
+                _glyphRef, prefixRef, startsRef, startIdx, count, _cacheGeneration);
+        }
+
+        /// <summary>
+        /// Creates a deep copy backed by a fresh, non-pooled <see cref="GlyphInfo"/> array so the
+        /// copy's advances can be mutated (e.g. by justification) without touching glyph storage
+        /// shared with a <see cref="TextRunCache"/> entry, a <see cref="Split"/> sibling or a
+        /// <see cref="WithBidiLevel"/> alias. The copy owns no ref-counted pooled handles (its
+        /// <c>_glyphRef</c> is null) and builds its own cluster cache lazily.
+        /// </summary>
+        internal ShapedBuffer CloneWritable()
+        {
+            var span = _glyphInfos.Span;
+            var glyphs = new GlyphInfo[span.Length];
+
+            span.CopyTo(glyphs);
+
+            return new ShapedBuffer(Text, new ArraySlice<GlyphInfo>(glyphs), GlyphTypeface, FontRenderingEmSize, BidiLevel);
+        }
 
         int IReadOnlyCollection<GlyphInfo>.Count => _glyphInfos.Length;
 
@@ -126,25 +608,30 @@ namespace Avalonia.Media.TextFormatting
                 return new SplitResult<ShapedBuffer>(this, null);
             }
 
+            return IsLeftToRight ? SplitAscending(textLength) : SplitDescending(textLength);
+        }
+
+        /// <summary>
+        /// Split a buffer whose glyphs are ordered by ascending cluster (LTR visual / logical order).
+        /// </summary>
+        private SplitResult<ShapedBuffer> SplitAscending(int textLength)
+        {
             var sliceStart = _glyphInfos.Start;
             var glyphInfos = _glyphInfos.Span;
             var glyphInfosLength = _glyphInfos.Length;
 
-            // the first glyph’s cluster is our “zero” for this sub‐buffer.
-            // we want an absolute target cluster = baseCluster + textLength
+            // the first glyph’s cluster is our “zero” for this sub-buffer.
             var baseCluster = glyphInfos[0].GlyphCluster;
             var targetCluster = baseCluster + textLength;
 
-            // binary‐search for a dummy with cluster == targetCluster
             var searchValue = new GlyphInfo(0, targetCluster, 0, default);
             var foundIndex = glyphInfos.BinarySearch(searchValue, GlyphInfo.ClusterAscendingComparer);
 
-            int splitGlyphIndex;    // how many glyph‐slots go into "leading"
-            int splitCharCount;   // how many chars go into "leading" Text
+            int splitGlyphIndex;
+            int splitCharCount;
 
             if (foundIndex >= 0)
             {
-                // found a glyph info whose cluster == targetCluster
                 // back up to the start of the cluster
                 var i = foundIndex;
 
@@ -152,26 +639,21 @@ namespace Avalonia.Media.TextFormatting
                 {
                     i--;
                 }
-                    
+
                 splitGlyphIndex = i;
                 splitCharCount = targetCluster - baseCluster;
             }
             else
             {
-                // no exact match need to invert so ~foundIndex is the insertion point
-                // the first cluster > targetCluster
                 var invertedIndex = ~foundIndex;
 
                 if (invertedIndex >= glyphInfosLength)
                 {
-                    // happens only if targetCluster ≥ lastCluster
-                    // put everything into leading
                     splitGlyphIndex = glyphInfosLength;
                     splitCharCount = Text.Length;
                 }
                 else
                 {
-                    // snap to the start of that next cluster
                     splitGlyphIndex = invertedIndex;
                     var nextCluster = glyphInfos[invertedIndex].GlyphCluster;
                     splitCharCount = nextCluster - baseCluster;
@@ -184,21 +666,286 @@ namespace Avalonia.Media.TextFormatting
             var firstText = Text.Slice(0, splitCharCount);
             var secondText = Text.Slice(splitCharCount);
 
+            // Ensure parent's cluster cache exists, then hand sub-views of
+            // it to the children. Splitting is O(1) per child instead of O(glyphs).
+            EnsureClusterCache();
+            var leadingClusterCount = FindClusterOffsetForSplit(splitCharCount);
+
             var leading = new ShapedBuffer(
                 firstText, firstGlyphs,
-                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+                GlyphTypeface, FontRenderingEmSize, BidiLevel,
+                _glyphRef, _prefixRef, _startsRef,
+                _clusterStartIdx, leadingClusterCount, _cacheGeneration);
 
-            // this happens if we try to find a position inside a cluster and we moved to the end
-            if(secondText.Length == 0)
+            if (secondText.Length == 0)
             {
                 return new SplitResult<ShapedBuffer>(leading, null);
             }
 
             var trailing = new ShapedBuffer(
                 secondText, secondGlyphs,
-                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+                GlyphTypeface, FontRenderingEmSize, BidiLevel,
+                _glyphRef, _prefixRef, _startsRef,
+                _clusterStartIdx + leadingClusterCount, _clusterCount - leadingClusterCount, _cacheGeneration);
 
             return new SplitResult<ShapedBuffer>(leading, trailing);
+        }
+
+        /// <summary>
+        /// Split a buffer whose glyphs are ordered by descending cluster (RTL visual order).
+        /// The leading <see cref="ShapedBuffer"/> corresponds to text[0..textLength], whose glyphs
+        /// live at the <em>tail</em> of the visual array.
+        /// </summary>
+        private SplitResult<ShapedBuffer> SplitDescending(int textLength)
+        {
+            var sliceStart = _glyphInfos.Start;
+            var glyphInfos = _glyphInfos.Span;
+            var glyphInfosLength = _glyphInfos.Length;
+
+            // Cluster values are anchored to the original text and can start from any value
+            // after a previous split. The logical-first cluster of this buffer is at the
+            // tail of the visual array (smallest cluster). The split happens at logical
+            // offset textLength from there.
+            var baseCluster = glyphInfos[glyphInfosLength - 1].GlyphCluster;
+            var targetCluster = baseCluster + textLength;
+
+            var searchValue = new GlyphInfo(0, targetCluster, 0, default);
+            var foundIndex = glyphInfos.BinarySearch(searchValue, GlyphInfo.ClusterDescendingComparer);
+
+            int splitGlyphIndex; // boundary between "second" (head/leading-visual) and "first" (tail/trailing-visual)
+
+            if (foundIndex >= 0)
+            {
+                // Snap to the last glyph that still has cluster == targetCluster; that glyph
+                // belongs to the trailing chunk (text[textLength..]) — i.e. still "second".
+                while (foundIndex + 1 < glyphInfosLength
+                       && glyphInfos[foundIndex + 1].GlyphCluster == targetCluster)
+                {
+                    foundIndex++;
+                }
+
+                splitGlyphIndex = foundIndex + 1;
+            }
+            else
+            {
+                splitGlyphIndex = ~foundIndex;
+            }
+
+            // Visual leading = glyphs [0, splitGlyphIndex) → logically text[textLength..]  (our "second")
+            // Visual trailing = glyphs [splitGlyphIndex, end) → logically text[0..textLength] (our "first")
+            var secondGlyphs = _glyphInfos.Slice(sliceStart, splitGlyphIndex);
+            var firstGlyphs = _glyphInfos.Slice(sliceStart + splitGlyphIndex, glyphInfosLength - splitGlyphIndex);
+
+            var firstText = Text.Slice(0, textLength);
+            var secondText = Text.Slice(textLength);
+
+            // share the parent's cluster cache. The cache stores
+            // clusters in logical order, so "first" (text[0..textLength]) gets the
+            // leading slice and "second" gets the trailing slice — same indexing
+            // as the LTR case.
+            EnsureClusterCache();
+            var firstClusterCount = FindClusterOffsetForSplit(textLength);
+
+            var first = new ShapedBuffer(
+                firstText, firstGlyphs,
+                GlyphTypeface, FontRenderingEmSize, BidiLevel,
+                _glyphRef, _prefixRef, _startsRef,
+                _clusterStartIdx, firstClusterCount, _cacheGeneration);
+
+            if (secondText.Length == 0 || secondGlyphs.Length == 0)
+            {
+                return new SplitResult<ShapedBuffer>(first, null);
+            }
+
+            var second = new ShapedBuffer(
+                secondText, secondGlyphs,
+                GlyphTypeface, FontRenderingEmSize, BidiLevel,
+                _glyphRef, _prefixRef, _startsRef,
+                _clusterStartIdx + firstClusterCount, _clusterCount - firstClusterCount, _cacheGeneration);
+
+            return new SplitResult<ShapedBuffer>(first, second);
+        }
+
+        /// <summary>
+        /// Returns the cumulative glyph advance for the logical character range
+        /// <c>[<paramref name="startChar"/>, <paramref name="endChar"/>)</c>
+        /// within this sub-buffer. Uses the cluster cache via binary search, so
+        /// each call is O(log clusters) regardless of how big the buffer is or
+        /// where the range sits inside it.
+        /// </summary>
+        /// <remarks>
+        /// The cluster cache is built in <i>logical</i> order for both LTR and
+        /// RTL buffers (see <see cref="EnsureClusterCache"/>), so callers pass
+        /// logical char offsets and the same code path serves both directions.
+        /// Out-of-range arguments are clamped to <c>[0, Text.Length]</c>.
+        /// </remarks>
+        internal double GetCharRangeWidth(int startChar, int endChar)
+        {
+            if (endChar <= startChar)
+            {
+                return 0d;
+            }
+
+            var prefix = EnsureClusterCache();
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var starts = _clusterStartChars;
+            int startBoundary;
+            int endBoundary;
+            if (starts is null)
+            {
+                // Simple mode: one char per cluster, so the local char offset equals
+                // the local cluster index. Clamp to [0, count] to mirror the
+                // out-of-range handling of FindLargestClusterAtOrBefore.
+                startBoundary = Math.Clamp(startChar, 0, count);
+                endBoundary = Math.Clamp(endChar, 0, count);
+            }
+            else
+            {
+                var baseChar = starts[startIdx];
+                startBoundary = FindLargestClusterAtOrBefore(starts, startIdx, count, baseChar, startChar);
+                endBoundary = FindLargestClusterAtOrBefore(starts, startIdx, count, baseChar, endChar);
+            }
+
+            return prefix[startIdx + endBoundary] - prefix[startIdx + startBoundary];
+        }
+
+        /// <summary>
+        /// Binary-search the largest cluster boundary index <c>i ∈ [0, count]</c>
+        /// such that <c>starts[startIdx + i] - baseChar ≤ charPos</c>. Cluster
+        /// starts are non-decreasing within the sub-buffer range, so a standard
+        /// upper-bound search works in both LTR and RTL buffers (the cache is
+        /// always built in logical order).
+        /// </summary>
+        private static int FindLargestClusterAtOrBefore(int[] starts, int startIdx, int count, int baseChar, int charPos)
+        {
+            if (charPos < 0)
+            {
+                return 0;
+            }
+
+            // Standard "rightmost <= charPos" upper-bound shape.
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi + 1) >> 1;
+                if (starts[startIdx + mid] - baseChar <= charPos)
+                {
+                    lo = mid;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+            return lo;
+        }
+
+        /// <summary>
+        /// Finds the largest <c>N</c> such that the first <c>N</c> logical
+        /// characters of this sub-buffer fit within <paramref name="availableWidth"/>.
+        /// Cluster-atomic: a multi-glyph cluster either fits completely or not at
+        /// all. Returns 0 if <paramref name="availableWidth"/> is non-positive
+        /// or the first cluster's width already exceeds it.
+        /// </summary>
+        /// <remarks>
+        /// Walks the cluster cache (built in logical order for both LTR and RTL
+        /// buffers) via binary search, so each call is O(log clusters) and the
+        /// returned count is the correct logical-leading char count regardless
+        /// of the buffer's visual direction.
+        /// </remarks>
+        internal int FindLeadingCharCountWithinWidth(double availableWidth)
+        {
+            if (availableWidth <= 0)
+            {
+                return 0;
+            }
+
+            var prefix = EnsureClusterCache();
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var basePrefix = prefix[startIdx];
+
+            // Largest k in [0, count] with prefix[startIdx + k] - basePrefix <= availableWidth.
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi + 1) >> 1;
+                if (MathUtilities.LessThanOrClose(prefix[startIdx + mid] - basePrefix, availableWidth))
+                {
+                    lo = mid;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+
+            var starts = _clusterStartChars;
+            if (starts is null)
+            {
+                // Simple mode: char count == cluster count that fits.
+                return lo;
+            }
+            return starts[startIdx + lo] - starts[startIdx];
+        }
+
+        /// <summary>
+        /// Finds the largest <c>N</c> such that the last <c>N</c> logical
+        /// characters of this sub-buffer fit within <paramref name="availableWidth"/>.
+        /// Cluster-atomic; <paramref name="consumedWidth"/> reports the actual
+        /// cumulative advance of those <c>N</c> chars.
+        /// </summary>
+        /// <remarks>
+        /// O(log clusters) via the cluster cache; direction-agnostic (cache is
+        /// always in logical order). The returned count is the logical-trailing
+        /// char count regardless of whether the buffer is LTR or RTL.
+        /// </remarks>
+        internal int FindTrailingCharCountWithinWidth(double availableWidth, out double consumedWidth)
+        {
+            consumedWidth = 0;
+
+            if (availableWidth <= 0)
+            {
+                return 0;
+            }
+
+            var prefix = EnsureClusterCache();
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var endPrefix = prefix[startIdx + count];
+
+            // Smallest k in [0, count] with endPrefix - prefix[startIdx + k] <= availableWidth.
+            // (That cluster index marks where the trailing-fitting suffix starts.)
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi) >> 1;
+                if (MathUtilities.LessThanOrClose(endPrefix - prefix[startIdx + mid], availableWidth))
+                {
+                    hi = mid;
+                }
+                else
+                {
+                    lo = mid + 1;
+                }
+            }
+
+            consumedWidth = endPrefix - prefix[startIdx + lo];
+
+            var starts = _clusterStartChars;
+            if (starts is null)
+            {
+                // Simple mode: char count == cluster count in the trailing suffix.
+                return count - lo;
+            }
+            return starts[startIdx + count] - starts[startIdx + lo];
         }
     }
 }

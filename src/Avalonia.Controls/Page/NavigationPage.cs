@@ -234,6 +234,18 @@ namespace Avalonia.Controls
                     return;
                 }
 
+                if (sender.CurrentPage != null)
+                {
+                    var forwarded = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                    sender.CurrentPage.RaiseEvent(forwarded);
+
+                    if (forwarded.Handled)
+                        eventArgs.Handled = true;
+                }
+
+                if (eventArgs.Handled)
+                    return;
+
                 if (sender.StackDepth > 1)
                 {
                     eventArgs.Handled = true;
@@ -848,7 +860,9 @@ namespace Avalonia.Controls
             if (old != null)
                 _pageSet.Remove(old);
 
-            if (old is ILogical oldLogical)
+            // Remove the page from the logical tree only if it isn't in a presenter.
+            // If it is, it's animating out and will be removed once the animation completes.
+            if (old is ILogical oldLogical && !IsPageInPresenter(old))
                 LogicalChildren.Remove(oldLogical);
 
             InvalidateNavigationStackCache();
@@ -1023,19 +1037,12 @@ namespace Avalonia.Controls
 
                 var poppedPages = new List<Page>();
 
-                void TearDownPopped(Page popped)
+                while (_navigationStack.Count > 1)
                 {
-                    _pageSet.Remove(popped);
-                    if (popped is ILogical poppedLogical)
-                        LogicalChildren.Remove(poppedLogical);
-                    popped.Navigation = null;
-                    popped.SetInNavigationPage(false);
-                    popped.SafeAreaPadding = default;
+                    var popped = _navigationStack.Pop();
+                    TearDownPoppedPage(popped);
                     poppedPages.Add(popped);
                 }
-
-                while (_navigationStack.Count > 1)
-                    TearDownPopped(_navigationStack.Pop());
 
                 InvalidateNavigationStackCache();
                 _isPop = true;
@@ -1061,6 +1068,20 @@ namespace Avalonia.Controls
             {
                 SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
+        }
+
+        private void TearDownPoppedPage(Page popped)
+        {
+            _pageSet.Remove(popped);
+
+            // Remove the page from the logical tree only if it isn't in a presenter.
+            // If it is, it will be removed once the animation is complete.
+            if (popped is ILogical poppedLogical && !IsPageInPresenter(popped))
+                LogicalChildren.Remove(poppedLogical);
+
+            popped.Navigation = null;
+            popped.SetInNavigationPage(false);
+            popped.SafeAreaPadding = default;
         }
 
         /// <summary>
@@ -1125,19 +1146,12 @@ namespace Avalonia.Controls
 
                 var poppedPages = new List<Page>();
 
-                void TearDownPopped(Page popped)
+                while (_navigationStack.Count > 1 && _navigationStack.Peek() != page)
                 {
-                    _pageSet.Remove(popped);
-                    if (popped is ILogical poppedLogical)
-                        LogicalChildren.Remove(poppedLogical);
-                    popped.Navigation = null;
-                    popped.SetInNavigationPage(false);
-                    popped.SafeAreaPadding = default;
+                    var popped = _navigationStack.Pop();
+                    TearDownPoppedPage(popped);
                     poppedPages.Add(popped);
                 }
-
-                while (_navigationStack.Count > 1 && _navigationStack.Peek() != page)
-                    TearDownPopped(_navigationStack.Pop());
 
                 InvalidateNavigationStackCache();
                 _isPop = true;
@@ -1788,6 +1802,9 @@ namespace Avalonia.Controls
                 _currentTransition?.Dispose();
                 _currentTransition = null;
 
+                // A previous transition may have been canceled above before its teardown ran, leaving its outgoing page
+                // in the back presenter; reconcile the logical tree.
+                DetachOrphanedPageFromLogicalTree(_pageBackPresenter.Content);
                 _pageBackPresenter.IsVisible = false;
                 _pageBackPresenter.Content = null;
                 _pageBackPresenter.RenderTransform = null;
@@ -1827,6 +1844,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
+                    var oldPageContent = _pagePresenter.Content;
                     _lastPageTransitionTask = Task.CompletedTask;
 
                     _pagePresenter.Content = page;
@@ -1836,6 +1854,8 @@ namespace Avalonia.Controls
                     _pageBackPresenter.Content = null;
                     _pageBackPresenter.IsVisible = false;
                     _pageBackPresenter.ZIndex = 0;
+
+                    DetachOrphanedPageFromLogicalTree(oldPageContent);
                 }
 
                 if (page != null)
@@ -1920,10 +1940,12 @@ namespace Avalonia.Controls
             if (ct.IsCancellationRequested)
                 return;
 
+            var fromContent = from.Content;
             from.IsVisible = false;
             from.Content = null;
             from.RenderTransform = null;
             from.Opacity = 1;
+            DetachOrphanedPageFromLogicalTree(fromContent);
         }
 
         private Task AwaitPageTransitionAsync()
@@ -1962,7 +1984,9 @@ namespace Avalonia.Controls
             _pageSet.Add(page);
             InvalidateNavigationStackCache();
 
-            if (removed is ILogical removedLogical)
+            // Remove the replaced page from the logical tree only if it isn't in a presenter.
+            // If it is, it's animating out and will be removed once the animation completes.
+            if (removed is ILogical removedLogical && !IsPageInPresenter(removed))
                 LogicalChildren.Remove(removedLogical);
             if (page is ILogical addedLogical)
                 LogicalChildren.Add(addedLogical);
@@ -1972,6 +1996,20 @@ namespace Avalonia.Controls
 
             UpdateActivePage();
         }
+
+        private void DetachOrphanedPageFromLogicalTree(object? content)
+        {
+            if (content is ILogical logical
+                && content is Page page
+                && !_pageSet.Contains(page)
+                && logical.LogicalParent == this)
+            {
+                LogicalChildren.Remove(logical);
+            }
+        }
+
+        private bool IsPageInPresenter(Page page)
+            => ReferenceEquals(page, _pagePresenter?.Content) || ReferenceEquals(page, _pageBackPresenter?.Content);
 
         private void SwapModalPresenters()
         {

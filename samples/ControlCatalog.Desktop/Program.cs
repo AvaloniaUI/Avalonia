@@ -142,6 +142,8 @@ namespace ControlCatalog.Desktop
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .WithDataAnnotationsValidation()
+                .UseWaylandWithFallback()
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
@@ -162,7 +164,9 @@ namespace ControlCatalog.Desktop
                 })
                 .UseSkia()
                 .WithInterFont()
+#if DEBUG
                 .WithDeveloperTools()
+#endif
                 .AfterSetup(builder =>
                 {
                     EmbedSample.Implementation = OperatingSystem.IsWindows() ? new EmbedSampleWin()

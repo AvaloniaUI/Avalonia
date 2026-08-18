@@ -125,20 +125,27 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Adds shaped runs to the cache for the given text source index.
+        /// Adds shaped runs to the cache for the given text source index. The cache takes
+        /// its own reference to each <see cref="ShapedTextRun"/>; the caller retains its
+        /// original references unchanged.
         /// </summary>
         internal void Add(int firstTextSourceIndex, CachedShapingResult result)
         {
+            AddRefShapedRuns(result.ShapedRuns);
+
             if (_entries != null)
             {
-                // Already in multi-entry mode.
+                if (_entries.TryGetValue(firstTextSourceIndex, out var existing))
+                {
+                    DisposeCachedRuns(existing);
+                }
+
                 _entries[firstTextSourceIndex] = result;
                 return;
             }
 
             if (!_hasSingleEntry)
             {
-                // First entry: store inline.
                 _singleKey = firstTextSourceIndex;
                 _singleValue = result;
                 _hasSingleEntry = true;
@@ -147,7 +154,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (_singleKey == firstTextSourceIndex)
             {
-                // Same key: update inline value.
+                DisposeCachedRuns(_singleValue);
                 _singleValue = result;
                 return;
             }
@@ -162,6 +169,17 @@ namespace Avalonia.Media.TextFormatting
             _singleValue = default;
         }
 
+        private static void AddRefShapedRuns(TextRun[] runs)
+        {
+            foreach (var run in runs)
+            {
+                if (run is ShapedTextRun shaped)
+                {
+                    shaped.AddRef();
+                }
+            }
+        }
+
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -171,11 +189,9 @@ namespace Avalonia.Media.TextFormatting
 
         private static void DisposeCachedRuns(CachedShapingResult result)
         {
-            var runs = result.ShapedRuns;
-
-            for (var i = 0; i < runs.Length; i++)
+            foreach (var run in result.ShapedRuns)
             {
-                if (runs[i] is ShapedTextRun shaped)
+                if (run is ShapedTextRun shaped)
                 {
                     shaped.Dispose();
                 }

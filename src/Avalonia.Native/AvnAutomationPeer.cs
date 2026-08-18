@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Native.Interop;
 
@@ -15,6 +16,7 @@ namespace Avalonia.Native
     {
         private static readonly Dictionary<AutomationProperty, AvnAutomationProperty> s_propertyMap = new()
         {
+            { AutomationElementIdentifiers.AutomationIdProperty, AvnAutomationProperty.AutomationPeer_AutomationId },
             { AutomationElementIdentifiers.BoundingRectangleProperty, AvnAutomationProperty.AutomationPeer_BoundingRectangle },
             { AutomationElementIdentifiers.ClassNameProperty, AvnAutomationProperty.AutomationPeer_ClassName },
             { AutomationElementIdentifiers.NameProperty, AvnAutomationProperty.AutomationPeer_Name },
@@ -55,6 +57,10 @@ namespace Avalonia.Native
         public AvnLandmarkType LandmarkType => (AvnLandmarkType?)_inner.GetLandmarkType() ?? AvnLandmarkType.LandmarkNone;
         public int HeadingLevel => _inner.GetHeadingLevel();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
+        public IAvnAutomationPeer? TemplatedParent =>
+            _inner is ControlAutomationPeer { Owner.TemplatedParent: Control templatedParent } ? 
+                Wrap(ControlAutomationPeer.CreatePeerForElement(templatedParent))
+                : null;
         public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetAutomationRoot());
         public AvnLiveSetting LiveSetting => (AvnLiveSetting)_inner.GetLiveSetting();
 
@@ -65,6 +71,7 @@ namespace Avalonia.Native
         public int IsKeyboardFocusable() => _inner.IsKeyboardFocusable().AsComBool();
         public void SetFocus() => _inner.SetFocus();
         public int ShowContextMenu() => _inner.ShowContextMenu().AsComBool();
+        public void BringIntoView() => _inner.BringIntoView();
 
         public void SetNode(IAvnAutomationNode node)
         {
@@ -177,9 +184,19 @@ namespace Avalonia.Native
         public double RangeValueProvider_GetSmallChange() => RangeValueProvider.SmallChange;
         public double RangeValueProvider_GetLargeChange() => RangeValueProvider.LargeChange;
         public void RangeValueProvider_SetValue(double value) => RangeValueProvider.SetValue(value);
+        public int RangeValueProvider_IsReadOnly() => RangeValueProvider.IsReadOnly.AsComBool();
 
         public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
         public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
+        public void SelectionItemProvider_Select() => SelectionItemProvider.Select();
+        public void SelectionItemProvider_AddToSelection() => SelectionItemProvider.AddToSelection();
+        public void SelectionItemProvider_RemoveFromSelection() => SelectionItemProvider.RemoveFromSelection();
+
+        public IAvnAutomationPeer? ScrollProvider_GetHorizontalScrollBar()
+            => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetHorizontalScrollBarPeer()) : null;
+
+        public IAvnAutomationPeer? ScrollProvider_GetVerticalScrollBar()
+            => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetVerticalScrollBarPeer()) : null;
         
         public int IsToggleProvider() => IsProvider<IToggleProvider>();
         public int ToggleProvider_GetToggleState() => (int)ToggleProvider.ToggleState;
@@ -188,6 +205,7 @@ namespace Avalonia.Native
         public int IsValueProvider() => IsProvider<IValueProvider>();
         public IAvnString? ValueProvider_GetValue() => ValueProvider.Value.ToAvnString();
         public void ValueProvider_SetValue(string value) => ValueProvider.SetValue(value);
+        public int ValueProvider_IsReadOnly() => ValueProvider.IsReadOnly.AsComBool();
 
         [return: NotNullIfNotNull("peer")]
         public static AvnAutomationPeer? Wrap(AutomationPeer? peer)

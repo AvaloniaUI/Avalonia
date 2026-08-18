@@ -155,6 +155,13 @@ namespace Avalonia.Automation.Peers
             return null;
         }
 
+        private protected override Rect? ToScreenCore(Rect rect)
+        {
+            if (Owner?.PresentationSource?.RootVisual is not { } root)
+                return null;
+            return new PixelRect(root.PointToScreen(rect.TopLeft), root.PointToScreen(rect.BottomRight)).ToRect(1);
+        }
+
         /// <summary>
         /// Invalidates the peer's children and causes a re-read from <see cref="GetChildrenCore"/>.
         /// </summary>
@@ -304,6 +311,13 @@ namespace Avalonia.Automation.Peers
                     AutomationElementIdentifiers.ItemStatusProperty,
                     e.OldValue,
                     e.NewValue);
+            }
+            else if (e.Property == AutomationProperties.AutomationIdProperty)
+            {
+                RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.AutomationIdProperty,
+                    null,
+                    GetAutomationId());
             }
         }
 

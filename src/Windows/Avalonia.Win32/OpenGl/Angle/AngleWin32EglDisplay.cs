@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
@@ -21,17 +22,24 @@ namespace Avalonia.Win32.OpenGl.Angle
 
         protected override bool DisplayLockIsSharedWithContexts => true;
 
+        static EglDisplayOptions GetDisplayOptions(EglInterface egl,
+            Func<bool>? deviceLostCheckCallback = null,
+            Action? disposeCallback = null) => new()
+        {
+            Egl = egl,
+            ContextLossIsDisplayLoss = true,
+            GlVersions = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
+                .Where(x => x.Type == GlProfileType.OpenGLES),
+            DeviceLostCheckCallback = deviceLostCheckCallback,
+            DisposeCallback = disposeCallback
+        };
+        
         public static AngleWin32EglDisplay CreateD3D9Display(EglInterface egl)
         {
             var display = egl.GetPlatformDisplayExt(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero,
                 new[] { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, EGL_NONE });
             
-            return new AngleWin32EglDisplay(display, egl, new EglDisplayOptions()
-            {
-                Egl = egl,
-                ContextLossIsDisplayLoss = true,
-                GlVersions = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
-            }, AngleOptions.PlatformApi.DirectX9);
+            return new AngleWin32EglDisplay(display, egl, GetDisplayOptions(egl), AngleOptions.PlatformApi.DirectX9);
         }
         
         public static AngleWin32EglDisplay CreateSharedD3D11Display(EglInterface egl)
@@ -39,12 +47,7 @@ namespace Avalonia.Win32.OpenGl.Angle
             var display = egl.GetPlatformDisplayExt(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero,
                 new[] { EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_NONE });
             
-            return new AngleWin32EglDisplay(display, egl, new EglDisplayOptions()
-            {
-                Egl = egl,
-                ContextLossIsDisplayLoss = true,
-                GlVersions = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
-            }, AngleOptions.PlatformApi.DirectX11);
+            return new AngleWin32EglDisplay(display, egl, GetDisplayOptions(egl), AngleOptions.PlatformApi.DirectX11);
         }
 
         public static unsafe AngleWin32EglDisplay CreateD3D11Display(Win32AngleEglInterface egl)
@@ -93,19 +96,28 @@ namespace Avalonia.Win32.OpenGl.Angle
                     if (adapters.Count == 0)
                         throw new OpenGlException("No adapters found");
 
-                    if (applyArmAdrenoBlacklist && adapters.Count > 1)
-                    {
-                        for (var c = adapters.Count - 1; c >= 0; c--)
-                            if (adapters[c].desc.Description?.Contains("adreno") == true)
-                            {
-                                adapters[c].adapter.Dispose();
-                                adapters.RemoveAt(c);
-                            }
-                    }
-
+                    // The Adreno blacklist (see #10405) now only moves the *default* selection away
+                    // from Adreno GPUs - it no longer hides adapters from the selection callback, so
+                    // an application can deliberately opt back into hardware acceleration.
                     var chosenAdapterIndex = 0;
                     if (selectionCallback != null)
+                    {
                         chosenAdapterIndex = selectionCallback(adapters.Select(a => a.desc).ToArray());
+                    }
+                    else if (applyArmAdrenoBlacklist && adapters.Count > 1)
+                    {
+                        var firstNonAdreno = adapters.FindIndex(a => a.desc.Description?.Contains("adreno") != true);
+                        if (firstNonAdreno > 0)
+                        {
+                            chosenAdapterIndex = firstNonAdreno;
+                            Logger.TryGet(LogEventLevel.Warning, "OpenGL")?.Log(null,
+                                "ARM64 Adreno GPU detected; the Adreno rendering blocklist is forcing a " +
+                                "fallback to '{FallbackAdapter}' (typically a software renderer). Set " +
+                                "Win32PlatformOptions.GraphicsAdapterSelectionCallback to choose an adapter " +
+                                "explicitly, or switch Win32PlatformOptions.RenderingMode to Vulkan or Wgl.",
+                                adapters[firstNonAdreno].desc.Description);
+                        }
+                    }
 
                     chosenAdapter = adapters[chosenAdapterIndex].adapter.CloneReference();
 
@@ -155,14 +167,8 @@ namespace Avalonia.Win32.OpenGl.Angle
 
 
                 var rv = new AngleWin32EglDisplay(display, egl,
-                    new EglDisplayOptions
-                    {
-                        DisposeCallback = Cleanup,
-                        Egl = egl,
-                        ContextLossIsDisplayLoss = true,
-                        DeviceLostCheckCallback = () => d3dDevice.DeviceRemovedReason != 0,
-                        GlVersions = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
-                    }, AngleOptions.PlatformApi.DirectX11);
+                    GetDisplayOptions(egl, () => d3dDevice.DeviceRemovedReason != 0, Cleanup),
+                    AngleOptions.PlatformApi.DirectX11);
                 success = true;
                 return rv;
             }

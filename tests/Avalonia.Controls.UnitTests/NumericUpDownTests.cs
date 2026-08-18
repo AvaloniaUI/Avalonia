@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Subjects;
+using System.Text.RegularExpressions;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
@@ -97,6 +99,51 @@ namespace Avalonia.Controls.UnitTests
                 // Check that NumberFormat is applied.
                 control.NumberFormat = newNumberFormat;
                 Assert.Equal(value.ToString(newNumberFormat), control.Text);
+            });
+        }
+        
+        private class TestNumericUpDownValueConverter(string format) : IValueConverter
+        {
+            public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                var input = value?.ToString() ?? string.Empty;
+                if (string.IsNullOrEmpty(input))
+                    return 0m;
+                var numberPattern = new Regex("[0-9.,]+");
+                var match = numberPattern.Matches(input).FirstOrDefault();
+                if (match == null)
+                    return 0m;
+                
+                return decimal.Parse(match.Value, CultureInfo.InvariantCulture);
+            }
+            
+            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                if (value is not decimal inputNumber)
+                    return null;
+                return inputNumber.ToString(format, CultureInfo.InvariantCulture);
+            }
+        }
+        
+        [Fact]
+        public void TextConverter_Is_Applied_Immediately()
+        {
+            RunTest((control, textbox) =>
+            {
+                const decimal value = 10.11m;
+                var initialConverter = new TestNumericUpDownValueConverter("C2");
+                var newConverter = new TestNumericUpDownValueConverter("P2");
+                
+                // Establish and verify initial conditions.
+                control.Value = value;
+                control.TextConverter = initialConverter;
+                var oldText = control.Text ?? string.Empty;
+                Assert.Equal("¤10.11", oldText);
+                
+                // Check that NumberFormat is applied.
+                control.TextConverter = newConverter;
+                var newText = control.Text ?? string.Empty;
+                Assert.Equal("1,011.00 %", newText);
             });
         }
 
