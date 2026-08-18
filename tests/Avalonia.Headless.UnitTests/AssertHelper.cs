@@ -49,4 +49,13 @@ internal static class AssertHelper
 #endif
     }
 
+    public static void NotSame(object? expected, object? actual)
+    {
+#if NUNIT
+        Assert.That(expected, Is.Not.SameAs(actual));
+#elif XUNIT
+        Assert.NotSame(expected, actual);
+#endif
+    }
+
 }
