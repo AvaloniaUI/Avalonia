@@ -12,6 +12,8 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
         WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.UISettings")
         && WinRTApiInformation.IsTypePresent("Windows.UI.ViewManagement.AccessibilitySettings"));
 
+    private PlatformColorValues? _colorValues;
+
     public override Size GetTapSize(PointerType type)
     {
         return type switch
@@ -33,10 +35,16 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     public override TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
     
     public override PlatformColorValues GetColorValues()
+        => _colorValues ??= GetUncachedColorValues();
+
+    private PlatformColorValues GetUncachedColorValues()
     {
         if (!s_uiSettingsSupported.Value)
         {
-            return base.GetColorValues();
+            return new PlatformColorValues
+            {
+                ThemeVariant = PlatformThemeVariant.Light
+            };
         }
 
         var uiSettings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
@@ -50,7 +58,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
             // - Desert - High Contrast White
             // - Dusk - High Contrast #1
             // - Night sky - High Contrast #2
-            // Only "Desert" one can be considered a "light" preference. 
+            // Only "Desert" one can be considered a "light" preference.
             using var highContrastScheme = new HStringInterop(accessibilitySettings.HighContrastScheme);
             return new PlatformColorValues
             {
@@ -72,12 +80,19 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
                     PlatformThemeVariant.Light,
                 ContrastPreference = ColorContrastPreference.NoPreference,
                 AccentColor1 = accent
-            };   
+            };
         }
     }
-    
+
     internal void OnColorValuesChanged()
     {
-        OnColorValuesChanged(GetColorValues());
+        var oldColorValues = _colorValues;
+        var colorValues = GetUncachedColorValues();
+
+        if (oldColorValues != colorValues)
+        {
+            _colorValues = colorValues;
+            OnColorValuesChanged(colorValues);
+        }
     }
 }

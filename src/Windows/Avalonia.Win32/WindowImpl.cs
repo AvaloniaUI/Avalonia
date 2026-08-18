@@ -964,8 +964,6 @@ namespace Avalonia.Win32
                     SetTransparencyMica();
                 }
             }
-
-            (Win32Platform.Instance.PlatformSettings as Win32PlatformSettings)?.OnColorValuesChanged();
         }
 
         protected virtual IntPtr CreateWindowOverride(ushort atom)
