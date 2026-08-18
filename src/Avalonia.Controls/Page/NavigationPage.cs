@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
@@ -879,17 +881,7 @@ namespace Avalonia.Controls
             return old;
         }
 
-        /// <summary>
-        /// Pushes <paramref name="page"/> onto the navigation stack asynchronously using <see cref="PageTransition"/>.
-        /// </summary>
-        /// <remarks>
-        /// If a navigation transition is already in progress (<see cref="IsNavigating"/> is <see langword="true"/>),
-        /// the call returns immediately without pushing the page and without raising any events.
-        /// If the outgoing page's <see cref="Page.Navigating"/> handler sets
-        /// <see cref="NavigatingFromEventArgs.Cancel"/> to <see langword="true"/>, the push is
-        /// silently aborted: the stack is not modified, no events are raised, and no exception is thrown.
-        /// </remarks>
-        public async Task PushAsync(Page page)
+        private async Task PushAsyncPrivate(Page page, object? parameter)
         {
             ArgumentNullException.ThrowIfNull(page);
             if (_isNavigating)
@@ -902,7 +894,7 @@ namespace Avalonia.Controls
 
                 if (previousPage != null)
                 {
-                    var navigatingArgs = new NavigatingFromEventArgs(page, NavigationType.Push);
+                    var navigatingArgs = new NavigatingFromEventArgs(page, NavigationType.Push, parameter);
                     await previousPage.SendNavigatingAsync(navigatingArgs);
 
                     if (navigatingArgs.Cancel)
@@ -913,20 +905,18 @@ namespace Avalonia.Controls
 
                 await AwaitPageTransitionAsync();
 
-                previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Push));
-                page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push));
-                Pushed?.Invoke(this, new NavigationEventArgs(page, NavigationType.Push));
+                previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Push, parameter));
+                page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push, parameter));
+                Pushed?.Invoke(this, new NavigationEventArgs(page, NavigationType.Push, parameter));
             }
             finally
             {
                 SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
+
         }
 
-        /// <summary>
-        /// Pushes <paramref name="page"/> onto the navigation stack asynchronously using <paramref name="transition"/>.
-        /// </summary>
-        public async Task PushAsync(Page page, IPageTransition? transition)
+        private async Task PushAsyncPrivate(Page page, IPageTransition? transition, object? parameter)
         {
             if (_isNavigating)
                 return;
@@ -934,13 +924,59 @@ namespace Avalonia.Controls
             _hasOverrideTransition = true;
             try
             {
-                await PushAsync(page);
+                await PushAsyncPrivate(page, parameter);
             }
             finally
             {
                 _hasOverrideTransition = false;
                 _overrideTransition = null;
             }
+        }
+
+        /// <summary>
+        /// Pushes <paramref name="page"/> onto the navigation stack asynchronously using <see cref="PageTransition"/>.
+        /// </summary>
+        /// <remarks>
+        /// If a navigation transition is already in progress (<see cref="IsNavigating"/> is <see langword="true"/>),
+        /// the call returns immediately without pushing the page and without raising any events.
+        /// If the outgoing page's <see cref="Page.Navigating"/> handler sets
+        /// <see cref="NavigatingFromEventArgs.Cancel"/> to <see langword="true"/>, the push is
+        /// silently aborted: the stack is not modified, no events are raised, and no exception is thrown.
+        /// </remarks>
+        public Task PushAsync(Page page) => PushAsyncPrivate(page, null);
+
+        /// <summary>
+        /// Pushes <paramref name="page"/> onto the navigation stack asynchronously using <paramref name="transition"/>.
+        /// </summary>
+        public Task PushAsync(Page page, IPageTransition? transition) => PushAsyncPrivate(page, transition, null);
+        public Task PushAsync(Page page, IPageTransition? transition, object parameter) => PushAsyncPrivate(page, transition, parameter);
+
+        public Task PushAsync<T>() where T : Page, new()
+        {
+            var instance = new T();
+
+            return PushAsyncPrivate(instance, null);
+        }
+
+        public Task PushAsync<T>(object parameter) where T : Page, new()
+        {
+            var instance = new T();
+
+            return PushAsyncPrivate(instance, parameter);
+        }
+
+        public Task PushAsync<T>(IPageTransition? transition) where T : Page, new()
+        {
+            var instance = new T();
+
+            return PushAsyncPrivate(instance, transition, null);
+        }
+
+        public Task PushAsync<T>(IPageTransition? transition, object parameter) where T : Page, new()
+        {
+            var instance = new T();
+
+            return PushAsyncPrivate(instance, transition, parameter);
         }
 
         /// <summary>
@@ -976,7 +1012,7 @@ namespace Avalonia.Controls
                 await AwaitPageTransitionAsync();
 
                 if (old != null)
-                    SendPopLifecycleEvents(old, NavigationType.Pop);
+                    SendPopLifecycleEvents(old, NavigationType.Pop, null);
 
                 return old;
             }
@@ -1197,14 +1233,7 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Pushes a modal page using <see cref="ModalTransition"/>.
-        /// </summary>
-        /// <remarks>
-        /// If a navigation transition is already in progress (<see cref="IsNavigating"/> is <see langword="true"/>),
-        /// the call returns immediately without pushing the page and without raising any events.
-        /// </remarks>
-        public async Task PushModalAsync(Page page)
+        private async Task PushModalAsyncPrivate(Page page, object? parameter)
         {
             ArgumentNullException.ThrowIfNull(page);
             if (_isNavigating)
@@ -1219,7 +1248,7 @@ namespace Avalonia.Controls
 
                 if (coveredPage != null)
                 {
-                    var navigatingArgs = new NavigatingFromEventArgs(page, NavigationType.PushModal);
+                    var navigatingArgs = new NavigatingFromEventArgs(page, NavigationType.PushModal, parameter);
                     await coveredPage.SendNavigatingAsync(navigatingArgs);
 
                     if (navigatingArgs.Cancel)
@@ -1286,8 +1315,8 @@ namespace Avalonia.Controls
 
                 SetCurrentValue(IsModalVisibleProperty, true);
 
-                coveredPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.PushModal));
-                page.SendNavigatedTo(new NavigatedToEventArgs(coveredPage, NavigationType.PushModal));
+                coveredPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.PushModal, parameter));
+                page.SendNavigatedTo(new NavigatedToEventArgs(coveredPage, NavigationType.PushModal, parameter));
                 ModalPushed?.Invoke(this, new ModalPushedEventArgs(page));
             }
             finally
@@ -1296,10 +1325,7 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Pushes <paramref name="page"/> as a modal page using <paramref name="transition"/>.
-        /// </summary>
-        public async Task PushModalAsync(Page page, IPageTransition? transition)
+        private async Task PushModalAsyncPrivate(Page page, IPageTransition? transition, object? parameter)
         {
             if (_isNavigating)
                 return;
@@ -1307,13 +1333,56 @@ namespace Avalonia.Controls
             _hasOverrideTransition = true;
             try
             {
-                await PushModalAsync(page);
+                await PushModalAsyncPrivate(page, parameter);
             }
             finally
             {
                 _hasOverrideTransition = false;
                 _overrideTransition = null;
             }
+        }
+
+        /// <summary>
+        /// Pushes a modal page using <see cref="ModalTransition"/>.
+        /// </summary>
+        /// <remarks>
+        /// If a navigation transition is already in progress (<see cref="IsNavigating"/> is <see langword="true"/>),
+        /// the call returns immediately without pushing the page and without raising any events.
+        /// </remarks>
+        public Task PushModalAsync(Page page) => PushModalAsyncPrivate(page, null);
+
+        /// <summary>
+        /// Pushes <paramref name="page"/> as a modal page using <paramref name="transition"/>.
+        /// </summary>
+        public Task PushModalAsync(Page page, IPageTransition? transition) => PushModalAsyncPrivate(page, transition, null);
+        public Task PushModalAsync(Page page, IPageTransition? transition, object parameter) => PushModalAsyncPrivate(page, transition, parameter);
+
+        public Task PushModalAsync<T>() where T : Page, new()
+        {
+            var instance = new T();
+
+            return PushModalAsyncPrivate(instance, null);
+        }
+
+        public Task PushModalAsync<T>(object parameter) where T : Page, new()
+        {
+            var instance = new T();
+
+            return PushModalAsyncPrivate(instance, parameter);
+        }
+
+        public Task PushModalAsync<T>(IPageTransition? transition) where T : Page, new()
+        {
+            var instance = new T();
+
+            return PushModalAsyncPrivate(instance, transition);
+        }
+
+        public Task PushModalAsync<T>(IPageTransition? transition, object parameter) where T : Page, new()
+        {
+            var instance = new T();
+
+            return PushModalAsyncPrivate(instance, transition, parameter);
         }
 
         /// <summary>
@@ -1693,19 +1762,12 @@ namespace Avalonia.Controls
             PageInserted?.Invoke(this, new PageInsertedEventArgs(page, before));
         }
 
-        /// <summary>
-        /// Replaces the top page with <paramref name="page"/> using <see cref="PageTransition"/>.
-        /// </summary>
-        /// <remarks>
-        /// If a navigation transition is already in progress (<see cref="IsNavigating"/> is <see langword="true"/>),
-        /// the call returns immediately without modifying the stack and without raising any events.
-        /// </remarks>
-        public async Task ReplaceAsync(Page page)
+        private async Task ReplaceAsyncPrivate(Page page, object? parameter)
         {
             ArgumentNullException.ThrowIfNull(page);
             if (StackDepth == 0)
             {
-                await PushAsync(page);
+                await PushAsyncPrivate(page, null, parameter);
                 return;
             }
             if (ReferenceEquals(page, CurrentPage))
@@ -1721,7 +1783,7 @@ namespace Avalonia.Controls
 
                 if (previousPage != null)
                 {
-                    var navigatingArgs = new NavigatingFromEventArgs(page, NavigationType.Replace);
+                    var navigatingArgs = new NavigatingFromEventArgs(page, NavigationType.Replace, parameter);
                     await previousPage.SendNavigatingAsync(navigatingArgs);
                     if (navigatingArgs.Cancel)
                         return;
@@ -1736,10 +1798,10 @@ namespace Avalonia.Controls
                     previousPage.Navigation = null;
                     previousPage.SetInNavigationPage(false);
                     previousPage.SafeAreaPadding = default;
-                    previousPage.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Replace));
+                    previousPage.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Replace, parameter));
                 }
 
-                page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
+                page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace, parameter));
             }
             finally
             {
@@ -1747,10 +1809,7 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Replaces the top page with <paramref name="page"/> using <paramref name="transition"/>.
-        /// </summary>
-        public async Task ReplaceAsync(Page page, IPageTransition? transition)
+        private async Task ReplaceAsyncPrivate(Page page, IPageTransition? transition, object? parameter)
         {
             if (_isNavigating)
                 return;
@@ -1758,13 +1817,56 @@ namespace Avalonia.Controls
             _hasOverrideTransition = true;
             try
             {
-                await ReplaceAsync(page);
+                await ReplaceAsyncPrivate(page, parameter);
             }
             finally
             {
                 _hasOverrideTransition = false;
                 _overrideTransition = null;
             }
+        }
+
+        /// <summary>
+        /// Replaces the top page with <paramref name="page"/> using <see cref="PageTransition"/>.
+        /// </summary>
+        /// <remarks>
+        /// If a navigation transition is already in progress (<see cref="IsNavigating"/> is <see langword="true"/>),
+        /// the call returns immediately without modifying the stack and without raising any events.
+        /// </remarks>
+        public Task ReplaceAsync(Page page) => ReplaceAsyncPrivate(page, null);
+
+        /// <summary>
+        /// Replaces the top page with <paramref name="page"/> using <paramref name="transition"/>.
+        /// </summary>
+        public Task ReplaceAsync(Page page, IPageTransition? transition) => ReplaceAsyncPrivate(page, transition, null);
+        public Task ReplaceAsync(Page page, IPageTransition? transition, object parameter) => ReplaceAsyncPrivate(page, transition, parameter);
+
+        public Task ReplaceAsync<T>() where T : Page, new()
+        {
+            var instance = new T();
+
+            return ReplaceAsyncPrivate(instance, null);
+        }
+
+        public Task ReplaceAsync<T>(object parameter) where T : Page, new()
+        {
+            var instance = new T();
+
+            return ReplaceAsyncPrivate(instance, parameter);
+        }
+
+        public Task ReplaceAsync<T>(IPageTransition? transition) where T : Page, new()
+        {
+            var instance = new T();
+
+            return ReplaceAsyncPrivate(instance, transition, null);
+        }
+
+        public Task ReplaceAsync<T>(IPageTransition? transition, object parameter) where T : Page, new()
+        {
+            var instance = new T();
+
+            return ReplaceAsyncPrivate(instance, transition, parameter);
         }
 
         // navigationType is intentionally unused; lifecycle events are fired in each navigation
@@ -1959,12 +2061,12 @@ namespace Avalonia.Controls
         /// Fires lifecycle events after a pop: SendNavigatedFrom on the old page,
         /// SendNavigatedTo on the new current page, and raises the Popped event.
         /// </summary>
-        private void SendPopLifecycleEvents(Page oldPage, NavigationType navigationType)
+        private void SendPopLifecycleEvents(Page oldPage, NavigationType navigationType, object? parameter)
         {
             var newCurrentPage = CurrentPage;
-            oldPage.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, navigationType));
-            newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(oldPage, navigationType));
-            Popped?.Invoke(this, new NavigationEventArgs(oldPage, navigationType));
+            oldPage.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, navigationType, parameter));
+            newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(oldPage, navigationType, parameter));
+            Popped?.Invoke(this, new NavigationEventArgs(oldPage, navigationType, parameter));
         }
 
         /// <summary>
