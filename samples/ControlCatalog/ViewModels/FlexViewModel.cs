@@ -36,23 +36,23 @@ namespace ControlCatalog.ViewModels
             RemoveItemCommand = MiniCommand.Create(RemoveItem);
         }
 
-        public IEnumerable DirectionValues { get; } = Enum.GetValues(typeof(FlexDirection));
+        public IEnumerable DirectionValues { get; } = Enum.GetValues<FlexDirection>();
 
-        public IEnumerable JustifyContentValues { get; } = Enum.GetValues(typeof(FlexJustifyContent));
+        public IEnumerable JustifyContentValues { get; } = Enum.GetValues<FlexJustifyContent>();
 
-        public IEnumerable AlignItemsValues { get; } = Enum.GetValues(typeof(FlexAlignItems));
+        public IEnumerable AlignItemsValues { get; } = Enum.GetValues<FlexAlignItems>();
 
-        public IEnumerable AlignContentValues { get; } = Enum.GetValues(typeof(FlexAlignContent));
+        public IEnumerable AlignContentValues { get; } = Enum.GetValues<FlexAlignContent>();
 
-        public IEnumerable WrapValues { get; } = Enum.GetValues(typeof(FlexWrap));
+        public IEnumerable WrapValues { get; } = Enum.GetValues<FlexWrap>();
 
-        public IEnumerable FlexBasisKindValues { get; } = Enum.GetValues(typeof(FlexBasisKind));
+        public IEnumerable FlexBasisKindValues { get; } = Enum.GetValues<FlexBasisKind>();
 
-        public IEnumerable HorizontalAlignmentValues { get; } = Enum.GetValues(typeof(HorizontalAlignment));
+        public IEnumerable HorizontalAlignmentValues { get; } = Enum.GetValues<HorizontalAlignment>();
 
-        public IEnumerable VerticalAlignmentValues { get; } = Enum.GetValues(typeof(VerticalAlignment));
+        public IEnumerable VerticalAlignmentValues { get; } = Enum.GetValues<VerticalAlignment>();
 
-        public IEnumerable AlignSelfValues { get; } = Enum.GetValues(typeof(FlexAlignItems)).Cast<FlexAlignItems>().Prepend(FlexItemViewModel.AlignSelfAuto);
+        public IEnumerable AlignSelfValues { get; } = Enum.GetValues<FlexAlignItems>().Cast<FlexAlignItems>().Prepend(FlexItemViewModel.AlignSelfAuto);
         
         public FlexDirection Direction
         {
