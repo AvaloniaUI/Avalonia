@@ -2710,7 +2710,7 @@ namespace Avalonia.Controls
                 if (MaxLines > 0 && double.IsNaN(Height))
                 {
                     var fontSize = FontSize;
-                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch, FontVariations);
                     var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
                     var textLayout = new TextLayout(new LineTextSource(MaxLines), paragraphProperties);
                     var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();
@@ -2726,7 +2726,7 @@ namespace Avalonia.Controls
                 if (MinLines > 0 && double.IsNaN(Height))
                 {
                     var fontSize = FontSize;
-                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+                    var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch, FontVariations);
                     var paragraphProperties = TextLayout.CreateTextParagraphProperties(typeface, fontSize, null, default, default, null, default, LineHeight, default, FontFeatures);
                     var textLayout = new TextLayout(new LineTextSource(MinLines), paragraphProperties);
                     var verticalSpace = GetVerticalSpaceBetweenScrollViewerAndPresenter();

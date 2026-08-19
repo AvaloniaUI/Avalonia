@@ -74,10 +74,11 @@ namespace Avalonia.Controls.Documents
             var parentOrSelfBackground = Background ?? FindParentBackground();
 
             var typeface = new Typeface(
-                FontFamily, 
-                FontStyle, 
-                FontWeight, 
-                FontStretch);
+                FontFamily,
+                FontStyle,
+                FontWeight,
+                FontStretch,
+                FontVariations);
 
             return new GenericTextRunProperties(
                 typeface,
