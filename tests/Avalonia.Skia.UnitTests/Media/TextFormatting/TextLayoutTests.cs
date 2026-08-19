@@ -626,6 +626,73 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        public static IEnumerable<object[]> MaxLinesEllipsisData
+        {
+            get
+            {
+                yield return new object[] { TextTrimming.CharacterEllipsis };
+                yield return new object[] { TextTrimming.WordEllipsis };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MaxLinesEllipsisData))]
+        public void Should_Add_Ellipsis_When_MaxLines_Cuts_Short_Wrapped_Line(TextTrimming trimming)
+        {
+            using (Start())
+            {
+                const string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+
+                var probe = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: trimming,
+                    maxWidth: 80
+                );
+
+                var maxLineWidth = probe.TextLines.Max(l => l.WidthIncludingTrailingWhitespace);
+
+                var cutIndex = -1;
+                for (var i = 0; i < probe.TextLines.Count - 1; i++)
+                {
+                    var line = probe.TextLines[i];
+
+                    // Shorter = line was wrapped, but not because of max width, so it will be cut off by max lines and should have ellipsis added.
+                    if (line.TextLineBreak is { IsSplit: true } && line.WidthIncludingTrailingWhitespace < (maxLineWidth - 0.01))
+                    {
+                        cutIndex = i;
+                        break;
+                    }
+                }
+
+                Assert.True(cutIndex >= 0, "Test data does not satisfy the bug-reproduction condition. Adjust text/maxWidth.");
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: trimming,
+                    maxWidth: 80,
+                    maxLines: cutIndex + 1);
+
+                var lastLine = layout.TextLines[layout.TextLines.Count - 1];
+
+                Assert.True(lastLine.HasCollapsed, "The wrapped line cut off by MaxLines must be collapsed.");
+
+                var formattedLineText = string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString()));
+                Assert.Contains("\u2026", formattedLineText);
+                Assert.Equal(cutIndex + 1, layout.TextLines.Count);
+
+                probe.Dispose();
+                layout.Dispose();
+            }
+        }
+
         [Fact]
         public void Should_Produce_Fixed_Height_Lines()
         {
