@@ -4,6 +4,7 @@
 //
 
 #import <AppKit/AppKit.h>
+#import <Carbon/Carbon.h> /* For the TIS functions used to classify the keyboard input source. */
 #include "AvnView.h"
 #include "automation.h"
 #import "WindowInterfaces.h"
@@ -22,8 +23,9 @@
     NSMutableAttributedString* _text;
     NSRange _selectedRange;
     NSRange _markedRange;
-    NSEvent* _lastKeyDownEvent;
     NSMutableArray* _accessibilityChildren;
+    NSString* _keyboardInputSourceId;
+    bool _keyboardInputSourceComposes;
 }
 
 - (void)onClosed
@@ -649,9 +651,100 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     [super flagsChanged:event];
 }
 
-- (bool) handleKeyDown: (NSTimeInterval) timestamp withKey:(AvnKey)key withPhysicalKey:(AvnPhysicalKey)physicalKey withModifiers:(AvnInputModifiers)modifiers withKeySymbol:(NSString*)keySymbol {
-    auto parent = _parent.tryGet();
-    return parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
+// The input mode an input method uses for direct alphanumeric typing. In this mode the input
+// method passes keys straight through instead of composing, so keys must not be masked.
+static CFStringRef const AlphanumericInputModeId = CFSTR("com.apple.inputmethod.Roman");
+
+static bool InputSourceComposes(TISInputSourceRef source)
+{
+    // A plain keyboard layout never composes. Dead keys are not driven by the input source, they
+    // show up as a composition in progress and are covered by hasMarkedText.
+    auto type = static_cast<CFStringRef>(TISGetInputSourceProperty(source, kTISPropertyInputSourceType));
+
+    if(type == nullptr || CFEqual(type, kTISTypeKeyboardLayout))
+    {
+        return false;
+    }
+
+    auto mode = static_cast<CFStringRef>(TISGetInputSourceProperty(source, kTISPropertyInputModeID));
+
+    return mode == nullptr || !CFEqual(mode, AlphanumericInputModeId);
+}
+
+// Whether this keystroke could be the one that starts a composition. Only a key that produces a
+// printable character can, and masking any of the others would stop controls like TextBox from
+// reacting to them at all.
+static bool CanStartComposition(NSString* keySymbol, NSEventModifierFlags modifierFlags)
+{
+    // No symbol at all: the arrows, the function keys, Home, End and friends.
+    if(keySymbol == nullptr || [keySymbol length] == 0)
+    {
+        return false;
+    }
+
+    // KeySymbolFromScanCode deliberately reports the control character for Backspace, Enter, Tab
+    // and Escape, and Forward Delete reports DEL (0x7F), so a symbol alone does not mean the key
+    // produces text. Those keys edit or cancel, they never start a composition.
+    auto firstChar = [keySymbol characterAtIndex:0];
+
+    if(firstChar < 0x20 || firstChar == 0x7F)
+    {
+        return false;
+    }
+
+    // Command and Control combinations are shortcuts, which an input method does not consume.
+    return (modifierFlags & (NSEventModifierFlagCommand | NSEventModifierFlagControl)) == 0;
+}
+
+// Returns true when the input source with the given id is an input method that can start a
+// composition, as opposed to a plain keyboard layout or an input method in alphanumeric mode.
+static bool KeyboardInputSourceComposes(NSString* sourceId)
+{
+    NSDictionary* filter = @{ (__bridge NSString*)kTISPropertyInputSourceID: sourceId };
+
+    // Include every installed source, not just the enabled ones: an input method mode can be
+    // selected without being listed as enabled, and failing to find it would classify a
+    // composing input method as a plain layout.
+    auto sources = TISCreateInputSourceList((__bridge CFDictionaryRef)filter, true);
+
+    if(sources == nullptr)
+    {
+        return false;
+    }
+
+    auto composes = CFArrayGetCount(sources) > 0 &&
+        InputSourceComposes((TISInputSourceRef)CFArrayGetValueAtIndex(sources, 0));
+
+    CFRelease(sources);
+
+    return composes;
+}
+
+// Whether the currently selected keyboard input source is a composing input method. The result
+// is cached per input source id, since this is queried for every key down.
+- (bool)isComposingInputSourceSelected
+{
+    auto inputContext = [self inputContext];
+
+    if(inputContext == nullptr)
+    {
+        return false;
+    }
+
+    NSString* sourceId = [inputContext selectedKeyboardInputSource];
+
+    if(sourceId == nullptr)
+    {
+        return false;
+    }
+
+    if(![sourceId isEqualToString:_keyboardInputSourceId])
+    {
+        _keyboardInputSourceId = sourceId;
+        _keyboardInputSourceComposes = KeyboardInputSourceComposes(sourceId);
+    }
+
+    return _keyboardInputSourceComposes;
 }
 
 - (void)keyDown:(NSEvent *)event
@@ -661,57 +754,57 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     {
         return;
     }
-    
-    _lastKeyDownEvent = event;
-    
+
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
-    
+
     auto scanCode = [event keyCode];
-    auto key = VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
     auto physicalKey = PhysicalKeyFromScanCode(scanCode);
     auto keySymbol = KeySymbolFromScanCode(scanCode, [event modifierFlags]);
-    
+    auto keySymbolUtf8 = keySymbol == nullptr ? nullptr : [keySymbol UTF8String];
+
     auto modifiers = [self getModifiers:[event modifierFlags]];
-    
-    //InputMethod is active
-    if(parent->InputMethod->IsActive()){
-        auto hasInputModifier = modifiers != AvnInputModifiersNone;
-        
-        //Handle keyDown first if an input modifier is present
-        if(hasInputModifier){
-            if([self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol]){
-                //User code has handled the event
-                _lastKeyDownEvent = nullptr;
-                
-                return;
-            }
-        }
-        
-        if([[self inputContext] handleEvent:event] == NO){
-            //KeyDown has not been consumed by the input context
-                
-            //Only raise a keyDown if we don't have a modifier
-            if(!hasInputModifier){
-                [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
-            }
-        }
-        
+
+    // The keystroke belongs to the input method when a composition is already in progress, since
+    // it then selects a candidate, commits or cancels it. It also belongs to the input method
+    // when a character key is typed into a text input client while a composing input method is
+    // selected, because that keystroke may be the one that starts the composition and we cannot
+    // know that before the input context has seen it.
+    //
+    // In both cases mask the key the way Win32 reports VK_PROCESSKEY, so that user code still
+    // observes a KeyDown but no KeyGesture can match it. The physical key and the key symbol
+    // keep their real values, so the underlying key remains recoverable.
+    //
+    // Both cases require an active client: without one the input context is never consulted, so
+    // marked text left over from a composition that lost its client mid-way must not mask keys.
+    auto imeProcessed = parent->InputMethod->IsActive() &&
+        ([self hasMarkedText] ||
+         (CanStartComposition(keySymbol, [event modifierFlags]) &&
+          [self isComposingInputSourceSelected]));
+
+    auto key = imeProcessed
+        ? AvnKeyImeProcessed
+        : VirtualKeyFromScanCode(scanCode, [event modifierFlags]);
+
+    // A KeyDown is always raised before the input context sees the event, otherwise the
+    // input context silently consumes printable keys (space, letters, digits) and user code
+    // never gets a chance to react to them.
+    auto handled = parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+
+    if(handled)
+    {
+        // User code has handled the event, so no text may be produced from it.
+        return;
     }
-    //InputMethod not active
-    else{
-        auto keyDownHandled = [self handleKeyDown:timestamp withKey:key withPhysicalKey:physicalKey withModifiers:modifiers withKeySymbol:keySymbol];
-            
-        //Raise text input event for unhandled key down
-        if(!keyDownHandled){
-            if(keySymbol != nullptr && key != AvnKeyEnter){
-                auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
-                
-                parent->TopLevelEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
-            }
-        }
+
+    if(parent->InputMethod->IsActive())
+    {
+        // Let the input context produce the text or drive the composition.
+        [[self inputContext] handleEvent:event];
     }
-    
-    _lastKeyDownEvent = nullptr;
+    else if(keySymbol != nullptr && key != AvnKeyEnter)
+    {
+        parent->TopLevelEvents->RawTextInputEvent(timestamp, keySymbolUtf8);
+    }
 }
 
 - (void)keyUp:(NSEvent *)event
@@ -721,9 +814,9 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 }
 
 - (void) doCommandBySelector:(SEL)selector{
-    if(_lastKeyDownEvent != nullptr){
-        [self keyboardEvent:_lastKeyDownEvent withType:KeyDown];
-    }
+    // -keyDown: already raised a KeyDown for this event before handing it to the input
+    // context, so nothing is left to do here. The method still has to be implemented:
+    // falling back to NSResponder would perform the default action and emit a system beep.
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
