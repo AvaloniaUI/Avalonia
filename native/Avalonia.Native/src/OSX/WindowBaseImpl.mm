@@ -465,12 +465,9 @@ void WindowBaseImpl::CleanNSWindow() {
 }
 
 void WindowBaseImpl::CreateNSWindow(bool usePanel) {
-    // Anchor the content rect to the primary screen's origin. The primary screen is
-    // at Cocoa (0,0) on a healthy Mac, but can be offset (often negative) while the
-    // display server is mid-reconfiguration -- e.g. CGMainDisplayID() briefly returns
-    // 0 after wake-from-sleep -- or on multi-monitor layouts. Anchoring keeps the
-    // window on a real screen, so it is positioned on-screen and its flipped Position
-    // lands inside a Screen.Bounds. See https://github.com/AvaloniaUI/Avalonia/issues/18895
+    // Anchor the content rect to the primary screen's origin. It's usually at (0,0), but can be offset while the
+    // display server is mid-reconfiguration. This ensures the window is always on a proper screen.
+    // See https://github.com/AvaloniaUI/Avalonia/issues/18895
     NSPoint origin = NSZeroPoint;
     NSArray<NSScreen*>* screens = [NSScreen screens];
     if (screens.count > 0)

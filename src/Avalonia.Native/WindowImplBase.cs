@@ -53,13 +53,6 @@ namespace Avalonia.Native
 
             int defaultWidth = 0, defaultHeight = 0;
 
-            // AppKit can transiently report [NSScreen screens] as empty -- or report screens
-            // whose bounds don't contain the last-known window position -- during a CGS
-            // demote/promote race after wake-from-sleep, headless boots, or Spaces
-            // transitions. FirstOrDefault keeps window construction resilient through that
-            // window: the window falls back to a default size and is repositioned on the next
-            // ScreenChanged event once the display server settles, mirroring X11Window.
-            // See https://github.com/AvaloniaUI/Avalonia/issues/18895
             var monitor = this.TryGetFeature<IScreenImpl>()!.AllScreens
                 .OrderBy(x => x.Scaling)
                 .FirstOrDefault(m => m.Bounds.Contains(Position));
