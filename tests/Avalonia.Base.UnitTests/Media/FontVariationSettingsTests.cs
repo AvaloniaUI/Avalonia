@@ -144,5 +144,109 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal("wght=700", new FontVariation(s_wght, 700).ToString());
             Assert.Equal("opsz=14.25", new FontVariation(s_opsz, 14.25).ToString());
         }
+
+        [Fact]
+        public void Interpolate_Lerps_Matching_Axis_Sets_Per_Axis()
+        {
+            var from = FontVariationSettings.Parse("wght=400, wdth=75");
+            var to = FontVariationSettings.Parse("wght=800, wdth=125");
+
+            var quarter = FontVariationSettings.Interpolate(from, to, 0.25);
+
+            Assert.NotNull(quarter);
+            Assert.True(quarter.TryGetValue(s_wght, out var wght));
+            Assert.Equal(500, wght);
+            Assert.True(quarter.TryGetValue(s_wdth, out var wdth));
+            Assert.Equal(87.5, wdth);
+
+            Assert.Equal(from, FontVariationSettings.Interpolate(from, to, 0));
+            Assert.Equal(to, FontVariationSettings.Interpolate(from, to, 1));
+        }
+
+        [Fact]
+        public void Interpolate_Matches_Axis_Sets_Order_Independently()
+        {
+            // Both endpoints store sorted variations, so the authoring order of the
+            // pairs must not force the discrete path.
+            var from = FontVariationSettings.Parse("wdth=75, wght=400");
+            var to = FontVariationSettings.Parse("wght=800, wdth=125");
+
+            var mid = FontVariationSettings.Interpolate(from, to, 0.5);
+
+            Assert.NotNull(mid);
+            Assert.True(mid.TryGetValue(s_wght, out var wght));
+            Assert.Equal(600, wght);
+        }
+
+        [Fact]
+        public void Interpolate_Extrapolates_On_Easing_Overshoot()
+        {
+            // Springy easings report progress outside [0, 1]; matching axis sets keep
+            // lerping through, like every other continuous animator.
+            var from = FontVariationSettings.Parse("wght=400");
+            var to = FontVariationSettings.Parse("wght=800");
+
+            var overshot = FontVariationSettings.Interpolate(from, to, 1.25);
+
+            Assert.NotNull(overshot);
+            Assert.True(overshot.TryGetValue(s_wght, out var wght));
+            Assert.Equal(900, wght);
+        }
+
+        [Fact]
+        public void Interpolate_Snaps_Axes_With_Infinite_Endpoints()
+        {
+            // Lerping between an infinite and a finite endpoint is NaN arithmetic; such
+            // axes snap to the nearer endpoint instead.
+            var from = new FontVariationSettings(new[]
+            {
+                new FontVariation(s_wght, double.PositiveInfinity),
+            });
+            var to = FontVariationSettings.Parse("wght=800");
+
+            var early = FontVariationSettings.Interpolate(from, to, 0.25);
+            var late = FontVariationSettings.Interpolate(from, to, 0.75);
+
+            Assert.NotNull(early);
+            Assert.True(early.TryGetValue(s_wght, out var earlyWght));
+            Assert.Equal(double.PositiveInfinity, earlyWght);
+
+            Assert.NotNull(late);
+            Assert.True(late.TryGetValue(s_wght, out var lateWght));
+            Assert.Equal(800, lateWght);
+        }
+
+        [Fact]
+        public void Interpolate_Is_Discrete_When_Axis_Sets_Differ()
+        {
+            // CSS font-variation-settings semantics: a missing axis means "the font's
+            // default", which is unknowable in user space — so mismatched sets switch
+            // at the midpoint instead of blending.
+            var from = FontVariationSettings.Parse("wght=700");
+            var toOtherAxis = FontVariationSettings.Parse("wdth=85");
+            var toSuperset = FontVariationSettings.Parse("wght=700, wdth=85");
+
+            Assert.Same(from, FontVariationSettings.Interpolate(from, toOtherAxis, 0.49));
+            Assert.Same(toOtherAxis, FontVariationSettings.Interpolate(from, toOtherAxis, 0.5));
+
+            Assert.Same(from, FontVariationSettings.Interpolate(from, toSuperset, 0.49));
+            Assert.Same(toSuperset, FontVariationSettings.Interpolate(from, toSuperset, 0.5));
+        }
+
+        [Fact]
+        public void Interpolate_Is_Discrete_Against_Null_And_Empty()
+        {
+            var settings = FontVariationSettings.Parse("wght=700");
+
+            Assert.Null(FontVariationSettings.Interpolate(null, settings, 0.49));
+            Assert.Same(settings, FontVariationSettings.Interpolate(null, settings, 0.5));
+
+            Assert.Same(settings, FontVariationSettings.Interpolate(settings, null, 0.49));
+            Assert.Null(FontVariationSettings.Interpolate(settings, null, 0.5));
+
+            Assert.Null(FontVariationSettings.Interpolate(null, null, 0.5));
+            Assert.Same(FontVariationSettings.Empty,
+                FontVariationSettings.Interpolate(null, FontVariationSettings.Empty, 0.5));
+        }
     }
 }
