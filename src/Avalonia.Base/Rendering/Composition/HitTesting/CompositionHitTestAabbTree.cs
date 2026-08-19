@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Collections.Pooled;
+using Avalonia.Media;
 using Avalonia.Platform;
 
-namespace Avalonia.Rendering.Composition;
+namespace Avalonia.Rendering.Composition.HitTesting;
 
 internal sealed class CompositionHitTestAabbTree
 {
@@ -104,7 +105,8 @@ internal sealed class CompositionHitTestAabbTree
             RemoveBucketIfEmpty(oldBucket);
     }
 
-    public void Query(Point point, PooledList<CompositionVisual> results, ulong readbackRevision)
+    public void Query<THitTester, T>(T input, PooledList<CompositionVisual> results, ulong readbackRevision)
+        where THitTester : struct, ICompositionHitTester<T>
     {
         var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
         var stack = ArrayPool<int>.Shared.Rent(16);
@@ -122,7 +124,7 @@ internal sealed class CompositionHitTestAabbTree
 
                 candidateCount = 0;
                 var stackCount = 0;
-                QueryBucket(bucket, point, ref candidates, ref candidateCount, ref stack, ref stackCount);
+                QueryBucket<THitTester, T>(bucket, input, ref candidates, ref candidateCount, ref stack, ref stackCount);
                 candidates.AsSpan(0, candidateCount).Sort(s_candidateComparer);
 
                 for (var j = 0; j < candidateCount; j++)
@@ -139,8 +141,16 @@ internal sealed class CompositionHitTestAabbTree
         }
     }
 
-    public CompositionVisual? QueryFirst(CompositionTarget target, Point point, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter, ulong readbackRevision)
+    public CompositionVisual? QueryFirst<THitTester, T>(
+        CompositionTarget target,
+        T input,
+        Func<CompositionVisual, bool>? filter,
+        Func<CompositionVisual, bool>? resultFilter,
+        ulong readbackRevision,
+        out IntersectionResult intersectionResult)
+        where THitTester : struct, ICompositionHitTester<T>
     {
+        intersectionResult = IntersectionResult.NotCalculated;
         var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
         var stack = ArrayPool<int>.Shared.Rent(16);
         var candidateCount = 0;
@@ -157,12 +167,12 @@ internal sealed class CompositionHitTestAabbTree
 
                 candidateCount = 0;
                 var stackCount = 0;
-                QueryBucket(bucket, point, ref candidates, ref candidateCount, ref stack, ref stackCount);
+                QueryBucket<THitTester, T>(bucket, input, ref candidates, ref candidateCount, ref stack, ref stackCount);
                 candidates.AsSpan(0, candidateCount).Sort(s_candidateComparer);
 
                 for (var j = 0; j < candidateCount; j++)
                 {
-                    var hit = target.HitTestFirstCore(candidates[j].Visual, point, filter, resultFilter);
+                    var hit = target.HitTestFirstCore<THitTester, T>(candidates[j].Visual, input, filter, resultFilter, out intersectionResult);
                     if (hit != null)
                         return hit;
                 }
@@ -241,7 +251,14 @@ internal sealed class CompositionHitTestAabbTree
             AddUnbounded(visual, entry.Order, ref entry);
     }
 
-    private void QueryBucket(Bucket bucket, Point point, ref Candidate[] candidates, ref int candidateCount, ref int[] stack, ref int stackCount)
+    private void QueryBucket<THitTester, T>(
+        Bucket bucket,
+        T input,
+        ref Candidate[] candidates,
+        ref int candidateCount,
+        ref int[] stack,
+        ref int stackCount)
+        where THitTester : struct, ICompositionHitTester<T>
     {
         PushQueryNode(ref stack, ref stackCount, bucket.Root);
 
@@ -250,7 +267,7 @@ internal sealed class CompositionHitTestAabbTree
             var nodeIndex = stack[--stackCount];
             var node = _nodes[nodeIndex];
 
-            if (!node.Bounds.Contains(point))
+            if (!THitTester.TransformedSubTreeBoundsMatch(node.Bounds, input))
                 continue;
 
             if (node.IsLeaf)

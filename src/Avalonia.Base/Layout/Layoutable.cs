@@ -636,13 +636,8 @@ namespace Avalonia.Layout
             double width = 0;
             double height = 0;
 
-            var visualChildren = VisualChildren;
-            var visualCount = visualChildren.Count;
-
-            for (var i = 0; i < visualCount; i++)
+            foreach (var visual in TypedVisualChildren)
             {
-                Visual visual = visualChildren[i];
-
                 if (visual is Layoutable layoutable)
                 {
                     layoutable.Measure(availableSize);
@@ -762,13 +757,8 @@ namespace Avalonia.Layout
         {
             var arrangeRect = new Rect(finalSize);
 
-            var visualChildren = VisualChildren;
-            var visualCount = visualChildren.Count;
-
-            for (var i = 0; i < visualCount; i++)
+            foreach (var visual in TypedVisualChildren)
             {
-                Visual visual = visualChildren[i];
-
                 if (visual is Layoutable layoutable)
                 {
                     layoutable.Arrange(arrangeRect);
@@ -858,11 +848,9 @@ namespace Avalonia.Layout
                     // property then we can piggy-pack on that; for the moment we do this manually.
                     if (this.GetLayoutRoot() is {} layoutRoot)
                     {
-                        var count = VisualChildren.Count;
-
-                        for (var i = 0; i < count; ++i)
+                        foreach (var child in TypedVisualChildren)
                         {
-                            (VisualChildren[i] as Layoutable)?.AncestorBecameVisible(layoutRoot.LayoutManager);
+                            (child as Layoutable)?.AncestorBecameVisible(layoutRoot.LayoutManager);
                         }
                     }
                 }
@@ -905,11 +893,9 @@ namespace Avalonia.Layout
                 InvalidateVisual();
             }
 
-            var count = VisualChildren.Count;
-
-            for (var i = 0; i < count; ++i)
+            foreach (var child in TypedVisualChildren)
             {
-                (VisualChildren[i] as Layoutable)?.AncestorBecameVisible(layoutManager);
+                (child as Layoutable)?.AncestorBecameVisible(layoutManager);
             }
         }
 

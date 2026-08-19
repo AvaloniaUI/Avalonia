@@ -456,9 +456,10 @@ partial class Build : NukeBuild
             
             foreach (var path in Parameters.NugetRoot.GlobFiles("*.nupkg"))
             {
+                var packageId = SbomGenerator.ReadPackageId(path);
+
                 using var f = File.Open(path.ToString(), FileMode.Open, FileAccess.Read);
                 using var zip = new ZipArchive(f, ZipArchiveMode.Read);
-                var packageId = SbomGenerator.ReadPackageId(path);
 
                 var packagePath = Path.Combine(
                     globalPackagesFolder,

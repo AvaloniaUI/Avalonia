@@ -46,7 +46,7 @@ namespace Avalonia.Input
         {
             if (element is Visual v)
             {
-                foreach (var visual in v.VisualChildren)
+                foreach (var visual in v.TypedVisualChildren)
                 {
                     if (visual is IInputElement el && el.IsKeyboardFocusWithin)
                     {
@@ -112,7 +112,7 @@ namespace Avalonia.Input
         {
             if (element is Visual v)
             {
-                foreach (var visual in v.VisualChildren)
+                foreach (var visual in v.TypedVisualChildren)
                 {
                     if (visual is IInputElement el && el.IsKeyboardFocusWithin)
                     {
