@@ -103,7 +103,7 @@
                     IsEnabled="{TemplateBinding IsEnabled}"
                     Theme="{StaticResource SimpleTimePickerFlyoutButton}">
 
-              <Grid Name="PART_FlyoutButtonContentGrid">
+              <Grid Name="PART_FlyoutButtonContentGrid" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                 <!--  Ignore col defs here, set in code  -->
                 <Border x:Name="PART_FirstPickerHost"
                         Grid.Column="0"
@@ -219,6 +219,11 @@
           <Grid Name="ContentPanel"
                 RowDefinitions="*,Auto">
             <Grid Name="PART_PickerContainer">
+              <Grid.Styles>
+                <Style Selector="DateTimePickerPanel > ListBoxItem">
+                  <Setter Property="Theme" Value="{StaticResource SimpleDateTimePickerItem}" />
+                </Style>
+              </Grid.Styles>
               <!--  Ignore col defs here, set in code  -->
               <Panel Name="PART_HourHost"
                      Grid.Column="0">

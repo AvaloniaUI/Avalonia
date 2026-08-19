@@ -45,7 +45,7 @@ namespace Avalonia.Native
         {
             using(var ms = new MemoryStream())
             {
-                cursor.Save(ms);
+                cursor.Save(ms, PngBitmapEncoderOptions.Default);
 
                 var imageData = ms.ToArray();
 

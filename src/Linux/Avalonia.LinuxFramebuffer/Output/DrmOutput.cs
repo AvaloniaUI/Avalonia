@@ -8,6 +8,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -377,7 +378,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             {
                 //Go through two cycles of buffer swapping (there are render artifacts otherwise)
                 for (var c = 0; c < 2; c++)
-                    using (CreateGlRenderTarget().BeginDraw(new IRenderTarget.RenderTargetSceneInfo(PixelSize, 1)))
+                    using (CreateGlRenderTarget().BeginDraw(new IRenderTarget.RenderTargetSceneInfo(PixelSize, 1, CompositionTransparencyLevel.None)))
                     {
                         _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG,
                             initialBufferSwappingColorB, initialBufferSwappingColorA);

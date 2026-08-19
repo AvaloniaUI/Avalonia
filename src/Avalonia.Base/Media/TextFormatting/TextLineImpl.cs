@@ -197,6 +197,39 @@ namespace Avalonia.Media.TextFormatting
             _textLineMetrics = CreateLineMetrics();
         }
 
+        /// <summary>
+        /// Replaces the run at <paramref name="index"/> in <see cref="_textRuns"/> and re-points the
+        /// matching bidi-reordered <see cref="IndexedTextRun"/> at the new run, so draw and hit-test
+        /// paths that resolve runs through <see cref="_indexedTextRuns"/> observe the replacement.
+        /// Used by justification to swap in a copy-on-write run without mutating shared glyph storage.
+        /// </summary>
+        internal void ReplaceTextRun(int index, TextRun textRun)
+        {
+            var oldRun = _textRuns[index];
+
+            if (ReferenceEquals(oldRun, textRun))
+            {
+                return;
+            }
+
+            _textRuns[index] = textRun;
+
+            if (_indexedTextRuns is null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < _indexedTextRuns.Count; i++)
+            {
+                if (ReferenceEquals(_indexedTextRuns[i].TextRun, oldRun))
+                {
+                    _indexedTextRuns[i].TextRun = textRun;
+
+                    break;
+                }
+            }
+        }
+
         /// <inheritdoc/>
         public override CharacterHit GetCharacterHitFromDistance(double distance)
         {
@@ -1428,6 +1461,15 @@ namespace Avalonia.Media.TextFormatting
                     var whitespaceWidth = glyphRun.Bounds.Width - glyphRunMetrics.Width;
 
                     width -= whitespaceWidth;
+
+                    if (glyphRunMetrics.TrailingWhitespaceLength != currentRun.Length)
+                    {
+                        // This run has visible content before its own trailing whitespace, so it -
+                        // not an earlier run - is the true end of the line's visible content. An
+                        // earlier run's own trailing whitespace is interior to the line (followed by
+                        // this run's visible content) and must not be excluded from Width too.
+                        break;
+                    }
                 }
             }
 

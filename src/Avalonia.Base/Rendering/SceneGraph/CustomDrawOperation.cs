@@ -1,7 +1,5 @@
 using System;
-using Avalonia.Logging;
 using Avalonia.Media;
-using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -22,6 +20,20 @@ namespace Avalonia.Rendering.SceneGraph
         /// to hit test children they must be hit tested manually.
         /// </remarks>
         bool HitTest(Point p);
+
+        /// <summary>
+        /// Hit test the geometry in this node.
+        /// </summary>
+        /// <param name="geometry">The geometry in global coordinates.</param>
+        /// <returns>The <see cref="IntersectionResult"/> describing the intersecting between the hit geometry and the node's geometry.</returns>
+        /// <remarks>
+        /// This method does not recurse to childs, if you want
+        /// to hit test children they must be hit tested manually.
+        /// </remarks>
+        IntersectionResult HitTest(Geometry geometry)
+        {
+            return IntersectionResult.Empty;
+        }
 
         /// <summary>
         /// Renders the node to a drawing context.
