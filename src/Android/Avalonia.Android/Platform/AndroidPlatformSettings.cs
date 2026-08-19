@@ -18,6 +18,7 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
     private TimeSpan _doubleTapTime = TimeSpan.FromMilliseconds(500);
     private Size _doubleTapSize = new Size(16,16);
     private Size _tapSize = new Size(10,10);
+    private string? _latestLanguage;
 
     public AndroidPlatformSettings()
     {
@@ -25,6 +26,7 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
         {
             UpdateInputConfigValues(context);
             _colorValues = GetColorValuesFromContext(context);
+            _latestLanguage = QueryPreferredApplicationLanguage(context);
 
             ContextCompat.RegisterReceiver(
                 context,
@@ -40,6 +42,8 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
     {
         return _colorValues;
     }
+
+    public override string PreferredApplicationLanguage => _latestLanguage ?? base.PreferredApplicationLanguage;
 
     public override TimeSpan GetDoubleTapTime(PointerType type)
     {
@@ -67,6 +71,18 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
         {
             _colorValues = colorValues;
             OnColorValuesChanged(colorValues);
+        }
+    }
+
+    private void UpdatePreferredApplicationLanguage(Context context)
+    {
+        var oldLanguage = _latestLanguage;
+        var language = QueryPreferredApplicationLanguage(context);
+
+        if (oldLanguage != language)
+        {
+            _latestLanguage = language;
+            OnPreferredApplicationLanguageChanged();
         }
     }
 
@@ -145,6 +161,12 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
         }
     }
 
+    private string? QueryPreferredApplicationLanguage(Context? context)
+    {
+        var locale = context?.Resources?.Configuration?.Locales?.Get(0);
+        return locale?.ToLanguageTag() is { Length: > 0 } tag ? tag : null;
+    }
+
     private static ColorContrastPreference IsHighContrast(Context context)
     {
         try
@@ -174,6 +196,7 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
                 timer.Stop();
                 settings.UpdateInputConfigValues(context);
                 settings.UpdateColorValues(context);
+                settings.UpdatePreferredApplicationLanguage(context);
             };
 
             timer.Start();
