@@ -226,6 +226,65 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void WithVariations_Normalizes_User_Space_Settings()
+        {
+            // The public front door: user-space wght=700 must land on the same clone as
+            // the internal path that normalizes explicitly.
+            var gt = LoadTypeface(InterVariableAsset);
+
+            var viaPublic = gt.WithVariations(FontVariationSettings.Parse("wght=700"));
+            var viaInternal = gt.WithVariation(WghtPosition(gt, 700));
+
+            Assert.Same(viaInternal, viaPublic);
+            Assert.NotSame(gt, viaPublic);
+        }
+
+        [Fact]
+        public void WithVariations_Returns_Self_For_Null_And_Empty()
+        {
+            var gt = LoadTypeface(InterVariableAsset);
+
+            Assert.Same(gt, gt.WithVariations(null));
+            Assert.Same(gt, gt.WithVariations(FontVariationSettings.Empty));
+        }
+
+        [Fact]
+        public void WithVariations_Returns_Self_For_Static_Font()
+        {
+            var gt = LoadTypeface(InterRegularAsset);
+
+            Assert.Same(gt, gt.WithVariations(FontVariationSettings.Parse("wght=700")));
+        }
+
+        [Fact]
+        public void WithVariations_Shares_Clones_Between_Settings_That_Normalize_Equal()
+        {
+            // Clamping happens during normalization, BEFORE the cache lookup — so two
+            // different user-space requests that clamp to the same axis position must
+            // share one clone instead of polluting the cache with duplicates.
+            var gt = LoadTypeface(InterVariableAsset);
+
+            var atMax = gt.WithVariations(FontVariationSettings.Parse("wght=900"));
+            var clamped = gt.WithVariations(FontVariationSettings.Parse("wght=10000"));
+
+            Assert.Same(atMax, clamped);
+        }
+
+        [Fact]
+        public void WithVariations_Selects_Named_Instance_By_Index()
+        {
+            // Instance index 8 in Inter Variable is Black (wght=900); selecting it by
+            // index must land on the same clone as requesting wght=900 explicitly.
+            var gt = LoadTypeface(InterVariableAsset);
+            var lastIndex = gt.NamedInstances.Count - 1;
+
+            var byIndex = gt.WithVariations(null, instanceIndex: lastIndex);
+            var byValues = gt.WithVariations(FontVariationSettings.Parse("wght=900"));
+
+            Assert.Same(byValues, byIndex);
+        }
+
+        [Fact]
         public void FontCollectionKey_Differs_When_Variation_Differs()
         {
             var gt = LoadTypeface(InterVariableAsset);
