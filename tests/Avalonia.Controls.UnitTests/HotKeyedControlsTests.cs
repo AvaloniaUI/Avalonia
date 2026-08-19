@@ -119,5 +119,36 @@ namespace Avalonia.Controls.UnitTests
             
             Assert.True(hotKeyedTextBox.IsFocused);
         }
+        
+        [Fact]
+        public void Hidden_Button_HotKey_Should_Not_Swallow_Input()
+        {
+            using var _ = CreateServicesWithFocus();
+            
+            var keyboardDevice = new KeyboardDevice();
+            var root = PreparedWindow();
+            var panel = new StackPanel { IsVisible = false };
+            var button = new Button { HotKey = KeyGesture.Parse("Escape") };
+    
+            bool buttonClicked = false;
+            button.Click += (s, e) => buttonClicked = true;
+
+            panel.Children.Add(button);
+            root.Content = panel;
+            root.Show();
+
+            keyboardDevice.ProcessRawEvent(
+                new RawKeyEventArgs(
+                    keyboardDevice,
+                    0,
+                    root.InputRoot,
+                    RawKeyEventType.KeyDown,
+                    Key.Escape,
+                    RawInputModifiers.None,
+                    PhysicalKey.Escape,
+                    ""));
+    
+            Assert.False(buttonClicked);
+        }
     }
 }

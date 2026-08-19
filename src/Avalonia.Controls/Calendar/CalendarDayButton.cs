@@ -5,6 +5,7 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 
@@ -156,6 +157,8 @@ namespace Avalonia.Controls.Primitives
         {
             SetPseudoClasses();
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new CalendarDayButtonAutomationPeer(this);
 
         private void SetPseudoClasses()
         {

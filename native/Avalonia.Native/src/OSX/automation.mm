@@ -96,7 +96,7 @@
         case AutomationEdit: return NSAccessibilityTextFieldRole;
         case AutomationHyperlink: return NSAccessibilityLinkRole;
         case AutomationImage: return NSAccessibilityImageRole;
-        case AutomationListItem: return NSAccessibilityGroupRole;
+        case AutomationListItem: return NSAccessibilityRowRole;
         case AutomationList: return NSAccessibilityListRole;
         case AutomationMenu: return NSAccessibilityMenuBarRole;
         case AutomationMenuBar: return NSAccessibilityMenuBarRole;
@@ -141,6 +141,7 @@
     auto controlType = _peer->GetAutomationControlType();
     switch (controlType) {
         case AutomationList: return @"AXContentList";
+        case AutomationListItem: return NSAccessibilityTableRowSubrole;
     }
 
     auto landmarkType = _peer->GetLandmarkType();
@@ -259,18 +260,34 @@
 
 - (void)setAccessibilityValue:(id)newValue
 {
-    if (_peer->IsValueProvider())
+    if (!_peer->IsEnabled())
+        return;
+    if (_peer->IsValueProvider() && !_peer->ValueProvider_IsReadOnly())
     {
         if (newValue == nil)
             _peer->ValueProvider_SetValue(nil);
         else if ([newValue isKindOfClass:[NSString class]])
             _peer->ValueProvider_SetValue([(NSString*)newValue UTF8String]);
     }
-    else if (_peer->IsRangeValueProvider())
+    else if (_peer->IsRangeValueProvider() && !_peer->RangeValueProvider_IsReadOnly())
     {
         if ([newValue isKindOfClass:[NSNumber class]])
             _peer->RangeValueProvider_SetValue([(NSNumber*)newValue doubleValue]);
     }
+}
+
+- (BOOL)accessibilityIsAttributeSettable:(NSAccessibilityAttributeName)attribute
+{
+    if ([attribute isEqualToString:NSAccessibilityValueAttribute])
+    {
+        if (_peer->IsValueProvider())
+            return !_peer->ValueProvider_IsReadOnly();
+        if (_peer->IsRangeValueProvider())
+            return !_peer->RangeValueProvider_IsReadOnly();
+        return NO;
+    }
+
+    return [super accessibilityIsAttributeSettable:attribute];
 }
 
 - (id)accessibilityMinValue
@@ -357,6 +374,20 @@
     return [AvnAccessibilityElement acquire:rootPeer];
 }
 
+- (id)accessibilityHorizontalScrollBar
+{
+    if (_peer == nullptr)
+        return nil;
+    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetHorizontalScrollBar()];
+}
+
+- (id)accessibilityVerticalScrollBar
+{
+    if (_peer == nullptr)
+        return nil;
+    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetVerticalScrollBar()];
+}
+
 - (BOOL)isAccessibilityExpanded
 {
     if (!_peer->IsExpandCollapseProvider())
@@ -366,7 +397,7 @@
 
 - (void)setAccessibilityExpanded:(BOOL)accessibilityExpanded
 {
-    if (!_peer->IsExpandCollapseProvider())
+    if (!_peer->IsExpandCollapseProvider() || !_peer->IsEnabled())
         return;
     if (accessibilityExpanded)
         _peer->ExpandCollapseProvider_Expand();
@@ -376,13 +407,18 @@
 
 - (BOOL)accessibilityPerformPress
 {
+    if (!_peer->IsEnabled())
+        return NO;
     if (_peer->IsInvokeProvider())
     {
         _peer->InvokeProvider_Invoke();
     }
     else if (_peer->IsExpandCollapseProvider())
     {
-        _peer->ExpandCollapseProvider_Expand();
+        if (_peer->ExpandCollapseProvider_GetIsExpanded())
+            _peer->ExpandCollapseProvider_Collapse();
+        else
+            _peer->ExpandCollapseProvider_Expand();
     }
     else if (_peer->IsToggleProvider())
     {
@@ -393,7 +429,7 @@
 
 - (BOOL)accessibilityPerformIncrement
 {
-    if (!_peer->IsRangeValueProvider())
+    if (!_peer->IsRangeValueProvider() || _peer->RangeValueProvider_IsReadOnly() || !_peer->IsEnabled())
         return NO;
     auto value = _peer->RangeValueProvider_GetValue();
     value += _peer->RangeValueProvider_GetSmallChange();
@@ -403,7 +439,7 @@
 
 - (BOOL)accessibilityPerformDecrement
 {
-    if (!_peer->IsRangeValueProvider())
+    if (!_peer->IsRangeValueProvider() || _peer->RangeValueProvider_IsReadOnly() || !_peer->IsEnabled())
         return NO;
     auto value = _peer->RangeValueProvider_GetValue();
     value -= _peer->RangeValueProvider_GetSmallChange();
@@ -413,7 +449,7 @@
 
 - (BOOL)accessibilityPerformShowMenu
 {
-    if (!_peer->IsExpandCollapseProvider())
+    if (!_peer->IsExpandCollapseProvider() || !_peer->IsEnabled())
         return NO;
     _peer->ExpandCollapseProvider_Expand();
     return YES;
@@ -445,11 +481,22 @@
     return NO;
 }
 
+- (void)setAccessibilitySelected:(BOOL)accessibilitySelected
+{
+    if (!_peer->IsSelectionItemProvider() || !_peer->IsEnabled())
+        return;
+    if (accessibilitySelected)
+        _peer->SelectionItemProvider_AddToSelection();
+    else
+        _peer->SelectionItemProvider_RemoveFromSelection();
+}
+
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
 {
     if (selector == @selector(setAccessibilityValue:))
     {
-        return _peer->IsValueProvider() || _peer->IsRangeValueProvider();
+        return (_peer->IsValueProvider() && !_peer->ValueProvider_IsReadOnly()) ||
+               (_peer->IsRangeValueProvider() && !_peer->RangeValueProvider_IsReadOnly());
     }
     else if (selector == @selector(accessibilityPerformShowMenu))
     {
@@ -463,9 +510,16 @@
     {
         return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider() || _peer->IsToggleProvider();
     }
+    else if (selector == @selector(setAccessibilitySelected:))
+    {
+        return _peer->IsSelectionItemProvider();
+    }
     else if (selector == @selector(accessibilityPerformIncrement) ||
-             selector == @selector(accessibilityPerformDecrement) ||
-             selector == @selector(accessibilityMinValue) ||
+             selector == @selector(accessibilityPerformDecrement))
+    {
+        return _peer->IsRangeValueProvider() && !_peer->RangeValueProvider_IsReadOnly();
+    }
+    else if (selector == @selector(accessibilityMinValue) ||
              selector == @selector(accessibilityMaxValue))
     {
         return _peer->IsRangeValueProvider();
@@ -501,8 +555,31 @@
     if (_children)
         [changed addObjectsFromArray:_children];
 
+	/*
+	For future reference, upon testing with a sample SwiftUI app:
+
+    1) Containers vanish. VStack/HStack don't appear in the accessibility tree at all, 
+      only real elements (Text, Button, List) do, parented to one root AXHostingView.
+
+    2) Changes post on the nearest real element, not the container. 
+       Toggling a child two VStack/HStack levels deep fired AXLayoutChanged on the AXHostingView 
+       (the nearest real element), never on the hidden containers.
+
+    3) Real controls get their own notification. The List (AXOutline) posted AXRowCountChanged on itself.
+
+	Apple never posts a structural notification on a non-accessibility container.
+    It targets the nearest element that's actually in the tree.
+    That's exactly what the code below does (templated parent, else walk to the nearest exposed ancestor).
+	*/
+
+    id target = [AvnAccessibilityElement acquire:_peer->GetTemplatedParent()];
+    if (target == nil)
+        target = self;
+    while ([target isKindOfClass:[AvnAccessibilityElement class]] && ![(AvnAccessibilityElement*)target isAccessibilityElement])
+        target = [(AvnAccessibilityElement*)target accessibilityParent];
+
     NSAccessibilityPostNotificationWithUserInfo(
-        self,
+        target,
         NSAccessibilityLayoutChangedNotification,
         @{ NSAccessibilityUIElementsKey: [changed allObjects]});
 }

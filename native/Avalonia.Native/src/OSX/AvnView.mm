@@ -375,7 +375,15 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
             [self becomeFirstResponder];
         }
     }
-       
+
+    if([self hasMarkedText] &&
+       (type == LeftButtonDown || type == RightButtonDown || type == MiddleButtonDown ||
+        type == XButton1Down || type == XButton2Down) &&
+       [self inputContext] != nil)
+    {
+        [[self inputContext] handleEvent:event];
+    }
+
     auto parent = _parent.tryGet();
     if(parent != nullptr)
     {
@@ -747,25 +755,48 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     return (AvnInputModifiers)rv;
 }
 
+// Clamps a range so that it can never be used to index outside of _text.
+// Ranges reaching us from AppKit or from the managed side are not guaranteed to be valid.
+- (NSRange)clampRangeToText:(NSRange)range
+{
+    if (range.location == NSNotFound)
+        return NSMakeRange(NSNotFound, 0);
+
+    NSUInteger length = _text.length;
+
+    if (range.location > length)
+        return NSMakeRange(length, 0);
+
+    // Avoids the overflow of location + length that a plain bounds check would have.
+    return NSMakeRange(range.location, MIN(range.length, length - range.location));
+}
+
 - (BOOL)hasMarkedText
 {
-    return _markedRange.length > 0;
+    return _markedRange.location != NSNotFound && _markedRange.length > 0;
 }
 
 - (NSRange)markedRange
 {
-    return _markedRange;
+    // From the docs: returns {NSNotFound, 0} if there is no marked range.
+    if (![self hasMarkedText])
+        return NSMakeRange(NSNotFound, 0);
+
+    // The preedit isn't necessarily part of the surrounding text we got from the managed side,
+    // so only the location is clamped here. An overlong length is handled by
+    // attributedSubstringForProposedRange:actualRange:, as the docs require.
+    return NSMakeRange(MIN(_markedRange.location, _text.length), _markedRange.length);
 }
 
 - (NSRange)selectedRange
 {
-    return _selectedRange;
+    return [self clampRangeToText:_selectedRange];
 }
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
     NSString* markedText;
-        
+
     if([string isKindOfClass:[NSAttributedString class]])
     {
         markedText = [string string];
@@ -774,24 +805,47 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     {
         markedText = (NSString*) string;
     }
-    
-    _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
+
+    if (markedText == nil)
+    {
+        markedText = @"";
+    }
+
     auto parent = _parent.tryGet();
 
-    if(parent->InputMethod->IsActive()){
-        parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
+    // Delete any replaced range
+    auto finalReplacementRange = [self clampRangeToText:replacementRange];
+
+    if (finalReplacementRange.location != NSNotFound && parent != nullptr && parent->InputMethod->IsActive())
+    {
+        parent->InputMethod->Client->SelectInSurroundingText((int)finalReplacementRange.location, (int)(finalReplacementRange.location + finalReplacementRange.length));
+        uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
+        parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
+        parent->TopLevelEvents->RawKeyEvent(KeyUp, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
+    }
+
+    auto markedLocation = [self selectedRange].location;
+
+    _markedRange = NSMakeRange(markedLocation == NSNotFound ? 0 : markedLocation, [markedText length]);
+
+    if (parent != nullptr && parent->InputMethod->IsActive())
+    {
+        const char* utf8MarkedText = [markedText UTF8String];
+        parent->InputMethod->Client->SetPreeditText((char*)(utf8MarkedText != nullptr ? utf8MarkedText : ""));
     }
 }
 
 - (void)unmarkText
 {
     auto parent = _parent.tryGet();
-    if(parent->InputMethod->IsActive()){
+    if(parent != nullptr && parent->InputMethod->IsActive()){
         parent->InputMethod->Client->SetPreeditText(nullptr);
     }
-    
-    _markedRange = NSMakeRange(_selectedRange.location, 0);
-    
+
+    auto selectionLocation = [self selectedRange].location;
+
+    _markedRange = NSMakeRange(selectionLocation == NSNotFound ? 0 : selectionLocation, 0);
+
     if([self inputContext]) {
         [[self inputContext] discardMarkedText];
     }
@@ -804,13 +858,27 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    if(actualRange){
-        range = *actualRange;
+    // From the docs: an implementation of this method should be prepared for aRange to be out of bounds.
+    // In this case, you should return the intersection of the document's range and aRange.
+    // If the location of aRange is completely outside of the document's range, return nil.
+    // actualRange is an out parameter: it is uninitialized on entry and must only be written to.
+    NSRange docRange = NSMakeRange(0, _text.length);
+    NSRange finalRange = NSIntersectionRange(range, docRange);
+
+    if (finalRange.length == 0)
+    {
+        if (actualRange) {
+            *actualRange = NSMakeRange(NSNotFound, 0);
+        }
+
+        return nil;
     }
-    
-    NSAttributedString* subString = [_text attributedSubstringFromRange:range];
-    
-    return subString;
+
+    if (actualRange) {
+        *actualRange = finalRange;
+    }
+
+    return [_text attributedSubstringFromRange:finalRange];
 }
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
@@ -819,9 +887,9 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     if(parent == nullptr){
         return;
     }
-    
+
     NSString* text;
-        
+
     if([string isKindOfClass:[NSAttributedString class]])
     {
         text = [string string];
@@ -830,12 +898,28 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     {
         text = (NSString*) string;
     }
-    
+
+    if (text == nil)
+    {
+        text = @"";
+    }
+
+    auto finalReplacementRange = [self clampRangeToText:replacementRange];
+
+    if (finalReplacementRange.location != NSNotFound &&
+        ![self hasMarkedText] &&
+        parent->InputMethod->IsActive())
+    {
+        parent->InputMethod->Client->SelectInSurroundingText((int)finalReplacementRange.location, (int)(finalReplacementRange.location + finalReplacementRange.length));
+    }
+
     [self unmarkText];
-        
+
     uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
-        
-    parent->TopLevelEvents->RawTextInputEvent(timestamp, [text UTF8String]);
+
+    const char* utf8Text = [text UTF8String];
+
+    parent->TopLevelEvents->RawTextInputEvent(timestamp, utf8Text != nullptr ? utf8Text : "");
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
@@ -845,11 +929,17 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
+    // actualRange is an out parameter: it is uninitialized on entry and must only be written to.
+    // We only ever report a single rect, so the requested range is echoed back clamped to the document.
+    if (actualRange) {
+        *actualRange = [self clampRangeToText:range];
+    }
+
     auto parent = _parent.tryGet();
-    if(!parent->InputMethod->IsActive()){
+    if(parent == nullptr || !parent->InputMethod->IsActive()){
         return NSZeroRect;
     }
-    
+
     return _cursorRect;
 }
 
@@ -1003,11 +1093,45 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 }
 
 - (void) setText:(NSString *)text{
-    [[_text mutableString] setString:text];
+    [[_text mutableString] setString:text != nil ? text : @""];
+
+    // The document changed, so the stored ranges can now point outside of it.
+    _selectedRange = [self clampRangeToText:_selectedRange];
+
+    if (_markedRange.location != NSNotFound)
+    {
+        _markedRange = NSMakeRange(MIN(_markedRange.location, _text.length), _markedRange.length);
+    }
 }
 
 - (void) setSelection:(int)start :(int)end{
-    _selectedRange = NSMakeRange(start, end - start);
+    if (end < start)
+    {
+        auto temp = start;
+        start = end;
+        end = temp;
+    }
+
+    auto length = (int)_text.length;
+
+    start = MAX(0, MIN(start, length));
+    end = MAX(start, MIN(end, length));
+
+    _selectedRange = NSMakeRange((NSUInteger)start, (NSUInteger)(end - start));
+}
+
+- (void) resetInputMethod{
+    auto parent = _parent.tryGet();
+
+    if(parent != nullptr && parent->InputMethod->IsActive()){
+        parent->InputMethod->Client->SetPreeditText(nullptr);
+    }
+
+    _markedRange = NSMakeRange(_selectedRange.location, 0);
+
+    if([self inputContext]) {
+        [[self inputContext] discardMarkedText];
+    }
 }
 
 - (void) setCursorRect:(AvnRect)rect{
