@@ -8,6 +8,7 @@ namespace Avalonia.Native;
 internal class NativePlatformSettings : DefaultPlatformSettings
 {
     private readonly IAvnPlatformSettings _platformSettings;
+    private PlatformColorValues? _colorValues;
     private string? _lastLanguage;
 
     public NativePlatformSettings(IAvnPlatformSettings platformSettings)
@@ -18,6 +19,9 @@ internal class NativePlatformSettings : DefaultPlatformSettings
     }
 
     public override PlatformColorValues GetColorValues()
+        => _colorValues ??= GetUncachedColorValues();
+
+    private PlatformColorValues GetUncachedColorValues()
     {
         var (theme, contrast) = _platformSettings.PlatformTheme switch
         {
@@ -50,7 +54,14 @@ internal class NativePlatformSettings : DefaultPlatformSettings
 
     public void OnColorValuesChanged()
     {
-        OnColorValuesChanged(GetColorValues());
+        var oldColorValues = _colorValues;
+        var colorValues = GetUncachedColorValues();
+
+        if (oldColorValues != colorValues)
+        {
+            _colorValues = colorValues;
+            OnColorValuesChanged(colorValues);
+        }
     }
 
     public override string PreferredApplicationLanguage =>

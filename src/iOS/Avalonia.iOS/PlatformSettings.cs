@@ -9,7 +9,7 @@ namespace Avalonia.iOS;
 // TODO: ideally should be created per view/activity.
 internal class PlatformSettings : DefaultPlatformSettings
 {
-    private PlatformColorValues? _lastColorValues;
+    private PlatformColorValues? _colorValues;
     private string? _lastLanguage;
 
     public PlatformSettings()
@@ -18,6 +18,9 @@ internal class PlatformSettings : DefaultPlatformSettings
     }
 
     public override PlatformColorValues GetColorValues()
+        => _colorValues ??= GetUncachedColorValues();
+
+    private static PlatformColorValues GetUncachedColorValues()
     {
         var themeVariant = UITraitCollection.CurrentTraitCollection.UserInterfaceStyle == UIUserInterfaceStyle.Dark ?
             PlatformThemeVariant.Dark :
@@ -39,7 +42,7 @@ internal class PlatformSettings : DefaultPlatformSettings
             tintColor.GetRGBA(out var red, out var green, out var blue, out var alpha);
             if (red != 0 && green != 0 && blue != 0 && alpha != 0)
             {
-                return _lastColorValues = new PlatformColorValues
+                return new PlatformColorValues
                 {
                     ThemeVariant = themeVariant,
                     ContrastPreference = contrastPreference,
@@ -52,26 +55,23 @@ internal class PlatformSettings : DefaultPlatformSettings
             }
         }
 
-        return _lastColorValues = new PlatformColorValues
+        return new PlatformColorValues
         {
-            ThemeVariant = themeVariant, ContrastPreference = contrastPreference
+            ThemeVariant = themeVariant,
+            ContrastPreference = contrastPreference
         };
     }
 
     public void TraitCollectionDidChange()
     {
-        var oldColorValues = _lastColorValues;
-        var colorValues = GetColorValues();
+        var oldColorValues = _colorValues;
+        var colorValues = GetUncachedColorValues();
 
         if (oldColorValues != colorValues)
         {
+            _colorValues = colorValues;
             OnColorValuesChanged(colorValues);
         }
-    }
-
-    internal void OnColorValuesChanged()
-    {
-        OnColorValuesChanged(GetColorValues());
     }
 
     public override string PreferredApplicationLanguage =>

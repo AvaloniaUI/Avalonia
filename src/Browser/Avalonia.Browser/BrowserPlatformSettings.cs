@@ -9,6 +9,7 @@ internal class BrowserPlatformSettings : DefaultPlatformSettings
     private bool _isDarkMode;
     private bool _isHighContrast;
     private bool _isInitialized;
+    private PlatformColorValues? _colorValues;
     private string? _lastLanguage;
 
     public override event EventHandler<PlatformColorValues>? ColorValuesChanged
@@ -43,25 +44,27 @@ internal class BrowserPlatformSettings : DefaultPlatformSettings
 
     public override PlatformColorValues GetColorValues()
     {
-        EnsureSettings();
-
-        return base.GetColorValues() with
+        if (_colorValues is null)
         {
-            ThemeVariant = _isDarkMode ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light,
-            ContrastPreference = _isHighContrast ? ColorContrastPreference.High : ColorContrastPreference.NoPreference
-        };
+            EnsureSettings();
+            _colorValues = BuildPlatformColorValues(_isDarkMode, _isHighContrast);
+        }
+
+        return _colorValues;
     }
+
+    private static PlatformColorValues BuildPlatformColorValues(bool isDarkMode, bool isHighContrast)
+        => new()
+        {
+            ThemeVariant = isDarkMode ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light,
+            ContrastPreference = isHighContrast ? ColorContrastPreference.High : ColorContrastPreference.NoPreference
+        };
 
     public void OnColorValuesChanged(bool isDarkMode, bool isHighContrast)
     {
         _isDarkMode = isDarkMode;
         _isHighContrast = isHighContrast;
-        OnColorValuesChanged(GetColorValues());
-    }
-
-    public void OnColorValuesChanged()
-    {
-        OnColorValuesChanged(GetColorValues());
+        UpdateColorValues();
     }
 
     public void OnPreferredLanguageChanged(string? language)
@@ -87,6 +90,18 @@ internal class BrowserPlatformSettings : DefaultPlatformSettings
             }
 
             _lastLanguage = DomHelper.GetNavigatorLanguage(BrowserWindowingPlatform.GlobalThis);
+        }
+    }
+
+    private void UpdateColorValues()
+    {
+        var oldColorValues = _colorValues;
+        var colorValues = BuildPlatformColorValues(_isDarkMode, _isHighContrast);
+
+        if (oldColorValues != colorValues)
+        {
+            _colorValues = colorValues;
+            OnColorValuesChanged(colorValues);
         }
     }
 }
