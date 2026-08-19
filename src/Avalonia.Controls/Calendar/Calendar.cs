@@ -375,7 +375,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<CalendarWeekRule> WeekNumberRuleProperty =
             AvaloniaProperty.Register<Calendar, CalendarWeekRule>(
                 nameof(WeekNumberRule),
-                defaultValue: (CalendarWeekRule)DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule);
+                defaultValue: DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule);
 
         /// <summary>
         /// Gets or sets the rule used to determine the first week of the year for week number display.

@@ -131,12 +131,12 @@
                   IsVisible="False">
               <Grid.RowDefinitions>
                 <RowDefinition Height="38" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
               </Grid.RowDefinitions>
               <!-- Header for the Weeks. -->
               <ContentControl Name="WeekNumberHeader" 
@@ -154,12 +154,12 @@
               <Grid.RowDefinitions>
                 <!--This should always be the week day names??-->
                 <RowDefinition Height="38" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
-                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
+                <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
               </Grid.RowDefinitions>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
