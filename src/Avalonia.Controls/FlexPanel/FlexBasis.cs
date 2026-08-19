@@ -1,16 +1,23 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Specifies the initial size of a flex item.
     /// </summary>
-    public readonly struct FlexBasis : IEquatable<FlexBasis>
+    public readonly partial struct FlexBasis : IEquatable<FlexBasis>
     {
+        /// <summary>
+        /// Gets the value of the <see cref="FlexBasis"/>. The meaning of this value depends on the <see cref="FlexBasisKind"/>
+        /// </summary>
         public double Value { get; }
 
+        /// <summary>
+        /// Gets the <see cref="FlexBasisKind"/>. This determines how the value affects the size of the flex item
+        /// </summary>
         public FlexBasisKind Kind { get; }
 
         /// <summary>
@@ -36,12 +43,24 @@ namespace Avalonia.Controls
         /// <exception cref="ArgumentException"></exception>
         public FlexBasis(double value) : this(value, FlexBasisKind.Absolute) { }
 
+        /// <summary>
+        /// Gets a <see cref="FlexBasis"/> instance that represents the "auto" value, which means the size of the flex item is determined by its content or other factors.
+        /// </summary>
         public static FlexBasis Auto => new(0.0, FlexBasisKind.Auto);
 
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="FlexBasis"/> is set to "auto".
+        /// </summary>
         public bool IsAuto => Kind == FlexBasisKind.Auto;
-    
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="FlexBasis"/> is set to an absolute value.
+        /// </summary>
         public bool IsAbsolute => Kind == FlexBasisKind.Absolute;
-    
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="FlexBasis"/> is set to a relative value.
+        /// </summary>
         public bool IsRelative => Kind == FlexBasisKind.Relative;
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
@@ -71,6 +90,10 @@ namespace Avalonia.Controls
             };
         }
 
+
+        [GeneratedRegex(@"^\d+([.]?\d*)%$", RegexOptions.Multiline)]
+        private static partial Regex ValidateRelativePattern();
+
         /// <summary>
         /// Converts a string flex-basis value to a <see cref="FlexBasis"/> instance.
         /// </summary>
@@ -78,13 +101,21 @@ namespace Avalonia.Controls
         /// <returns></returns>
         public static FlexBasis Parse(string str)
         {
-            return str.ToUpperInvariant() switch
+            var span = str.AsSpan().Trim();
+            if (string.Equals(str, "AUTO", StringComparison.OrdinalIgnoreCase))
             {
-                "AUTO" => Auto,
-                var s when s.EndsWith("%") => new FlexBasis(ParseDouble(s.TrimEnd('%').TrimEnd()) / 100, FlexBasisKind.Relative),
-                _ => new FlexBasis(ParseDouble(str), FlexBasisKind.Absolute),
-            };
-            double ParseDouble(string s) => double.Parse(s, CultureInfo.InvariantCulture);
+                return Auto;
+            }
+            else if (ValidateRelativePattern().IsMatch(str))
+            {
+                return new FlexBasis(double.Parse(span.TrimEnd('%'), CultureInfo.InvariantCulture) / 100, FlexBasisKind.Relative);
+            }
+            else if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+            {
+                return new FlexBasis(value, FlexBasisKind.Absolute);
+            }
+
+            throw new ArgumentException($"Value '{str}' is not a valid flex-basis value. Valid values are 'auto', a number (e.g., '100'), or a percentage (e.g., '50%').", nameof(str));
         }
     }
 }

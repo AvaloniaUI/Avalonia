@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
-
-using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -18,7 +19,7 @@ namespace Avalonia.Controls
     /// </remarks>
     public sealed class FlexPanel : Panel
     {
-        private static readonly Func<Layoutable, int> s_getOrder = x => x is { } y ? Flex.GetOrder(y) : 0;
+        private static readonly Func<Layoutable, int> s_getOrder = x => Flex.GetOrder(x);
         private static readonly Func<Layoutable, bool> s_isVisible = x => x.IsVisible;
 
         /// <summary>
@@ -64,6 +65,9 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<FlexPanel, double>(nameof(RowSpacing));
 
         private FlexLayoutState? _state;
+        private Dictionary<Visual, IDisposable> _childVisibilitySubscriptions = new Dictionary<Visual, IDisposable>();
+        private Layoutable[]? _visibleChildren;
+        private FlexStateLayout? _flexLayout;
 
         static FlexPanel()
         {
@@ -95,7 +99,7 @@ namespace Avalonia.Controls
         /// determining the orientation in which child controls are laid out.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to <see cref="FlexDirection.Row"/>.
+        /// The default value is <see cref="FlexDirection.Row"/>.
         /// Equivalent to CSS flex-direction property
         /// </remarks>
         public FlexDirection Direction
@@ -193,8 +197,11 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override Size MeasureOverride(Size availableSize)
         {
-            var children = (IReadOnlyList<Layoutable>)Children;
-            children = children.Where(s_isVisible).OrderBy(s_getOrder).ToArray();
+            if (_visibleChildren is not { Length: > 0 } children)
+            {
+                _state = null;
+                return availableSize;
+            }
 
             var isColumn = Direction is FlexDirection.Column or FlexDirection.ColumnReverse;
 
@@ -204,18 +211,25 @@ namespace Avalonia.Controls
             LineData lineData = default;
             var (childIndex, firstChildIndex, itemIndex) = (0, 0, 0);
 
-            var flexLines = new List<FlexLine>();
+            _flexLayout = _flexLayout ?? new FlexStateLayout();
+            _flexLayout.Lines.Clear();
+
+            double panelSizeU = 0;
+            Func<FlexLine, double> maxSelector = l => l.U + (l.Count - 1) * spacing.U;
 
             foreach (var element in children)
             {
                 var size = MeasureChild(element, max, isColumn);
 
-                if (Wrap != FlexWrap.NoWrap && lineData.U + size.U + itemIndex * spacing.U > max.U)
+                if (Wrap != FlexWrap.NoWrap && MathUtilities.GreaterThanOrClose(lineData.U + size.U + itemIndex * spacing.U, max.U))
                 {
-                    flexLines.Add(new FlexLine(firstChildIndex, childIndex - 1, lineData));
+                    var line = new FlexLine(firstChildIndex, childIndex - 1, lineData);
+                    _flexLayout.Lines.Add(line);
                     lineData = default;
                     firstChildIndex = childIndex;
                     itemIndex = 0;
+
+                    panelSizeU = Math.Max(panelSizeU, maxSelector(line));
                 }
 
                 lineData.U += size.U;
@@ -229,24 +243,28 @@ namespace Avalonia.Controls
 
             if (itemIndex != 0)
             {
-                flexLines.Add(new FlexLine(firstChildIndex, firstChildIndex + itemIndex - 1, lineData));
+                var line = new FlexLine(firstChildIndex, firstChildIndex + itemIndex - 1, lineData);
+                _flexLayout.Lines.Add(line);
+                panelSizeU = Math.Max(panelSizeU, maxSelector(line));
             }
 
-            var state = new FlexLayoutState(children, flexLines, Wrap);
+            var state = new FlexLayoutState(_flexLayout.Lines, Wrap);
 
-            var totalSpacingV = (flexLines.Count - 1) * spacing.V;
-            var panelSizeU = flexLines.Count > 0 ? flexLines.Max(flexLine => flexLine.U + (flexLine.Count - 1) * spacing.U) : 0.0;
+            var totalSpacingV = (_flexLayout.Lines.Count - 1) * spacing.V;
 
             // Resizing along main axis using grow and shrink factors can affect cross axis, so remeasure affected items and lines.
-            foreach (var flexLine in flexLines)
+            for (var i = 0; i < _flexLayout.Lines.Count; i++)
             {
-                var (itemsCount, totalSpacingU, totalU, freeU) = GetLineMeasureU(flexLine, max.U, spacing.U);
+                var flexLine = _flexLayout.Lines[i];
+                var (itemsCount, freeU) = GetLineMeasureU(flexLine, max.U, spacing.U);
                 var (lineMult, autoMargins, remainingFreeU) = GetLineMultInfo(flexLine, freeU);
-                
+
                 if (lineMult != 0.0 && remainingFreeU != 0.0)
                 {
-                    foreach (var element in state.GetLineItems(flexLine))
+                    double maxV = 0.0;
+                    for (var j = flexLine.First; j <= flexLine.Last; j++)
                     {
+                        var element = _visibleChildren[j];
                         var baseLength = Flex.GetBaseLength(element);
                         var mult = GetItemMult(element, freeU);
                         if (mult != 0.0)
@@ -254,22 +272,28 @@ namespace Avalonia.Controls
                             var length = Math.Max(0.0, baseLength + remainingFreeU * mult / lineMult);
                             element.Measure(Uv.ToSize(max.WithU(length), isColumn));
                         }
+
+                        maxV = Math.Max(Uv.FromSize(element.DesiredSize, isColumn).V, maxV);
                     }
 
-                    flexLine.V = state.GetLineItems(flexLine).Max(i => Uv.FromSize(i.DesiredSize, isColumn).V);
+                    flexLine.V = maxV;
+                    _flexLayout.Lines[i] = flexLine;
                 }
             }
 
             _state = state;
-            var totalLineV = flexLines.Sum(l => l.V);
-            var panelSize = flexLines.Count == 0 ? default : new Uv(panelSizeU, totalLineV + totalSpacingV);
+            var totalLineV = _flexLayout.Lines.Sum(l => l.V);
+            var panelSize = _flexLayout.Lines.Count == 0 ? default : new Uv(panelSizeU, totalLineV + totalSpacingV);
             return Uv.ToSize(panelSize, isColumn);
         }
 
         /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var state = _state ?? throw new InvalidOperationException();
+            if (_visibleChildren is not { Length: > 0 } || _state is not { } state)
+            {
+                return finalSize;
+            }
 
             var isColumn = Direction is FlexDirection.Column or FlexDirection.ColumnReverse;
             var isReverse = Direction is FlexDirection.RowReverse or FlexDirection.ColumnReverse;
@@ -292,14 +316,15 @@ namespace Avalonia.Controls
             foreach (var line in state.Lines)
             {
                 var lineV = scaleV * line.V;
-                var (itemsCount, totalSpacingU, totalU, freeU) = GetLineMeasureU(line, panelSize.U, spacing.U);
+                var (itemsCount, freeU) = GetLineMeasureU(line, panelSize.U, spacing.U);
                 var (lineMult, lineAutoMargins, remainingFreeU) = GetLineMultInfo(line, freeU);
 
                 var currentFreeU = remainingFreeU;
                 if (lineMult != 0.0 && remainingFreeU != 0.0)
                 {
-                    foreach (var element in state.GetLineItems(line))
+                    for (var i = line.First; i <= line.Last; i++)
                     {
+                        var element = _visibleChildren[i];
                         var baseLength = Flex.GetBaseLength(element);
                         var mult = GetItemMult(element, freeU);
                         if (mult != 0.0)
@@ -314,8 +339,9 @@ namespace Avalonia.Controls
 
                 if (lineAutoMargins != 0 && remainingFreeU != 0.0)
                 {
-                    foreach (var element in state.GetLineItems(line))
+                    for (var i = line.First; i <= line.Last; i++)
                     {
+                        var element = _visibleChildren[i];
                         var baseLength = Flex.GetCurrentLength(element);
                         var autoMargins = GetItemAutoMargins(element, isColumn);
                         if (autoMargins != 0)
@@ -330,8 +356,9 @@ namespace Avalonia.Controls
 
                 var (u, spacingU) = GetMainAxisPosAndSpacing(JustifyContent, line, spacing, remainingFreeU, itemsCount);
 
-                foreach (var element in state.GetLineItems(line))
+                for (var i = line.First; i <= line.Last; i++)
                 {
+                    var element = _visibleChildren[i];
                     var size = Uv.FromSize(element.DesiredSize, isColumn).WithU(Flex.GetCurrentLength(element));
                     var align = Flex.GetAlignSelf(element) ?? AlignItems;
 
@@ -370,7 +397,7 @@ namespace Avalonia.Controls
             element.Measure(Uv.ToSize(max.WithU(flexConstraint), isColumn));
 
             var size = Uv.FromSize(element.DesiredSize, isColumn);
-            
+
             var flexLength = basis.Kind switch
             {
                 FlexBasisKind.Auto => size.U,
@@ -378,7 +405,7 @@ namespace Avalonia.Controls
                 _ => throw new InvalidOperationException()
             };
             size = size.WithU(flexLength);
-            
+
             Flex.SetBaseLength(element, flexLength);
             Flex.SetCurrentLength(element, flexLength);
             return size;
@@ -394,19 +421,19 @@ namespace Avalonia.Controls
                 FlexAlignContent.SpaceBetween when freeV > 0.0 && linesCount > 1 => FlexAlignContent.SpaceBetween,
                 FlexAlignContent.SpaceAround when freeV > 0.0 && linesCount > 0 => FlexAlignContent.SpaceAround,
                 FlexAlignContent.SpaceEvenly when freeV > 0.0 && linesCount > 0 => FlexAlignContent.SpaceEvenly,
-                
+
                 // Default alignments when there's no free space or not enough lines
                 FlexAlignContent.Stretch => FlexAlignContent.FlexStart,
                 FlexAlignContent.SpaceBetween => FlexAlignContent.FlexStart,
                 FlexAlignContent.SpaceAround => FlexAlignContent.Center,
                 FlexAlignContent.SpaceEvenly => FlexAlignContent.Center,
                 FlexAlignContent.FlexStart or FlexAlignContent.Center or FlexAlignContent.FlexEnd => currentAlignContent,
-                
+
                 _ => throw new InvalidOperationException($"Unsupported AlignContent value: {currentAlignContent}")
             };
         }
-        
-        private static (double v, double spacingV) GetCrossAxisPosAndSpacing(FlexAlignContent alignContent, Uv spacing, 
+
+        private static (double v, double spacingV) GetCrossAxisPosAndSpacing(FlexAlignContent alignContent, Uv spacing,
             double freeV, int linesCount)
         {
             return alignContent switch
@@ -415,20 +442,20 @@ namespace Avalonia.Controls
                 FlexAlignContent.FlexEnd => (freeV, spacing.V),
                 FlexAlignContent.Center => (freeV / 2, spacing.V),
                 FlexAlignContent.Stretch => (0.0, spacing.V),
-                
+
                 FlexAlignContent.SpaceBetween when linesCount > 1 => (0.0, spacing.V + freeV / (linesCount - 1)),
                 FlexAlignContent.SpaceBetween => (0.0, spacing.V),
-                
-                FlexAlignContent.SpaceAround when linesCount > 0 =>  (freeV / linesCount / 2, spacing.V + freeV / linesCount),
+
+                FlexAlignContent.SpaceAround when linesCount > 0 => (freeV / linesCount / 2, spacing.V + freeV / linesCount),
                 FlexAlignContent.SpaceAround => (freeV / 2, spacing.V),
-                
+
                 FlexAlignContent.SpaceEvenly => (freeV / (linesCount + 1), spacing.V + freeV / (linesCount + 1)),
-                
+
                 _ => throw new InvalidOperationException($"Unsupported AlignContent value: {alignContent}")
             };
         }
-        
-        private static (double u, double spacingU) GetMainAxisPosAndSpacing(FlexJustifyContent justifyContent, FlexLine line, 
+
+        private static (double u, double spacingU) GetMainAxisPosAndSpacing(FlexJustifyContent justifyContent, FlexLine line,
             Uv spacing, double remainingFreeU, int itemsCount)
         {
             return line.Grow > 0 ? (0.0, spacing.U) : justifyContent switch
@@ -436,28 +463,28 @@ namespace Avalonia.Controls
                 FlexJustifyContent.FlexStart => (0.0, spacing.U),
                 FlexJustifyContent.FlexEnd => (remainingFreeU, spacing.U),
                 FlexJustifyContent.Center => (remainingFreeU / 2, spacing.U),
-                
+
                 FlexJustifyContent.SpaceBetween when itemsCount > 1 => (0.0, spacing.U + remainingFreeU / (itemsCount - 1)),
                 FlexJustifyContent.SpaceBetween => (0.0, spacing.U),
-                
+
                 FlexJustifyContent.SpaceAround when itemsCount > 0 => (remainingFreeU / itemsCount / 2, spacing.U + remainingFreeU / itemsCount),
                 FlexJustifyContent.SpaceAround => (remainingFreeU / 2, spacing.U),
-                
-                FlexJustifyContent.SpaceEvenly when itemsCount > 0 =>  (remainingFreeU / (itemsCount + 1), spacing.U + remainingFreeU / (itemsCount + 1)), 
+
+                FlexJustifyContent.SpaceEvenly when itemsCount > 0 => (remainingFreeU / (itemsCount + 1), spacing.U + remainingFreeU / (itemsCount + 1)),
                 FlexJustifyContent.SpaceEvenly => (remainingFreeU / 2, spacing.U),
-                
+
                 _ => throw new InvalidOperationException($"Unsupported JustifyContent value: {justifyContent}")
             };
         }
 
-        private static (int ItemsCount, double TotalSpacingU, double TotalU, double FreeU) GetLineMeasureU(
+        private static (int ItemsCount, double FreeU) GetLineMeasureU(
             FlexLine line, double panelSizeU, double spacingU)
         {
             var itemsCount = line.Count;
             var totalSpacingU = (itemsCount - 1) * spacingU;
             var totalU = line.U + totalSpacingU;
             var freeU = panelSizeU - totalU;
-            return (itemsCount, totalSpacingU, totalU, freeU);
+            return (itemsCount, freeU);
         }
 
         private static (double LineMult, double LineAutoMargins, double RemainingFreeU) GetLineMultInfo(FlexLine line, double freeU)
@@ -505,26 +532,55 @@ namespace Avalonia.Controls
                 };
         }
 
+        protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.ChildrenChanged(sender, e);
+
+            if (e.OldItems is { } oldItems)
+                foreach (var old in oldItems)
+                {
+                    if (old is Visual v)
+                        if (_childVisibilitySubscriptions.Remove(v, out var disposable))
+                        {
+                            disposable.Dispose();
+                        }
+                }
+
+            if (e.NewItems is { } newItems)
+                foreach (var newItem in newItems)
+                {
+                    if (newItem is Visual visual)
+                    {
+                        _childVisibilitySubscriptions.Add(visual, visual.GetObservable(IsVisibleProperty).Subscribe(new AnonymousObserver<bool>(OnChildVisibilityChanged)));
+                    }
+                }
+
+            UpdateVisibleChildren();
+        }
+
+        private void OnChildVisibilityChanged(bool isVisible)
+        {
+            UpdateVisibleChildren();
+        }
+
+        private void UpdateVisibleChildren()
+        {
+            _visibleChildren = Children.Where(s_isVisible).OrderBy(s_getOrder).ToArray();
+
+            InvalidateMeasure();
+        }
+
         private readonly struct FlexLayoutState
         {
-            private readonly IReadOnlyList<Layoutable> _children;
-
             public IReadOnlyList<FlexLine> Lines { get; }
 
-            public FlexLayoutState(IReadOnlyList<Layoutable> children, List<FlexLine> lines, FlexWrap wrap)
+            public FlexLayoutState(List<FlexLine> lines, FlexWrap wrap)
             {
                 if (wrap == FlexWrap.WrapReverse)
                 {
                     lines.Reverse();
                 }
-                _children = children;
                 Lines = lines;
-            }
-
-            public IEnumerable<Layoutable> GetLineItems(FlexLine line)
-            {
-                for (var i = line.First; i <= line.Last; i++)
-                    yield return _children[i];
             }
         }
 
@@ -541,7 +597,12 @@ namespace Avalonia.Controls
             public int AutoMargins { get; set; }
         }
 
-        private class FlexLine
+        private class FlexStateLayout
+        {
+            public List<FlexLine> Lines { get; } = new List<FlexLine>();
+        }
+
+        private struct FlexLine
         {
             public FlexLine(int first, int last, LineData l)
             {
@@ -577,6 +638,40 @@ namespace Avalonia.Controls
 
             /// <summary>Number of items.</summary>
             public int Count => Last - First + 1;
+        }
+
+        private readonly struct Uv
+        {
+            public Uv(double u, double v)
+            {
+                U = u;
+                V = v;
+            }
+
+            public double U { get; }
+
+            public double V { get; }
+
+            public static Uv FromSize(double width, double height, bool swap) =>
+                new Uv(swap ? height : width, swap ? width : height);
+
+            public static Uv FromSize(Size size, bool swap) =>
+                FromSize(size.Width, size.Height, swap);
+
+            public static Point ToPoint(Uv uv, bool swap) =>
+                new Point(swap ? uv.V : uv.U, swap ? uv.U : uv.V);
+
+            public static Size ToSize(Uv uv, bool swap) =>
+                new Size(swap ? uv.V : uv.U, swap ? uv.U : uv.V);
+
+            public Uv WithU(double u) =>
+                new Uv(u, V);
+
+            public Uv WithV(double v) =>
+                new Uv(U, v);
+
+            public override string ToString() =>
+                $"U: {U}, V: {V}";
         }
     }
 }

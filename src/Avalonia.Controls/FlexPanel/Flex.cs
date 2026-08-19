@@ -4,6 +4,9 @@ using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Provides attached properties for controlling the layout behavior of child elements within a <see cref="FlexPanel"/>.
+    /// </summary>
     public static class Flex
     {
         /// <summary>

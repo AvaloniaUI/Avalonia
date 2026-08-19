@@ -279,7 +279,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new FlexPanel()
             {
-                Width = 100,
+                Width = 110,
                 ColumnSpacing = 10,
                 RowSpacing = 20,
                 Children =
@@ -295,7 +295,7 @@ namespace Avalonia.Controls.UnitTests
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(new Size(100, 190), target.Bounds.Size);
+            Assert.Equal(new Size(110, 190), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 60, 50), target.Children[0].Bounds);
             Assert.Equal(new Rect(70, 0, 30, 50), target.Children[1].Bounds);
             Assert.Equal(new Rect(0, 70, 70, 50), target.Children[2].Bounds);
@@ -330,7 +330,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new FlexPanel()
             {
-                Height = 100,
+                Height = 110,
                 RowSpacing = 10,
                 ColumnSpacing = 20,
                 Children =
@@ -347,7 +347,7 @@ namespace Avalonia.Controls.UnitTests
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(new Size(190, 100), target.Bounds.Size);
+            Assert.Equal(new Size(190, 110), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 50, 60), target.Children[0].Bounds);
             Assert.Equal(new Rect(0, 70, 50, 30), target.Children[1].Bounds);
             Assert.Equal(new Rect(70, 0, 50, 70), target.Children[2].Bounds);
