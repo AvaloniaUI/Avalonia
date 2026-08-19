@@ -1616,6 +1616,13 @@ namespace Avalonia.Media
                     normalizedValue = _avarTable.Remap(i, normalizedValue);
                 }
 
+                // Quantize to the F2Dot14 grid (1/16384) the font binary itself uses for
+                // normalized coordinates — gvar, avar and the item variation stores cannot
+                // represent a finer position, so this loses nothing. It also bounds the
+                // per-source variation-clone cache under animation: a swept axis lands on
+                // at most 32769 distinct positions instead of one per float progress value.
+                normalizedValue = MathF.Round(normalizedValue * 16384f) / 16384f;
+
                 if (normalizedValue != 0f)
                 {
                     normalized ??= new Dictionary<OpenTypeTag, float>(axes.Length);

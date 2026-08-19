@@ -162,6 +162,24 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void CreateNormalizedPosition_Quantizes_To_The_F2Dot14_Grid()
+        {
+            // Normalized coordinates are quantized to the 1/16384 grid the font binary
+            // uses, so user values that differ below that resolution produce the SAME
+            // position — this is what keeps the variation-clone cache bounded when an
+            // axis is animated through arbitrary float values.
+            var typeface = LoadTypeface(InterVariableAsset);
+
+            var a = typeface.CreateNormalizedPosition(Settings((s_wghtTag, 700)));
+            var b = typeface.CreateNormalizedPosition(Settings((s_wghtTag, 700.001)));
+
+            Assert.Equal(a, b);
+
+            Assert.True(a.TryGetCoordinate(s_wghtTag, out var wght));
+            Assert.Equal(MathF.Round(wght * 16384f) / 16384f, wght);
+        }
+
+        [Fact]
         public void CreateNormalizedPosition_Uses_Named_Instance_Coordinates()
         {
             // Instance index 8 in Inter Variable is the last preset (Black, wght=900).
