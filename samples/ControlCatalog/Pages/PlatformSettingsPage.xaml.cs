@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
@@ -17,7 +18,7 @@ namespace ControlCatalog.Pages
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _viewModel.Subscribe();
+            _viewModel.Subscribe(this.GetPlatformSettings() ?? Application.Current?.PlatformSettings);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

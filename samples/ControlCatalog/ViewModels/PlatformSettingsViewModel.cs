@@ -1,5 +1,4 @@
 using System;
-using Avalonia;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -9,27 +8,21 @@ namespace ControlCatalog.ViewModels;
 
 public class PlatformSettingsViewModel : ViewModelBase
 {
-    private readonly IPlatformSettings? _platformSettings;
+    private IPlatformSettings? _platformSettings;
     private PlatformColorValues? _colorValues;
     private string? _preferredLanguage;
 
-    public PlatformSettingsViewModel()
+    public void Subscribe(IPlatformSettings? platformSettings)
     {
-        _platformSettings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+        _platformSettings = platformSettings;
 
-        if (_platformSettings != null)
+        if (platformSettings is not null)
         {
-            _colorValues = _platformSettings.GetColorValues();
-            _preferredLanguage = _platformSettings.PreferredApplicationLanguage;
-        }
-    }
+            OnColorValuesChanged(platformSettings, platformSettings.GetColorValues());
+            OnPreferredLanguageChanged(platformSettings, EventArgs.Empty);
 
-    public void Subscribe()
-    {
-        if (_platformSettings != null)
-        {
-            _platformSettings.ColorValuesChanged += OnColorValuesChanged;
-            _platformSettings.PreferredApplicationLanguageChanged += OnPreferredLanguageChanged;
+            platformSettings?.ColorValuesChanged += OnColorValuesChanged;
+            platformSettings?.PreferredApplicationLanguageChanged += OnPreferredLanguageChanged;
         }
     }
 
@@ -39,6 +32,7 @@ public class PlatformSettingsViewModel : ViewModelBase
         {
             _platformSettings.ColorValuesChanged -= OnColorValuesChanged;
             _platformSettings.PreferredApplicationLanguageChanged -= OnPreferredLanguageChanged;
+            _platformSettings = null;
         }
     }
 
@@ -54,14 +48,9 @@ public class PlatformSettingsViewModel : ViewModelBase
 
     private void OnPreferredLanguageChanged(object? sender, EventArgs e)
     {
-        if (_platformSettings != null)
-        {
-            _preferredLanguage = _platformSettings.PreferredApplicationLanguage;
-            RaisePropertyChanged(nameof(PreferredLanguage));
-        }
+        _preferredLanguage = ((IPlatformSettings)sender!).PreferredApplicationLanguage;
+        RaisePropertyChanged(nameof(PreferredLanguage));
     }
-
-    public bool IsAvailable => _platformSettings != null;
 
     public string PreferredLanguage => _preferredLanguage ?? "Not available";
 
