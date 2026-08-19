@@ -543,10 +543,10 @@ namespace Avalonia.Layout
         /// </remarks>
         protected virtual Size MeasureCore(Size availableSize)
         {
+            ApplyStyling();
+
             if (IsVisible)
             {
-                ApplyStyling();
-                if (!IsVisible) return new Size();
                 var margin = Margin;
                 var useLayoutRounding = UseLayoutRounding;
                 var scale = 1.0;
