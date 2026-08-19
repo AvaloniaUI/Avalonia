@@ -150,7 +150,7 @@ namespace Avalonia.Controls.UnitTests
             using var app = App();
             var horizontal = orientation == Orientation.Horizontal;
             var items = Enumerable.Range(0, 100)
-                .Select(x => horizontal ? (object)new ItemWithWidth(x, x < 60 ? 10 : 50) : new ItemWithHeight(x, x < 60 ? 10 : 50))
+                .Select(x => horizontal ? (object)new ItemWithWidth(x, x < 60 ? 20 : 50) : new ItemWithHeight(x, x < 60 ? 20 : 50))
                 .ToList();
             var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
                 items: items,
@@ -159,9 +159,6 @@ namespace Avalonia.Controls.UnitTests
                 bufferFactor: bufferFactor);
             scroll.Template = ScrollViewerTemplateWithScrollBars();
             CreateRoot(itemsControl).LayoutManager.ExecuteInitialLayoutPass();
-
-            scroll.Offset = horizontal ? new Vector(850, 0) : new Vector(0, 850);
-            Layout(target);
 
             (horizontal ? scroll.HorizontalScrollBar : scroll.VerticalScrollBar)?.ScrollToEnd();
             Layout(target);
