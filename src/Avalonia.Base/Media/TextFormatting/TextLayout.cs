@@ -632,7 +632,7 @@ namespace Avalonia.Media.TextFormatting
                     //Fulfill max lines constraint
                     if (MaxLines > 0 && textLines.Count >= MaxLines)
                     {
-                        if (textLine.TextLineBreak is { IsSplit: true } && !textLine.HasCollapsed)
+                        if (textLine.TextLineBreak is { IsSplit: true })
                         {
                             textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(textLine.WidthIncludingTrailingWhitespace));
                         }
