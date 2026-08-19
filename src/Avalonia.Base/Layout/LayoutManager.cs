@@ -5,20 +5,17 @@ using System.Diagnostics;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Media;
-using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Layout
 {
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
-    internal class LayoutManager : ILayoutManager, IDisposable
+    internal class LayoutManager : IBringIntoViewLayoutManager
     {
         private const int MaxPasses = 10;
         private readonly ILayoutRoot _owner;
@@ -26,9 +23,11 @@ namespace Avalonia.Layout
         private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
         private readonly List<Layoutable> _toArrangeAfterMeasure = new();
         private List<EffectiveViewportChangedListener>? _effectiveViewportChangedListeners;
+        private List<BringIntoViewRequest>? _bringIntoViewRequests;
         private bool _disposed;
         private bool _queued;
         private bool _running;
+        private bool _processingBringIntoViewRequests;
         private int _totalPassCount;
         private readonly Action _invokeOnRender;
 
@@ -39,6 +38,8 @@ namespace Avalonia.Layout
         }
 
         public virtual event EventHandler? LayoutUpdated;
+
+        public bool IsInLayoutPass => _running;
 
         internal Action<LayoutPassTiming>? LayoutPassTimed { get; set; }
 
@@ -175,7 +176,87 @@ namespace Avalonia.Layout
             }
 
             _queued = false;
+
+            ProcessBringIntoViewRequests();
+
             LayoutUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <inheritdoc />
+        public void EnqueueBringIntoView(BringIntoViewRequest request)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+
+            if (_disposed)
+                return;
+
+            var requests = _bringIntoViewRequests ??= new();
+            var replaced = false;
+
+            for (var i = 0; i < requests.Count; ++i)
+            {
+                if (requests[i].Target == request.Target)
+                {
+                    requests[i] = request;
+                    replaced = true;
+                    break;
+                }
+            }
+
+            if (!replaced)
+                requests.Add(request);
+
+            // The request will usually be consumed by the already pending layout pass that will lay out its target,
+            // but make sure a pass is scheduled in case there is none.
+            QueueLayoutPass();
+        }
+
+        private void ProcessBringIntoViewRequests()
+        {
+            if (_processingBringIntoViewRequests || _bringIntoViewRequests is not { Count: > 0 } requests)
+                return;
+
+            _processingBringIntoViewRequests = true;
+
+            try
+            {
+                for (var pass = 0; pass < MaxPasses; ++pass)
+                {
+                    var executedAny = false;
+                    var i = 0;
+
+                    while (i < requests.Count)
+                    {
+                        var request = requests[i];
+
+                        // The target has been detached, abort.
+                        if (request.Target.GetLayoutRoot() != _owner)
+                        {
+                            requests.RemoveAt(i);
+                            continue;
+                        }
+
+                        var executed = request.TryExecute();
+                        executedAny |= executed;
+
+                        // Executing the request may have replaced it with a new one for the same target.
+                        if (executed && i < requests.Count && requests[i] == request)
+                            requests.RemoveAt(i);
+                        else
+                            ++i;
+                    }
+
+                    if (!executedAny || (_toMeasure.Count == 0 && _toArrange.Count == 0))
+                        break;
+
+                    // Executing requests invalidated layout: run another pass.
+                    ExecuteLayoutPass();
+                }
+            }
+            finally
+            {
+                _processingBringIntoViewRequests = false;
+            }
         }
 
         /// <inheritdoc/>
@@ -212,6 +293,7 @@ namespace Avalonia.Layout
             _disposed = true;
             _toMeasure.Dispose();
             _toArrange.Dispose();
+            _bringIntoViewRequests = null;
         }
 
         void ILayoutManager.RegisterEffectiveViewportListener(Layoutable control)

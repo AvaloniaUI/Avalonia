@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -20,6 +22,8 @@ namespace Avalonia.Controls.Presenters
         private PanelContainerGenerator? _generator;
         private ILogicalScrollable? _logicalScrollable;
         private EventHandler? _scrollInvalidated;
+        private ScrollIntoViewRequest? _scrollIntoViewRequest;
+        private int _pendingScrollIntoViewIndex = -1;
 
         event EventHandler? ILogicalScrollable.ScrollInvalidated
         {
@@ -126,10 +130,81 @@ namespace Avalonia.Controls.Presenters
 
         internal void ScrollIntoView(int index)
         {
-            if (Panel is VirtualizingPanel v)
-                v.ScrollIntoView(index);
-            else if (index >= 0 && index < Panel?.Children.Count)
-                Panel.Children[index].BringIntoView();
+            if (index < 0)
+                return;
+
+            // Not attached to a layout root yet: the request will be enqueued in OnAttachedToVisualTree.
+            if (this.GetLayoutRoot()?.LayoutManager is not IBringIntoViewLayoutManager layoutManager)
+            {
+                _pendingScrollIntoViewIndex = index;
+                return;
+            }
+
+            // Try to execute synchronously when no layout pass is running.
+            if (!layoutManager.IsInLayoutPass && TryScrollIntoViewNow(index))
+            {
+                _pendingScrollIntoViewIndex = -1;
+                return;
+            }
+
+            // Defer to the end of the layout pass.
+            _pendingScrollIntoViewIndex = index;
+            layoutManager.EnqueueBringIntoView(_scrollIntoViewRequest ??= new(this));
+        }
+
+        internal void CancelScrollIntoView(int index)
+        {
+            if (_pendingScrollIntoViewIndex == index)
+                _pendingScrollIntoViewIndex = -1;
+        }
+
+        private bool TryScrollIntoViewNow(int index)
+        {
+            if (!IsEffectivelyVisible || Panel is not { } panel)
+                return false;
+
+            if (panel is VirtualizingPanel virtualizingPanel)
+                return virtualizingPanel.ScrollIntoView(index) is not null;
+
+            if (index < panel.Children.Count)
+            {
+                panel.Children[index].BringIntoView();
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryExecutePendingScrollIntoView()
+        {
+            var index = _pendingScrollIntoViewIndex;
+            if (index < 0)
+                return true;
+
+            if (Panel is not { IsMeasureValid: true, IsArrangeValid: true } || !IsEffectivelyVisible)
+                return false;
+
+            _pendingScrollIntoViewIndex = -1;
+            TryScrollIntoViewNow(index);
+
+            // Executing the scroll may have prepared containers whose handlers requested a new
+            // scroll: in that case keep the request queued so it gets executed as well.
+            return _pendingScrollIntoViewIndex < 0;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            if (_pendingScrollIntoViewIndex >= 0 && this.GetLayoutRoot()?.LayoutManager is IBringIntoViewLayoutManager layoutManager)
+                layoutManager.EnqueueBringIntoView(_scrollIntoViewRequest ??= new(this));
+        }
+
+        private sealed class ScrollIntoViewRequest(ItemsPresenter presenter)
+            : BringIntoViewRequest(presenter)
+        {
+            public override bool TryExecute()
+                => presenter.TryExecutePendingScrollIntoView();
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
