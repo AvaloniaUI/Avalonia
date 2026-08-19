@@ -660,7 +660,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var line = probe.TextLines[i];
 
-                    // Shorter = line was wrapped, but not because of max width, so it will be cut off by max lines and should have ellipsis added.
                     if (line.TextLineBreak is { IsSplit: true } && line.WidthIncludingTrailingWhitespace < (maxLineWidth - 0.01))
                     {
                         cutIndex = i;
