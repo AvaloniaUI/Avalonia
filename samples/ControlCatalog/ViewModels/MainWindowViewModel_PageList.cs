@@ -73,6 +73,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("OpenGL Lease",() => new OpenGlLeasePage(), Icons.Cube3D),
             new PageItem("PipsPager",() => new PipsPagerPage(), Icons.HorizontalDots),
             new PageItem("Platform Information",() => new PlatformInfoPage(), Icons.Info),
+            new PageItem("Platform Settings",() => new PlatformSettingsPage(), Icons.Tune),
             new PageItem("Pointers",() => new PointersPage(), Icons.Cursor),
             new PageItem("ProgressBar",() => new ProgressBarPage(), Icons.Progress),
             new PageItem("RadioButton",() => new RadioButtonPage(), Icons.Radio),
