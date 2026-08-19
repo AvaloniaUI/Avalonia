@@ -24,6 +24,52 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal(new Typeface("Font A").GetHashCode(), new Typeface("Font A").GetHashCode());
         }
 
+        [Fact]
+        public void Typefaces_With_Equal_FontVariations_Are_Equal_With_Equal_Hash()
+        {
+            var a = new Typeface("Font A", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, FontVariationSettings.Parse("wght=700"));
+            var b = new Typeface("Font A", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, FontVariationSettings.Parse("wght=700"));
+
+            Assert.Equal(a, b);
+            Assert.Equal(a.GetHashCode(), b.GetHashCode());
+        }
+
+        [Fact]
+        public void Typefaces_With_Different_FontVariations_Are_Not_Equal()
+        {
+            var plain = new Typeface("Font A");
+            var bold = new Typeface("Font A", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, FontVariationSettings.Parse("wght=700"));
+            var black = new Typeface("Font A", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, FontVariationSettings.Parse("wght=900"));
+
+            Assert.NotEqual(plain, bold);
+            Assert.NotEqual(bold, black);
+        }
+
+        [Fact]
+        public void Empty_FontVariations_Normalize_To_Null()
+        {
+            // null and Empty both mean "design defaults"; the ctor stores the canonical
+            // form so equality, hashing and cache keys never split the two spellings.
+            var withNull = new Typeface("Font A", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, null);
+            var withEmpty = new Typeface("Font A", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, FontVariationSettings.Empty);
+
+            Assert.Null(withEmpty.FontVariations);
+            Assert.Equal(withNull, withEmpty);
+            Assert.Equal(withNull.GetHashCode(), withEmpty.GetHashCode());
+        }
+
+        [Fact]
+        public void Normalize_Preserves_FontVariations()
+        {
+            var typeface = new Typeface("Hello World Italic",
+                FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, FontVariationSettings.Parse("wght=650"));
+
+            var normalized = typeface.Normalize(out _);
+
+            Assert.Equal(FontStyle.Italic, normalized.Style);
+            Assert.Equal(typeface.FontVariations, normalized.FontVariations);
+        }
+
         [InlineData("Hello World 6", "Hello World 6", FontStyle.Normal, FontWeight.Normal)]
         [InlineData("Hello World Italic", "Hello World", FontStyle.Italic, FontWeight.Normal)]
         [InlineData("Hello World Italic Bold", "Hello World", FontStyle.Italic, FontWeight.Bold)]
