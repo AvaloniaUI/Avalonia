@@ -1352,6 +1352,31 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Returns a <see cref="GlyphTypeface"/> configured for the given user-space
+        /// variation settings — the public front door for variable-font configuration.
+        /// </summary>
+        /// <param name="settings">
+        /// The desired axis values in user space (e.g. <c>wght = 700</c>), as declared by
+        /// the font's <c>fvar</c> table. Values are clamped to each axis range and axes
+        /// the font does not declare are ignored. <c>null</c> or
+        /// <see cref="FontVariationSettings.Empty"/> means the design defaults.
+        /// </param>
+        /// <param name="instanceIndex">
+        /// Optional index of a named instance (see <see cref="NamedInstances"/>) to use
+        /// as the base position; explicit <paramref name="settings"/> values override the
+        /// instance's value per axis.
+        /// </param>
+        /// <returns>
+        /// <c>this</c> for static fonts, for design-default requests, and for requests
+        /// matching the receiver's own position; otherwise a cached or freshly-cloned
+        /// typeface. Settings are normalized per font before caching, so two settings
+        /// that resolve to the same position (for example two values clamped to the same
+        /// axis maximum) share one clone.
+        /// </returns>
+        public GlyphTypeface WithVariations(FontVariationSettings? settings, int? instanceIndex = null)
+            => WithVariation(CreateNormalizedPosition(settings, instanceIndex));
+
+        /// <summary>
         /// Returns a <see cref="GlyphTypeface"/> bound to the same underlying font face
         /// but at the specified variation point.
         /// </summary>
