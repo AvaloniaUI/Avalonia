@@ -101,13 +101,32 @@ namespace Avalonia.Media
         /// </returns>
         public bool TryGetGlyphTypeface(Typeface typeface, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
+            if (!TryResolveGlyphTypeface(typeface, out glyphTypeface))
+            {
+                return false;
+            }
+
+            // Variations are applied once, here, whichever resolution path (mapped family,
+            // composite key, system fonts, default fallback) produced the base typeface.
+            // Static fonts ignore the request; per-variation instances are cached on the
+            // resolved GlyphTypeface, so repeated lookups stay cheap.
+            if (typeface.FontVariations is { } variations)
+            {
+                glyphTypeface = glyphTypeface.WithVariations(variations);
+            }
+
+            return true;
+        }
+
+        private bool TryResolveGlyphTypeface(Typeface typeface, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        {
             glyphTypeface = null;
 
             var fontFamily = GetMappedFontFamily(typeface.FontFamily);
 
             if (typeface.FontFamily.Name == FontFamily.DefaultFontFamilyName)
             {
-                return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+                return TryResolveGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
             }
 
 
@@ -137,7 +156,7 @@ namespace Avalonia.Media
 
                         if (familyName == FontFamily.DefaultFontFamilyName)
                         {
-                            return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+                            return TryResolveGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
                         }
 
                         if (TryGetGlyphTypefaceByKeyAndName(typeface, key, familyName, out glyphTypeface) &&
@@ -175,7 +194,7 @@ namespace Avalonia.Media
             }
 
             //Nothing was found so use the default
-            return TryGetGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
+            return TryResolveGlyphTypeface(new Typeface(DefaultFontFamily, typeface.Style, typeface.Weight, typeface.Stretch), out glyphTypeface);
 
             FontFamily GetMappedFontFamily(FontFamily fontFamily)
             {
