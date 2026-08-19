@@ -377,8 +377,6 @@ namespace Avalonia.Base.UnitTests.Media
         //   "%" suffix = percent mode
         // =====================================================================
 
-        #region Default format (null / "")
-
         [Fact]
         public void Color_ToString_Default_Returns_KnownName()
         {
@@ -426,10 +424,6 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.Equal(color.ToString(), color.ToString(null, null));
         }
-
-        #endregion
-
-        #region Hex formats: X, x, H
 
         [Theory]
         [InlineData(0xFF, 0xFF, 0x88, 0x44, "#FFFF8844")]
@@ -499,10 +493,6 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal("#FF0000", hsv.ToString("x", CultureInfo.InvariantCulture));
         }
 
-        #endregion
-
-        #region RGB functional: R, r
-
         [Theory]
         [InlineData(0xFF, 0xFF, 0x88, 0x44, "rgba(255, 136, 68, 1.00)")]
         [InlineData(0x80, 0xFF, 0x88, 0x44, "rgba(255, 136, 68, 0.50)")]
@@ -543,10 +533,6 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal("rgb(255, 0, 0)", hsv.ToString("r", CultureInfo.InvariantCulture));
         }
 
-        #endregion
-
-        #region RGB percent: R%, r%
-
         [Theory]
         [InlineData(0xFF, 0xFF, 0x80, 0x00, "rgba(100%, 50%, 0%, 100%)")]
         [InlineData(0x80, 0xFF, 0x80, 0x00, "rgba(100%, 50%, 0%, 50%)")]
@@ -577,10 +563,6 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.Equal("rgba(100%, 0%, 0%, 100%)", hsl.ToString("R%", CultureInfo.InvariantCulture));
         }
-
-        #endregion
-
-        #region HSL functional: L, l
 
         [Theory]
         [InlineData(1.0, 180, 0.5, 0.5, "hsla(180, 50%, 50%, 1.00)")]
@@ -630,10 +612,6 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal("hsla(0, 100%, 50%, 1.00)", hsv.ToString("L", CultureInfo.InvariantCulture));
         }
 
-        #endregion
-
-        #region HSL percent: L%, l%
-
         [Theory]
         [InlineData(1.0, 180, 0.5, 0.5, "hsla(50%, 50%, 50%, 100%)")]
         [InlineData(0.5, 90, 1.0, 1.0, "hsla(25%, 100%, 100%, 50%)")]
@@ -655,10 +633,6 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.Equal(expected, color.ToString("l%", CultureInfo.InvariantCulture));
         }
-
-        #endregion
-
-        #region HSV functional: V, v
 
         [Theory]
         [InlineData(1.0, 180, 0.5, 0.5, "hsva(180, 50%, 50%, 1.00)")]
@@ -700,10 +674,6 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal("hsva(0, 100%, 100%, 1.00)", hsl.ToString("V", CultureInfo.InvariantCulture));
         }
 
-        #endregion
-
-        #region HSV percent: V%, v%
-
         [Theory]
         [InlineData(1.0, 180, 0.5, 0.5, "hsva(50%, 50%, 50%, 100%)")]
         [InlineData(0.5, 90, 1.0, 1.0, "hsva(25%, 100%, 100%, 50%)")]
@@ -725,10 +695,6 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.Equal(expected, color.ToString("v%", CultureInfo.InvariantCulture));
         }
-
-        #endregion
-
-        #region Invalid format + reserved specifiers
 
         [Fact]
         public void Color_ToString_Invalid_Format_Throws()
@@ -788,10 +754,6 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Throws<FormatException>(() => color.ToString(format, null));
         }
 
-        #endregion
-
-        #region IFormatProvider is always ignored (culture-invariant)
-
         [Fact]
         public void Color_ToString_IFormatProvider_Is_Ignored()
         {
@@ -813,7 +775,5 @@ namespace Avalonia.Base.UnitTests.Media
                 color.ToString("L", CultureInfo.InvariantCulture),
                 color.ToString("L", french));
         }
-
-        #endregion
     }
 }
