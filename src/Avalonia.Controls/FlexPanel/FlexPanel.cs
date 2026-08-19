@@ -267,11 +267,8 @@ namespace Avalonia.Controls
                         var element = _visibleChildren[j];
                         var baseLength = Flex.GetBaseLength(element);
                         var mult = GetItemMult(element, freeU);
-                        if (mult != 0.0)
-                        {
-                            var length = Math.Max(0.0, baseLength + remainingFreeU * mult / lineMult);
-                            element.Measure(Uv.ToSize(max.WithU(length), isColumn));
-                        }
+                        var length = Math.Max(0.0, baseLength + remainingFreeU * mult / lineMult);
+                        element.Measure(Uv.ToSize(max.WithU(length), isColumn));
 
                         maxV = Math.Max(Uv.FromSize(element.DesiredSize, isColumn).V, maxV);
                     }
