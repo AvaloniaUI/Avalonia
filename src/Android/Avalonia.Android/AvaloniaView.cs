@@ -137,11 +137,8 @@ namespace Avalonia.Android
         private void SendConfigurationChanged(Configuration? newConfig)
         {
             _view.InsetsManager?.SetDefaultSystemLightMode(!(newConfig?.UiMode.HasFlag(UiMode.NightYes) ?? false));
-            if (Context is { } context && newConfig is { } config)
+            if (Context is not null && newConfig is not null)
             {
-                var settings =
-                    AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
-                settings?.OnViewConfigurationChanged(context, config);
                 ((AndroidScreens)_view.TryGetFeature<IScreenImpl>()!).OnChanged();
             }
         }
