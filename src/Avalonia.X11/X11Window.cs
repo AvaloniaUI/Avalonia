@@ -596,6 +596,16 @@ namespace Avalonia.X11
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
                 MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+            else if (ev.type == XEventName.EnterNotify)
+            {
+                if (ev.CrossingEvent.detail is
+                    NotifyDetail.NotifyNonlinear or
+                    NotifyDetail.NotifyNonlinearVirtual or
+                    NotifyDetail.NotifyVirtual)
+                {
+                    MouseEvent(RawPointerEventType.Move, ref ev, ev.CrossingEvent.state);
+                }
+            }
             else if (ev.type == XEventName.PropertyNotify)
             {
                 OnPropertyChange(ev.PropertyEvent.atom, ev.PropertyEvent.state == 0);
@@ -1679,15 +1689,39 @@ namespace Avalonia.X11
         {
         }
 
+        public void SetHitTestVisible(bool isHitTestVisible)
+        {
+            if (!_x11.HasXFixes)
+                return;
+
+            // An empty input region makes the server route pointer input to whatever is behind
+            // the window. None (0) restores the default input shape, i.e. the whole window.
+            var region = IntPtr.Zero;
+            if (!isHitTestVisible)
+            {
+                var rect = default(XRectangle);
+                region = XFixesCreateRegion(_x11.Display, &rect, 0);
+            }
+
+            XFixesSetWindowShapeRegion(_x11.Display, _handle, ShapeKind.ShapeInput, 0, 0, region);
+
+            // The render window is a child of _handle when a GPU backend is in use. Shaping the
+            // parent alone doesn't take the child out of the input hierarchy, so it would keep
+            // capturing the pointer.
+            if (_renderHandle != _handle)
+                XFixesSetWindowShapeRegion(_x11.Display, _renderHandle, ShapeKind.ShapeInput, 0, 0, region);
+
+            if (region != IntPtr.Zero)
+                XFixesDestroyRegion(_x11.Display, region);
+
+            XFlush(_x11.Display);
+        }
+
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
 
-        public async void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            if (themeVariant == null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is DBusPlatformSettings platformSettings)
-            {
-                platformSettings.OnRequestDefaultThemeVariant();
-            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
