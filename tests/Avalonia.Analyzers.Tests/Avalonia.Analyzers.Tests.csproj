@@ -6,19 +6,14 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj" />
-    <ProjectReference Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.csproj" />
+    <ProjectReference Include="..\..\src\tools\Avalonia.Analyzers.CSharp\Avalonia.Analyzers.CSharp.csproj" />
+    <ProjectReference Include="..\..\src\tools\Avalonia.Analyzers.CodeFixes.CSharp\Avalonia.Analyzers.CodeFixes.CSharp.csproj" />
     <!-- The testing packages float on ancient minimum Roslyn versions; pin the repo version. -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="5.6.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" VersionOverride="5.6.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="5.6.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Views\*.xml" />
-    <EmbeddedResource Include="OnlyProperties\GeneratedCode\*.txt" />
-    <EmbeddedResource Include="InitializeComponent\GeneratedInitializeComponent\*.txt" />
-    <EmbeddedResource Include="InitializeComponent\GeneratedDevTools\*.txt" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
   </ItemGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\XUnit.props" />
