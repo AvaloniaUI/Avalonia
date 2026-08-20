@@ -43,7 +43,8 @@ namespace Avalonia.Controls
     public abstract class TopLevel : ContentControl,
         ICloseable,
         IStyleHost,
-        ILogicalRoot
+        ILogicalRoot,
+        IThemeVariantRoot
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -251,19 +252,19 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesAdded += ((IStyleHost)this).StylesAdded;
                 _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
             }
+
             if (_applicationThemeHost is { })
             {
                 SetValue(ActualThemeVariantProperty, _applicationThemeHost.ActualThemeVariant, BindingPriority.Template);
                 _applicationThemeHost.ActualThemeVariantChanged += GlobalActualThemeVariantChanged;
             }
+            else
+            {
+                ThemeVariant.UpdateActualThemeVariant(this);
+            }
+
             CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
             {
-                if(_applicationThemeHost is AvaloniaObject element)
-                {
-                    if (element.GetValue(ThemeVariantScope.RequestedThemeVariantProperty) is { } requestedThemeVariant)
-                        variant = requestedThemeVariant == ThemeVariant.Default ? ThemeVariant.Default : variant;
-                }
-                variant ??= ThemeVariant.Default;
                 PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant);
             });
 
@@ -416,6 +417,8 @@ namespace Avalonia.Controls
             get => GetValue(RequestedThemeVariantProperty);
             set => SetValue(RequestedThemeVariantProperty, value);
         }
+
+        bool IThemeVariantRoot.IsThemeVariantRoot => _applicationThemeHost is null;
 
         /// <summary>
         /// Occurs when physical Back Button is pressed or a back navigation has been requested.

@@ -13,10 +13,12 @@ internal class PlatformSettings : DefaultPlatformSettings
     private readonly NSObject _contentSizeChangedToken;
     private readonly Dictionary<double, double> _fontScaleCache = [];
 
-    private PlatformColorValues? _lastColorValues;
+    private PlatformColorValues? _colorValues;
+    private string? _lastLanguage;
 
     public PlatformSettings()
     {
+        NSLocale.Notifications.ObserveCurrentLocaleDidChange(OnPreferredLanguageChanged);
         _contentSizeChangedToken = UIApplication.Notifications.ObserveContentSizeCategoryChanged(OnContentSizeCategoryChanged);
     }
 
@@ -32,6 +34,9 @@ internal class PlatformSettings : DefaultPlatformSettings
     }
 
     public override PlatformColorValues GetColorValues()
+        => _colorValues ??= GetUncachedColorValues();
+
+    private static PlatformColorValues GetUncachedColorValues()
     {
         var themeVariant = UITraitCollection.CurrentTraitCollection.UserInterfaceStyle == UIUserInterfaceStyle.Dark ?
             PlatformThemeVariant.Dark :
@@ -53,7 +58,7 @@ internal class PlatformSettings : DefaultPlatformSettings
             tintColor.GetRGBA(out var red, out var green, out var blue, out var alpha);
             if (red != 0 && green != 0 && blue != 0 && alpha != 0)
             {
-                return _lastColorValues = new PlatformColorValues
+                return new PlatformColorValues
                 {
                     ThemeVariant = themeVariant,
                     ContrastPreference = contrastPreference,
@@ -66,20 +71,41 @@ internal class PlatformSettings : DefaultPlatformSettings
             }
         }
 
-        return _lastColorValues = new PlatformColorValues
+        return new PlatformColorValues
         {
-            ThemeVariant = themeVariant, ContrastPreference = contrastPreference
+            ThemeVariant = themeVariant,
+            ContrastPreference = contrastPreference
         };
     }
 
     public void TraitCollectionDidChange()
     {
-        var oldColorValues = _lastColorValues;
-        var colorValues = GetColorValues();
+        var oldColorValues = _colorValues;
+        var colorValues = GetUncachedColorValues();
 
         if (oldColorValues != colorValues)
         {
+            _colorValues = colorValues;
             OnColorValuesChanged(colorValues);
+        }
+    }
+
+    public override string PreferredApplicationLanguage =>
+        _lastLanguage ??= QueryPreferredApplicationLanguage();
+
+    private string QueryPreferredApplicationLanguage() =>
+        NSLocale.PreferredLanguages is [{ Length: > 0 } language, ..]
+            ? language
+            : base.PreferredApplicationLanguage;
+
+    private void OnPreferredLanguageChanged(object? sender, NSNotificationEventArgs args)
+    {
+        var oldLanguage = _lastLanguage;
+        _lastLanguage = null;
+
+        if (oldLanguage != PreferredApplicationLanguage)
+        {
+            OnPreferredApplicationLanguageChanged();
         }
     }
 
@@ -97,10 +123,5 @@ internal class PlatformSettings : DefaultPlatformSettings
         }
 
         return scaledSize;
-    }
-
-    internal void OnColorValuesChanged()
-    {
-        OnColorValuesChanged(GetColorValues());
     }
 }

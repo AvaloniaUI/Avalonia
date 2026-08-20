@@ -9,9 +9,13 @@ namespace Avalonia.Win32;
 internal class Win32PlatformSettings : DefaultPlatformSettings
 {
     private double _textScaleFactor = s_uiSettings2?.TextScaleFactor ?? 1;
+    private PlatformColorValues? _colorValues;
+    private string? _lastLanguage;
 
     private static readonly IUISettings2? s_uiSettings2;
     private static readonly bool s_uiSettingsSupported;
+    private static readonly Lazy<bool> s_globalizationSupported = new(() =>
+        WinRTApiInformation.IsTypePresent("Windows.System.UserProfile.GlobalizationPreferences"));
 
     static Win32PlatformSettings()
     {
@@ -44,17 +48,26 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
 
     public override TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
 
+    public override string PreferredApplicationLanguage =>
+        _lastLanguage ??= QueryPreferredApplicationLanguage();
+
     public override PlatformColorValues GetColorValues()
+        => _colorValues ??= GetUncachedColorValues();
+
+    private PlatformColorValues GetUncachedColorValues()
     {
         if (!s_uiSettingsSupported)
         {
-            return base.GetColorValues();
+            return new PlatformColorValues
+            {
+                ThemeVariant = PlatformThemeVariant.Light
+            };
         }
 
-        var uiSettings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
+        using var uiSettings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
         var accent = uiSettings.GetColorValue(UIColorType.Accent).ToAvalonia();
 
-        var accessibilitySettings = NativeWinRTMethods.CreateInstance<IAccessibilitySettings>("Windows.UI.ViewManagement.AccessibilitySettings");
+        using var accessibilitySettings = NativeWinRTMethods.CreateInstance<IAccessibilitySettings>("Windows.UI.ViewManagement.AccessibilitySettings");
         if (accessibilitySettings.HighContrast == 1)
         {
             // Windows 11 has 4 different high contrast schemes:
@@ -62,7 +75,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
             // - Desert - High Contrast White
             // - Dusk - High Contrast #1
             // - Night sky - High Contrast #2
-            // Only "Desert" one can be considered a "light" preference. 
+            // Only "Desert" one can be considered a "light" preference.
             using var highContrastScheme = new HStringInterop(accessibilitySettings.HighContrastScheme);
             return new PlatformColorValues
             {
@@ -90,7 +103,14 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
 
     internal void OnColorValuesChanged()
     {
-        OnColorValuesChanged(GetColorValues());
+        var oldColorValues = _colorValues;
+        var colorValues = GetUncachedColorValues();
+
+        if (oldColorValues != colorValues)
+        {
+            _colorValues = colorValues;
+            OnColorValuesChanged(colorValues);
+        }
 
         var newTextScaleFactor = s_uiSettings2?.TextScaleFactor ?? 1;
         if (newTextScaleFactor != _textScaleFactor)
@@ -98,6 +118,39 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
             _textScaleFactor = newTextScaleFactor;
             OnTextScaleChanged();
         }
+    }
+
+    internal void OnLanguageChanged()
+    {
+        var oldLanguage = _lastLanguage;
+        _lastLanguage = null;
+        var newLanguage = PreferredApplicationLanguage;
+
+        if (oldLanguage != newLanguage)
+        {
+            OnPreferredApplicationLanguageChanged();
+        }
+    }
+
+    private string QueryPreferredApplicationLanguage()
+    {
+        // `GetUserPreferredUILanguages`win32 API doesn't seem to respect Win11 "Preferred Languages" setting.
+        // While GlobalizationPreferences works fine.
+        if (s_globalizationSupported.Value)
+        {
+            using var globalizationPreferences = NativeWinRTMethods.CreateActivationFactory<IGlobalizationPreferencesStatics>("Windows.System.UserProfile.GlobalizationPreferences");
+            var languages = globalizationPreferences.Languages;
+            if (languages.Size > 0)
+            {
+                using var languageHString = new HStringInterop(languages.GetAt(0));
+                if (languageHString.Value is { } language)
+                {
+                    return language;
+                }
+            }
+        }
+
+        return base.PreferredApplicationLanguage;
     }
 
     /// <summary>
