@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -147,6 +149,118 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 return base.TryCreateSyntheticGlyphTypeface(glyphTypeface, style, weight, stretch, out syntheticGlyphTypeface);
             }
+        }
+
+        [Fact]
+        public void Should_Cache_Synthetic_Match_Under_Requested_Family_Name()
+        {
+            var fontManager = new AliasFontManagerImpl(alias: "MyAlias");
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+                var blackKey = new FontCollectionKey(FontStyle.Normal, FontWeight.Black, FontStretch.Normal);
+
+                // Prime the cache with the bare family, as any control asking for the alias at a
+                // normal weight would. This is what makes the next lookup take the nearest match.
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "MyAlias", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out _));
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "MyAlias", FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var first));
+
+                var creationsAfterFirstCall = fontManager.StreamTypefaceCreations;
+
+                for (var i = 0; i < 10; i++)
+                {
+                    Assert.True(fontCollection.TryGetGlyphTypeface(
+                        "MyAlias", FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var next));
+
+                    Assert.Same(first, next);
+                }
+
+                // Each synthesis copies the entire font file through IPlatformTypeface.TryGetStream,
+                // so an uncached synthetic means one full font copy per call.
+                Assert.Equal(creationsAfterFirstCall, fontManager.StreamTypefaceCreations);
+
+                Assert.True(fontCollection.GlyphTypefaceCache.TryGetValue("MyAlias", out var cached));
+                Assert.True(cached.ContainsKey(blackKey));
+            }
+        }
+
+        /// <summary>
+        /// Font manager whose <c>MyAlias</c> family resolves through the platform but is absent from
+        /// the installed family list — the shape of a platform alias (for instance Android's
+        /// <c>&lt;alias name="arial" to="sans-serif"/&gt;</c> in <c>/system/etc/fonts.xml</c>).
+        /// Such a family cannot be found again by the family-name search, so nothing repairs a
+        /// missing cache entry.
+        ///
+        /// The alias is backed by an embedded test font rather than an installed one, so the test
+        /// runs identically on every platform.
+        /// </summary>
+        private sealed class AliasFontManagerImpl : IFontManagerImpl
+        {
+            private const string EmbeddedFonts =
+                "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests";
+
+            private readonly IFontManagerImpl _inner = new FontManagerImpl();
+            private readonly string _alias;
+
+            public AliasFontManagerImpl(string alias)
+            {
+                _alias = alias;
+            }
+
+            /// <summary>Number of typefaces created from a stream, i.e. of synthetic emboldenings.</summary>
+            public int StreamTypefaceCreations { get; private set; }
+
+            public string GetDefaultFontFamilyName() => _inner.GetDefaultFontFamilyName();
+
+            public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false)
+                => Array.Empty<string>();
+
+            public bool TryCreateGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
+                FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+            {
+                // The alias always resolves to the regular face of the backing font, never to the
+                // requested weight — exactly what a platform alias does.
+                if (string.Equals(familyName, _alias, StringComparison.OrdinalIgnoreCase))
+                {
+                    using var stream = OpenBackingFont();
+
+                    return _inner.TryCreateGlyphTypeface(stream, FontSimulations.None, out platformTypeface);
+                }
+
+                platformTypeface = null;
+
+                return false;
+            }
+
+            private static Stream OpenBackingFont()
+            {
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+                var fontAsset = FontFamilyLoader.LoadFontAssets(new Uri(EmbeddedFonts, UriKind.Absolute)).First();
+
+                return assetLoader.Open(fontAsset);
+            }
+
+            public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations,
+                [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+            {
+                StreamTypefaceCreations++;
+
+                return _inner.TryCreateGlyphTypeface(stream, fontSimulations, out platformTypeface);
+            }
+
+            public bool TryGetFamilyTypefaces(string familyName,
+                [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+                => _inner.TryGetFamilyTypefaces(familyName, out familyTypefaces);
+
+            public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight,
+                FontStretch fontStretch, string? familyName, CultureInfo? culture,
+                [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+                => _inner.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontStretch, familyName,
+                    culture, out platformTypeface);
         }
     }
 }
