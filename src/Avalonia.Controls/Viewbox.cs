@@ -115,13 +115,8 @@ namespace Avalonia.Controls
             }
             else if (change.Property == TemplatedParentProperty)
             {
-                // TemplatedControl teardown walks the visual tree via GetTemplateDescendants,
-                // which stops at visuals whose TemplatedParent is null. The container must carry
-                // the Viewbox's TemplatedParent so teardown can reach template descendants hosted
-                // inside it (e.g. a ContentPresenter) and disconnect them. Null is not forwarded:
-                // teardown clears the Viewbox's TemplatedParent while iterating, and forwarding it
-                // would prune the walk before it reaches the container's subtree; the walk clears
-                // the container's own TemplatedParent instead.
+                // Update _containerVisual.TemplateParent, otherwise its descendants aren't reachable
+                // during the template's teardown and incorrectly stay attached to the visual tree.
                 if (change.NewValue is AvaloniaObject templatedParent)
                 {
                     _containerVisual.TemplatedParent = templatedParent;
