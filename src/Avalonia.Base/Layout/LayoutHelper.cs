@@ -156,8 +156,8 @@ namespace Avalonia.Layout
             // If DPI == 1, don't use DPI-aware rounding.
             return dpiScale == 1.0 ?
                 new Size(
-                    Math.Ceiling(size.Width),
-                    Math.Ceiling(size.Height)) :
+                    Math.Ceiling(RoundTo8Digits(size.Width)),
+                    Math.Ceiling(RoundTo8Digits(size.Height))) :
                 new Size(
                     Math.Ceiling(RoundTo8Digits(size.Width) * dpiScale) / dpiScale,
                     Math.Ceiling(RoundTo8Digits(size.Height) * dpiScale) / dpiScale);
@@ -230,6 +230,29 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
+        /// Calculates the value to be used for layout rounding at high DPI by rounding the value
+        /// up or down to the nearest pixel, using the specified <see cref="MidpointRounding" />.
+        /// </summary>
+        /// <param name="value">Input value to be rounded.</param>
+        /// <param name="dpiScale">Ratio of screen's DPI to layout DPI</param>
+        /// <param name="midpointRounding">The midpoint rounding method to use.</param>
+        /// <returns>Adjusted value that will produce layout rounding on screen at high dpi.</returns>
+        /// <remarks>
+        /// This is a layout helper method. It takes DPI into account and also does not return
+        /// the rounded value if it is unacceptable for layout, e.g. Infinity or NaN. It's a helper
+        /// associated with the UseLayoutRounding property and should not be used as a general rounding
+        /// utility.
+        /// </remarks>
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
+        public static double RoundLayoutValueWithMidpoint(double value, double dpiScale, MidpointRounding midpointRounding)
+        {
+            // If DPI == 1, don't use DPI-aware rounding.
+            return dpiScale == 1 ?
+                Math.Round(value, midpointRounding) :
+                Math.Round(value * dpiScale, midpointRounding) / dpiScale;
+        }
+
+        /// <summary>
         /// Calculates the value to be used for layout rounding at high DPI by rounding the value up
         /// to the nearest pixel.
         /// </summary>
@@ -247,7 +270,7 @@ namespace Avalonia.Layout
         {
             // If DPI == 1, don't use DPI-aware rounding.
             return dpiScale == 1.0 ?
-                Math.Ceiling(value) :
+                Math.Ceiling(RoundTo8Digits(value)) :
                 Math.Ceiling(RoundTo8Digits(value) * dpiScale) / dpiScale;
         }
 
