@@ -117,6 +117,14 @@ internal partial class MediaContext : ICompositorScheduler
         _inputMarkerOp = null;
     }
 
+    /// <summary>
+    /// Raised as the very first action of <see cref="RenderCore"/>, before the animation clock pulse and the
+    /// layout pass. The Wayland embedding subcompositor (Avalonia.Wayland.Embedding) subscribes to drain its
+    /// compositor→UI queue in-process (no network round-trip) so this frame's layout sees the latest
+    /// already-delivered embedded-surface state and cannot tear against surrounding content.
+    /// </summary>
+    internal static event Action? BeforeRenderCore;
+
     private void Render()
     {
         try
@@ -133,6 +141,8 @@ internal partial class MediaContext : ICompositorScheduler
     
     private void RenderCore()
     {
+        BeforeRenderCore?.Invoke();
+
         var now = _time.Elapsed;
         if (!_animationsAreWaitingForComposition)
             _clock.Pulse(now);

@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <DefineConstants>$(DefineConstants);XUNIT</DefineConstants>
+    <!-- The test simulates an embedded toolkit with the NWayland CLIENT bindings over libwayland-client;
+         the whole suite is Linux-only and skips itself at runtime elsewhere. -->
+  </PropertyGroup>
+
+  <Import Project="..\..\build\UnitTests.NetCore.targets" />
+  <Import Project="..\..\build\UnitTests.NetFX.props" />
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.Wayland.Embedding\Avalonia.Wayland.Embedding.csproj" />
+    <!-- The example GTK glue lives here now; the integration test reuses it instead of duplicating the P/Invokes. -->
+    <ProjectReference Include="..\..\src\Avalonia.Wayland.Embedding.Gtk\Avalonia.Wayland.Embedding.Gtk.csproj" />
+    <ProjectReference Include="..\..\src\Headless\Avalonia.Headless.XUnit\Avalonia.Headless.XUnit.csproj" />
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+    <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
+  </ItemGroup>
+
+  <!-- Real-GTK integration tests: GTK3 connects to our in-process subcompositor over WAYLAND_SOCKET (no display
+       needed), so the actual toolkit glue is exercised headlessly. Reuse the GtkSharp/HarfBuzz dlopen workaround. -->
+  <ItemGroup>
+    <PackageReference Include="GtkSharp" />
+  </ItemGroup>
+</Project>
