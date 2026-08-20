@@ -29,6 +29,14 @@ namespace Avalonia.Benchmarks
                 return;
             }
 
+            // Container prepare/clear/measure counts and retained memory for the virtualizing
+            // panel. Deterministic, so it bypasses BDN — see VirtualizationReport.
+            if (args.Contains("--virtualization-report"))
+            {
+                Controls.VirtualizationReport.Run();
+                return;
+            }
+
             // Use reflection for a more maintainable way of creating the benchmark switcher,
             // Benchmarks are listed in namespace order first (e.g. BenchmarkDotNet.Samples.CPU,
             // BenchmarkDotNet.Samples.IL, etc) then by name, so the output is easy to understand

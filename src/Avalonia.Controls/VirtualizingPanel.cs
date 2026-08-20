@@ -216,7 +216,20 @@ namespace Avalonia.Controls
             Children.Clear();
         }
 
-        internal void Refresh() => OnItemsControlItemsChanged(null, CollectionUtils.ResetEventArgs);
+        /// <summary>
+        /// Called when the owner <see cref="ItemsControl"/> requires every container to be
+        /// unrealized and re-realized, e.g. because its <see cref="ItemsControl.ItemTemplate"/>,
+        /// <see cref="ItemsControl.ItemContainerTheme"/> or
+        /// <see cref="ItemsControl.DisplayMemberBinding"/> changed.
+        /// </summary>
+        /// <remarks>
+        /// The items themselves have not changed, so this is not a collection change even though
+        /// the default implementation reuses the <see cref="NotifyCollectionChangedAction.Reset"/>
+        /// path. A panel that optimizes <see cref="NotifyCollectionChangedAction.Reset"/> by keeping
+        /// containers whose items are unchanged must override this and not apply that optimization
+        /// here, otherwise the containers are never re-prepared.
+        /// </remarks>
+        internal virtual void Refresh() => OnItemsControlItemsChanged(null, CollectionUtils.ResetEventArgs);
 
         private ItemsControl EnsureItemsControl()
         {

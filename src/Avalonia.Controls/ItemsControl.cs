@@ -374,15 +374,35 @@ namespace Avalonia.Controls
             }
             else if (container is ContentControl cc)
             {
-                SetIfUnset(cc, ContentControl.ContentProperty, item);
+                // Begin batch update to ensure both Content and ContentTemplate are set together
+                if (cc.Presenter != null)
+                {
+                    cc.Presenter.BeginBatchUpdate();
+                }
+
+                SetIfUnsetOrDifferent(cc, ContentControl.ContentProperty, item);
+
                 if (itemTemplate is not null)
-                    SetIfUnset(cc, ContentControl.ContentTemplateProperty, itemTemplate);
+                    SetIfUnsetOrDifferent(cc, ContentControl.ContentTemplateProperty, itemTemplate);
+
+                // End batch update - triggers single UpdateChild with both properties set
+                if (cc.Presenter != null)
+                {
+                    cc.Presenter.EndBatchUpdate();
+                }
             }
             else if (container is ContentPresenter p)
             {
-                SetIfUnset(p, ContentPresenter.ContentProperty, item);
+                // Begin batch update to ensure both Content and ContentTemplate are set together
+                p.BeginBatchUpdate();
+
+                SetIfUnsetOrDifferent(p, ContentPresenter.ContentProperty, item);
+
                 if (itemTemplate is not null)
-                    SetIfUnset(p, ContentPresenter.ContentTemplateProperty, itemTemplate);
+                    SetIfUnsetOrDifferent(p, ContentPresenter.ContentTemplateProperty, itemTemplate);
+
+                // End batch update - triggers single UpdateChild with both properties set
+                p.EndBatchUpdate();
             }
             else if (container is ItemsControl ic)
             {
@@ -448,13 +468,44 @@ namespace Avalonia.Controls
             }
             else if (container is ContentControl cc)
             {
-                cc.ClearValue(ContentControl.ContentProperty);
-                cc.ClearValue(ContentControl.ContentTemplateProperty);
+                // Check if we should skip clearing for virtualization
+                // ONLY skip when using a VirtualizingPanel that actually recycles containers, and
+                // only for a template that opted in by handing out a recycle key for this item -
+                // the same condition NeedsContainer<T> keys on.
+                // When we skip clearing, the Child stays attached to this container
+                var shouldSkipClear = cc.Presenter != null &&
+                                      ContainerVirtualization.IsEnabled &&
+                                      Presenter?.Panel is VirtualizingStackPanel &&
+                                      cc.ContentTemplate is IVirtualizingDataTemplate vdt &&
+                                      vdt.GetKey(cc.Content) != null;
+
+                // Only clear if NOT being recycled for virtualization
+                // This keeps the Child attached, avoiding detach/reattach visual tree churn
+                if (!shouldSkipClear)
+                {
+                    cc.ClearValue(ContentControl.ContentProperty);
+                    cc.ClearValue(ContentControl.ContentTemplateProperty);
+                }
             }
             else if (container is ContentPresenter p)
             {
-                p.ClearValue(ContentPresenter.ContentProperty);
-                p.ClearValue(ContentPresenter.ContentTemplateProperty);
+                // Check if we should skip clearing for virtualization
+                // ONLY skip when using a VirtualizingPanel that actually recycles containers, and
+                // only for a template that opted in by handing out a recycle key for this item -
+                // the same condition NeedsContainer<T> keys on.
+                // When we skip clearing, the Child stays attached to this container
+                var shouldSkipClear = ContainerVirtualization.IsEnabled &&
+                                      Presenter?.Panel is VirtualizingStackPanel &&
+                                      p.ContentTemplate is IVirtualizingDataTemplate vdt &&
+                                      vdt.GetKey(p.Content) != null;
+
+                // Only clear if NOT being recycled for virtualization
+                // This keeps the Child attached, avoiding detach/reattach visual tree churn
+                if (!shouldSkipClear)
+                {
+                    p.ClearValue(ContentPresenter.ContentProperty);
+                    p.ClearValue(ContentPresenter.ContentTemplateProperty);
+                }
             }
             else if (container is ItemsControl ic)
             {
@@ -513,16 +564,29 @@ namespace Avalonia.Controls
         /// </returns>
         protected bool NeedsContainer<T>(object? item, out object? recycleKey) where T : Control
         {
+            // If the item is already a container of the expected type, it can be used directly
+            // without wrapping. This must be checked first, before content virtualization logic.
             if (item is T)
             {
                 recycleKey = null;
                 return false;
             }
-            else
+
+            // Container-level virtualization is opt-in: a template has to hand out a recycle key
+            // for this item. Keys partition the container pool so a container is only ever reused
+            // for data that its retained Child can display. Anything else falls through to stock
+            // behaviour - a single shared pool under DefaultRecycleKey.
+            if (ContainerVirtualization.IsEnabled &&
+                Presenter?.Panel is VirtualizingStackPanel &&
+                GetEffectiveItemTemplate() is IVirtualizingDataTemplate vdt &&
+                vdt.GetKey(item) is { } key)
             {
-                recycleKey = DefaultRecycleKey;
+                recycleKey = key;
                 return true;
             }
+
+            recycleKey = DefaultRecycleKey;
+            return true;
         }
 
         /// <inheritdoc />
@@ -755,6 +819,15 @@ namespace Avalonia.Controls
             if (!target.IsSet(property))
                 target.SetCurrentValue(property, value);
         }
+        
+        private void SetIfUnsetOrDifferent<T>(AvaloniaObject target, StyledProperty<T> property, T value)
+        {
+            if (!target.IsSet(property))
+                target.SetCurrentValue(property, value);
+            // when re-using some contentpresenter/contentcontrol, we need to re-apply the content and contenttemplate
+            else if(!object.Equals(target.GetValue(property), value))
+                target.SetCurrentValue(property, value);
+        }
 
         private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
         {
@@ -791,6 +864,54 @@ namespace Avalonia.Controls
             }
 
             return _displayMemberItemTemplate;
+        }
+
+        /// <summary>
+        /// Gets the effective item template if it opted into container virtualization, otherwise null.
+        /// </summary>
+        /// <remarks>
+        /// This resolves the template through the same path <see cref="NeedsContainer{T}"/> uses to
+        /// pick a recycle key, so pooling decisions can never key off one template while the panel
+        /// sizes its pools from another - a <see cref="DisplayMemberBinding"/> template or a
+        /// <see cref="Control.DataTemplates"/> collection is not reachable through
+        /// <see cref="ItemTemplate"/> alone.
+        /// </remarks>
+        internal IVirtualizingDataTemplate? EffectiveVirtualizingItemTemplate =>
+            GetEffectiveItemTemplate() as IVirtualizingDataTemplate;
+
+        /// <summary>
+        /// Gets the maximum number of containers a <see cref="VirtualizingStackPanel"/> should pool
+        /// under <paramref name="recycleKey"/>, or null if that pool is unbounded.
+        /// </summary>
+        /// <remarks>
+        /// Only keys handed out by an <see cref="IVirtualizingDataTemplate"/> are capped. Containers
+        /// pooled under <see cref="DefaultRecycleKey"/> - i.e. every item whose template did not opt
+        /// into container virtualization - stay uncapped, as in stock Avalonia.
+        /// </remarks>
+        internal int? GetMaxPoolSizePerKey(object recycleKey)
+        {
+            return recycleKey != DefaultRecycleKey && EffectiveVirtualizingItemTemplate is { } vdt
+                ? vdt.MaxPoolSizePerKey
+                : null;
+        }
+
+        /// <summary>
+        /// Gets how many containers warmup should keep available under <paramref name="recycleKey"/>,
+        /// or null to use the panel's own default depth.
+        /// </summary>
+        /// <remarks>
+        /// Guarded on the key exactly as <see cref="GetMaxPoolSizePerKey"/> is, and for the same
+        /// reason: implementing <see cref="IVirtualizingDataTemplate"/> is not the opt-in, handing
+        /// out a key is. <see cref="Templates.FuncDataTemplate"/> implements the interface inertly —
+        /// it backs every code-defined template in the framework — so reading
+        /// <see cref="IVirtualizingDataTemplate.MinPoolSizePerKey"/> off the template's *type* would
+        /// silently change warmup depth for all of them.
+        /// </remarks>
+        internal int? GetMinPoolSizePerKey(object recycleKey)
+        {
+            return recycleKey != DefaultRecycleKey && EffectiveVirtualizingItemTemplate is { } vdt
+                ? vdt.MinPoolSizePerKey
+                : null;
         }
 
         private void UpdatePseudoClasses()
@@ -858,5 +979,24 @@ namespace Avalonia.Controls
             count = ItemsView.Count;
             return true;
         }
+    }
+
+    /// <summary>
+    /// Global switch for opt-in container-level virtualization.
+    /// </summary>
+    public static class ContainerVirtualization
+    {
+        /// <summary>
+        /// Gets or sets whether container-level virtualization is globally enabled.
+        /// </summary>
+        /// <remarks>
+        /// This is a kill switch, not the opt-in. Virtualization is opted into per template, by
+        /// implementing <see cref="IVirtualizingDataTemplate"/> and returning a non-null key from
+        /// <see cref="IVirtualizingDataTemplate.GetKey"/> - for a XAML
+        /// <c>DataTemplate</c> that means <c>EnableVirtualization="True"</c>. Setting this to false
+        /// forces every <see cref="ItemsControl"/> back to stock container recycling, which is useful
+        /// when isolating whether a layout problem comes from virtualization.
+        /// </remarks>
+        public static bool IsEnabled { get; set; } = true;
     }
 }

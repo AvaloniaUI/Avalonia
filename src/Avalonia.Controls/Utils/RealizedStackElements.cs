@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
@@ -383,6 +384,29 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
+        /// Nullifies an element at the specified index without recycling it.
+        /// The element slot becomes null so that RecycleAllElements will skip it.
+        /// </summary>
+        /// <param name="index">The index in the source collection.</param>
+        /// <returns>The element and its size, or null if not found.</returns>
+        public (Control element, double sizeU)? NullifyElement(int index)
+        {
+            if (_elements is null || _elements.Count == 0)
+                return null;
+
+            var i = index - FirstIndex;
+            if (i < 0 || i >= _elements.Count)
+                return null;
+
+            if (_elements[i] is not Control element)
+                return null;
+
+            var sizeU = _sizes![i];
+            _elements[i] = null;
+            return (element, sizeU);
+        }
+
+        /// <summary>
         /// Recycles all realized elements.
         /// </summary>
         /// <param name="recycleElement">A method used to recycle elements.</param>
@@ -417,32 +441,147 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
-        /// Validates that <see cref="StartU"/> is still valid.
+        /// Reconciles the stored element sizes with the elements' current desired sizes and, when
+        /// only content the user has already scrolled past changed size, shifts
+        /// <see cref="StartU"/> so the item at <paramref name="anchorIndex"/> keeps its position.
+        /// Returns true if any layout-significant change was found.
         /// </summary>
-        /// <param name="orientation">The panel orientation.</param>
+        /// <param name="anchorIndex">
+        /// Index of the item intersecting the start of the viewport (the item the user is looking
+        /// at), or -1 if unknown. Growth before it must be cancelled out of <see cref="StartU"/>:
+        /// the anchor sits at <c>StartU + Σ sizes before it</c>, so if that sum grew by
+        /// <c>preDelta</c>, StartU must shrink by the same amount for the anchor to stay put.
+        /// Growth at or after the anchor legitimately pushes later content down and needs no
+        /// compensation.
+        /// </param>
+        /// <param name="preDelta">The accumulated size change of items before the anchor.</param>
+        /// <param name="getSizeU">
+        /// Returns an element's size along the panel's layout axis, given the element and its item
+        /// index. It must be the same function the panel used to record the sizes in the first
+        /// place, otherwise every pass would re-detect the difference between the two as a resize.
+        /// </param>
         /// <remarks>
-        /// If the U size of any element in the realized elements has changed, then the value of
-        /// <see cref="StartU"/> should be considered unstable.
+        /// Changes below <see cref="LayoutHelper.LayoutEpsilon"/> are floating-point noise, not
+        /// resizes: they are folded into the stored size and nothing else. Anything larger is a
+        /// real change, however small — a fractional layout scale (125%, 150% DPI) makes the
+        /// layout rounding grid itself sub-pixel, so genuine sub-1px changes do occur.
         /// </remarks>
-        public void ValidateStartU(Orientation orientation)
+        public bool ValidateStartU(int anchorIndex, Func<Control, int, double> getSizeU, out double preDelta)
         {
+            preDelta = 0;
+
             if (_elements is null || _sizes is null || _startUUnstable)
-                return;
+                return false;
+
+            var hasSignificantChange = false;
+            var anchorChanged = false;
+            var anchorMeasurePending = false;
+            var otherItemsChanged = false;
+            var otherItemsPendingMeasure = false;
 
             for (var i = 0; i < _elements.Count; ++i)
             {
                 if (_elements[i] is not { } element)
                     continue;
 
-                var sizeU = orientation == Orientation.Horizontal ?
-                    element.DesiredSize.Width : element.DesiredSize.Height;
+                var itemIndex = _firstIndex + i;
 
-                if (sizeU != _sizes[i])
+                // Detect partial layout manager state: elements whose data changed
+                // but the layout manager hasn't re-measured them yet.
+                if (!element.IsMeasureValid)
                 {
-                    _startUUnstable = true;
-                    break;
+                    if (itemIndex == anchorIndex)
+                        anchorMeasurePending = true;
+                    else
+                        otherItemsPendingMeasure = true;
                 }
+
+                var sizeU = getSizeU(element, itemIndex);
+
+                var diff = sizeU - _sizes[i];
+                if (diff == 0)
+                    continue;
+
+                if (!MathUtilities.AreClose(sizeU, _sizes[i], LayoutHelper.LayoutEpsilon))
+                {
+                    if (Logger.TryGet(LogEventLevel.Verbose, LogArea.Control) is { } log)
+                    {
+                        var dc = (element as StyledElement)?.DataContext;
+                        log.Log(element,
+                            "Item template size changed during layout. " +
+                            "This typically means the item template produces non-deterministic sizes " +
+                            "(e.g., async image loading, text wrapping). Consider using fixed-size templates. " +
+                            "DataContext='{DataContext}', OldSize='{OldSize}', NewSize='{NewSize}', Diff='{Diff}' " +
+                            "(#{HashCode} idx={ItemIndex})",
+                            dc?.GetType().FullName ?? "(null)", _sizes[i], sizeU, diff,
+                            element.GetHashCode(), itemIndex);
+                    }
+
+                    hasSignificantChange = true;
+
+                    if (anchorIndex >= 0 && itemIndex < anchorIndex)
+                    {
+                        preDelta += diff;
+                        otherItemsChanged = true;
+                    }
+                    else if (itemIndex == anchorIndex)
+                    {
+                        anchorChanged = true;
+                    }
+                    else
+                    {
+                        otherItemsChanged = true;
+                    }
+                }
+
+                // Update stored size so the next pass won't re-detect this change.
+                _sizes[i] = sizeU;
             }
+
+            if (!hasSignificantChange && !anchorMeasurePending)
+                return false;
+
+            if (anchorMeasurePending ||
+                (anchorChanged && (otherItemsChanged || otherItemsPendingMeasure)))
+            {
+                // Either the anchor hasn't been re-measured yet (partial layout state),
+                // or the anchor changed AND other items also changed or are pending
+                // re-measure (uniform resize scenario). Mark unstable so the layout
+                // re-evaluates positions from scratch.
+                _startUUnstable = true;
+            }
+            else if (anchorChanged)
+            {
+                // Only the anchor itself changed size and nothing else is affected (e.g. async
+                // content loading on the visible item). Its START position is still correct —
+                // only the items after it shift, which realization handles. Report no change so
+                // the caller does not treat the recorded per-item sizes as stale: the anchor
+                // alternating between a placeholder and a loaded size would otherwise discard
+                // the whole size record on every flip.
+                return false;
+            }
+            else if (!MathUtilities.AreClose(preDelta, 0, LayoutHelper.LayoutEpsilon))
+            {
+                // Only items before the anchor changed (async content loading).
+                // Subtract preDelta from StartU to keep the anchor at its visual position:
+                //   anchor_pos = startU + sum_of_sizes_before_anchor
+                // If sizes_before grew by preDelta, decrease startU by the same amount.
+                _startU -= preDelta;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Adjusts StartU to compensate for extent changes outside the realized range.
+        /// This prevents scroll jumping by maintaining the visual position of realized elements.
+        /// </summary>
+        public void CompensateStartU(double delta)
+        {
+            if (_startUUnstable || double.IsNaN(_startU))
+                return;
+
+            _startU += delta;
         }
     }
 }
