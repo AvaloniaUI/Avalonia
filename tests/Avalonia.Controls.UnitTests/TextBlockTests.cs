@@ -815,9 +815,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TextBlock_With_Overflow_And_MaxHeight_Should_Not_Produce_Double_Ellipsis()
         {
-            // Height-based counterpart of TextBlock_With_Overflow_And_MaxLines_Should_Not_Produce_Double_Ellipsis:
-            // a line that already overflowed (and was collapsed with an ellipsis) is later re-collapsed by
-            // the MaxHeight path via CollapseForTruncation. This must not produce a second ellipsis.
+            // When a line overflows its width and is collapsed by the overflow handler, and then the
+            // MaxHeight gate is hit, no second ellipsis must appear. With the IsSplit guard on the
+            // MaxHeight path, CollapseForTruncation is not called here at all (the overflowed line
+            // ends at a hard paragraph break, so IsSplit=false). The single "…" comes from the
+            // overflow handler only.
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
             const double width = 20;
@@ -847,77 +849,12 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void TextBlock_With_MaxLines_And_Hidden_Content_After_NewLine_Should_Show_Ellipsis()
+        public void TextBlock_With_MaxHeight_And_Hidden_Content_After_NewLine_Should_Not_Show_Ellipsis()
         {
-            // When MaxLines hides content that follows a hard paragraph break, an ellipsis must still
-            // appear on the last visible line so the user knows content was truncated.
-            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
-
-            var unbounded = new TextBlock
-            {
-                Text = "first line\r\nsecond line\r\nthird line",
-                Width = 200,
-            };
-
-            unbounded.Measure(Size.Infinity);
-            unbounded.Arrange(new Rect(0, 0, 200, unbounded.DesiredSize.Height));
-
-            Assert.True(unbounded.TextLayout.TextLines.Count >= 3);
-
-            var target = new TextBlock
-            {
-                Text = "first line\r\nsecond line\r\nthird line",
-                TextTrimming = TextTrimming.CharacterEllipsis,
-                MaxLines = 2,
-                Width = 200,
-            };
-
-            target.Measure(Size.Infinity);
-            target.Arrange(new Rect(0, 0, 200, target.DesiredSize.Height));
-
-            Assert.Equal(2, target.TextLayout.TextLines.Count);
-            Assert.Contains("…", GetLineText(target, 1));
-        }
-
-        [Fact]
-        public void TextBlock_With_MaxLines_And_Hidden_Content_After_NewLine_Should_Show_Ellipsis_WordEllipsis()
-        {
-            // WordEllipsis variant of the test above: it takes a different code path in
-            // TextEllipsisHelper.Collapse (word-boundary search) and must be verified separately.
-            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
-
-            var unbounded = new TextBlock
-            {
-                Text = "first line\r\nsecond line\r\nthird line",
-                Width = 200,
-            };
-
-            unbounded.Measure(Size.Infinity);
-            unbounded.Arrange(new Rect(0, 0, 200, unbounded.DesiredSize.Height));
-
-            Assert.True(unbounded.TextLayout.TextLines.Count >= 3);
-
-            var target = new TextBlock
-            {
-                Text = "first line\r\nsecond line\r\nthird line",
-                TextTrimming = TextTrimming.WordEllipsis,
-                MaxLines = 2,
-                Width = 200,
-            };
-
-            target.Measure(Size.Infinity);
-            target.Arrange(new Rect(0, 0, 200, target.DesiredSize.Height));
-
-            Assert.Equal(2, target.TextLayout.TextLines.Count);
-            Assert.Contains("…", GetLineText(target, 1));
-        }
-
-        [Fact]
-        public void TextBlock_With_MaxHeight_And_Hidden_Content_After_NewLine_Should_Show_Ellipsis()
-        {
-            // Height-based counterpart of TextBlock_With_MaxLines_And_Hidden_Content_After_NewLine_Should_Show_Ellipsis:
-            // when a Height limit (rather than MaxLines) hides content that follows a hard paragraph break, an
-            // ellipsis must still appear on the last visible line.
+            // When a Height limit hides content that follows a hard paragraph break, no ellipsis is shown
+            // on the last visible line — matching WPF and CSS max-height+overflow:hidden behavior.
+            // The last visible line ("second line") was not itself trimmed, so no "…" is added.
+            // Contrast with MaxLines, where the behavior is intentionally different (see the MaxLines tests).
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
             var unbounded = new TextBlock
@@ -945,7 +882,7 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(0, 0, 200, target.Height));
 
             Assert.Equal(2, target.TextLayout.TextLines.Count);
-            Assert.Contains("…", GetLineText(target, 1));
+            Assert.DoesNotContain("…", GetLineText(target, 1));
         }
 
         [Fact]
