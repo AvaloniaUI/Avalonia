@@ -118,7 +118,7 @@
                       Margin="6,-1,6,6"
                       VerticalAlignment="Stretch">
                   <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewHeaderRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewHeaderRow" />
                     <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
                     <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
                     <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
@@ -140,7 +140,7 @@
                       Margin="6,-1,6,6"
                       IsVisible="False">
                   <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMothViewHeaderRow" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewHeaderRow" />
                     <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
                     <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
                     <RowDefinition Height="Auto" SharedSizeGroup="CalendarMonthViewWeekRow" />
