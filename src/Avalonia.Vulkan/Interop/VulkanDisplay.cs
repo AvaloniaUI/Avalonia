@@ -119,10 +119,7 @@ internal class VulkanDisplay : IDisposable
             preTransform = supportsIdentityTransform && isRotated
                 ? VkSurfaceTransformFlagsKHR.VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
                 : capabilities.currentTransform,
-            compositeAlpha = capabilities.supportedCompositeAlpha.HasAllFlags(
-                VkCompositeAlphaFlagsKHR.VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
-                ? VkCompositeAlphaFlagsKHR.VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR
-                : VkCompositeAlphaFlagsKHR.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+            compositeAlpha = VkCompositeAlphaFlagsKHR.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
             presentMode = presentMode,
             clipped = 1,
             oldSwapchain = oldDisplay?._swapchain ?? default
@@ -332,9 +329,24 @@ internal class VulkanDisplay : IDisposable
             pResults = &result
         };
         
-        _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo)
-            .ThrowOnError("vkQueuePresentKHR");
-        result.ThrowOnError("vkQueuePresentKHR");
+        var presentResult = _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo);
+        
+        // We need to check both presentResult and result because some drivers may report different results,
+        // for example, presentResult can be VK_SUCCESS but result can be VK_ERROR_OUT_OF_DATE_KHR.
+        if ((presentResult is VkResult.VK_ERROR_OUT_OF_DATE_KHR or VkResult.VK_SUBOPTIMAL_KHR) ||
+            (result is VkResult.VK_ERROR_OUT_OF_DATE_KHR or VkResult.VK_SUBOPTIMAL_KHR))
+        {
+            RecreateSwapchain();
+        }
+        else if (presentResult == VkResult.VK_ERROR_SURFACE_LOST_KHR || result == VkResult.VK_ERROR_SURFACE_LOST_KHR)
+        {
+            RecreateSurface();
+        }
+        else
+        {
+            result.ThrowOnError("vkQueuePresentKHR");
+            presentResult.ThrowOnError("vkQueuePresentKHR");
+        }        
     }
     
     public void Dispose()
