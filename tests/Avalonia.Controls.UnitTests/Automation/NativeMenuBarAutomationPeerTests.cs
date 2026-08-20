@@ -28,6 +28,17 @@ public class NativeMenuBarAutomationPeerTests
 
             Assert.Equal(AutomationControlType.MenuBar, peer.GetAutomationControlType());
         }
+
+        [Fact]
+        public void Name_Falls_Back_To_Application_Name()
+        {
+            using var app = UnitTestApplication.Start();
+            UnitTestApplication.Current.Name = "Test Application";
+            var control = new NativeMenuBar { Template = CreateTemplate() };
+            var peer = (NativeMenuBarAutomationPeer)ControlAutomationPeer.CreatePeerForElement(control);
+
+            Assert.Equal("Test Application", peer.GetName());
+        }
     }
 
     private static FuncControlTemplate CreateTemplate()
