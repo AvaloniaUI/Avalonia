@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
@@ -146,6 +147,29 @@ namespace Avalonia.Controls
             {
                 return new Size();
             }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if(change.Property == SourceProperty)
+            {
+                if(change.OldValue is IAffectsRender oldAffectsRender)
+                {
+                    oldAffectsRender.Invalidated -= OnSourceInvalidated;
+                }
+
+                if(change.NewValue is IAffectsRender newAffectsRender)
+                {
+                    newAffectsRender.Invalidated += OnSourceInvalidated;
+                }
+            }
+        }
+
+        private void OnSourceInvalidated(object? sender, EventArgs e)
+        {
+            InvalidateMeasure();
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
