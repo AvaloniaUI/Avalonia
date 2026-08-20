@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input;
@@ -27,7 +28,7 @@ class WSurface : IPersistentWaylandObject, IWSurface, IWaylandFramebufferSurface
     protected WpViewport? Viewport { get; private set; }
     protected int? LastPreferredBufferScale { get; private set; }
     protected double? PreferredFractionalScale { get; private set; }
-    protected List<WaylandOutputsTracker.Output> Outputs  { get; } = new();
+    protected List<WaylandOutputsTracker.Output> Outputs { get; } = new();
     private WlCallback? _frameCallback;
     private bool _hitTestVisible = true;
     private double _currentScale = 1;
@@ -659,6 +660,8 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         if (_title != null)
             _xdgTopLevel.SetTitle(_title);
 
+        SetAppId(globals.WlAppId);
+
         // Re-apply cached min/max if they were ever set on a previous
         // (now-dead) connection. The OnConnected commit below will
         // promote the queued double-buffered state.
@@ -672,9 +675,9 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         // Prefer compositor-provided bounds
         if (_pendingBatch.Bounds is { Width: > 0, Height: > 0 } bounds)
             return new Size(bounds.Width, bounds.Height);
-        
+
         // Fallback: compute from output geometry
-        Size? maxSize = null;  
+        Size? maxSize = null;
         var outputs = Outputs.Count > 0 ? Outputs : Globals!.Outputs.Outputs;
         foreach (var o in outputs)
         {
@@ -703,6 +706,14 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     {
         _title = title;
         _xdgTopLevel?.SetTitle(title ?? string.Empty);
+    }
+
+    private void SetAppId(string? appId)
+    {
+        var id = string.IsNullOrWhiteSpace(appId) ? Process.GetCurrentProcess().ProcessName : appId;
+        if (_xdgTopLevel is null)
+            return;
+        _xdgTopLevel.SetAppId(id);
     }
 
     public void SetMinMaxSize(Size? minSize, Size? maxSize)
@@ -744,8 +755,10 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         // size of a surface is illegal and will result in an invalid_size
         // error." Clamp the minimum down to the maximum (≥0 maintained);
         // 0 on max means "unconstrained" and lets any min through.
-        if (maxW > 0 && minW > maxW) minW = maxW;
-        if (maxH > 0 && minH > maxH) minH = maxH;
+        if (maxW > 0 && minW > maxW)
+            minW = maxW;
+        if (maxH > 0 && minH > maxH)
+            minH = maxH;
 
         _xdgTopLevel.SetMinSize(minW, minH);
         _xdgTopLevel.SetMaxSize(maxW, maxH);
@@ -773,17 +786,17 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
             && cookie.TryConsume(display, out var seat, out var serial))
             _xdgTopLevel.Resize(seat, serial, edge);
     }
-    
+
     protected override void OnConfigureBatchComplete(uint serial)
     {
         var batch = _pendingBatch;
         batch.Serial = serial;
         batch.MaxSize = CalculateMaxSize();
         _pendingBatch = new();
-        
+
         _topLevelEventSink.OnConfigure(batch);
         BasicInitCompletedTcs.TrySetResult(batch);
-        
+
         base.OnConfigureBatchComplete(serial);
     }
 
@@ -813,9 +826,9 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
 
     internal class TopLevelListener(WXdgTopLevel p) : XdgToplevel.Listener
     {
-        protected override void ConfigureBounds(XdgToplevel eventSender, int width, int height) => 
+        protected override void ConfigureBounds(XdgToplevel eventSender, int width, int height) =>
             p._pendingBatch.Bounds = new(width, height);
-        
+
         protected override void Configure(XdgToplevel eventSender, int width, int height, ReadOnlySpan<byte> states)
         {
             p._pendingBatch.Size = new(width, height);
@@ -886,7 +899,7 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
         _popupEventSink = eventSink;
         _parent = parent;
     }
-    
+
     public void UpdatePositioner(XdgPopupPositionerParams positioner)
     {
         var hadPrevious = _positioner.HasValue;
@@ -943,9 +956,12 @@ class WXdgPopup : WXdgShellSurface, IWXdgPopup
     /// </summary>
     internal void TryAttachToParent()
     {
-        if (_xdgPopup != null) return;                         // already attached
-        if (XdgSurface == null) return;                       // we're not connected
-        if (_positioner is not { } pos) return;                // UI hasn't supplied positioner yet
+        if (_xdgPopup != null)
+            return;                         // already attached
+        if (XdgSurface == null)
+            return;                       // we're not connected
+        if (_positioner is not { } pos)
+            return;                // UI hasn't supplied positioner yet
         if (!_parent.IsMapped || _parent.XdgSurface is not { } parentXdgSurface)
         {
             // Parent not yet mapped — register; parent will call us back
