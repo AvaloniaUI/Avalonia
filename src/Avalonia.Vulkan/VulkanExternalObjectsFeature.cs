@@ -257,8 +257,17 @@ internal unsafe class VulkanExternalObjectsFeature : IVulkanContextExternalObjec
                 sType = VkStructureType.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO
             };
             Initialize(&externalAlloc);
+            this.CurrentLayout = properties.ImageLayout switch
+            {
+                PlatformGraphicsExternalImageLayout.Undefined => VkImageLayout.VK_IMAGE_LAYOUT_UNDEFINED,
+                PlatformGraphicsExternalImageLayout.General => VkImageLayout.VK_IMAGE_LAYOUT_GENERAL,
+                PlatformGraphicsExternalImageLayout.ColorAttachmentOptimal => VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                PlatformGraphicsExternalImageLayout.ShaderReadOnlyOptimal => VkImageLayout.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                PlatformGraphicsExternalImageLayout.TransferSrcOptimal => VkImageLayout.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                PlatformGraphicsExternalImageLayout.TransferDstOptimal => VkImageLayout.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                _ => throw new NotSupportedException("Unsupported external image layout")
+            };
             TransitionLayout(VkImageLayout.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VkAccessFlags.VK_ACCESS_TRANSFER_READ_BIT);
-            this.CurrentLayout = VkImageLayout.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
         }
 
         protected override VkDeviceMemory CreateMemory(VkImage image, ulong size, uint memoryTypeBits)
