@@ -128,6 +128,21 @@ namespace Avalonia.PropertyStore
         }
 
         /// <summary>
+        /// Removes the entry from the current effective value without unsubscribing it.
+        /// </summary>
+        /// <param name="entry">The entry to detach.</param>
+        /// <remarks>
+        /// Used when an active frame still owns the entry, but the entry temporarily has no value.
+        /// </remarks>
+        public void DetachValueEntry(IValueEntry entry)
+        {
+            if (ValueEntry == entry)
+                ValueEntry = null;
+            if (BaseValueEntry == entry)
+                BaseValueEntry = null;
+        }
+
+        /// <summary>
         /// Sets the value and base value for a non-LocalValue priority, raising 
         /// <see cref="AvaloniaObject.PropertyChanged"/> where necessary.
         /// </summary>

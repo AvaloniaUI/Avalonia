@@ -944,8 +944,8 @@ namespace Avalonia.PropertyStore
         }
 
         /// <summary>
-        /// Adds a new effective value, raises the initial <see cref="AvaloniaObject.PropertyChanged"/>
-        /// event and notifies inheritance children if necessary .
+        /// Adds a new effective value if the entry has a value, raises the initial
+        /// <see cref="AvaloniaObject.PropertyChanged"/> event and notifies inheritance children if necessary.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="entry">The value entry.</param>
@@ -953,6 +953,9 @@ namespace Avalonia.PropertyStore
         private void AddEffectiveValueAndRaise(AvaloniaProperty property, IValueEntry entry, BindingPriority priority)
         {
             Debug.Assert(priority < BindingPriority.Inherited);
+            if (!entry.HasValue())
+                return;
+
             var effectiveValue = property.CreateEffectiveValue(Owner);
             AddEffectiveValue(property, effectiveValue);
             effectiveValue.SetAndRaise(this, entry, priority);
@@ -1051,22 +1054,29 @@ namespace Avalonia.PropertyStore
                     }
 
                     // If the frame has an entry for this property with a higher priority than the
-                    // current effective value (and that entry has a value), then we have a new 
-                    // value for the property. Note that the check for entry.HasValue must be 
-                    // evaluated last as it can cause bindings to be subscribed.
+                    // current effective value, then apply it when it has a value. If the changed
+                    // entry has no value, the active frame keeps it subscribed for future updates.
+                    // Note that the check for entry.HasValue must be evaluated last as it can
+                    // cause bindings to be subscribed.
                     if (foundEntry &&
-                        HasHigherPriority(entry!, priority, current, changedValueEntry) &&
-                        entry!.HasValue())
+                        HasHigherPriority(entry!, priority, current, changedValueEntry))
                     {
-                        if (current is not null)
+                        if (entry!.HasValue())
                         {
-                            current.SetAndRaise(this, entry, priority);
+                            if (current is not null)
+                            {
+                                current.SetAndRaise(this, entry, priority);
+                            }
+                            else
+                            {
+                                current = property.CreateEffectiveValue(Owner);
+                                AddEffectiveValue(property, current);
+                                current.SetAndRaise(this, entry, priority);
+                            }
                         }
-                        else
+                        else if (entry == changedValueEntry)
                         {
-                            current = property.CreateEffectiveValue(Owner);
-                            AddEffectiveValue(property, current);
-                            current.SetAndRaise(this, entry, priority);
+                            current?.DetachValueEntry(entry);
                         }
                     }
 
@@ -1141,7 +1151,11 @@ namespace Avalonia.PropertyStore
                             continue;
 
                         if (!entry.HasValue())
+                        {
+                            if (entry == changedValueEntry)
+                                effectiveValue?.DetachValueEntry(entry);
                             continue;
+                        }
 
                         if (effectiveValue is not null)
                         {
