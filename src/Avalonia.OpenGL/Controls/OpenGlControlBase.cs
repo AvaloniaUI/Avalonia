@@ -1,13 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Logging;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.VisualTree;
-using Avalonia.Platform;
 using System.ComponentModel;
 
 namespace Avalonia.OpenGL.Controls
@@ -35,6 +33,7 @@ namespace Avalonia.OpenGL.Controls
         private Task<bool>? _initialization;
         private OpenGlControlBaseResources? _resources;
         private Compositor? _compositor;
+        private int _generation;
 
         [MemberNotNullWhen(true, nameof(_resources))]
         private bool IsInitializedSuccessfully => _initialization is { Status: TaskStatus.RanToCompletion, Result: true };
@@ -54,6 +53,7 @@ namespace Avalonia.OpenGL.Controls
 
         private void DoCleanup()
         {
+            _generation++;
             if (IsInitializedSuccessfully)
             {
                 try
@@ -94,51 +94,6 @@ namespace Avalonia.OpenGL.Controls
             RequestNextFrameRendering();
         }
 
-        [MemberNotNullWhen(true, nameof(_resources))]
-        private bool EnsureInitializedCore(
-            ICompositionGpuInterop interop,
-            IOpenGlTextureSharingRenderInterfaceContextFeature? contextSharingFeature)
-        {
-            var surface = _compositor!.CreateDrawingSurface();
-
-            IGlContext? ctx = null;
-            try
-            {
-                if (contextSharingFeature?.CanCreateSharedContext == true)
-                    _resources = OpenGlControlBaseResources.TryCreate(surface, interop, contextSharingFeature);
-
-                if(_resources == null)
-                {
-                    var contextFactory = AvaloniaLocator.Current.GetRequiredService<IPlatformGraphicsOpenGlContextFactory>();
-                    ctx = contextFactory.CreateContext(null);
-                    if (ctx.TryGetFeature<IGlContextExternalObjectsFeature>(out var externalObjects))
-                        _resources = OpenGlControlBaseResources.TryCreate(ctx, surface, interop, externalObjects);
-                }
-                
-                if(_resources == null)
-                {
-                    Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
-                        "Unable to initialize OpenGL: current platform does not support multithreaded context sharing and shared memory");
-                    ctx?.Dispose();
-                    return false;
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
-                    "Unable to initialize OpenGL: {exception}", e);
-                ctx?.Dispose();
-                return false;
-            }
-            
-            _visual = _compositor.CreateSurfaceVisual();
-            _visual.Size = new Vector(Bounds.Width, Bounds.Height);
-            _visual.Surface = _resources.Surface;
-            ElementComposition.SetElementChildVisual(this, _visual);
-            return true;
-
-        }
-
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
@@ -155,6 +110,7 @@ namespace Avalonia.OpenGL.Controls
         {
             _initialization = null;
             _resources?.DisposeAsync();
+            _resources = null;
             OnOpenGlLost();
         }
 
@@ -170,7 +126,7 @@ namespace Avalonia.OpenGL.Controls
                     return false;
                 }
 
-                if (_resources.Context.IsLost)
+                if (_resources.IsLost)
                     ContextLost();
                 else 
                     return true;
@@ -217,31 +173,47 @@ namespace Avalonia.OpenGL.Controls
                     "Unable to obtain Compositor instance");
                 return false;
             }
-            
-            var gpuInteropTask = _compositor.TryGetCompositionGpuInterop();
 
-            var contextSharingFeature =
-                (IOpenGlTextureSharingRenderInterfaceContextFeature?)
-                await _compositor.TryGetRenderInterfaceFeature(
-                    typeof(IOpenGlTextureSharingRenderInterfaceContextFeature));
-            var interop = await gpuInteropTask;
-
-            if (interop == null)
+            var generation = _generation;
+            var context = await _compositor.TryCreateCompatibleGlContextAsync();
+            if (context == null)
             {
                 Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
-                    "Compositor backend doesn't support GPU interop");
+                    "Unable to initialize OpenGL: current platform doesn't support OpenGL interop with the compositor");
                 return false;
             }
 
-            if (!EnsureInitializedCore(interop, contextSharingFeature))
+            if (generation != _generation)
             {
+                // The control was detached while we were awaiting
+                await context.DisposeAsync();
+                return false;
+            }
+
+            var surface = _compositor.CreateDrawingSurface();
+            try
+            {
+                _resources = new OpenGlControlBaseResources(context, surface);
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
+                    "Unable to initialize OpenGL: {exception}", e);
+                surface.Dispose();
+                await context.DisposeAsync();
+                // The failure might be transient, allow the next invalidation to retry
                 DoCleanup();
                 return false;
             }
 
+            _visual = _compositor.CreateSurfaceVisual();
+            _visual.Size = new Vector(Bounds.Width, Bounds.Height);
+            _visual.Surface = _resources.Surface;
+            ElementComposition.SetElementChildVisual(this, _visual);
+
             using (_resources.Context.MakeCurrent())
                 OnOpenGlInit(_resources.Context.GlInterface);
-            
+
             return true;
         }
 
