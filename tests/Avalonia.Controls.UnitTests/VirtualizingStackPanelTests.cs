@@ -1699,6 +1699,40 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 140, 100, 20), container.Bounds);
         }
 
+        [Theory]
+        [InlineData(25, Orientation.Vertical)]
+        [InlineData(99, Orientation.Vertical)]
+        [InlineData(25, Orientation.Horizontal)]
+        [InlineData(99, Orientation.Horizontal)]
+        public void ScrollIntoView_With_Variable_Size_Items_Keeps_Target_In_Viewport(int targetIndex, Orientation orientation)
+        {
+            using var app = App();
+
+            var firstHalfSize = targetIndex < 60 ? 20 : 40;
+            var secondHalfSize = targetIndex < 60 ? 40 : 20;
+            var horizontal = orientation == Orientation.Horizontal;
+            IEnumerable<object> items = horizontal ?
+                Enumerable.Range(0, 100).Select(x => new ItemWithWidth(x, x < 50 ? firstHalfSize : secondHalfSize)) :
+                Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, x < 50 ? firstHalfSize : secondHalfSize));
+            Optional<IDataTemplate?> itemTemplate = horizontal ? CanvasWithWidthTemplate : CanvasWithHeightTemplate;
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: itemTemplate, orientation: orientation);
+
+            target.ScrollIntoView(60);
+            target.ScrollIntoView(targetIndex);
+
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(targetIndex));
+            var message = $"Bounds={container.Bounds}, Offset={scroll.Offset}, Viewport={scroll.Viewport}, Extent={scroll.Extent}";
+
+            var containerStart = horizontal ? container.Bounds.Left : container.Bounds.Top;
+            var containerEnd = horizontal ? container.Bounds.Right : container.Bounds.Bottom;
+            var viewportStart = horizontal ? scroll.Offset.X : scroll.Offset.Y;
+            var viewportEnd = viewportStart + (horizontal ? scroll.Viewport.Width : scroll.Viewport.Height);
+
+            Assert.True(containerStart > 0, message);
+            Assert.True(containerStart >= viewportStart, message);
+            Assert.True(containerEnd <= viewportEnd, message);
+        }
+
         [Fact]
         public void When_Vertical_Calculates_ViewPort_At_Start_Of_List()
         {
