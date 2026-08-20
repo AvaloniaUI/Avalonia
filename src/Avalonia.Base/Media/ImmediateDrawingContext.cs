@@ -179,6 +179,19 @@ namespace Avalonia.Media
 
             PlatformImpl.DrawEllipse(brush, pen, new Rect(originX, originY, width, height));
         }
+        
+        public void DrawGeometry(IImmutableBrush? brush, ImmutablePen? pen, Geometry geometry)
+        {
+            if (brush == null && !PenIsVisible(pen))
+            {
+                return;
+            }
+            if (geometry.PlatformImpl is null)
+            {
+                return;
+            }
+            PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl);
+        }
 
         /// <summary>
         /// Draws a glyph run.
