@@ -1,285 +1,270 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
+using System.Text;
 using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
 {
     /// <summary>
-    /// A single axis tag / normalized-coordinate pair within a
-    /// <see cref="FontVariationSettings"/>.
+    /// A single variation axis setting in designer units, e.g. <c>wght = 700</c>.
     /// </summary>
-    /// <param name="Axis">The OpenType axis tag (e.g. <c>wght</c>, <c>wdth</c>).</param>
-    /// <param name="NormalizedValue">
-    /// The axis position in the OpenType normalized range <c>[-1.0, 1.0]</c>, as
-    /// produced by applying the font's <c>avar</c> table to a user-space value.
+    /// <param name="Tag">The OpenType axis tag (e.g. <c>wght</c>, <c>wdth</c>, <c>opsz</c>).</param>
+    /// <param name="Value">
+    /// The axis position in the font's user coordinate space — the same units the font's
+    /// <c>fvar</c> table declares for the axis (weight 100–900, width percentages, optical
+    /// sizes in points). Values are clamped to the axis range and normalized per font when
+    /// the settings are applied; axes a font does not declare are ignored.
     /// </param>
-    public readonly record struct FontVariationCoordinate(OpenTypeTag Axis, float NormalizedValue);
+    public readonly record struct FontVariation(OpenTypeTag Tag, double Value)
+    {
+        /// <summary>Returns the <c>tag=value</c> form, e.g. <c>wght=700</c>.</summary>
+        public override string ToString() =>
+            string.Create(CultureInfo.InvariantCulture, $"{Tag}={Value}");
+    }
 
     /// <summary>
-    /// Describes how a variable font (one with an <c>fvar</c> table) should be configured
-    /// for rendering: a set of normalized axis coordinates.
+    /// An immutable, order-independent set of user-space variation axis values that
+    /// configures variable fonts (fonts with an <c>fvar</c> table) for rendering.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <see cref="FontVariationSettings"/> is a value type with structural equality.
-    /// The all-zero <see langword="default"/> value represents "no variation" — pass
-    /// <c>default(FontVariationSettings)</c> (or rely on a parameter default) to leave
-    /// the font at its design defaults. The <see cref="IsDefault"/> property tests for
-    /// this case.
+    /// Values are expressed in the font's user coordinate space (<c>wght = 700</c>), the
+    /// same space CSS <c>font-variation-settings</c>, DirectWrite and HarfBuzz use.
+    /// Normalization to the OpenType <c>[-1, 1]</c> range — including the <c>avar</c>
+    /// mapping — happens per font when the settings are applied, so one settings value is
+    /// meaningful across fonts: each font clamps to its own axis ranges and ignores axes
+    /// it does not declare.
     /// </para>
     /// <para>
-    /// Settings are typeface-agnostic: the renderer maps coordinates to whichever axes
-    /// the active font exposes, and silently ignores axes the font does not have. The
-    /// same settings value can be shared across a variable-font family.
+    /// Instances have structural equality with a cached hash code and are usable as cache
+    /// keys. Variations are stored sorted by axis tag, so equality is order-independent;
+    /// when the same tag is given more than once, the last value wins (CSS behavior).
+    /// <c>null</c> and <see cref="Empty"/> both mean "design defaults".
     /// </para>
     /// <para>
-    /// To construct settings from human-readable user-space axis values (e.g.
-    /// <c>wght = 700</c>), use <c>GlyphTypeface.CreateVariationSettings</c>; it reads
-    /// the font's <c>fvar</c> / <c>avar</c> tables and normalizes the values. Use
-    /// <see cref="FromCoordinates(IReadOnlyDictionary{OpenTypeTag, float})"/> or the
-    /// span overload directly only when the normalized values are already known.
-    /// </para>
-    /// <para>
-    /// Coordinates are stored in a single <see cref="ImmutableArray{T}"/> sorted by
-    /// axis tag. Equality, hash and axis lookup are all linear scans over the array;
-    /// for typical axis counts (one to a handful) this is faster than a hash-based
-    /// dictionary and allocates nothing on the lookup path. The hash code is computed
-    /// at construction and cached.
+    /// The string form accepted by <see cref="Parse"/> (and produced by
+    /// <see cref="ToString"/>) is a comma-separated list of <c>tag=value</c> pairs, e.g.
+    /// <c>"wght=700, wdth=85"</c>, usable directly in XAML.
     /// </para>
     /// </remarks>
-    public readonly struct FontVariationSettings : IEquatable<FontVariationSettings>
+    public sealed class FontVariationSettings : IEquatable<FontVariationSettings>
     {
-        private readonly ImmutableArray<FontVariationCoordinate> _coordinates;
+        private readonly ImmutableArray<FontVariation> _variations;
         private readonly int _hashCode;
 
-        private FontVariationSettings(ImmutableArray<FontVariationCoordinate> sortedCoordinates)
+        private FontVariationSettings(ImmutableArray<FontVariation> sortedVariations)
         {
-            _coordinates = sortedCoordinates;
-            _hashCode = ComputeHashCode(sortedCoordinates);
+            _variations = sortedVariations;
+            _hashCode = ComputeHashCode(sortedVariations);
         }
 
-        /// <summary>
-        /// Gets the axis coordinates, sorted by <see cref="OpenTypeTag"/> ascending.
-        /// </summary>
-        /// <remarks>
-        /// Always returns a non-default (possibly empty) <see cref="ImmutableArray{T}"/>.
-        /// Callers can iterate, index, or pass it to span-based APIs without first
-        /// checking <see cref="ImmutableArray{T}.IsDefault"/>.
-        /// </remarks>
-        public ImmutableArray<FontVariationCoordinate> Coordinates =>
-            _coordinates.IsDefault ? ImmutableArray<FontVariationCoordinate>.Empty : _coordinates;
+        /// <summary>Gets the empty settings — the font's design defaults.</summary>
+        public static FontVariationSettings Empty { get; } =
+            new(ImmutableArray<FontVariation>.Empty);
 
         /// <summary>
-        /// Gets a value indicating whether these are the default ("no variation")
-        /// settings — equivalent to <c>default(FontVariationSettings)</c>.
+        /// Gets the variations, sorted by axis tag ascending. Duplicate tags passed at
+        /// construction have already been collapsed to their last value.
         /// </summary>
-        public bool IsDefault => _coordinates.IsDefaultOrEmpty;
+        public ImmutableArray<FontVariation> Variations => _variations;
+
+        /// <summary>Gets a value indicating whether no axis is set.</summary>
+        public bool IsEmpty => _variations.IsEmpty;
 
         /// <summary>
-        /// Creates a <see cref="FontVariationSettings"/> from an axis-tag → normalized-coordinate
-        /// map.
+        /// Creates settings from variation values. When a tag appears more than once, the
+        /// last occurrence wins.
         /// </summary>
-        /// <param name="normalizedCoordinates">
-        /// Axis coordinates in the OpenType-normalized range <c>[-1.0, 1.0]</c>. The
-        /// dictionary is copied into a sorted internal store.
-        /// <para>
-        /// Prefer <c>GlyphTypeface.CreateVariationSettings</c> when you have user-space
-        /// axis values (e.g. <c>wght = 700</c>) — it normalizes them via the font's
-        /// <c>fvar</c> / <c>avar</c> tables automatically.
-        /// </para>
-        /// </param>
-        /// <returns>
-        /// <c>default(FontVariationSettings)</c> when the input is empty or every
-        /// coordinate is <c>0</c> (the axis default); otherwise a settings value carrying
-        /// the sorted non-zero coordinates.
-        /// </returns>
-        /// <exception cref="ArgumentNullException"><paramref name="normalizedCoordinates"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// A coordinate value is <c>NaN</c> or outside <c>[-1, 1]</c>.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// The dictionary enumerates two entries for the same axis.
-        /// </exception>
-        public static FontVariationSettings FromCoordinates(
-            IReadOnlyDictionary<OpenTypeTag, float> normalizedCoordinates)
+        /// <exception cref="ArgumentNullException"><paramref name="variations"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">A value is <c>NaN</c> or infinite.</exception>
+        public FontVariationSettings(IEnumerable<FontVariation> variations)
         {
-            if (normalizedCoordinates is null)
+            if (variations is null)
             {
-                throw new ArgumentNullException(nameof(normalizedCoordinates));
+                throw new ArgumentNullException(nameof(variations));
             }
 
-            if (normalizedCoordinates.Count == 0)
+            var builder = ImmutableArray.CreateBuilder<FontVariation>();
+
+            foreach (var variation in variations)
             {
-                return default;
-            }
-
-            var builder = ImmutableArray.CreateBuilder<FontVariationCoordinate>(normalizedCoordinates.Count);
-
-            foreach (var kvp in normalizedCoordinates)
-            {
-                ValidateCoordinate(kvp.Value, kvp.Key, nameof(normalizedCoordinates));
-                builder.Add(new FontVariationCoordinate(kvp.Key, kvp.Value));
-            }
-
-            return CreateFromValidated(builder, nameof(normalizedCoordinates));
-        }
-
-        /// <summary>
-        /// Creates a <see cref="FontVariationSettings"/> from a span of coordinates.
-        /// </summary>
-        /// <param name="normalizedCoordinates">
-        /// Axis coordinates in the OpenType-normalized range <c>[-1.0, 1.0]</c>. Each
-        /// axis must appear at most once; the span is copied into a sorted internal
-        /// store.
-        /// </param>
-        /// <returns>
-        /// <c>default(FontVariationSettings)</c> when the span is empty or every
-        /// coordinate is <c>0</c> (the axis default); otherwise a settings value carrying
-        /// the sorted non-zero coordinates.
-        /// </returns>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// A coordinate value is <c>NaN</c> or outside <c>[-1, 1]</c>.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// The span contains two entries for the same axis.
-        /// </exception>
-        public static FontVariationSettings FromCoordinates(
-            ReadOnlySpan<FontVariationCoordinate> normalizedCoordinates)
-        {
-            if (normalizedCoordinates.IsEmpty)
-            {
-                return default;
-            }
-
-            var builder = ImmutableArray.CreateBuilder<FontVariationCoordinate>(normalizedCoordinates.Length);
-
-            foreach (var coord in normalizedCoordinates)
-            {
-                ValidateCoordinate(coord.NormalizedValue, coord.Axis, nameof(normalizedCoordinates));
-                builder.Add(coord);
-            }
-
-            return CreateFromValidated(builder, nameof(normalizedCoordinates));
-        }
-
-        private static FontVariationSettings CreateFromValidated(
-            ImmutableArray<FontVariationCoordinate>.Builder builder, string paramName)
-        {
-            builder.Sort(static (a, b) => ((uint)a.Axis).CompareTo((uint)b.Axis));
-
-            for (var i = 1; i < builder.Count; i++)
-            {
-                if (builder[i].Axis == builder[i - 1].Axis)
+                if (double.IsNaN(variation.Value) || double.IsInfinity(variation.Value))
                 {
                     throw new ArgumentException(
-                        $"Duplicate axis '{builder[i].Axis}' in coordinates.",
-                        paramName);
+                        $"Value for axis '{variation.Tag}' must be finite; was {variation.Value}.",
+                        nameof(variations));
                 }
-            }
 
-            // A normalized value of 0 is the axis default: dropping it keeps explicitly-default
-            // settings structurally equal to settings that omit the axis, so both produce one
-            // cache key (and one variation clone) instead of two. Done after the duplicate check
-            // so that duplicates still throw regardless of their values.
-            for (var i = builder.Count - 1; i >= 0; i--)
-            {
-                if (builder[i].NormalizedValue == 0f)
+                // Last-wins for duplicate tags, matching CSS font-variation-settings.
+                var replaced = false;
+
+                for (var i = 0; i < builder.Count; i++)
                 {
-                    builder.RemoveAt(i);
+                    if (builder[i].Tag == variation.Tag)
+                    {
+                        builder[i] = variation;
+                        replaced = true;
+                        break;
+                    }
+                }
+
+                if (!replaced)
+                {
+                    builder.Add(variation);
                 }
             }
 
-            if (builder.Count == 0)
-            {
-                return default;
-            }
+            builder.Sort(static (a, b) => ((uint)a.Tag).CompareTo((uint)b.Tag));
 
-            return new FontVariationSettings(builder.ToImmutable());
+            _variations = builder.ToImmutable();
+            _hashCode = ComputeHashCode(_variations);
         }
 
         /// <summary>
-        /// Looks up the normalized value for a single axis.
+        /// Looks up the value for an axis.
         /// </summary>
-        /// <param name="axis">The axis tag to look up.</param>
-        /// <param name="normalizedValue">The axis's normalized value, or <c>0</c> when
-        /// the axis is not present.</param>
-        /// <returns><c>true</c> when the axis is present; <c>false</c> otherwise.</returns>
-        public bool TryGetCoordinate(OpenTypeTag axis, out float normalizedValue)
+        /// <param name="tag">The axis tag.</param>
+        /// <param name="value">The axis value, or <c>0</c> when the axis is not set.</param>
+        /// <returns><c>true</c> when the axis is set; <c>false</c> otherwise.</returns>
+        public bool TryGetValue(OpenTypeTag tag, out double value)
         {
-            if (!_coordinates.IsDefault)
+            foreach (var variation in _variations)
             {
-                foreach (var coord in _coordinates)
+                if (variation.Tag == tag)
                 {
-                    if (coord.Axis == axis)
-                    {
-                        normalizedValue = coord.NormalizedValue;
-                        return true;
-                    }
+                    value = variation.Value;
+                    return true;
                 }
             }
 
-            normalizedValue = 0f;
+            value = 0;
             return false;
         }
 
         /// <summary>
-        /// Returns the normalized value for a single axis, or <paramref name="fallback"/>
-        /// if the axis is not present.
+        /// Parses a comma-separated list of <c>tag=value</c> pairs, e.g.
+        /// <c>"wght=700, wdth=85"</c>. Whitespace around pairs, tags and values is
+        /// ignored; an empty string yields <see cref="Empty"/>; duplicate tags collapse
+        /// to the last value.
         /// </summary>
-        public float GetCoordinateOrDefault(OpenTypeTag axis, float fallback = 0f)
-            => TryGetCoordinate(axis, out var value) ? value : fallback;
+        /// <exception cref="FormatException">A pair is not <c>tag=value</c>, a tag is not
+        /// a valid four-character OpenType tag, or a value is not a finite invariant
+        /// number.</exception>
+        public static FontVariationSettings Parse(string s)
+        {
+            if (s is null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return Empty;
+            }
+
+            var variations = new List<FontVariation>();
+
+            foreach (var part in s.Split(','))
+            {
+                var pair = part.AsSpan().Trim();
+
+                if (pair.IsEmpty)
+                {
+                    continue;
+                }
+
+                var separator = pair.IndexOf('=');
+
+                if (separator <= 0 || separator == pair.Length - 1)
+                {
+                    throw new FormatException(
+                        $"Invalid font variation '{pair.ToString()}': expected tag=value.");
+                }
+
+                var tagText = pair.Slice(0, separator).Trim();
+                var valueText = pair.Slice(separator + 1).Trim();
+
+                if (tagText.IsEmpty || tagText.Length > 4)
+                {
+                    throw new FormatException(
+                        $"Invalid font variation axis tag '{tagText.ToString()}'.");
+                }
+
+                if (!double.TryParse(valueText, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ||
+                    double.IsNaN(value) || double.IsInfinity(value))
+                {
+                    throw new FormatException(
+                        $"Invalid font variation value '{valueText.ToString()}' for axis '{tagText.ToString()}'.");
+                }
+
+                variations.Add(new FontVariation(OpenTypeTag.Parse(tagText.ToString()), value));
+            }
+
+            return variations.Count == 0 ? Empty : new FontVariationSettings(variations);
+        }
+
+        /// <summary>Returns the parseable string form, e.g. <c>wght=700,wdth=85</c>.</summary>
+        public override string ToString()
+        {
+            if (_variations.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var builder = new StringBuilder();
+
+            foreach (var variation in _variations)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append(',');
+                }
+
+                builder.Append(variation.ToString());
+            }
+
+            return builder.ToString();
+        }
 
         /// <inheritdoc/>
-        public bool Equals(FontVariationSettings other)
+        public bool Equals(FontVariationSettings? other)
         {
-            // Cheap reject via the cached hash first; then an allocation-free element-wise
-            // compare. Coordinates normalizes default → Empty, so the spans are always valid,
-            // and the span overload (not LINQ SequenceEqual) avoids boxing the ImmutableArray
-            // to IEnumerable — this type is used as a dictionary key. FontVariationCoordinate is
-            // a record struct, so the per-element compare uses its (Axis, NormalizedValue) value
-            // equality.
+            if (other is null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
             if (_hashCode != other._hashCode)
             {
                 return false;
             }
 
-            return Coordinates.AsSpan().SequenceEqual(other.Coordinates.AsSpan());
+            return _variations.AsSpan().SequenceEqual(other._variations.AsSpan());
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object? obj) => obj is FontVariationSettings other && Equals(other);
+        public override bool Equals(object? obj) => Equals(obj as FontVariationSettings);
 
         /// <inheritdoc/>
         public override int GetHashCode() => _hashCode;
 
-        public static bool operator ==(FontVariationSettings left, FontVariationSettings right) => left.Equals(right);
-
-        public static bool operator !=(FontVariationSettings left, FontVariationSettings right) => !left.Equals(right);
-
-        private static void ValidateCoordinate(float value, OpenTypeTag axis, string paramName)
+        private static int ComputeHashCode(ImmutableArray<FontVariation> variations)
         {
-            if (float.IsNaN(value) || value < -1f || value > 1f)
-            {
-                throw new ArgumentOutOfRangeException(
-                    paramName, value,
-                    $"Normalized coordinate for axis '{axis}' must be in [-1, 1]; was {value}.");
-            }
-        }
-
-        private static int ComputeHashCode(ImmutableArray<FontVariationCoordinate> coordinates)
-        {
-            if (coordinates.IsDefaultOrEmpty)
-            {
-                return 0;
-            }
-
             var hash = new HashCode();
-            foreach (var coord in coordinates)
+
+            foreach (var variation in variations)
             {
-                hash.Add(coord.Axis);
-                hash.Add(coord.NormalizedValue);
+                hash.Add(variation.Tag);
+                hash.Add(variation.Value);
             }
+
             return hash.ToHashCode();
         }
     }
