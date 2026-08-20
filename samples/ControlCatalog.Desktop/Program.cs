@@ -15,6 +15,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
+using Avalonia.Wayland;
 using ControlCatalog.Pages;
 
 namespace ControlCatalog.Desktop
@@ -62,11 +63,11 @@ namespace ControlCatalog.Desktop
             }
             if (args.Contains("--fbdev"))
             {
-                 SilenceConsole();
-                 return builder.StartLinuxFbDev(args, new FbDevOutputOptions()
-                 {
-                     Scaling = GetScaling()
-                 });
+                SilenceConsole();
+                return builder.StartLinuxFbDev(args, new FbDevOutputOptions()
+                {
+                    Scaling = GetScaling()
+                });
             }
             else if (args.Contains("--vnc"))
             {
@@ -153,7 +154,7 @@ namespace ControlCatalog.Desktop
 
                 .With(new VulkanOptions
                 {
-                    VulkanInstanceCreationOptions = new ()
+                    VulkanInstanceCreationOptions = new()
                     {
                         UseDebug = true
                     }
