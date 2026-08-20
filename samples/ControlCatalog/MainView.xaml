@@ -10,6 +10,7 @@
             d:DesignWidth="1200"
             d:DesignHeight="720"
             x:DataType="viewModels:MainWindowViewModel"
+            TextScaling.IsEnabled="True"
             DrawerLayoutBehavior="Split"
             IsOpen="{Binding IsDrawerOpened , Mode=TwoWay}"
             DisplayMode="{Binding DisplayMode, Mode=TwoWay}"

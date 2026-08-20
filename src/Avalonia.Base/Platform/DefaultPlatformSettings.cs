@@ -2,10 +2,8 @@
 using System.Globalization;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Platform
 {
@@ -56,7 +54,7 @@ namespace Avalonia.Platform
         public virtual event EventHandler<PlatformColorValues>? ColorValuesChanged;
         public virtual event EventHandler? PreferredApplicationLanguageChanged;
 
-        protected void OnColorValuesChanged(PlatformColorValues colorValues)
+        protected virtual void OnColorValuesChanged(PlatformColorValues colorValues)
         {
             Dispatcher.UIThread.Send(
                 _ => ColorValuesChanged?.Invoke(this, colorValues));
@@ -67,5 +65,11 @@ namespace Avalonia.Platform
             Dispatcher.UIThread.Send(
                 _ => PreferredApplicationLanguageChanged?.Invoke(this, EventArgs.Empty));
         }
+
+        public event EventHandler<EventArgs>? TextScalingChanged;
+
+        protected virtual void OnTextScaleChanged() => Dispatcher.UIThread.Send(_ => TextScalingChanged?.Invoke(this, EventArgs.Empty));
+
+        public virtual double GetScaledFontSize(Visual target, double baseFontSize) => baseFontSize;
     }
 }

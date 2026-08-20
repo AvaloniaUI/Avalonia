@@ -10,7 +10,7 @@ namespace Avalonia.Platform
     /// Some of these settings might be changed by used globally in the OS in runtime.
     /// </summary>
     [NotClientImplementable]
-    public interface IPlatformSettings
+    public interface IPlatformSettings : ITextScaler
     {
         /// <summary>
         /// The size of the rectangle around the location of a pointer down that a pointer up
