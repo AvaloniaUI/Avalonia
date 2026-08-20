@@ -4,11 +4,7 @@ namespace Avalonia.Media.TextFormatting
 {
     internal static class TextEllipsisHelper
     {
-        public static TextRun[]? Collapse(
-            TextLine textLine,
-            TextCollapsingProperties properties,
-            bool isWordEllipsis,
-            bool forceCollapse = false)
+        public static TextRun[]? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
         {
             var textRunsEnumerator = new LogicalTextRunEnumerator(textLine);
 
@@ -105,11 +101,6 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 collapsedLength += currentRun.Length;
-            }
-
-            if (forceCollapse)
-            {
-                return TextCollapsingProperties.CreateCollapsedRuns(textLine, collapsedLength, shapedSymbol);
             }
 
             return null;

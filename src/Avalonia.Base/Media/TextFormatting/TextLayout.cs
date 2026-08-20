@@ -615,8 +615,7 @@ namespace Avalonia.Media.TextFormatting
                         if (_textTrimming != TextTrimming.None && hasRealContent)
                         {
                             textLines[textLines.Count - 1] = CollapseForTruncation(
-                                (TextLineImpl)textLines[textLines.Count - 1],
-                                MaxWidth);
+                                (TextLineImpl)textLines[textLines.Count - 1]);
                         }
 
                         break;
@@ -629,8 +628,7 @@ namespace Avalonia.Media.TextFormatting
                         if (_textTrimming != TextTrimming.None && hasRealContent)
                         {
                             textLines[textLines.Count - 1] = CollapseForTruncation(
-                                (TextLineImpl)textLines[textLines.Count - 1],
-                                MaxWidth);
+                                (TextLineImpl)textLines[textLines.Count - 1]);
                         }
 
                         break;
@@ -758,48 +756,19 @@ namespace Avalonia.Media.TextFormatting
                 new TextCollapsingCreateInfo(width, _paragraphProperties.DefaultTextRunProperties, _paragraphProperties.FlowDirection));
         }
 
-        private TextLineImpl CollapseForTruncation(TextLineImpl line, double width)
+        private TextLineImpl CollapseForTruncation(TextLineImpl line)
         {
-            var collapsingProperties = GetCollapsingProperties(width);
+            // Collapse against the line's own rendered width rather than MaxWidth, so there's
+            // always room reserved for the ellipsis symbol and a trailing ellipsis is reliably
+            // produced, even if the line already fits within MaxWidth on its own.
+            var collapsingProperties = GetCollapsingProperties(line.WidthIncludingTrailingWhitespace);
 
             if (collapsingProperties is null)
             {
                 return line;
             }
 
-            // For the known ellipsis types we can always force a trailing ellipsis onto the
-            // line: this method is only ever called on a line that has already been checked
-            // for its own width overflow when it was added, so a plain (non-forced) collapse
-            // attempt at the same width would always be a no-op here. Unknown/custom
-            // TextCollapsingProperties can't be forced, so fall back to a plain collapse
-            // attempt for those.
-            TextCollapsingProperties forceProperties = collapsingProperties switch
-            {
-                TextTrailingCharacterEllipsis => new ForcedTrailingCollapseProperties(collapsingProperties, false),
-                TextTrailingWordEllipsis => new ForcedTrailingCollapseProperties(collapsingProperties, true),
-                _ => collapsingProperties
-            };
-
-            return (TextLineImpl)line.Collapse(forceProperties);
-        }
-
-        private sealed class ForcedTrailingCollapseProperties : TextCollapsingProperties
-        {
-            private readonly TextCollapsingProperties _inner;
-            private readonly bool _isWordEllipsis;
-
-            public ForcedTrailingCollapseProperties(TextCollapsingProperties inner, bool isWordEllipsis)
-            {
-                _inner = inner;
-                _isWordEllipsis = isWordEllipsis;
-            }
-
-            public override double Width => _inner.Width;
-            public override TextRun Symbol => _inner.Symbol;
-            public override FlowDirection FlowDirection => _inner.FlowDirection;
-
-            public override TextRun[]? Collapse(TextLine textLine) =>
-                TextEllipsisHelper.Collapse(textLine, this, _isWordEllipsis, forceCollapse: true);
+            return (TextLineImpl)line.Collapse(collapsingProperties);
         }
 
         public void Dispose()
