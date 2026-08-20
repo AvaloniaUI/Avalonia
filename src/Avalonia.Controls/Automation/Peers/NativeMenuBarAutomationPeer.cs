@@ -8,5 +8,11 @@ namespace Avalonia.Automation.Peers
         {
             return AutomationControlType.MenuBar;
         }
+
+        protected override string? GetNameCore()
+        {
+            var name = base.GetNameCore();
+            return string.IsNullOrWhiteSpace(name) ? Application.Current?.Name : name;
+        }
     }
 }
