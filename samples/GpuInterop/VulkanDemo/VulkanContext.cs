@@ -34,7 +34,7 @@ public unsafe class VulkanContext : IDisposable
     public required DescriptorPool DescriptorPool { get; init; }
     public required ComPtr<ID3D11Device> D3DDevice { get; init; }
 
-    public static (VulkanContext? result, string info) TryCreate(ICompositionGpuInterop gpuInterop)
+    public static (VulkanContext? result, string info) TryCreate(ICompositionGpuInterop gpuInterop, bool dmaBuf = false)
     {
         using var appName = new ByteString("GpuInterop");
         using var engineName = new ByteString("Test");
@@ -142,6 +142,19 @@ public unsafe class VulkanContext : IDisposable
                    )
                     return (null, "Image sharing is not supported by the current backend");
                 requireDeviceExtensions.AddRange(["VK_EXT_metal_objects", "VK_KHR_timeline_semaphore"]);
+            }
+            else if (dmaBuf)
+            {
+                if (!gpuInterop.SupportedImageHandleTypes.Contains(KnownPlatformGraphicsExternalImageHandleTypes
+                        .DmaBufFileDescriptor))
+                    return (null, "dma-buf image sharing is not supported by the current backend");
+                // VK_KHR_external_memory_fd is needed to obtain the dma-buf fd, VK_EXT_external_memory_dma_buf
+                // marks the allocation as dma-buf exportable and VK_EXT_image_drm_format_modifier lets us
+                // create the image with an explicit DRM tiling layout that the EGL importer understands.
+                // (bind_memory2/get_memory_requirements2/image_format_list dependencies are core in Vulkan 1.1.)
+                requireDeviceExtensions.Add(KhrExternalMemoryFd.ExtensionName);
+                requireDeviceExtensions.Add("VK_EXT_external_memory_dma_buf");
+                requireDeviceExtensions.Add("VK_EXT_image_drm_format_modifier");
             }
             else
             {
