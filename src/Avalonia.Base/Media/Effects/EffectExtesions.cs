@@ -31,6 +31,23 @@ public static class EffectExtensions
     }
 
     /// <summary>
+    /// The radius, in DIPs, from which a backdrop effect samples its input: the largest component of the
+    /// effect's output padding.
+    /// </summary>
+    internal static double GetBackdropSamplingRadius(this IEffect? effect)
+    {
+        var padding = effect.GetEffectOutputPadding();
+        return Math.Max(Math.Max(padding.Left, padding.Top), Math.Max(padding.Right, padding.Bottom));
+    }
+
+    /// <summary>
+    /// Whether <paramref name="effect"/> can act as a backdrop: any effect except a drop-shadow (which is not
+    /// a meaningful backdrop). A null effect is not a backdrop.
+    /// </summary>
+    internal static bool IsSupportedBackdropEffect(this IEffect? effect) =>
+        effect is { } and not IDropShadowEffect;
+
+    /// <summary>
     /// Converts a effect to an immutable effect.
     /// </summary>
     /// <param name="effect">The effect.</param>

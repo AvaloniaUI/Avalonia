@@ -83,6 +83,24 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, IEffect?>(nameof(Effect));
 
         /// <summary>
+        /// Defines the <see cref="BackdropEffect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEffect?> BackdropEffectProperty =
+            AvaloniaProperty.Register<Visual, IEffect?>(nameof(BackdropEffect));
+
+        /// <summary>
+        /// Defines the <see cref="BackdropEffectBounds"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BackdropEffectBounds> BackdropEffectBoundsProperty =
+            AvaloniaProperty.Register<Visual, BackdropEffectBounds>(nameof(BackdropEffectBounds));
+
+        /// <summary>
+        /// Defines the <see cref="BackdropEffectCache"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BackdropEffectCacheMode?> BackdropEffectCacheProperty =
+            AvaloniaProperty.Register<Visual, BackdropEffectCacheMode?>(nameof(BackdropEffectCache));
+
+        /// <summary>
         /// Defines the <see cref="HasMirrorTransform"/> property.
         /// </summary>
         public static readonly DirectProperty<Visual, bool> HasMirrorTransformProperty =
@@ -146,6 +164,9 @@ namespace Avalonia
                 OpacityProperty,
                 OpacityMaskProperty,
                 EffectProperty,
+                BackdropEffectProperty,
+                BackdropEffectBoundsProperty,
+                BackdropEffectCacheProperty,
                 HasMirrorTransformProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
             ZIndexProperty.Changed.Subscribe(ZIndexChanged);
@@ -280,6 +301,34 @@ namespace Avalonia
         {
             get => GetValue(EffectProperty);
             set => SetValue(EffectProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the effect applied to the content rendered behind this control's subtree.
+        /// </summary>
+        public IEffect? BackdropEffect
+        {
+            get => GetValue(BackdropEffectProperty);
+            set => SetValue(BackdropEffectProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the bounds used when applying the backdrop effect.
+        /// </summary>
+        public BackdropEffectBounds BackdropEffectBounds
+        {
+            get => GetValue(BackdropEffectBoundsProperty);
+            set => SetValue(BackdropEffectBoundsProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether the backdrop effect's sampled result is retained in a texture
+        /// or resampled from the live content every frame.
+        /// </summary>
+        public BackdropEffectCacheMode? BackdropEffectCache
+        {
+            get => GetValue(BackdropEffectCacheProperty);
+            set => SetValue(BackdropEffectCacheProperty, value);
         }
 
 
