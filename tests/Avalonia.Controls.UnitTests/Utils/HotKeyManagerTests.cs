@@ -32,23 +32,60 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 HotKeyManager.SetHotKey(button, gesture1);
 
-                Assert.Equal(gesture1, tl.KeyBindings[0].Gesture);
+                Assert.Empty(tl.KeyBindings);
+                Assert.Equal(gesture1, button.KeyBindings[0].Gesture);
 
                 HotKeyManager.SetHotKey(button, gesture2);
-                Assert.Equal(gesture2, tl.KeyBindings[0].Gesture);
+                Assert.Empty(tl.KeyBindings);
+                Assert.Equal(gesture2, button.KeyBindings[0].Gesture);
 
                 tl.Content = null;
                 tl.Presenter.ApplyTemplate();
 
                 Assert.Empty(tl.KeyBindings);
+                Assert.Empty(button.KeyBindings);
 
                 tl.Content = button;
                 tl.Presenter.ApplyTemplate();
 
-                Assert.Equal(gesture2, tl.KeyBindings[0].Gesture);
+                Assert.Empty(tl.KeyBindings);
+                Assert.Equal(gesture2, button.KeyBindings[0].Gesture);
 
                 HotKeyManager.SetHotKey(button, null);
                 Assert.Empty(tl.KeyBindings);
+                Assert.Empty(button.KeyBindings);
+            }
+        }
+
+        [Fact]
+        public void HotKeyManager_Should_Not_Execute_When_Control_Is_Not_Focused()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
+
+                var target = new KeyboardDevice();
+                var root = new Window();
+                var button = new Button { HotKey = new KeyGesture(Key.A, KeyModifiers.Control) };
+                var executed = 0;
+                button.Click += (_, _) => executed++;
+                root.Content = button;
+                root.Template = CreateWindowTemplate();
+                root.ApplyTemplate();
+                root.Presenter!.ApplyTemplate();
+
+                target.ProcessRawEvent(new RawKeyEventArgs(
+                    target,
+                    0,
+                    root.InputRoot,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control,
+                    PhysicalKey.A,
+                    "a"));
+
+                Assert.Equal(0, executed);
             }
         }
 
@@ -82,6 +119,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 root.Presenter!.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(element, gesture);
+                target.SetFocusedElement((InputElement)element, NavigationMethod.Pointer, KeyModifiers.None);
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
@@ -126,6 +164,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 root.Presenter!.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(element, gesture);
+                target.SetFocusedElement(element, NavigationMethod.Pointer, KeyModifiers.None);
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
@@ -170,6 +209,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 root.Presenter!.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(element, gesture);
+                target.SetFocusedElement(element, NavigationMethod.Pointer, KeyModifiers.None);
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
@@ -232,6 +272,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 root.Presenter!.ApplyTemplate();
 
                 HotKeyManager.SetHotKey(element, gesture);
+                target.SetFocusedElement(element, NavigationMethod.Pointer, KeyModifiers.None);
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
