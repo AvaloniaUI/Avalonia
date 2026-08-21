@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
 using Avalonia.Reactive;
@@ -109,6 +110,8 @@ namespace Avalonia.Controls
             {
                 oldPresenter.CurrentImClient = null;
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
+                oldPresenter.ClearValue(TextPresenter.PreeditTextCursorPositionProperty);
+                oldPresenter.ClearValue(TextPresenter.PreeditTextSegmentsProperty);
 
                 if (_caretBoundsChangedHandler is not null)
                 {
@@ -144,6 +147,12 @@ namespace Avalonia.Controls
         public override void SetPreeditText(string? preeditText) => SetPreeditText(preeditText, null);
 
         public override void SetPreeditText(string? preeditText, int? cursorPos)
+            => SetPreeditText(preeditText, cursorPos, null);
+
+        public override void SetPreeditText(
+            string? preeditText,
+            int? cursorPos,
+            IReadOnlyList<TextInputMethodPreeditSegment>? segments)
         {
             if (_presenter == null || _parent == null)
             {
@@ -152,6 +161,7 @@ namespace Avalonia.Controls
 
             _presenter.SetCurrentValue(TextPresenter.PreeditTextProperty, preeditText);
             _presenter.SetCurrentValue(TextPresenter.PreeditTextCursorPositionProperty, cursorPos);
+            _presenter.SetCurrentValue(TextPresenter.PreeditTextSegmentsProperty, segments);
         }
 
         public override void ExecuteContextMenuAction(ContextMenuAction action)

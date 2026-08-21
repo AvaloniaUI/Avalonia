@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
@@ -26,6 +28,7 @@ namespace Avalonia.Win32.Input
 
         private bool _ignoreComposition;
         private int? _compositionCursorPosition;
+        private IReadOnlyList<TextInputMethodPreeditSegment>? _compositionSegments;
 
         public TextInputMethodClient? Client { get; private set; }
 
@@ -112,6 +115,7 @@ namespace Avalonia.Win32.Input
 
             IsComposing = false;
             _compositionCursorPosition = null;
+            _compositionSegments = null;
         }
 
         //Dependant on CurrentThread. When Avalonia will support Multiple Dispatchers -
@@ -121,6 +125,7 @@ namespace Avalonia.Win32.Input
         public void Reset()
         {
             _compositionCursorPosition = null;
+            _compositionSegments = null;
 
             Dispatcher.UIThread.Post(() =>
             {
@@ -146,6 +151,7 @@ namespace Avalonia.Win32.Input
 
                     Composition = null;
                     _compositionCursorPosition = null;
+                    _compositionSegments = null;
                 }
             });
         }
@@ -156,8 +162,9 @@ namespace Avalonia.Win32.Input
             {
                 Composition = null;
                 _compositionCursorPosition = null;
+                _compositionSegments = null;
 
-                Client.SetPreeditText(null, null);
+                Client.SetPreeditText(null, null, null);
             }
 
             Client = client;
@@ -272,17 +279,21 @@ namespace Avalonia.Win32.Input
             // we're skipping this. not usable on windows
         }
 
-        public void CompositionChanged(string? composition, int? cursorPosition)
+        public void CompositionChanged(
+            string? composition,
+            int? cursorPosition,
+            IReadOnlyList<TextInputMethodPreeditSegment>? segments)
         {
             Composition = composition;
             _compositionCursorPosition = cursorPosition;
+            _compositionSegments = segments;
 
             if (!IsActive || !Client.SupportsPreedit)
             {
                 return;
             }
 
-            Client.SetPreeditText(composition, cursorPosition);
+            Client.SetPreeditText(composition, cursorPosition, segments);
         }
         
         public string? GetCompositionString(GCS flag)
@@ -323,14 +334,273 @@ namespace Avalonia.Win32.Input
             }
         }
 
+        private IReadOnlyList<TextInputMethodPreeditSegment>? GetCompositionSegments(string? composition, int? cursorPosition)
+        {
+            if (!IsComposing || string.IsNullOrEmpty(composition) || composition.Length <= 1)
+            {
+                return null;
+            }
+
+            var himc = ImmGetContext(Hwnd);
+
+            if (himc == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            try
+            {
+                var clauses = GetCompositionClauseOffsets(himc, composition.Length);
+
+                if (clauses is null || clauses.Count <= 2)
+                {
+                    return null;
+                }
+
+                var attributes = GetCompositionAttributes(himc, composition.Length);
+
+                return BuildCompositionSegments(clauses, attributes, composition.Length, cursorPosition);
+            }
+            finally
+            {
+                ImmReleaseContext(Hwnd, himc);
+            }
+        }
+
+        private static byte[]? GetCompositionAttributes(IntPtr himc, int compositionLength)
+        {
+            var bytes = GetCompositionBytes(himc, GCS.GCS_COMPATTR);
+
+            if (bytes is null || bytes.Length == 0)
+            {
+                return null;
+            }
+
+            return bytes.Length > compositionLength ? bytes.Take(compositionLength).ToArray() : bytes;
+        }
+
+        private static IReadOnlyList<int>? GetCompositionClauseOffsets(IntPtr himc, int compositionLength)
+        {
+            var bytes = GetCompositionBytes(himc, GCS.GCS_COMPCLAUSE);
+
+            if (bytes is null || bytes.Length < sizeof(int) * 2 || bytes.Length % sizeof(int) != 0)
+            {
+                return null;
+            }
+
+            var rawOffsets = new int[bytes.Length / sizeof(int)];
+            Buffer.BlockCopy(bytes, 0, rawOffsets, 0, bytes.Length);
+
+            return NormalizeClauseOffsets(rawOffsets, compositionLength);
+        }
+
+        private static byte[]? GetCompositionBytes(IntPtr himc, GCS flag)
+        {
+            var bufferLength = ImmGetCompositionString(himc, flag, IntPtr.Zero, 0);
+
+            if (bufferLength <= 0)
+            {
+                return null;
+            }
+
+            var buffer = new byte[bufferLength];
+
+            unsafe
+            {
+                fixed (byte* bufferPtr = buffer)
+                {
+                    var result = ImmGetCompositionString(himc, flag, (IntPtr)bufferPtr, (uint)bufferLength);
+
+                    if (result <= 0)
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            return buffer;
+        }
+
+        internal static IReadOnlyList<int>? NormalizeClauseOffsets(IReadOnlyList<int> rawOffsets, int compositionLength)
+        {
+            if (rawOffsets.Count < 2 || compositionLength <= 0)
+            {
+                return null;
+            }
+
+            var lastOffset = rawOffsets[rawOffsets.Count - 1];
+            var scale = lastOffset switch
+            {
+                var value when value == compositionLength => 1,
+                var value when value == compositionLength * sizeof(char) => sizeof(char),
+                _ => 0
+            };
+
+            if (scale == 0)
+            {
+                return null;
+            }
+
+            var normalized = new List<int>(rawOffsets.Count);
+            var previous = -1;
+
+            foreach (var rawOffset in rawOffsets)
+            {
+                if (rawOffset < 0 || rawOffset % scale != 0)
+                {
+                    return null;
+                }
+
+                var normalizedOffset = rawOffset / scale;
+
+                if (normalizedOffset < previous || normalizedOffset > compositionLength)
+                {
+                    return null;
+                }
+
+                normalized.Add(normalizedOffset);
+                previous = normalizedOffset;
+            }
+
+            if (normalized[0] != 0 || normalized[normalized.Count - 1] != compositionLength)
+            {
+                return null;
+            }
+
+            return normalized;
+        }
+
+        internal static IReadOnlyList<TextInputMethodPreeditSegment>? BuildCompositionSegments(
+            IReadOnlyList<int> clauses,
+            IReadOnlyList<byte>? attributes,
+            int compositionLength,
+            int? cursorPosition)
+        {
+            if (clauses.Count <= 2 || compositionLength <= 1)
+            {
+                return null;
+            }
+
+            var clampedCursorPosition = cursorPosition is >= 0 && cursorPosition <= compositionLength
+                ? cursorPosition.Value
+                : compositionLength;
+
+            var targetClauseIndices = new List<int>();
+
+            for (var i = 0; i < clauses.Count - 1; i++)
+            {
+                var start = clauses[i];
+                var end = clauses[i + 1];
+
+                if (end <= start)
+                {
+                    continue;
+                }
+
+                if (ContainsTargetAttribute(attributes, start, end))
+                {
+                    targetClauseIndices.Add(i);
+                }
+            }
+
+            var activeClauseIndex = targetClauseIndices.Count switch
+            {
+                0 => FindClauseIndex(clauses, clampedCursorPosition),
+                1 => targetClauseIndices[0],
+                _ => FindClauseIndex(clauses, clampedCursorPosition, targetClauseIndices) ?? targetClauseIndices[0]
+            };
+
+            if (activeClauseIndex < 0)
+            {
+                return null;
+            }
+
+            var segments = new List<TextInputMethodPreeditSegment>(clauses.Count - 1);
+
+            for (var i = 0; i < clauses.Count - 1; i++)
+            {
+                var start = clauses[i];
+                var end = clauses[i + 1];
+
+                if (start < 0 || end > compositionLength || end <= start)
+                {
+                    continue;
+                }
+
+                segments.Add(new TextInputMethodPreeditSegment(
+                    start,
+                    end - start,
+                    i == activeClauseIndex ?
+                        TextInputMethodPreeditSegmentKind.ActiveClause :
+                        TextInputMethodPreeditSegmentKind.InactiveClause));
+            }
+
+            return segments.Count > 1 ? segments : null;
+        }
+
+        private static bool ContainsTargetAttribute(IReadOnlyList<byte>? attributes, int start, int end)
+        {
+            if (attributes is null || attributes.Count == 0)
+            {
+                return false;
+            }
+
+            var upperBound = Math.Min(end, attributes.Count);
+
+            for (var i = Math.Max(0, start); i < upperBound; i++)
+            {
+                if (attributes[i] is 0x01 or 0x03)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static int FindClauseIndex(IReadOnlyList<int> clauses, int cursorPosition)
+        {
+            for (var i = 0; i < clauses.Count - 1; i++)
+            {
+                var start = clauses[i];
+                var end = clauses[i + 1];
+
+                if (cursorPosition >= start && cursorPosition < end)
+                {
+                    return i;
+                }
+            }
+
+            return clauses.Count - 2;
+        }
+
+        private static int? FindClauseIndex(IReadOnlyList<int> clauses, int cursorPosition, IReadOnlyList<int> candidates)
+        {
+            foreach (var clauseIndex in candidates)
+            {
+                if (clauseIndex < 0 || clauseIndex >= clauses.Count - 1)
+                {
+                    continue;
+                }
+
+                if (cursorPosition >= clauses[clauseIndex] && cursorPosition < clauses[clauseIndex + 1])
+                {
+                    return clauseIndex;
+                }
+            }
+
+            return null;
+        }
+
         public void HandleCompositionStart()
         {
             Composition = null;
             _compositionCursorPosition = null;
+            _compositionSegments = null;
 
             if (IsActive)
             {
-                Client.SetPreeditText(null, null);
+                Client.SetPreeditText(null, null, null);
 
                 if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
                 {
@@ -360,10 +630,11 @@ namespace Avalonia.Win32.Input
 
             Composition = null;
             _compositionCursorPosition = null;
+            _compositionSegments = null;
 
             if (IsActive)
             {
-                Client.SetPreeditText(null, null);
+                Client.SetPreeditText(null, null, null);
             }
         }
 
@@ -381,7 +652,7 @@ namespace Avalonia.Win32.Input
             
             if (flags == 0)
             {
-                CompositionChanged("", null);
+                CompositionChanged("", null, null);
             }
 
             if (resultChanged)
@@ -390,10 +661,11 @@ namespace Avalonia.Win32.Input
 
                 Composition = null;
                 _compositionCursorPosition = null;
+                _compositionSegments = null;
 
                 if (IsActive)
                 {
-                    Client.SetPreeditText(null, null);
+                    Client.SetPreeditText(null, null, null);
                 }
 
                 if (_parent != null && !string.IsNullOrEmpty(resultString))
@@ -411,8 +683,9 @@ namespace Avalonia.Win32.Input
 
             var compositionChanged = (flags & GCS.GCS_COMPSTR) != 0;
             var cursorPositionChanged = (flags & GCS.GCS_CURSORPOS) != 0;
+            var segmentChanged = (flags & GCS.GCS_COMPATTR) != 0 || (flags & GCS.GCS_COMPCLAUSE) != 0;
 
-            if (compositionChanged || (cursorPositionChanged && !resultChanged))
+            if (compositionChanged || (cursorPositionChanged && !resultChanged) || segmentChanged)
             {
                 var compositionString = compositionChanged
                     ? GetCompositionString(GCS.GCS_COMPSTR)
@@ -422,7 +695,11 @@ namespace Avalonia.Win32.Input
                     ? GetCompositionCursorPosition()
                     : _compositionCursorPosition;
 
-                CompositionChanged(compositionString, cursorPosition);
+                var segments = (compositionChanged || segmentChanged)
+                    ? GetCompositionSegments(compositionString, cursorPosition)
+                    : _compositionSegments;
+
+                CompositionChanged(compositionString, cursorPosition, segments);
             }
         }
 
