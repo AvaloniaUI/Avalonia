@@ -104,13 +104,15 @@ internal class SkiaMetalGpu : ISkiaGpu
             var success = false;
             try
             {
-                session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
+                var target = _target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget));
+                session = target.BeginRendering();
                 backendTarget = new GRBackendRenderTarget(session.Size.Width, session.Size.Height,
                     new GRMtlTextureInfo(session.Texture));
 
+                var colorSpace = target.GetPresentationColorSpace();
                 surface = SKSurface.Create(_gpu._context!, backendTarget,
                     session.IsYFlipped ? GRSurfaceOrigin.BottomLeft : GRSurfaceOrigin.TopLeft,
-                    SKColorType.Bgra8888);
+                    colorSpace.ToSKColorType(SKColorType.Bgra8888), colorSpace.ToSKColorSpace());
 
                 var result = new SkiaMetalRenderSession(_gpu, surface, session, backendTarget);
                 success = true;

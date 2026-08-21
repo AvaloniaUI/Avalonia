@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Logging;
+using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
@@ -31,7 +32,12 @@ namespace Avalonia.Win32.OpenGl.Angle
             GlVersions = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
                 .Where(x => x.Type == GlProfileType.OpenGLES),
             DeviceLostCheckCallback = deviceLostCheckCallback,
-            DisposeCallback = disposeCallback
+            DisposeCallback = disposeCallback,
+            // scRGB presents through an RGBA16F surface, and the context has to be able to be made
+            // current on one. The config is a property of the display, so this has to be decided
+            // here, before any window exists, rather than per render target.
+            PreferFloat16Config = AvaloniaLocator.Current.GetService<PresentationOptions>()
+                ?.PreferredColorSpace is PresentationColorSpace.ScRgb or PresentationColorSpace.WideGamut
         };
         
         public static AngleWin32EglDisplay CreateD3D9Display(EglInterface egl)
