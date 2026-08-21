@@ -1131,8 +1131,8 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
 
     auto clientPoint = [window convertPointFromScreen:point];
     auto localPoint = [self translateLocalPoint:ToAvnPoint(clientPoint)];
-    auto hit = peer->RootProvider_GetPeerFromPoint(localPoint);
-    return [AvnAccessibilityElement acquire:hit];
+    ComPtr<IAvnAutomationPeer> hit(peer->RootProvider_GetPeerFromPoint(localPoint), true);
+    return [AvnAccessibilityElement acquire:hit.getRaw()];
 }
 
 - (void)raiseAccessibilityChildrenChanged
@@ -1167,18 +1167,18 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     {
         return;
     }
-    auto childPeers = peer->GetChildren();
+    ComPtr<IAvnAutomationPeerArray> childPeers(peer->GetChildren(), true);
     auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
 
     if (childCount > 0)
     {
         for (int i = 0; i < childCount; ++i)
         {
-            IAvnAutomationPeer* child;
+            ComPtr<IAvnAutomationPeer> child;
 
-            if (childPeers->Get(i, &child) == S_OK)
+            if (childPeers->Get(i, child.getPPV()) == S_OK)
             {
-                id element = [AvnAccessibilityElement acquire:child];
+                id element = [AvnAccessibilityElement acquire:child.getRaw()];
                 [_accessibilityChildren addObject:element];
             }
         }
