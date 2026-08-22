@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -14,7 +16,9 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     internal class LightDismissOverlayLayer : Border, ICustomHitTest
     {
-        public IInputElement? InputPassThroughElement { get; set; }
+        private readonly List<Registration> _registrations = [];
+
+        public IInputElement? InputPassThroughElement { get; private set; }
 
         static LightDismissOverlayLayer()
         {
@@ -46,6 +50,14 @@ namespace Avalonia.Controls.Primitives
             return manager?.LightDismissOverlayLayer;
         }
 
+        public IDisposable Register(IInputElement? inputPassThroughElement)
+        {
+            var registration = new Registration(this, inputPassThroughElement);
+            _registrations.Add(registration);
+            UpdateState();
+            return registration;
+        }
+
         /// <inheritdoc />
         public bool HitTest(Point point)
         {
@@ -58,6 +70,27 @@ namespace Avalonia.Controls.Primitives
             }
 
             return true;
+        }
+
+        private void Unregister(Registration registration)
+        {
+            _registrations.Remove(registration);
+            UpdateState();
+        }
+
+        private void UpdateState()
+        {
+            IsVisible = _registrations.Count > 0;
+            InputPassThroughElement = _registrations.LastOrDefault()?.InputPassThroughElement;
+        }
+
+        private sealed class Registration(LightDismissOverlayLayer owner, IInputElement? inputPassThroughElement) : IDisposable
+        {
+            private LightDismissOverlayLayer? _owner = owner;
+
+            public IInputElement? InputPassThroughElement { get; } = inputPassThroughElement;
+
+            public void Dispose() => Interlocked.Exchange(ref _owner, null)?.Unregister(this);
         }
     }
 }
