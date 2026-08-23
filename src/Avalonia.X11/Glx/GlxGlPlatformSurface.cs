@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
@@ -39,7 +41,9 @@ namespace Avalonia.X11.Glx
                 // No-op
             }
             
-            public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
+            public PlatformRenderTargetState State =>
+                _context.Display.IsLost ? PlatformRenderTargetState.Corrupted : PlatformRenderTargetState.Ready;
+
             public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 var size = sceneInfo.Size;
@@ -87,7 +91,24 @@ namespace Avalonia.X11.Glx
                 public void Dispose()
                 {
                     _context.GlInterface.Flush();
+
+                    // glXWaitGL taking the frame budget while the process burns CPU means the
+                    // driver session is stuck (e.g. flapping output spinning a driver thread);
+                    // a slow-but-healthy GPU only sleeps the render thread on a fence.
+                    var stopwatch = Stopwatch.StartNew();
+                    var cpuBefore = GlxCpuTime.CpuTimeMicroseconds();
                     _context.Glx.WaitGL();
+                    var wallMs = stopwatch.Elapsed.TotalMilliseconds;
+                    var busyMs = (GlxCpuTime.CpuTimeMicroseconds() - cpuBefore) / 1000.0;
+                    var isBad = wallMs > 4 && busyMs > wallMs * 0.7;
+                    _context.Display.ReportPresent(isBad);
+                    if (isBad)
+                    {
+                        // Break the exact vsync cadence that lets a stuck driver session latch;
+                        // a healthy present (sub-millisecond) never pays this cost.
+                        Thread.Sleep(5);
+                    }
+
                     _context.Display.SwapBuffers(_info.Handle);
                     _context.Glx.WaitX();
                     _clearContext.Dispose();

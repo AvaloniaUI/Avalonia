@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Avalonia.Logging;
 using Avalonia.OpenGL;
 using static Avalonia.X11.Glx.GlxConsts;
 
@@ -20,6 +22,38 @@ namespace Avalonia.X11.Glx
         public GlxInterface Glx { get; } = new GlxInterface();
         public X11Info X11Info => _x11;
         public IntPtr FbConfig => _fbconfig;
+
+        private int _consecutiveBadPresents;
+        private bool _lost;
+
+        /// <summary>
+        /// True once the GL session has repeatedly failed to present and can't be recovered
+        /// (e.g. a flapping or broken display output); the compositor then falls back to
+        /// the software rendering surface.
+        /// </summary>
+        public bool IsLost => Volatile.Read(ref _lost);
+
+        private const int LostSessionPresentCount = 300;
+
+        public void ReportPresent(bool isBad)
+        {
+            if (Volatile.Read(ref _lost))
+                return;
+            if (isBad)
+            {
+                if (Interlocked.Increment(ref _consecutiveBadPresents) >= LostSessionPresentCount)
+                {
+                    Volatile.Write(ref _lost, true);
+                    Logger.TryGet(LogEventLevel.Error, "OpenGL")
+                        ?.Log(null, "GL session failed to present cleanly for {0} consecutive frames, falling back to software rendering", LostSessionPresentCount);
+                }
+            }
+            else
+            {
+                Interlocked.Exchange(ref _consecutiveBadPresents, 0);
+            }
+        }
+
         public GlxDisplay(X11Info x11, IList<GlVersion> probeProfiles) 
         {
             _x11 = x11;

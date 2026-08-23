@@ -73,6 +73,9 @@ namespace Avalonia.Skia
 
         public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
         {
+            if (IsLost)
+                return null;
+
             var customRenderTargetFactory = _glContext.TryGetFeature<IGlPlatformSurfaceRenderTargetFactory>();
             foreach (var surface in surfaces)
             {
@@ -91,6 +94,9 @@ namespace Avalonia.Skia
 
         public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
         {
+            if (IsLost)
+                return false;
+
             var customRenderTargetFactory = _glContext.TryGetFeature<IGlPlatformSurfaceRenderTargetFactory>();
             foreach (var surface in surfaces)
             {

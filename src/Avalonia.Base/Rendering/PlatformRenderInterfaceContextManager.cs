@@ -9,7 +9,7 @@ namespace Avalonia.Rendering;
 
 internal class PlatformRenderInterfaceContextManager
 {
-    private readonly IPlatformGraphics? _graphics;
+    private IPlatformGraphics? _graphics;
     private IPlatformRenderInterfaceContext? _backend;
     private OwnedDisposable<IPlatformGraphicsContext>? _gpuContext;
     private readonly IPlatformGraphicsReadyStateFeature? _readyStateFeature;
@@ -50,6 +50,15 @@ internal class PlatformRenderInterfaceContextManager
                             new OwnedDisposable<IPlatformGraphicsContext>(_graphics.GetSharedContext(), false);
                     else
                         _gpuContext = new OwnedDisposable<IPlatformGraphicsContext>(_graphics.CreateContext(), true);
+                }
+
+                if (_gpuContext is { Value.IsLost: true })
+                {
+                    // The session can't recover (e.g. a broken display output): stop recreating
+                    // lost contexts and render with the software fallback instead.
+                    _gpuContext?.Dispose();
+                    _gpuContext = null;
+                    _graphics = null;
                 }
             }
 

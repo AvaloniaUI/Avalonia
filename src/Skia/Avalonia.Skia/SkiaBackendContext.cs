@@ -72,10 +72,8 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
         if (surfaces is not IList)
             surfaces = surfaces.ToList();
 
-        if (_gpu != null)
-        {
-            return _gpu.IsReadyToCreateRenderTarget(surfaces);
-        }
+        if (_gpu?.IsReadyToCreateRenderTarget(surfaces) == true)
+            return true;
 
         foreach (var surface in surfaces)
         {

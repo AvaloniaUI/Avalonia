@@ -77,7 +77,7 @@ namespace Avalonia.X11.Glx
         }
         
         public IDisposable MakeCurrent() => MakeCurrent(_defaultXid);
-        public bool IsLost => false;
+        public bool IsLost => Display.IsLost;
 
         public IDisposable EnsureCurrent()
         {
