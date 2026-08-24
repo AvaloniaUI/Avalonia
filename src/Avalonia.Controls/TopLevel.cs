@@ -123,6 +123,7 @@ namespace Avalonia.Controls
         private readonly IDisposable? _backGestureSubscription;
         private readonly Dictionary<AvaloniaProperty, Action> _platformImplBindings = new();
         private double _scaling;
+        private bool _isClosed;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
@@ -233,7 +234,7 @@ namespace Avalonia.Controls
 
 
 
-            impl.Closed = HandleClosed;
+            impl.Closed = EnsureClosed;
             impl.Paint = HandlePaint;
             impl.Resized = HandleResized;
             impl.ScalingChanged += HandleScalingChanged;
@@ -660,6 +661,18 @@ namespace Avalonia.Controls
         private protected void StartRendering() => MediaContext.Instance.AddTopLevel(this, LayoutManager, Renderer);
 
         private protected void StopRendering() => MediaContext.Instance.RemoveTopLevel(this);
+
+        /// <summary>
+        /// Runs the top level teardown exactly once, no matter whether it was initiated by the
+        /// platform via <see cref="ITopLevelImpl.Closed"/> or by a managed <c>Dispose()</c>.
+        /// </summary>
+        private protected void EnsureClosed()
+        {
+            if (_isClosed)
+                return;
+            _isClosed = true;
+            HandleClosed();
+        }
 
         /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.

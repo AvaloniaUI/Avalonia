@@ -126,6 +126,7 @@ namespace Avalonia.Controls.Primitives
         public void Dispose()
         {
             PlatformImpl?.Dispose();
+            EnsureClosed();
         }
 
         private void UpdatePosition()
