@@ -81,9 +81,9 @@
 
     // NSTrackingInVisibleRect makes AppKit follow the visible bounds of the view.
     // Because of this, the tracking area does not need to change on resize.
-    // Do not remove and add the area again on each live-resize tick. If you do, AppKit
-    // queues synthetic enter and exit events with stale locations. These events corrupt
-    // the pointer position after a resize and force it to the top left.
+    // Do not remove and add the area again on each live-resize tick.
+    // If you do, AppKit queues synthetic enter and exit events with stale locations.
+    // These events corrupt the pointer position after a resize and force it to the top left.
     NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved |
         NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag | NSTrackingInVisibleRect;
     _area = [[NSTrackingArea alloc] initWithRect:NSZeroRect options:options owner:self userInfo:nullptr];
