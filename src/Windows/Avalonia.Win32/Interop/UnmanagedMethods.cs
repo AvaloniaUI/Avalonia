@@ -1413,7 +1413,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
 
         [DllImport("user32.dll")]
-        public static extern bool SetMenuDefaultItem(IntPtr hMenu, uint uItem, bool fByPos);
+        public static extern bool SetMenuDefaultItem(IntPtr hMenu, uint uItem, uint fByPos);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);

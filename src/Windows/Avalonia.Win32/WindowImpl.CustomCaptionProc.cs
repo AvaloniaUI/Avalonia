@@ -367,15 +367,15 @@ namespace Avalonia.Win32
 
             if (isMinimized || isMaximized || isFullScreen)
             {
-                SetMenuDefaultItem(menu, (uint)SysCommands.SC_RESTORE, false);
+                SetMenuDefaultItem(menu, (uint)SysCommands.SC_RESTORE, 0u);
             }
             else if (isNormal && _windowProperties.IsMaximizable)
             {
-                SetMenuDefaultItem(menu, (uint)SysCommands.SC_MAXIMIZE, false);
+                SetMenuDefaultItem(menu, (uint)SysCommands.SC_MAXIMIZE, 0u);
             }
             else
             {
-                SetMenuDefaultItem(menu, (uint)SysCommands.SC_CLOSE, false);
+                SetMenuDefaultItem(menu, (uint)SysCommands.SC_CLOSE, 0u);
             }
         }
 
