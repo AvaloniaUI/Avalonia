@@ -68,35 +68,6 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         BindingPriority priority)
         => AttachCore(sink, frame, target, targetProperty, priority, typeof(TValue));
 
-    private void AttachCore(
-        IBindingExpressionSink sink,
-        ImmediateValueFrame? frame,
-        AvaloniaObject target,
-        AvaloniaProperty targetProperty,
-        BindingPriority priority,
-        Type valueType)
-    {
-        if (_sink is not null)
-            throw new InvalidOperationException("TypedBindingExpression was already attached.");
-        if (target is not StyledElement element)
-            throw new InvalidOperationException("TypedBindingExpression may only target StyledElements");
-        if (TargetProperty is not null && TargetProperty != targetProperty)
-            throw new InvalidOperationException("TypedBindingExpression was already attached to a different property.");
-
-        if (!valueType.IsAssignableTo(targetProperty.PropertyType))
-        {
-            throw new InvalidOperationException(
-                $"TypedBindingExpression of type '{valueType}' cannot be bound " +
-                $"to a property of type '{targetProperty.PropertyType}'.");
-        }
-
-        _sink = sink;
-        _frame = frame;
-        _target = new(element);
-        TargetProperty = targetProperty;
-        Priority = priority;
-    }
-
     public override void Dispose()
     {
         if (_sink is null)
@@ -176,6 +147,35 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
     void IWeakEventSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
     {
         OnSourcePropertyChanged(sender, e);
+    }
+
+    private void AttachCore(
+        IBindingExpressionSink sink,
+        ImmediateValueFrame? frame,
+        AvaloniaObject target,
+        AvaloniaProperty targetProperty,
+        BindingPriority priority,
+        Type valueType)
+    {
+        if (_sink is not null)
+            throw new InvalidOperationException("TypedBindingExpression was already attached.");
+        if (target is not StyledElement element)
+            throw new InvalidOperationException("TypedBindingExpression may only target StyledElements");
+        if (TargetProperty is not null && TargetProperty != targetProperty)
+            throw new InvalidOperationException("TypedBindingExpression was already attached to a different property.");
+
+        if (!valueType.IsAssignableTo(targetProperty.PropertyType))
+        {
+            throw new InvalidOperationException(
+                $"TypedBindingExpression of type '{valueType}' cannot be bound " +
+                $"to a property of type '{targetProperty.PropertyType}'.");
+        }
+
+        _sink = sink;
+        _frame = frame;
+        _target = new(element);
+        TargetProperty = targetProperty;
+        Priority = priority;
     }
 
     private void StartCore()
