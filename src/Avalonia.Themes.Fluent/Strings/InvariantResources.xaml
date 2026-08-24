@@ -1,6 +1,8 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <!-- Calendar -->
+  <x:String x:Key="StringCalendarWeekNumberHeader"> </x:String> <!-- Just one whitespace to preserve the resource -->
   <!-- DatePicker -->
   <x:String x:Key="StringDatePickerDayText">day</x:String>
   <x:String x:Key="StringDatePickerMonthText">month</x:String>
@@ -25,5 +27,18 @@
   <x:String x:Key="StringManagedFileChooserOverwritePromptFileAlreadyExistsText">{0} already exists. Do you want to replace it?</x:String>
   <x:String x:Key="StringManagedFileChooserOverwritePromptConfirmText">Yes</x:String>
   <x:String x:Key="StringManagedFileChooserOverwritePromptCancelText">No</x:String>
+  <x:String x:Key="StringScrollBarScrollHere">Scroll Here</x:String>
+  <x:String x:Key="StringScrollBarTop">Top</x:String>
+  <x:String x:Key="StringScrollBarBottom">Bottom</x:String>
+  <x:String x:Key="StringScrollBarPageUp">Page Up</x:String>
+  <x:String x:Key="StringScrollBarPageDown">Page Down</x:String>
+  <x:String x:Key="StringScrollBarScrollUp">Scroll Up</x:String>
+  <x:String x:Key="StringScrollBarScrollDown">Scroll Down</x:String>
+  <x:String x:Key="StringScrollBarLeftEdge">Left Edge</x:String>
+  <x:String x:Key="StringScrollBarRightEdge">Right Edge</x:String>
+  <x:String x:Key="StringScrollBarPageLeft">Page Left</x:String>
+  <x:String x:Key="StringScrollBarPageRight">Page Right</x:String>
+  <x:String x:Key="StringScrollBarScrollLeft">Scroll Left</x:String>
+  <x:String x:Key="StringScrollBarScrollRight">Scroll Right</x:String>
 </ResourceDictionary>
 

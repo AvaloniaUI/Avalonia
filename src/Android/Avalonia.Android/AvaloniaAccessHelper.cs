@@ -8,17 +8,54 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
-using Avalonia.Controls;
 using Java.Lang;
 
 namespace Avalonia.Android
 {
     internal class AvaloniaAccessHelper : ExploreByTouchHelper
     {
+        private static readonly HashSet<AutomationControlType> s_containerTypes =
+            new HashSet<AutomationControlType>()
+            {
+                AutomationControlType.Calendar,
+                AutomationControlType.ComboBoxItem,
+                AutomationControlType.Custom,
+                AutomationControlType.DataGrid,
+                AutomationControlType.DataItem,
+                AutomationControlType.Document,
+                AutomationControlType.Expander,
+                AutomationControlType.Group,
+                AutomationControlType.List,
+                AutomationControlType.ListItem,
+                AutomationControlType.Menu,
+                AutomationControlType.MenuBar,
+                AutomationControlType.MenuItem,
+                AutomationControlType.None,
+                AutomationControlType.Pane,
+                AutomationControlType.ScrollViewer,
+                AutomationControlType.SplitButton,
+                AutomationControlType.Tab,
+                AutomationControlType.TabItem,
+                AutomationControlType.Table,
+                AutomationControlType.TitleBar,
+                AutomationControlType.ToolBar,
+                AutomationControlType.Tree,
+                AutomationControlType.TreeItem,
+                AutomationControlType.Window,
+            };
+
         private readonly Dictionary<int, AutomationPeer> _peers;
         private readonly Dictionary<AutomationPeer, int> _peerIds;
 
         private readonly Dictionary<AutomationPeer, HashSet<INodeInfoProvider>> _peerNodeInfoProviders;
+
+        /// <remarks>
+        /// Virtual view IDs must be allocated from a monotonic counter rather than derived from
+        /// the size of <see cref="_peerNodeInfoProviders"/>: entries are now removed when their
+        /// owner leaves the visual tree, so the dictionary's count no longer grows monotonically
+        /// and reusing it would hand out an ID that is still in use.
+        /// </remarks>
+        private int _nextPeerViewId;
 
         private readonly AvaloniaView _view;
 
@@ -56,16 +93,16 @@ namespace Avalonia.Android
             }
             else
             {
-                peerViewId = _peerNodeInfoProviders.Count;
+                peerViewId = _nextPeerViewId++;
                 _peers.Add(peerViewId, peer);
                 _peerIds.Add(peer, peerViewId);
 
                 nodeInfoProviders = new();
                 _peerNodeInfoProviders.Add(peer, nodeInfoProviders);
 
-                peer.ChildrenChanged += (s, ev) => InvalidateVirtualView(peerViewId,
+                EventHandler childrenChanged = (s, ev) => InvalidateVirtualView(peerViewId,
                     AccessibilityEventCompat.ContentChangeTypeSubtree);
-                peer.PropertyChanged += (s, ev) =>
+                EventHandler<AutomationPropertyChangedEventArgs> propertyChanged = (s, ev) =>
                 {
                     if (ev.Property == AutomationElementIdentifiers.NameProperty)
                     {
@@ -75,26 +112,55 @@ namespace Avalonia.Android
                     {
                         InvalidateVirtualView(peerViewId, AccessibilityEventCompat.ContentChangeTypeContentDescription);
                     }
-                    else if (ev.Property == AutomationElementIdentifiers.BoundingRectangleProperty || 
+                    else if (ev.Property == AutomationElementIdentifiers.BoundingRectangleProperty ||
                         ev.Property == AutomationElementIdentifiers.ClassNameProperty)
                     {
                         InvalidateVirtualView(peerViewId);
                     }
                 };
 
-                if (peer is IExpandCollapseProvider)
+                peer.ChildrenChanged += childrenChanged;
+                peer.PropertyChanged += propertyChanged;
+
+                // Drop the registration once the peer's control leaves the visual tree, otherwise
+                // every control ever explored by accessibility is kept alive for the lifetime of
+                // the view: the peer holds a strong reference to its Owner, and these three
+                // dictionaries were never pruned. On a long-running app that rebuilds its UI (for
+                // instance digital signage swapping screens), this retains each dead visual tree in
+                // full — measured at ~2.5 MB per rebuild on a real device.
+                // The root peer (ID 0) is deliberately never unregistered: GetVirtualViewAt and
+                // GetVisibleVirtualViews index _peers[0] directly, so removing it would throw.
+                // It is a single entry owned by the view itself, and dies with the helper.
+                if (peerViewId != 0 && peer is ControlAutomationPeer controlPeer)
+                {
+                    EventHandler<VisualTreeAttachmentEventArgs>? detachedFromVisualTree = null;
+                    detachedFromVisualTree = (s, ev) =>
+                    {
+                        controlPeer.Owner.DetachedFromVisualTree -= detachedFromVisualTree;
+                        peer.ChildrenChanged -= childrenChanged;
+                        peer.PropertyChanged -= propertyChanged;
+
+                        _peers.Remove(peerViewId);
+                        _peerIds.Remove(peer);
+                        _peerNodeInfoProviders.Remove(peer);
+                    };
+
+                    controlPeer.Owner.DetachedFromVisualTree += detachedFromVisualTree;
+                }
+
+                if (peer.GetProvider<IExpandCollapseProvider>() is not null)
                     nodeInfoProviders.Add(new ExpandCollapseNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IInvokeProvider)
+                if (peer.GetProvider<IInvokeProvider>() is not null)
                     nodeInfoProviders.Add(new InvokeNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IRangeValueProvider)
+                if (peer.GetProvider<IRangeValueProvider>() is not null)
                     nodeInfoProviders.Add(new RangeValueNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IScrollProvider)
+                if (peer.GetProvider<IScrollProvider>() is not null)
                     nodeInfoProviders.Add(new ScrollNodeInfoProvider(this, peer, peerViewId));
-                if (peer is ISelectionItemProvider)
+                if (peer.GetProvider<ISelectionItemProvider>() is not null)
                     nodeInfoProviders.Add(new SelectionItemNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IToggleProvider)
+                if (peer.GetProvider<IToggleProvider>() is not null)
                     nodeInfoProviders.Add(new ToggleNodeInfoProvider(this, peer, peerViewId));
-                if (peer is IValueProvider)
+                if (peer.GetProvider<IValueProvider>() is not null)
                     nodeInfoProviders.Add(new ValueNodeInfoProvider(this, peer, peerViewId));
             }
 
@@ -109,7 +175,17 @@ namespace Avalonia.Android
             AutomationPeer? peer = embeddedRootProvider?.GetPeerFromPoint(p);
             if (peer is not null)
             {
-                GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
+                int virtualViewId;
+                if (peer.GetParent() is AutomationPeer parent && 
+                    !s_containerTypes.Contains(parent.GetAutomationControlType()))
+                {
+                    GetOrCreateNodeInfoProvidersFromPeer(parent, out virtualViewId);
+                }
+                else
+                {
+                    GetOrCreateNodeInfoProvidersFromPeer(peer, out virtualViewId);
+                }
+
                 return virtualViewId == 0 ? InvalidId : virtualViewId;
             }
             else
@@ -193,13 +269,15 @@ namespace Avalonia.Android
 
             // UI debug metadata
             nodeInfo.ClassName = peer.GetClassName();
-            nodeInfo.UniqueId = peer.GetAutomationId();
+            var automationId = peer.GetAutomationId();
+            nodeInfo.UniqueId = automationId;
+            nodeInfo.ViewIdResourceName = automationId;
 
             // Common control state
             nodeInfo.Enabled = peer.IsEnabled();
 
             // Control focus state
-            bool canFocusAtAll = peer.IsContentElement() && !peer.IsOffscreen();
+            bool canFocusAtAll = peer.IsControlElement() && !peer.IsOffscreen();
             nodeInfo.ScreenReaderFocusable = canFocusAtAll;
             nodeInfo.Focusable = canFocusAtAll && peer.IsKeyboardFocusable();
 

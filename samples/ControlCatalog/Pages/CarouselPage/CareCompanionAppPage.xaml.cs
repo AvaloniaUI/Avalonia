@@ -5,6 +5,7 @@ using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -130,7 +131,7 @@ public partial class CareCompanionAppPage : UserControl
         };
 
         pager.Bind(PipsPager.SelectedPageIndexProperty,
-            new Avalonia.Data.Binding("SelectedIndex") { Source = carousel, Mode = Avalonia.Data.BindingMode.TwoWay });
+            CompiledBinding.Create<AvaCarouselPage, int>(c => c.SelectedIndex, carousel, mode: BindingMode.TwoWay));
 
         return pager;
     }

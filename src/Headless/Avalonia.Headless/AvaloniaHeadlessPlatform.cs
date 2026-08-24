@@ -1,64 +1,22 @@
 ﻿using System;
-using System.Diagnostics;
-using Avalonia.Controls.Platform;
-using Avalonia.Reactive;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using Avalonia.Threading;
 using System.Collections.Generic;
+using Avalonia.Threading;
 
 namespace Avalonia.Headless
 {
     public static class AvaloniaHeadlessPlatform
     {
         internal static Compositor? Compositor { get; private set; }
-        private static RenderTimer? s_renderTimer;
+        private static IRenderTimer? s_renderTimer;
 
-        private class RenderTimer : DefaultRenderTimer
+        private class HeadlessWindowingPlatform(AvaloniaHeadlessPlatformOptions options) : IWindowingPlatform
         {
-            private readonly int _framesPerSecond;
-            private Action? _forceTick; 
-            protected override IDisposable StartCore(Action<TimeSpan> tick)
-            {
-                var st = Stopwatch.StartNew();
-                _forceTick = () => tick(st.Elapsed);
-
-                var timer = new DispatcherTimer(DispatcherPriority.UiThreadRender)
-                {
-                    Interval = TimeSpan.FromSeconds(1.0 / _framesPerSecond),
-                    Tag = "HeadlessRenderTimer"
-                };
-                timer.Tick += (s, e) => tick(st.Elapsed);
-                timer.Start();
-
-                return Disposable.Create(() =>
-                {
-                    _forceTick = null;
-                    timer.Stop();
-                });
-            }
-
-            public RenderTimer(int framesPerSecond) : base(framesPerSecond)
-            {
-                _framesPerSecond = framesPerSecond;
-            }
-
-            public override bool RunsInBackground => false;
-
-            public void ForceTick() => _forceTick?.Invoke();
-        }
-
-        private class HeadlessWindowingPlatform : IWindowingPlatform
-        {
-            readonly PixelFormat _frameBufferFormat;
-            public HeadlessWindowingPlatform(PixelFormat frameBufferFormat)
-            {
-                _frameBufferFormat = frameBufferFormat;
-            }
-            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false, _frameBufferFormat);
+            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(options);
             public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
@@ -73,11 +31,18 @@ namespace Avalonia.Headless
                 }
             }
         }
-        
+
         internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)
         {
+            if (opts.UseSharedMouseDevice == true)
+                MouseDevice.ResetPrimaryForUnitTests();
+
             var clipboardImpl = new HeadlessClipboardImplStub();
             var clipboard = new Clipboard(clipboardImpl);
+
+            s_renderTimer = opts.ShouldRenderOnUIThread
+                ? new HeadlessRenderTimer(opts.Fps)
+                : new SleepLoopRenderTimer(opts.Fps);
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
@@ -86,8 +51,8 @@ namespace Avalonia.Headless
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
-                .Bind<IRenderLoop>().ToConstant(Rendering.RenderLoop.FromTimer(s_renderTimer = new RenderTimer(60)))
-                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
+                .Bind<IRenderLoop>().ToConstant(Rendering.RenderLoop.FromTimer(s_renderTimer))
+                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }));
             Compositor = new Compositor( null);
@@ -100,16 +65,75 @@ namespace Avalonia.Headless
         /// <param name="count">Count of frames to be ticked on the timer.</param>
         public static void ForceRenderTimerTick(int count = 1)
         {
-            for (var c = 0; c < count; c++)
-                s_renderTimer?.ForceTick();
+            if (s_renderTimer is HeadlessRenderTimer timer)
+            {
+                for (var c = 0; c < count; c++)
+                {
+                    timer.ForceTick();
+                }
+            }
+            else
+            {
+                if (Compositor is not { } compositor)
+                {
+                    throw new InvalidOperationException("Compositor is not initialized.");
+                }
 
+                var frame = new DispatcherFrame();
+                var task = compositor.RequestCommitAsync();
+                task.ContinueWith(static (_, s) => ((DispatcherFrame)s!).Continue = false, frame);
+                Dispatcher.CurrentDispatcher.PushFrame(frame);
+                task.GetAwaiter().GetResult();
+            }
         }
     }
 
+    /// <summary>
+    /// Options for configuring the Avalonia headless platform.
+    /// </summary>
     public class AvaloniaHeadlessPlatformOptions
     {
+        /// <summary>
+        /// Gets or sets the number of frames per second at which the renderer should run.
+        /// Default 60.
+        /// </summary>
+        public int Fps { get; set; } = 60;
+
+        /// <summary>
+        /// Render directly on the UI thread instead of using a dedicated render thread.
+        /// This can be usable if your device doesn't have multiple cores to begin with.
+        /// This setting is false by default.
+        /// </summary>
+        public bool ShouldRenderOnUIThread { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use headless drawing mode, which allows rendering without creating an actual window.
+        /// </summary>
+        /// <remarks>
+        /// Disable this option if you are using Avalonia.Skia or another drawing backend.
+        /// </remarks>
         public bool UseHeadlessDrawing { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the pixel format to be used for the headless Window framebuffers.
+        /// </summary>
         public PixelFormat FrameBufferFormat { get; set; } = PixelFormat.Rgba8888;
+
+        /// <summary>
+        /// Embeds popups to the window when set to true. The default value is true.
+        /// When disabled, popups are hosted in dedicated headless top-levels that are not part of
+        /// the parent's visual tree; use <see cref="HeadlessWindowExtensions.GetOpenPopups"/> to access them.
+        /// </summary>
+        // TODO13: Change the default to false to match the other desktop platforms.
+        public bool OverlayPopups { get; set; } = true;
+
+        /// <summary>
+        /// Shares a single mouse device between all top-levels when set to true, so that pointer capture
+        /// and click counting are global rather than per-window, as they are on the other platforms.
+        /// When null or false, every top-level gets its own mouse device.
+        /// </summary>
+        // TODO13: Change the default to true to match the other platforms.
+        public bool? UseSharedMouseDevice { get; set; }
     }
 
     public static class AvaloniaHeadlessPlatformExtensions

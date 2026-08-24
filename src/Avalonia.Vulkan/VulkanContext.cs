@@ -63,6 +63,9 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     {
         foreach (var surf in surfaces)
         {
+            if (surf is IVulkanRenderTargetPlatformSurface renderTargetSurface)
+                return renderTargetSurface.CreateRenderTarget(this);
+
             IVulkanKhrSurfacePlatformSurface khrSurface;
             if (surf is IVulkanKhrSurfacePlatformSurface khr)
                 khrSurface = khr;

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
 using Avalonia.Fonts.Inter;
 using Avalonia.Logging;
 using Avalonia.Media;
@@ -642,6 +645,109 @@ namespace Avalonia.Skia.UnitTests.Media
             // Nearest match should still work (650 falls back to 700 Bold)
             Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Inter", FontStyle.Normal, (FontWeight)650), out var nearestMatchTypeface));
             Assert.Same(boldGlyphTypeface, nearestMatchTypeface);
+        }
+
+        [Fact]
+        public void TryGetGlyphTypeface_Should_Cache_Matched_GlyphTypeface_Under_Requested_FamilyName()
+        {
+            var fontManagerImpl = new FamilyRemappingFontManagerImpl("NotInstalled", "Noto Mono");
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManagerImpl));
+
+            // "NotInstalled" is not installed, so the platform substitutes it with a different
+            // family ("Noto Mono"), much like requesting "Arial" yields "Liberation Sans" on some Linux distributions.
+            Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("NotInstalled"), out var first));
+            Assert.Equal("Noto Mono", first.FamilyName);
+
+            // The substitute should now be cached under the requested "NotInstalled" name, so a second
+            // lookup must resolve from the cache instead of asking the platform again.
+            Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("NotInstalled"), out var second));
+            Assert.Same(first, second);
+            Assert.Equal(1, fontManagerImpl.RequestedFamilyCreateCount);
+        }
+
+        /// <summary>
+        /// A font manager whose every by-name lookup resolves to a single matched font whose family name
+        /// differs from the requested one.
+        /// </summary>
+        private sealed class FamilyRemappingFontManagerImpl(string requestedFamilyName, string matchedFamilyName)
+            : IFontManagerImpl, IDisposable
+        {
+            public int RequestedFamilyCreateCount { get; private set; }
+
+            public string GetDefaultFontFamilyName() 
+                => matchedFamilyName;
+
+            public string[] GetInstalledFontFamilyNames(bool checkForUpdates = false) 
+                => [matchedFamilyName];
+
+            public bool TryCreateGlyphTypeface(
+                string familyName,
+                FontStyle style,
+                FontWeight weight,
+                FontStretch stretch,
+                [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+            {
+                if (string.Equals(familyName, requestedFamilyName, StringComparison.OrdinalIgnoreCase))
+                    RequestedFamilyCreateCount++;
+
+                platformTypeface = new SkiaTypeface(CreateMatchedTypeface(), FontSimulations.None);
+                return true;
+            }
+
+            public bool TryCreateGlyphTypeface(
+                Stream stream,
+                FontSimulations fontSimulations,
+                [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+            {
+                platformTypeface = new SkiaTypeface(SKTypeface.FromStream(stream), fontSimulations);
+                return true;
+            }
+
+            public bool TryMatchCharacter(
+                int codepoint,
+                FontStyle fontStyle,
+                FontWeight fontWeight,
+                FontStretch fontStretch,
+                string? familyName,
+                CultureInfo? culture,
+                [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
+            {
+                platformTypeface = null;
+                return false;
+            }
+
+            public bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
+            {
+                familyTypefaces = null;
+                return false;
+            }
+
+            private SKTypeface CreateMatchedTypeface()
+            {
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                // LoadFontAssets ignores the family fragment and returns every embedded font asset,
+                // so pick the one whose family name matches the substitute we want to return.
+                foreach (var fontAsset in FontFamilyLoader.LoadFontAssets(new Uri(s_fontUri)))
+                {
+                    var stream = assetLoader.Open(fontAsset);
+                    var typeface = SKTypeface.FromStream(stream);
+
+                    if (typeface is not null && 
+                        string.Equals(typeface.FamilyName, matchedFamilyName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return typeface;
+                    }
+
+                    typeface?.Dispose();
+                }
+
+                throw new InvalidOperationException($"Could not load the '{matchedFamilyName}' font asset.");
+            }
+
+            public void Dispose()
+            {
+            }
         }
     }
 }
