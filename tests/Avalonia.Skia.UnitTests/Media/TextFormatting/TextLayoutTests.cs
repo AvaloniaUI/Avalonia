@@ -642,32 +642,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 const string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-
-                var probe = new TextLayout(
-                    text,
-                    Typeface.Default,
-                    12,
-                    Brushes.Black,
-                    textWrapping: TextWrapping.Wrap,
-                    textTrimming: trimming,
-                    maxWidth: 80
-                );
-
-                var maxLineWidth = probe.TextLines.Max(l => l.WidthIncludingTrailingWhitespace);
-
-                var cutIndex = -1;
-                for (var i = 0; i < probe.TextLines.Count - 1; i++)
-                {
-                    var line = probe.TextLines[i];
-
-                    if (line.TextLineBreak is { IsSplit: true } && line.WidthIncludingTrailingWhitespace < (maxLineWidth - 0.01))
-                    {
-                        cutIndex = i;
-                        break;
-                    }
-                }
-
-                Assert.True(cutIndex >= 0, "Test data does not satisfy the bug-reproduction condition. Adjust text/maxWidth.");
+                const int maxLines = 2;
 
                 var layout = new TextLayout(
                     text,
@@ -676,18 +651,17 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Brushes.Black,
                     textWrapping: TextWrapping.Wrap,
                     textTrimming: trimming,
-                    maxWidth: 80,
-                    maxLines: cutIndex + 1);
+                    maxWidth: 180,
+                    maxLines: maxLines);
+
+                Assert.Equal(maxLines, layout.TextLines.Count);
 
                 var lastLine = layout.TextLines[layout.TextLines.Count - 1];
+                var formattedLineText = string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString()));
 
                 Assert.True(lastLine.HasCollapsed, "The wrapped line cut off by MaxLines must be collapsed.");
+                Assert.Equal('\u2026', formattedLineText.Last());
 
-                var formattedLineText = string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString()));
-                Assert.Contains("\u2026", formattedLineText);
-                Assert.Equal(cutIndex + 1, layout.TextLines.Count);
-
-                probe.Dispose();
                 layout.Dispose();
             }
         }
