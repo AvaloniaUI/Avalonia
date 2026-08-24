@@ -122,20 +122,9 @@ namespace Avalonia.Win32
                     }
                     break;
 
-                // Prevent right-clicks from triggering controls underneath while the cursor is over the window edge or HTCAPTION.
-                case WindowsMessage.WM_NCRBUTTONDOWN
-                    when (HitTestValues)ToInt32(wParam) is HitTestValues.HTCAPTION
-                    or HitTestValues.HTTOP or HitTestValues.HTBOTTOM
-                    or HitTestValues.HTLEFT or HitTestValues.HTRIGHT
-                    or HitTestValues.HTTOPLEFT or HitTestValues.HTTOPRIGHT
-                    or HitTestValues.HTBOTTOMLEFT or HitTestValues.HTBOTTOMRIGHT:
-                    callDwp = false;
-                    return IntPtr.Zero;
-
                 case WindowsMessage.WM_NCRBUTTONUP when (HitTestValues)ToInt32(wParam) == HitTestValues.HTCAPTION:
                     ShowSystemMenu(PointFromLParam(lParam));
-                    callDwp = false;
-                    return IntPtr.Zero;
+                    break;
 
                 case WindowsMessage.WM_INITMENU:
                     UpdateSystemMenu(GetSystemMenu(hWnd, false));
