@@ -101,7 +101,7 @@ namespace Avalonia.Controls
             {
                 return Auto;
             }
-            else if (span.EndsWith("%") && double.TryParse(span[..^1], CultureInfo.InvariantCulture, out var val))
+            else if (span.EndsWith("%") && double.TryParse(span[..^1], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var val))
             {
                 return new FlexBasis(val / 100, FlexBasisKind.Relative);
             }
