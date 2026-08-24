@@ -106,8 +106,7 @@
                     TemplatedControl.IsTemplateFocusTarget="True"
                     Theme="{StaticResource SimpleDatePickerFlyoutButton}">
               <Grid Name="PART_ButtonContentGrid"
-                    ColumnDefinitions="78*,Auto,132*,Auto,78*"
-                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                    ColumnDefinitions="78*,Auto,132*,Auto,78*">
                 <TextBlock Name="PART_DayTextBlock"
                            Padding="{DynamicResource DatePickerHostPadding}"
                            HorizontalAlignment="Center"
@@ -157,6 +156,10 @@
 
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
+
+    <Style Selector="^ /template/ Button#PART_FlyoutButton TextBlock">
+      <Setter Property="VerticalAlignment" Value="{TemplateBinding VerticalContentAlignment}"/>
     </Style>
 
     <!--  Changes foreground for watermark text when SelectedDate is null  -->
