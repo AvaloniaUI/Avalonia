@@ -836,6 +836,18 @@ namespace Avalonia.Controls
                 return;
             }
 
+            var horizontal = Orientation == Orientation.Horizontal;
+            var viewportEnd = horizontal ? _viewport.Right : _viewport.Bottom;
+
+            if (!_hasReachedEnd && MathUtilities.GreaterThanOrClose(
+                viewportEnd,
+                horizontal ? Bounds.Width : Bounds.Height))
+            {
+                index = itemCount - 1;
+                position = viewportEnd - EstimateElementSizeU();
+                return;
+            }
+
             // If we have realised elements and a valid StartU then try to use this information to
             // get the anchor element.
             if (_realizedElements?.StartU is { } u && !double.IsNaN(u))
@@ -925,6 +937,9 @@ namespace Avalonia.Controls
             var index = viewport.anchorIndex;
             var horizontal = Orientation == Orientation.Horizontal;
             var u = viewport.anchorU;
+            var viewportEnd = horizontal ? _viewport.Right : _viewport.Bottom;
+            var anchorAtEnd = !_hasReachedEnd && index == items.Count - 1 &&
+                MathUtilities.GreaterThanOrClose(viewportEnd, horizontal ? Bounds.Width : Bounds.Height);
                     
             // Reset boundary flags
             _hasReachedStart = false;
@@ -946,6 +961,12 @@ namespace Avalonia.Controls
                 
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
+
+                if (anchorAtEnd && index == viewport.anchorIndex)
+                {
+                    u = viewportEnd - sizeU;
+                    viewport.anchorU = u;
+                }
 
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
