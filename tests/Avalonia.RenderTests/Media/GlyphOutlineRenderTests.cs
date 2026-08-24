@@ -90,11 +90,11 @@ namespace Avalonia.Skia.RenderTests
             // GetGlyphOutline must return null without throwing on a font with fvar but
             // no usable contour data.
             var gt = LoadGlyphTypeface(AdobeBlankAsset);
-            var glyphId = gt.CharacterToGlyphMap.ContainsGlyph('A')
+            var glyphIndex = gt.CharacterToGlyphMap.ContainsGlyph('A')
                 ? gt.CharacterToGlyphMap['A']
                 : (ushort)0;
 
-            Assert.Null(gt.GetGlyphOutline(glyphId));
+            Assert.Null(gt.GetGlyphOutline(glyphIndex));
         }
 
         private static GlyphTypeface LoadGlyphTypeface(string assetUri)
@@ -141,7 +141,7 @@ namespace Avalonia.Skia.RenderTests
                     return;
                 }
 
-                var glyphId = glyphTypeface.CharacterToGlyphMap[ch];
+                var glyphIndex = glyphTypeface.CharacterToGlyphMap[ch];
                 var scale = emSize / glyphTypeface.Metrics.DesignEmHeight;
 
                 // glyf is y-up; flip the y axis and translate so the baseline lands inside
@@ -149,7 +149,7 @@ namespace Avalonia.Skia.RenderTests
                 var transform = Matrix.CreateScale(scale, -scale)
                               * Matrix.CreateTranslation(margin, emSize + margin);
 
-                _outline = glyphTypeface.GetGlyphOutline(glyphId)?.WithTransform(transform);
+                _outline = glyphTypeface.GetGlyphOutline(glyphIndex)?.WithTransform(transform);
             }
 
             public override void Render(DrawingContext context)
