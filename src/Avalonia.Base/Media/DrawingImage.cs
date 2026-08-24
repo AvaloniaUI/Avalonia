@@ -98,10 +98,22 @@ namespace Avalonia.Media
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == DrawingProperty || change.Property == ViewboxProperty)
+            if (change.Property == DrawingProperty)
+            {
+                var (oldValue, newValue) = change.GetOldAndNewValue<Drawing?>();
+
+                oldValue?.Invalidated -= DrawingInvalidated;
+                newValue?.Invalidated += DrawingInvalidated;
+
+                RaiseInvalidated(EventArgs.Empty);
+            }
+            else if (change.Property == ViewboxProperty)
             {
                 RaiseInvalidated(EventArgs.Empty);
             }
+
+            void DrawingInvalidated(object? sender, EventArgs e)
+                => RaiseInvalidated(EventArgs.Empty);
         }
 
         /// <summary>

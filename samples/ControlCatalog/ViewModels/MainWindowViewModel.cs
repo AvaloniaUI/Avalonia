@@ -1,8 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Chrome;
 using Avalonia.Dialogs;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 using Avalonia;
 using MiniMvvm;
 
@@ -122,6 +124,55 @@ namespace ControlCatalog.ViewModels
             set { RaiseAndSetIfChanged(ref _selectedDecorationIndex, value); }
         }
 
+        public TitleBarDecorations TitleBarDecorations
+        {
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        } = TitleBarDecorations.All;
+
+        public bool ShowTitle
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.Title);
+            set => SetTitleBarDecoration(TitleBarDecorations.Title, value);
+        }
+
+        public bool ShowFullScreenButton
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.FullScreenButton);
+            set => SetTitleBarDecoration(TitleBarDecorations.FullScreenButton, value);
+        }
+
+        public bool ShowMinimizeButton
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.MinimizeButton);
+            set => SetTitleBarDecoration(TitleBarDecorations.MinimizeButton, value);
+        }
+
+        public bool ShowMaximizeButton
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.MaximizeButton);
+            set => SetTitleBarDecoration(TitleBarDecorations.MaximizeButton, value);
+        }
+
+        public bool ShowCloseButton
+        {
+            get => HasTitleBarDecoration(TitleBarDecorations.CloseButton);
+            set => SetTitleBarDecoration(TitleBarDecorations.CloseButton, value);
+        }
+
+        private bool HasTitleBarDecoration(TitleBarDecorations decoration)
+            => (TitleBarDecorations & decoration) != 0;
+
+        private void SetTitleBarDecoration(TitleBarDecorations decoration, bool value, [CallerMemberName] string? propertyName = null)
+        {
+            var newDecorations = value ? TitleBarDecorations | decoration : TitleBarDecorations & ~decoration;
+            if (newDecorations == TitleBarDecorations)
+                return;
+
+            TitleBarDecorations = newDecorations;
+            RaisePropertyChanged(propertyName);
+            RaisePropertyChanged(nameof(TitleBarDecorations));
+        }
 
         public MiniCommand AboutCommand { get; }
 
@@ -137,6 +188,15 @@ namespace ControlCatalog.ViewModels
         {
             get => _validatedDateExample;
             set => RaiseAndSetIfChanged(ref _validatedDateExample, value);
+        }
+
+        public Win32Properties.WindowCornerPreference[] Win32WindowCornerPreferences { get; } =
+            Enum.GetValues<Win32Properties.WindowCornerPreference>();
+
+        public Win32Properties.WindowCornerPreference Win32WindowCornerPreference
+        {
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
     }
 }

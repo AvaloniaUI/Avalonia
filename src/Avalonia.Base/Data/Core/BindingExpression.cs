@@ -31,6 +31,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
     private readonly List<ExpressionNode> _nodes;
     private readonly TargetTypeConverter? _targetTypeConverter;
     private readonly UncommonFields? _uncommon;
+    private int _updateTargetDepth;
     private bool _shouldUpdateOneTimeBindingTarget;
 
     /// <summary>
@@ -167,10 +168,19 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
 
         var source = _nodes[0].Source;
 
-        for (var i = 0; i < _nodes.Count; ++i)
-            _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
+        ++_updateTargetDepth;
 
-        _nodes[0].SetSource(source, null);
+        try
+        {
+            for (var i = 0; i < _nodes.Count; ++i)
+                _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
+
+            _nodes[0].SetSource(source, null);
+        }
+        finally
+        {
+            --_updateTargetDepth;
+        }
     }
 
     /// <summary>
@@ -206,7 +216,9 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
                     new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
                     null;
 
-                var forceUpdate = _mode == BindingMode.OneWay;
+                // UpdateTarget must reapply the source value even if this expression already
+                // has it cached: a two-way target may contain an uncommitted local value.
+                var forceUpdate = _mode == BindingMode.OneWay || _updateTargetDepth > 0;
                 ConvertAndPublishValue(value, error, forceUpdate);
             }
         }

@@ -164,6 +164,30 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         internal bool RemoveAttachedChild(AtSpiNode child) => _attachedChildren.Remove(child);
 
+        // Present a selection container's realized item containers as its direct
+        // AT-SPI children so SelectChild-by-index and parent lookups work.
+        private IReadOnlyList<AutomationPeer> GetChildPeers()
+        {
+            if (Peer.GetProvider<ISelectionProvider>() is null)
+                return Peer.GetChildren();
+
+            var items = new List<AutomationPeer>();
+            CollectSelectionItemPeers(Peer.GetChildren(), items);
+            return items.Count > 0 ? items : Peer.GetChildren();
+        }
+
+        private static void CollectSelectionItemPeers(
+            IReadOnlyList<AutomationPeer> peers, List<AutomationPeer> result)
+        {
+            foreach (var peer in peers)
+            {
+                if (peer.GetProvider<ISelectionItemProvider>() is not null)
+                    result.Add(peer);
+                else
+                    CollectSelectionItemPeers(peer.GetChildren(), result);
+            }
+        }
+
         internal IReadOnlyList<AtSpiNode> EnsureChildren()
         {
             if (!IsAttached)
@@ -172,7 +196,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (!_childrenDirty)
                 return _attachedChildren;
 
-            var childPeers = Peer.GetChildren();
+            var childPeers = GetChildPeers();
             var nextChildren = new List<AtSpiNode>(childPeers.Count);
             var nextChildrenSet = new HashSet<AtSpiNode>();
             foreach (var childPeer in childPeers)
@@ -275,7 +299,7 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             _childrenDirty = true;
 
-            var childPeers = Peer.GetChildren();
+            var childPeers = GetChildPeers();
             if (_attachedChildren.Count > 0)
             {
                 var currentPeers = new HashSet<AutomationPeer>(childPeers);

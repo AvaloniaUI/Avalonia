@@ -1044,17 +1044,12 @@ namespace Avalonia.Input
         {
             IsEffectivelyEnabled = IsEnabledCore && (parent?.IsEffectivelyEnabled ?? true);
 
-            // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
+            // PERF-SENSITIVE: This is called on entire hierarchy and using LINQ
             // will cause extra allocations and overhead.
 
-            var children = VisualChildren;
-
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (int i = 0; i < children.Count; ++i)
+            foreach (var child in TypedVisualChildren)
             {
-                var child = children[i] as InputElement;
-
-                child?.UpdateIsEffectivelyEnabled(this);
+                (child as InputElement)?.UpdateIsEffectivelyEnabled(this);
             }
         }
 
