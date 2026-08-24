@@ -46,6 +46,7 @@ namespace Avalonia.iOS
         private static readonly IReadOnlyDictionary<AutomationProperty, Action<AutomationPeerWrapper>> s_propertySetters =
             new Dictionary<AutomationProperty, Action<AutomationPeerWrapper>>()
             {
+                { AutomationElementIdentifiers.AutomationIdProperty, UpdateAutomationId },
                 { AutomationElementIdentifiers.NameProperty, UpdateName },
                 { AutomationElementIdentifiers.HelpTextProperty, UpdateHelpText },
                 { AutomationElementIdentifiers.BoundingRectangleProperty, UpdateBoundingRectangle },
@@ -160,6 +161,12 @@ namespace Avalonia.iOS
                 wrapper?.UpdateAllProperties();
                 wrapper?.UpdateTraits();
             }
+        }
+
+        private static void UpdateAutomationId(AutomationPeerWrapper self)
+        {
+            AutomationPeer peer = self;
+            self.AccessibilityIdentifier = peer.GetAutomationId();
         }
 
         private static void UpdateName(AutomationPeerWrapper self)
