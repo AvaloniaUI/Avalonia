@@ -56,37 +56,31 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
 
     public string Description => _propertyInfo.Name;
 
+    // The whole method body is factored out into AttachCore, which takes the value type as a
+    // Type parameter instead of reading it from TValue. Because AttachCore doesn't reference the
+    // generic parameters, its code is shared across all generic instantiations instead of being
+    // duplicated for each one, which is a meaningful NativeAOT size saving.
     internal override void Attach(
         IBindingExpressionSink sink,
         ImmediateValueFrame? frame,
         AvaloniaObject target,
         AvaloniaProperty targetProperty,
         BindingPriority priority)
-    {
-        // The validation is factored out into a non-generic static method so that its code (most
-        // notably the exception string formatting) is shared across all generic instantiations
-        // instead of being duplicated for each one, which is a meaningful NativeAOT size saving.
-        var element = ValidateAttach(_sink is not null, TargetProperty, typeof(TValue), target, targetProperty);
+        => AttachCore(sink, frame, target, targetProperty, priority, typeof(TValue));
 
-        _sink = sink;
-        _frame = frame;
-        _target = new(element);
-        TargetProperty = targetProperty;
-        Priority = priority;
-    }
-
-    private static StyledElement ValidateAttach(
-        bool alreadyAttached,
-        AvaloniaProperty? currentTargetProperty,
-        Type valueType,
+    private void AttachCore(
+        IBindingExpressionSink sink,
+        ImmediateValueFrame? frame,
         AvaloniaObject target,
-        AvaloniaProperty targetProperty)
+        AvaloniaProperty targetProperty,
+        BindingPriority priority,
+        Type valueType)
     {
-        if (alreadyAttached)
+        if (_sink is not null)
             throw new InvalidOperationException("TypedBindingExpression was already attached.");
         if (target is not StyledElement element)
             throw new InvalidOperationException("TypedBindingExpression may only target StyledElements");
-        if (currentTargetProperty is not null && currentTargetProperty != targetProperty)
+        if (TargetProperty is not null && TargetProperty != targetProperty)
             throw new InvalidOperationException("TypedBindingExpression was already attached to a different property.");
 
         if (!valueType.IsAssignableTo(targetProperty.PropertyType))
@@ -96,7 +90,11 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
                 $"to a property of type '{targetProperty.PropertyType}'.");
         }
 
-        return element;
+        _sink = sink;
+        _frame = frame;
+        _target = new(element);
+        TargetProperty = targetProperty;
+        Priority = priority;
     }
 
     public override void Dispose()
