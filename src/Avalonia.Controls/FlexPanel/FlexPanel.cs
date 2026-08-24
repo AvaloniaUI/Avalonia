@@ -8,7 +8,6 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
-
     /// <summary>
     /// A panel that arranges child controls using CSS FlexBox principles.
     /// It organizes child items in one or more lines along a main-axis (either row or column)
@@ -67,7 +66,6 @@ namespace Avalonia.Controls
         private FlexLayoutState? _state;
         private Dictionary<Visual, IDisposable> _childVisibilitySubscriptions = new Dictionary<Visual, IDisposable>();
         private Layoutable[]? _visibleChildren;
-        private FlexStateLayout? _flexLayout;
 
         static FlexPanel()
         {
@@ -113,7 +111,7 @@ namespace Avalonia.Controls
         /// Typically used to distribute extra free space leftover after flexible lengths and margins have been resolved.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to <see cref="FlexJustifyContent.FlexStart"/>.
+        /// The default value is <see cref="FlexJustifyContent.FlexStart"/>.
         /// Equivalent to CSS justify-content property.
         /// </remarks>
         public FlexJustifyContent JustifyContent
@@ -127,7 +125,7 @@ namespace Avalonia.Controls
         /// Similar to <see cref="JustifyContent"/>, but in the perpendicular direction.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to <see cref="FlexAlignItems.Stretch"/>.
+        /// The default value is <see cref="FlexAlignItems.Stretch"/>.
         /// Equivalent to CSS align-items property.
         /// </remarks>
         public FlexAlignItems AlignItems
@@ -143,7 +141,7 @@ namespace Avalonia.Controls
         /// allows controls to be arranged on multiple lines.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to <see cref="FlexAlignContent.Stretch"/>.
+        /// The default value is <see cref="FlexAlignContent.Stretch"/>.
         /// Equivalent to CSS align-content property.
         /// </remarks>
         public FlexAlignContent AlignContent
@@ -157,7 +155,7 @@ namespace Avalonia.Controls
         /// Additionally, it determines the cross-axis stacking direction for new lines.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to <see cref="FlexWrap.NoWrap"/>.
+        /// The default value is <see cref="FlexWrap.NoWrap"/>.
         /// Equivalent to CSS flex-wrap property.
         /// </remarks>
         public FlexWrap Wrap
@@ -171,7 +169,7 @@ namespace Avalonia.Controls
         /// depending on main-axis direction of the <see cref="FlexPanel"/>.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to 0.
+        /// The default value is 0.
         /// Similar to CSS column-gap property.
         /// </remarks>
         public double ColumnSpacing
@@ -185,7 +183,7 @@ namespace Avalonia.Controls
         /// depending on main-axis direction of the <see cref="FlexPanel"/>.
         /// </summary>
         /// <remarks>
-        /// When omitted, it is set to 0.
+        /// The default value is 0.
         /// Similar to CSS row-gap property.
         /// </remarks>
         public double RowSpacing
@@ -211,8 +209,8 @@ namespace Avalonia.Controls
             LineData lineData = default;
             var (childIndex, firstChildIndex, itemIndex) = (0, 0, 0);
 
-            _flexLayout = _flexLayout ?? new FlexStateLayout();
-            _flexLayout.Lines.Clear();
+            _state = _state ?? new FlexLayoutState();
+            _state?.Lines.Clear();
 
             double panelSizeU = 0;
             Func<FlexLine, double> maxSelector = l => l.U + (l.Count - 1) * spacing.U;
@@ -224,7 +222,7 @@ namespace Avalonia.Controls
                 if (Wrap != FlexWrap.NoWrap && MathUtilities.GreaterThanOrClose(lineData.U + size.U + itemIndex * spacing.U, max.U))
                 {
                     var line = new FlexLine(firstChildIndex, childIndex - 1, lineData);
-                    _flexLayout.Lines.Add(line);
+                    _state?.Lines.Add(line);
                     lineData = default;
                     firstChildIndex = childIndex;
                     itemIndex = 0;
@@ -244,18 +242,16 @@ namespace Avalonia.Controls
             if (itemIndex != 0)
             {
                 var line = new FlexLine(firstChildIndex, firstChildIndex + itemIndex - 1, lineData);
-                _flexLayout.Lines.Add(line);
+                _state?.Lines.Add(line);
                 panelSizeU = Math.Max(panelSizeU, maxSelector(line));
             }
 
-            var state = new FlexLayoutState(_flexLayout.Lines, Wrap);
-
-            var totalSpacingV = (_flexLayout.Lines.Count - 1) * spacing.V;
+            var totalSpacingV = (_state?.Lines.Count - 1) * spacing.V ?? 0;
 
             // Resizing along main axis using grow and shrink factors can affect cross axis, so remeasure affected items and lines.
-            for (var i = 0; i < _flexLayout.Lines.Count; i++)
+            for (var i = 0; i < _state?.Lines.Count; i++)
             {
-                var flexLine = _flexLayout.Lines[i];
+                var flexLine = _state.Value.Lines[i];
                 var (itemsCount, freeU) = GetLineMeasureU(flexLine, max.U, spacing.U);
                 var (lineMult, autoMargins, remainingFreeU) = GetLineMultInfo(flexLine, freeU);
 
@@ -274,20 +270,24 @@ namespace Avalonia.Controls
                     }
 
                     flexLine.V = maxV;
-                    _flexLayout.Lines[i] = flexLine;
+                    _state?.Lines[i] = flexLine;
                 }
             }
 
-            _state = state;
-            var totalLineV = _flexLayout.Lines.Sum(l => l.V);
-            var panelSize = _flexLayout.Lines.Count == 0 ? default : new Uv(panelSizeU, totalLineV + totalSpacingV);
+            if(Wrap == FlexWrap.WrapReverse)
+            {
+                _state?.Lines.Reverse();
+            }
+
+            var totalLineV = _state?.Lines.Sum(l => l.V) ?? 0;
+            var panelSize = _state?.Lines.Count == 0 ? default : new Uv(panelSizeU, totalLineV + totalSpacingV);
             return Uv.ToSize(panelSize, isColumn);
         }
 
         /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (_visibleChildren is not { Length: > 0 } || _state is not { } state)
+            if (_visibleChildren is not { Length: > 0 } || _state is not { } state || state.Lines.Count == 0)
             {
                 return finalSize;
             }
@@ -569,16 +569,9 @@ namespace Avalonia.Controls
 
         private readonly struct FlexLayoutState
         {
-            public IReadOnlyList<FlexLine> Lines { get; }
+            public List<FlexLine> Lines { get; } = new List<FlexLine>();
 
-            public FlexLayoutState(List<FlexLine> lines, FlexWrap wrap)
-            {
-                if (wrap == FlexWrap.WrapReverse)
-                {
-                    lines.Reverse();
-                }
-                Lines = lines;
-            }
+            public FlexLayoutState() { }
         }
 
         private struct LineData
@@ -592,11 +585,6 @@ namespace Avalonia.Controls
             public double Grow { get; set; }
 
             public int AutoMargins { get; set; }
-        }
-
-        private class FlexStateLayout
-        {
-            public List<FlexLine> Lines { get; } = new List<FlexLine>();
         }
 
         private struct FlexLine

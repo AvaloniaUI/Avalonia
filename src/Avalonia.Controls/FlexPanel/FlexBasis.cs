@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace Avalonia.Controls
 {
@@ -90,10 +89,6 @@ namespace Avalonia.Controls
             };
         }
 
-
-        [GeneratedRegex(@"^\d+([.]?\d*)%$", RegexOptions.Multiline)]
-        private static partial Regex ValidateRelativePattern();
-
         /// <summary>
         /// Converts a string flex-basis value to a <see cref="FlexBasis"/> instance.
         /// </summary>
@@ -106,9 +101,9 @@ namespace Avalonia.Controls
             {
                 return Auto;
             }
-            else if (ValidateRelativePattern().IsMatch(str))
+            else if (span.EndsWith("%") && double.TryParse(span[..^1], CultureInfo.InvariantCulture, out var val))
             {
-                return new FlexBasis(double.Parse(span.TrimEnd('%'), CultureInfo.InvariantCulture) / 100, FlexBasisKind.Relative);
+                return new FlexBasis(val / 100, FlexBasisKind.Relative);
             }
             else if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
             {

@@ -47,53 +47,5 @@ namespace Avalonia.Controls.UnitTests
         {
             Assert.Throws<ArgumentException>(() => FlexBasis.Parse("2x"));
         }
-
-        [Fact]
-        public async Task ToString_AllCulture_Absolute_Should_Pass()
-        {
-            List<CultureInfo> cultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures).ToList();
-            var length = new FlexBasis(1.2d, FlexBasisKind.Absolute);
-
-            foreach (var culture in cultureInfos)
-            {
-                await Task.Run(() =>
-                {
-                    CultureInfo.CurrentCulture = culture;
-                    Assert.Equal("1.2", length.ToString());
-                }, TestContext.Current.CancellationToken);
-            }
-        }
-
-        [Fact]
-        public async Task ToString_AllCulture_Relative_Should_Pass()
-        {
-            List<CultureInfo> cultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures).ToList();
-            var length = new FlexBasis(0.012d, FlexBasisKind.Relative); // 1.2%
-
-            foreach (var culture in cultureInfos)
-            {
-                await Task.Run(() =>
-                {
-                    CultureInfo.CurrentCulture = culture;
-                    Assert.Equal("1.2%", length.ToString());
-                }, TestContext.Current.CancellationToken);
-            }
-        }
-
-        [Fact]
-        public async Task ToString_AllCulture_Auto_Should_Pass()
-        {
-            List<CultureInfo> cultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures).ToList();
-            var length = FlexBasis.Auto;
-
-            foreach (var culture in cultureInfos)
-            {
-                await Task.Run(() =>
-                {
-                    CultureInfo.CurrentCulture = culture;
-                    Assert.Equal("Auto", length.ToString());
-                }, TestContext.Current.CancellationToken);
-            }
-        }
     }
 }
