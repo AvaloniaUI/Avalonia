@@ -47,5 +47,22 @@ namespace Avalonia.Controls.UnitTests
         {
             Assert.Throws<ArgumentException>(() => FlexBasis.Parse("2x"));
         }
+
+
+        [Fact]
+        public async Task ToString_AllCulture_Absolute_Should_Pass()
+        {
+            List<CultureInfo> cultureInfos = [CultureInfo.GetCultureInfo("en-US"), CultureInfo.GetCultureInfo("fr-FR")];
+            var length = new FlexBasis(1.2d, FlexBasisKind.Absolute);
+
+            foreach (var culture in cultureInfos)
+            {
+                await Task.Run(() =>
+                {
+                    CultureInfo.CurrentCulture = culture;
+                    Assert.Equal("1.2", length.ToString());
+                }, TestContext.Current.CancellationToken);
+            }
+        }
     }
 }
