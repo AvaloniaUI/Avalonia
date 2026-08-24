@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -169,6 +168,12 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.True(fontCollection.TryGetGlyphTypeface(
                     "MyAlias", FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var first));
 
+                // Guards the test itself: the first resolution must really be a synthesised bold.
+                // If the backing font could not be emboldened, TryCreateSyntheticGlyphTypeface would
+                // fail and the old else branch would cache the nearest match, making everything below
+                // pass against unfixed code.
+                Assert.Equal(FontSimulations.Bold, first.FontSimulations);
+
                 var creationsAfterFirstCall = fontManager.StreamTypefaceCreations;
 
                 for (var i = 0; i < 10; i++)
@@ -200,8 +205,11 @@ namespace Avalonia.Skia.UnitTests.Media
         /// </summary>
         private sealed class AliasFontManagerImpl : IFontManagerImpl
         {
-            private const string EmbeddedFonts =
-                "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests";
+            /// <summary>Named explicitly rather than enumerated: the backing font must be a real
+            /// text face, since a font that cannot be emboldened would make the test pass against
+            /// unfixed code (the old else branch cached the nearest match).</summary>
+            private const string BackingFontUri =
+                "resm:Avalonia.Skia.UnitTests.Assets.NotoMono-Regular.ttf?assembly=Avalonia.Skia.UnitTests";
 
             private readonly IFontManagerImpl _inner = new FontManagerImpl();
             private readonly string _alias;
@@ -239,9 +247,8 @@ namespace Avalonia.Skia.UnitTests.Media
             private static Stream OpenBackingFont()
             {
                 var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-                var fontAsset = FontFamilyLoader.LoadFontAssets(new Uri(EmbeddedFonts, UriKind.Absolute)).First();
 
-                return assetLoader.Open(fontAsset);
+                return assetLoader.Open(new Uri(BackingFontUri, UriKind.Absolute));
             }
 
             public bool TryCreateGlyphTypeface(Stream stream, FontSimulations fontSimulations,
