@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
 
@@ -149,7 +150,7 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         Start(produceValue: false);
         if (!_sourceValue.HasValue)
             throw new AvaloniaInternalException("The binding expression has no value.");
-        return _sourceValue.Value;
+        return Box(_sourceValue.Value);
     }
 
     TValue IValueEntry<TValue>.GetValue()
@@ -306,6 +307,18 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
             if (!_writingValueToTarget && _mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
                 WriteValueToSource(_targetValue.Value);
         }
+    }
+
+    /// <summary>
+    /// Converts a value to <see cref="object"/>, using cached boxes for booleans so that reading
+    /// a boolean-valued binding into an object-typed target property does not allocate on every
+    /// read (#21065).
+    /// </summary>
+    private static object? Box(TValue value)
+    {
+        if (typeof(TValue) == typeof(bool))
+            return BooleanBoxes.Box(Unsafe.As<TValue, bool>(ref value));
+        return value;
     }
 
     private bool TryGetSource([NotNullWhen(true)] out TSource? source)
