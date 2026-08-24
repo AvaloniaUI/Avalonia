@@ -106,7 +106,8 @@
                     TemplatedControl.IsTemplateFocusTarget="True"
                     Theme="{StaticResource SimpleDatePickerFlyoutButton}">
               <Grid Name="PART_ButtonContentGrid"
-                    ColumnDefinitions="78*,Auto,132*,Auto,78*">
+                    ColumnDefinitions="78*,Auto,132*,Auto,78*"
+                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                 <TextBlock Name="PART_DayTextBlock"
                            Padding="{DynamicResource DatePickerHostPadding}"
                            HorizontalAlignment="Center"

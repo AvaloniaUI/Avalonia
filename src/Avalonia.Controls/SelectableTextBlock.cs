@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Documents;
-
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
-using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -21,10 +19,10 @@ namespace Avalonia.Controls
     public class SelectableTextBlock : TextBlock, IInlineHost
     {
         public static readonly StyledProperty<int> SelectionStartProperty =
-            TextBox.SelectionStartProperty.AddOwner<SelectableTextBlock>();
+            TextBox.SelectionStartProperty.AddOwner<SelectableTextBlock>(new(coerce: TextBox.CoerceCaretIndex));
 
         public static readonly StyledProperty<int> SelectionEndProperty =
-            TextBox.SelectionEndProperty.AddOwner<SelectableTextBlock>();
+            TextBox.SelectionEndProperty.AddOwner<SelectableTextBlock>(new(coerce: TextBox.CoerceCaretIndex));
 
         public static readonly DirectProperty<SelectableTextBlock, string> SelectedTextProperty =
             AvaloniaProperty.RegisterDirect<SelectableTextBlock, string>(
@@ -49,7 +47,7 @@ namespace Avalonia.Controls
 
         static SelectableTextBlock()
         {
-            FocusableProperty.OverrideDefaultValue(typeof(SelectableTextBlock), true);
+            FocusableProperty.OverrideDefaultValue<SelectableTextBlock>(true);
             AffectsRender<SelectableTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty);
         }
 
@@ -332,15 +330,31 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == SelectionStartProperty || 
-                change.Property == SelectionEndProperty)
+            if (change.Property == InlinesProperty)
+            {
+                if (change.OldValue is InlineCollection oldInlines)
+                {
+                    oldInlines.Invalidated -= OnInlinesInvalidated;
+                }
+
+                if (change.NewValue is InlineCollection newInlines)
+                {
+                    newInlines.Invalidated += OnInlinesInvalidated;
+                }
+
+                OnTextOrInlinesChanged();
+            }
+            else if (change.Property == TextProperty)
+            {
+                OnTextOrInlinesChanged();
+            }
+            else if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
             {
                 RaisePropertyChanged(SelectedTextProperty, "", "");
                 UpdateCommandStates();
                 InvalidateTextLayout();
             }
-
-            if(change.Property == SelectionForegroundBrushProperty)
+            else if (change.Property == SelectionForegroundBrushProperty)
             {
                 InvalidateTextLayout();
             }
@@ -429,10 +443,6 @@ namespace Avalonia.Controls
 
                 var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
 
-                point = new Point(
-                    MathUtilities.Clamp(point.X, 0, Math.Max(TextLayout.WidthIncludingTrailingWhitespace, 0)),
-                    MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Height, 0)));
-
                 var hit = TextLayout.HitTestPoint(point);
                 var textPosition = hit.TextPosition;
 
@@ -496,6 +506,16 @@ namespace Avalonia.Controls
             }
 
             e.Pointer.Capture(null);
+        }
+
+        private void OnInlinesInvalidated(object? sender, EventArgs e) => OnTextOrInlinesChanged();
+
+        private void OnTextOrInlinesChanged()
+        {
+            CoerceValue(SelectionStartProperty);
+            CoerceValue(SelectionEndProperty);
+            RaisePropertyChanged(SelectedTextProperty, "", "");
+            UpdateCommandStates();
         }
 
         private void UpdateCommandStates()

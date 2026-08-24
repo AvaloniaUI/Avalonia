@@ -1285,6 +1285,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void BoolPropertyGetterUsesCachedBoxes()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Tag='{CompiledBinding BoolProperty}' Name='textBlock' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                window.DataContext = new TestDataContext { BoolProperty = true };
+                var boxedTrue = textBlock.Tag;
+                window.DataContext = new TestDataContext { BoolProperty = false };
+                var boxedFalse = textBlock.Tag;
+
+                Assert.Equal(true, boxedTrue);
+                Assert.Equal(false, boxedFalse);
+
+                // The getter must return the cached boxes instead of allocating a new box per read.
+                window.DataContext = new TestDataContext { BoolProperty = true };
+                Assert.Same(boxedTrue, textBlock.Tag);
+                window.DataContext = new TestDataContext { BoolProperty = false };
+                Assert.Same(boxedFalse, textBlock.Tag);
+            }
+        }
+
+        [Fact]
         public void ThrowsOnInvalidBindingPathOnCompiledBindingEnabledViaDirective()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
