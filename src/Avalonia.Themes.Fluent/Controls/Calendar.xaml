@@ -18,7 +18,7 @@
     <Setter Property="Foreground" Value="{DynamicResource CalendarViewForeground}" />
     <Setter Property="Background" Value="{DynamicResource CalendarViewBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewBorderBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderThickness" Value="{DynamicResource CalendarBorderThickness}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="FontSize" Value="{DynamicResource CalendarFontSize}" />

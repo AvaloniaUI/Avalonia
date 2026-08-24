@@ -131,5 +131,11 @@ namespace Avalonia.Android.Platform.Input
                 Composition = null;
             }
         }
+
+
+        internal void DispatchKeyEvent(KeyEvent? keyEvent)
+        {
+            _textInputMethod?.View.DispatchKeyEvent(keyEvent);
+        }
     }
 }

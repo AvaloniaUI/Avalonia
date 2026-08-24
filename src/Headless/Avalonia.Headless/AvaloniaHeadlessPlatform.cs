@@ -14,9 +14,9 @@ namespace Avalonia.Headless
         internal static Compositor? Compositor { get; private set; }
         private static IRenderTimer? s_renderTimer;
 
-        private class HeadlessWindowingPlatform(PixelFormat frameBufferFormat) : IWindowingPlatform
+        private class HeadlessWindowingPlatform(AvaloniaHeadlessPlatformOptions options) : IWindowingPlatform
         {
-            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false, frameBufferFormat);
+            public IWindowImpl CreateWindow() => new HeadlessWindowImpl(options);
             public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
@@ -34,6 +34,9 @@ namespace Avalonia.Headless
 
         internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)
         {
+            if (opts.UseSharedMouseDevice == true)
+                MouseDevice.ResetPrimaryForUnitTests();
+
             var clipboardImpl = new HeadlessClipboardImplStub();
             var clipboard = new Clipboard(clipboardImpl);
 
@@ -49,7 +52,7 @@ namespace Avalonia.Headless
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IRenderLoop>().ToConstant(Rendering.RenderLoop.FromTimer(s_renderTimer))
-                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
+                .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }));
             Compositor = new Compositor( null);
@@ -115,6 +118,22 @@ namespace Avalonia.Headless
         /// Gets or sets the pixel format to be used for the headless Window framebuffers.
         /// </summary>
         public PixelFormat FrameBufferFormat { get; set; } = PixelFormat.Rgba8888;
+
+        /// <summary>
+        /// Embeds popups to the window when set to true. The default value is true.
+        /// When disabled, popups are hosted in dedicated headless top-levels that are not part of
+        /// the parent's visual tree; use <see cref="HeadlessWindowExtensions.GetOpenPopups"/> to access them.
+        /// </summary>
+        // TODO13: Change the default to false to match the other desktop platforms.
+        public bool OverlayPopups { get; set; } = true;
+
+        /// <summary>
+        /// Shares a single mouse device between all top-levels when set to true, so that pointer capture
+        /// and click counting are global rather than per-window, as they are on the other platforms.
+        /// When null or false, every top-level gets its own mouse device.
+        /// </summary>
+        // TODO13: Change the default to true to match the other platforms.
+        public bool? UseSharedMouseDevice { get; set; }
     }
 
     public static class AvaloniaHeadlessPlatformExtensions

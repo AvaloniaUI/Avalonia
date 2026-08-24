@@ -18,6 +18,8 @@ namespace Avalonia.Input
         private static MouseDevice? _primary;
         internal static MouseDevice Primary => _primary ??= new MouseDevice();
 
+        internal static void ResetPrimaryForUnitTests() => _primary = null;
+
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
