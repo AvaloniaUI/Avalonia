@@ -103,7 +103,7 @@
                     IsEnabled="{TemplateBinding IsEnabled}"
                     Theme="{StaticResource SimpleTimePickerFlyoutButton}">
 
-              <Grid Name="PART_FlyoutButtonContentGrid">
+              <Grid Name="PART_FlyoutButtonContentGrid" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                 <!--  Ignore col defs here, set in code  -->
                 <Border x:Name="PART_FirstPickerHost"
                         Grid.Column="0"

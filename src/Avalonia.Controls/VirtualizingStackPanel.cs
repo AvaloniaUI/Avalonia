@@ -293,10 +293,28 @@ namespace Avalonia.Controls
                 // Ensure that the focused element is in the correct position.
                 if (_focusedElement is not null && _focusedIndex >= 0)
                 {
+                    var realizedEndU = u;
+                    var sizeU = orientation == Orientation.Horizontal ?
+                        _focusedElement.DesiredSize.Width :
+                        _focusedElement.DesiredSize.Height;
+
                     u = GetOrEstimateElementU(_focusedIndex);
+
+                    // The focused element's position is estimated as it's outside the realized
+                    // range. A bad estimate must not place it over the realized elements in the
+                    // viewport: an element before the realized range always ends at or before its
+                    // start, and one after it always starts at or after its end.
+                    if (_realizedElements.Count > 0 && !double.IsNaN(_realizedElements.StartU))
+                    {
+                        if (_focusedIndex < _realizedElements.FirstIndex)
+                            u = Math.Min(u, _realizedElements.StartU - sizeU);
+                        else if (_focusedIndex > _realizedElements.LastIndex)
+                            u = Math.Max(u, realizedEndU);
+                    }
+
                     var rect = orientation == Orientation.Horizontal ?
-                        new Rect(u, 0, _focusedElement.DesiredSize.Width, finalSize.Height) :
-                        new Rect(0, u, finalSize.Width, _focusedElement.DesiredSize.Height);
+                        new Rect(u, 0, sizeU, finalSize.Height) :
+                        new Rect(0, u, finalSize.Width, sizeU);
 
                     _focusedElement.Arrange(rect);
                 }
