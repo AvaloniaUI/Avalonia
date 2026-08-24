@@ -237,12 +237,6 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SYSCOMMAND:
-                    if (GetSysCommand(wParam) == SysCommands.SC_KEYMENU &&
-                        ToInt32(lParam) == (int)VirtualKeyStates.VK_SPACE) // Open system menu.
-                    {
-                        break;
-                    }
-
                     // Disable system handling of Alt/F10 menu keys.
                     if (GetSysCommand(wParam) == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0)
                         return IntPtr.Zero;
@@ -1417,8 +1411,7 @@ namespace Avalonia.Win32
 
         private static int HighWord(int param) => param >> 16;
 
-        private static SysCommands GetSysCommand(IntPtr wParam)
-            => (SysCommands)(ToInt32(wParam) & 0xfff0);
+        private static SysCommands GetSysCommand(IntPtr wParam) => (SysCommands)(ToInt32(wParam) & 0xfff0);
 
         private Point DipFromLParam(IntPtr lParam)
         {
