@@ -582,7 +582,6 @@ namespace Avalonia.Win32
                         e = args;
                         break;
                     }
-                case WindowsMessage.WM_POINTERDEVICEOUTOFRANGE:
                 case WindowsMessage.WM_POINTERLEAVE:
                 case WindowsMessage.WM_POINTERCAPTURECHANGED:
                     {
@@ -610,22 +609,6 @@ namespace Avalonia.Win32
                         {
                             RawPointerId = info.pointerId
                         };
-                        break;
-                    }
-                case WindowsMessage.WM_POINTERDEVICEINRANGE:
-                    {
-                        if (!_wmPointerEnabled)
-                        {
-                            break;
-                        }
-
-                        // Do not generate events, but release mouse capture on any other device input.
-                        GetDevicePointerInfo(wParam, out var device, out _, out _, out _, ref timestamp);
-                        if (device != _mouseDevice)
-                        {
-                            _mouseDevice.Capture(null);
-                            return IntPtr.Zero;
-                        }
                         break;
                     }
                 case WindowsMessage.WM_POINTERACTIVATE:
