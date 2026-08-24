@@ -98,7 +98,7 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     TemplatedControl.IsTemplateFocusTarget="True">
-              <Grid Name="PART_ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+              <Grid Name="PART_ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*">
                 <TextBlock Name="PART_DayTextBlock" Text="{DynamicResource StringDatePickerDayText}" HorizontalAlignment="Center"
                            Padding="{DynamicResource DatePickerHostPadding}" />
                 <TextBlock Name="PART_MonthTextBlock" Text="{DynamicResource StringDatePickerMonthText}" TextAlignment="Left"
@@ -131,6 +131,10 @@
 
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Fill" Value="{DynamicResource DatePickerSpacerFillDisabled}"/>
+    </Style>
+
+    <Style Selector="^ /template/ Button#PART_FlyoutButton TextBlock">
+      <Setter Property="VerticalAlignment" Value="{TemplateBinding VerticalContentAlignment}"/>
     </Style>
 
     <!-- Changes foreground for watermark text when SelectedDate is null-->
