@@ -9,8 +9,8 @@
     <AndroidPackageFormat>apk</AndroidPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <AndroidResource Include="..\..\build\Assets\Icon.png">
-      <Link>Resources\drawable\Icon.png</Link>
+    <AndroidResource Include="..\..\build\Assets\icon.png">
+      <Link>Resources\drawable\icon.png</Link>
     </AndroidResource>
   </ItemGroup>
 
