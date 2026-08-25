@@ -197,7 +197,7 @@ namespace Avalonia.Controls
 
         private void OnSourceInvalidated(object? sender, EventArgs e)
         {
-             if(Source is DrawingImage drawingImage && drawingImage.Drawing is { } drawing)
+             if(IsAttachedToVisualTree && Source is DrawingImage drawingImage && drawingImage.Drawing is { } drawing)
             {
                 var bounds = drawing.GetBounds();
                 if(bounds != _currentDrawingBounds)
