@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Layout;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -2267,23 +2268,30 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(3, 2)]
-        [InlineData(13, 3)]
-        public void Grid_With_Auto_RowDefinitions_And_Spanning_Child_Should_Match_In_Height(int targetHeight, int rowCount)
+        [InlineData(3, 2, 1.0)]
+        [InlineData(3, 4, 1.0)]
+        [InlineData(13, 3, 1.0)]
+        [InlineData(47, 8, 1.25)]
+        public void Grid_With_Auto_RowDefinitions_And_Spanning_Child_Should_Match_In_Height(int targetHeight, int rowCount, double scaling)
         {
             var innerBorder = new Border { Height = targetHeight };
             var outerBorder = new Border { [Grid.RowSpanProperty] = rowCount, Child = innerBorder };
-            var target = new Grid
+            var grid = new Grid
             {
                 RowDefinitions = RowDefinitions.Parse(string.Join(',', Enumerable.Repeat("Auto", rowCount))),
                 Children = { outerBorder },
             };
+            var root = new TestRoot(grid) { LayoutScaling = scaling };
 
-            target.Measure(Size.Infinity);
-            target.Arrange(new Rect(target.DesiredSize));
-            Assert.Equal(targetHeight, target.Bounds.Height);
-            Assert.Equal(targetHeight, outerBorder.Bounds.Height);
-            Assert.Equal(targetHeight, innerBorder.Bounds.Height);
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(grid.DesiredSize));
+
+            var roundedHeight = LayoutHelper.RoundLayoutValue(targetHeight, scaling);
+            Assert.Equal(roundedHeight, grid.Bounds.Height);
+            Assert.Equal(roundedHeight, outerBorder.Bounds.Height);
+            Assert.Equal(roundedHeight, innerBorder.Bounds.Height);
+
+            Assert.Equal(roundedHeight, grid.RowDefinitions.Sum(r => r.ActualHeight));
         }
 
         private class TestControl : Control
