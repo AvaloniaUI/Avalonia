@@ -51,7 +51,6 @@ namespace ControlCatalog.ViewModels
             new PageItem("ContextMenu",() => new ContextMenuPage(), Icons.Menu, "Traditional right-click context menus", "Menus & Flyouts"),
             new PageItem("Cursor",() => new CursorPage(), Icons.Cursor, "Change the pointer cursor over elements", "Interaction"),
             new PageItem("Custom Drawing",() => new CustomDrawing(), Icons.Brush, "Render custom geometry in code", "Media & Graphics"),
-            new PageItem("DataGrid",() => new DataGridPage(), Icons.Grid, "Tabular data with sorting and editing", "Collections & Data"),
             new PageItem("Data Validation",() => new DataValidationPage(), Icons.Shield, "Display validation errors from bindings", "Status & Feedback"),
             new PageItem("Date/Time Picker",() => new DateTimePickerPage(), Icons.Clock, "Spinner-style date and time pickers", "Date & Time"),
             new PageItem("CalendarDatePicker",() => new CalendarDatePickerPage(), Icons.Calendar, "A date picker with a drop-down calendar", "Date & Time"),
