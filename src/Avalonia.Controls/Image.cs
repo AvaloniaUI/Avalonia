@@ -7,7 +7,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
-{   
+{
     /// <summary>
     /// Displays a <see cref="Bitmap"/> image.
     /// </summary>
@@ -18,7 +18,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IImage?> SourceProperty =
             AvaloniaProperty.Register<Image, IImage?>(nameof(Source));
-        
+
         /// <summary>
         /// Defines the <see cref="BlendMode"/> property.
         /// </summary>
@@ -88,7 +88,7 @@ namespace Avalonia.Controls
 
         /// <inheritdoc />
         protected override bool BypassFlowDirectionPolicies => true;
-        
+
         /// <summary>
         /// Renders the control.
         /// </summary>
@@ -156,16 +156,16 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if(change.Property == SourceProperty)
+            if (change.Property == SourceProperty)
             {
                 _currentDrawingBounds = default;
-                if(change.OldValue is DrawingImage oldDrawingImage && _subscribedToDrawingImageSource)
+                if (change.OldValue is DrawingImage oldDrawingImage && _subscribedToDrawingImageSource)
                 {
                     _subscribedToDrawingImageSource = false;
                     oldDrawingImage.Invalidated -= OnSourceInvalidated;
                 }
 
-                if(change.NewValue is DrawingImage newDrawingImage && IsAttachedToVisualTree)
+                if (change.NewValue is DrawingImage newDrawingImage && IsAttachedToVisualTree)
                 {
                     _subscribedToDrawingImageSource = true;
                     newDrawingImage.Invalidated += OnSourceInvalidated;
@@ -177,7 +177,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            if(!_subscribedToDrawingImageSource && Source is DrawingImage drawingImage)
+            if (!_subscribedToDrawingImageSource && Source is DrawingImage drawingImage)
             {
                 _subscribedToDrawingImageSource = true;
                 drawingImage.Invalidated += OnSourceInvalidated;
@@ -197,10 +197,10 @@ namespace Avalonia.Controls
 
         private void OnSourceInvalidated(object? sender, EventArgs e)
         {
-             if(IsAttachedToVisualTree && Source is DrawingImage drawingImage && drawingImage.Drawing is { } drawing)
+            if (IsAttachedToVisualTree && Source is DrawingImage drawingImage && drawingImage.Drawing is { } drawing)
             {
                 var bounds = drawing.GetBounds();
-                if(bounds != _currentDrawingBounds)
+                if (bounds != _currentDrawingBounds)
                 {
                     InvalidateMeasure();
                 }
