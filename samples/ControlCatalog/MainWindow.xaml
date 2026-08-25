@@ -1,5 +1,5 @@
 ﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300"
-        Width="1024" Height="800"
+        Width="1100" Height="800"
         xmlns:pages="using:ControlCatalog.Pages"
         Title="Avalonia Control Gallery"
         Icon="/Assets/test_icon.ico"
