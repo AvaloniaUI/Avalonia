@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -12,7 +13,7 @@ using Xunit;
 namespace Avalonia.Skia.UnitTests.Media
 {
     /// <summary>
-    /// Verifies that <see cref="FontCollectionBase.TryMatchCharacter"/> resolves the same family
+    /// Verifies that <see cref="FontCollectionBase.TryMatchCharacter(int, FontStyle, FontWeight, FontStretch, string?, CultureInfo?, out Typeface)"/> resolves the same family
     /// regardless of the order in which fonts were added to the collection, and is stable
     /// across repeated invocations.
     /// </summary>

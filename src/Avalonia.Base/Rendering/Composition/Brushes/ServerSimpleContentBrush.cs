@@ -8,7 +8,7 @@ namespace Avalonia.Rendering.Composition.Server;
 internal sealed class ServerCompositionSimpleContentBrush : ServerCompositionSimpleTileBrush, ITileBrush, ISceneBrush
 {
     private CompositionRenderDataSceneBrushContent.Properties? _content;
-    
+
 
     internal ServerCompositionSimpleContentBrush(ServerCompositor compositor) : base(compositor)
     {
@@ -22,6 +22,20 @@ internal sealed class ServerCompositionSimpleContentBrush : ServerCompositionSim
     protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
         base.DeserializeChangesCore(reader, committedAt);
-        _content = reader.ReadObject<CompositionRenderDataSceneBrushContent.Properties?>();
+        var content = reader.ReadObject<CompositionRenderDataSceneBrushContent.Properties?>();
+
+        if (!ReferenceEquals(_content?.RenderData, content?.RenderData))
+        {
+            _content?.RenderData.RemoveObserver(this);
+            content?.RenderData.AddObserver(this);
+        }
+
+        _content = content;
+    }
+
+    public override void Dispose()
+    {
+        _content?.RenderData.RemoveObserver(this);
+        base.Dispose();
     }
 }

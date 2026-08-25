@@ -32,22 +32,25 @@ namespace Avalonia.Native
             {
                 _client.SurroundingTextChanged -= OnSurroundingTextChanged;
                 _client.CursorRectangleChanged -= OnCursorRectangleChanged;
-                
+                _client.SelectionChanged -= OnSelectionChanged;
+
                 _nativeClient?.Dispose();
             }
-            
+
             _nativeClient = null;
             _client = client;
-            
+
             if (_client != null)
             {
                 _nativeClient = new AvnTextInputMethodClient(_client);
 
                 OnSurroundingTextChanged(this, EventArgs.Empty);
                 OnCursorRectangleChanged(this, EventArgs.Empty);
+                // Note: OnSelectionChanged isn't called, it's already up-to-date thanks to OnSurroundingTextChanged
 
                 _client.SurroundingTextChanged += OnSurroundingTextChanged;
                 _client.CursorRectangleChanged += OnCursorRectangleChanged;
+                _client.SelectionChanged += OnSelectionChanged;
             }
 
             _inputMethod.SetClient(_nativeClient);
@@ -92,7 +95,7 @@ namespace Avalonia.Native
             {
                 return;
             }
-            
+
             var surroundingText = _client.SurroundingText;
             var selection = _client.Selection;
 
@@ -101,6 +104,17 @@ namespace Avalonia.Native
                 selection.Start,
                 selection.End
             );
+        }
+
+        private void OnSelectionChanged(object? sender, EventArgs e)
+        {
+            if (_client is null)
+            {
+                return;
+            }
+
+            var selection = _client.Selection;
+            _inputMethod.SetSelectionInSurroundingText(selection.Start, selection.End);
         }
 
         public void SetCursorRect(Rect rect)

@@ -584,6 +584,40 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Losing_Focus_Closes_DropDown()
+        {
+            using var app = UnitTestApplication.Start(FocusServices);
+
+            var target1 = CreateControl();
+            target1.ItemsSource = CreateSimpleStringArray();
+            var textBox1 = GetTextBox(target1);
+
+            var target2 = CreateControl();
+
+            target1.ApplyTemplate();
+            target2.ApplyTemplate();
+
+            _ = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children = { target1, target2 }
+                }
+            };
+
+            target1.Focus();
+            textBox1.Text = "a";
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            Assert.True(target1.IsDropDownOpen);
+
+            target2.Focus();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.False(target1.IsFocused);
+            Assert.False(target1.IsDropDownOpen);
+        }
+
         /// <summary>
         /// Retrieves a defined predicate filter through a new AutoCompleteBox
         /// control instance.

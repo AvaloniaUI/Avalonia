@@ -23,6 +23,14 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
     private const string ProxyAttributeName = "Avalonia.SourceGenerator.GenerateCrossThreadProxyAttribute";
     private const string ReturnTaskAttributeName = "global::Avalonia.SourceGenerator.GenerateCrossThreadProxyReturnTaskAttribute";
 
+    private static readonly DiagnosticDescriptor MarshallerMismatchDescriptor = new(
+        id: "AVPROXY001",
+        title: "Cross-thread proxy marshaller type mismatch",
+        messageFormat: "Parameter '{0}' of method '{1}' has type '{2}' which uses marshaller type '{3}', but the containing interface uses '{4}'. Interfaces with different marshaller types belong to different threads and cannot be passed across proxy boundaries.",
+        category: "Avalonia.SourceGenerator",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var proxies = context.SyntaxProvider
@@ -35,6 +43,17 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(proxies, static (spc, model) =>
         {
+            foreach (var diag in model.Diagnostics)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    MarshallerMismatchDescriptor,
+                    Location.None,
+                    diag.ParamName,
+                    diag.MethodName,
+                    diag.ParamTypeFqn,
+                    diag.ParamMarshallerFqn,
+                    diag.ExpectedMarshallerFqn));
+            }
             var source = Render(model);
             spc.AddSource(model.HintName, source);
         });
@@ -103,6 +122,7 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
         }
 
         var methodsBuilder = ImmutableArray.CreateBuilder<MethodModel>();
+        var diagnosticsBuilder = ImmutableArray.CreateBuilder<ProxyDiagnosticInfo>();
         foreach (var member in iface.GetMembers())
         {
             if (member is not IMethodSymbol m || m.MethodKind != MethodKind.Ordinary)
@@ -124,7 +144,47 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
                     skip = true;
                     break;
                 }
-                paramsBuilder.Add(new ParamModel(p.Name, p.Type.GetFullyQualifiedName()));
+                var typeFqn = p.Type.GetFullyQualifiedName();
+                string? proxyClassFqn = null;
+                var isNullable = typeFqn.EndsWith("?");
+
+                if (p.Type is INamedTypeSymbol namedParamType
+                    && namedParamType.TypeKind == TypeKind.Interface)
+                {
+                    var paramProxyAttr = namedParamType.GetAttributes().FirstOrDefault(a =>
+                        a.AttributeClass?.ToDisplayString() == ProxyAttributeName);
+                    if (paramProxyAttr is not null
+                        && paramProxyAttr.ConstructorArguments.Length >= 2
+                        && paramProxyAttr.ConstructorArguments[0].Value is INamedTypeSymbol paramPriorityType)
+                    {
+                        var paramPriorityFqn = paramPriorityType.GetFullyQualifiedName();
+                        if (paramPriorityFqn != priorityFqn)
+                        {
+                            diagnosticsBuilder.Add(new ProxyDiagnosticInfo(
+                                m.Name,
+                                p.Name,
+                                namedParamType.ToDisplayString(),
+                                paramPriorityFqn,
+                                priorityFqn));
+                        }
+                        else
+                        {
+                            string? paramGenClassName = null;
+                            foreach (var na in paramProxyAttr.NamedArguments)
+                            {
+                                if (na.Key == "GeneratedClassName" && na.Value.Value is string s2)
+                                    paramGenClassName = s2;
+                            }
+                            var paramClassName = paramGenClassName ?? DefaultProxyName(namedParamType.Name);
+                            var paramNs = namedParamType.ContainingNamespace.IsGlobalNamespace
+                                ? null
+                                : namedParamType.ContainingNamespace.ToDisplayString();
+                            proxyClassFqn = "global::" + (paramNs is null ? paramClassName : paramNs + "." + paramClassName);
+                        }
+                    }
+                }
+
+                paramsBuilder.Add(new ParamModel(p.Name, typeFqn, proxyClassFqn, isNullable));
             }
             if (skip)
                 continue;
@@ -146,7 +206,8 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
             PriorityFqn: priorityFqn,
             DefaultPriorityExpression: defaultExpr,
             BaseProxyFqn: baseProxyFqn,
-            Methods: methodsBuilder.ToImmutable());
+            Methods: methodsBuilder.ToImmutable(),
+            Diagnostics: diagnosticsBuilder.ToImmutable());
     }
 
     private static string MethodSignature(IMethodSymbol m)
@@ -182,16 +243,13 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
         }
 
         sb.Append("internal class ").Append(m.ClassName);
-        var canImplementInterface = m.Methods.All(mm => !mm.WrapInTask);
+        // The proxy intentionally does NOT implement the proxied interface.
+        // Implementing it makes it dangerously easy to confuse proxy objects
+        // (which live on the caller's thread) with real implementations
+        // (which live on the target thread), leading to cross-thread bugs.
         if (m.BaseProxyFqn is not null)
         {
             sb.Append(" : ").Append(m.BaseProxyFqn);
-            if (canImplementInterface)
-                sb.Append(", ").Append(m.InterfaceFqn);
-        }
-        else if (canImplementInterface)
-        {
-            sb.Append(" : ").Append(m.InterfaceFqn);
         }
         sb.AppendLine();
         sb.AppendLine("{");
@@ -233,15 +291,23 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
     private static void RenderMethod(StringBuilder sb, ProxyModel m, MethodModel method)
     {
         var paramListNoPriority = string.Join(", ",
-            method.Parameters.Select(p => p.TypeFqn + " " + p.Name));
+            method.Parameters.Select(p =>
+                (p.ProxyClassFqn is not null
+                    ? p.ProxyClassFqn + (p.IsNullable ? "?" : "")
+                    : p.TypeFqn) + " " + p.Name));
         var paramListWithPriority = paramListNoPriority.Length > 0
             ? paramListNoPriority + ", " + m.PriorityFqn + " priority"
             : m.PriorityFqn + " priority";
 
-        var argList = string.Join(", ", method.Parameters.Select(p => p.Name));
-        var argListPlusDefaultPriority = argList.Length > 0
-            ? argList + ", " + m.DefaultPriorityExpression
+        var paramNames = string.Join(", ", method.Parameters.Select(p => p.Name));
+        var paramNamesWithDefaultPriority = paramNames.Length > 0
+            ? paramNames + ", " + m.DefaultPriorityExpression
             : m.DefaultPriorityExpression;
+
+        var dispatchArgs = string.Join(", ", method.Parameters.Select(p =>
+            p.ProxyClassFqn is not null
+                ? p.Name + (p.IsNullable ? "?" : "") + ".ProxyTarget"
+                : p.Name));
 
         string returnType;
         if (!method.WrapInTask)
@@ -254,7 +320,7 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
         // Convenience overload — uses the configured default priority.
         sb.Pad(1).Append("public ").Append(returnType).Append(' ').Append(method.Name)
             .Append('(').Append(paramListNoPriority).Append(") => ")
-            .Append(method.Name).Append('(').Append(argListPlusDefaultPriority).AppendLine(");");
+            .Append(method.Name).Append('(').Append(paramNamesWithDefaultPriority).AppendLine(");");
         sb.AppendLine();
 
         sb.Pad(1).Append("public ").Append(returnType).Append(' ').Append(method.Name)
@@ -265,7 +331,7 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
         {
             // Fire-and-forget void.
             sb.Pad(2).Append("_marshaller(() => _target.").Append(method.Name)
-                .Append('(').Append(argList).AppendLine("), priority);");
+                .Append('(').Append(dispatchArgs).AppendLine("), priority);");
         }
         else
         {
@@ -284,13 +350,13 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
             sb.Pad(3).AppendLine("{");
             if (method.ReturnTypeFqn is null)
             {
-                sb.Pad(4).Append("_target.").Append(method.Name).Append('(').Append(argList).AppendLine(");");
+                sb.Pad(4).Append("_target.").Append(method.Name).Append('(').Append(dispatchArgs).AppendLine(");");
                 sb.Pad(4).AppendLine("tcs.TrySetResult(true);");
             }
             else
             {
                 sb.Pad(4).Append("var __result = _target.").Append(method.Name)
-                    .Append('(').Append(argList).AppendLine(");");
+                    .Append('(').Append(dispatchArgs).AppendLine(");");
                 sb.Pad(4).AppendLine("tcs.TrySetResult(__result);");
             }
             sb.Pad(3).AppendLine("}");
@@ -315,7 +381,8 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
         string PriorityFqn,
         string DefaultPriorityExpression,
         string? BaseProxyFqn,
-        ImmutableArray<MethodModel> Methods)
+        ImmutableArray<MethodModel> Methods,
+        ImmutableArray<ProxyDiagnosticInfo> Diagnostics)
     {
         public bool Equals(ProxyModel? other)
         {
@@ -327,7 +394,8 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
                 && PriorityFqn == other.PriorityFqn
                 && DefaultPriorityExpression == other.DefaultPriorityExpression
                 && BaseProxyFqn == other.BaseProxyFqn
-                && Methods.SequenceEqual(other.Methods);
+                && Methods.SequenceEqual(other.Methods)
+                && Diagnostics.SequenceEqual(other.Diagnostics);
         }
 
         public override int GetHashCode()
@@ -343,6 +411,7 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
                 h = h * 31 + (DefaultPriorityExpression?.GetHashCode() ?? 0);
                 h = h * 31 + (BaseProxyFqn?.GetHashCode() ?? 0);
                 foreach (var m in Methods) h = h * 31 + m.GetHashCode();
+                foreach (var d in Diagnostics) h = h * 31 + d.GetHashCode();
                 return h;
             }
         }
@@ -377,5 +446,12 @@ public sealed class CrossThreadProxyGenerator : IIncrementalGenerator
         }
     }
 
-    private sealed record ParamModel(string Name, string TypeFqn);
+    private sealed record ParamModel(string Name, string TypeFqn, string? ProxyClassFqn, bool IsNullable);
+
+    private sealed record ProxyDiagnosticInfo(
+        string MethodName,
+        string ParamName,
+        string ParamTypeFqn,
+        string ParamMarshallerFqn,
+        string ExpectedMarshallerFqn);
 }

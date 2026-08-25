@@ -109,10 +109,12 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             Rect GetBounds()
             {
                 var screens = _popup.Screens;
+                var anchorPoint = GetAnchorPoint(anchorRect, anchor);
+                var parentGeometryPoint = GetAnchorPoint(parentGeometry, anchor);
                 
-                var targetScreen =  screens.FirstOrDefault(s => s.Bounds.ContainsExclusive(anchorRect.TopLeft))
+                var targetScreen =  screens.FirstOrDefault(s => s.Bounds.ContainsExclusive(anchorPoint))
                                    ?? screens.FirstOrDefault(s => s.Bounds.Intersects(anchorRect))
-                                   ?? screens.FirstOrDefault(s => s.Bounds.ContainsExclusive(parentGeometry.TopLeft))
+                                   ?? screens.FirstOrDefault(s => s.Bounds.ContainsExclusive(parentGeometryPoint))
                                    ?? screens.FirstOrDefault(s => s.Bounds.Intersects(parentGeometry))
                                    ?? screens.FirstOrDefault();
 

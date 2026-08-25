@@ -251,6 +251,13 @@ namespace Avalonia.Controls
                 var orientation = Orientation;
                 var u = _realizedElements!.StartU;
 
+                // Collection changes before the realized range make its exact position unstable
+                // until the next measure. ScrollIntoView can intentionally defer that measure
+                // while waiting for an updated viewport, so use the same position estimate used
+                // when realizing an element instead of arranging the range at NaN.
+                if (double.IsNaN(u))
+                    u = GetOrEstimateElementU(_realizedElements.FirstIndex);
+
                 for (var i = 0; i < _realizedElements.Count; ++i)
                 {
                     var e = _realizedElements.Elements[i];
@@ -286,10 +293,28 @@ namespace Avalonia.Controls
                 // Ensure that the focused element is in the correct position.
                 if (_focusedElement is not null && _focusedIndex >= 0)
                 {
+                    var realizedEndU = u;
+                    var sizeU = orientation == Orientation.Horizontal ?
+                        _focusedElement.DesiredSize.Width :
+                        _focusedElement.DesiredSize.Height;
+
                     u = GetOrEstimateElementU(_focusedIndex);
+
+                    // The focused element's position is estimated as it's outside the realized
+                    // range. A bad estimate must not place it over the realized elements in the
+                    // viewport: an element before the realized range always ends at or before its
+                    // start, and one after it always starts at or after its end.
+                    if (_realizedElements.Count > 0 && !double.IsNaN(_realizedElements.StartU))
+                    {
+                        if (_focusedIndex < _realizedElements.FirstIndex)
+                            u = Math.Min(u, _realizedElements.StartU - sizeU);
+                        else if (_focusedIndex > _realizedElements.LastIndex)
+                            u = Math.Max(u, realizedEndU);
+                    }
+
                     var rect = orientation == Orientation.Horizontal ?
-                        new Rect(u, 0, _focusedElement.DesiredSize.Width, finalSize.Height) :
-                        new Rect(0, u, finalSize.Width, _focusedElement.DesiredSize.Height);
+                        new Rect(u, 0, sizeU, finalSize.Height) :
+                        new Rect(0, u, finalSize.Width, sizeU);
 
                     _focusedElement.Arrange(rect);
                 }
@@ -811,6 +836,18 @@ namespace Avalonia.Controls
                 return;
             }
 
+            var horizontal = Orientation == Orientation.Horizontal;
+            var viewportEnd = horizontal ? _viewport.Right : _viewport.Bottom;
+
+            if (!_hasReachedEnd && MathUtilities.GreaterThanOrClose(
+                viewportEnd,
+                horizontal ? Bounds.Width : Bounds.Height))
+            {
+                index = itemCount - 1;
+                position = viewportEnd - EstimateElementSizeU();
+                return;
+            }
+
             // If we have realised elements and a valid StartU then try to use this information to
             // get the anchor element.
             if (_realizedElements?.StartU is { } u && !double.IsNaN(u))
@@ -900,6 +937,9 @@ namespace Avalonia.Controls
             var index = viewport.anchorIndex;
             var horizontal = Orientation == Orientation.Horizontal;
             var u = viewport.anchorU;
+            var viewportEnd = horizontal ? _viewport.Right : _viewport.Bottom;
+            var anchorAtEnd = !_hasReachedEnd && index == items.Count - 1 &&
+                MathUtilities.GreaterThanOrClose(viewportEnd, horizontal ? Bounds.Width : Bounds.Height);
                     
             // Reset boundary flags
             _hasReachedStart = false;
@@ -921,6 +961,12 @@ namespace Avalonia.Controls
                 
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
+
+                if (anchorAtEnd && index == viewport.anchorIndex)
+                {
+                    u = viewportEnd - sizeU;
+                    viewport.anchorU = u;
+                }
 
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);

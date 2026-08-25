@@ -519,13 +519,8 @@ namespace Avalonia.Controls
             var selectedIndex = SelectedIndex;
             if (IsDropDownOpen && selectedIndex != -1)
             {
+                ScrollIntoView(selectedIndex);
                 var container = ContainerFromIndex(selectedIndex);
-
-                if (container == null && SelectedIndex != -1)
-                {
-                    ScrollIntoView(Selection.SelectedIndex);
-                    container = ContainerFromIndex(selectedIndex);
-                }
 
                 if (container != null && CanFocus(container))
                 {

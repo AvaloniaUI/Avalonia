@@ -64,9 +64,9 @@ namespace Avalonia.FreeDesktop.DBusIme
             _watchCts = new CancellationTokenSource();
             var cancellationToken = _watchCts.Token;
             foreach (var name in _knownNames)
-                WatchNameAsync(name);
+                _ = WatchNameAsync(name);
 
-            async void WatchNameAsync(string name)
+            async Task WatchNameAsync(string name)
             {
                 try
                 {
@@ -99,10 +99,13 @@ namespace Avalonia.FreeDesktop.DBusIme
                         OnOwnerChanged(name, owner);
                     }
                 }
-                catch (Exception e) when (!cancellationToken.IsCancellationRequested)
+                catch (Exception e)
                 {
-                    Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)
-                        ?.Log(this, $"WatchNameOwner for '{name}' failed: {e}");
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)
+                            ?.Log(this, $"WatchNameOwner for '{name}' failed: {e}");
+                    }
                 }
             }
         }
