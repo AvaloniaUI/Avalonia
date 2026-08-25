@@ -1,9 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Harfbuzz;
+using Avalonia.Headless;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -222,5 +231,88 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(1, target.SelectionEnd);
             }
         }
+
+        [Theory]
+        [InlineData(typeof(TimeoutException))]
+        [InlineData(typeof(OperationCanceledException))]
+        [InlineData(typeof(UnauthorizedAccessException))]
+        [InlineData(typeof(COMException))]
+        public void Copy_Does_Not_Throw_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(ClipboardServices);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateSelectableTextBlockInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, message, _) => messages.Add(message)))
+            {
+                using var syncContext = UnitTestSynchronizationContext.Begin();
+
+                target.Copy();
+
+                Assert.Null(Record.Exception(syncContext.ExecutePostedCallbacks));
+            }
+
+            Assert.Equal(1, clipboardImpl.SetDataCount);
+            Assert.Equal(["Failed to write text to clipboard: {Error}"], messages);
+        }
+
+        [Fact]
+        public void Copy_Does_Not_Swallow_Unexpected_Exceptions()
+        {
+            using var app = UnitTestApplication.Start(ClipboardServices);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(typeof(InvalidOperationException));
+            var target = CreateSelectableTextBlockInTopLevel(clipboardImpl);
+
+            using var syncContext = UnitTestSynchronizationContext.Begin();
+
+            target.Copy();
+
+            Assert.IsType<InvalidOperationException>(Record.Exception(syncContext.ExecutePostedCallbacks));
+        }
+
+        private static TestServices ClipboardServices
+            => TestServices.MockThreadingInterface.With(
+                assetLoader: new StandardAssetLoader(),
+                renderInterface: new HeadlessPlatformRenderInterface(),
+                textShaperImpl: new HarfBuzzTextShaper(),
+                fontManagerImpl: new TestFontManager());
+
+        private static SelectableTextBlock CreateSelectableTextBlockInTopLevel(IClipboardImpl clipboardImpl)
+        {
+            var target = new SelectableTextBlock
+            {
+                Text = "abcd",
+                SelectionStart = 1,
+                SelectionEnd = 3
+            };
+
+            var impl = new Mock<ITopLevelImpl>();
+            impl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
+            impl.Setup(x => x.TryGetFeature(typeof(IClipboard))).Returns(new Clipboard(clipboardImpl));
+            impl.SetupGet(x => x.RenderScaling).Returns(1);
+
+            var topLevel = new TestTopLevel(impl.Object)
+            {
+                Template = new FuncControlTemplate<TestTopLevel>((x, scope) =>
+                    new ContentPresenter
+                    {
+                        Name = "PART_ContentPresenter",
+                        [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
+                    }.RegisterInNameScope(scope)),
+                Content = target
+            };
+
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.True(target.CanCopy);
+
+            return target;
+        }
+
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl);
     }
 }
