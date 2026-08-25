@@ -626,6 +626,46 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        public static IEnumerable<object[]> MaxLinesEllipsisData
+        {
+            get
+            {
+                yield return new object[] { TextTrimming.CharacterEllipsis };
+                yield return new object[] { TextTrimming.WordEllipsis };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MaxLinesEllipsisData))]
+        public void Should_Add_Ellipsis_When_MaxLines_Cuts_Short_Wrapped_Line(TextTrimming trimming)
+        {
+            using (Start())
+            {
+                const string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+                const int maxLines = 2;
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: trimming,
+                    maxWidth: 180,
+                    maxLines: maxLines);
+
+                Assert.Equal(maxLines, layout.TextLines.Count);
+
+                var lastLine = layout.TextLines[layout.TextLines.Count - 1];
+                var formattedLineText = string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString()));
+
+                Assert.True(lastLine.HasCollapsed, "The wrapped line cut off by MaxLines must be collapsed.");
+                Assert.Equal('\u2026', formattedLineText.Last());
+
+                layout.Dispose();
+            }
+        }
+
         [Fact]
         public void Should_Produce_Fixed_Height_Lines()
         {

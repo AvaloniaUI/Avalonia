@@ -42,7 +42,8 @@ namespace Avalonia.Controls
     public abstract class TopLevel : ContentControl,
         ICloseable,
         IStyleHost,
-        ILogicalRoot
+        ILogicalRoot,
+        IThemeVariantRoot
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -122,6 +123,7 @@ namespace Avalonia.Controls
         private readonly IDisposable? _backGestureSubscription;
         private readonly Dictionary<AvaloniaProperty, Action> _platformImplBindings = new();
         private double _scaling;
+        private bool _isClosed;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
@@ -232,7 +234,7 @@ namespace Avalonia.Controls
 
 
 
-            impl.Closed = HandleClosed;
+            impl.Closed = EnsureClosed;
             impl.Paint = HandlePaint;
             impl.Resized = HandleResized;
             impl.ScalingChanged += HandleScalingChanged;
@@ -248,19 +250,19 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesAdded += ((IStyleHost)this).StylesAdded;
                 _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
             }
+
             if (_applicationThemeHost is { })
             {
                 SetValue(ActualThemeVariantProperty, _applicationThemeHost.ActualThemeVariant, BindingPriority.Template);
                 _applicationThemeHost.ActualThemeVariantChanged += GlobalActualThemeVariantChanged;
             }
+            else
+            {
+                ThemeVariant.UpdateActualThemeVariant(this);
+            }
+
             CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
             {
-                if(_applicationThemeHost is AvaloniaObject element)
-                {
-                    if (element.GetValue(ThemeVariantScope.RequestedThemeVariantProperty) is { } requestedThemeVariant)
-                        variant = requestedThemeVariant == ThemeVariant.Default ? ThemeVariant.Default : variant;
-                }
-                variant ??= ThemeVariant.Default;
                 PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant);
             });
 
@@ -399,6 +401,8 @@ namespace Avalonia.Controls
             get => GetValue(RequestedThemeVariantProperty);
             set => SetValue(RequestedThemeVariantProperty, value);
         }
+
+        bool IThemeVariantRoot.IsThemeVariantRoot => _applicationThemeHost is null;
 
         /// <summary>
         /// Occurs when physical Back Button is pressed or a back navigation has been requested.
@@ -657,6 +661,18 @@ namespace Avalonia.Controls
         private protected void StartRendering() => MediaContext.Instance.AddTopLevel(this, LayoutManager, Renderer);
 
         private protected void StopRendering() => MediaContext.Instance.RemoveTopLevel(this);
+
+        /// <summary>
+        /// Runs the top level teardown exactly once, no matter whether it was initiated by the
+        /// platform via <see cref="ITopLevelImpl.Closed"/> or by a managed <c>Dispose()</c>.
+        /// </summary>
+        private protected void EnsureClosed()
+        {
+            if (_isClosed)
+                return;
+            _isClosed = true;
+            HandleClosed();
+        }
 
         /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
