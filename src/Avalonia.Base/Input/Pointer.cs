@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.VisualTree;
@@ -18,6 +19,8 @@ namespace Avalonia.Input
         private static int s_NextFreePointerId = 1000;
         public static int GetNextFreeId() => s_NextFreePointerId++;
         
+        private bool _disposed;
+
         public Pointer(int id, PointerType type, bool isPrimary)
         {
             Id = id;
@@ -40,10 +43,25 @@ namespace Avalonia.Input
 
         }
 
-        internal void PlatformCaptureLost()
+        internal void PlatformCaptureLost() => CaptureLost(CaptureSource.Platform);
+
+        /// <summary>
+        /// Ends every capture the pointer holds, on the element and on a gesture recognizer.
+        /// </summary>
+        internal void CaptureLost(CaptureSource source)
+        {
+            if (_disposed)
+                return;
+
+            CaptureLostCore(source);
+        }
+
+        private void CaptureLostCore(CaptureSource source)
         {
             if (Captured != null)
-                Capture(null, CaptureSource.Platform);
+                CaptureCore(null, source);
+            CaptureGestureRecognizerCore(null);
+            IsGestureRecognitionSkipped = false;
         }
 
         public void Capture(IInputElement? control)
@@ -52,6 +70,17 @@ namespace Avalonia.Input
         }
 
         internal void Capture(IInputElement? control, CaptureSource source)
+        {
+            if (_disposed)
+            {
+                Debug.Assert(control is null, "Capturing a pointer that no longer exists.");
+                return;
+            }
+
+            CaptureCore(control, source);
+        }
+
+        private void CaptureCore(IInputElement? control, CaptureSource source)
         {
             var oldCapture = Captured;
             var oldSource = CaptureSource;
@@ -148,7 +177,14 @@ namespace Avalonia.Input
 
         public void Dispose()
         {
-            // callers are responsible for calling Capture(null, source) with an appropriate source
+            if (_disposed)
+                return;
+
+            // Mark the pointer gone first, so a capture lost handler can't capture it again.
+            // It no longer exists, so the platform is the only source the release can come from.
+            _disposed = true;
+
+            CaptureLostCore(CaptureSource.Platform);
         }
 
         /// <summary>
@@ -156,6 +192,17 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="gestureRecognizer">The gesture recognizer.</param>
         internal void CaptureGestureRecognizer(GestureRecognizer? gestureRecognizer)
+        {
+            if (_disposed)
+            {
+                Debug.Assert(gestureRecognizer is null, "Capturing a pointer that no longer exists to a gesture recognizer.");
+                return;
+            }
+
+            CaptureGestureRecognizerCore(gestureRecognizer);
+        }
+
+        private void CaptureGestureRecognizerCore(GestureRecognizer? gestureRecognizer)
         {
             if (CapturedGestureRecognizer != gestureRecognizer)
             {
