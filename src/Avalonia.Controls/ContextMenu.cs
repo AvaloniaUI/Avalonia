@@ -429,6 +429,9 @@ namespace Avalonia.Controls
                     e.Source as Control ?? control,
                     requestedByPointer ? contextMenu.Placement : PlacementMode.Bottom);
                 e.Handled = true;
+
+                if (e.IsHolding)
+                    control.PerformFeedback(FeedbackAction.Hold);
             }
         }
 

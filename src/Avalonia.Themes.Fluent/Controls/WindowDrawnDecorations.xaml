@@ -48,7 +48,7 @@
               <!-- Titlebar: background, title text, and drag area live in underlay -->
               <Panel x:Name="PART_TitleBar" VerticalAlignment="Top"
                      Height="{TemplateBinding TitleBarHeight}"
-                     Background="{DynamicResource SystemControlTransparentBrush}"
+                     Background="{DynamicResource TitleBarBackgroundBrush}"
                      IsVisible="{TemplateBinding HasTitleBar}"
                      WindowDecorationProperties.ElementRole="TitleBar" />
 
@@ -128,7 +128,8 @@
                    VerticalAlignment="Top"
                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
                    WindowDecorationProperties.ElementRole="TitleBar">
-              <TextBlock Text="{TemplateBinding Title}"
+              <TextBlock x:Name="PART_PopoverTitleText"
+                         Text="{TemplateBinding Title}"
                          VerticalAlignment="Center"
                          Margin="12,0,0,0"
                          FontSize="12" />
@@ -196,7 +197,8 @@
       <Setter Property="Opacity" Value="0.2"/>
     </Style>
 
-    <!-- Hide caption buttons when the platform does not support the action -->
+    <!-- Hide title bar elements when the platform does not support the action
+         or when they aren't requested by WindowDrawnDecorations.TitleBarDecorationHints -->
     <Style Selector="^:not(:has-minimize) /template/ Button#PART_MinimizeButton">
       <Setter Property="IsVisible" Value="False"/>
     </Style>
@@ -207,6 +209,18 @@
       <Setter Property="IsVisible" Value="False"/>
     </Style>
     <Style Selector="^:not(:has-fullscreen) /template/ Button#PART_PopoverFullScreenButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-close) /template/ Button#PART_CloseButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-close) /template/ Button#PART_PopoverCloseButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-title) /template/ Panel#PART_TitleTextPanel">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-title) /template/ TextBlock#PART_PopoverTitleText">
       <Setter Property="IsVisible" Value="False"/>
     </Style>
 

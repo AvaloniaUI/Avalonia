@@ -113,6 +113,24 @@ internal class BatchStreamWriter : IDisposable
         _currentDataSegment.ElementCount += size;
     }
 
+    public unsafe void Write(ReadOnlySpan<byte> data)
+    {
+        while (data.Length > 0)
+        {
+            if (_currentDataSegment.Data == IntPtr.Zero ||
+                _currentDataSegment.ElementCount == _memoryPool.BufferSize)
+                NextDataSegment();
+
+            var chunk = Math.Min(_memoryPool.BufferSize - _currentDataSegment.ElementCount, data.Length);
+            var destination = new Span<byte>(
+                (byte*)_currentDataSegment.Data + _currentDataSegment.ElementCount, chunk);
+            data.Slice(0, chunk).CopyTo(destination);
+
+            _currentDataSegment.ElementCount += chunk;
+            data = data.Slice(chunk);
+        }
+    }
+
     public void WriteObject(object? item)
     {
         if (_currentObjectSegment.Data == null ||
@@ -178,6 +196,34 @@ internal class BatchStreamReader : IDisposable
         }
 
         return rv;
+    }
+
+    public unsafe void Read(Span<byte> destination)
+    {
+        while (destination.Length > 0)
+        {
+            if (_currentDataSegment.Data == IntPtr.Zero)
+            {
+                if (_input.Structs.Count == 0)
+                    throw new EndOfStreamException();
+                _currentDataSegment = _input.Structs.Dequeue();
+                _memoryOffset = 0;
+            }
+
+            var chunk = Math.Min(_currentDataSegment.ElementCount - _memoryOffset, destination.Length);
+            var source = new ReadOnlySpan<byte>(
+                (byte*)_currentDataSegment.Data + _memoryOffset, chunk);
+            source.CopyTo(destination);
+
+            _memoryOffset += chunk;
+            destination = destination.Slice(chunk);
+
+            if (_memoryOffset == _currentDataSegment.ElementCount)
+            {
+                _memoryPool.Return(_currentDataSegment.Data);
+                _currentDataSegment = new();
+            }
+        }
     }
 
     public T ReadObject<T>() where T : class? => (T)ReadObject()!;

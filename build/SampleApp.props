@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
   <Target Name="GatherReferences" AfterTargets="CoreCompile">

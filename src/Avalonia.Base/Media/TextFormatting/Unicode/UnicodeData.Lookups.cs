@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -112,6 +113,53 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public static EastAsianWidthClass GetEastAsianWidthClass(uint codepoint)
         {
             return (EastAsianWidthClass)EastAsianWidthTrie.Trie.Get(codepoint);
+        }
+
+        /// <summary>
+        /// Determines whether the given codepoint's Script_Extensions property (UAX #24) contains
+        /// the supplied script. When the codepoint has no explicit Script_Extensions entry the
+        /// extensions set is taken to be the singleton of the codepoint's primary
+        /// <see cref="Script"/> property.
+        /// </summary>
+        /// <param name="codepoint">The codepoint in question.</param>
+        /// <param name="script">The script being tested.</param>
+        public static bool HasScriptExtension(uint codepoint, Script script)
+        {
+            if (script == Script.Unknown)
+            {
+                return false;
+            }
+
+            var packed = UnicodeDataTrie.Trie.Get(codepoint);
+            var setIndex = (int)((packed >> SCRIPTEXTENSIONS_SHIFT) & SCRIPTEXTENSIONS_MASK);
+
+            if (setIndex == 0)
+            {
+                var primary = (Script)((packed >> SCRIPT_SHIFT) & SCRIPT_MASK);
+                return primary == script;
+            }
+
+            var offsets = s_scriptExtensionSetOffsets;
+
+            if ((uint)(setIndex + 1) >= (uint)offsets.Length)
+            {
+                return false;
+            }
+
+            var setStart = offsets[setIndex];
+            var setEnd = offsets[setIndex + 1];
+            var sets = s_scriptExtensionSets;
+
+            if (setEnd > sets.Length || setStart > setEnd)
+            {
+                return false;
+            }
+
+            var target = (byte)script;
+
+            var set = sets.Slice(setStart, setEnd - setStart);
+
+            return set.Contains(target);
         }
     }
 }

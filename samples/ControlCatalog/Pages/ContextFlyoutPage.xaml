@@ -22,6 +22,7 @@
         <Setter Property="Margin" Value="8" />
         <Setter Property="Focusable" Value="True" />
         <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+        <Setter Property="PlatformFeedback.FeedbackType" Value="Auto"/>
       </Style>
       <Style Selector="Border.context-target > :is(Control)">
         <Setter Property="VerticalAlignment" Value="Center" />
