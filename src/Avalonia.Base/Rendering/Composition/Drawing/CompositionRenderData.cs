@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -100,4 +101,6 @@ internal class CompositionRenderData : ICompositorSerializable, IDisposable
     public void Render(IDrawingContextImpl context) => _stream.Replay(context);
 
     public bool HitTest(Point pt) => _stream.HitTest(pt);
+
+    public IntersectionResult HitTest(Geometry geometry) => _stream.HitTest(geometry);
 }

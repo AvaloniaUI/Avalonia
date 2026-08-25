@@ -1308,7 +1308,17 @@ namespace Avalonia.Controls
                 if (clipboard == null)
                     return;
 
-                await clipboard.SetTextAsync(text);
+                try
+                {
+                    await clipboard.SetTextAsync(text);
+                }
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                    return;
+                }
+
                 DeleteSelection();
             }
         }
@@ -1330,15 +1340,17 @@ namespace Avalonia.Controls
             if (!eventArgs.Handled)
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard is null)
+                    return;
 
                 try
                 {
-                    if (clipboard != null)
-                        await clipboard.SetTextAsync(text);
+                    await clipboard.SetTextAsync(text);
                 }
-                catch (UnauthorizedAccessException uex)
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
                 {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to write text to clipboard: {Error}", uex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
                 }
             }
         }
@@ -1365,13 +1377,10 @@ namespace Avalonia.Controls
                 {
                     text = await clipboard.TryGetTextAsync();
                 }
-                catch (TimeoutException)
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
                 {
-                    // Silently ignore.
-                }
-                catch (UnauthorizedAccessException uex)
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to read text from clipboard: {Error}", ex);
                 }
             }
 
@@ -2136,7 +2145,10 @@ namespace Avalonia.Controls
 
         internal static int CoerceCaretIndex(AvaloniaObject sender, int value)
         {
-            var text = sender.GetValue(TextProperty); // method also used by TextPresenter and SelectableTextBlock
+            // method also used by TextPresenter and SelectableTextBlock
+            var text = sender is SelectableTextBlock { HasComplexContent: true } textBlock
+                ? textBlock.Inlines?.Text
+                : sender.GetValue(TextProperty);
 
             if (text == null)
             {
