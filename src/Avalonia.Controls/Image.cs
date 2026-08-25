@@ -40,6 +40,7 @@ namespace Avalonia.Controls
                 StretchDirection.Both);
 
         private Rect _currentDrawingBounds;
+        private bool _subcribedToDrawingImageSource;
 
         static Image()
         {
@@ -158,15 +159,39 @@ namespace Avalonia.Controls
             if(change.Property == SourceProperty)
             {
                 _currentDrawingBounds = default;
-                if(change.OldValue is IAffectsRender oldAffectsRender)
+                if(change.OldValue is DrawingImage oldDrawingImage && _subcribedToDrawingImageSource)
                 {
-                    oldAffectsRender.Invalidated -= OnSourceInvalidated;
+                    _subcribedToDrawingImageSource = false;
+                    oldDrawingImage.Invalidated -= OnSourceInvalidated;
                 }
 
-                if(change.NewValue is IAffectsRender newAffectsRender)
+                if(change.NewValue is DrawingImage newDrawingImage && IsAttachedToVisualTree)
                 {
-                    newAffectsRender.Invalidated += OnSourceInvalidated;
+                    _subcribedToDrawingImageSource = true;
+                    newDrawingImage.Invalidated += OnSourceInvalidated;
                 }
+            }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            if(!_subcribedToDrawingImageSource && Source is DrawingImage drawingImage)
+            {
+                _subcribedToDrawingImageSource = true;
+                drawingImage.Invalidated += OnSourceInvalidated;
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            if (_subcribedToDrawingImageSource && Source is DrawingImage drawingImage)
+            {
+                _subcribedToDrawingImageSource = false;
+                drawingImage.Invalidated -= OnSourceInvalidated;
             }
         }
 
