@@ -38,6 +38,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Image, StretchDirection>(
                 nameof(StretchDirection),
                 StretchDirection.Both);
+
         private Rect _currentDrawingBounds;
 
         static Image()
