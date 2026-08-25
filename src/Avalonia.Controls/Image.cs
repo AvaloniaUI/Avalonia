@@ -40,7 +40,7 @@ namespace Avalonia.Controls
                 StretchDirection.Both);
 
         private Rect _currentDrawingBounds;
-        private bool _subcribedToDrawingImageSource;
+        private bool _subscribedToDrawingImageSource;
 
         static Image()
         {
@@ -159,15 +159,15 @@ namespace Avalonia.Controls
             if(change.Property == SourceProperty)
             {
                 _currentDrawingBounds = default;
-                if(change.OldValue is DrawingImage oldDrawingImage && _subcribedToDrawingImageSource)
+                if(change.OldValue is DrawingImage oldDrawingImage && _subscribedToDrawingImageSource)
                 {
-                    _subcribedToDrawingImageSource = false;
+                    _subscribedToDrawingImageSource = false;
                     oldDrawingImage.Invalidated -= OnSourceInvalidated;
                 }
 
                 if(change.NewValue is DrawingImage newDrawingImage && IsAttachedToVisualTree)
                 {
-                    _subcribedToDrawingImageSource = true;
+                    _subscribedToDrawingImageSource = true;
                     newDrawingImage.Invalidated += OnSourceInvalidated;
                 }
             }
@@ -177,9 +177,9 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            if(!_subcribedToDrawingImageSource && Source is DrawingImage drawingImage)
+            if(!_subscribedToDrawingImageSource && Source is DrawingImage drawingImage)
             {
-                _subcribedToDrawingImageSource = true;
+                _subscribedToDrawingImageSource = true;
                 drawingImage.Invalidated += OnSourceInvalidated;
             }
         }
@@ -188,9 +188,9 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
 
-            if (_subcribedToDrawingImageSource && Source is DrawingImage drawingImage)
+            if (_subscribedToDrawingImageSource && Source is DrawingImage drawingImage)
             {
-                _subcribedToDrawingImageSource = false;
+                _subscribedToDrawingImageSource = false;
                 drawingImage.Invalidated -= OnSourceInvalidated;
             }
         }
