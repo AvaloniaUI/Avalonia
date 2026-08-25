@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -319,8 +320,25 @@ public class CompositorBoundDrawingRecordingTests : ScopedTestBase
         // The server bounds pass runs on the render thread. Evaluating it from
         // a worker thread must not throw: every node, including the nested
         // recording node, answers from server-side data and resource shadows.
-        var bounds = Task.Run(() => outerRenderData.Server.Bounds).GetAwaiter().GetResult();
+        // A dedicated thread (not an awaited task) keeps the rest of the test
+        // on this dispatcher thread, which the disposals below verify against.
+        LtrbRect? bounds = null;
+        Exception? error = null;
+        var worker = new Thread(() =>
+        {
+            try
+            {
+                bounds = outerRenderData.Server.Bounds;
+            }
+            catch (Exception e)
+            {
+                error = e;
+            }
+        });
+        worker.Start();
+        worker.Join();
 
+        Assert.Null(error);
         Assert.Equal(new Rect(1, 1, 116, 106), bounds?.ToRect());
 
         outerRenderData.Dispose();

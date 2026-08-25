@@ -60,14 +60,10 @@ public class DrawingRecordingBenchmarks
             }
         });
 
-        // SVG <g filter><g opacity> pattern.
+        // SVG <g opacity> pattern.
         _layeredRecording = DrawingRecording.Create(ctx =>
         {
-            using (ctx.PushLayer(new LayerOptions
-            {
-                Opacity = 0.5,
-                Effect = new ImmutableBlurEffect(2)
-            }))
+            using (ctx.PushOpacity(0.5))
             {
                 for (int i = 0; i < 50; i++)
                     ctx.DrawRectangle(s_brush, s_pen, new Rect(i, i, 10, 10));
@@ -153,9 +149,8 @@ public class DrawingRecordingBenchmarks
     [Benchmark]
     public void Replay_Layered()
     {
-        // Includes PushLayer with blur effect — exercise the layer probe + paint
-        // composition path. Replays a fixed-size 50-item recording regardless
-        // of OpCount.
+        // Includes an opacity layer — exercises the push/pop scope path during
+        // replay. Replays a fixed-size 50-item recording regardless of OpCount.
         _target.DrawRecording(_layeredRecording);
     }
 
