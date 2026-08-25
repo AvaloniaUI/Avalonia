@@ -31,6 +31,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         private const string NotoSansScFont = "Avalonia.Skia.UnitTests.Fonts.NotoSansSC-Subset.ttf";
         private const string NotoSansJpFont = "Avalonia.Skia.UnitTests.Fonts.NotoSansJP-Subset.ttf";
 
+        // A colour emoji font, of the kind every platform ships: it covers the emoji block and, like
+        // practically every font, U+0020 - at an advance of its own that is not the primary's.
+        private const string EmojiFont = "Avalonia.Skia.UnitTests.Assets.TwitterColorEmoji-SVGinOT.ttf";
+
+        // U+1F642 🙂 — covered by the emoji font only.
+        private const int EmojiCodepoint = 0x1F642;
+
         // U+4E2D 中 — a CJK ideograph covered by neither curated font, and with no platform fallback,
         // so it has no match at all.
         private const int NoMatchCodepoint = 0x4E2D;
@@ -327,6 +334,119 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     FormattingObjectPool.Instance.TextRunLists.Return(ref toReturn);
                 }
             }
+        }
+
+        // A fallback run must end where the primary font regains coverage, whitespace included.
+        // Practically every font maps U+0020, so a run that is extended for as long as the fallback
+        // has glyphs swallows the space that follows the fallback text and shapes it with the
+        // fallback's space glyph - which is a full em in most emoji fonts.
+        [Fact]
+        public void GetShapeableCharacters_Does_Not_Absorb_Whitespace_Into_A_Fallback_Run()
+        {
+            using (Start(PrimaryFont, FallbackFont))
+            {
+                var fontManager = FontManager.Current;
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var defaultGlyphTypeface = defaultProperties.CachedGlyphTypeface;
+                var defaultFontFamily = defaultProperties.Typeface.FontFamily;
+
+                // Preconditions: the primary lacks the Hebrew letter but covers both the space and the
+                // letter after it, and the fallback that covers the Hebrew letter maps the space too -
+                // which is what lets the fallback run reach past the letter today.
+                Assert.False(defaultGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(FallbackCodepoint, out _));
+                Assert.True(defaultGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(' ', out _));
+                Assert.True(defaultGlyphTypeface.CharacterToGlyphMap.TryGetGlyph('b', out _));
+
+                Assert.True(fontManager.TryMatchCharacter(FallbackCodepoint, FontStyle.Normal, FontWeight.Normal,
+                    FontStretch.Normal, defaultFontFamily, null, out var fallbackTypeface));
+                Assert.True(fontManager.TryGetGlyphTypeface(fallbackTypeface, out var fallbackGlyphTypeface));
+                Assert.True(fallbackGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(' ', out _));
+
+                var text = (char.ConvertFromUtf32(FallbackCodepoint) + " b").AsMemory();
+
+                var textCharacters = new TextCharacters(text, defaultProperties);
+
+                var results = FormattingObjectPool.Instance.TextRunLists.Rent();
+
+                try
+                {
+                    TextRunProperties? previousProperties = null;
+
+                    textCharacters.GetShapeableCharacters(text, 0, fontManager, ref previousProperties, results);
+
+                    Assert.Equal(2, results.Count);
+
+                    // The fallback run covers the Hebrew letter only. Before the fix it was 2 characters
+                    // long: the space was pulled into the fallback run and rendered with its metrics.
+                    Assert.Equal(1, results[0].Length);
+                    Assert.Equal(fallbackTypeface, results[0].Properties!.Typeface);
+
+                    // The space returns to the primary along with the rest of the text.
+                    Assert.Equal(2, results[1].Length);
+                    Assert.Equal(defaultProperties.Typeface, results[1].Properties!.Typeface);
+                }
+                finally
+                {
+                    FormattingObjectPool.RentedList<TextRun>? toReturn = results;
+                    FormattingObjectPool.Instance.TextRunLists.Return(ref toReturn);
+                }
+            }
+        }
+
+        // The user-visible half of the same defect: the absorbed space is measured with the fallback
+        // font, so a space typed after an emoji has a different advance than the same space elsewhere
+        // in the line - a full em with the platform emoji fonts, and a narrower space with the emoji
+        // font bundled here. Either way it is not the primary's.
+        // https://github.com/AvaloniaUI/Avalonia/issues/14011
+        [Fact]
+        public void FormatLine_Keeps_A_Space_After_A_Fallback_Run_At_The_Primary_Width()
+        {
+            using (Start(PrimaryFont, EmojiFont))
+            {
+                var fontManager = FontManager.Current;
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var defaultGlyphTypeface = defaultProperties.CachedGlyphTypeface;
+
+                Assert.False(defaultGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(EmojiCodepoint, out _));
+
+                Assert.True(fontManager.TryMatchCharacter(EmojiCodepoint, FontStyle.Normal, FontWeight.Normal,
+                    FontStretch.Normal, defaultProperties.Typeface.FontFamily, null, out var emojiTypeface));
+                Assert.True(fontManager.TryGetGlyphTypeface(emojiTypeface, out var emojiGlyphTypeface));
+
+                // The whole point of the test: the two fonts disagree about how wide a space is, so
+                // whichever font shapes it is directly observable in the line width.
+                Assert.NotEqual(SpaceAdvanceInEm(defaultGlyphTypeface), SpaceAdvanceInEm(emojiGlyphTypeface), 3);
+
+                var formatter = new TextFormatterImpl();
+
+                double Width(string text)
+                {
+                    var textLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties), 0,
+                        double.PositiveInfinity, new GenericTextParagraphProperties(defaultProperties));
+
+                    Assert.NotNull(textLine);
+
+                    return textLine.WidthIncludingTrailingWhitespace;
+                }
+
+                var emoji = char.ConvertFromUtf32(EmojiCodepoint);
+
+                // Isolate the space by differencing, so the surrounding glyphs' advances cancel out.
+                var plainSpace = Width("a b") - Width("ab");
+                var spaceAfterFallback = Width(emoji + " b") - Width(emoji + "b");
+
+                Assert.Equal(plainSpace, spaceAfterFallback, 3);
+            }
+        }
+
+        private static double SpaceAdvanceInEm(GlyphTypeface glyphTypeface)
+        {
+            Assert.True(glyphTypeface.CharacterToGlyphMap.TryGetGlyph(' ', out var glyph));
+            Assert.True(glyphTypeface.TryGetHorizontalGlyphAdvance(glyph, out var advance));
+
+            return (double)advance / glyphTypeface.Metrics.DesignEmHeight;
         }
 
         // A spread of combining marks (all grapheme-cluster Extend) likely present in a broad fallback
