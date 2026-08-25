@@ -77,11 +77,16 @@
                       Data="M10 2.5a7.5 7.5 0 0 1 5.964 12.048l4.743 4.745a1 1 0 0 1-1.32 1.497l-.094-.083-4.745-4.743A7.5 7.5 0 1 1 10 2.5Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z" />
           </TextBox.InnerLeftContent>
         </TextBox>
-        <Border HorizontalAlignment="Stretch" Padding="10">
-          <Image Source="/Assets/Icon.png" VerticalAlignment="Center"
-                 HorizontalAlignment="Center"
-                 MaxHeight="120"
-                 Stretch="Uniform"/>
+        <Border HorizontalAlignment="Center" Padding="20"
+                Background="Transparent"
+                Cursor="Hand"
+                Tapped="AvaloniaIcon_OnTapped">
+          <PathIcon VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Height="100"
+                    Width="100"
+                    Foreground="#007DF9"
+                    Data="M24 0C37.2548 0 48 10.7452 48 24V42C48 45.3137 45.3137 48 42 48H24C10.7452 48 0 37.2548 0 24C0 10.7452 10.7452 0 24 0ZM24 7C16.3489 7 9.87832 12.0545 7.74496 19.0065C10.3931 19.1342 12.5 21.321 12.5 24C12.5 26.6793 10.3926 28.8664 7.74496 28.9941C9.83517 35.8054 16.0901 40.7958 23.5395 40.9939C26.6226 40.9252 29.1092 40.2605 31 39V41H41V24C41 14.827 33.7348 7.35088 24.6446 7.012L24.323 7.00301L24 7ZM24 16C28.4183 16 32 19.5817 32 24C32 28.4183 28.4183 32 24 32C19.5817 32 16 28.4183 16 24C16 19.5817 19.5817 16 24 16ZM7.5 20.5C5.567 20.5 4 22.067 4 24C4 25.933 5.567 27.5 7.5 27.5C9.433 27.5 11 25.933 11 24C11 22.067 9.433 20.5 7.5 20.5Z" />
         </Border>
       </DockPanel>
     </DataTemplate>
