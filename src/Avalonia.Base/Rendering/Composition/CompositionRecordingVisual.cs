@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -77,4 +78,7 @@ public class CompositionRecordingVisual : CompositionContainerVisual
     }
 
     internal override bool HitTest(Point pt) => _recording?.HitTest(pt) ?? false;
+
+    internal override IntersectionResult HitTest(Geometry geometry) =>
+        _recording?.HitTest(geometry) ?? IntersectionResult.Empty;
 }

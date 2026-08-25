@@ -13,7 +13,15 @@ namespace Avalonia.Base.UnitTests.Composition;
 
 public class CompositorBoundDrawingRecordingTests : ScopedTestBase
 {
-    private readonly CompositorTestServices _services = new();
+    // Constructed after the ScopedTestBase constructor has replaced the locator;
+    // a field initializer would run first and its service registrations would be
+    // discarded, leaving locator-dependent members (e.g. geometries) unresolvable.
+    private readonly CompositorTestServices _services;
+
+    public CompositorBoundDrawingRecordingTests()
+    {
+        _services = new CompositorTestServices();
+    }
 
     public override void Dispose()
     {
@@ -92,6 +100,19 @@ public class CompositorBoundDrawingRecordingTests : ScopedTestBase
 
         Assert.True(recording.HitTest(new Point(50, 30)));
         Assert.False(recording.HitTest(new Point(0, 0)));
+        recording.Dispose();
+    }
+
+    [Fact]
+    public void Compositor_Bound_Geometry_HitTest_Works()
+    {
+        var recording = DrawingRecording.Create(_services.Compositor, ctx =>
+        {
+            ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
+        });
+
+        Assert.True(recording.HitTest(new RectangleGeometry(new Rect(40, 20, 20, 20))) > IntersectionResult.Empty);
+        Assert.False(recording.HitTest(new RectangleGeometry(new Rect(200, 200, 20, 20))) > IntersectionResult.Empty);
         recording.Dispose();
     }
 
