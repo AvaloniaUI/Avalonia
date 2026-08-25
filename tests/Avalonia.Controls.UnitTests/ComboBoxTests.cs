@@ -825,6 +825,99 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(item, textBlock.Tag);
         }
 
+        [Fact]
+        public void ItemTemplate_Is_Applied_To_Control_Item_In_SelectionBox_When_Changed()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var item = new Canvas();
+            var target = new ComboBox { Items = { item }, SelectedIndex = 0 };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            AssertSelectionBoxItemIsVisualBrushOf(target, item);
+
+            target.ItemTemplate = new FuncDataTemplate<object?>((x, _) => new TextBlock { Tag = x });
+            window.LayoutManager.ExecuteLayoutPass();
+
+            var textBlock = Assert.IsType<TextBlock>(GetSelectionBoxControl(target).Presenter?.Child);
+            Assert.Same(item, textBlock.Tag);
+
+            target.ItemTemplate = null;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            AssertSelectionBoxItemIsVisualBrushOf(target, item);
+        }
+
+        [Fact]
+        public void DisplayMemberBinding_Is_Applied_To_Control_Item_In_SelectionBox_When_Changed()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var item = new Canvas { Tag = "foo" };
+            var target = new ComboBox { Items = { item }, SelectedIndex = 0 };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            AssertSelectionBoxItemIsVisualBrushOf(target, item);
+
+            target.DisplayMemberBinding = CompiledBinding.Create((Canvas c) => c.Tag);
+            window.LayoutManager.ExecuteLayoutPass();
+
+            var textBlock = Assert.IsType<TextBlock>(GetSelectionBoxControl(target).Presenter?.Child);
+            Assert.Equal("foo", textBlock.Text);
+
+            target.DisplayMemberBinding = null;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            AssertSelectionBoxItemIsVisualBrushOf(target, item);
+        }
+
+        [Fact]
+        public void SelectionBoxItemTemplate_Is_Applied_To_Control_Item_In_SelectionBox_When_Changed()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var item = new Canvas();
+            var target = new ComboBox { Items = { item }, SelectedIndex = 0 };
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+
+            AssertSelectionBoxItemIsVisualBrushOf(target, item);
+
+            target.SelectionBoxItemTemplate = new FuncDataTemplate<object?>((x, _) => new TextBlock { Tag = x });
+            window.LayoutManager.ExecuteLayoutPass();
+
+            var textBlock = Assert.IsType<TextBlock>(GetSelectionBoxControl(target).Presenter?.Child);
+            Assert.Same(item, textBlock.Tag);
+
+            target.SelectionBoxItemTemplate = null;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            AssertSelectionBoxItemIsVisualBrushOf(target, item);
+        }
+
+        private static ContentControl GetSelectionBoxControl(ComboBox target)
+        {
+            var selectionBoxControl = target.FindDescendantOfType<ContentControl>(
+                false, c => c.ContentTemplate == target.SelectionBoxItemTemplate);
+            Assert.NotNull(selectionBoxControl);
+            return selectionBoxControl;
+        }
+
+        private static void AssertSelectionBoxItemIsVisualBrushOf(ComboBox target, Control item)
+        {
+            var rectangle = Assert.IsType<Rectangle>(target.SelectionBoxItem);
+            var visualBrush = Assert.IsType<VisualBrush>(rectangle.Fill);
+            Assert.Same(item, visualBrush.Visual);
+        }
+
         private sealed record Item(string Value, string Display);
 
         [Fact]
