@@ -101,7 +101,7 @@ namespace Avalonia.UnitTests
                 else
                     target.RaiseEvent(e);
 
-                _pointer.CaptureLost(CaptureSource.Implicit);
+                _pointer.CaptureLost(CaptureSource.Explicit);
             }
             else
                 Move(target, source, position ?? default);
