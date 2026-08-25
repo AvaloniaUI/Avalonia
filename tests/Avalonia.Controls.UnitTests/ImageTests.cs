@@ -186,13 +186,12 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Size(500, 500), target.DesiredSize);
 
-            Dispatcher.UIThread.Invoke(() =>
-            {
-                drawing.Geometry = new RectangleGeometry(new Rect(0, 0, 600, 600));
-                Dispatcher.UIThread.RunJobs();
-                root.LayoutManager.ExecuteLayoutPass();
-                Assert.Equal(new Size(600, 600), target.DesiredSize);
-            });
+            drawing.Geometry = new RectangleGeometry(new Rect(0, 0, 600, 600));
+
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(new Size(600, 600), target.DesiredSize);
         }
 
         private static IBitmap CreateBitmap(int width, int height)
