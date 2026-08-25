@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
@@ -114,6 +115,32 @@ public class DrawingRecordingTests
     }
 
     [Fact]
+    public void HitTest_Geometry_Intersecting_Reports_Intersection()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+        using var recording = DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
+        });
+
+        Assert.True(recording.HitTest(new RectangleGeometry(new Rect(40, 20, 20, 20))) > IntersectionResult.Empty);
+    }
+
+    [Fact]
+    public void HitTest_Geometry_Outside_Reports_No_Intersection()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+        using var recording = DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
+        });
+
+        Assert.False(recording.HitTest(new RectangleGeometry(new Rect(200, 200, 20, 20))) > IntersectionResult.Empty);
+    }
+
+    [Fact]
     public void Disposed_Recording_Throws_On_Bounds()
     {
         var recording = DrawingRecording.Create(ctx =>
@@ -135,7 +162,7 @@ public class DrawingRecordingTests
         });
 
         recording.Dispose();
-        Assert.Throws<ObjectDisposedException>(() => recording.HitTest(default));
+        Assert.Throws<ObjectDisposedException>(() => recording.HitTest(default(Point)));
     }
 
     [Fact]
@@ -254,6 +281,39 @@ public class DrawingRecordingTests
 
         Assert.True(outer.HitTest(new Point(105, 105)));
         Assert.False(outer.HitTest(new Point(5, 5)));
+    }
+
+    [Fact]
+    public void DrawRecording_With_Matrix_Geometry_HitTest_Uses_Transformed_Bounds()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+        using var inner = DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 10, 10));
+        });
+
+        using var outer = DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawRecording(inner, Matrix.CreateTranslation(100, 100));
+        });
+
+        Assert.True(outer.HitTest(new RectangleGeometry(new Rect(105, 105, 10, 10))) > IntersectionResult.Empty);
+        Assert.False(outer.HitTest(new RectangleGeometry(new Rect(5, 5, 10, 10))) > IntersectionResult.Empty);
+    }
+
+    [Fact]
+    public void Disposed_Recording_Throws_On_Geometry_HitTest()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+        var recording = DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
+        });
+
+        recording.Dispose();
+        Assert.Throws<ObjectDisposedException>(() => recording.HitTest(new RectangleGeometry(new Rect(0, 0, 1, 1))));
     }
 
     [Fact]

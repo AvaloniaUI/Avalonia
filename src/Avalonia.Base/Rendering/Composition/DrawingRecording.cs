@@ -201,6 +201,17 @@ public sealed class DrawingRecording : IDisposable
     }
 
     /// <summary>
+    /// Hit tests the recorded content against a geometry.
+    /// </summary>
+    public IntersectionResult HitTest(Geometry geometry)
+    {
+        ThrowIfDisposed();
+        if (_renderData != null)
+            return _renderData.HitTest(geometry);
+        return _stream!.HitTest(geometry);
+    }
+
+    /// <summary>
     /// Raised on the UI thread after a compositor commit when <see cref="Bounds"/>
     /// has changed since the previous commit (or since the first subscription).
     /// Supported on compositor-bound recordings only; immutable recordings never
