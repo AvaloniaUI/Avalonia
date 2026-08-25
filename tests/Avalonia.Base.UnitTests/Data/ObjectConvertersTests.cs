@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data
 {
-    public class ObjectMultiConverter_Tests
+    public class ObjectConvertersTests
     {
         [Theory]
         [InlineData(null, null, null, true)]
@@ -15,9 +15,9 @@ namespace Avalonia.Base.UnitTests.Data
         [InlineData(null, "value", null, false)]
         [InlineData("value", null, null, false)]
         [InlineData("value", "value", "value", false)]
-        public void ObjectMultiConverter_AreAllNull_Works(object? value1, object? value2, object? value3, bool valid)
+        public void ObjectConvertersTests_AreAllNull_Works(object? value1, object? value2, object? value3, bool valid)
         {
-            var converter = ObjectMultiConverter.AreAllNull;
+            var converter = ObjectConverters.AreAllNull;
             var result = converter.Convert([value1, value2, value3], typeof(bool), null, CultureInfo.CurrentCulture);
             Assert.Equal(valid, Assert.IsType<bool>(result));
         }
@@ -28,9 +28,9 @@ namespace Avalonia.Base.UnitTests.Data
         [InlineData(null, "value", null, false)]
         [InlineData("value", null, null, false)]
         [InlineData("value", "value", "value", true)]
-        public void ObjectMultiConverter_AreAnyNull_Works(object? value1, object? value2, object? value3, bool valid)
+        public void ObjectConvertersTests_AreAnyNull_Works(object? value1, object? value2, object? value3, bool valid)
         {
-            var converter = ObjectMultiConverter.AreAnyNull;
+            var converter = ObjectConverters.AreAnyNull;
             var result = converter.Convert([value1, value2, value3], typeof(bool), null, CultureInfo.CurrentCulture);
             Assert.Equal(valid, Assert.IsType<bool>(result));
         }
@@ -42,9 +42,9 @@ namespace Avalonia.Base.UnitTests.Data
         [InlineData("value", "value", "value1", false)]
         [InlineData("value1", "value", "value1", false)]
         [InlineData("value", "value", 1, false)]
-        public void ObjectMultiConverter_AreEqual_Works(object? value1, object? value2, object? value3, bool valid)
+        public void ObjectConvertersTests_AreEqual_Works(object? value1, object? value2, object? value3, bool valid)
         {
-            var converter = ObjectMultiConverter.AreAllEqual;
+            var converter = ObjectConverters.AreAllEqual;
             var result = converter.Convert([value1, value2, value3], typeof(bool), null, CultureInfo.CurrentCulture);
             Assert.Equal(valid, Assert.IsType<bool>(result));
         }
@@ -53,7 +53,7 @@ namespace Avalonia.Base.UnitTests.Data
         [InlineData(true, true, true)]
         [InlineData(false, true, false)]
         [InlineData(false, false, true)]
-        public void ObjectMultiConverter_AreEqual_Edge_Works(bool empty, bool unique, bool valid)
+        public void ObjectConvertersTests_AreEqual_Edge_Works(bool empty, bool unique, bool valid)
         {
             ICollection<object?> values;
             if (empty)
@@ -63,7 +63,7 @@ namespace Avalonia.Base.UnitTests.Data
             else
                 values = ["1", "1"];
 
-            var converter = ObjectMultiConverter.AreAllEqual;
+            var converter = ObjectConverters.AreAllEqual;
             var result = converter.Convert(values.ToList(), typeof(bool), null, CultureInfo.CurrentCulture);
             Assert.Equal(valid, Assert.IsType<bool>(result));
         }
