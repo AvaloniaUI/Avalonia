@@ -1319,6 +1319,48 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Popup_IsHitTestVisible_Defaults_To_True()
+        {
+            using (CreateServices())
+            {
+                Assert.True(new Popup().IsHitTestVisible);
+            }
+        }
+
+        [Fact]
+        public void Popup_Forwards_IsHitTestVisible_To_Host_On_Open()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup { IsHitTestVisible = false };
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.Open();
+
+                Assert.False(target.Host!.IsHitTestVisible);
+            }
+        }
+
+        [Fact]
+        public void Popup_Forwards_IsHitTestVisible_Changes_To_Open_Host()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.Open();
+                Assert.True(target.Host!.IsHitTestVisible);
+
+                target.IsHitTestVisible = false;
+
+                Assert.False(target.Host!.IsHitTestVisible);
+            }
+        }
+
+        [Fact]
         public void Popup_Open_With_Correct_IsUsingOverlayLayer_And_Disabled_OverlayLayer()
         {
             using (CreateServices())
