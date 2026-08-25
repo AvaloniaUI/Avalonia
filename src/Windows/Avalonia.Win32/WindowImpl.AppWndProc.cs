@@ -583,7 +583,6 @@ namespace Avalonia.Win32
                         break;
                     }
                 case WindowsMessage.WM_POINTERLEAVE:
-                case WindowsMessage.WM_POINTERCAPTURECHANGED:
                     {
                         if (!_wmPointerEnabled)
                         {
@@ -591,6 +590,17 @@ namespace Avalonia.Win32
                         }
                         GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
                         var eventType = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
+                        e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
+                        break;
+                    }
+                case WindowsMessage.WM_POINTERCAPTURECHANGED:
+                    {
+                        if (!_wmPointerEnabled)
+                        {
+                            break;
+                        }
+                        GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
+                        var eventType = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.CancelCapture;
                         e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
                         break;
                     }
@@ -1300,7 +1310,7 @@ namespace Avalonia.Win32
             var isTouch = info.pointerType == PointerInputType.PT_TOUCH;
             if (info.pointerFlags.HasFlag(PointerFlags.POINTER_FLAG_CANCELED))
             {
-                return isTouch ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
+                return isTouch ? RawPointerEventType.TouchCancel : RawPointerEventType.CancelCapture;
             }
 
             var eventType = ToEventType(info.ButtonChangeType, isTouch);
