@@ -23,11 +23,11 @@ namespace Avalonia.Base.UnitTests.Data
         }
 
         [Theory]
-        [InlineData(null, null, null, false)]
-        [InlineData(null, null, "value", false)]
-        [InlineData(null, "value", null, false)]
-        [InlineData("value", null, null, false)]
-        [InlineData("value", "value", "value", true)]
+        [InlineData(null, null, null, true)]
+        [InlineData(null, null, "value", true)]
+        [InlineData(null, "value", null, true)]
+        [InlineData("value", null, null, true)]
+        [InlineData("value", "value", "value", false)]
         public void ObjectConvertersTests_AreAnyNull_Works(object? value1, object? value2, object? value3, bool valid)
         {
             var converter = ObjectConverters.AreAnyNull;
