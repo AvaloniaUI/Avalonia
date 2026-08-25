@@ -27,6 +27,9 @@ namespace Avalonia.FreeDesktop
         // a refused acquisition from being mistaken for ownership, and lets a hide that races the
         // request wait for it before releasing.
         private Task? _sysTrayServiceNameRequest;
+        // The bus keeps a name registered until the release is acknowledged, so a show right after a
+        // hide has to wait this out before asking for the same name again.
+        private Task? _sysTrayServiceNameRelease;
         private string? _tooltipText;
         private bool _isDisposed;
         private bool _serviceConnected;
@@ -134,6 +137,8 @@ namespace Avalonia.FreeDesktop
             if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _statusNotifierWatcher is null)
                 return;
 
+            Task? request = null;
+
             try
             {
                 // Reused for the lifetime of the icon: a new instance id looks like a new item to the host.
@@ -148,8 +153,23 @@ namespace Avalonia.FreeDesktop
                     _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
                 }
 
-                _sysTrayServiceNameRequest ??= _connection.RequestNameAsync(_sysTrayServiceName);
-                await _sysTrayServiceNameRequest;
+                if (_sysTrayServiceNameRelease is { } release)
+                {
+                    await release;
+                    if (ReferenceEquals(_sysTrayServiceNameRelease, release))
+                        _sysTrayServiceNameRelease = null;
+                    if (!ShouldShowTrayIcon)
+                        return;
+                }
+
+                request = _sysTrayServiceNameRequest ??= _connection.RequestNameAsync(_sysTrayServiceName);
+                await request;
+
+                // A hide or a dispose during the request queued its release on this very task, so it runs
+                // after this continuation: exporting now would leave the object up under a name that is no
+                // longer owned, which is what the duplicate item grows from.
+                if (!ShouldShowTrayIcon || !ReferenceEquals(_sysTrayServiceNameRequest, request))
+                    return;
 
                 // Exported only while the name is owned: a host scanning the bus would otherwise find the
                 // object under the unique connection name and register a second, duplicate item.
@@ -157,14 +177,18 @@ namespace Avalonia.FreeDesktop
 
                 await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
+                if (!ShouldShowTrayIcon)
+                    return;
+
                 _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
                 _statusNotifierItemDbusObj.SetIcon(_icon);
             }
             catch (Exception e)
             {
-                // A refused name must not stick around as if it were owned: drop the request so the
-                // next attempt asks again. A failure after that point leaves ownership untouched.
-                if (_sysTrayServiceNameRequest is { Status: not TaskStatus.RanToCompletion })
+                // A refused name must not stick around as if it were owned: drop the request so the next
+                // attempt asks again. Only this call's own request, and only when it never completed: a
+                // failure further down leaves ownership untouched, as does a newer request replacing it.
+                if (request is { Status: not TaskStatus.RanToCompletion } && ReferenceEquals(_sysTrayServiceNameRequest, request))
                     _sysTrayServiceNameRequest = null;
 
                 if (!_isDisposed)
@@ -172,6 +196,10 @@ namespace Avalonia.FreeDesktop
                         ?.Log(this, "Unable to register the system tray icon.\n{Exception}", e);
             }
         }
+
+        // Entry conditions of CreateTrayIcon, re-read after every await: the icon can be hidden or
+        // disposed while the bus answers.
+        private bool ShouldShowTrayIcon => !_isDisposed && _isVisible && _serviceConnected;
 
         private void DestroyTrayIcon()
         {
@@ -192,10 +220,10 @@ namespace Avalonia.FreeDesktop
                 return;
 
             _sysTrayServiceNameRequest = null;
-            ReleaseTrayServiceName(request, _connection, _sysTrayServiceName);
+            _sysTrayServiceNameRelease = ReleaseTrayServiceName(request, _connection, _sysTrayServiceName);
         }
 
-        private async void ReleaseTrayServiceName(Task request, DBusConnection connection, string name)
+        private async Task ReleaseTrayServiceName(Task request, DBusConnection connection, string name)
         {
             try
             {
