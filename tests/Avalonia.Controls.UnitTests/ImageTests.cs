@@ -1,7 +1,8 @@
-using Moq;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -163,6 +164,35 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(0, 0, 25, 100));
 
             Assert.Equal(new Size(25, 100), target.Bounds.Size);
+        }
+
+        [Fact]
+        public void DrawingImage_Source_Invalidates_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            GeometryDrawing drawing = new GeometryDrawing();
+            drawing.Geometry = new RectangleGeometry(new Rect(0, 0, 500, 500));
+            DrawingImage image = new DrawingImage(drawing);
+            var target = new Image
+            {
+                Stretch = Stretch.None,
+                HorizontalAlignment = Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Layout.VerticalAlignment.Center,
+                Source = image
+            };
+
+            var root = new TestRoot(target);
+            root.ExecuteInitialLayoutPass();
+
+            Assert.Equal(new Size(500, 500), target.DesiredSize);
+
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                drawing.Geometry = new RectangleGeometry(new Rect(0, 0, 600, 600));
+                Dispatcher.UIThread.RunJobs();
+                root.LayoutManager.ExecuteLayoutPass();
+                Assert.Equal(new Size(600, 600), target.DesiredSize);
+            });
         }
 
         private static IBitmap CreateBitmap(int width, int height)

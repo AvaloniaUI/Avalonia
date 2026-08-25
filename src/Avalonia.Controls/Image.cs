@@ -38,6 +38,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Image, StretchDirection>(
                 nameof(StretchDirection),
                 StretchDirection.Both);
+        private Rect _currentDrawingBounds;
 
         static Image()
         {
@@ -155,6 +156,7 @@ namespace Avalonia.Controls
 
             if(change.Property == SourceProperty)
             {
+                _currentDrawingBounds = default;
                 if(change.OldValue is IAffectsRender oldAffectsRender)
                 {
                     oldAffectsRender.Invalidated -= OnSourceInvalidated;
@@ -169,7 +171,15 @@ namespace Avalonia.Controls
 
         private void OnSourceInvalidated(object? sender, EventArgs e)
         {
-            InvalidateMeasure();
+             if(Source is DrawingImage drawingImage && drawingImage.Drawing is { } drawing)
+            {
+                var bounds = drawing.GetBounds();
+                if(bounds != _currentDrawingBounds)
+                {
+                    InvalidateMeasure();
+                }
+                _currentDrawingBounds = bounds;
+            }
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
