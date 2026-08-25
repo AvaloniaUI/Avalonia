@@ -51,6 +51,20 @@ namespace Avalonia.Controls
            AvaloniaProperty.Register<TimePicker, string>(nameof(ClockIdentifier), "12HourClock", coerce: CoerceClockIdentifier);
         
         /// <summary>
+        /// Defines the <see cref="VerticalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<TimePicker>();
+
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the control.
+        /// </summary>
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+        /// <summary>
         /// Defines the <see cref="UseSeconds"/> property
         /// </summary>
         public static readonly StyledProperty<bool> UseSecondsProperty =
