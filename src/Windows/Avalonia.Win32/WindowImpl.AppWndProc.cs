@@ -238,7 +238,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_SYSCOMMAND:
                     // Disable system handling of Alt/F10 menu keys.
-                    if ((SysCommands)wParam == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0)
+                    if (GetSysCommand(wParam) == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0)
                         return IntPtr.Zero;
                     break;
 
@@ -1349,7 +1349,7 @@ namespace Avalonia.Win32
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
         }
-        
+
         // GetPointerDeviceRects is part of the WM_POINTER API (Windows 8+) but is not implemented
         // by Wine/Proton. Probe once and fall back to the integer pixel location when missing,
         // otherwise the P/Invoke throws EntryPointNotFoundException for every pointer message.
@@ -1393,6 +1393,8 @@ namespace Avalonia.Win32
         }
 
         private static int HighWord(int param) => param >> 16;
+
+        private static SysCommands GetSysCommand(IntPtr wParam) => (SysCommands)(ToInt32(wParam) & 0xfff0);
 
         private Point DipFromLParam(IntPtr lParam)
         {
