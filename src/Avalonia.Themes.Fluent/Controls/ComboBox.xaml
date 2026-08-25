@@ -98,6 +98,7 @@
                        Grid.Column="0"
                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                       Opacity="{DynamicResource TextControlPlaceholderOpacity}"
                        Margin="{TemplateBinding Padding}"
                        Text="{TemplateBinding PlaceholderText}"
                        Foreground="{TemplateBinding PlaceholderForeground}">

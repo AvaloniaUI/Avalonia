@@ -113,4 +113,35 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(!((WindowNotificationManager)manager).Notifications.Any(x => !x.IsClosing));
         }
     }
+
+    public class NotificationCardTests : ScopedTestBase
+    {
+        [Fact]
+        public void Should_Update_Pseudoclasses_When_NotificationType_Changes()
+        {
+            var target = new NotificationCard();
+
+            target.NotificationType = NotificationType.Error;
+            AssertPseudoClasses(target, ":error");
+
+            target.NotificationType = NotificationType.Information;
+            AssertPseudoClasses(target, ":information");
+
+            target.NotificationType = NotificationType.Success;
+            AssertPseudoClasses(target, ":success");
+
+            target.NotificationType = NotificationType.Warning;
+            AssertPseudoClasses(target, ":warning");
+ 
+            static void AssertPseudoClasses(NotificationCard target, string expected)
+            {
+                Assert.Contains(expected, target.Classes);
+
+                foreach (var pseudoclass in new[] { ":error", ":information", ":success", ":warning" }.Where(x => x != expected))
+                {
+                    Assert.DoesNotContain(pseudoclass, target.Classes);
+                }
+            }
+        }
+    }
 }

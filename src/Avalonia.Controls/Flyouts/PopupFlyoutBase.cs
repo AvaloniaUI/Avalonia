@@ -597,11 +597,17 @@ namespace Avalonia.Controls.Primitives
                     // We do not support absolute popup positioning yet, so we ignore "point" at this moment.
                     var triggeredByPointerInput = e.TryGetPosition(null, out _);
                     e.Handled = popupFlyout.ShowAtCore(control, triggeredByPointerInput);
+
+                    if (e.Handled && e.IsHolding)
+                        control.PerformFeedback(FeedbackAction.Hold);
                 }
                 else
                 {
                     flyout.ShowAt(control);
                     e.Handled = true;
+
+                    if (e.IsHolding)
+                        control.PerformFeedback(FeedbackAction.Hold);
                 }
             }
         }

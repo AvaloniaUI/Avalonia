@@ -1726,7 +1726,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, bounds.Count);
 
-                Assert.Equal(36.005859374999993, bounds[0].Rectangle.Left);
+                // Layout bounds depend on the order in which floating-point glyph
+                // advances are summed inside ShapedBuffer; that order changed when
+                // the cluster-width cache landed, so this value moved by one ULP
+                // (36.005859374999993 → 36.005859375). Both round to the same
+                // sub-pixel position; use a tolerant compare to capture intent.
+                Assert.Equal(36.005859375, bounds[0].Rectangle.Left, 5);
 
                 bounds = textLine.GetTextBounds(0, 1);
 

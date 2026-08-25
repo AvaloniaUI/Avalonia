@@ -49,6 +49,7 @@ namespace Avalonia.Automation.Peers
         TitleBar,
         Separator,
         Expander,
+        ScrollViewer,
     }
 
     public enum AutomationLandmarkType
@@ -420,6 +421,17 @@ namespace Avalonia.Automation.Peers
         public AutomationPeer? GetAutomationRoot() => GetAutomationRootCore();
 
         /// <summary>
+        /// Converts a rectangle in the peer's coordinate space, as returned by
+        /// <see cref="GetBoundingRectangle"/>, to screen coordinates; returns null if the peer is
+        /// not currently hosted in a rendered visual tree.
+        /// </summary>
+        /// <param name="rect">
+        /// A rectangle in the peer's own coordinate space, as returned by
+        /// <see cref="GetBoundingRectangle"/>.
+        /// </param>
+        public Rect? ToScreen(Rect rect) => ToScreenCore(rect);
+
+        /// <summary>
         /// Gets a value that indicates whether the element that is associated with this automation
         /// peer currently has keyboard focus.
         /// </summary>
@@ -609,6 +621,7 @@ namespace Avalonia.Automation.Peers
                 AutomationControlType.HeaderItem => "header item",
                 AutomationControlType.TitleBar => "title bar",
                 AutomationControlType.Expander => "group",
+                AutomationControlType.ScrollViewer => "scroll viewer",
                 AutomationControlType.None => (GetLandmarkType()?.ToString() ?? controlType.ToString()).ToLowerInvariant(),
                 _ => controlType.ToString().ToLowerInvariant(),
             };
@@ -666,6 +679,8 @@ namespace Avalonia.Automation.Peers
         }
 
         private protected virtual AutomationPeer? GetVisualRootCore() => GetAutomationRootCore();
+
+        private protected virtual Rect? ToScreenCore(Rect rect) => null;
 
 
         protected virtual bool IsContentElementOverrideCore()

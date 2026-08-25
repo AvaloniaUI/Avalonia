@@ -8,6 +8,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using AndroidX.Core.View;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -29,6 +30,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
+        private readonly Context _context;
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<AvaloniaView> _textInputMethod;
@@ -39,6 +41,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly Clipboard _clipboard;
         private readonly AndroidLauncher? _launcher;
         private readonly AndroidScreens? _screens;
+        private readonly AndroidPlatformFeedback _feedback;
         private SurfaceViewImpl? _view;
         private WindowTransparencyLevel _transparencyLevel;
 
@@ -49,6 +52,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 throw new ArgumentException("AvaloniaView.Context must not be null");
             }
 
+            _context = context;
             _view = new SurfaceViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<AvaloniaView>(avaloniaView);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
@@ -57,6 +61,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>(),
                 context));
             _screens = new AndroidScreens(context);
+            _feedback = new AndroidPlatformFeedback(avaloniaView);
 
             if (context is Activity mainActivity)
             {
@@ -230,7 +235,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
             if (_insetsManager != null)
             {
@@ -242,7 +247,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 };
             }
 
-            AppCompatDelegate.DefaultNightMode = themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
+            if (_context is AppCompatActivity activity)
+            {
+                var nightMode = themeVariant == PlatformThemeVariant.Dark ?
+                    AppCompatDelegate.ModeNightYes :
+                    AppCompatDelegate.ModeNightNo;
+
+                // Don't use AppCompatDelegate.DefaultNightMode: doing so will force the app to use one night mode,
+                // ignoring the system's configuration and preventing us from detecting system theme changes.
+                activity.Delegate.SetLocalNightMode(nightMode);
+            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new(1, 1, 1);
@@ -252,8 +266,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size => _view?.Size ?? default;
         double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => _view?.Scaling ?? default;
 
+        internal AndroidInsetsManager? InsetsManager => _insetsManager;
         internal AndroidKeyboardEventsHelper<TopLevelImpl> KeyboardHelper => _keyboardHelper;
-
         internal AndroidMotionEventsHelper PointerHelper => _pointerHelper;
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
@@ -356,6 +370,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _screens;
             }
 
+            if(featureType == typeof(IPlatformFeedback))
+            {
+                return _feedback;
+            }
             return null;
         }
 

@@ -14,7 +14,7 @@ namespace Avalonia.Input
             // TODO: add control overrides to return custom focus list from control
             if (parent is Visual visual)
             {
-                return visual.VisualChildren.OfType<IInputElement>();
+                return visual.TypedVisualChildren.OfType<IInputElement>();
             }
 
             return Array.Empty<IInputElement>();
@@ -27,7 +27,7 @@ namespace Avalonia.Input
 
             var children = GetInputElementChildren(parent);
 
-            bool hasFocusChildren = true;
+            bool hasFocusChildren = false;
 
             foreach (var child in children)
             {

@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -30,11 +31,15 @@ namespace Avalonia.UnitTests
             SetPresentationSourceForRootVisual(this);
         }
 
-        class NullHitTester : IHitTester
+        class NullHitTester :  IHitTester
         {
             public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter) => Array.Empty<Visual>();
 
+            public IEnumerable<GeometryHitTestResult> HitTest(Geometry geometry, Visual root, Func<Visual, bool> filter) => Array.Empty<GeometryHitTestResult>();
+
             public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter) => null;
+
+            public GeometryHitTestResult? HitTestFirst(Geometry geometry, Visual root, Func<Visual, bool>? filter) => null;
         }
 
         public TestRoot(Control? child)
@@ -78,6 +83,7 @@ namespace Avalonia.UnitTests
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement? PointerOverElement { get; set; }
+        public IInputElement? CursorElement { get; set; }
         public ITextInputMethodImpl? InputMethod { get; }
         public InputElement RootElement => this;
         public InputElement FocusRoot => this;
@@ -141,6 +147,10 @@ namespace Avalonia.UnitTests
         protected override Size MeasureOverride(Size availableSize)
         {
             return base.MeasureOverride(ClientSize);
+        }
+
+        public void PointerOverInvalidated()
+        {
         }
     }
 }
