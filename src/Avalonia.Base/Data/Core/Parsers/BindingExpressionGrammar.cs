@@ -140,10 +140,10 @@ namespace Avalonia.Data.Core.Parsers
                 nodes.Add(new EmptyExpressionNode());
                 return State.AfterMember;
             }
-            else if (ParseStreamOperator(ref r))
+            else if (ParseStreamOperator(ref r, out var acceptsNull))
             {
                 nodes.Add(new EmptyExpressionNode());
-                nodes.Add(new StreamNode());
+                nodes.Add(new StreamNode { AcceptsNull = acceptsNull });
                 return State.AfterMember;
             }
             else
@@ -166,9 +166,9 @@ namespace Avalonia.Data.Core.Parsers
             {
                 return acceptsNull ? State.BeforeMemberNullable : State.BeforeMember;
             }
-            else if (ParseStreamOperator(ref r))
+            else if (ParseStreamOperator(ref r, out acceptsNull))
             {
-                nodes.Add(new StreamNode());
+                nodes.Add(new StreamNode { AcceptsNull = acceptsNull });
                 return State.AfterMember;
             }
             else if (PeekOpenBracket(ref r))
@@ -441,9 +441,26 @@ namespace Avalonia.Data.Core.Parsers
             return !r.End && r.Peek == '(';
         }
 
-        private static bool ParseStreamOperator(ref CharacterReader r)
+        private static bool ParseStreamOperator(ref CharacterReader r, out bool acceptsNull)
         {
-            return !r.End && r.TakeIf('^');
+            acceptsNull = false;
+
+            if (r.End)
+                return false;
+
+            if (r.Peek == '^')
+            {
+                r.Take();
+                return true;
+            }
+
+            if (r.TakeIf("?^"))
+            {
+                acceptsNull = true;
+                return true;
+            }
+
+            return false;
         }
 
         private static bool ParseDollarSign(ref CharacterReader r)
@@ -521,7 +538,10 @@ namespace Avalonia.Data.Core.Parsers
 
         public class NotNode : INode, ITransformNode { }
 
-        public class StreamNode : INode { }
+        public class StreamNode : INode
+        {
+            public bool AcceptsNull { get; set; }
+        }
 
         public class SelfNode : INode { }
 

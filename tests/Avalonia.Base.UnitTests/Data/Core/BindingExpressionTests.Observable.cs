@@ -1,6 +1,11 @@
 using System;
 using System.Reactive.Subjects;
+using Avalonia.Data;
+using Avalonia.Data.Core;
+using Avalonia.Data.Core.ExpressionNodes;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core;
@@ -85,5 +90,49 @@ public partial class BindingExpressionTests
         Assert.Equal(42, target.Int);
 
         GC.KeepAlive(data);
+    }
+
+    public partial class Reflection
+    {
+        [Fact]
+        public void Should_Not_Error_When_Observable_Is_Null_With_Null_Conditional_Stream()
+        {
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var data = new ViewModel { NextObservable = null };
+            var target = new TargetClass { DataContext = data };
+
+            var reader = new CharacterReader("NextObservable?^".AsSpan());
+            var (astNodes, _) = BindingExpressionGrammar.Parse(ref reader);
+            var nodes = ExpressionNodeFactory.CreateFromAst(astNodes, null, null, out _)!;
+            nodes.Insert(0, new DataContextNode());
+
+            var bindingExpression = new BindingExpression(target, nodes, AvaloniaProperty.UnsetValue);
+            target.GetValueStore().AddBinding(TargetClass.ObjectProperty, bindingExpression);
+
+            Assert.Equal(BindingErrorType.None, bindingExpression.ErrorType);
+            Assert.Null(target.Object);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public void Should_Error_When_Observable_Is_Null_Without_Null_Conditional_Stream()
+        {
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var data = new ViewModel { NextObservable = null };
+            var target = new TargetClass { DataContext = data };
+
+            var reader = new CharacterReader("NextObservable^".AsSpan());
+            var (astNodes, _) = BindingExpressionGrammar.Parse(ref reader);
+            var nodes = ExpressionNodeFactory.CreateFromAst(astNodes, null, null, out _)!;
+            nodes.Insert(0, new DataContextNode());
+
+            var bindingExpression = new BindingExpression(target, nodes, AvaloniaProperty.UnsetValue);
+            target.GetValueStore().AddBinding(TargetClass.ObjectProperty, bindingExpression);
+
+            Assert.Equal(BindingErrorType.Error, bindingExpression.ErrorType);
+
+            GC.KeepAlive(data);
+        }
     }
 }

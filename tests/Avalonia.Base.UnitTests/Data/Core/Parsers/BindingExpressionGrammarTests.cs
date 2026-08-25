@@ -221,7 +221,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var result = Parse("Foo^");
 
             Assert.Equal(2, result.Count);
-            Assert.IsType<BindingExpressionGrammar.StreamNode>(result[1]);
+            AssertIsProperty(result[0], "Foo");
+            AssertIsStream(result[1], acceptsNull: false);
         }
 
         [Fact]
@@ -244,6 +245,16 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Assert.IsType<BindingExpressionGrammar.StreamNode>(result[1]);
         }
 
+        [Fact]
+        public void Should_Parse_Null_Conditional_Stream_Node()
+        {
+            var result = Parse("Foo?^");
+
+            Assert.Equal(2, result.Count);
+            AssertIsProperty(result[0], "Foo");
+            AssertIsStream(result[1], acceptsNull: true);
+        }
+
         private static void AssertIsProperty(
             BindingExpressionGrammar.INode node,
             string name,
@@ -252,6 +263,14 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             var p = Assert.IsType<BindingExpressionGrammar.PropertyNameNode>(node);
             Assert.Equal(name, p.PropertyName);
             Assert.Equal(acceptsNull, p.AcceptsNull);
+        }
+
+        private static void AssertIsStream(
+            BindingExpressionGrammar.INode node,
+            bool acceptsNull = false)
+        {
+            var s = Assert.IsType<BindingExpressionGrammar.StreamNode>(node);
+            Assert.Equal(acceptsNull, s.AcceptsNull);
         }
 
         private static void AssertIsAttachedProperty(

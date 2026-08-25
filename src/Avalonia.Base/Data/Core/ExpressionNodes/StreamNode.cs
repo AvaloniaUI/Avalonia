@@ -6,12 +6,14 @@ namespace Avalonia.Data.Core.ExpressionNodes;
 
 internal sealed class StreamNode : ExpressionNode, IObserver<object?>
 {
+    private readonly bool _acceptsNull;
     private IStreamPlugin _plugin;
     private IDisposable? _subscription;
 
-    public StreamNode(IStreamPlugin plugin)
+    public StreamNode(IStreamPlugin plugin, bool acceptsNull)
     {
         _plugin = plugin;
+        _acceptsNull = acceptsNull;
     }
 
     public override void BuildString(StringBuilder builder)
@@ -25,8 +27,14 @@ internal sealed class StreamNode : ExpressionNode, IObserver<object?>
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
+        if (source is null)
+        {
+            if (_acceptsNull)
+                SetValue(null);
+            else
+                ValidateNonNullSource(source);
             return;
+        }
 
         if (_plugin.Start(new(source)) is { } accessor)
         {

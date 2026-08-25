@@ -59,8 +59,8 @@ namespace Avalonia.Data.Core.Parsers
                         node = null;
                         isRooted = true;
                         break;
-                    case BindingExpressionGrammar.StreamNode:
-                        node = new DynamicPluginStreamNode();
+                    case BindingExpressionGrammar.StreamNode stream:
+                        node = new DynamicPluginStreamNode(stream.AcceptsNull);
                         break;
                     case BindingExpressionGrammar.TypeCastNode typeCast:
                         node = new ReflectionTypeCastNode(LookupType(typeResolver, typeCast.Namespace, typeCast.TypeName));

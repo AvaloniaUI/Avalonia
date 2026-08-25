@@ -152,7 +152,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     case BindingExpressionGrammar.NotNode _:
                         transformNodes.Add(new XamlIlNotPathElementNode(context.Configuration.WellKnownTypes.Boolean));
                         break;
-                    case BindingExpressionGrammar.StreamNode _:
+                    case BindingExpressionGrammar.StreamNode streamNode:
                         {
                             IXamlType targetType = targetTypeResolver();
                             IXamlType? observableType;
@@ -168,7 +168,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                             if (observableType != null)
                             {
-                                nodes.Add(new XamlIlStreamObservablePathElementNode(observableType.GenericArguments[0]));
+                                nodes.Add(new XamlIlStreamObservablePathElementNode(observableType.GenericArguments[0], streamNode.AcceptsNull));
                                 break;
                             }
 
@@ -180,7 +180,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                                 if (currentType.GenericTypeDefinition?.Equals(taskType) == true)
                                 {
                                     foundTask = true;
-                                    nodes.Add(new XamlIlStreamTaskPathElementNode(currentType.GenericArguments[0]));
+                                    nodes.Add(new XamlIlStreamTaskPathElementNode(currentType.GenericArguments[0], streamNode.AcceptsNull));
                                     break;
                                 }
                             }
@@ -620,31 +620,57 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         class XamlIlStreamObservablePathElementNode : IXamlIlBindingPathElementNode
         {
-            public XamlIlStreamObservablePathElementNode(IXamlType type)
+            private readonly bool _acceptsNull;
+
+            public XamlIlStreamObservablePathElementNode(IXamlType type, bool acceptsNull)
             {
                 Type = type;
+                _acceptsNull = acceptsNull;
             }
 
             public IXamlType Type { get; }
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m is { Name: "StreamObservable", IsGenericMethod: true }).MakeGenericMethod(new[] { Type }));
+                var parameterCount = 0;
+
+                if (_acceptsNull)
+                {
+                    parameterCount = 1;
+                    codeGen.Ldc_I4(1);
+                }
+
+                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m =>
+                    m is { Name: "StreamObservable", IsGenericMethod: true } &&
+                    m.Parameters.Count == parameterCount).MakeGenericMethod(new[] { Type }));
             }
         }
 
         class XamlIlStreamTaskPathElementNode : IXamlIlBindingPathElementNode
         {
-            public XamlIlStreamTaskPathElementNode(IXamlType type)
+            private readonly bool _acceptsNull;
+
+            public XamlIlStreamTaskPathElementNode(IXamlType type, bool acceptsNull)
             {
                 Type = type;
+                _acceptsNull = acceptsNull;
             }
 
             public IXamlType Type { get; }
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m is { Name: "StreamTask", IsGenericMethod: true }).MakeGenericMethod(new[] { Type }));
+                var parameterCount = 0;
+
+                if (_acceptsNull)
+                {
+                    parameterCount = 1;
+                    codeGen.Ldc_I4(1);
+                }
+
+                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m =>
+                    m is { Name: "StreamTask", IsGenericMethod: true } &&
+                    m.Parameters.Count == parameterCount).MakeGenericMethod(new[] { Type }));
             }
         }
 

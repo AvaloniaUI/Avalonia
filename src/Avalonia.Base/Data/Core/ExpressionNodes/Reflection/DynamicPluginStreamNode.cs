@@ -10,7 +10,13 @@ namespace Avalonia.Data.Core.ExpressionNodes.Reflection;
 [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
 internal sealed class DynamicPluginStreamNode : ExpressionNode
 {
+    private readonly bool _acceptsNull;
     private IDisposable? _subscription;
+
+    public DynamicPluginStreamNode(bool acceptsNull)
+    {
+        _acceptsNull = acceptsNull;
+    }
 
     override public void BuildString(StringBuilder builder)
     {
@@ -19,8 +25,14 @@ internal sealed class DynamicPluginStreamNode : ExpressionNode
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
+        if (source is null)
+        {
+            if (_acceptsNull)
+                SetValue(null);
+            else
+                ValidateNonNullSource(source);
             return;
+        }
 
         var reference = new WeakReference<object?>(source);
 

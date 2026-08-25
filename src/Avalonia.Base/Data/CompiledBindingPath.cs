@@ -71,7 +71,7 @@ namespace Avalonia.Data
                         isRooted = true;
                         break;
                     case IStronglyTypedStreamElement stream:
-                        node = new StreamNode(stream.CreatePlugin());
+                        node = new StreamNode(stream.CreatePlugin(), stream.AcceptsNull);
                         break;
                     case ITypeCastElement typeCast:
                         node = new FuncTransformNode(typeCast.Cast);
@@ -152,7 +152,13 @@ namespace Avalonia.Data
 
         public CompiledBindingPathBuilder StreamTask<T>()
         {
-            _elements.Add(new TaskStreamPathElement<T>());
+            _elements.Add(new TaskStreamPathElement<T>(acceptsNull: false));
+            return this;
+        }
+
+        public CompiledBindingPathBuilder StreamTask<T>(bool acceptsNull)
+        {
+            _elements.Add(new TaskStreamPathElement<T>(acceptsNull));
             return this;
         }
 
@@ -163,9 +169,22 @@ namespace Avalonia.Data
             return this;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+        public CompiledBindingPathBuilder StreamTask(bool acceptsNull)
+        {
+            _elements.Add(new TaskStreamPathElement(acceptsNull));
+            return this;
+        }
+
         public CompiledBindingPathBuilder StreamObservable<T>()
         {
-            _elements.Add(new ObservableStreamPathElement<T>());
+            _elements.Add(new ObservableStreamPathElement<T>(acceptsNull: false));
+            return this;
+        }
+
+        public CompiledBindingPathBuilder StreamObservable<T>(bool acceptsNull)
+        {
+            _elements.Add(new ObservableStreamPathElement<T>(acceptsNull));
             return this;
         }
 
@@ -173,6 +192,13 @@ namespace Avalonia.Data
         public CompiledBindingPathBuilder StreamObservable()
         {
             _elements.Add(new ObservableStreamPathElement());
+            return this;
+        }
+
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+        public CompiledBindingPathBuilder StreamObservable(bool acceptsNull)
+        {
+            _elements.Add(new ObservableStreamPathElement(acceptsNull));
             return this;
         }
 
@@ -303,6 +329,8 @@ namespace Avalonia.Data
 
     internal interface IStronglyTypedStreamElement : ICompiledBindingPathElement
     {
+        bool AcceptsNull { get; }
+
         IStreamPlugin CreatePlugin();
     }
 
@@ -315,7 +343,14 @@ namespace Avalonia.Data
 
     internal class TaskStreamPathElement<T> : IStronglyTypedStreamElement
     {
-        public static readonly TaskStreamPathElement<T> Instance = new TaskStreamPathElement<T>();
+        public static readonly TaskStreamPathElement<T> Instance = new TaskStreamPathElement<T>(acceptsNull: false);
+
+        public TaskStreamPathElement(bool acceptsNull)
+        {
+            AcceptsNull = acceptsNull;
+        }
+
+        public bool AcceptsNull { get; }
 
         public IStreamPlugin CreatePlugin() => new TaskStreamPlugin<T>();
     }
@@ -323,14 +358,32 @@ namespace Avalonia.Data
     [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
     internal class TaskStreamPathElement : IStronglyTypedStreamElement
     {
-        public static readonly TaskStreamPathElement Instance = new TaskStreamPathElement();
+        public static readonly TaskStreamPathElement Instance = new TaskStreamPathElement(acceptsNull: false);
+
+        public TaskStreamPathElement() : this(acceptsNull: false)
+        {
+        }
+
+        public TaskStreamPathElement(bool acceptsNull)
+        {
+            AcceptsNull = acceptsNull;
+        }
+
+        public bool AcceptsNull { get; }
 
         public IStreamPlugin CreatePlugin() => new TaskStreamPlugin();
     }
 
     internal class ObservableStreamPathElement<T> : IStronglyTypedStreamElement
     {
-        public static readonly ObservableStreamPathElement<T> Instance = new ObservableStreamPathElement<T>();
+        public static readonly ObservableStreamPathElement<T> Instance = new ObservableStreamPathElement<T>(acceptsNull: false);
+
+        public ObservableStreamPathElement(bool acceptsNull)
+        {
+            AcceptsNull = acceptsNull;
+        }
+
+        public bool AcceptsNull { get; }
 
         public IStreamPlugin CreatePlugin() => new ObservableStreamPlugin<T>();
     }
@@ -338,7 +391,18 @@ namespace Avalonia.Data
     [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
     internal class ObservableStreamPathElement : IStronglyTypedStreamElement
     {
-        public static readonly ObservableStreamPathElement Instance = new ObservableStreamPathElement();
+        public static readonly ObservableStreamPathElement Instance = new ObservableStreamPathElement(acceptsNull: false);
+
+        public ObservableStreamPathElement() : this(acceptsNull: false)
+        {
+        }
+
+        public ObservableStreamPathElement(bool acceptsNull)
+        {
+            AcceptsNull = acceptsNull;
+        }
+
+        public bool AcceptsNull { get; }
 
         public IStreamPlugin CreatePlugin() => new ObservableStreamPlugin();
     }
