@@ -425,6 +425,10 @@ namespace Avalonia.Controls
             {
                 CoerceValue(SelectionBoxItemTemplateProperty);
             }
+            else if (change.Property == SelectionBoxItemTemplateProperty)
+            {
+                UpdateSelectionBoxItem(SelectedItem);
+            }
             else if (change.Property == IsEditableProperty && change.GetNewValue<bool>())
             {
                 UpdateInputTextFromSelection(SelectedItem);
@@ -443,8 +447,11 @@ namespace Avalonia.Controls
             }
             else if (change.Property == DisplayMemberBindingProperty)
             {
-                CoerceValue(SelectionBoxItemTemplateProperty);
                 HandleTextValueBindingValueChanged(null, change);
+                // The base handler invalidates the cached template: run it before coercing.
+                base.OnPropertyChanged(change);
+                CoerceValue(SelectionBoxItemTemplateProperty);
+                return;
             }
             else if (change.Property == TextSearch.TextBindingProperty)
             {
