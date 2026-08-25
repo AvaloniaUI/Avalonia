@@ -28,12 +28,6 @@ namespace Avalonia.Data.Converters
             new FuncMultiValueConverter<object?, bool>(EqualityFunction);
 
         /// <summary>
-        /// A multi-value converter that returns true if not all inputs are equal to each other.
-        /// </summary>
-        public static readonly IMultiValueConverter AreNotEqual =
-            new FuncMultiValueConverter<object?, bool>(NotEqualityFunction);
-
-        /// <summary>
         /// Helper function for AreAllEqual converter. Returns true if all inputs are equal to each other.
         /// </summary>
         /// <param name="values">The values to compare.</param>
@@ -60,12 +54,5 @@ namespace Avalonia.Data.Converters
 
             return true;
         }
-
-        /// <summary>
-        /// Helper function for AreNotEqual converter. Returns true if not all inputs are equal to each other.
-        /// </summary>
-        /// <param name="values">The values to compare.</param>
-        /// <returns>True if not all values are equal, false otherwise.</returns>
-        private static bool NotEqualityFunction(IEnumerable<object?> values) => !EqualityFunction(values);
     }
 }
