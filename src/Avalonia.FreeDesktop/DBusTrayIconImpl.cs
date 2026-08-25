@@ -23,7 +23,10 @@ namespace Avalonia.FreeDesktop
         private (int, int, byte[]) _icon;
 
         private string? _sysTrayServiceName;
-        private bool _sysTrayServiceNameOwned;
+        // Non-null from the moment the name is asked for. Tracking the request instead of a bool keeps
+        // a refused acquisition from being mistaken for ownership, and lets a hide that races the
+        // request wait for it before releasing.
+        private Task? _sysTrayServiceNameRequest;
         private string? _tooltipText;
         private bool _isDisposed;
         private bool _serviceConnected;
@@ -145,12 +148,8 @@ namespace Avalonia.FreeDesktop
                     _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
                 }
 
-                if (!_sysTrayServiceNameOwned)
-                {
-                    // Set before awaiting, so that a concurrent hide queues its ReleaseName instead of skipping it.
-                    _sysTrayServiceNameOwned = true;
-                    await _connection.RequestNameAsync(_sysTrayServiceName);
-                }
+                _sysTrayServiceNameRequest ??= _connection.RequestNameAsync(_sysTrayServiceName);
+                await _sysTrayServiceNameRequest;
 
                 // Exported only while the name is owned: a host scanning the bus would otherwise find the
                 // object under the unique connection name and register a second, duplicate item.
@@ -163,6 +162,11 @@ namespace Avalonia.FreeDesktop
             }
             catch (Exception e)
             {
+                // A refused name must not stick around as if it were owned: drop the request so the
+                // next attempt asks again. A failure after that point leaves ownership untouched.
+                if (_sysTrayServiceNameRequest is { Status: not TaskStatus.RanToCompletion })
+                    _sysTrayServiceNameRequest = null;
+
                 if (!_isDisposed)
                     Logger.TryGet(LogEventLevel.Error, "DBUS")
                         ?.Log(this, "Unable to register the system tray icon.\n{Exception}", e);
@@ -184,11 +188,28 @@ namespace Avalonia.FreeDesktop
         /// </summary>
         private void ReleaseTrayServiceName()
         {
-            if (_connection is null || _sysTrayServiceName is null || !_sysTrayServiceNameOwned)
+            if (_connection is null || _sysTrayServiceName is null || _sysTrayServiceNameRequest is not { } request)
                 return;
 
-            _sysTrayServiceNameOwned = false;
-            _connection.ReleaseNameAsync(_sysTrayServiceName);
+            _sysTrayServiceNameRequest = null;
+            ReleaseTrayServiceName(request, _connection, _sysTrayServiceName);
+        }
+
+        private async void ReleaseTrayServiceName(Task request, DBusConnection connection, string name)
+        {
+            try
+            {
+                // Awaiting the request first: releasing a name that is still being acquired would
+                // leave it owned. If the acquisition failed there is nothing to release.
+                await request;
+                await connection.ReleaseNameAsync(name);
+            }
+            catch (Exception e)
+            {
+                if (!_isDisposed)
+                    Logger.TryGet(LogEventLevel.Error, "DBUS")
+                        ?.Log(this, "Unable to release the system tray icon name.\n{Exception}", e);
+            }
         }
 
         public void Dispose()
