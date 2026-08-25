@@ -11,13 +11,13 @@ namespace Avalonia.Data.Converters
         /// <summary>
         /// A multi-value converter that returns true if all inputs are null.
         /// </summary>
-        public static readonly IMultiValueConverter AreNull =
+        public static readonly IMultiValueConverter AreAllNull =
             new FuncMultiValueConverter<object?, bool>(x => x.All(item => item is null));
 
         /// <summary>
         /// A multi-value converter that returns true if all inputs are not null.
         /// </summary>
-        public static readonly IMultiValueConverter AreNotNull =
+        public static readonly IMultiValueConverter AreAnyNull =
             new FuncMultiValueConverter<object?, bool>(x => x.All(item => item is not null));
 
         /// <summary>

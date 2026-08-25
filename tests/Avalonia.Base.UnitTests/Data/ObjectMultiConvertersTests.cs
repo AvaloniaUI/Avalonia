@@ -15,9 +15,9 @@ namespace Avalonia.Base.UnitTests.Data
         [InlineData(null, "value", null, false)]
         [InlineData("value", null, null, false)]
         [InlineData("value", "value", "value", false)]
-        public void ObjectMultiConverter_AreNull_Works(object? value1, object? value2, object? value3, bool valid)
+        public void ObjectMultiConverter_AreAllNull_Works(object? value1, object? value2, object? value3, bool valid)
         {
-            var converter = ObjectMultiConverter.AreNull;
+            var converter = ObjectMultiConverter.AreAllNull;
             var result = converter.Convert([value1, value2, value3], typeof(bool), null, CultureInfo.CurrentCulture);
             Assert.Equal(valid, Assert.IsType<bool>(result));
         }
@@ -28,9 +28,9 @@ namespace Avalonia.Base.UnitTests.Data
         [InlineData(null, "value", null, false)]
         [InlineData("value", null, null, false)]
         [InlineData("value", "value", "value", true)]
-        public void ObjectMultiConverter_AreNotNull_Works(object? value1, object? value2, object? value3, bool valid)
+        public void ObjectMultiConverter_AreAnyNull_Works(object? value1, object? value2, object? value3, bool valid)
         {
-            var converter = ObjectMultiConverter.AreNotNull;
+            var converter = ObjectMultiConverter.AreAnyNull;
             var result = converter.Convert([value1, value2, value3], typeof(bool), null, CultureInfo.CurrentCulture);
             Assert.Equal(valid, Assert.IsType<bool>(result));
         }
