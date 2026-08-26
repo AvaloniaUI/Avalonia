@@ -67,61 +67,61 @@ namespace ControlCatalog.ViewModels
         public bool ExtendClientAreaEnabled
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public double TitleBarHeight
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public WindowState WindowState
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public WindowState[] WindowStates
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public bool IsSystemBarVisible
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public bool DisplayEdgeToEdge
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public Thickness SafeAreaPadding
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public bool CanResize
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public bool CanMinimize
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public bool CanMaximize
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public int SelectedDecorationIndex
@@ -133,7 +133,7 @@ namespace ControlCatalog.ViewModels
         public TitleBarDecorations TitleBarDecorations
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         } = TitleBarDecorations.All;
 
         public bool ShowTitle
@@ -186,13 +186,13 @@ namespace ControlCatalog.ViewModels
         public bool IsDrawerOpened
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         } = true;
 
         public SplitViewDisplayMode DisplayMode
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public string? Query
@@ -242,7 +242,7 @@ namespace ControlCatalog.ViewModels
         public Win32Properties.WindowCornerPreference Win32WindowCornerPreference
         {
             get;
-            set { RaiseAndSetIfChanged(ref field, value); }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public void NavigateToPage(PageItem item)
