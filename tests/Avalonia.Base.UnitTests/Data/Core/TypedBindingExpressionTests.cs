@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core;
 
-public class TypedBindingExpressionTests : ScopedTestBase
+public partial class TypedBindingExpressionTests : ScopedTestBase
 {
     [Fact]
     public void Should_Produce_TypedBindingExpression()
@@ -456,6 +456,7 @@ public class TypedBindingExpressionTests : ScopedTestBase
     private class ViewModel : NotifyingBase
     {
         private string? _stringValue;
+        private double _doubleValue;
 
         // Counts every setter invocation so tests can assert the binding doesn't write spurious
         // values back to the source. PropertyChanged is only raised on a real change.
@@ -478,6 +479,12 @@ public class TypedBindingExpressionTests : ScopedTestBase
                 ++StringValueSetCount;
                 SetField(ref _stringValue, value);
             }
+        }
+
+        public double DoubleValue
+        {
+            get => _doubleValue;
+            set => SetField(ref _doubleValue, value);
         }
 
         // Mutates the backing field without raising PropertyChanged, so tests can then raise an
