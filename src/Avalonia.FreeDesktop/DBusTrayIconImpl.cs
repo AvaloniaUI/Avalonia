@@ -23,12 +23,9 @@ namespace Avalonia.FreeDesktop
         private (int, int, byte[]) _icon;
 
         private string? _sysTrayServiceName;
-        // Non-null from the moment the name is asked for. Tracking the request instead of a bool keeps
-        // a refused acquisition from being mistaken for ownership, and lets a hide that races the
-        // request wait for it before releasing.
+        // This task shows if the name request is in progress, complete, or failed.
         private Task? _sysTrayServiceNameRequest;
-        // The bus keeps a name registered until the release is acknowledged, so a show right after a
-        // hide has to wait this out before asking for the same name again.
+        // The bus keeps the name until the release is complete. A request before that fails.
         private Task? _sysTrayServiceNameRelease;
         private string? _tooltipText;
         private bool _isDisposed;
@@ -59,7 +56,7 @@ namespace Avalonia.FreeDesktop
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusMenuPath, _connection);
 
-            // Note: the object is only exported from CreateTrayIcon, once the name is owned.
+            // CreateTrayIcon exports this object when the connection owns the name.
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
             _statusNotifierItemDbusObj.ActivationDelegate += () => OnClicked?.Invoke();
 
@@ -102,8 +99,7 @@ namespace Avalonia.FreeDesktop
             }
             catch (OperationCanceledException)
             {
-                // Cancelled by Dispose. Can't be filtered on _isDisposed: the continuation
-                // is posted to the dispatcher and runs after Dispose has completed.
+                // Dispose cancels this task. The continuation runs after Dispose sets _isDisposed.
             }
             catch (Exception e) when (!_isDisposed)
             {
@@ -141,7 +137,7 @@ namespace Avalonia.FreeDesktop
 
             try
             {
-                // Reused for the lifetime of the icon: a new instance id looks like a new item to the host.
+                // Keep the name for the life of the icon. A new id shows a new item to the host.
                 if (_sysTrayServiceName is null)
                 {
 #if NET5_0_OR_GREATER
@@ -165,14 +161,13 @@ namespace Avalonia.FreeDesktop
                 request = _sysTrayServiceNameRequest ??= _connection.RequestNameAsync(_sysTrayServiceName);
                 await request;
 
-                // A hide or a dispose during the request queued its release on this very task, so it runs
-                // after this continuation: exporting now would leave the object up under a name that is no
-                // longer owned, which is what the duplicate item grows from.
+                // The icon can become hidden or disposed while the bus answers. The release then runs
+                // after this line.
                 if (!ShouldShowTrayIcon || !ReferenceEquals(_sysTrayServiceNameRequest, request))
                     return;
 
-                // Exported only while the name is owned: a host scanning the bus would otherwise find the
-                // object under the unique connection name and register a second, duplicate item.
+                // Export the object only while the connection owns the name. If not, a host that scans
+                // the bus adds a second item.
                 _connection.AddMethodHandler(_statusNotifierItemDbusObj);
 
                 await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
@@ -185,9 +180,8 @@ namespace Avalonia.FreeDesktop
             }
             catch (Exception e)
             {
-                // A refused name must not stick around as if it were owned: drop the request so the next
-                // attempt asks again. Only this call's own request, and only when it never completed: a
-                // failure further down leaves ownership untouched, as does a newer request replacing it.
+                // Clear only this request, and only if it did not complete. The next call then asks for
+                // the name again.
                 if (request is { Status: not TaskStatus.RanToCompletion } && ReferenceEquals(_sysTrayServiceNameRequest, request))
                     _sysTrayServiceNameRequest = null;
 
@@ -197,8 +191,7 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        // Entry conditions of CreateTrayIcon, re-read after every await: the icon can be hidden or
-        // disposed while the bus answers.
+        // CreateTrayIcon reads these conditions again after each await.
         private bool ShouldShowTrayIcon => !_isDisposed && _isVisible && _serviceConnected;
 
         private void DestroyTrayIcon()
@@ -210,9 +203,8 @@ namespace Avalonia.FreeDesktop
         }
 
         /// <summary>
-        /// Releasing the name is what makes a host drop the item, unexporting the object isn't observable.
-        /// Call after <see cref="DestroyTrayIcon"/>, and not when the watcher merely goes away: the object
-        /// must never be exported while the name is unowned.
+        /// Releases the bus name. A host removes the item when the name goes away.
+        /// Call this after <see cref="DestroyTrayIcon"/>, but not when the watcher stops.
         /// </summary>
         private void ReleaseTrayServiceName()
         {
@@ -227,8 +219,7 @@ namespace Avalonia.FreeDesktop
         {
             try
             {
-                // Awaiting the request first: releasing a name that is still being acquired would
-                // leave it owned. If the acquisition failed there is nothing to release.
+                // Wait for the request. A release before the connection owns the name has no effect.
                 await request;
                 await connection.ReleaseNameAsync(name);
             }
