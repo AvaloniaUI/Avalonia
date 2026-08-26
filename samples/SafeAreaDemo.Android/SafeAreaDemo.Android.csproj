@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AndroidResource Include="..\..\build\Assets\icon.png">
+    <AndroidResource Include="$(SharedAssetsPath)icon.png">
       <Link>Resources\drawable\icon.png</Link>
     </AndroidResource>
   </ItemGroup>
