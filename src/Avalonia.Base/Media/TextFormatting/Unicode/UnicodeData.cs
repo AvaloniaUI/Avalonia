@@ -30,6 +30,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         internal const int BIDIPAIREDBRACKEDTYPE_SHIFT = BIDIPAIREDBRACKED_BITS;
         internal const int BIDICLASS_SHIFT = BIDIPAIREDBRACKED_BITS + BIDIPAIREDBRACKEDTYPE_BITS;
 
+        // Single-bit properties packed into the spare bits of the GraphemeBreak trie word, which
+        // otherwise only uses GRAPHEMEBREAK_BITS + INDICCONJUNCTBREAK_BITS. Emoji and
+        // Emoji_Presentation come from the same emoji-data.txt the grapheme break data is read from.
+        internal const int EMOJI_SHIFT = INDICCONJUNCTBREAK_SHIFT + INDICCONJUNCTBREAK_BITS;
+        internal const int EMOJIPRESENTATION_SHIFT = EMOJI_SHIFT + 1;
+        internal const int DEFAULTIGNORABLE_SHIFT = EMOJIPRESENTATION_SHIFT + 1;
+
+        internal const uint EMOJI_FLAG = 1u << EMOJI_SHIFT;
+        internal const uint EMOJIPRESENTATION_FLAG = 1u << EMOJIPRESENTATION_SHIFT;
+        internal const uint DEFAULTIGNORABLE_FLAG = 1u << DEFAULTIGNORABLE_SHIFT;
+
         internal const int CATEGORY_MASK = (1 << CATEGORY_BITS) - 1;
         internal const int SCRIPT_MASK = (1 << SCRIPT_BITS) - 1;
         internal const int LINEBREAK_MASK = (1 << LINEBREAK_BITS) - 1;
