@@ -9,6 +9,8 @@ namespace ControlCatalog.Pages
 {
     public class ScreenPage : ContentPage
     {
+        private readonly ScreensPagePresenter _presenter;
+
         public ScreenPage()
         {
             var button = new Button();
@@ -21,11 +23,11 @@ namespace ControlCatalog.Pages
                 button.Content = "Request ScreenDetails: " + (success ? "Granted" : "Denied");
             };
 
-            var presenter = new ScreensPagePresenter();
+            _presenter = new ScreensPagePresenter();
 
             Content = new DockPanel
             {
-                Children = { button, presenter },
+                Children = { button, _presenter },
                 VerticalSpacing = 10,
                 Margin = new Thickness(10)
             };
@@ -40,15 +42,14 @@ namespace ControlCatalog.Pages
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel is Window w)
             {
-                w.PositionChanged += (_, _) => InvalidateVisual();
+                w.PositionChanged += (_, _) => _presenter.InvalidateVisual();
             }
 
             if (topLevel?.Screens is { } screens)
             {
                 screens.Changed += (_, _) =>
                 {
-                    Console.WriteLine("Screens Changed");
-                    InvalidateVisual();
+                    _presenter.InvalidateVisual();
                 };
             }
         }
