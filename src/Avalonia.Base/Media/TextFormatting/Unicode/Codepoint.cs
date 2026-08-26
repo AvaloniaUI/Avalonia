@@ -69,6 +69,33 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public EastAsianWidthClass EastAsianWidthClass => UnicodeData.GetEastAsianWidthClass(_value);
 
         /// <summary>
+        /// Determines whether this <see cref="Codepoint"/> has the Unicode <c>Emoji</c> property.
+        /// </summary>
+        /// <remarks>
+        /// The property marks a codepoint that can be presented as emoji; it says nothing about which
+        /// presentation is the default. Use <see cref="HasEmojiPresentation"/> for that.
+        /// </remarks>
+        public bool IsEmoji => UnicodeData.GetIsEmoji(_value);
+
+        /// <summary>
+        /// Determines whether this <see cref="Codepoint"/> has the Unicode <c>Emoji_Presentation</c>
+        /// property, i.e. whether it defaults to an emoji presentation when no variation selector
+        /// follows it.
+        /// </summary>
+        public bool HasEmojiPresentation => UnicodeData.GetHasEmojiPresentation(_value);
+
+        /// <summary>
+        /// Determines whether this <see cref="Codepoint"/> has the Unicode
+        /// <c>Default_Ignorable_Code_Point</c> property.
+        /// </summary>
+        /// <remarks>
+        /// Default ignorable codepoints (variation selectors, joiners, the byte order mark, ...) are
+        /// meant to have no visible rendering of their own, so a font is not expected to provide a
+        /// glyph for them.
+        /// </remarks>
+        public bool IsDefaultIgnorable => UnicodeData.GetIsDefaultIgnorable(_value);
+
+        /// <summary>
         /// Determines whether the codepoint's Unicode Script_Extensions property contains
         /// <paramref name="script"/>.
         /// </summary>
