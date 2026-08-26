@@ -1367,6 +1367,8 @@ interface IAvnPlatformSettings : IUnknown
     AvnPlatformThemeVariant GetPlatformTheme();
     uint GetAccentColor();
     void RegisterColorsChange(IAvnActionCallback* callback);
+    HRESULT GetPreferredLanguage(IAvnString** ret);
+    void RegisterLanguageChange(IAvnActionCallback* callback);
 }
 
 [uuid(12edf00d-5803-4d3f-9947-b4840e5e9372)]

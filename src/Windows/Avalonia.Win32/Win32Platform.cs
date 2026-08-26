@@ -184,6 +184,10 @@ namespace Avalonia.Win32
                     {
                         win32PlatformSettings.OnColorValuesChanged();
                     }
+                    else if (changedSetting == "intl") // language/locale change
+                    {
+                        win32PlatformSettings.OnLanguageChanged();
+                    }
                 }
 
                 // Notify WorkingArea changed to Screens
