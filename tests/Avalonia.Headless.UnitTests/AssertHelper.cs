@@ -40,7 +40,10 @@ internal static class AssertHelper
 #elif XUNIT
         Assert.NotNull(value);
 #endif
+        // NUnit doesn't suppress CS8777 warning on its own
+#pragma warning disable CS8777 // Parameter must have a non-null value when exiting.
     }
+#pragma warning restore CS8777 // Parameter must have a non-null value when exiting.
 
     public static void Equal<T>(T expected, T actual)
     {
