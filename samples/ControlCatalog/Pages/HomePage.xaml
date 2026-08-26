@@ -17,7 +17,6 @@
           <SolidColorBrush x:Key="HomeSubtleForeground" Color="#64646E" />
           <SolidColorBrush x:Key="HomeBadgeBackground" Color="#E8EFFD" />
           <SolidColorBrush x:Key="HomeBadgeForeground" Color="#3462D9" />
-          <SolidColorBrush x:Key="HomeSectionDivider" Color="#EBEBEF" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="HomeCardBackground" Color="#2B2B33" />
@@ -26,7 +25,6 @@
           <SolidColorBrush x:Key="HomeSubtleForeground" Color="#9C9CAB" />
           <SolidColorBrush x:Key="HomeBadgeBackground" Color="#31395A" />
           <SolidColorBrush x:Key="HomeBadgeForeground" Color="#8AB4FF" />
-          <SolidColorBrush x:Key="HomeSectionDivider" Color="#3A3A45" />
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
