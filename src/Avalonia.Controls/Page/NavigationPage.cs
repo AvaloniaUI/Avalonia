@@ -1375,7 +1375,7 @@ namespace Avalonia.Controls
         {
             var instance = new T();
 
-            return PushModalAsyncPrivate(instance, transition);
+            return PushModalAsyncPrivate(instance, transition, null);
         }
 
         public Task PushModalAsync<T>(IPageTransition? transition, object parameter) where T : Page, new()
