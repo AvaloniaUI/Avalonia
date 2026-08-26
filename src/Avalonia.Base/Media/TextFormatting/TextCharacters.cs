@@ -297,9 +297,7 @@ namespace Avalonia.Media.TextFormatting
                 //Stop at the first cluster this typeface can't render. A cluster that only holds a
                 //default ignorable (a stray variation selector, say) renders nothing whichever font
                 //it lands on, so it never ends the run.
-                if (!currentCodepoint.IsBreakChar &&
-                    currentCodepoint.GeneralCategory != GeneralCategory.Control &&
-                    !currentCodepoint.IsDefaultIgnorable &&
+                if (NeedsGlyph(currentCodepoint) &&
                     !ClusterIsCovered(clusterText, currentCodepoint, glyphTypeface, requireFullCluster))
                 {
                     break;
@@ -329,13 +327,15 @@ namespace Avalonia.Media.TextFormatting
 
         /// <summary>
         /// Determines whether the codepoint is one a font is expected to provide a glyph for. Break
-        /// chars, control and format codepoints never render, and neither do default ignorables
-        /// (variation selectors, joiners, ...) - demanding a glyph for those would reject fonts that
-        /// cover the cluster's actual content.
+        /// chars, control codepoints and default ignorables (variation selectors, joiners, ...) never
+        /// render - demanding a glyph for those would reject fonts that cover the cluster's actual
+        /// content. Format codepoints are not excluded wholesale: the invisible ones are all default
+        /// ignorable, while the rest (prepended concatenation marks like U+0600, interlinear
+        /// annotation chars) are visible and do need a glyph.
         /// </summary>
         private static bool NeedsGlyph(Codepoint codepoint)
             => !codepoint.IsBreakChar
-               && codepoint.GeneralCategory is not (GeneralCategory.Control or GeneralCategory.Format)
+               && codepoint.GeneralCategory != GeneralCategory.Control
                && !codepoint.IsDefaultIgnorable;
 
         /// <summary>
