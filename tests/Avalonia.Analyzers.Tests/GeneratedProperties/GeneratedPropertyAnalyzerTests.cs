@@ -292,6 +292,41 @@ public class GeneratedPropertyAnalyzerTests
         """);
 
     [Fact]
+    public Task Inherited_Accessible_Callback_Reports_Nothing() => Verify(
+        """
+        public class BaseClass : AvaloniaObject
+        {
+            protected static bool ValidateAnswer(int value) => value == 42;
+
+            internal static int CoerceAnswer(AvaloniaObject sender, int value) => value;
+        }
+
+        public partial class DerivedClass : BaseClass
+        {
+            [GeneratedStyledProperty(ValidateMethodName = nameof(ValidateAnswer), CoerceMethodName = nameof(CoerceAnswer))]
+            public partial int Answer { get; set; }
+        }
+        """);
+
+    [Fact]
+    public Task Hidden_Base_Callback_Reports_AVP2006() => Verify(
+        """
+        public class BaseClass : AvaloniaObject
+        {
+            protected static bool ValidateAnswer(int value) => value == 42;
+        }
+
+        public partial class DerivedClass : BaseClass
+        {
+            [GeneratedStyledProperty({|AVP2006:ValidateMethodName = nameof(ValidateAnswer)|})]
+            public partial int Answer { get; set; }
+
+            // Wrong return type, and it hides BaseClass.ValidateAnswer(int).
+            private new static string ValidateAnswer(int value) => "";
+        }
+        """);
+
+    [Fact]
     public Task Nullable_Mismatched_Callback_Reports_AVP2006() => Verify(
         """
         #nullable enable

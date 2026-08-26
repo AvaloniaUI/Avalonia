@@ -256,19 +256,23 @@ internal static class GeneratedPropertyShape
         CallbackShape shape,
         ITypeSymbol valueType)
     {
-        foreach (var candidate in containingType.GetMembers(methodName).OfType<IMethodSymbol>())
+        for (var type = containingType; type is not null; type = type.BaseType)
         {
-            if (candidate.Arity != 0 ||
-                !candidate.IsStatic ||
-                !ParametersMatch(compilation, candidate, shape, valueType) ||
-                !ReturnMatches(candidate, shape, valueType))
+            foreach (var candidate in type.GetMembers(methodName).OfType<IMethodSymbol>())
             {
-                continue;
-            }
+                if (candidate.Arity != 0 ||
+                    !ParametersMatch(compilation, candidate, shape, valueType) ||
+                    !compilation.IsSymbolAccessibleWithin(candidate, containingType))
+                {
+                    continue;
+                }
 
-            // Implemented either as the partial pair (definition + implementation) or as a plain
-            // method (the compiler reports any duplicate-member issues).
-            return !candidate.IsPartialDefinition || candidate.PartialImplementationPart is not null;
+                return candidate.IsStatic &&
+                       ReturnMatches(candidate, shape, valueType) &&
+                       // Implemented either as the partial pair (definition + implementation) or as
+                       // a plain method (the compiler reports any duplicate-member issues).
+                       (!candidate.IsPartialDefinition || candidate.PartialImplementationPart is not null);
+            }
         }
 
         return false;

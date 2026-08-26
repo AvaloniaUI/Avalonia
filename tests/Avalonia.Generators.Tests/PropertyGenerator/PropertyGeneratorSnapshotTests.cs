@@ -106,6 +106,23 @@ public class PropertyGeneratorSnapshotTests
         """);
 
     [Fact]
+    public void Styled_InheritedCallback() => AssertGeneratedCode("Styled_InheritedCallback", """
+        namespace TestNs;
+
+        public class BaseClass : AvaloniaObject
+        {
+            protected static bool ValidateAnswer(int value) => value == 42;
+        }
+
+        public partial class DerivedClass : BaseClass
+        {
+            [GeneratedStyledProperty(ValidateMethodName = nameof(ValidateAnswer))]
+            public partial int Answer { get; set; }
+        }
+        """,
+        expectedHintName: "TestNs.DerivedClass.AvaloniaProperties.g.cs");
+
+    [Fact]
     public void Styled_AddOwner() => AssertGeneratedCode("Styled_AddOwner", """
         namespace TestNs;
 
