@@ -141,6 +141,38 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
+        [InlineData(Orientation.Vertical, 0d)]
+        [InlineData(Orientation.Vertical, 0.5d)]
+        [InlineData(Orientation.Horizontal, 0d)]
+        [InlineData(Orientation.Horizontal, 0.5d)]
+        public void ScrollToEnd_Arrives_At_End_When_Items_Have_Different_Sizes(Orientation orientation, double bufferFactor)
+        {
+            using var app = App();
+            var horizontal = orientation == Orientation.Horizontal;
+            var items = Enumerable.Range(0, 100)
+                .Select(x => horizontal ? (object)new ItemWithWidth(x, x < 60 ? 20 : 50) : new ItemWithHeight(x, x < 60 ? 20 : 50))
+                .ToList();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items,
+                itemTemplate: horizontal ? CanvasWithWidthTemplate : CanvasWithHeightTemplate,
+                orientation: orientation,
+                bufferFactor: bufferFactor);
+            scroll.Template = ScrollViewerTemplateWithScrollBars();
+            CreateRoot(itemsControl).LayoutManager.ExecuteInitialLayoutPass();
+
+            (horizontal ? scroll.HorizontalScrollBar : scroll.VerticalScrollBar)?.ScrollToEnd();
+            Layout(target);
+
+            Assert.Equal(
+                horizontal ? scroll.Extent.Width - scroll.Viewport.Width : scroll.Extent.Height - scroll.Viewport.Height,
+                horizontal ? scroll.Offset.X : scroll.Offset.Y);
+            Assert.Equal(items.Count - 1, target.LastRealizedIndex);
+            Assert.Equal(
+                horizontal ? target.ViewPort.Right : target.ViewPort.Bottom,
+                horizontal ? target.GetRealizedElements().Last()!.Bounds.Right : target.GetRealizedElements().Last()!.Bounds.Bottom);
+        }
+
+        [Theory]
         [InlineData(0d, 10)]
         [InlineData(0.5d, 20)]
         public void Scrolling_Up_To_Index_Does_Not_Create_A_Page_Of_Unrealized_Elements(double bufferFactor, int expectedCount)
@@ -2534,6 +2566,33 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Name = "PART_ScrollContentPresenter",
                 }.RegisterInNameScope(ns));
+        }
+
+        private static IControlTemplate ScrollViewerTemplateWithScrollBars()
+        {
+            return new FuncControlTemplate<ScrollViewer>((_, ns) =>
+            {
+                var presenter = new ScrollContentPresenter
+                {
+                    Name = "PART_ScrollContentPresenter",
+                }.RegisterInNameScope(ns);
+
+                var horizontalScrollBar = new ScrollBar
+                {
+                    Name = "PART_HorizontalScrollBar",
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Bottom
+                }.RegisterInNameScope(ns);
+
+                var verticalScrollBar = new ScrollBar
+                {
+                    Name = "PART_VerticalScrollBar",
+                    Orientation = Orientation.Vertical,
+                    HorizontalAlignment = HorizontalAlignment.Right
+                }.RegisterInNameScope(ns);
+
+                return new Panel { Children = { presenter, horizontalScrollBar, verticalScrollBar } };
+            });
         }
 
         private static IDisposable App() => UnitTestApplication.Start(TestServices.RealFocus);

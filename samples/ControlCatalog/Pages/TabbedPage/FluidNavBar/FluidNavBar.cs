@@ -575,7 +575,7 @@ namespace ControlCatalog.Pages
                 while (measure.NextContour());
             }
 
-            private static float Lerp(float a, float b, float t) => a + (b - a) * t;
+            private static float Lerp(float a, float b, float t) => float.Lerp(a, b, t);
 
             private static double LinearPoint(double x, double pIn, double pOut)
             {
