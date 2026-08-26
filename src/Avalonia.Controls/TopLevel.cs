@@ -131,6 +131,7 @@ namespace Avalonia.Controls
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
+        private List<Popup>? _openedPopups;
         private readonly PresentationSource _source;
         private readonly TopLevelHost _topLevelHost;
         internal TopLevelHost TopLevelHost => _topLevelHost;
@@ -559,6 +560,36 @@ namespace Avalonia.Controls
         private IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         /// <summary>
+        /// Gets the popups that are currently open in this top level, including nested popups.
+        /// </summary>
+        public IReadOnlyList<Popup> OpenedPopups
+        {
+            get
+            {
+                if (_openedPopups is not { Count: > 0 })
+                    return [];
+
+                var collected = new List<Popup>(_openedPopups.Count);
+                ProcessPopups(_openedPopups);
+
+                return collected;
+
+                void ProcessPopups(List<Popup> popups)
+                {
+                    foreach (var popup in popups)
+                    {
+                        collected.Add(popup);
+
+                        if (popup.Host is PopupRoot { _openedPopups: { Count: > 0 } nestedPopups})
+                        {
+                            ProcessPopups(nestedPopups);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="TopLevel" /> for which the given <see cref="Visual"/> is hosted in.
         /// </summary>
         /// <param name="visual">The visual to query its TopLevel</param>
@@ -695,6 +726,7 @@ namespace Avalonia.Controls
 
             LayoutManager.Dispose();
             _platformImplBindings.Clear();
+            _openedPopups = null;
         }
 
         /// <summary>
@@ -710,6 +742,10 @@ namespace Avalonia.Controls
             LayoutManager.ExecuteLayoutPass();
             Renderer.Resized(clientSize);
         }
+
+        internal void AddOpenedPopup(Popup popup) => (_openedPopups ??= new List<Popup>(capacity: 2)).Add(popup);
+
+        internal void RemoveOpenedPopup(Popup popup) => _openedPopups?.Remove(popup);
 
         /// <summary>
         /// Handles a window scaling change notification from 

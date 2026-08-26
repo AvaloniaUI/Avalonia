@@ -576,6 +576,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             _openState = new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup);
+            _openState.TopLevel.AddOpenedPopup(this);
 
             WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
 
@@ -844,6 +845,7 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
+            _openState.TopLevel.RemoveOpenedPopup(this);
             _openState.Dispose();
             _openState = null;
 
