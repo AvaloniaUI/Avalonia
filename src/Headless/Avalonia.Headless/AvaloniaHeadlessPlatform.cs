@@ -121,8 +121,6 @@ namespace Avalonia.Headless
 
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is true.
-        /// When disabled, popups are hosted in dedicated headless top-levels that are not part of
-        /// the parent's visual tree; use <see cref="HeadlessWindowExtensions.GetOpenPopups"/> to access them.
         /// </summary>
         // TODO13: Change the default to false to match the other desktop platforms.
         public bool OverlayPopups { get; set; } = true;

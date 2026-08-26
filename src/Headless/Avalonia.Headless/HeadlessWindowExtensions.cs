@@ -116,18 +116,6 @@ public static class HeadlessWindowExtensions
         RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
 
     /// <summary>
-    /// Returns the popups currently open directly above this toplevel, in z-order (bottom to top).
-    /// For popups nested in another popup, call this method on that popup's toplevel.
-    /// </summary>
-    /// <remarks>
-    /// Only popups hosted in dedicated headless top-levels are returned, which requires disabling
-    /// <see cref="AvaloniaHeadlessPlatformOptions.OverlayPopups"/>. Popups hosted in the overlay
-    /// layer are part of the parent's visual tree and are not tracked by the platform.
-    /// </remarks>
-    public static IReadOnlyList<TopLevel> GetOpenPopups(this TopLevel topLevel) =>
-        GetImpl(topLevel).GetOpenPopups();
-
-    /// <summary>
     /// Changes the render scaling (DPI) of the headless window/toplevel.
     /// This simulates a DPI change, triggering scaling changed notifications and a layout pass.
     /// </summary>
