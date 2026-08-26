@@ -20,6 +20,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         private const string PrimaryFont = "Avalonia.Skia.UnitTests.Assets.NotoMono-Regular.ttf";
         private const string FallbackFont = "Avalonia.Skia.UnitTests.Fonts.DejaVuSans.ttf";
 
+        // A second broad fallback that covers Latin plus a range of combining marks but has no glyph
+        // for U+FE0F - unlike DejaVu Sans, which maps the variation selector and would therefore hide
+        // the default-ignorable bug.
+        private const string NoVariationSelectorFallbackFont = "Avalonia.Skia.UnitTests.Assets.NotoSans-Italic.ttf";
+
         // Tiny zh/ja regional subsets (a few glyphs each) of the Google Fonts Noto Sans SC / JP, with
         // distinct OS/2 codepage bits and localized family names so the culture-aware fallback scorer
         // can tell them apart. Both cover U+4E2D (中); only the JP subset covers U+3042 (あ).
@@ -111,29 +116,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 const int baseCodepoint = 'a';
                 Assert.True(defaultGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(baseCodepoint, out _));
 
-                // Probe for a combining mark the primary lacks but a fallback covers together with the
-                // base. Probing keeps the test robust to the exact coverage of the embedded fonts.
-                var mark = 0;
-
-                foreach (var candidate in CombiningMarkCandidates)
-                {
-                    if (defaultGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(candidate, out _))
-                    {
-                        continue; // primary already covers it - not a useful probe
-                    }
-
-                    if (fontManager.TryMatchCharacter(candidate, FontStyle.Normal, FontWeight.Normal,
-                            FontStretch.Normal, defaultFontFamily, null, out var markTypeface)
-                        && fontManager.TryGetGlyphTypeface(markTypeface, out var markGlyphTypeface)
-                        && markGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(baseCodepoint, out _))
-                    {
-                        mark = candidate;
-                        break;
-                    }
-                }
-
-                Assert.True(mark != 0,
-                    "No combining mark found that the primary font lacks but a fallback covers together with the base.");
+                var mark = FindMarkCoveredByFallbackOnly(fontManager, defaultGlyphTypeface, defaultFontFamily,
+                    baseCodepoint);
 
                 var text = ("a" + char.ConvertFromUtf32(mark)).AsMemory();
 
@@ -164,6 +148,89 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     FormattingObjectPool.Instance.TextRunLists.Return(ref toReturn);
                 }
             }
+        }
+
+        // A default ignorable codepoint inside a cluster must not be treated as content the font has to
+        // cover. U+FE0F is a nonspacing mark by general category, so it used to be demanded from every
+        // candidate font; no text font maps it, which made the whole base+VS16+mark cluster unmatchable
+        // and dropped it back onto the primary font (rendering the mark as .notdef).
+        [Fact]
+        public void GetShapeableCharacters_Ignores_Default_Ignorable_Codepoints_When_Matching_Cluster_Coverage()
+        {
+            using (Start(PrimaryFont, NoVariationSelectorFallbackFont))
+            {
+                var fontManager = FontManager.Current;
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var defaultGlyphTypeface = defaultProperties.CachedGlyphTypeface;
+                var defaultFontFamily = defaultProperties.Typeface.FontFamily;
+
+                const int baseCodepoint = 'a';
+                const char variationSelector16 = '\uFE0F';
+
+                Assert.True(defaultGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(baseCodepoint, out _));
+
+                // The premise: no font here has a glyph for the variation selector, and none is expected
+                // to - it is default ignorable.
+                Assert.False(fontManager.TryMatchCharacter(variationSelector16, FontStyle.Normal,
+                    FontWeight.Normal, FontStretch.Normal, defaultFontFamily, null, out _));
+
+                var mark = FindMarkCoveredByFallbackOnly(fontManager, defaultGlyphTypeface, defaultFontFamily,
+                    baseCodepoint);
+
+                var text = ("a" + variationSelector16 + char.ConvertFromUtf32(mark)).AsMemory();
+
+                var textCharacters = new TextCharacters(text, defaultProperties);
+
+                var results = FormattingObjectPool.Instance.TextRunLists.Rent();
+
+                try
+                {
+                    TextRunProperties? previousProperties = null;
+
+                    textCharacters.GetShapeableCharacters(text, 0, fontManager, ref previousProperties, results);
+
+                    Assert.NotEmpty(results);
+
+                    var firstRun = results[0];
+
+                    Assert.Equal(text.Length, firstRun.Length);
+                    Assert.True(firstRun.Properties!.CachedGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(mark, out _),
+                        "The cluster's run uses a font that does not cover the combining mark.");
+                }
+                finally
+                {
+                    FormattingObjectPool.RentedList<TextRun>? toReturn = results;
+                    FormattingObjectPool.Instance.TextRunLists.Return(ref toReturn);
+                }
+            }
+        }
+
+        // Probes for a combining mark the primary font lacks but a fallback covers together with the
+        // base. Probing keeps the tests robust to the exact coverage of the embedded fonts.
+        private static int FindMarkCoveredByFallbackOnly(FontManager fontManager, GlyphTypeface primary,
+            FontFamily primaryFontFamily, int baseCodepoint)
+        {
+            foreach (var candidate in CombiningMarkCandidates)
+            {
+                if (primary.CharacterToGlyphMap.TryGetGlyph(candidate, out _))
+                {
+                    continue; // primary already covers it - not a useful probe
+                }
+
+                if (fontManager.TryMatchCharacter(candidate, FontStyle.Normal, FontWeight.Normal,
+                        FontStretch.Normal, primaryFontFamily, null, out var markTypeface)
+                    && fontManager.TryGetGlyphTypeface(markTypeface, out var markGlyphTypeface)
+                    && markGlyphTypeface.CharacterToGlyphMap.TryGetGlyph(baseCodepoint, out _))
+                {
+                    return candidate;
+                }
+            }
+
+            Assert.Fail(
+                "No combining mark found that the primary font lacks but a fallback covers together with the base.");
+
+            return 0;
         }
 
         // F5 — NUL characters are replaced with non-breaking WORD JOINER (U+2060), not ZERO WIDTH
