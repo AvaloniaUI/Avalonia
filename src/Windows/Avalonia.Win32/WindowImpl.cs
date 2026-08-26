@@ -103,6 +103,7 @@ namespace Avalonia.Win32
         private WindowImpl? _parent;
         private bool _isCloseRequested;
         private bool _shown;
+        private bool _isInitialShow = true;
         private bool _hiddenWindowIsParent;
         private uint _langid;
         internal bool _ignoreWmChar;
@@ -1237,7 +1238,11 @@ namespace Avalonia.Win32
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
                 // Make sure that Windows still paints the non-client area so we get native borders and shadows.
-                SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_ENABLED);
+                // Bypass it during the startup maximize animation to fix Windows top border issue.
+                if (WindowState != WindowState.Maximized || !_isInitialShow)
+                {
+                    SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_ENABLED);
+                }
             }
             else
             {
@@ -1305,7 +1310,20 @@ namespace Avalonia.Win32
 
             if (command.HasValue)
             {
+                if (_isClientAreaExtended)
+                {
+                    if (state == WindowState.Maximized && _isInitialShow)
+                    {
+                        SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_DISABLED);
+                    }
+                    else
+                    {
+                        SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_ENABLED);
+                    }
+                }
+
                 UnmanagedMethods.ShowWindow(_hwnd, command.Value);
+                _isInitialShow = false;
             }
 
             if (!Design.IsDesignMode && activate)
