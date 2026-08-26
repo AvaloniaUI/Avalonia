@@ -1,5 +1,7 @@
 #nullable enable
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Avalonia.Headless.UnitTests;
 
 internal static class AssertHelper
@@ -22,7 +24,16 @@ internal static class AssertHelper
 #endif
     }
 
-    public static void NotNull(object? value)
+    public static void Null(object? value)
+    {
+#if NUNIT
+        Assert.That(value, Is.Null);
+#elif XUNIT
+        Assert.Null(value);
+#endif
+    }
+
+    public static void NotNull([NotNull] object? value)
     {
 #if NUNIT
         Assert.That(value, Is.Not.Null);

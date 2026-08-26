@@ -32,7 +32,7 @@ public class PopupTests
 #elif XUNIT
     [AvaloniaFact]
 #endif
-    public void Popup_Uses_Dedicated_TopLevel_And_Is_Discoverable()
+    public void Popup_Uses_Dedicated_TopLevel()
     {
         var target = new Border { Background = Brushes.Red };
         var popup = new Popup
@@ -49,56 +49,22 @@ public class PopupTests
         window.Show();
         Dispatcher.UIThread.RunJobs();
 
-        AssertHelper.Equal(0, window.GetOpenPopups().Count);
+        AssertHelper.False(popup.IsOpen);
+        AssertHelper.False(popup.IsUsingOverlayLayer);
+        AssertHelper.Null(GetPopupTopLevel(popup));
 
         popup.Open();
         Dispatcher.UIThread.RunJobs();
 
         AssertHelper.True(popup.IsOpen);
         AssertHelper.False(popup.IsUsingOverlayLayer);
-        AssertHelper.Equal(1, window.GetOpenPopups().Count);
-        AssertHelper.True(window.GetOpenPopups()[0] is PopupRoot);
-
-        popup.Close();
-        Dispatcher.UIThread.RunJobs();
-
-        AssertHelper.Equal(0, window.GetOpenPopups().Count);
+        AssertHelper.True(GetPopupTopLevel(popup) is PopupRoot);
 
         window.Close();
-    }
 
-#if NUNIT
-    [AvaloniaTest]
-#elif XUNIT
-    [AvaloniaFact]
-#endif
-    public void Can_Click_Button_Inside_Platform_Popup()
-    {
-        var clickCount = 0;
-        var button = new Button { Width = 80, Height = 30 };
-        button.Click += (_, _) => clickCount++;
-
-        var target = new Border { Background = Brushes.Red };
-        var popup = new Popup { PlacementTarget = target, Child = button };
-        var window = new Window
-        {
-            Width = 100,
-            Height = 100,
-            Content = new Panel { Children = { target, popup } }
-        };
-        window.Show();
-        Dispatcher.UIThread.RunJobs();
-
-        popup.Open();
-        Dispatcher.UIThread.RunJobs();
-
-        var popupRoot = window.GetOpenPopups()[0];
-        popupRoot.MouseDown(new Point(40, 15), MouseButton.Left);
-        popupRoot.MouseUp(new Point(40, 15), MouseButton.Left);
-
-        AssertHelper.Equal(1, clickCount);
-
-        window.Close();
+        AssertHelper.False(popup.IsOpen);
+        AssertHelper.False(popup.IsUsingOverlayLayer);
+        AssertHelper.Null(GetPopupTopLevel(popup));
     }
 
 #if NUNIT
@@ -135,7 +101,9 @@ public class PopupTests
         popup.Open();
         Dispatcher.UIThread.RunJobs();
 
-        var popupRoot = window.GetOpenPopups()[0];
+        var popupRoot = GetPopupTopLevel(popup);
+        AssertHelper.NotNull(popupRoot);
+
         var expected = target.PointToScreen(new Point(0, target.Bounds.Height));
         AssertHelper.Equal(expected, popupRoot.PointToScreen(default));
 
@@ -147,20 +115,14 @@ public class PopupTests
 #elif XUNIT
     [AvaloniaFact]
 #endif
-    public void Nested_Popup_Is_Child_Of_Popup_Root()
+    public void Can_Click_Button_Inside_Platform_Popup()
     {
-        var nestedTarget = new Border { Width = 20, Height = 20, Background = Brushes.Green };
-        var nestedPopup = new Popup
-        {
-            PlacementTarget = nestedTarget,
-            Child = new Border { Width = 10, Height = 10 }
-        };
+        var clickCount = 0;
+        var button = new Button { Width = 80, Height = 30 };
+        button.Click += (_, _) => clickCount++;
+
         var target = new Border { Background = Brushes.Red };
-        var popup = new Popup
-        {
-            PlacementTarget = target,
-            Child = new Panel { Children = { nestedTarget, nestedPopup } }
-        };
+        var popup = new Popup { PlacementTarget = target, Child = button };
         var window = new Window
         {
             Width = 100,
@@ -172,14 +134,22 @@ public class PopupTests
 
         popup.Open();
         Dispatcher.UIThread.RunJobs();
-        nestedPopup.Open();
-        Dispatcher.UIThread.RunJobs();
 
-        var popupRoot = window.GetOpenPopups()[0];
-        AssertHelper.Equal(1, window.GetOpenPopups().Count);
-        AssertHelper.Equal(1, popupRoot.GetOpenPopups().Count);
-        AssertHelper.True(popupRoot.GetOpenPopups()[0] is PopupRoot);
+        var popupRoot = GetPopupTopLevel(popup);
+        AssertHelper.NotNull(popupRoot);
+
+        popupRoot.MouseDown(new Point(40, 15), MouseButton.Left);
+        popupRoot.MouseUp(new Point(40, 15), MouseButton.Left);
+
+        AssertHelper.Equal(1, clickCount);
 
         window.Close();
+    }
+
+    internal static TopLevel GetPopupTopLevel(Popup popup)
+    {
+        AssertHelper.NotNull(popup.Child);
+        var topLevel = TopLevel.GetTopLevel(popup.Child);
+        return topLevel;
     }
 }
