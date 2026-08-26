@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Avalonia.Logging;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
 
@@ -183,7 +184,7 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         if (TryGetTarget(out var target) && TargetProperty is not null)
         {
             target.PropertyChanged += OnTargetPropertyChanged;
-            UpdateSource(target.DataContext as TSource);
+            UpdateSource(target.DataContext);
         }
     }
 
@@ -196,8 +197,16 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         }
     }
 
-    private void UpdateSource(TSource? source)
+    private void UpdateSource(object? dataContext)
     {
+        var source = dataContext as TSource;
+
+        if (dataContext is not null && source is null)
+        {
+            Log($"Could not convert DataContext of type '{dataContext.GetType()}' " +
+                $"to '{typeof(TSource)}'.");
+        }
+
         if (TryGetSource(out var oldSource))
         {
             if (oldSource is INotifyPropertyChanged oldInpc)
@@ -241,6 +250,8 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         if (_mode is BindingMode.OneTime && !_shouldUpdateOneTimeBindingTarget)
             return;
 
+        var oldValue = _sourceValue;
+
         if (source is null)
         {
             _sourceValue = default;
@@ -251,18 +262,23 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
             {
                 _sourceValue = new(_propertyInfo.Get(source));
             }
-            catch
+            catch (Exception e)
             {
-                // Getter exceptions are swallowed to match the untyped binding path and avoid
-                // crashing the UI thread (the getter runs in response to a source PropertyChanged
-                // event). Leave the previously-published value in place.
-                return;
+                // Getter exceptions must not escape into the source's PropertyChanged event and
+                // crash the UI thread, so log the error and clear the value, as the untyped
+                // binding path does.
+                Log($"Error getting '{_propertyInfo.Name}': {e.Message}");
+                _sourceValue = default;
             }
         }
 
         if (_produceValue && _mode is not BindingMode.OneWayToSource)
         {
-            if (!_targetValue.HasValue || _targetValue != _sourceValue)
+            // An expression which has no value, and had no value before, must not notify: doing so
+            // would push the target property's default value, overriding values from styles or
+            // property inheritance. Otherwise always notify, even if the value is unchanged, as
+            // the target may hold an uncommitted value written by SetCurrentValue.
+            if (oldValue.HasValue || _sourceValue.HasValue)
             {
                 // Flag that we're pushing the source value to the target so that the resulting
                 // target PropertyChanged isn't echoed straight back to the source in TwoWay mode.
@@ -293,18 +309,36 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
     {
         if (e.Property == StyledElement.DataContextProperty)
         {
-            UpdateSource(((StyledElement?)sender)?.DataContext as TSource);
+            UpdateSource(((StyledElement?)sender)?.DataContext);
         }
         else if (e.Property == TargetProperty)
         {
-            _targetValue = e is AvaloniaPropertyChangedEventArgs<TValue> typedArgs ?
-                typedArgs.NewValue.Value : (TValue)e.NewValue!;
+            _targetValue = ReadTargetValue(e);
 
             // Don't write back to the source if this change is the binding pushing the source
             // value to the target; that would be a redundant round-trip.
-            if (!_writingValueToTarget && _mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
+            if (_targetValue.HasValue &&
+                !_writingValueToTarget &&
+                _mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
+            {
                 WriteValueToSource(_targetValue.Value);
+            }
         }
+    }
+
+    private static Optional<TValue> ReadTargetValue(AvaloniaPropertyChangedEventArgs e)
+    {
+        // The binding value type only needs to be assignable to the target property type, so the
+        // target property can hold values which cannot be represented as a TValue; for example a
+        // string binding on an object-typed property whose value is set to an int. Such values
+        // are reported as absent rather than throwing.
+        if (e is AvaloniaPropertyChangedEventArgs<TValue> typedArgs)
+            return typedArgs.NewValue.Value;
+        if (e.NewValue is TValue value)
+            return value;
+        if (e.NewValue is null && default(TValue) is null)
+            return new Optional<TValue>(default!);
+        return default;
     }
 
     /// <summary>
@@ -317,6 +351,19 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         if (typeof(TValue) == typeof(bool))
             return BooleanBoxes.Box(Unsafe.As<TValue, bool>(ref value));
         return value;
+    }
+
+    private void Log(string error, LogEventLevel level = LogEventLevel.Warning)
+    {
+        if (!Logger.TryGet(level, LogArea.Binding, out var log) || !TryGetTarget(out var target))
+            return;
+
+        log.Log(
+            target,
+            "An error occurred binding {Property} to {Expression}: {Message}",
+            (object?)TargetProperty ?? "(unknown)",
+            Description,
+            error);
     }
 
     private bool TryGetSource([NotNullWhen(true)] out TSource? source)
