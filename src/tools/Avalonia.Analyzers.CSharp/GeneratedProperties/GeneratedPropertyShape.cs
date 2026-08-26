@@ -13,6 +13,12 @@ internal enum GeneratedPropertyKind
     Attached
 }
 
+internal enum CallbackShape
+{
+    Validate,
+    Coerce,
+}
+
 [Flags]
 internal enum PropertyDefects
 {
@@ -241,6 +247,77 @@ internal static class GeneratedPropertyShape
         }
 
         return count > 1;
+    }
+
+    public static bool IsCallbackImplemented(
+        Compilation compilation,
+        INamedTypeSymbol containingType,
+        string methodName,
+        CallbackShape shape,
+        ITypeSymbol valueType)
+    {
+        foreach (var candidate in containingType.GetMembers(methodName).OfType<IMethodSymbol>())
+        {
+            if (candidate.Arity != 0 ||
+                !candidate.IsStatic ||
+                !ParametersMatch(compilation, candidate, shape, valueType) ||
+                !ReturnMatches(candidate, shape, valueType))
+            {
+                continue;
+            }
+
+            // Implemented either as the partial pair (definition + implementation) or as a plain
+            // method (the compiler reports any duplicate-member issues).
+            return !candidate.IsPartialDefinition || candidate.PartialImplementationPart is not null;
+        }
+
+        return false;
+    }
+
+    private static bool ParametersMatch(
+        Compilation compilation,
+        IMethodSymbol candidate,
+        CallbackShape shape,
+        ITypeSymbol valueType)
+    {
+        var parameters = candidate.Parameters;
+
+        return shape switch
+        {
+            CallbackShape.Validate =>
+                parameters.Length == 1 &&
+                TypeMatches(parameters[0].Type, valueType),
+            CallbackShape.Coerce =>
+                parameters.Length == 2 &&
+                SymbolEqualityComparer.Default.Equals(
+                    parameters[0].Type,
+                    compilation.GetTypeByMetadataName(AvaloniaObjectMetadataName)) &&
+                TypeMatches(parameters[1].Type, valueType),
+            _ => false,
+        };
+    }
+
+    private static bool ReturnMatches(IMethodSymbol candidate, CallbackShape shape, ITypeSymbol valueType) => shape switch
+    {
+        CallbackShape.Validate => candidate.ReturnType.SpecialType == SpecialType.System_Boolean,
+        CallbackShape.Coerce => TypeMatches(candidate.ReturnType, valueType),
+        _ => false,
+    };
+
+    private static bool TypeMatches(ITypeSymbol candidateType, ITypeSymbol valueType)
+    {
+        if (!SymbolEqualityComparer.Default.Equals(candidateType, valueType))
+        {
+            return false;
+        }
+
+        if (candidateType.NullableAnnotation == NullableAnnotation.None ||
+            valueType.NullableAnnotation == NullableAnnotation.None)
+        {
+            return true;
+        }
+
+        return SymbolEqualityComparer.IncludeNullability.Equals(candidateType, valueType);
     }
 
     private static bool DerivesFromAvaloniaObject(ITypeSymbol? type, Compilation compilation)

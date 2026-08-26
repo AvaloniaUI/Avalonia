@@ -92,11 +92,11 @@ public class GeneratedPropertyCodeFixTests
             [GeneratedStyledProperty(ValidateMethodName = "ValidateValue", CoerceMethodName = "CoerceValue")]
             public partial int Value { get; set; }
 
-            private static partial int CoerceValue(AvaloniaObject sender, int value)
+            private static int CoerceValue(AvaloniaObject sender, int value)
             {
             }
 
-            private static partial bool ValidateValue(int value)
+            private static bool ValidateValue(int value)
             {
             }
         }

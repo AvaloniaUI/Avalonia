@@ -17,11 +17,5 @@ namespace TestNs
             set => SetValue(HeaderProperty, value);
         }
 #nullable restore annotations
-
-#nullable disable annotations
-        private static partial bool ValidateHeader(string value);
-
-        private static partial string CoerceHeader(global::Avalonia.AvaloniaObject sender, string value);
-#nullable restore annotations
     }
 }

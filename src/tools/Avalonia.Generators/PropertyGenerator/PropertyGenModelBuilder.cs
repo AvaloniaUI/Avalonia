@@ -78,8 +78,8 @@ internal static class PropertyGenModelBuilder
             DefaultBindingMode: args.DefaultBindingMode,
             Inherits: args.Inherits,
             EnableDataValidation: args.EnableDataValidation,
-            ValidateMethodName: args.ValidateMethodName,
-            CoerceMethodName: args.CoerceMethodName);
+            ValidateMethodName: ResolveCallback(context, property.ContainingType, args.ValidateMethodName, CallbackShape.Validate, property.Type),
+            CoerceMethodName: ResolveCallback(context, property.ContainingType, args.CoerceMethodName, CallbackShape.Coerce, property.Type));
     }
 
     private static PropertyGenModel BuildAttached(
@@ -114,8 +114,30 @@ internal static class PropertyGenModelBuilder
             DefaultBindingMode: args.DefaultBindingMode,
             Inherits: args.Inherits,
             EnableDataValidation: false,
-            ValidateMethodName: args.ValidateMethodName,
-            CoerceMethodName: args.CoerceMethodName);
+            ValidateMethodName: ResolveCallback(context, method.ContainingType, args.ValidateMethodName, CallbackShape.Validate, method.ReturnType),
+            CoerceMethodName: ResolveCallback(context, method.ContainingType, args.CoerceMethodName, CallbackShape.Coerce, method.ReturnType));
+    }
+
+    /// <summary>
+    /// Returns the callback name only when it resolves to a method the generated registration can actually call.
+    /// An unresolved name is reported as AVP2006 by the analyzer.
+    /// </summary>
+    private static string? ResolveCallback(
+        GeneratorAttributeSyntaxContext context,
+        INamedTypeSymbol containingType,
+        string? methodName,
+        CallbackShape shape,
+        ITypeSymbol valueType)
+    {
+        if (methodName is null)
+        {
+            return null;
+        }
+
+        return GeneratedPropertyShape.IsCallbackImplemented(
+            context.SemanticModel.Compilation, containingType, methodName, shape, valueType)
+            ? methodName
+            : null;
     }
 
     private static TypeDeclarationModel BuildTypeDeclaration(INamedTypeSymbol type)

@@ -53,9 +53,9 @@ public class GeneratedPropertyAnalyzerTests
             [GeneratedStyledProperty(ValidateMethodName = nameof(ValidateValue), CoerceMethodName = nameof(CoerceValue))]
             public partial int Value { get; set; }
 
-            private static partial bool ValidateValue(int value) => value >= 0;
+            private static bool ValidateValue(int value) => value >= 0;
 
-            private static partial int CoerceValue(AvaloniaObject sender, int value) => value;
+            private static int CoerceValue(AvaloniaObject sender, int value) => value;
         }
         """);
 
@@ -265,7 +265,7 @@ public class GeneratedPropertyAnalyzerTests
             public partial int Value { get; set; }
 
             // 'string' instead of 'int'
-            private static partial bool ValidateValue(string value) => true;
+            private static bool ValidateValue(string value) => true;
         }
         """);
 
@@ -288,6 +288,37 @@ public class GeneratedPropertyAnalyzerTests
         {
             [GeneratedStyledProperty({|AVP2006:CoerceMethodName = "not a name"|})]
             public partial int Value { get; set; }
+        }
+        """);
+
+    [Fact]
+    public Task Nullable_Mismatched_Callback_Reports_AVP2006() => Verify(
+        """
+        #nullable enable
+
+        public partial class MyControl : AvaloniaObject
+        {
+            [GeneratedStyledProperty({|AVP2006:ValidateMethodName = nameof(ValidateHeader)|})]
+            public partial string? Header { get; set; }
+
+            // 'string' instead of 'string?'
+            private static bool ValidateHeader(string value) => true;
+        }
+        """);
+
+    [Fact]
+    public Task Nullable_Disable_Callback_Reports_Nothing() => Verify(
+        """
+        #nullable enable
+
+        public partial class MyControl : AvaloniaObject
+        {
+            [GeneratedStyledProperty(ValidateMethodName = nameof(ValidateHeader))]
+            public partial string? Header { get; set; }
+
+        #nullable disable
+            private static bool ValidateHeader(string value) => true;
+        #nullable restore
         }
         """);
 

@@ -17,12 +17,6 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
 {
     private const string PropertySuffix = "Property";
 
-    private enum CallbackShape
-    {
-        Validate,
-        Coerce,
-    }
-
     // By default, Roslyn doesn't seem to include nullable in ToDisplayString.
     private static readonly SymbolDisplayFormat s_typeFormatWithNullable =
         SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
@@ -317,7 +311,7 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol containingType,
         ITypeSymbol valueType)
     {
-        if (IsCallbackImplemented(context.Compilation, containingType, methodName, shape, valueType))
+        if (GeneratedPropertyShape.IsCallbackImplemented(context.Compilation, containingType, methodName, shape, valueType))
         {
             return;
         }
@@ -334,70 +328,15 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
             methodName, signature));
     }
 
-    private static bool IsCallbackImplemented(
-        Compilation compilation,
-        INamedTypeSymbol containingType,
-        string methodName,
-        CallbackShape shape,
-        ITypeSymbol valueType)
-    {
-        foreach (var candidate in containingType.GetMembers(methodName).OfType<IMethodSymbol>())
-        {
-            if (candidate.Arity != 0 ||
-                !candidate.IsStatic ||
-                !ParametersMatch(compilation, candidate, shape, valueType) ||
-                !ReturnMatches(candidate, shape, valueType))
-            {
-                continue;
-            }
-
-            // Implemented either as the partial pair (definition + implementation, where the
-            // definition typically comes from the generator) or as a plain method (an
-            // implementing-only declaration; the compiler reports any duplicate-member issues).
-            return !candidate.IsPartialDefinition || candidate.PartialImplementationPart is not null;
-        }
-
-        return false;
-    }
-
-    private static bool ParametersMatch(
-        Compilation compilation,
-        IMethodSymbol candidate,
-        CallbackShape shape,
-        ITypeSymbol valueType)
-    {
-        var comparer = SymbolEqualityComparer.Default;
-        var parameters = candidate.Parameters;
-
-        return shape switch
-        {
-            CallbackShape.Validate =>
-                parameters.Length == 1 &&
-                comparer.Equals(parameters[0].Type, valueType),
-            CallbackShape.Coerce =>
-                parameters.Length == 2 &&
-                comparer.Equals(parameters[0].Type, compilation.GetTypeByMetadataName(GeneratedPropertyShape.AvaloniaObjectMetadataName)) &&
-                comparer.Equals(parameters[1].Type, valueType),
-            _ => false,
-        };
-    }
-
-    private static bool ReturnMatches(IMethodSymbol candidate, CallbackShape shape, ITypeSymbol valueType) => shape switch
-    {
-        CallbackShape.Validate => candidate.ReturnType.SpecialType == SpecialType.System_Boolean,
-        CallbackShape.Coerce => SymbolEqualityComparer.Default.Equals(candidate.ReturnType, valueType),
-        _ => false,
-    };
-
     private static string RenderCallbackSignature(string methodName, CallbackShape shape, ITypeSymbol valueType)
     {
         var value = valueType.ToDisplayString(s_typeFormatWithNullable);
         return shape switch
         {
             CallbackShape.Validate =>
-                $"private static partial bool {methodName}({value} value)",
+                $"private static bool {methodName}({value} value)",
             CallbackShape.Coerce =>
-                $"private static partial {value} {methodName}(global::Avalonia.AvaloniaObject sender, {value} value)",
+                $"private static {value} {methodName}(global::Avalonia.AvaloniaObject sender, {value} value)",
             _ => methodName,
         };
     }

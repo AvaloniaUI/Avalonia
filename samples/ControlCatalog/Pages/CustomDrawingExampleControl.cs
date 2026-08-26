@@ -60,7 +60,7 @@ namespace ControlCatalog.Pages
             _smileGeometry = sg.Clone();
         }
 
-        private static partial double CoerceRotation(AvaloniaObject sender, double value) => value % (Math.PI * 2);
+        private static double CoerceRotation(AvaloniaObject sender, double value) => value % (Math.PI * 2);
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {

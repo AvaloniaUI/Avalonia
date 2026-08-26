@@ -20,11 +20,5 @@ namespace TestNs
         public static void SetOrder(global::Avalonia.Visual element, int value)
             => element.SetValue(OrderProperty, value);
 #nullable restore annotations
-
-#nullable enable annotations
-        private static partial bool ValidateOrder(int value);
-
-        private static partial int CoerceOrder(global::Avalonia.AvaloniaObject sender, int value);
-#nullable restore annotations
     }
 }

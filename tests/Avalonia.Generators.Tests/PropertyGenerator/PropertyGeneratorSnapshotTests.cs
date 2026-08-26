@@ -83,9 +83,25 @@ public class PropertyGeneratorSnapshotTests
             [GeneratedStyledProperty(ValidateMethodName = nameof(ValidateValue), CoerceMethodName = nameof(CoerceValue), DefaultValue = 0)]
             public partial int Value { get; set; }
 
-            private static partial bool ValidateValue(int value) => value >= 0;
+            private static bool ValidateValue(int value) => value >= 0;
 
-            private static partial int CoerceValue(AvaloniaObject sender, int value) => value > 100 ? 100 : value;
+            private static int CoerceValue(AvaloniaObject sender, int value) => value > 100 ? 100 : value;
+        }
+        """);
+
+    [Fact]
+    public void Styled_SharedCallback() => AssertGeneratedCode("Styled_SharedCallback", """
+        namespace TestNs;
+
+        public partial class MyControl : AvaloniaObject
+        {
+            [GeneratedStyledProperty(CoerceMethodName = nameof(CoerceValue))]
+            public partial int First { get; set; }
+
+            [GeneratedStyledProperty(CoerceMethodName = nameof(CoerceValue))]
+            public partial int Second { get; set; }
+
+            private static int CoerceValue(AvaloniaObject sender, int value) => value;
         }
         """);
 
@@ -133,7 +149,7 @@ public class PropertyGeneratorSnapshotTests
             [GeneratedStyledProperty(AddOwnerFrom = typeof(RangeBase), DefaultValue = 1.0, CoerceMethodName = nameof(CoerceValue), EnableDataValidation = true)]
             public new partial double Value { get; set; }
 
-            private static partial double CoerceValue(AvaloniaObject sender, double value) => value < 0 ? 0 : value;
+            private static double CoerceValue(AvaloniaObject sender, double value) => value < 0 ? 0 : value;
         }
         """);
 
@@ -301,9 +317,9 @@ public class PropertyGeneratorSnapshotTests
             [GeneratedAttachedProperty(ValidateMethodName = nameof(ValidateOrder), CoerceMethodName = nameof(CoerceOrder), DefaultValue = 0)]
             public static partial int GetOrder(Visual element);
 
-            private static partial bool ValidateOrder(int value) => value >= 0;
+            private static bool ValidateOrder(int value) => value >= 0;
 
-            private static partial int CoerceOrder(AvaloniaObject sender, int value) => value < 0 ? 0 : value;
+            private static int CoerceOrder(AvaloniaObject sender, int value) => value < 0 ? 0 : value;
         }
         """);
 
@@ -452,9 +468,9 @@ public class PropertyGeneratorSnapshotTests
             [GeneratedStyledProperty(ValidateMethodName = nameof(ValidateHeader), CoerceMethodName = nameof(CoerceHeader))]
             public partial string Header { get; set; }
 
-            private static partial bool ValidateHeader(string value) => true;
+            private static bool ValidateHeader(string value) => true;
 
-            private static partial string CoerceHeader(AvaloniaObject sender, string value) => value;
+            private static string CoerceHeader(AvaloniaObject sender, string value) => value;
         }
         """,
         nullableContextOptions: NullableContextOptions.Disable);

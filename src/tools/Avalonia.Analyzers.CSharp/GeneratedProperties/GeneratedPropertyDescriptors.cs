@@ -65,7 +65,7 @@ internal static class GeneratedPropertyDescriptors
     public static readonly DiagnosticDescriptor UnboundCallback = new(
         DiagnosticIds.GeneratedPropertyUnboundCallback,
         "Callback method cannot be bound",
-        "'{0}' does not resolve to an implemented partial callback method; expected signature: '{1}'",
+        "'{0}' does not resolve to an implemented callback method; expected signature: '{1}'",
         Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);

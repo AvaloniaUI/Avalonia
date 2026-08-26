@@ -44,7 +44,7 @@ public sealed class GeneratedAttachedPropertyAttribute : Attribute
     /// <summary>
     /// The name of the validation method, with signature
     /// <c>static bool {Method}(T value)</c>. Pass via <c>nameof(...)</c>.
-    /// The generator emits a <c>private static partial</c> declaration for the method.
+    /// Declare it as an <c>private static</c> method on the same type.
     /// </summary>
     /// <remarks>
     /// Cannot be used with <see cref="AddOwnerFrom"/>. 
@@ -54,7 +54,7 @@ public sealed class GeneratedAttachedPropertyAttribute : Attribute
     /// <summary>
     /// The name of the coercion method, with signature
     /// <c>static T {Method}(AvaloniaObject sender, T value)</c>.
-    /// The generator emits a <c>private static partial</c> declaration for the method.
+    /// Declare it as an <c>private static</c> method on the same type.
     /// </summary>
     public string? CoerceMethodName { get; set; }
 }

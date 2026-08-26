@@ -11,7 +11,6 @@ internal static class PropertyGenEmitter
 {
     private const string AvaloniaProperty = "global::Avalonia.AvaloniaProperty";
     private const string BindingMode = "global::Avalonia.Data.BindingMode";
-    private const string AvaloniaObject = "global::Avalonia.AvaloniaObject";
 
     public static string Emit(PropertyGenTypeModel model, bool useFieldKeyword)
     {
@@ -39,8 +38,6 @@ internal static class PropertyGenEmitter
         {
             EmitProperty(builder, indent, model.Type, property, useFieldKeyword, ref firstMember);
         }
-
-        EmitCallbackDeclarations(builder, indent, model.Properties, ref firstMember);
 
         while (indent > 0)
         {
@@ -208,55 +205,6 @@ internal static class PropertyGenEmitter
         return arguments.Count == 0
             ? string.Empty
             : $"new global::Avalonia.StyledPropertyMetadata<{property.ValueTypeRef}>({string.Join(", ", arguments)})";
-    }
-
-    private static void EmitCallbackDeclarations(
-        StringBuilder builder,
-        int indent,
-        IReadOnlyList<PropertyGenModel> properties,
-        ref bool firstMember)
-    {
-        // Deduplicate by full declaration text: two properties may share one callback method,
-        // while the same name with different parameter types is a valid overload pair.
-        var emitted = new HashSet<string>();
-        var pending = new List<string>();
-
-        foreach (var property in properties)
-        {
-            pending.Clear();
-
-            if (property.ValidateMethodName is { } validate)
-            {
-                pending.Add($"private static partial bool {validate}({property.ValueTypeRef} value);");
-            }
-
-            if (property.CoerceMethodName is { } coerce)
-            {
-                pending.Add($"private static partial {property.ValueTypeRef} {coerce}({AvaloniaObject} sender, {property.ValueTypeRef} value);");
-            }
-
-            pending.RemoveAll(declaration => !emitted.Add(declaration));
-
-            if (pending.Count == 0)
-            {
-                continue;
-            }
-
-            StartMember(builder, indent, ref firstMember);
-            SetNullableContext(builder, property.NullableContext);
-
-            for (var i = 0; i < pending.Count; i++)
-            {
-                if (i > 0)
-                {
-                    builder.AppendLine();
-                }
-
-                Line(builder, indent, pending[i]);
-            }
-
-            RestoreNullableContext(builder);
-        }
     }
 
     private static void EmitFieldDoc(StringBuilder builder, int indent, string summary)
