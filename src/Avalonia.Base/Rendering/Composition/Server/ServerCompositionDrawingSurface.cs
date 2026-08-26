@@ -9,6 +9,7 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
 {
     private IRef<IBitmapImpl>? _bitmap;
     private IPlatformRenderInterfaceContext? _createdWithContext;
+    private bool _disposed;
     public override IRef<IBitmapImpl>? Bitmap
     {
         get
@@ -41,6 +42,17 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
 
     void Update(IBitmapImpl newImage, IPlatformRenderInterfaceContext context)
     {
+        if (_disposed)
+        {
+            // Batches are processed with disposals before server jobs, so an update job
+            // can be processed after this surface was disposed in the same batch.
+            // Dispose the snapshot here on the render thread (context is current)
+            // instead of orphaning it: an orphaned ref is only ever released by the
+            // Ref<T> critical finalizer, which then performs GPU work on the finalizer
+            // thread and races the render loop (#21865).
+            newImage.Dispose();
+            return;
+        }
         _bitmap?.Dispose();
         _bitmap = RefCountable.Create(newImage);
         _createdWithContext = context;
@@ -92,5 +104,7 @@ internal class ServerCompositionDrawingSurface : ServerCompositionSurface, IDisp
     public void Dispose()
     {
         _bitmap?.Dispose();
+        _bitmap = null;
+        _disposed = true;
     }
 }
