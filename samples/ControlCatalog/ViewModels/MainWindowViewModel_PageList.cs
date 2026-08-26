@@ -38,6 +38,7 @@ partial class MainWindowViewModel
             Page<ListBoxPage>("ListBox", Icons.List, "A selectable, virtualized list of items"),
             Page<PipsPagerPage>("PipsPager", Icons.HorizontalDots, "Dot-style pager for paginated content"),
             Page<RefreshContainerPage>("RefreshContainer", Icons.Refresh, "Pull-to-refresh for scrollable content"),
+            Page<TableViewPage>("TableView", Icons.Grid, "Tabular data with resizable, sortable columns"),
             Page<TreeViewPage>("TreeView", Icons.Tree, "Hierarchical data with expandable nodes"),
         ]),
         new("Date & Time", 
@@ -77,6 +78,7 @@ partial class MainWindowViewModel
             Page<RelativePanelPage>("RelativePanel", Icons.Layout, "Arrange children relative to each other"),
             Page<ScrollViewerPage>("ScrollViewer", Icons.Scroll, "Scrollable viewport over large content"),
             Page<ViewboxPage>("Viewbox", Icons.Viewbox, "Scale content to fit available space"),
+            Page<WrapPanelPage>("WrapPanel", Icons.Layout, "Wrap children onto multiple lines"),
         ]),
         new("Media & Graphics", 
         [
