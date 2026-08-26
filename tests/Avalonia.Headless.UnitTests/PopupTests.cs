@@ -146,6 +146,63 @@ public class PopupTests
         window.Close();
     }
 
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Nested_Popup_Is_Owned_By_Parent_Popup()
+    {
+        var nestedTarget = new Border { Width = 20, Height = 20, Background = Brushes.Green };
+        var nestedPopup = new Popup
+        {
+            PlacementTarget = nestedTarget,
+            Child = new Border { Width = 10, Height = 10 }
+        };
+        var target = new Border { Background = Brushes.Red };
+        var popup = new Popup
+        {
+            PlacementTarget = target,
+            Child = new Panel { Children = { nestedTarget, nestedPopup } }
+        };
+        var window = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = new Panel { Children = { target, popup } }
+        };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        popup.Open();
+        Dispatcher.UIThread.RunJobs();
+        nestedPopup.Open();
+        Dispatcher.UIThread.RunJobs();
+
+        AssertHelper.Equal(1, window.OpenedPopups.Count);
+        AssertHelper.Same(popup, window.OpenedPopups[0]);
+
+        AssertHelper.Equal(1, popup.OpenedPopups.Count);
+        AssertHelper.Same(nestedPopup, popup.OpenedPopups[0]);
+        AssertHelper.Equal(0, nestedPopup.OpenedPopups.Count);
+
+        // The nested popup is hosted in the parent popup's own top level.
+        AssertHelper.Same(GetPopupTopLevel(popup), TopLevel.GetTopLevel(nestedTarget));
+
+        nestedPopup.Close();
+        Dispatcher.UIThread.RunJobs();
+
+        AssertHelper.Equal(0, popup.OpenedPopups.Count);
+        AssertHelper.Equal(1, window.OpenedPopups.Count);
+
+        popup.Close();
+        Dispatcher.UIThread.RunJobs();
+
+        AssertHelper.Equal(0, window.OpenedPopups.Count);
+
+        window.Close();
+    }
+
     internal static TopLevel GetPopupTopLevel(Popup popup)
     {
         AssertHelper.NotNull(popup.Child);

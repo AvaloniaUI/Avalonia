@@ -5,7 +5,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using System.Collections.Generic;
-using Avalonia.Controls;
 using Avalonia.Threading;
 
 namespace Avalonia.Headless

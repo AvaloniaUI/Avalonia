@@ -1444,7 +1444,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Nested_Popup_Should_Be_Included_In_OpenedPopups()
+        public void Nested_Popup_Should_Be_In_Parent_Popup_OpenedPopups()
         {
             using (CreateServices())
             {
@@ -1474,7 +1474,24 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 nestedPopup.Open();
 
-                Assert.Equal([popup, nestedPopup], window.OpenedPopups);
+                Assert.Equal([popup], window.OpenedPopups);
+                Assert.Equal([nestedPopup], popup.OpenedPopups);
+                Assert.Empty(nestedPopup.OpenedPopups);
+
+                if (popup.Host is PopupRoot popupRoot)
+                {
+                    // A popup root exposes the popups opened by its own popup.
+                    Assert.Equal([nestedPopup], popupRoot.OpenedPopups);
+                }
+
+                nestedPopup.Close();
+
+                Assert.Equal([popup], window.OpenedPopups);
+                Assert.Empty(popup.OpenedPopups);
+
+                popup.Close();
+
+                Assert.Empty(window.OpenedPopups);
             }
         }
 

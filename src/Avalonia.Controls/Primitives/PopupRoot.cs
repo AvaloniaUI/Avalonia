@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Diagnostics;
@@ -121,6 +122,8 @@ namespace Avalonia.Controls.Primitives
         IStyleHost? IStyleHost.StylingParent => Parent;
 
         public TopLevel ParentTopLevel { get; }
+
+        public override IReadOnlyList<Popup> OpenedPopups => (Parent as Popup)?.OpenedPopups ?? [];
 
         /// <inheritdoc/>
         public void Dispose()

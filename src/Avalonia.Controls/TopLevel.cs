@@ -560,34 +560,12 @@ namespace Avalonia.Controls
         private IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         /// <summary>
-        /// Gets the popups that are currently open in this top level, including nested popups.
+        /// Gets the popups that are currently open directly in this top level, in the order they were opened.
         /// </summary>
-        public IReadOnlyList<Popup> OpenedPopups
-        {
-            get
-            {
-                if (_openedPopups is not { Count: > 0 })
-                    return [];
-
-                var collected = new List<Popup>(_openedPopups.Count);
-                ProcessPopups(_openedPopups);
-
-                return collected;
-
-                void ProcessPopups(List<Popup> popups)
-                {
-                    foreach (var popup in popups)
-                    {
-                        collected.Add(popup);
-
-                        if (popup.Host is PopupRoot { _openedPopups: { Count: > 0 } nestedPopups})
-                        {
-                            ProcessPopups(nestedPopups);
-                        }
-                    }
-                }
-            }
-        }
+        /// <remarks>
+        /// Use <see cref="Popup.OpenedPopups"/> for nested popups.
+        /// </remarks>
+        public virtual IReadOnlyList<Popup> OpenedPopups => _openedPopups ?? (IReadOnlyList<Popup>)[];
 
         /// <summary>
         /// Gets the <see cref="TopLevel" /> for which the given <see cref="Visual"/> is hosted in.
