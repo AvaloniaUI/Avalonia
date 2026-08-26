@@ -107,7 +107,9 @@
             <ItemsControl ItemsSource="{Binding Items}">
               <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                  <UniformGrid RowSpacing="12" ColumnSpacing="12" SizeChanged="UniformGrid_OnSizeChanged" />
+                  <UniformGrid RowSpacing="12" ColumnSpacing="12"
+                               Margin="0, 0, 1, 0"
+                               SizeChanged="UniformGrid_OnSizeChanged" />
                 </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
