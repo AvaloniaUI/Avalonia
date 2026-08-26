@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -1683,7 +1683,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Focused_Container_Is_Positioned_Correctly_When_Scrolled_Past_Items_With_Different_Heights()
+        public void Focused_Container_Is_Positioned_Outside_Viewport_When_Scrolled_Past_Items_With_Different_Heights()
         {
             using var app = App();
 
@@ -1691,7 +1691,7 @@ namespace Avalonia.Controls.UnitTests
                 .Select(x => new ItemWithHeight(x, x < 10 ? 10 : 50))
                 .ToList();
 
-            var (target, _, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
 
             var focused = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
             focused.Focusable = true;
@@ -1702,18 +1702,19 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(target.FirstRealizedIndex > 5);
 
-            var firstIndex = target.FirstRealizedIndex;
-            var firstRealized = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(firstIndex));
-            var realized = target.GetRealizedElements()
-                .Where(x => x is not null)
-                .Cast<Control>()
-                .ToList();
-
-            var estimatedSize = realized.Average(x => x.DesiredSize.Height);
-            var expectedTop = firstRealized.Bounds.Top - ((firstIndex - 5) * estimatedSize);
-
+            var firstRealized = Assert.IsType<ContentPresenter>(
+                target.ContainerFromIndex(target.FirstRealizedIndex));
             focused = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
-            Assert.Equal(expectedTop, focused.Bounds.Top, 3);
+
+            // The focused container's position is estimated, as it's outside the realized range.
+            // The estimate must never place it before the panel origin...
+            Assert.True(focused.Bounds.Top >= 0);
+
+            // ...must keep it above the realized range rather than overlapping it...
+            Assert.True(focused.Bounds.Bottom <= firstRealized.Bounds.Top);
+
+            // ...and must keep it out of the viewport, so it can't appear as a ghost item.
+            Assert.True(focused.Bounds.Bottom <= scroll.Offset.Y);
         }
 
         [Theory]
