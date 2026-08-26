@@ -4,7 +4,7 @@ namespace TestNs
 {
     partial class MyControl
     {
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
@@ -16,6 +16,6 @@ namespace TestNs
             get => GetValue(FontSizeProperty);
             set => SetValue(FontSizeProperty, value);
         }
-#nullable restore
+#nullable restore annotations
     }
 }

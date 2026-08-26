@@ -4,7 +4,7 @@ namespace TestNs
 {
     partial class Grid
     {
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <c>Order</c> attached property.
         /// </summary>
@@ -19,13 +19,12 @@ namespace TestNs
         /// </summary>
         public static void SetOrder(global::Avalonia.Visual element, int value)
             => element.SetValue(OrderProperty, value);
-#nullable restore
+#nullable restore annotations
 
-#nullable enable
-
+#nullable enable annotations
         private static partial bool ValidateOrder(int value);
 
         private static partial int CoerceOrder(global::Avalonia.AvaloniaObject sender, int value);
-#nullable restore
+#nullable restore annotations
     }
 }

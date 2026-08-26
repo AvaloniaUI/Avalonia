@@ -4,7 +4,7 @@ namespace TestNs
 {
     partial class MyPanel
     {
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <c>Row</c> attached property.
         /// </summary>
@@ -19,6 +19,6 @@ namespace TestNs
         /// </summary>
         public static void SetRow(global::Avalonia.Visual element, int value)
             => element.SetValue(RowProperty, value);
-#nullable restore
+#nullable restore annotations
     }
 }

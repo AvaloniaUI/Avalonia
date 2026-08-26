@@ -46,8 +46,7 @@ internal static class PropertyGenModelBuilder
     {
         var declaration = context.TargetNode;
         var setter = property.SetMethod!;
-        var nullableContext = (context.SemanticModel.GetNullableContext(declaration.SpanStart) &
-                               NullableContext.AnnotationsEnabled) != 0;
+        var nullableContext = HasNullableAnnotations(context.SemanticModel, declaration);
 
         // C# only allows an accessor modifier that is strictly more restrictive than the
         // property's accessibility, so "differs" means "restricted" (the `private set` pattern).
@@ -89,8 +88,7 @@ internal static class PropertyGenModelBuilder
         GeneratorAttributeSyntaxContext context)
     {
         var declaration = context.TargetNode;
-        var nullableContext = (context.SemanticModel.GetNullableContext(declaration.SpanStart) &
-                               NullableContext.AnnotationsEnabled) != 0;
+        var nullableContext = HasNullableAnnotations(context.SemanticModel, declaration);
 
         GeneratedPropertyShape.TryGetAttachedName(method, out var name);
         var host = method.Parameters[0];
@@ -170,6 +168,18 @@ internal static class PropertyGenModelBuilder
             : string.Empty;
 
         return $"partial {keyword} {type.Name}{typeParameters}";
+    }
+
+    private static bool HasNullableAnnotations(SemanticModel semanticModel, SyntaxNode declaration)
+    {
+        var position = declaration switch
+        {
+            PropertyDeclarationSyntax property => property.Type.SpanStart,
+            MethodDeclarationSyntax method => method.ReturnType.SpanStart,
+            _ => declaration.SpanStart,
+        };
+
+        return (semanticModel.GetNullableContext(position) & NullableContext.AnnotationsEnabled) != 0;
     }
 
     private static string FormatInheritanceModifiers(SyntaxNode declaration)

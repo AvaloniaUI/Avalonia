@@ -4,7 +4,7 @@ namespace TestNs
 {
     partial class MyControl
     {
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <see cref="Count"/> property.
         /// </summary>
@@ -16,6 +16,6 @@ namespace TestNs
             get => field;
             set => SetAndRaise(CountProperty, ref field, value);
         }
-#nullable restore
+#nullable restore annotations
     }
 }

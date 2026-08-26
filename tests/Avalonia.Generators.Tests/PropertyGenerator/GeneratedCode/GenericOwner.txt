@@ -4,7 +4,7 @@ namespace TestNs
 {
     partial class MyControl<T>
     {
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <see cref="Item"/> property.
         /// </summary>
@@ -16,6 +16,6 @@ namespace TestNs
             get => GetValue(ItemProperty);
             set => SetValue(ItemProperty, value);
         }
-#nullable restore
+#nullable restore annotations
     }
 }

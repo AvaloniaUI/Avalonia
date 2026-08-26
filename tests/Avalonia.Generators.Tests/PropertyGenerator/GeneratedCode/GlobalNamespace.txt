@@ -2,7 +2,7 @@
 
 partial class MyControl
 {
-#nullable enable
+#nullable enable annotations
     /// <summary>
     /// Defines the <see cref="Header"/> property.
     /// </summary>
@@ -14,5 +14,5 @@ partial class MyControl
         get => GetValue(HeaderProperty);
         set => SetValue(HeaderProperty, value);
     }
-#nullable restore
+#nullable restore annotations
 }

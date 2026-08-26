@@ -4,7 +4,7 @@ namespace TestNs
 {
     partial class Grid
     {
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <c>RowSpan</c> attached property.
         /// </summary>
@@ -19,9 +19,9 @@ namespace TestNs
         /// </summary>
         public static void SetRowSpan(global::Avalonia.Visual element, int value)
             => element.SetValue(RowSpanProperty, value);
-#nullable restore
+#nullable restore annotations
 
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <c>FontSize</c> attached property.
         /// </summary>
@@ -36,6 +36,6 @@ namespace TestNs
         /// </summary>
         public static void SetFontSize(global::Avalonia.Visual element, double value)
             => element.SetValue(FontSizeProperty, value);
-#nullable restore
+#nullable restore annotations
     }
 }

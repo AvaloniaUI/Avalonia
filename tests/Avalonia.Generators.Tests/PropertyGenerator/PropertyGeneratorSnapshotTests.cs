@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 using static Avalonia.Generators.Tests.PropertyGenerator.PropertyGeneratorTestHelper;
@@ -412,6 +413,71 @@ public class PropertyGeneratorSnapshotTests
 
             [GeneratedAttachedProperty]
             public static partial int GetOrder(Visual element);
+        }
+        """);
+
+    [Fact]
+    public void NullableDisabled_Styled() => AssertGeneratedCode("NullableDisabled_Styled", """
+        namespace TestNs;
+
+        public partial class MyControl : AvaloniaObject
+        {
+            [GeneratedStyledProperty]
+            public partial string Header { get; set; }
+
+            [GeneratedStyledProperty]
+            public partial int Width { get; set; }
+        }
+        """,
+        nullableContextOptions: NullableContextOptions.Disable);
+
+    [Fact]
+    public void NullableDisabled_Attached() => AssertGeneratedCode("NullableDisabled_Attached", """
+        namespace TestNs;
+
+        public partial class MyPanel : AvaloniaObject
+        {
+            [GeneratedAttachedProperty]
+            public static partial string GetLabel(Visual element);
+        }
+        """,
+        nullableContextOptions: NullableContextOptions.Disable);
+
+    [Fact]
+    public void NullableDisabled_ValidateCoerce() => AssertGeneratedCode("NullableDisabled_ValidateCoerce", """
+        namespace TestNs;
+
+        public partial class MyControl : AvaloniaObject
+        {
+            [GeneratedStyledProperty(ValidateMethodName = nameof(ValidateHeader), CoerceMethodName = nameof(CoerceHeader))]
+            public partial string Header { get; set; }
+
+            private static partial bool ValidateHeader(string value) => true;
+
+            private static partial string CoerceHeader(AvaloniaObject sender, string value) => value;
+        }
+        """,
+        nullableContextOptions: NullableContextOptions.Disable);
+
+    [Fact]
+    public void NullableMixed_InlineDirective() => AssertGeneratedCode("NullableMixed_InlineDirective", """
+        namespace TestNs;
+
+        public partial class MyControl : AvaloniaObject
+        {
+            [GeneratedStyledProperty]
+            public partial string? Enabled { get; set; }
+
+        #nullable disable
+            [GeneratedStyledProperty]
+            public partial string Disabled { get; set; }
+
+            [GeneratedAttachedProperty]
+            public static partial string GetDisabledAttached(Visual element);
+        #nullable restore
+
+            [GeneratedDirectProperty]
+            public partial string EnabledAgain { get; set; } = "";
         }
         """);
 }

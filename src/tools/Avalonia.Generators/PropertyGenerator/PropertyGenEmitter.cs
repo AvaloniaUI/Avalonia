@@ -219,42 +219,43 @@ internal static class PropertyGenEmitter
         // Deduplicate by full declaration text: two properties may share one callback method,
         // while the same name with different parameter types is a valid overload pair.
         var emitted = new HashSet<string>();
+        var pending = new List<string>();
 
         foreach (var property in properties)
         {
-            if (property.ValidateMethodName is null && property.CoerceMethodName is null)
+            pending.Clear();
+
+            if (property.ValidateMethodName is { } validate)
+            {
+                pending.Add($"private static partial bool {validate}({property.ValueTypeRef} value);");
+            }
+
+            if (property.CoerceMethodName is { } coerce)
+            {
+                pending.Add($"private static partial {property.ValueTypeRef} {coerce}({AvaloniaObject} sender, {property.ValueTypeRef} value);");
+            }
+
+            pending.RemoveAll(declaration => !emitted.Add(declaration));
+
+            if (pending.Count == 0)
             {
                 continue;
             }
 
             StartMember(builder, indent, ref firstMember);
-
             SetNullableContext(builder, property.NullableContext);
 
-            if (property.ValidateMethodName is { } validate)
+            for (var i = 0; i < pending.Count; i++)
             {
-                EmitOnce(builder, indent,
-                    $"private static partial bool {validate}({property.ValueTypeRef} value);",
-                    emitted, ref firstMember);
-            }
+                if (i > 0)
+                {
+                    builder.AppendLine();
+                }
 
-            if (property.CoerceMethodName is { } coerce)
-            {
-                EmitOnce(builder, indent,
-                    $"private static partial {property.ValueTypeRef} {coerce}({AvaloniaObject} sender, {property.ValueTypeRef} value);",
-                    emitted, ref firstMember);
+                Line(builder, indent, pending[i]);
             }
 
             RestoreNullableContext(builder);
-        }
-    }
-
-    private static void EmitOnce(StringBuilder builder, int indent, string declaration, HashSet<string> emitted, ref bool firstMember)
-    {
-        if (emitted.Add(declaration))
-        {
-            StartMember(builder, indent, ref firstMember);
-            Line(builder, indent, declaration);
         }
     }
 
@@ -280,12 +281,12 @@ internal static class PropertyGenEmitter
 
     private static void SetNullableContext(StringBuilder builder, bool propertyNullableContext)
     {
-        Line(builder, 0, propertyNullableContext ? "#nullable enable" : "#nullable disable");
+        Line(builder, 0, propertyNullableContext ? "#nullable enable annotations" : "#nullable disable annotations");
     }
 
     private static void RestoreNullableContext(StringBuilder builder)
     {
-        Line(builder, 0, "#nullable restore");
+        Line(builder, 0, "#nullable restore annotations");
     }
 
     private static string Camel(string name)

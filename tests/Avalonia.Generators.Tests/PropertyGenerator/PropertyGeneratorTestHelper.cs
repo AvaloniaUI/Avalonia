@@ -23,12 +23,15 @@ internal static class PropertyGeneratorTestHelper
         .Append(MetadataReference.CreateFromFile(typeof(AvaloniaObject).Assembly.Location))
         .ToList());
 
-    public static CSharpCompilation CreateCompilation(string source, CSharpParseOptions? parseOptions = null) =>
+    public static CSharpCompilation CreateCompilation(
+        string source,
+        CSharpParseOptions? parseOptions = null,
+        NullableContextOptions nullableContextOptions = NullableContextOptions.Enable) =>
         CSharpCompilation.Create(
             "PropertyGeneratorTests",
             [CSharpSyntaxTree.ParseText(source, parseOptions ?? ParseOptions)],
             s_references.Value,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: nullableContextOptions));
 
     public static (GeneratorDriverRunResult Result, Compilation Output) RunGenerator(
         CSharpCompilation compilation,
@@ -56,6 +59,7 @@ internal static class PropertyGeneratorTestHelper
         [StringSyntax("csharp")] string source,
         string? expectedHintName = null,
         LanguageVersion languageVersion = LanguageVersion.CSharp14,
+        NullableContextOptions nullableContextOptions = NullableContextOptions.Enable,
         [CallerFilePath] string callerFilePath = "")
     {
         source = """
@@ -64,7 +68,7 @@ internal static class PropertyGeneratorTestHelper
 
                  """ + source;
         var parseOptions = new CSharpParseOptions(languageVersion);
-        var (result, output) = RunGenerator(CreateCompilation(source, parseOptions), parseOptions);
+        var (result, output) = RunGenerator(CreateCompilation(source, parseOptions, nullableContextOptions), parseOptions);
 
         Assert.Empty(result.Diagnostics);
 

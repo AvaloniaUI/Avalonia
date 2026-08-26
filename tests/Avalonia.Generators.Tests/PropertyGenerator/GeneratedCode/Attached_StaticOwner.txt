@@ -4,7 +4,7 @@ namespace TestNs
 {
     partial class ScrollHelper
     {
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <c>IsScrollTarget</c> attached property.
         /// </summary>
@@ -19,6 +19,6 @@ namespace TestNs
         /// </summary>
         public static void SetIsScrollTarget(global::Avalonia.Visual element, bool value)
             => element.SetValue(IsScrollTargetProperty, value);
-#nullable restore
+#nullable restore annotations
     }
 }

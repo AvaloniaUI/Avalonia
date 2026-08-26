@@ -4,7 +4,7 @@ namespace TestNs
 {
     partial class MyControl
     {
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <see cref="First"/> property.
         /// </summary>
@@ -16,9 +16,9 @@ namespace TestNs
             get => GetValue(FirstProperty);
             set => SetValue(FirstProperty, value);
         }
-#nullable restore
+#nullable restore annotations
 
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <see cref="Second"/> property.
         /// </summary>
@@ -30,9 +30,9 @@ namespace TestNs
             get => GetValue(SecondProperty);
             set => SetValue(SecondProperty, value);
         }
-#nullable restore
+#nullable restore annotations
 
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
@@ -44,9 +44,9 @@ namespace TestNs
             get => field;
             set => SetAndRaise(TextProperty, ref field, value);
         }
-#nullable restore
+#nullable restore annotations
 
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <c>Order</c> attached property.
         /// </summary>
@@ -61,6 +61,6 @@ namespace TestNs
         /// </summary>
         public static void SetOrder(global::Avalonia.Visual element, int value)
             => element.SetValue(OrderProperty, value);
-#nullable restore
+#nullable restore annotations
     }
 }

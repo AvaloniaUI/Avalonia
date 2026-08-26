@@ -4,7 +4,7 @@ namespace TestNs
 {
     partial class Host
     {
-#nullable enable
+#nullable enable annotations
         /// <summary>
         /// Defines the <c>IsHosted</c> attached property.
         /// </summary>
@@ -19,6 +19,6 @@ namespace TestNs
         /// </summary>
         internal static void SetIsHosted(global::Avalonia.Visual element, bool value)
             => element.SetValue(IsHostedProperty, value);
-#nullable restore
+#nullable restore annotations
     }
 }
