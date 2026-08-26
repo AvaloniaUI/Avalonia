@@ -1562,6 +1562,53 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Justify_Distributes_Across_A_Word_Gap_At_A_Run_Boundary()
+        {
+            using (Start())
+            {
+                // The emoji needs a fallback font, so this line's word gaps sit next to a run
+                // boundary. Break opportunities are collected run by run, and the break the
+                // enumerator always reports at the end of the text it is given is discarded as an
+                // artifact - so a real word gap that coincides with a run boundary yields no
+                // opportunity at all and never widens.
+                const string text = "abc \U0001F600 def";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                TextLine Format()
+                    => formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties))!;
+
+                static double Gap(TextLine line, int spaceIndex)
+                    => line.GetDistanceFromCharacterHit(new CharacterHit(spaceIndex + 1))
+                       - line.GetDistanceFromCharacterHit(new CharacterHit(spaceIndex));
+
+                var reference = Format();
+
+                var firstGapBefore = Gap(reference, 3);
+                var secondGapBefore = Gap(reference, 6);
+
+                var textLine = Format();
+
+                // Confirm the line really is multi-run, otherwise the test proves nothing.
+                AssertGreaterThan(textLine.TextRuns.Count, 1, "The emoji should force a fallback run");
+
+                textLine.Justify(new InterWordJustification(textLine.WidthIncludingTrailingWhitespace + 40));
+
+                var firstGap = Gap(textLine, 3);
+                var secondGap = Gap(textLine, 6);
+
+                AssertGreaterThan(firstGap, firstGapBefore, "The first word gap should be widened");
+                AssertGreaterThan(secondGap, secondGapBefore, "The second word gap should be widened");
+
+                // Both gaps are break opportunities, so they take an equal share of the added width.
+                Assert.Equal(firstGap - firstGapBefore, secondGap - secondGapBefore, 3);
+            }
+        }
+
         [Theory]
         [InlineData("aa bb   ")]     // trailing ASCII spaces
         [InlineData("一二　　　")]    // trailing ideographic (U+3000) spaces
