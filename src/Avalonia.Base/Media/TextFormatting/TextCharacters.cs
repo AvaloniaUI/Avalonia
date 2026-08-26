@@ -294,9 +294,10 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                //Stop at the first cluster this typeface can't render
-                if (!currentCodepoint.IsBreakChar &&
-                    currentCodepoint.GeneralCategory != GeneralCategory.Control &&
+                //Stop at the first cluster this typeface can't render. A cluster that only holds a
+                //default ignorable (a stray variation selector, say) renders nothing whichever font
+                //it lands on, so it never ends the run.
+                if (NeedsGlyph(currentCodepoint) &&
                     !ClusterIsCovered(clusterText, currentCodepoint, glyphTypeface, requireFullCluster))
                 {
                     break;
@@ -325,12 +326,24 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Determines whether the codepoint is one a font is expected to provide a glyph for. Break
+        /// chars, control codepoints and default ignorables (variation selectors, joiners, ...) never
+        /// render - demanding a glyph for those would reject fonts that cover the cluster's actual
+        /// content. Format codepoints are not excluded wholesale: the invisible ones are all default
+        /// ignorable, while the rest (prepended concatenation marks like U+0600, interlinear
+        /// annotation chars) are visible and do need a glyph.
+        /// </summary>
+        private static bool NeedsGlyph(Codepoint codepoint)
+            => !codepoint.IsBreakChar
+               && codepoint.GeneralCategory != GeneralCategory.Control
+               && !codepoint.IsDefaultIgnorable;
+
+        /// <summary>
         /// Determines whether <paramref name="glyphTypeface"/> can render the first grapheme cluster in
         /// <paramref name="clusterText"/>. For a single-scalar cluster, or when
         /// <paramref name="requireFullCluster"/> is <c>false</c>, only the base scalar is tested.
-        /// Otherwise every scalar that needs a glyph (excluding break chars and control/format
-        /// codepoints) must be present, so a base+mark cluster is only covered by a font that has the
-        /// marks too.
+        /// Otherwise every scalar that needs a glyph must be present, so a base+mark cluster is only
+        /// covered by a font that has the marks too.
         /// </summary>
         private static bool ClusterIsCovered(ReadOnlySpan<char> clusterText, Codepoint firstCodepoint,
             GlyphTypeface glyphTypeface, bool requireFullCluster)
@@ -346,7 +359,7 @@ namespace Avalonia.Media.TextFormatting
 
             while (codepoints.MoveNext(out var codepoint))
             {
-                if (codepoint.IsBreakChar || codepoint.GeneralCategory is GeneralCategory.Control or GeneralCategory.Format)
+                if (!NeedsGlyph(codepoint))
                 {
                     continue;
                 }
@@ -380,7 +393,7 @@ namespace Avalonia.Media.TextFormatting
 
             while (codepoints.MoveNext(out var codepoint))
             {
-                if (codepoint.IsBreakChar || codepoint.GeneralCategory is GeneralCategory.Control or GeneralCategory.Format)
+                if (!NeedsGlyph(codepoint))
                 {
                     continue;
                 }
