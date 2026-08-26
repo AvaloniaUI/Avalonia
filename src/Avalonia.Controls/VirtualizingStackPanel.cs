@@ -653,7 +653,7 @@ namespace Avalonia.Controls
                 scrollToElement.Measure(Size.Infinity);
 
                 // Get the expected position of the element and put it in place.
-                var anchorU = GetOrEstimateElementU(index, isScrollIntoView: true);
+                var anchorU = GetOrEstimateElementU(index);
                 var rect = Orientation == Orientation.Horizontal ?
                     new Rect(anchorU, 0, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height) :
                     new Rect(0, anchorU, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height);
@@ -885,7 +885,7 @@ namespace Avalonia.Controls
             position = startIndex * estimatedSize;
         }
 
-        private double GetOrEstimateElementU(int index, bool isScrollIntoView = false)
+        private double GetOrEstimateElementU(int index)
         {
             // Return the position of the existing element if realized.
             var u = _realizedElements?.GetElementU(index) ?? double.NaN;
@@ -904,15 +904,10 @@ namespace Avalonia.Controls
 
                 if (index < first)
                 {
-                    if (isScrollIntoView && first > 0)
-                    {
-                        // When scrolling a preceding item into view, interpolate between the known
-                        // panel origin and the first realized item. Using the realized items' average
-                        // size to extrapolate backwards can place the target before the panel origin.
-                        return realized.StartU * index / first;
-                    }
-
-                    return realized.StartU - ((first - index) * estimatedSize);
+                    // Interpolate between the known panel origin and the first realized item.
+                    // Using the realized items' average size to extrapolate backwards can place
+                    // the target before the panel origin.
+                    return realized.StartU * index / first;
                 }
 
                 if (index > last)
