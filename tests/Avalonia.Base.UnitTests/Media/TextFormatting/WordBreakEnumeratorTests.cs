@@ -18,6 +18,63 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             _outputHelper = outputHelper;
         }
 
+        [Fact]
+        public void ShouldReportCodepointReadouts()
+        {
+            var wordBreaker = new WordBreakEnumerator("hello world");
+            var segments = new List<(int Offset, int Length, int CodepointOffset, int CodepointLength, string Text)>();
+
+            while (wordBreaker.MoveNext(out var segment))
+            {
+                segments.Add((segment.Offset, segment.Length, segment.CodepointOffset, segment.CodepointLength, segment.Text.ToString()));
+            }
+
+            Assert.Equal(
+                new[]
+                {
+                    (0, 5, 0, 5, "hello"),
+                    (5, 1, 5, 1, " "),
+                    (6, 5, 6, 5, "world")
+                },
+                segments);
+        }
+
+        [Fact]
+        public void ShouldKeepReadoutsConsistentWithText()
+        {
+            // Mixes a combining mark (WB4-absorbed), a surrogate pair and a CRLF so the
+            // code-unit and code-point readouts diverge and every member is exercised.
+            const string text = "áb \U0001D51Ex cr\r\nlf";
+            var wordBreaker = new WordBreakEnumerator(text);
+            var offset = 0;
+            var codepointOffset = 0;
+
+            while (wordBreaker.MoveNext(out var segment))
+            {
+                Assert.Equal(offset, segment.Offset);
+                Assert.Equal(codepointOffset, segment.CodepointOffset);
+                Assert.Equal(segment.Text.Length, segment.Length);
+                Assert.True(text.AsSpan(segment.Offset, segment.Length).SequenceEqual(segment.Text));
+
+                var codepointCount = 0;
+                var span = segment.Text;
+
+                while (!span.IsEmpty)
+                {
+                    Codepoint.ReadAt(span, 0, out var consumed);
+                    span = span.Slice(consumed);
+                    codepointCount++;
+                }
+
+                Assert.Equal(codepointCount, segment.CodepointLength);
+
+                offset += segment.Length;
+                codepointOffset += segment.CodepointLength;
+            }
+
+            Assert.Equal(text.Length, offset);
+        }
+
         [Theory(Skip = "Only run when we update Unicode data.")]
         [ClassData(typeof(WordBreakTestDataGenerator))]
         public void ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints, string rules)
