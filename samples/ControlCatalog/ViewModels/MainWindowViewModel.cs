@@ -263,7 +263,11 @@ namespace ControlCatalog.ViewModels
                 _ignoreListChange = true;
                 _filteredPages.Clear();
 
-                var allPages = _pageSections.SelectMany(cat => cat.Items);
+                // Left panel items are sorted alphabetically
+                var allPages = _pageSections
+                    .SelectMany(cat => cat.Items)
+                    .OrderBy(p => p.Header == "Home" ? 0 : 1)
+                    .ThenBy(p => p.Header);
 
                 if (string.IsNullOrWhiteSpace(query))
                 {
