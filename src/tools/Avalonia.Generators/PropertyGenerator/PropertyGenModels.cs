@@ -28,6 +28,7 @@ internal sealed record PropertyGenModel(
     string? SetterAccessibility,
     bool SetterIsNonPublic,
     bool OwnerIsStatic,
+    bool NullableContext,
     string? HostTypeRef,
     string? HostParamName,
     string? AddOwnerFromTypeRef,

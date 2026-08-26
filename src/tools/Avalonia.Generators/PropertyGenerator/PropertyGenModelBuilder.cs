@@ -28,11 +28,11 @@ internal static class PropertyGenModelBuilder
         {
             GeneratedPropertyKind.Attached when context.TargetSymbol is IMethodSymbol method =>
                 GeneratedPropertyShape.CheckAttached(method, args, compilation) == PropertyDefects.None
-                    ? BuildAttached(method, args, context.TargetNode)
+                    ? BuildAttached(method, args, context)
                     : null,
             GeneratedPropertyKind.Styled or GeneratedPropertyKind.Direct when context.TargetSymbol is IPropertySymbol property =>
                 GeneratedPropertyShape.CheckStyledOrDirect(property, args, kind, compilation) == PropertyDefects.None
-                    ? BuildStyledOrDirect(property, args, kind, context.TargetNode)
+                    ? BuildStyledOrDirect(property, args, kind, context)
                     : null,
             _ => null,
         };
@@ -42,9 +42,13 @@ internal static class PropertyGenModelBuilder
         IPropertySymbol property,
         GeneratedPropertyAttributeArgs args,
         GeneratedPropertyKind kind,
-        SyntaxNode declaration)
+        GeneratorAttributeSyntaxContext context)
     {
+        var declaration = context.TargetNode;
         var setter = property.SetMethod!;
+        var nullableContext = (context.SemanticModel.GetNullableContext(declaration.SpanStart) &
+                               NullableContext.AnnotationsEnabled) != 0;
+
         // C# only allows an accessor modifier that is strictly more restrictive than the
         // property's accessibility, so "differs" means "restricted" (the `private set` pattern).
         var setterIsRestricted = setter.DeclaredAccessibility != property.DeclaredAccessibility;
@@ -62,6 +66,7 @@ internal static class PropertyGenModelBuilder
             SetterAccessibility: setterAccessibility,
             SetterIsNonPublic: setterIsRestricted,
             OwnerIsStatic: false,
+            NullableContext: nullableContext,
             HostTypeRef: null,
             HostParamName: null,
             AddOwnerFromTypeRef: args.AddOwnerFrom?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
@@ -81,8 +86,12 @@ internal static class PropertyGenModelBuilder
     private static PropertyGenModel BuildAttached(
         IMethodSymbol method,
         GeneratedPropertyAttributeArgs args,
-        SyntaxNode declaration)
+        GeneratorAttributeSyntaxContext context)
     {
+        var declaration = context.TargetNode;
+        var nullableContext = (context.SemanticModel.GetNullableContext(declaration.SpanStart) &
+                               NullableContext.AnnotationsEnabled) != 0;
+
         GeneratedPropertyShape.TryGetAttachedName(method, out var name);
         var host = method.Parameters[0];
 
@@ -96,6 +105,7 @@ internal static class PropertyGenModelBuilder
             SetterAccessibility: null,
             SetterIsNonPublic: false,
             OwnerIsStatic: method.ContainingType.IsStatic,
+            NullableContext: nullableContext,
             HostTypeRef: host.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             HostParamName: host.Name,
             AddOwnerFromTypeRef: args.AddOwnerFrom?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
