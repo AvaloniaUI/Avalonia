@@ -3,26 +3,23 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Chrome;
 using Avalonia.Dialogs;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia;
+using Avalonia.Collections;
+using ControlCatalog.Models;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
     partial class MainWindowViewModel : ViewModelBase
     {
-        private WindowState _windowState;
-        private WindowState[] _windowStates = Array.Empty<WindowState>();
-        private bool _extendClientAreaEnabled;
-        private double _titleBarHeight;
-        private bool _isSystemBarVisible;
-        private bool _displayEdgeToEdge;
-        private Thickness _safeAreaPadding;
-        private bool _canResize;
-        private bool _canMinimize;
-        private bool _canMaximize;
-        private int _selectedDecorationIndex;
+        private readonly AvaloniaList<PageItem> _filteredPages = [];
+
+        private bool _ignoreListChange;
+        private PageItem? _currentItem;
 
         public MainWindowViewModel()
         {
@@ -57,72 +54,80 @@ namespace ControlCatalog.ViewModels
             CanMaximize = true;
 
             Filter();
-        }        
-        
+        }
+
+        public IReadOnlyList<HomeSection> HomeSections =>
+            // Home page doesn't have a section title and should be excluded from this list
+            field ??= _pageSections.Where(s => !string.IsNullOrEmpty(s.Title)).ToArray();
+
+        public IReadOnlyList<PageItem> Pages => _filteredPages;
+
+        public INavigation? Navigator { get; internal set; }
+
         public bool ExtendClientAreaEnabled
         {
-            get { return _extendClientAreaEnabled; }
-            set { RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
 
         public double TitleBarHeight
         {
-            get { return _titleBarHeight; }
-            set { RaiseAndSetIfChanged(ref _titleBarHeight, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
 
         public WindowState WindowState
         {
-            get { return _windowState; }
-            set { RaiseAndSetIfChanged(ref _windowState, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
 
         public WindowState[] WindowStates
         {
-            get { return _windowStates; }
-            set { RaiseAndSetIfChanged(ref _windowStates, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
 
         public bool IsSystemBarVisible
         {
-            get { return _isSystemBarVisible; }
-            set { RaiseAndSetIfChanged(ref _isSystemBarVisible, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
 
         public bool DisplayEdgeToEdge
         {
-            get { return _displayEdgeToEdge; }
-            set { RaiseAndSetIfChanged(ref _displayEdgeToEdge, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
-        
+
         public Thickness SafeAreaPadding
         {
-            get { return _safeAreaPadding; }
-            set { RaiseAndSetIfChanged(ref _safeAreaPadding, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
 
         public bool CanResize
         {
-            get { return _canResize; }
-            set { RaiseAndSetIfChanged(ref _canResize, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
 
         public bool CanMinimize
         {
-            get { return _canMinimize; }
-            set { RaiseAndSetIfChanged(ref _canMinimize, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
 
         public bool CanMaximize
         {
-            get { return _canMaximize; }
-            set { RaiseAndSetIfChanged(ref _canMaximize, value); }
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
         }
 
         public int SelectedDecorationIndex
         {
-            get { return _selectedDecorationIndex; }
-            set { RaiseAndSetIfChanged(ref _selectedDecorationIndex, value); }
+            get;
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public TitleBarDecorations TitleBarDecorations
@@ -161,6 +166,46 @@ namespace ControlCatalog.ViewModels
             set => SetTitleBarDecoration(TitleBarDecorations.CloseButton, value);
         }
 
+        public int SelectedPageIndex
+        {
+            get;
+            set
+            {
+                RaiseAndSetIfChanged(ref field, value);
+
+                if (!_ignoreListChange)
+                {
+                    NavigateTo(field);
+
+                    if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
+                        IsDrawerOpened = false;
+                }
+            }
+        }
+
+        public bool IsDrawerOpened
+        {
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        } = true;
+
+        public SplitViewDisplayMode DisplayMode
+        {
+            get;
+            set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public string? Query
+        {
+            get;
+            set
+            {
+                RaiseAndSetIfChanged(ref field, value);
+
+                Filter(value);
+            }
+        } = "";
+
         private bool HasTitleBarDecoration(TitleBarDecorations decoration)
             => (TitleBarDecorations & decoration) != 0;
 
@@ -181,16 +226,14 @@ namespace ControlCatalog.ViewModels
 
         public MiniCommand NavigateToPageCommand { get; }
 
-        private DateTime? _validatedDateExample;
-
         /// <summary>
         ///    A required DateTime which should demonstrate validation for the DateTimePicker
         /// </summary>
         [Required]
         public DateTime? ValidatedDateExample
         {
-            get => _validatedDateExample;
-            set => RaiseAndSetIfChanged(ref _validatedDateExample, value);
+            get;
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public Win32Properties.WindowCornerPreference[] Win32WindowCornerPreferences { get; } =
@@ -200,6 +243,79 @@ namespace ControlCatalog.ViewModels
         {
             get;
             set { RaiseAndSetIfChanged(ref field, value); }
+        }
+
+        public void NavigateToPage(PageItem item)
+        {
+            // Clear any active search so the target is present in the filtered list.
+            if (!string.IsNullOrEmpty(Query))
+                Query = "";
+
+            var index = _filteredPages.IndexOf(item);
+            if (index >= 0)
+                SelectedPageIndex = index;
+        }
+
+        public void Filter(string? query = "")
+        {
+            try
+            {
+                _ignoreListChange = true;
+                _filteredPages.Clear();
+
+                var allPages = _pageSections.SelectMany(cat => cat.Items);
+
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    _filteredPages.AddRange(allPages);
+                }
+                else
+                {
+                    var querySearchKey = PageItem.CreateSearchKey(query);
+
+                    if (querySearchKey.Length == 0)
+                    {
+                        _filteredPages.AddRange(allPages);
+                    }
+                    else
+                    {
+                        foreach (var item in allPages)
+                        {
+                            if (item.MatchesSearch(querySearchKey))
+                            {
+                                _filteredPages.Add(item);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _ignoreListChange = false;
+                if (_currentItem != null)
+                {
+                    var newIndex = _filteredPages.IndexOf(_currentItem);
+                    if (newIndex != -1)
+                    {
+                        SelectedPageIndex = newIndex;
+                    }
+                }
+            }
+        }
+
+        private async void NavigateTo(int pageIndex)
+        {
+            if (pageIndex < 0 || pageIndex >= Pages.Count || Navigator is null)
+                return;
+
+            var item = Pages[pageIndex];
+            var page = item.CreatePage();
+
+            if (page.GetType() != Navigator.NavigationStack.LastOrDefault()?.GetType())
+            {
+                _currentItem = item;
+                await Navigator.ReplaceAsync(page);
+            }
         }
     }
 }

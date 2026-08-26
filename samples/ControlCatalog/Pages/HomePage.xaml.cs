@@ -20,11 +20,6 @@ namespace ControlCatalog.Pages
         {
             base.OnAttachedToVisualTree(e);
 
-            // Pages hosted in a NavigationPage inherit the navigator as DataContext;
-            // the card grid binds to MainWindowViewModel, so resolve it from MainView.
-            if (DataContext is not MainWindowViewModel)
-                DataContext = this.FindAncestorOfType<MainView>()?.DataContext;
-
             StartFloatingAnimation(BannerLogo1, 12, 8, TimeSpan.FromSeconds(12));
             StartFloatingAnimation(BannerLogo2, -14, 8, TimeSpan.FromSeconds(10));
             StartFloatingAnimation(BannerLogo3, -12, -12, TimeSpan.FromSeconds(14));

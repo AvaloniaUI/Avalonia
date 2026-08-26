@@ -2,8 +2,9 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
+             xmlns:controlCatalog="using:ControlCatalog"
+             xmlns:models="clr-namespace:ControlCatalog.Models"
              x:Class="ControlCatalog.Pages.HomePage"
-             x:DataType="viewModels:MainWindowViewModel"
              Header="Home">
 
   <ContentPage.Resources>
@@ -57,7 +58,8 @@
     </Style>
   </ContentPage.Styles>
 
-  <StackPanel Spacing="28" Margin="0,0,15,20" HorizontalAlignment="Stretch">
+  <StackPanel Spacing="28" Margin="0,0,15,20" HorizontalAlignment="Stretch"
+              DataContext="{Binding $parent[controlCatalog:MainView].((viewModels:MainWindowViewModel)DataContext)}">
 
     <!-- Hero banner (1:1 from the Accelerate demo dashboard) -->
     <Border CornerRadius="20" ClipToBounds="True" HorizontalAlignment="Stretch" Height="220">
@@ -100,7 +102,7 @@
     <!-- Card sections -->
     <ItemsControl ItemsSource="{Binding HomeSections}">
       <ItemsControl.ItemTemplate>
-        <DataTemplate DataType="viewModels:HomeSection">
+        <DataTemplate DataType="models:HomeSection">
           <StackPanel Spacing="14" Margin="0,0,0,26">
             <TextBlock Text="{Binding Title}"
                        FontSize="19" FontWeight="Bold" />
@@ -111,9 +113,9 @@
                 </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="viewModels:PageItem">
+                <DataTemplate DataType="models:PageItem">
                   <Button Classes="card"
-                          Command="{Binding $parent[ContentPage].((viewModels:MainWindowViewModel)DataContext).NavigateToPageCommand}"
+                          Command="{Binding $parent[controlCatalog:MainView].((viewModels:MainWindowViewModel)DataContext).NavigateToPageCommand}"
                           CommandParameter="{Binding}"
                           Margin="0,0,12,12"
                           Padding="0"
