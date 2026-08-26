@@ -15,10 +15,39 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         private Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>> _fields
             = new Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>>();
-        
+
+        private IXamlField? _boxedTrue;
+        private IXamlField? _boxedFalse;
+
         public XamlIlClrPropertyInfoEmitter(IXamlTypeBuilder<IXamlILEmitter> builder)
         {
             _builder = builder;
+        }
+
+        /// <summary>
+        /// Defines two cached boxed booleans on the generated per-assembly helper type, shared by
+        /// all bool property getters in the assembly, so they don't allocate on every read (#21065).
+        /// </summary>
+        private IXamlField GetBooleanBoxField(bool value, XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context)
+        {
+            if (_boxedTrue is null || _boxedFalse is null)
+            {
+                var wellKnownTypes = context.Configuration.WellKnownTypes;
+                _boxedTrue = _builder.DefineField(wellKnownTypes.Object, "BooleanBox!True", XamlVisibility.Private, true);
+                _boxedFalse = _builder.DefineField(wellKnownTypes.Object, "BooleanBox!False", XamlVisibility.Private, true);
+
+                var cctor = _builder.DefineConstructor(true);
+                cctor.Generator
+                    .Ldc_I4(1)
+                    .Box(wellKnownTypes.Boolean)
+                    .Stsfld(_boxedTrue)
+                    .Ldc_I4(0)
+                    .Box(wellKnownTypes.Boolean)
+                    .Stsfld(_boxedFalse)
+                    .Ret();
+            }
+
+            return value ? _boxedTrue : _boxedFalse;
         }
 
         static string GetKey(IXamlProperty property, string? indexerArgumentsKey)
@@ -93,8 +122,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     Load(property.Getter!, getter.Generator, !property.Getter!.IsStatic);
                     
                     getter.Generator.EmitCall(property.Getter);
-                    if (property.Getter.ReturnType.IsValueType)
-                        getter.Generator.Box(property.Getter.ReturnType);
+                    var returnType = property.Getter.ReturnType;
+                    if (returnType.Equals(context.Configuration.WellKnownTypes.Boolean))
+                    {
+                        var whenTrue = getter.Generator.DefineLabel();
+                        getter.Generator
+                            .Brtrue(whenTrue)
+                            .Ldsfld(GetBooleanBoxField(false, context))
+                            .Ret()
+                            .MarkLabel(whenTrue)
+                            .Ldsfld(GetBooleanBoxField(true, context));
+                    }
+                    else if (returnType.IsValueType)
+                        getter.Generator.Box(returnType);
                     getter.Generator.Ret();
                 }
 
