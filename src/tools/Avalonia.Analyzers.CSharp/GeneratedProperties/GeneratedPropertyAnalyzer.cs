@@ -58,7 +58,7 @@ public sealed class GeneratedPropertyAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            var languageVersionOk = compilation is CSharpCompilation { LanguageVersion: >= (LanguageVersion)1300 };
+            var languageVersionOk = compilation is CSharpCompilation { LanguageVersion: >= LanguageVersion.CSharp13 };
 
             start.RegisterSymbolAction(
                 context => AnalyzeProperty(context, styled, direct, languageVersionOk),

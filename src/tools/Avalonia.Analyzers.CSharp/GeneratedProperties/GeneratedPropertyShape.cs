@@ -65,9 +65,10 @@ internal static class GeneratedPropertyShape
     {
         if (method.Name.Length > GetPrefix.Length &&
             method.Name.StartsWith(GetPrefix, StringComparison.Ordinal) &&
-            SyntaxFacts.IsValidIdentifier(method.Name.Substring(GetPrefix.Length)))
+            method.Name.Substring(GetPrefix.Length) is var tempName &&
+            SyntaxFacts.IsValidIdentifier(tempName))
         {
-            name = method.Name.Substring(GetPrefix.Length);
+            name = tempName;
             return true;
         }
 
