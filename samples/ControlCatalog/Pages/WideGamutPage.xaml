@@ -1,0 +1,58 @@
+﻿<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.WideGamutPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:ControlCatalog.Pages"
+             d:DesignHeight="800"
+             d:DesignWidth="600"
+             mc:Ignorable="d"
+             Header="Wide Gamut">
+  <StackPanel Spacing="20">
+    <TextBlock TextWrapping="Wrap"
+               Text="You ask for a color space one time, when the app starts. To do this you put PresentationOptions into the AvaloniaLocator, before the first window is made. The backend then looks at your wish and gives you what it can. It tells you the real color space with the IColorManagedPresentation feature on the TopLevel." />
+
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="4">
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="You asked for (PresentationOptions):" />
+      <TextBlock Grid.Row="0" Grid.Column="1" x:Name="RequestedText" FontWeight="Bold" />
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="You really get (CurrentColorSpace):" />
+      <TextBlock Grid.Row="1" Grid.Column="1" x:Name="CurrentText" FontWeight="Bold" TextWrapping="Wrap" />
+    </Grid>
+
+    <TextBlock TextWrapping="Wrap"
+               Text="A window can not change its color space after it is made. Press a button to open a new window that uses another color space. Put the windows next to each other to compare them. This works on desktop only." />
+
+    <StackPanel x:Name="OpenPanel" Orientation="Horizontal" Spacing="8">
+      <Button Content="Unspecified" Tag="Unspecified" Click="OpenInColorSpace" />
+      <Button Content="sRGB" Tag="Srgb" Click="OpenInColorSpace" />
+      <Button Content="Display P3" Tag="DisplayP3" Click="OpenInColorSpace" />
+      <Button Content="Wide Gamut" Tag="WideGamut" Click="OpenInColorSpace" />
+      <Button Content="scRGB" Tag="ScRgb" Click="OpenInColorSpace" />
+    </StackPanel>
+
+    <TextBlock TextWrapping="Wrap"
+               Text="Every patch below is painted two times with the same numbers. The big outside part reads the numbers as Display P3. The small square inside reads the same numbers as sRGB. When the app runs in a wide color space, you can see the small square, because the outside color is stronger than sRGB can show. When the app runs in sRGB, or with no color space, both parts look the same." />
+
+    <UniformGrid Columns="4" Height="200">
+      <StackPanel Margin="4" Spacing="4">
+        <local:WideGamutSwatch Color="#FFFF0000" Height="160" />
+        <TextBlock Text="Red" HorizontalAlignment="Center" />
+      </StackPanel>
+      <StackPanel Margin="4" Spacing="4">
+        <local:WideGamutSwatch Color="#FF00FF00" Height="160" />
+        <TextBlock Text="Green" HorizontalAlignment="Center" />
+      </StackPanel>
+      <StackPanel Margin="4" Spacing="4">
+        <local:WideGamutSwatch Color="#FF0000FF" Height="160" />
+        <TextBlock Text="Blue" HorizontalAlignment="Center" />
+      </StackPanel>
+      <StackPanel Margin="4" Spacing="4">
+        <local:WideGamutSwatch Color="#FFFF00FF" Height="160" />
+        <TextBlock Text="Magenta" HorizontalAlignment="Center" />
+      </StackPanel>
+    </UniformGrid>
+
+    <TextBlock TextWrapping="Wrap"
+               Text="ControlCatalog.Desktop can take --color-space. The values are unspecified, srgb, displayp3, widegamut and scrgb. The default is unspecified, so the catalog looks the same as before. Start the app one time with unspecified and one time with srgb, then compare them. On a wide gamut screen, content with no color space looks too strong. When you ask for a color space, the colors look like they should." />
+  </StackPanel>
+</ContentPage>

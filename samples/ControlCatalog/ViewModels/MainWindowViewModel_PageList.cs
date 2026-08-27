@@ -92,6 +92,7 @@ partial class MainWindowViewModel
             s.Add<OpenGlPage>("OpenGL", Icons.Cube3D, "Embed custom OpenGL rendering");
             s.Add<OpenGlLeasePage>("OpenGL Lease", Icons.Cube3D, "Low-level access to the OpenGL context");
             s.Add<TransitioningContentControlPage>("TransitioningContentControl", Icons.Transition, "Animate between content changes");
+            s.Add<WideGamutPage>("Wide Gamut", Icons.Palette, "Present content in a wide color space");
         }),
         Section("Status & Feedback", s => 
         {
