@@ -185,7 +185,10 @@ namespace Avalonia.Controls.Presenters
                 return false;
 
             _pendingScrollIntoViewIndex = -1;
-            TryScrollIntoViewNow(index);
+
+            // Try to scroll, but ignore the return value. We don't want to return false if this fails:
+            // this would requeue a request that might never been be fulfilled because items changed.
+            _ = TryScrollIntoViewNow(index);
 
             // Executing the scroll may have prepared containers whose handlers requested a new
             // scroll: in that case keep the request queued so it gets executed as well.
