@@ -22,30 +22,27 @@ namespace Avalonia.Headless
         private readonly IKeyboardDevice _keyboard;
         private readonly IScreenImpl _screen;
         private readonly Stopwatch _st = Stopwatch.StartNew();
-        private readonly Pointer _mousePointer;
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
-        private readonly PixelFormat _frameBufferFormat;
-        private readonly bool _overlayPopups;
+        private readonly AvaloniaHeadlessPlatformOptions _options;
         private readonly HeadlessWindowImpl? _popupParent;
         private readonly IPopupPositioner? _popupPositioner;
-        private readonly List<HeadlessWindowImpl> _openPopups = new();
         public bool IsPopup { get; }
 
-        public HeadlessWindowImpl(PixelFormat frameBufferFormat, bool overlayPopups)
+        public HeadlessWindowImpl(AvaloniaHeadlessPlatformOptions options)
         {
             Surfaces = [this];
             _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
             _screen = new HeadlessScreensStub();
-            _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
-            MouseDevice = new MouseDevice(_mousePointer);
+            MouseDevice = options.UseSharedMouseDevice == true
+                ? Avalonia.Input.MouseDevice.Primary
+                : new MouseDevice(new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true));
             ClientSize = new Size(1024, 768);
-            _frameBufferFormat = frameBufferFormat;
-            _overlayPopups = overlayPopups;
+            _options = options;
         }
 
         private HeadlessWindowImpl(HeadlessWindowImpl popupParent)
-            : this(popupParent._frameBufferFormat, popupParent._overlayPopups)
+            : this(popupParent._options)
         {
             IsPopup = true;
             _popupParent = popupParent;
@@ -62,7 +59,6 @@ namespace Avalonia.Headless
 
         public void Dispose()
         {
-            _popupParent?._openPopups.Remove(this);
             Closed?.Invoke();
             _lastRenderedFrame?.Dispose();
             _lastRenderedFrame = null;
@@ -103,9 +99,6 @@ namespace Avalonia.Headless
 
         public void Show(bool activate, bool isDialog)
         {
-            if (_popupParent != null && !_popupParent._openPopups.Contains(this))
-                _popupParent._openPopups.Add(this);
-
             if (activate)
             {
                 ZOrder = _nextGlobalZOrder++;
@@ -115,7 +108,6 @@ namespace Avalonia.Headless
 
         public void Hide()
         {
-            _popupParent?._openPopups.Remove(this);
             Dispatcher.UIThread.Post(() => Deactivated?.Invoke(), DispatcherPriority.Input);
         }
 
@@ -233,7 +225,7 @@ namespace Avalonia.Headless
 
         public ILockedFramebuffer Lock()
         {
-            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, _frameBufferFormat, AlphaFormat.Premul);
+            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, _options.FrameBufferFormat, AlphaFormat.Premul);
             var fb = bmp.Lock();
             return new FramebufferProxy(fb, () =>
             {
@@ -403,22 +395,7 @@ namespace Avalonia.Headless
             PositionChanged?.Invoke(point);
         }
 
-        public IPopupImpl? CreatePopup() => _overlayPopups ? null : new HeadlessWindowImpl(this);
-
-        public IReadOnlyList<TopLevel> GetOpenPopups()
-        {
-            if (_openPopups.Count == 0)
-                return Array.Empty<TopLevel>();
-
-            var result = new List<TopLevel>(_openPopups.Count);
-            foreach (var popup in _openPopups)
-            {
-                if (popup.InputRoot is PresentationSource { FocusRoot: TopLevel topLevel })
-                    result.Add(topLevel);
-            }
-
-            return result;
-        }
+        public IPopupImpl? CreatePopup() => _options.OverlayPopups ? null : new HeadlessWindowImpl(this);
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
