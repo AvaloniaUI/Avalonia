@@ -18,11 +18,12 @@ namespace Avalonia.Controls.Primitives
     {
         private readonly List<Registration> _registrations = [];
 
-        public IInputElement? InputPassThroughElement { get; private set; }
+        public IInputElement? InputPassThroughElement => _registrations.LastOrDefault()?.InputPassThroughElement;
 
         static LightDismissOverlayLayer()
         {
             BackgroundProperty.OverrideDefaultValue<LightDismissOverlayLayer>(Brushes.Transparent);
+            IsVisibleProperty.OverrideDefaultValue<LightDismissOverlayLayer>(false);
         }
 
         /// <summary>
@@ -81,7 +82,6 @@ namespace Avalonia.Controls.Primitives
         private void UpdateState()
         {
             IsVisible = _registrations.Count > 0;
-            InputPassThroughElement = _registrations.LastOrDefault()?.InputPassThroughElement;
         }
 
         private sealed class Registration(LightDismissOverlayLayer owner, IInputElement? inputPassThroughElement) : IDisposable
@@ -90,7 +90,12 @@ namespace Avalonia.Controls.Primitives
 
             public IInputElement? InputPassThroughElement { get; } = inputPassThroughElement;
 
-            public void Dispose() => Interlocked.Exchange(ref _owner, null)?.Unregister(this);
+            public void Dispose()
+            {
+                var owner = _owner;
+                _owner = null;
+                owner?.Unregister(this);
+            }
         }
     }
 }
