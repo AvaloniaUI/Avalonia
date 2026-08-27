@@ -15,7 +15,7 @@ public abstract class BindingExpressionBase : IDisposable, ISetterInstance, IVal
 {
     private protected BindingExpressionBase(BindingPriority defaultPriority)
     {
-        DefaultPriority = defaultPriority;
+        Priority = DefaultPriority = defaultPriority;
     }
 
     /// <summary>

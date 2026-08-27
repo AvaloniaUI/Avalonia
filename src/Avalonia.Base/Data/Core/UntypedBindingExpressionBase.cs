@@ -45,7 +45,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         bool isDataValidationEnabled = false)
         : base(defaultPriority)
     {
-        Priority = defaultPriority;
         TargetProperty = targetProperty;
         TargetType = targetProperty?.PropertyType ?? typeof(object);
         IsDataValidationEnabled = isDataValidationEnabled;
