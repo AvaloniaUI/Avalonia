@@ -180,8 +180,8 @@ namespace Avalonia
         internal override void RouteSetDirectValueUnchecked(AvaloniaObject o, IValueEntry entry)
         {
             var value = GetValue(entry, o);
-            var bindingValue = BindingValue<TValue>.FromUntypedStrict(value);
-            o.SetDirectValueUnchecked<TValue>(this, bindingValue);
+            var bindingValue = new BindingValue<TValue>(value);
+            o.SetDirectValueUnchecked(this, bindingValue);
         }
 
         internal override void RouteSetCurrentValue(AvaloniaObject o, object? value)
