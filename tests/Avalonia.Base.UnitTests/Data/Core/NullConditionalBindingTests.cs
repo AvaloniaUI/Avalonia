@@ -88,7 +88,33 @@ public class NullConditionalBindingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Clr_Property(bool compileBindings)
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Clr_Property_1(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding Second?.Third.Final}'/>
+            </Window>
+            """;
+        var data = new First { Second = null };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Clr_Property_2(bool compileBindings)
     {
         using var app = Start();
         using var log = TestLogger.Create();
