@@ -114,11 +114,11 @@ namespace Avalonia.iOS
             }
             else
 #endif
-                if (l is CAMetalLayer metalLayer)
-                {
-                    metalLayer.Opaque = false;
-                    _topLevelImpl.Surfaces = [new Metal.MetalPlatformSurface(metalLayer, this)];
-                }
+            if (l is CAMetalLayer metalLayer)
+            {
+                metalLayer.Opaque = false;
+                _topLevelImpl.Surfaces = [new Metal.MetalPlatformSurface(metalLayer, this)];
+            }
         }
 
         /// <inheritdoc />
@@ -430,7 +430,7 @@ namespace Avalonia.iOS
             if (!_disposedValue)
             {
                 _disposedValue = true;
-                
+
                 if (disposing)
                 {
                     _accessWrapper.Dispose();
