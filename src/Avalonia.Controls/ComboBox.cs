@@ -525,7 +525,7 @@ namespace Avalonia.Controls
         private void TryFocusSelectedItem()
         {
             var selectedIndex = SelectedIndex;
-            if (IsDropDownOpen && selectedIndex != -1)
+            if (IsDropDownOpen && AutoScrollToSelectedItem && selectedIndex != -1)
             {
                 ScrollIntoView(selectedIndex);
                 var container = ContainerFromIndex(selectedIndex);

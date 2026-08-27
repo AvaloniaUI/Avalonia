@@ -198,6 +198,7 @@ namespace Avalonia.Controls.UnitTests
                         {
                             Name = "PART_Popup",
                             [!!Popup.IsOpenProperty] = parent[!!ComboBox.IsDropDownOpenProperty],
+                            [!Popup.MaxHeightProperty] = parent[!ComboBox.MaxDropDownHeightProperty],
                             Child = new ScrollViewer
                             {
                                 Name = "PART_ScrollViewer",
@@ -215,6 +216,44 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
             });
+        }
+
+        [Fact]
+        public void Opening_DropDown_Does_Not_Scroll_When_AutoScrollToSelectedItem_Is_False()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                keyboardDevice: () => new KeyboardDevice(),
+                keyboardNavigation: () => new KeyboardNavigationHandler()));
+
+            var target = new ComboBox
+            {
+                AutoScrollToSelectedItem = false,
+                Template = GetTemplate(),
+            };
+
+            for (var i = 0; i < 50; i++)
+            {
+                target.Items.Add(new ComboBoxItem
+                {
+                    Content = $"Item {i}"
+                });
+            }
+
+            var window = new Window { Content = target };
+            window.Show();
+            window.LayoutManager.ExecuteInitialLayoutPass();
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            var popup = target.GetVisualDescendants().OfType<Popup>().Single(x => x.Name == "PART_Popup");
+            var scrollViewer = Assert.IsType<ScrollViewer>(popup.Child);
+
+            target.SelectedIndex = 40;
+            target.Focus();
+            target.IsDropDownOpen = true;
+            window.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(Vector.Zero, scrollViewer.Offset);
         }
 
         [Fact]
@@ -241,8 +280,8 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter!.ApplyTemplate();
 
-            var scrollViewer = target.GetVisualDescendants().OfType<ScrollViewer>().First();
-            Assert.True(scrollViewer != null);
+            var popup = target.GetVisualDescendants().OfType<Popup>().Single(x => x.Name == "PART_Popup");
+            var scrollViewer = Assert.IsType<ScrollViewer>(popup.Child);
 
             target.SelectedItem = selectedItem;
             target.Focus();
