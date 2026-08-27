@@ -70,7 +70,7 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
                 throw new NotSupportedException($"Unsupported BindingExpressionBase implementation '{expression}'.");
 
             _expressions[i] = e;
-            e.Attach(this, null, target, null, DefaultPriority);
+            e.Attach(this, null, target, null, Priority);
             e.Start(produceValue: true);
         }
     }
