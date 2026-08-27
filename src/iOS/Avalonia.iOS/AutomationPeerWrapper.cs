@@ -62,7 +62,9 @@ namespace Avalonia.iOS
 
         private readonly AutomationPeer _peer;
 
-        private readonly List<AutomationPeer?> _childrenList;
+        private readonly AutomationPeerWrapper? _parent;
+
+        private readonly List<AutomationPeer> _childrenList;
 
         private readonly Dictionary<AutomationPeer, AutomationPeerWrapper> _childrenMap;
 
@@ -71,6 +73,7 @@ namespace Avalonia.iOS
         private AutomationPeerWrapper(AutomationPeerWrapper parent, AvaloniaView view, AutomationPeer peer) : base(parent)
         {
             _view = view;
+            _parent = parent;
 
             _peer = peer;
             _peer.ChildrenChanged += PeerChildrenChanged;
@@ -90,6 +93,7 @@ namespace Avalonia.iOS
         public AutomationPeerWrapper(AvaloniaView view, AutomationPeer peer) : base(view)
         {
             _view = view;
+            _parent = null;
 
             _peer = peer;
             _peer.ChildrenChanged += PeerChildrenChanged;
@@ -116,21 +120,19 @@ namespace Avalonia.iOS
         [Export("accessibilityElementAtIndex:")]
         public NSObject GetAccessibilityElementAt(nint index)
         {
-            AutomationPeer? child = _childrenList[(int)index];
-            if (child is not null)
-            {
-                return _childrenMap[child];
-            }
-            else
-            {
-                throw new ArgumentNullException();
-            }
+            AutomationPeer child = _childrenList[(int)index];
+            return _childrenMap[child];
         }
 
         [Export("indexOfAccessibilityElement:")]
         public nint GetIndexOfAccessibilityElement(NSObject element)
         {
-            int indexOf = _childrenList.IndexOf((element as AutomationPeerWrapper)?._peer);
+            if (element is not AutomationPeerWrapper wrapper)
+            {
+                return NSRange.NotFound;
+            }
+
+            int indexOf = _childrenList.IndexOf(wrapper._peer);
             return indexOf < 0 ? NSRange.NotFound : indexOf;
         }
 
@@ -142,25 +144,38 @@ namespace Avalonia.iOS
             UpdateAllProperties();
             UpdateTraits();
 
+            List<AutomationPeer> children = new();
+            HashSet<AutomationPeer> retainedChildren = new();
             foreach (AutomationPeer child in _peer.GetChildren())
             {
-                AutomationPeerWrapper? wrapper;
                 if (child.IsOffscreen())
                 {
-                    _childrenList.Remove(child);
-                    _childrenMap.Remove(child);
                     continue;
                 }
-                else if (!_childrenMap.TryGetValue(child, out wrapper))
+
+                if (!_childrenMap.TryGetValue(child, out AutomationPeerWrapper? wrapper))
                 {
                     wrapper = new(this, _view, child);
-                    _childrenList.Add(child);
                     _childrenMap.Add(child, wrapper);
                 }
 
-                wrapper?.UpdateAllProperties();
-                wrapper?.UpdateTraits();
+                children.Add(child);
+                retainedChildren.Add(child);
+                wrapper.UpdateAllProperties();
+                wrapper.UpdateTraits();
             }
+
+            foreach ((AutomationPeer child, AutomationPeerWrapper wrapper) in _childrenMap.ToArray())
+            {
+                if (!retainedChildren.Contains(child))
+                {
+                    _childrenMap.Remove(child);
+                    wrapper.Dispose();
+                }
+            }
+
+            _childrenList.Clear();
+            _childrenList.AddRange(children);
         }
 
         private static void UpdateAutomationId(AutomationPeerWrapper self)
@@ -197,7 +212,6 @@ namespace Avalonia.iOS
             if (self.AccessibilityFrame != nativeRect)
             {
                 self.AccessibilityFrame = nativeRect;
-                UIAccessibility.PostNotification(UIAccessibilityPostNotification.LayoutChanged, self);
             }
         }
 
@@ -205,9 +219,13 @@ namespace Avalonia.iOS
         {
             AutomationPeer peer = self;
             self.AccessibilityRespondsToUserInteraction =
-                peer.GetProvider<IValueProvider>()?.IsReadOnly ??
-                peer.GetProvider<IRangeValueProvider>()?.IsReadOnly ??
-                peer.IsEnabled();
+                peer.IsEnabled() &&
+                (peer.GetProvider<IValueProvider>()?.IsReadOnly == false ||
+                 peer.GetProvider<IRangeValueProvider>()?.IsReadOnly == false ||
+                 self.GetSelectionItemProvider() is not null ||
+                 peer.GetProvider<IToggleProvider>() is not null ||
+                 peer.GetProvider<IInvokeProvider>() is not null ||
+                 peer.GetProvider<IScrollProvider>() is not null);
         }
 
         private static void UpdateValue(AutomationPeerWrapper self)
@@ -219,7 +237,6 @@ namespace Avalonia.iOS
             if (self.AccessibilityValue != newValue)
             {
                 self.AccessibilityValue = newValue;
-                UIAccessibility.PostNotification(UIAccessibilityPostNotification.Announcement, (NSString?)newValue);
             }
         }
 
@@ -247,9 +264,20 @@ namespace Avalonia.iOS
         public void UpdateAllProperties()
         {
             UpdateProperties(s_propertySetters.Keys.ToArray());
-            if (!_isContainer)
+            bool isAccessibilityElement = !_peer.IsOffscreen() && _peer.IsControlElement();
+            if (_isContainer)
             {
-                IsAccessibilityElement = !_peer.IsOffscreen() && _peer.IsControlElement();
+                bool isNamedSelectionItem =
+                    _peer.GetProvider<ISelectionItemProvider>() is not null &&
+                    !string.IsNullOrWhiteSpace(AccessibilityLabel);
+                AccessibilityContainerType = isNamedSelectionItem ?
+                    UIAccessibilityContainerType.None :
+                    UIAccessibilityContainerType.SemanticGroup;
+                IsAccessibilityElement = isNamedSelectionItem && isAccessibilityElement;
+            }
+            else
+            {
+                IsAccessibilityElement = isAccessibilityElement;
             }
         }
 
@@ -278,14 +306,9 @@ namespace Avalonia.iOS
                 traits |= UIAccessibilityTrait.Adjustable;
             }
 
-            if (_peer.GetProvider<ISelectionItemProvider>()?.IsSelected == true)
+            if (GetSelectionItemProvider()?.IsSelected == true)
             {
                 traits |= UIAccessibilityTrait.Selected;
-            }
-
-            if (_peer.GetProvider<IValueProvider>()?.IsReadOnly == false)
-            {
-                traits |= UIAccessibilityTrait.UpdatesFrequently;
             }
 
             if (_peer.IsEnabled() == false)
@@ -299,9 +322,16 @@ namespace Avalonia.iOS
         [Export("accessibilityActivate")]
         public bool AccessibilityActivate()
         {
+            ISelectionItemProvider? selectionItemProvider = _peer.GetProvider<ISelectionItemProvider>();
             IToggleProvider? toggleProvider = _peer.GetProvider<IToggleProvider>();
             IInvokeProvider? invokeProvider = _peer.GetProvider<IInvokeProvider>();
-            if (toggleProvider is not null)
+            if (selectionItemProvider is not null)
+            {
+                selectionItemProvider.Select();
+                UpdateTraits();
+                return true;
+            }
+            else if (toggleProvider is not null)
             {
                 toggleProvider.Toggle();
                 return true;
@@ -309,6 +339,12 @@ namespace Avalonia.iOS
             else if (invokeProvider is not null)
             {
                 invokeProvider.Invoke();
+                return true;
+            }
+            else if (_parent?.GetSelectionItemProvider() is { } parentSelectionItemProvider)
+            {
+                parentSelectionItemProvider.Select();
+                UpdateTraits();
                 return true;
             }
             else
@@ -390,7 +426,7 @@ namespace Avalonia.iOS
 
                 try
                 {
-                    scrollProvider.Scroll(verticalAmount, horizontalAmount);
+                    scrollProvider.Scroll(horizontalAmount, verticalAmount);
                     if (didScroll)
                     {
                         UIAccessibility.PostNotification(UIAccessibilityPostNotification.PageScrolled, null);
@@ -400,6 +436,38 @@ namespace Avalonia.iOS
                 catch (InvalidOperationException) { }
             }
             return false;
+        }
+
+        private ISelectionItemProvider? GetSelectionItemProvider()
+        {
+            for (AutomationPeerWrapper? wrapper = this; wrapper is not null; wrapper = wrapper._parent)
+            {
+                if (wrapper._peer.GetProvider<ISelectionItemProvider>() is { } provider)
+                {
+                    return provider;
+                }
+            }
+
+            return null;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _peer.ChildrenChanged -= PeerChildrenChanged;
+                _peer.PropertyChanged -= PeerPropertyChanged;
+
+                foreach (AutomationPeerWrapper child in _childrenMap.Values)
+                {
+                    child.Dispose();
+                }
+
+                _childrenList.Clear();
+                _childrenMap.Clear();
+            }
+
+            base.Dispose(disposing);
         }
 
         public static implicit operator AutomationPeer(AutomationPeerWrapper instance)
