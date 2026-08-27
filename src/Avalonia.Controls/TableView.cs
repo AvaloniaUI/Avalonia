@@ -5,6 +5,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using static Avalonia.Controls.Presenters.TableViewLayoutHelper;
 
@@ -139,6 +140,7 @@ public class TableView : ListBox
         }
 
         column.TableView = this;
+        ((ISetLogicalParent)column).SetParent(this);
     }
 
     private void DetachColumn(TableViewColumn column)
@@ -146,6 +148,7 @@ public class TableView : ListBox
         Debug.Assert(column.TableView == this || column.TableView is null);
 
         column.TableView = null;
+        ((ISetLogicalParent)column).SetParent(null);
         column.ActualWidth = double.NaN;
     }
 
