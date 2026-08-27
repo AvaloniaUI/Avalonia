@@ -251,8 +251,10 @@ namespace Avalonia.Controls.Presenters
                 return scrollable.BringIntoView(control, targetRect);
             }
 
-            // Transform into the content's coordinate space rather than our own:
-            // Offset might have been changed but Arrange not called yet.
+            // The `viewport` rectangle computed below is in extent coordinates, so transform
+            // `targetRect` into that space too. Going via Child rather than via this + Offset
+            // keeps the result independent of Offset, which may have changed since the last
+            // arrange.
             if (target.TransformToVisual(Child) is not { } transform)
             {
                 return false;
