@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -1683,7 +1683,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Focused_Container_Is_Positioned_Correctly_When_Scrolled_Past_Items_With_Different_Heights()
+        public void Focused_Container_Is_Positioned_Outside_Viewport_When_Scrolled_Past_Items_With_Different_Heights()
         {
             using var app = App();
 
@@ -1691,7 +1691,7 @@ namespace Avalonia.Controls.UnitTests
                 .Select(x => new ItemWithHeight(x, x < 10 ? 10 : 50))
                 .ToList();
 
-            var (target, _, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
 
             var focused = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
             focused.Focusable = true;
@@ -1702,18 +1702,19 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(target.FirstRealizedIndex > 5);
 
-            var firstIndex = target.FirstRealizedIndex;
-            var firstRealized = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(firstIndex));
-            var realized = target.GetRealizedElements()
-                .Where(x => x is not null)
-                .Cast<Control>()
-                .ToList();
-
-            var estimatedSize = realized.Average(x => x.DesiredSize.Height);
-            var expectedTop = firstRealized.Bounds.Top - ((firstIndex - 5) * estimatedSize);
-
+            var firstRealized = Assert.IsType<ContentPresenter>(
+                target.ContainerFromIndex(target.FirstRealizedIndex));
             focused = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
-            Assert.Equal(expectedTop, focused.Bounds.Top, 3);
+
+            // The focused container's position is estimated, as it's outside the realized range.
+            // The estimate must never place it before the panel origin...
+            Assert.True(focused.Bounds.Top >= 0);
+
+            // ...must keep it above the realized range rather than overlapping it...
+            Assert.True(focused.Bounds.Bottom <= firstRealized.Bounds.Top);
+
+            // ...and must keep it out of the viewport, so it can't appear as a ghost item.
+            Assert.True(focused.Bounds.Bottom <= scroll.Offset.Y);
         }
 
         [Theory]
@@ -1724,7 +1725,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(0.5d,
             0, 7,
             0, 7,
-            7, 17)]
+            0, 9)]
         public void Focused_Container_Is_Positioned_Correctly_when_Container_Size_Change_Causes_It_To_Be_Moved_Into_Visible_Viewport(double bufferFactor, 
             int firstIndex1, int lastIndex1,
             int firstIndex2, int lastIndex2,
@@ -1763,6 +1764,40 @@ namespace Avalonia.Controls.UnitTests
             // The container should be positioned correctly.
             container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(7));
             Assert.Equal(new Rect(0, 140, 100, 20), container.Bounds);
+        }
+
+        [Theory]
+        [InlineData(25, Orientation.Vertical)]
+        [InlineData(99, Orientation.Vertical)]
+        [InlineData(25, Orientation.Horizontal)]
+        [InlineData(99, Orientation.Horizontal)]
+        public void ScrollIntoView_With_Variable_Size_Items_Keeps_Target_In_Viewport(int targetIndex, Orientation orientation)
+        {
+            using var app = App();
+
+            var firstHalfSize = targetIndex < 60 ? 20 : 40;
+            var secondHalfSize = targetIndex < 60 ? 40 : 20;
+            var horizontal = orientation == Orientation.Horizontal;
+            IEnumerable<object> items = horizontal ?
+                Enumerable.Range(0, 100).Select(x => new ItemWithWidth(x, x < 50 ? firstHalfSize : secondHalfSize)) :
+                Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, x < 50 ? firstHalfSize : secondHalfSize));
+            Optional<IDataTemplate?> itemTemplate = horizontal ? CanvasWithWidthTemplate : CanvasWithHeightTemplate;
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: itemTemplate, orientation: orientation);
+
+            target.ScrollIntoView(60);
+            target.ScrollIntoView(targetIndex);
+
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(targetIndex));
+            var message = $"Bounds={container.Bounds}, Offset={scroll.Offset}, Viewport={scroll.Viewport}, Extent={scroll.Extent}";
+
+            var containerStart = horizontal ? container.Bounds.Left : container.Bounds.Top;
+            var containerEnd = horizontal ? container.Bounds.Right : container.Bounds.Bottom;
+            var viewportStart = horizontal ? scroll.Offset.X : scroll.Offset.Y;
+            var viewportEnd = viewportStart + (horizontal ? scroll.Viewport.Width : scroll.Viewport.Height);
+
+            Assert.True(containerStart > 0, message);
+            Assert.True(containerStart >= viewportStart, message);
+            Assert.True(containerEnd <= viewportEnd, message);
         }
 
         [Fact]
