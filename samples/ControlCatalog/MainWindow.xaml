@@ -12,7 +12,8 @@
         CanMaximize="{Binding CanMaximize}"
         WindowDrawnDecorations.TitleBarDecorations="{Binding TitleBarDecorations}"
         Win32Properties.WindowCornerPreference="{Binding Win32WindowCornerPreference}"
-        x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}"
+        x:Class="ControlCatalog.MainWindow" 
+        WindowState="{Binding SettingsViewModel.WindowState, Mode=TwoWay}"
         x:DataType="vm:MainWindowViewModel">
   <NativeMenu.Menu>
     <NativeMenu>

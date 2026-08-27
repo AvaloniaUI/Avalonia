@@ -1,0 +1,313 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:ControlCatalog.Controls">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="HamburgerBaseHighColor">#99FFFFFF</Color>
+      <Color x:Key="HamburgerChromeMediumColor">#FF1F1F1F</Color>
+      <Color x:Key="HamburgerAltHighColor">#FF000000</Color>
+      <Color x:Key="HamburgerChromeLowColor">#FF171717</Color>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Default">
+      <Color x:Key="HamburgerBaseHighColor">#99000000</Color>
+      <Color x:Key="HamburgerChromeMediumColor">#FFE6E6E6</Color>
+      <Color x:Key="HamburgerAltHighColor">#FFFFFFFF</Color>
+      <Color x:Key="HamburgerChromeLowColor">#FFF2F2F2</Color>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <x:Double x:Key="NavigationItemHeight">36</x:Double>
+  <BoxShadows x:Key="NavigationItemShadow">1 1 1 1 #2000, 0 0 1 1 #2fff</BoxShadows>
+
+  <ControlTheme x:Key="ScrollPage" TargetType="ContentPage">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DockPanel>
+          <ContentPresenter Name="PART_TopCommandBar"
+                            DockPanel.Dock="Top"
+                            HorizontalContentAlignment="Stretch"
+                            IsVisible="False" />
+          <ContentPresenter Name="PART_BottomCommandBar"
+                            DockPanel.Dock="Bottom"
+                            HorizontalContentAlignment="Stretch"
+                            IsVisible="False" />
+
+          <ScrollViewer Padding="20"
+                        HorizontalScrollBarVisibility="Disabled">
+            <ContentPresenter Name="PART_ContentPresenter"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              CornerRadius="{TemplateBinding CornerRadius}" />
+          </ScrollViewer>
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="NavHeaderItem" TargetType="ListBoxItem">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
+    <Setter Property="Padding" Value="14,0,4,0" />
+    <Setter Property="Margin" Value="4,2,8,0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Panel>
+            <Border Name="PART_SelectedPipe"
+                    Width="{DynamicResource TabItemPipeThickness}"
+                    Height="{DynamicResource TabItemVerticalPipeHeight}"
+                    Margin="6,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                    IsVisible="False"
+                    CornerRadius="4"/>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Padding="{TemplateBinding Padding}"
+                              Margin="0"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+        <Setter Property="BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:selected">
+      <Style Selector="^ /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Border.Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
+    </Style>
+  </ControlTheme>
+  <ControlTheme x:Key="SelectableItemButton" TargetType="controls:SelectableButton">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
+    <Setter Property="Padding" Value="14,0,4,0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Panel>
+            <Border Name="PART_SelectedPipe"
+                    Width="{DynamicResource TabItemPipeThickness}"
+                    Height="{DynamicResource TabItemVerticalPipeHeight}"
+                    Margin="6,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                    IsVisible="False"
+                    CornerRadius="4"/>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Padding="{TemplateBinding Padding}"
+                              Margin="0"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+        <Setter Property="BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:selected">
+      <Style Selector="^ /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Border.Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="ExpanderToggleButton" TargetType="ToggleButton">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
+    <Setter Property="Padding" Value="14,0,4,0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Panel>
+            <Border Name="PART_SelectedPipe"
+                    Width="{DynamicResource TabItemPipeThickness}"
+                    Height="{DynamicResource TabItemVerticalPipeHeight}"
+                    Margin="6,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                    IsVisible="False"
+                    CornerRadius="4"/>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Padding="{TemplateBinding Padding}"
+                              Margin="0"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+        <Setter Property="BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:checked">
+      <Style Selector="^ /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Border.Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
+    </Style>
+  </ControlTheme>
+  <ControlTheme x:Key="HomeSectionExpander" TargetType="Expander">
+    <Setter Property="IsTabStop" Value="False"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="MinHeight" Value="{StaticResource NavigationItemHeight}" />
+    <Setter Property="Padding" Value="14,0,4,0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid RowDefinitions="Auto,*">
+            <ToggleButton x:Name="ExpanderHeader"
+                          HorizontalAlignment="Stretch"
+                          MinHeight="{TemplateBinding MinHeight}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          IsEnabled="{TemplateBinding IsEnabled}"
+                          Content="{TemplateBinding Header}"
+                          Theme="{StaticResource ExpanderToggleButton}"
+                          Background="{TemplateBinding Background}"
+                          ContentTemplate="{TemplateBinding HeaderTemplate}"
+                          IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" >
+              <ToggleButton.Resources>
+                <x:Double x:Key="TabItemVerticalPipeHeight">10</x:Double>
+              </ToggleButton.Resources>
+            </ToggleButton>
+            <Border x:Name="ExpanderContent"
+                    Grid.Row="1"
+                    IsVisible="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    MinHeight="{TemplateBinding MinHeight}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter x:Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Foreground="{TemplateBinding Foreground}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Border>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover">
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Border.Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

@@ -1,8 +1,9 @@
 <DrawerPage x:Class="ControlCatalog.MainView"
             xmlns="https://github.com/avaloniaui"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-            xmlns:local="using:ControlCatalog"
+            xmlns:controls="using:ControlCatalog.Controls"
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:local="using:ControlCatalog"
             xmlns:models="using:ControlCatalog.Models"
             xmlns:viewModels="using:ControlCatalog.ViewModels"
             d:DesignWidth="1200"
@@ -37,26 +38,101 @@
   </DrawerPage.Styles>
   <DrawerPage.DrawerTemplate>
     <DataTemplate x:DataType="viewModels:MainWindowViewModel">
-      <ListBox ItemsSource="{Binding Pages}"
-               Padding="0,10,0,10"
-               Background="Transparent"
-               ItemContainerTheme="{StaticResource NavHeaderItem}"
-               SelectedIndex="{Binding SelectedPageIndex}">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="models:PageItem">
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <Grid RowDefinitions="Auto,*" Margin="10,0">
+          <controls:SelectableButton Margin="1"
+                                     Command="{Binding HomeCommand}"
+                                     Theme="{StaticResource SelectableItemButton}">
+            <controls:SelectableButton.IsSelected>
+              <MultiBinding Converter="{x:Static ObjectConverters.AreAllEqual}">
+                <Binding Path="$parent[local:MainView].ViewModel.CurrentPageItem.Header"/>
+                <Binding Path="$parent[local:MainView].ViewModel.HomeItem.Header"/>
+              </MultiBinding>
+            </controls:SelectableButton.IsSelected>
             <Grid ColumnDefinitions="20,*">
               <PathIcon Grid.Column="0" Width="16" Height="16"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        Data="{Binding IconData}"/>
-              <TextBlock Grid.Column="1" Text="{Binding Header}"
+                        Data="{Binding HomeItem.IconData}"/>
+              <TextBlock Grid.Column="1" Text="{Binding HomeItem.Header}"
                          VerticalAlignment="Center"
                          Margin="12,0,0,0"
                          TextTrimming="CharacterEllipsis"/>
             </Grid>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+          </controls:SelectableButton>
+          <ItemsControl ItemsSource="{Binding HomeSections}"
+                        Grid.Row="1">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical"/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="models:HomeSection">
+                <Expander Theme="{StaticResource HomeSectionExpander}" Margin="1" IsVisible="{Binding IsSectionVisible}">
+                  <Expander.IsExpanded>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                      <Binding Path="$parent[local:MainView].ViewModel.ExpandAllSections"/>
+                      <MultiBinding Mode="OneWay" Converter="{x:Static ObjectConverters.AreAllEqual}">
+                        <Binding Path="$parent[local:MainView].ViewModel.OpenedSection"/>
+                        <Binding Path="Title"/>
+                      </MultiBinding>
+                    </MultiBinding>
+                  </Expander.IsExpanded>
+                  <Expander.Header>
+                    <Grid ColumnDefinitions="20,*">
+                      <PathIcon Grid.Column="0" Width="16" Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Data="{Binding IconData}"/>
+                      <TextBlock Grid.Column="1" Text="{Binding Title}"
+                                 VerticalAlignment="Center"
+                                 Margin="12,0,0,0"
+                                 TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                  </Expander.Header>
+                  <Expander.Content>
+                    <ItemsControl ItemsSource="{Binding Items}" Margin="10,0">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <StackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:PageItem">
+                          <controls:SelectableButton Margin="1"
+                                                     IsVisible="{Binding IsVisible}"
+                                                     Theme="{StaticResource SelectableItemButton}"
+                                                     Command="{Binding $parent[local:MainView].ViewModel.NavigateToPageCommand}"
+                                                     CommandParameter="{Binding}">
+                            <controls:SelectableButton.IsSelected>
+                              <MultiBinding Mode="OneWay" Converter="{x:Static ObjectConverters.AreAllEqual}">
+                                <Binding Path="$parent[local:MainView].ViewModel.CurrentPageItem.Header"/>
+                                <Binding Path="Header"/>
+                              </MultiBinding>
+                            </controls:SelectableButton.IsSelected>
+                            <Grid ColumnDefinitions="20,*">
+                              <PathIcon Grid.Column="0" Width="16" Height="16"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Data="{Binding IconData}"/>
+                              <TextBlock Grid.Column="1" Text="{Binding Header}"
+                                         VerticalAlignment="Center"
+                                         Margin="12,0,0,0"
+                                         TextTrimming="CharacterEllipsis"/>
+                            </Grid>
+                          </controls:SelectableButton>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Expander.Content>
+                </Expander>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </ScrollViewer>
     </DataTemplate>
   </DrawerPage.DrawerTemplate>
   <DrawerPage.DrawerHeaderTemplate>
@@ -91,74 +167,32 @@
   </DrawerPage.DrawerHeaderTemplate>
   <DrawerPage.DrawerFooterTemplate>
     <DataTemplate x:DataType="viewModels:MainWindowViewModel">
-      <Expander HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Stretch"
-                Header="Settings"
-                Margin="0"
-                BorderThickness="0"
-                ExpandDirection="Up"
-                x:Name="SettingsExpander">
-        <StackPanel Width="152" Spacing="8">
-          <ComboBox x:Name="Decorations"
-                    HorizontalAlignment="Stretch"
-                    SelectedIndex="{Binding SelectedDecorationIndex}"
-                    SelectionChanged="Decorations_SelectionChanged"
-                    ToolTip.Tip="System Decorations">
-            <ComboBox.Items>
-              <WindowDecorations>None</WindowDecorations>
-              <WindowDecorations>BorderOnly</WindowDecorations>
-              <WindowDecorations>Full</WindowDecorations>
-            </ComboBox.Items>
-          </ComboBox>
-          <ComboBox HorizontalAlignment="Stretch"
-                    DisplayMemberBinding="{Binding Key, x:DataType=ThemeVariant}"
-                    SelectedIndex="0"
-                    SelectionChanged="ThemeVariants_SelectionChanged"
-                    ToolTip.Tip="Theme Variant">
-            <ComboBox.Items>
-              <ThemeVariant>Default</ThemeVariant>
-              <ThemeVariant>Light</ThemeVariant>
-              <ThemeVariant>Dark</ThemeVariant>
-            </ComboBox.Items>
-          </ComboBox>
-          <ComboBox HorizontalAlignment="Stretch"
-                    SelectedItem="{x:Static local:App.CurrentTheme}"
-                    SelectionChanged="Themes_SelectionChanged"
-                    ToolTip.Tip="Catalog Theme">
-            <ComboBox.Items>
-              <models:CatalogTheme>Fluent</models:CatalogTheme>
-              <models:CatalogTheme>Simple</models:CatalogTheme>
-            </ComboBox.Items>
-          </ComboBox>
-          <ComboBox HorizontalAlignment="Stretch"
-                    SelectedIndex="0"
-                    SelectionChanged="TransparencyLevels_SelectionChanged"
-                    ToolTip.Tip="Window Transparency Level">
-            <ComboBox.Items>
-              <WindowTransparencyLevel>None</WindowTransparencyLevel>
-              <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>
-              <WindowTransparencyLevel>Blur</WindowTransparencyLevel>
-              <WindowTransparencyLevel>AcrylicBlur</WindowTransparencyLevel>
-              <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
-            </ComboBox.Items>
-          </ComboBox>
-          <ComboBox HorizontalAlignment="Stretch"
-                    SelectedIndex="0"
-                    SelectionChanged="FlowDirection_SelectionChanged"
-                    ToolTip.Tip="Flow Direction">
-            <ComboBox.Items>
-              <FlowDirection>LeftToRight</FlowDirection>
-              <FlowDirection>RightToLeft</FlowDirection>
-            </ComboBox.Items>
-          </ComboBox>
-          <ComboBox HorizontalAlignment="Stretch"
-                    ItemsSource="{Binding WindowStates}"
-                    SelectedItem="{Binding WindowState}"
-                    ToolTip.Tip="Window State"/>
-        </StackPanel>
-      </Expander>
+      <controls:SelectableButton Margin="10"
+                                 Command="{Binding SettingsCommand}"
+                                 Theme="{StaticResource SelectableItemButton}">
+        <controls:SelectableButton.IsSelected>
+          <MultiBinding Converter="{x:Static ObjectConverters.AreAllEqual}">
+            <Binding Path="$parent[local:MainView].ViewModel.CurrentPageItem.Header"/>
+            <Binding Path="$parent[local:MainView].ViewModel.SettingsItem.Header"/>
+          </MultiBinding>
+        </controls:SelectableButton.IsSelected>
+        <Grid ColumnDefinitions="20,*">
+          <PathIcon Grid.Column="0" Width="16" Height="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Data="{Binding SettingsItem.IconData}"/>
+          <TextBlock Grid.Column="1" Text="{Binding SettingsItem.Header}"
+                     VerticalAlignment="Center"
+                     Margin="12,0,0,0"
+                     TextTrimming="CharacterEllipsis"/>
+        </Grid>
+      </controls:SelectableButton>
     </DataTemplate>
   </DrawerPage.DrawerFooterTemplate>
 
-  <NavigationPage Name="NavPage"/>
+  <NavigationPage Name="NavPage">
+    <NavigationPage.Resources>
+      <SolidColorBrush x:Key="NavigationBarBackground">Transparent</SolidColorBrush>
+    </NavigationPage.Resources>
+  </NavigationPage>
 </DrawerPage>
