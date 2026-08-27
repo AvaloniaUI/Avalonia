@@ -43,6 +43,7 @@ namespace Avalonia.iOS
         private IInputRoot? _inputRoot;
         private Metal.MetalRenderTarget? _currentRenderTarget;
         private (PixelSize size, double scaling) _latestLayoutProps;
+        private bool _disposedValue;
 
         public AvaloniaView()
         {
@@ -113,11 +114,11 @@ namespace Avalonia.iOS
             }
             else
 #endif
-            if (l is CAMetalLayer metalLayer)
-            {
-                metalLayer.Opaque = false;
-                _topLevelImpl.Surfaces = [new Metal.MetalPlatformSurface(metalLayer, this)];
-            }
+                if (l is CAMetalLayer metalLayer)
+                {
+                    metalLayer.Opaque = false;
+                    _topLevelImpl.Surfaces = [new Metal.MetalPlatformSurface(metalLayer, this)];
+                }
         }
 
         /// <inheritdoc />
@@ -136,7 +137,7 @@ namespace Avalonia.iOS
         public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
         {
             base.TraitCollectionDidChange(previousTraitCollection);
-            
+
             var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
             settings?.TraitCollectionDidChange();
         }
@@ -145,7 +146,7 @@ namespace Avalonia.iOS
         public override void TintColorDidChange()
         {
             base.TintColorDidChange();
-            
+
             var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
             settings?.TraitCollectionDidChange();
         }
@@ -156,7 +157,7 @@ namespace Avalonia.iOS
             _controller = controller;
             _topLevelImpl._insetsManager.InitWithController(controller);
         }
-        
+
         internal class TopLevelImpl : ITopLevelImpl
         {
             private readonly AvaloniaView _view;
@@ -275,7 +276,7 @@ namespace Avalonia.iOS
                 }
 #endif
             }
-            
+
             public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } =
                 new AcrylicPlatformCompensationLevels();
 
@@ -422,6 +423,21 @@ namespace Avalonia.iOS
         {
             _currentRenderTarget = target;
             _currentRenderTarget.PendingLayout = _latestLayoutProps;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                _disposedValue = true;
+                
+                if (disposing)
+                {
+                    _accessWrapper.Dispose();
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

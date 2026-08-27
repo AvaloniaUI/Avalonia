@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Avalonia.iOS
 {
-    public class AutomationPeerWrapper : UIAccessibilityElement, IUIAccessibilityContainer
+    internal sealed class AutomationPeerWrapper : UIAccessibilityElement, IUIAccessibilityContainer
     {
         private static readonly HashSet<AutomationControlType> s_containerTypes =
             new HashSet<AutomationControlType>()
@@ -56,6 +56,8 @@ namespace Avalonia.iOS
 
                 { ValuePatternIdentifiers.IsReadOnlyProperty, UpdateIsReadOnly },
                 { ValuePatternIdentifiers.ValueProperty, UpdateValue },
+
+                { SelectionItemPatternIdentifiers.IsSelectedProperty, UpdateSelected },
             };
 
         private readonly AvaloniaView _view;
@@ -226,6 +228,12 @@ namespace Avalonia.iOS
                  peer.GetProvider<IToggleProvider>() is not null ||
                  peer.GetProvider<IInvokeProvider>() is not null ||
                  peer.GetProvider<IScrollProvider>() is not null);
+
+            self.AccessibilityTraits &= ~(ulong)UIAccessibilityTrait.Adjustable;
+            if (peer.GetProvider<IRangeValueProvider>()?.IsReadOnly == false)
+            {
+                self.AccessibilityTraits |= (ulong)UIAccessibilityTrait.Adjustable;
+            }
         }
 
         private static void UpdateValue(AutomationPeerWrapper self)
@@ -237,6 +245,15 @@ namespace Avalonia.iOS
             if (self.AccessibilityValue != newValue)
             {
                 self.AccessibilityValue = newValue;
+            }
+        }
+
+        private static void UpdateSelected(AutomationPeerWrapper self)
+        {
+            self.AccessibilityTraits &= ~(ulong)UIAccessibilityTrait.Selected;
+            if (self.GetSelectionItemProvider()?.IsSelected == true)
+            {
+                self.AccessibilityTraits |= (ulong)UIAccessibilityTrait.Selected;
             }
         }
 
@@ -269,7 +286,7 @@ namespace Avalonia.iOS
             {
                 bool isNamedSelectionItem =
                     _peer.GetProvider<ISelectionItemProvider>() is not null &&
-                    !string.IsNullOrWhiteSpace(AccessibilityLabel);
+                    !string.IsNullOrWhiteSpace(_peer.GetName());
                 AccessibilityContainerType = isNamedSelectionItem ?
                     UIAccessibilityContainerType.None :
                     UIAccessibilityContainerType.SemanticGroup;
@@ -299,16 +316,6 @@ namespace Avalonia.iOS
                 case AutomationControlType.Image:
                     traits |= UIAccessibilityTrait.Image;
                     break;
-            }
-
-            if (_peer.GetProvider<IRangeValueProvider>()?.IsReadOnly == false)
-            {
-                traits |= UIAccessibilityTrait.Adjustable;
-            }
-
-            if (GetSelectionItemProvider()?.IsSelected == true)
-            {
-                traits |= UIAccessibilityTrait.Selected;
             }
 
             if (_peer.IsEnabled() == false)

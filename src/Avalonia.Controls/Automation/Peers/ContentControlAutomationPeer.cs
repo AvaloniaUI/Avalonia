@@ -5,8 +5,8 @@ namespace Avalonia.Automation.Peers
     public class ContentControlAutomationPeer : ControlAutomationPeer
     {
         protected ContentControlAutomationPeer(ContentControl owner)
-            : base(owner) 
-        { 
+            : base(owner)
+        {
         }
 
         public new ContentControl Owner => (ContentControl)base.Owner;
@@ -15,11 +15,19 @@ namespace Avalonia.Automation.Peers
 
         protected override string? GetNameCore()
         {
-            Control? childControl = Owner.Presenter?.Child;
-            AutomationPeer? childPeer = childControl is null ? null :
-                CreatePeerForElement(childControl);
-            return base.GetNameCore() ?? (childControl as TextBlock)?.Text ?? 
-                childPeer?.GetName() ?? Owner.Content?.ToString();
+            var result = base.GetNameCore();
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                return result;
+            }
+            else
+            {
+                Control? childControl = Owner.Presenter?.Child;
+                AutomationPeer? childPeer = childControl is null ? null :
+                    CreatePeerForElement(childControl);
+                string? childName = (childControl as TextBlock)?.Text ?? childPeer?.GetName();
+                return !string.IsNullOrWhiteSpace(childName) ? childName : Owner.Content?.ToString();
+            }
         }
 
         protected override string? GetHelpTextCore()
@@ -27,7 +35,7 @@ namespace Avalonia.Automation.Peers
             Control? childControl = Owner.Presenter?.Child;
             AutomationPeer? childPeer = childControl is null ? null :
                 CreatePeerForElement(childControl);
-            return base.GetHelpTextCore() ?? 
+            return base.GetHelpTextCore() ??
                 childPeer?.GetHelpText();
         }
 

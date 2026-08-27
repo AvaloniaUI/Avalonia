@@ -254,7 +254,7 @@ namespace Avalonia.Automation.Peers
                 IsOffscreenBehavior.FromClip => Owner.GetTransformedBounds() is not { } bounds ||
                     MathUtilities.IsZero(bounds.Clip.Width) ||
                     MathUtilities.IsZero(bounds.Clip.Height),
-                _ => !Owner.IsEffectivelyVisible,
+                _ => !Owner.IsEffectivelyVisible || !(Owner.GetVisualRoot()?.IsEffectivelyVisible ?? false),
             };
         }
 

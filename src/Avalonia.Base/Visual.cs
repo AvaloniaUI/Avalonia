@@ -587,7 +587,7 @@ namespace Avalonia
             }
 
             DisableTransitions();
-            UpdateIsEffectivelyVisible(false);
+            UpdateIsEffectivelyVisible(true);
             OnDetachedFromVisualTree(e);
             DetachFromCompositor();
 
