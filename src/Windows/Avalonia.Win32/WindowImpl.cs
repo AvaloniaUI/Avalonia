@@ -984,8 +984,6 @@ namespace Avalonia.Win32
                     SetTransparencyMica();
                 }
             }
-
-            (Win32Platform.Instance.PlatformSettings as Win32PlatformSettings)?.OnColorValuesChanged();
         }
 
         protected virtual IntPtr CreateWindowOverride(ushort atom)
@@ -1132,6 +1130,12 @@ namespace Avalonia.Win32
                 _savedWindowInfo.Style = current;
                 _savedWindowInfo.ExStyle = currentEx;
 
+                if (current.HasAllFlags(WindowStyles.WS_SYSMENU))
+                {
+                    // Create the system menu copy before fullscreen removes WS_SYSMENU.
+                    GetSystemMenu(_hwnd, false);
+                }
+
                 // Set new window style and size.
                 SetStyle(current & ~WindowStyles.WS_OVERLAPPEDWINDOW, false);
                 SetExtendedStyle(currentEx & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE), false);
@@ -1263,15 +1267,6 @@ namespace Avalonia.Win32
                 _extendedMargins = new Thickness();
 
                 SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_USEWINDOWSTYLE);
-            }
-
-            if (!_isClientAreaExtended)
-            {
-                EnableCloseButton(_hwnd);
-            }
-            else
-            {
-                DisableCloseButton(_hwnd);
             }
 
             // Inform the application of the frame change.
@@ -1569,19 +1564,6 @@ namespace Avalonia.Win32
         private const int MF_ENABLED = 0x0;
         private const int MF_GRAYED = 0x1;
         private const int MF_DISABLED = 0x2;
-        private const int SC_CLOSE = 0xF060;
-
-        private static void DisableCloseButton(IntPtr hwnd)
-        {
-            EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
-                           MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-        }
-
-        private static void EnableCloseButton(IntPtr hwnd)
-        {
-            EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
-                           MF_BYCOMMAND | MF_ENABLED);
-        }
 
         private RECT ClientRectToWindowRect(RECT clientRect, WindowStyles? styleOverride = null, WindowStyles? extendedStyleOverride = null)
         {

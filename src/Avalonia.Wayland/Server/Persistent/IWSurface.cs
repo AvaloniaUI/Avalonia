@@ -58,4 +58,12 @@ internal interface IWSurface
 
     /// <summary>Resets the IME state (clears any pending preedit/commit).</summary>
     void ResetTextInput();
+
+    /// <summary>
+    /// Sets whether the surface takes part in pointer/touch hit testing. When
+    /// false an empty wl_region is installed as the input region, so the
+    /// compositor routes input to whatever is behind. Cached and re-applied on
+    /// reconnect.
+    /// </summary>
+    void SetHitTestVisible(bool value);
 }

@@ -4,6 +4,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
       <DependentUpon>%(Filename)</DependentUpon>
@@ -11,23 +12,13 @@
     <AvaloniaXaml Include="**\*.xaml">
       <SubType>Designer</SubType>
     </AvaloniaXaml>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="$(SharedAssetsPath)\icon.ico" Link="Assets\icon.ico" />
+    <AvaloniaResource Include="$(SharedAssetsPath)\icon-32.png" Link="Assets\icon-32.png" />
     <AvaloniaResource Include="Assets\**\*" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Assets\Icon.png" />
-    <None Remove="Assets\image1.jpg" />
-    <None Remove="Assets\image2.jpg" />
-    <None Remove="Assets\image3.jpg" />
-    <None Remove="Assets\image4.jpg" />
-    <None Remove="Assets\image5.jpg" />
-    <None Remove="Assets\image6.jpg" />
-    <None Remove="Assets\image7.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
-    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
-    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
-    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Regular.ttf" />
+    <EmbeddedResource Include="Assets\Fonts\*.*" />
     <EmbeddedResource Include="Pages\teapot.bin" />
   </ItemGroup>
 
@@ -39,12 +30,6 @@
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaXaml Update="NavHeaderItem.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />

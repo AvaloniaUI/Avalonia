@@ -22,22 +22,39 @@ namespace Avalonia.Headless
         private readonly IKeyboardDevice _keyboard;
         private readonly IScreenImpl _screen;
         private readonly Stopwatch _st = Stopwatch.StartNew();
-        private readonly Pointer _mousePointer;
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
-        private readonly PixelFormat _frameBufferFormat;
+        private readonly AvaloniaHeadlessPlatformOptions _options;
+        private readonly HeadlessWindowImpl? _popupParent;
+        private readonly IPopupPositioner? _popupPositioner;
         public bool IsPopup { get; }
 
-        public HeadlessWindowImpl(bool isPopup, PixelFormat frameBufferFormat)
+        public HeadlessWindowImpl(AvaloniaHeadlessPlatformOptions options)
         {
-            IsPopup = isPopup;
             Surfaces = [this];
             _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
             _screen = new HeadlessScreensStub();
-            _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
-            MouseDevice = new MouseDevice(_mousePointer);
+            MouseDevice = options.UseSharedMouseDevice == true
+                ? Avalonia.Input.MouseDevice.Primary
+                : new MouseDevice(new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true));
             ClientSize = new Size(1024, 768);
-            _frameBufferFormat = frameBufferFormat;
+            _options = options;
+        }
+
+        private HeadlessWindowImpl(HeadlessWindowImpl popupParent)
+            : this(popupParent._options)
+        {
+            IsPopup = true;
+            _popupParent = popupParent;
+            _popupPositioner = new ManagedPopupPositioner(
+                new ManagedPopupPositionerPopupImplHelper(popupParent, PopupMoveResize));
+        }
+
+        private void PopupMoveResize(PixelPoint position, Size size, double scaling)
+        {
+            Position = position;
+            PositionChanged?.Invoke(position);
+            DoResize(size, WindowResizeReason.Unspecified);
         }
 
         public void Dispose()
@@ -68,9 +85,9 @@ namespace Avalonia.Headless
 
         public IInputRoot? InputRoot { get; set; }
 
-        public Point PointToClient(PixelPoint point) => point.ToPoint(RenderScaling);
+        public Point PointToClient(PixelPoint point) => (point - Position).ToPoint(RenderScaling);
 
-        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
+        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling) + Position;
 
         public void SetCursor(ICursorImpl? cursor)
         {
@@ -208,7 +225,7 @@ namespace Avalonia.Headless
 
         public ILockedFramebuffer Lock()
         {
-            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, _frameBufferFormat, AlphaFormat.Premul);
+            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, _options.FrameBufferFormat, AlphaFormat.Premul);
             var fb = bmp.Lock();
             return new FramebufferProxy(fb, () =>
             {
@@ -239,8 +256,7 @@ namespace Avalonia.Headless
 
         private ulong Timestamp => (ulong)_st.ElapsedMilliseconds;
 
-        // TODO: Hook recent Popup changes. 
-        IPopupPositioner IPopupImpl.PopupPositioner => null!;
+        IPopupPositioner IPopupImpl.PopupPositioner => _popupPositioner!;
 
         public Size MaxAutoSizeHint => new Size(1920, 1080);
 
@@ -379,11 +395,7 @@ namespace Avalonia.Headless
             PositionChanged?.Invoke(point);
         }
 
-        public IPopupImpl? CreatePopup()
-        {
-            // TODO: Hook recent Popup changes. 
-            return null;
-        }
+        public IPopupImpl? CreatePopup() => _options.OverlayPopups ? null : new HeadlessWindowImpl(this);
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
@@ -443,7 +455,11 @@ namespace Avalonia.Headless
             
         }
 
-        public void TakeFocus() 
+        public void TakeFocus()
+        {
+        }
+
+        public void SetHitTestVisible(bool isHitTestVisible)
         {
         }
     }
