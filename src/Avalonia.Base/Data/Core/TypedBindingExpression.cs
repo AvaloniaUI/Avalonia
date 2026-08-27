@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Avalonia.Logging;
 using Avalonia.PropertyStore;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core;
@@ -279,21 +280,36 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
             // property inheritance. Otherwise always notify, even if the value is unchanged, as
             // the target may hold an uncommitted value written by SetCurrentValue.
             if (oldValue.HasValue || _sourceValue.HasValue)
-            {
-                // Flag that we're pushing the source value to the target so that the resulting
-                // target PropertyChanged isn't echoed straight back to the source in TwoWay mode.
-                _writingValueToTarget = true;
-                try
-                {
-                    _sink?.OnChanged(this, true, false);
-                }
-                finally
-                {
-                    _writingValueToTarget = false;
-                }
-            }
+                PublishValue();
             if (_mode is BindingMode.OneTime)
                 _shouldUpdateOneTimeBindingTarget = false;
+        }
+    }
+
+    private void PublishValue()
+    {
+        // The source's PropertyChanged event may be raised on any thread, but the target can only
+        // be updated on the UI thread.
+        if (Dispatcher.UIThread.CheckAccess())
+            PublishCore(this);
+        else
+            Dispatcher.UIThread.Post(PublishCore, this);
+
+        static void PublishCore(object? state)
+        {
+            var expression = (TypedBindingExpression<TSource, TValue>)state!;
+
+            // Flag that we're pushing the source value to the target so that the resulting target
+            // PropertyChanged isn't echoed straight back to the source in TwoWay mode.
+            expression._writingValueToTarget = true;
+            try
+            {
+                expression._sink?.OnChanged(expression, true, false);
+            }
+            finally
+            {
+                expression._writingValueToTarget = false;
+            }
         }
     }
 
