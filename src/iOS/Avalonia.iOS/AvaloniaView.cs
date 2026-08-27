@@ -434,6 +434,7 @@ namespace Avalonia.iOS
                 if (disposing)
                 {
                     _accessWrapper.Dispose();
+                    _topLevel.Dispose();
                 }
             }
 

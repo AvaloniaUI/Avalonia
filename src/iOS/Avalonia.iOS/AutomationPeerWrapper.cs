@@ -324,6 +324,7 @@ namespace Avalonia.iOS
             }
 
             AccessibilityTraits = (ulong)traits;
+            UpdateSelected(this);
         }
 
         [Export("accessibilityActivate")]
