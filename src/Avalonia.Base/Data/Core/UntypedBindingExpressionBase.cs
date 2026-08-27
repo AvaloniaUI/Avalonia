@@ -407,8 +407,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
             var sink = _sink;
             var vc = hasValueChanged;
             var ec = hasErrorChanged;
-            var v = GetValueOrDefault();
-            var e = _error;
             Dispatcher.UIThread.Post(() => sink.OnChanged(this, vc, ec));
         }
     }
