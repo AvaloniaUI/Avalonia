@@ -110,11 +110,14 @@ internal class SkiaMetalGpu : ISkiaGpu
                     new GRMtlTextureInfo(session.Texture));
 
                 var colorSpace = target.GetPresentationColorSpace();
+                var skColorType = colorSpace.ToSKColorType(SKColorType.Bgra8888);
+                var skColorSpace = colorSpace.ToSKColorSpace();
                 surface = SKSurface.Create(_gpu._context!, backendTarget,
                     session.IsYFlipped ? GRSurfaceOrigin.BottomLeft : GRSurfaceOrigin.TopLeft,
-                    colorSpace.ToSKColorType(SKColorType.Bgra8888), colorSpace.ToSKColorSpace());
+                    skColorType, skColorSpace);
 
-                var result = new SkiaMetalRenderSession(_gpu, surface, session, backendTarget);
+                var result = new SkiaMetalRenderSession(_gpu, surface, session, backendTarget, skColorType,
+                    skColorSpace);
                 success = true;
                 return result;
             }
@@ -132,7 +135,7 @@ internal class SkiaMetalGpu : ISkiaGpu
         public PlatformRenderTargetState State => _target?.State ?? PlatformRenderTargetState.Disposed;
     }
     
-    internal class SkiaMetalRenderSession : ISkiaGpuRenderSession
+    internal class SkiaMetalRenderSession : ISkiaGpuRenderSession, ISkiaGpuRenderSessionSurfaceFormat
     {
         private readonly SkiaMetalGpu _gpu;
         private SKSurface? _surface;
@@ -143,14 +146,24 @@ internal class SkiaMetalGpu : ISkiaGpu
         public SkiaMetalRenderSession(SkiaMetalGpu gpu,
             SKSurface surface,
             IMetalPlatformSurfaceRenderingSession session,
-            GRBackendRenderTarget backendTarget)
+            GRBackendRenderTarget backendTarget,
+            SKColorType colorType,
+            SKColorSpace? colorSpace)
         {
             _autoReleasePool = new AutoReleasePool();
             _gpu = gpu;
             _surface = surface;
             _session = session;
             _backendTarget = backendTarget;
+            ColorType = colorType;
+            ColorSpace = colorSpace;
         }
+
+        // Lets the intermediate surfaces that are composited into this one match its format, so
+        // colors outside of sRGB are not clamped before they get here.
+        public SKColorType ColorType { get; }
+
+        public SKColorSpace? ColorSpace { get; }
 
         public void Dispose()
         {

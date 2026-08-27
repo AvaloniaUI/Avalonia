@@ -2,6 +2,7 @@
 
 using System;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 using Xunit;
@@ -107,6 +108,83 @@ namespace Avalonia.Skia.UnitTests.Media
             var target = new ColorManagedRenderTarget(PresentationColorSpace.DisplayP3);
 
             Assert.Equal(PresentationColorSpace.DisplayP3, target.GetPresentationColorSpace());
+        }
+
+        [Fact]
+        public void Layer_Should_Use_The_Color_Space_Of_The_Surface_It_Is_Composited_Into()
+        {
+            var colorSpace = PresentationColorSpace.DisplayP3.ToSKColorSpace();
+
+            using var target = CreateLayer(new FormatRenderSession(SKColorType.Bgra8888, colorSpace));
+            using var image = target.SnapshotImage();
+
+            Assert.NotNull(image.ColorSpace);
+            Assert.True(image.ColorSpace!.Equals(colorSpace));
+            Assert.Equal(SKColorType.Bgra8888, image.ColorType);
+        }
+
+        [Fact]
+        public void Layer_Should_Use_The_Wider_Color_Type_Of_An_ScRgb_Surface()
+        {
+            var colorSpace = PresentationColorSpace.ScRgb.ToSKColorSpace();
+            var colorType = PresentationColorSpace.ScRgb.ToSKColorType(SKColorType.Bgra8888);
+
+            using var target = CreateLayer(new FormatRenderSession(colorType, colorSpace));
+            using var image = target.SnapshotImage();
+
+            Assert.Equal(SKColorType.RgbaF16, image.ColorType);
+            Assert.NotNull(image.ColorSpace);
+        }
+
+        [Fact]
+        public void Layer_Without_A_Session_Format_Should_Stay_Untagged()
+        {
+            using var target = CreateLayer(null);
+            using var image = target.SnapshotImage();
+
+            Assert.Null(image.ColorSpace);
+        }
+
+        [Fact]
+        public void Layer_With_An_Explicitly_Requested_Format_Should_Keep_It()
+        {
+            var colorSpace = PresentationColorSpace.DisplayP3.ToSKColorSpace();
+
+            using var target = CreateLayer(new FormatRenderSession(SKColorType.Bgra8888, colorSpace),
+                PixelFormat.Bgra8888);
+            using var image = target.SnapshotImage();
+
+            Assert.Null(image.ColorSpace);
+        }
+
+        private static SurfaceRenderTarget CreateLayer(ISkiaGpuRenderSession? session, PixelFormat? format = null) =>
+            new(new SurfaceRenderTarget.CreateInfo
+            {
+                Width = 8,
+                Height = 8,
+                Dpi = new Vector(96, 96),
+                Format = format,
+                Session = session
+            });
+
+        // Only the format is read while an intermediate surface is created, the rest of the session
+        // belongs to the surface that intermediate is later composited into.
+        private class FormatRenderSession : ISkiaGpuRenderSession, ISkiaGpuRenderSessionSurfaceFormat
+        {
+            public FormatRenderSession(SKColorType colorType, SKColorSpace? colorSpace)
+            {
+                ColorType = colorType;
+                ColorSpace = colorSpace;
+            }
+
+            public SKColorType ColorType { get; }
+            public SKColorSpace? ColorSpace { get; }
+
+            public GRContext GrContext => throw new NotSupportedException();
+            public SKSurface SkSurface => throw new NotSupportedException();
+            public double ScaleFactor => throw new NotSupportedException();
+            public GRSurfaceOrigin SurfaceOrigin => throw new NotSupportedException();
+            public void Dispose() { }
         }
 
         private class PlainRenderTarget : IPlatformRenderSurfaceRenderTarget
