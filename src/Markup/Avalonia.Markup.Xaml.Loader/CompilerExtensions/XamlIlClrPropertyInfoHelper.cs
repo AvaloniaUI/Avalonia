@@ -68,6 +68,43 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return baseKey + $"[{indexerArgumentsKey}]";
         }
 
+        /// <summary>
+        /// Searches a property info cache for a method which was already generated for a property.
+        /// </summary>
+        /// <param name="fields">The cache to search.</param>
+        /// <param name="key">The cache key for the property, as returned by <see cref="GetKey"/>.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="cached">
+        /// When the method returns, contains the cache entries for <paramref name="key"/>. The list is
+        /// created and added to <paramref name="fields"/> if it doesn't yet exist.
+        /// </param>
+        /// <returns>
+        /// The method which returns the property info for <paramref name="property"/>, or null if no
+        /// such method has been generated yet.
+        /// </returns>
+        static IXamlMethod? GetCachedPropertyInfoMethod(
+            Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>> fields,
+            string key,
+            IXamlProperty property,
+            out List<(IXamlProperty prop, IXamlMethod get)> cached)
+        {
+            if (!fields.TryGetValue(key, out cached!))
+                fields[key] = cached = new List<(IXamlProperty prop, IXamlMethod get)>();
+
+            foreach (var entry in cached)
+            {
+                if (
+                    ((entry.prop.Getter == null && property.Getter == null) ||
+                     entry.prop.Getter?.Equals(property.Getter) == true) &&
+                    ((entry.prop.Setter == null && property.Setter == null) ||
+                     entry.prop.Setter?.Equals(property.Setter) == true)
+                )
+                    return entry.get;
+            }
+
+            return null;
+        }
+
         public IXamlType Emit(
             XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
             IXamlILEmitter codeGen,
@@ -80,19 +117,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             IXamlMethod Get()
             {
                 var key = GetKey(property, indexerArgumentsKey);
-                if (!_fields.TryGetValue(key, out var lst))
-                    _fields[key] = lst = new List<(IXamlProperty prop, IXamlMethod get)>();
 
-                foreach (var cached in lst)
-                {
-                    if (
-                        ((cached.prop.Getter == null && property.Getter == null) ||
-                         cached.prop.Getter?.Equals(property.Getter) == true) &&
-                        ((cached.prop.Setter == null && property.Setter == null) ||
-                         cached.prop.Setter?.Equals(property.Setter) == true)
-                    )
-                        return cached.get;
-                }
+                if (GetCachedPropertyInfoMethod(_fields, key, property, out var lst) is { } cached)
+                    return cached;
 
                 var name = lst.Count == 0 ? key : key + "_" + context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
                 
@@ -222,26 +249,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             var valueType = property.PropertyType;
 
             var typedPropertyInfoType = types.IPropertyInfoT.MakeGenericType(sourceType, valueType);
-            var typedClrPropertyInfoType = types.ClrPropertyInfoT.MakeGenericType(sourceType, valueType);
-            var funcType = context.Configuration.WellKnownTypes.GetFuncOfT(2).MakeGenericType(sourceType, valueType);
-            var actionType = context.Configuration.WellKnownTypes.GetActionOfT(2).MakeGenericType(sourceType, valueType);
 
             IXamlMethod Get()
             {
                 var key = GetKey(property, null);
-                if (!_typedFields.TryGetValue(key, out var lst))
-                    _typedFields[key] = lst = new List<(IXamlProperty prop, IXamlMethod get)>();
 
-                foreach (var cached in lst)
-                {
-                    if (
-                        ((cached.prop.Getter == null && property.Getter == null) ||
-                         cached.prop.Getter?.Equals(property.Getter) == true) &&
-                        ((cached.prop.Setter == null && property.Setter == null) ||
-                         cached.prop.Setter?.Equals(property.Setter) == true)
-                    )
-                        return cached.get;
-                }
+                if (GetCachedPropertyInfoMethod(_typedFields, key, property, out var lst) is { } cached)
+                    return cached;
+
+                // Only construct the generic types on a cache miss: they're not needed when an
+                // existing property info method is reused.
+                var typedClrPropertyInfoType = types.ClrPropertyInfoT.MakeGenericType(sourceType, valueType);
+                var funcType = context.Configuration.WellKnownTypes.GetFuncOfT(2).MakeGenericType(sourceType, valueType);
+                var actionType = context.Configuration.WellKnownTypes.GetActionOfT(2).MakeGenericType(sourceType, valueType);
 
                 var name = lst.Count == 0
                     ? key + "!Typed"
