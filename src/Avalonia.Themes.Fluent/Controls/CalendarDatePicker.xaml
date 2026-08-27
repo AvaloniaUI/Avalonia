@@ -31,11 +31,11 @@
                   Grid.Row="1"
                   Grid.RowSpan="3"
                   BorderThickness="1,0,1,1"
-                  BorderBrush="{DynamicResource CalendarDatePickerIconForegroundBrush}"
+                  BorderBrush="{TemplateBinding Foreground}"
                   CornerRadius="0,0,2,2" />
           <Border Grid.ColumnSpan="4"
                   Grid.RowSpan="1"
-                  BorderBrush="{DynamicResource CalendarDatePickerIconForegroundBrush}"
+                  BorderBrush="{TemplateBinding Foreground}"
                   BorderThickness="1"
                   CornerRadius="2,2,0,0" />
           <TextBlock Margin="0,-1,0,0"
@@ -45,12 +45,12 @@
                      Grid.Row="1"
                      Grid.ColumnSpan="4"
                      Grid.RowSpan="3"
-                     Foreground="{DynamicResource CalendarDatePickerIconForegroundBrush}"
+                     Foreground="{TemplateBinding Foreground}"
                      FontSize="{DynamicResource CalendarDatePickerCurrentDayFontSize}"
                      Text="{Binding Source={x:Static sys:DateTime.Today}, Path=Day}" />
           <Ellipse HorizontalAlignment="Center"
                    VerticalAlignment="Center"
-                   Fill="{DynamicResource CalendarDatePickerIconForegroundBrush}"
+                   Fill="{TemplateBinding Foreground}"
                    StrokeThickness="0"
                    Grid.ColumnSpan="4"
                    Width="3"
@@ -58,10 +58,6 @@
         </Grid>
       </ControlTemplate>
     </Setter>
-          
-    <Style Selector="^:disabled" >
-      <Setter Property="Opacity" Value="0.3" />
-    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type CalendarDatePicker}" TargetType="CalendarDatePicker">

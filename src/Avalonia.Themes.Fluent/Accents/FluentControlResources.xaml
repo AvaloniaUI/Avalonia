@@ -808,7 +808,6 @@
       <StaticResource x:Key="CalendarDatePickerBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
       <StaticResource x:Key="CalendarDatePickerLightDismissOverlayBackground"
                       ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
-      <StaticResource x:Key="CalendarDatePickerIconForegroundBrush" ResourceKey="SystemControlPageTextBaseMediumBrush" />
       <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
 
       <!-- Resources for FlyoutPresenter.xaml -->
@@ -1657,7 +1656,6 @@
       <StaticResource x:Key="CalendarDatePickerBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
       <StaticResource x:Key="CalendarDatePickerLightDismissOverlayBackground"
                       ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
-      <StaticResource x:Key="CalendarDatePickerIconForegroundBrush" ResourceKey="SystemControlPageTextBaseMediumBrush" />
       <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
 
       <!-- Resources for FlyoutPresenter.xaml -->
