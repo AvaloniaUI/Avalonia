@@ -152,7 +152,14 @@ namespace Avalonia.Layout
                     {
                         InnerLayoutPass();
 
-                        if (!RaiseEffectiveViewportChanged())
+                        if (RaiseEffectiveViewportChanged())
+                        {
+                            continue;
+                        }
+
+                        // The layout is now stable: bring-into-view requests can execute against final bounds.
+                        // Executing them typically changes scroll offsets, which invalidates layout again.
+                        if (!ProcessBringIntoViewRequests() || (_toMeasure.Count == 0 && _toArrange.Count == 0))
                         {
                             break;
                         }
@@ -174,10 +181,24 @@ namespace Avalonia.Layout
                     Logger.TryGet(timingLogLevel, LogArea.Layout)?.Log(this, "Layout pass finished in {Time}", elapsed);
                 }
             }
+            else if (_processingBringIntoViewRequests)
+            {
+                // A layout pass forced while executing a bring-into-view request is part of the enclosing pass:
+                // run inner passes inline, and let the enclosing pass raise LayoutUpdated once all requests have been processed.
+                for (var pass = 0; pass < MaxPasses; ++pass)
+                {
+                    InnerLayoutPass();
+
+                    if (!RaiseEffectiveViewportChanged())
+                    {
+                        break;
+                    }
+                }
+
+                return;
+            }
 
             _queued = false;
-
-            ProcessBringIntoViewRequests();
 
             LayoutUpdated?.Invoke(this, EventArgs.Empty);
         }
@@ -211,47 +232,47 @@ namespace Avalonia.Layout
             QueueLayoutPass();
         }
 
-        private void ProcessBringIntoViewRequests()
+        /// <summary>
+        /// Attempts to execute each pending bring-into-view request once.
+        /// </summary>
+        /// <returns>
+        /// true if at least one request was executed;
+        /// false if there was nothing to do or no request could make progress.
+        /// </returns>
+        private bool ProcessBringIntoViewRequests()
         {
             if (_processingBringIntoViewRequests || _bringIntoViewRequests is not { Count: > 0 } requests)
-                return;
+                return false;
 
             _processingBringIntoViewRequests = true;
 
             try
             {
-                for (var pass = 0; pass < MaxPasses; ++pass)
+                var executedAny = false;
+                var i = 0;
+
+                while (i < requests.Count)
                 {
-                    var executedAny = false;
-                    var i = 0;
+                    var request = requests[i];
 
-                    while (i < requests.Count)
+                    // The target has been detached, abort.
+                    if (request.Target.GetLayoutRoot() != _owner)
                     {
-                        var request = requests[i];
-
-                        // The target has been detached, abort.
-                        if (request.Target.GetLayoutRoot() != _owner)
-                        {
-                            requests.RemoveAt(i);
-                            continue;
-                        }
-
-                        var executed = request.TryExecute();
-                        executedAny |= executed;
-
-                        // Executing the request may have replaced it with a new one for the same target.
-                        if (executed && i < requests.Count && requests[i] == request)
-                            requests.RemoveAt(i);
-                        else
-                            ++i;
+                        requests.RemoveAt(i);
+                        continue;
                     }
 
-                    if (!executedAny || (_toMeasure.Count == 0 && _toArrange.Count == 0))
-                        break;
+                    var executed = request.TryExecute();
+                    executedAny |= executed;
 
-                    // Executing requests invalidated layout: run another pass.
-                    ExecuteLayoutPass();
+                    // Executing the request may have replaced it with a new one for the same target.
+                    if (executed && i < requests.Count && requests[i] == request)
+                        requests.RemoveAt(i);
+                    else
+                        ++i;
                 }
+
+                return executedAny;
             }
             finally
             {

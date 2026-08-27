@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.UnitTests;
 using Xunit;
@@ -142,6 +143,100 @@ public class LayoutManagerTests_BringIntoView : ScopedTestBase
         Assert.Equal(1, request.Executions);
         Assert.True(control.Measured);
         Assert.True(control.Arranged);
+    }
+
+    [Fact]
+    public void LayoutUpdated_Is_Not_Raised_Until_All_Requests_Have_Been_Processed()
+    {
+        var first = new LayoutTestControl();
+        var second = new LayoutTestControl();
+        var root = new LayoutTestRoot { Child = new StackPanel { Children = { first, second } } };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        var layoutManager = GetLayoutManager(root);
+        var layoutUpdatedRaised = false;
+        var secondExecutedBeforeLayoutUpdated = false;
+        root.LayoutManager.LayoutUpdated += (_, _) => layoutUpdatedRaised = true;
+
+        // The second request can only execute once the layout invalidated by the first one has
+        // been re-run, so it is executed by a following pass of the processing loop.
+        first.Measured = false;
+
+        var secondRequest = new TestRequest(second)
+        {
+            CanExecute = () => first.Measured,
+            OnExecute = () => secondExecutedBeforeLayoutUpdated = !layoutUpdatedRaised,
+        };
+
+        var firstRequest = new TestRequest(first) { OnExecute = first.InvalidateMeasure };
+
+        layoutManager.EnqueueBringIntoView(firstRequest);
+        layoutManager.EnqueueBringIntoView(secondRequest);
+
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(1, secondRequest.Executions);
+        Assert.True(secondExecutedBeforeLayoutUpdated);
+    }
+
+    [Fact]
+    public void LayoutUpdated_Is_Raised_Once_When_Request_Invalidates_Layout()
+    {
+        var control = new LayoutTestControl();
+        var root = new LayoutTestRoot { Child = control };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        var layoutUpdated = 0;
+        root.LayoutManager.LayoutUpdated += (_, _) => ++layoutUpdated;
+
+        var request = new TestRequest(control) { OnExecute = control.InvalidateMeasure };
+        GetLayoutManager(root).EnqueueBringIntoView(request);
+
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(1, request.Executions);
+        Assert.Equal(1, layoutUpdated);
+    }
+
+    [Fact]
+    public void Request_Enqueued_While_Processing_Is_Attempted_By_The_Same_Pass()
+    {
+        var first = new LayoutTestControl();
+        var second = new LayoutTestControl();
+        var root = new LayoutTestRoot { Child = new StackPanel { Children = { first, second } } };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        var layoutManager = GetLayoutManager(root);
+        var canExecuteSecond = false;
+        var secondRequest = new TestRequest(second) { CanExecute = () => canExecuteSecond };
+
+        // Executing a request can enqueue another one (as ControlExtensions.BringIntoViewCore does):
+        // the new request must be attempted by the same pass, and retained if it can't execute yet.
+        var firstRequest = new TestRequest(first)
+        {
+            OnExecute = () =>
+            {
+                layoutManager.EnqueueBringIntoView(secondRequest);
+                first.InvalidateMeasure();
+            }
+        };
+
+        layoutManager.EnqueueBringIntoView(firstRequest);
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(1, firstRequest.Executions);
+
+        // Attempted first during the same pass as the first request, then retried once after a new layout pass.
+        Assert.Equal(2, secondRequest.ExecuteAttempts);
+        Assert.Equal(0, secondRequest.Executions);
+
+        // The second request couldn't execute despite having been through an extra layout pass.
+        // We can't retry forever (nothing has changed). The request will be retried again on the next "natural" pass.
+        canExecuteSecond = true;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(3, secondRequest.ExecuteAttempts);
+        Assert.Equal(1, secondRequest.Executions);
     }
 
     private static LayoutManager GetLayoutManager(TestRoot root)
