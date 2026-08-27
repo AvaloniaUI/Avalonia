@@ -67,8 +67,34 @@ namespace Avalonia.Media.TextFormatting
 
                 text = text.Slice(shapeableRun.Length);
 
-                previousProperties = shapeableRun.Properties;
+                // Whitespace says nothing about which font the text around it wants, and it belongs to
+                // the default typeface whenever that covers it - so a run of pure whitespace must not
+                // become the anti-thrashing bias for what follows. Otherwise the words on either side
+                // of a space each resolve their fallback from scratch and can land on different fonts.
+                if (!IsWhiteSpaceOnly(shapeableRun.Text.Span))
+                {
+                    previousProperties = shapeableRun.Properties;
+                }
             }
+        }
+
+        /// <summary>
+        /// Returns whether every codepoint in <paramref name="text"/> is whitespace. Returns on the
+        /// first codepoint that isn't, so a run of text costs a single lookup.
+        /// </summary>
+        private static bool IsWhiteSpaceOnly(ReadOnlySpan<char> text)
+        {
+            var codepoints = new CodepointEnumerator(text);
+
+            while (codepoints.MoveNext(out var codepoint))
+            {
+                if (!codepoint.IsWhiteSpace)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -149,18 +175,19 @@ namespace Avalonia.Media.TextFormatting
                 GlyphTypeface? fallbackGlyphTypeface = null;
                 var fallbackResolved = false;
 
-                // A primary that cannot shape this tier's script is not a valid "return target": pass
-                // null so the return-to-primary check doesn't hand clusters back to it, which would
-                // otherwise block a shaping-capable fallback that merely shares the primary's cmap.
+                // A primary that cannot shape this tier's script is not a valid "return target" for
+                // text: handing clusters back to it would block a shaping-capable fallback that merely
+                // shares the primary's cmap. It still reclaims the spacing whitespace between the
+                // words, which needs no shaping - see TryGetShapeableLength.
                 var defaultCanShape = !requireShapingCapability || defaultGlyphTypeface.CanShapeScript(firstScript);
-                var primaryForReturn = defaultCanShape ? defaultGlyphTypeface : null;
 
                 for (var pass = 0; pass < 2; pass++)
                 {
                     var requireFullCluster = pass == 0;
 
                     if (defaultCanShape &&
-                        TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, requireFullCluster, out count))
+                        TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, defaultCanShapeScript: false,
+                            requireFullCluster, out count))
                     {
                         // Primary font: the properties already carry this typeface, so reuse them
                         // directly. This avoids a needless copy and preserves a custom
@@ -170,7 +197,8 @@ namespace Avalonia.Media.TextFormatting
 
                     if (allowPreviousTypeface && previousGlyphTypeface is not null &&
                         (!requireShapingCapability || previousGlyphTypeface.CanShapeScript(firstScript)) &&
-                        TryGetShapeableLength(textSpan, previousGlyphTypeface, primaryForReturn, requireFullCluster, out count))
+                        TryGetShapeableLength(textSpan, previousGlyphTypeface, defaultGlyphTypeface, defaultCanShape,
+                            requireFullCluster, out count))
                     {
                         return new UnshapedTextRun(text.Slice(0, count),
                             defaultProperties.WithTypeface(previousTypeface!.Value), biDiLevel);
@@ -200,7 +228,8 @@ namespace Avalonia.Media.TextFormatting
                     }
 
                     if (fallbackGlyphTypeface is not null &&
-                        TryGetShapeableLength(textSpan, fallbackGlyphTypeface, primaryForReturn, requireFullCluster, out count))
+                        TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, defaultCanShape,
+                            requireFullCluster, out count))
                     {
                         return new UnshapedTextRun(text.Slice(0, count),
                             defaultProperties.WithTypeface(fallbackTypeface), biDiLevel);
@@ -249,7 +278,12 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="text">The characters to shape.</param>
         /// <param name="glyphTypeface">The typeface that is used to find matching characters.</param>
-        /// <param name="defaultGlyphTypeface">The default typeface.</param>
+        /// <param name="defaultGlyphTypeface">The default typeface, or <c>null</c> when there is none to
+        /// return to (the probe for the default typeface itself).</param>
+        /// <param name="defaultCanShapeScript">
+        /// Whether the default typeface can shape this run's script. When <c>false</c> it only reclaims
+        /// spacing whitespace, which needs no shaping.
+        /// </param>
         /// <param name="requireFullCluster">
         /// When <c>true</c>, a grapheme cluster only counts as supported when the typeface has a glyph
         /// for every scalar it contains (base plus combining marks); when <c>false</c>, only the base
@@ -261,6 +295,7 @@ namespace Avalonia.Media.TextFormatting
             ReadOnlySpan<char> text,
             GlyphTypeface glyphTypeface,
             GlyphTypeface? defaultGlyphTypeface,
+            bool defaultCanShapeScript,
             bool requireFullCluster,
             out int length)
         {
@@ -287,16 +322,23 @@ namespace Avalonia.Media.TextFormatting
 
                 var clusterText = text.Slice(currentGrapheme.Offset, currentGrapheme.Length);
 
-                if (!currentCodepoint.IsWhiteSpace
-                    && defaultGlyphTypeface != null
+                // A fallback run ends where the default typeface regains coverage, spacing whitespace
+                // included - practically every font maps U+0020, so exempting it would let the run
+                // shape the following space with the fallback's own advance. A default typeface that
+                // cannot shape this script still reclaims that whitespace, which carries no shaping.
+                // Only Zs qualifies: control and format codepoints (bidi controls, prepended number
+                // signs) keep their cluster with the probed font.
+                if (defaultGlyphTypeface != null
+                    && (defaultCanShapeScript || currentCodepoint.GeneralCategory == GeneralCategory.SpaceSeparator)
                     && ClusterIsCovered(clusterText, currentCodepoint, defaultGlyphTypeface, requireFullCluster))
                 {
                     break;
                 }
 
-                //Stop at the first cluster this typeface can't render
-                if (!currentCodepoint.IsBreakChar &&
-                    currentCodepoint.GeneralCategory != GeneralCategory.Control &&
+                //Stop at the first cluster this typeface can't render. A cluster that only holds a
+                //default ignorable (a stray variation selector, say) renders nothing whichever font
+                //it lands on, so it never ends the run.
+                if (NeedsGlyph(currentCodepoint) &&
                     !ClusterIsCovered(clusterText, currentCodepoint, glyphTypeface, requireFullCluster))
                 {
                     break;
@@ -325,12 +367,24 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Determines whether the codepoint is one a font is expected to provide a glyph for. Break
+        /// chars, control codepoints and default ignorables (variation selectors, joiners, ...) never
+        /// render - demanding a glyph for those would reject fonts that cover the cluster's actual
+        /// content. Format codepoints are not excluded wholesale: the invisible ones are all default
+        /// ignorable, while the rest (prepended concatenation marks like U+0600, interlinear
+        /// annotation chars) are visible and do need a glyph.
+        /// </summary>
+        private static bool NeedsGlyph(Codepoint codepoint)
+            => !codepoint.IsBreakChar
+               && codepoint.GeneralCategory != GeneralCategory.Control
+               && !codepoint.IsDefaultIgnorable;
+
+        /// <summary>
         /// Determines whether <paramref name="glyphTypeface"/> can render the first grapheme cluster in
         /// <paramref name="clusterText"/>. For a single-scalar cluster, or when
         /// <paramref name="requireFullCluster"/> is <c>false</c>, only the base scalar is tested.
-        /// Otherwise every scalar that needs a glyph (excluding break chars and control/format
-        /// codepoints) must be present, so a base+mark cluster is only covered by a font that has the
-        /// marks too.
+        /// Otherwise every scalar that needs a glyph must be present, so a base+mark cluster is only
+        /// covered by a font that has the marks too.
         /// </summary>
         private static bool ClusterIsCovered(ReadOnlySpan<char> clusterText, Codepoint firstCodepoint,
             GlyphTypeface glyphTypeface, bool requireFullCluster)
@@ -346,7 +400,7 @@ namespace Avalonia.Media.TextFormatting
 
             while (codepoints.MoveNext(out var codepoint))
             {
-                if (codepoint.IsBreakChar || codepoint.GeneralCategory is GeneralCategory.Control or GeneralCategory.Format)
+                if (!NeedsGlyph(codepoint))
                 {
                     continue;
                 }
@@ -380,7 +434,7 @@ namespace Avalonia.Media.TextFormatting
 
             while (codepoints.MoveNext(out var codepoint))
             {
-                if (codepoint.IsBreakChar || codepoint.GeneralCategory is GeneralCategory.Control or GeneralCategory.Format)
+                if (!NeedsGlyph(codepoint))
                 {
                     continue;
                 }
