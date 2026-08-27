@@ -89,7 +89,7 @@ namespace Avalonia.PropertyStore
             IValueEntry entry)
         {
             var value = GetValue(entry);
-            SetLocalValueAndRaise(owner, property, value);
+            SetLocalValueAndRaise(owner, (StyledProperty<T>)property, value!);
         }
 
         public void SetCurrentValueAndRaise(
