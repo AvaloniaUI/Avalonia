@@ -105,6 +105,33 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return null;
         }
 
+        /// <summary>
+        /// Emits a delegate which invokes a property accessor, or a null reference if the property
+        /// has no such accessor.
+        /// </summary>
+        /// <param name="context">The emit context.</param>
+        /// <param name="emitter">The emitter to write to.</param>
+        /// <param name="method">The accessor to wrap, or null if the property has no accessor.</param>
+        /// <param name="del">The delegate type to construct.</param>
+        static void EmitFunc(
+            XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
+            IXamlILEmitter emitter,
+            IXamlMethod? method,
+            IXamlType del)
+        {
+            if (method == null)
+                emitter.Ldnull();
+            else
+            {
+                emitter
+                    .Ldnull()
+                    .Ldftn(method)
+                    .Newobj(del.Constructors.First(c =>
+                        c.Parameters.Count == 2 &&
+                        c.Parameters[0].Equals(context.Configuration.WellKnownTypes.Object)));
+            }
+        }
+
         public IXamlType Emit(
             XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
             IXamlILEmitter codeGen,
@@ -205,23 +232,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     .MarkLabel(cacheMiss)
                     .Ldstr(property.Name);
 
-                void EmitFunc(IXamlILEmitter emitter, IXamlMethod? method, IXamlType del)
-                {
-                    if (method == null)
-                        emitter.Ldnull();
-                    else
-                    {
-                        emitter
-                            .Ldnull()
-                            .Ldftn(method)
-                            .Newobj(del.Constructors.First(c =>
-                                c.Parameters.Count == 2 &&
-                                c.Parameters[0].Equals(context.Configuration.WellKnownTypes.Object)));
-                    }
-                }
-
-                EmitFunc(get.Generator, getter, ctor.Parameters[1]);
-                EmitFunc(get.Generator, setter, ctor.Parameters[2]);
+                EmitFunc(context, get.Generator, getter, ctor.Parameters[1]);
+                EmitFunc(context, get.Generator, setter, ctor.Parameters[2]);
                 get.Generator
                     .Ldtype(property.PropertyType)
                     .Newobj(ctor)
@@ -305,23 +317,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     .MarkLabel(cacheMiss)
                     .Ldstr(property.Name);
 
-                void EmitFunc(IXamlILEmitter emitter, IXamlMethod? method, IXamlType del)
-                {
-                    if (method == null)
-                        emitter.Ldnull();
-                    else
-                    {
-                        emitter
-                            .Ldnull()
-                            .Ldftn(method)
-                            .Newobj(del.Constructors.First(c =>
-                                c.Parameters.Count == 2 &&
-                                c.Parameters[0].Equals(context.Configuration.WellKnownTypes.Object)));
-                    }
-                }
-
-                EmitFunc(get.Generator, getter, funcType);
-                EmitFunc(get.Generator, setter, actionType);
+                EmitFunc(context, get.Generator, getter, funcType);
+                EmitFunc(context, get.Generator, setter, actionType);
                 get.Generator
                     .Newobj(ctor)
                     .Stsfld(field)
