@@ -78,7 +78,7 @@ namespace Avalonia.Media
         /// last occurrence wins.
         /// </summary>
         /// <exception cref="ArgumentNullException"><paramref name="variations"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">A value is <c>NaN</c> or infinite.</exception>
+        /// <exception cref="ArgumentException">A value is <c>NaN</c>.</exception>
         public FontVariationSettings(IEnumerable<FontVariation> variations)
         {
             if (variations is null)
@@ -90,10 +90,12 @@ namespace Avalonia.Media
 
             foreach (var variation in variations)
             {
-                if (double.IsNaN(variation.Value) || double.IsInfinity(variation.Value))
+                // Infinite values are usable — they clamp to the axis range like any other
+                // out-of-range value when the settings are applied. NaN has no such meaning.
+                if (double.IsNaN(variation.Value))
                 {
                     throw new ArgumentException(
-                        $"Value for axis '{variation.Tag}' must be finite; was {variation.Value}.",
+                        $"Value for axis '{variation.Tag}' must not be NaN.",
                         nameof(variations));
                 }
 
@@ -150,8 +152,9 @@ namespace Avalonia.Media
         /// to the last value.
         /// </summary>
         /// <exception cref="FormatException">A pair is not <c>tag=value</c>, a tag is not
-        /// a valid four-character OpenType tag, or a value is not a finite invariant
-        /// number.</exception>
+        /// a valid four-character OpenType tag, or a value is not an invariant number
+        /// (<c>NaN</c> is rejected; infinite values are accepted and clamp to the axis
+        /// range when applied).</exception>
         public static FontVariationSettings Parse(string s)
         {
             if (s is null)
@@ -192,8 +195,13 @@ namespace Avalonia.Media
                         $"Invalid font variation axis tag '{tagText.ToString()}'.");
                 }
 
-                if (!double.TryParse(valueText, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ||
-                    double.IsNaN(value) || double.IsInfinity(value))
+                // The value text is already trimmed, so no whitespace styles — NumberStyles.Float
+                // would silently re-allow leading/trailing whitespace inside the number itself.
+                const NumberStyles valueStyles =
+                    NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent;
+
+                if (!double.TryParse(valueText, valueStyles, CultureInfo.InvariantCulture, out var value) ||
+                    double.IsNaN(value))
                 {
                     throw new FormatException(
                         $"Invalid font variation value '{valueText.ToString()}' for axis '{tagText.ToString()}'.");

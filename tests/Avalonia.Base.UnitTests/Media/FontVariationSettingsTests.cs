@@ -102,13 +102,31 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void Constructor_Rejects_Non_Finite_Values()
+        public void Constructor_Rejects_NaN_And_Null()
         {
             Assert.Throws<ArgumentException>(() =>
                 new FontVariationSettings(new[] { new FontVariation(s_wght, double.NaN) }));
-            Assert.Throws<ArgumentException>(() =>
-                new FontVariationSettings(new[] { new FontVariation(s_wght, double.PositiveInfinity) }));
             Assert.Throws<ArgumentNullException>(() => new FontVariationSettings(null!));
+        }
+
+        [Fact]
+        public void Infinite_Values_Are_Accepted_And_Round_Trip()
+        {
+            // Infinities clamp to the axis range when applied, like any out-of-range value.
+            var settings = new FontVariationSettings(new[]
+            {
+                new FontVariation(s_wght, double.PositiveInfinity),
+                new FontVariation(s_opsz, double.NegativeInfinity),
+            });
+
+            Assert.True(settings.TryGetValue(s_wght, out var wght));
+            Assert.Equal(double.PositiveInfinity, wght);
+
+            var roundTripped = FontVariationSettings.Parse(settings.ToString());
+
+            Assert.Equal(settings, roundTripped);
+            Assert.True(roundTripped.TryGetValue(s_opsz, out var opsz));
+            Assert.Equal(double.NegativeInfinity, opsz);
         }
 
         [Fact]
