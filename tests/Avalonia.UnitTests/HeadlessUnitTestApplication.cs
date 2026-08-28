@@ -1,5 +1,4 @@
 using System;
-using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -8,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Themes.Simple;
 using Avalonia.Threading;
+using Xunit;
 
 namespace Avalonia.UnitTests;
 
@@ -28,7 +28,7 @@ public class HeadlessUnitTestApplication : Application
         Styles.Add(new SimpleTheme());
     }
 
-    public static IDisposable Start(AvaloniaHeadlessPlatformOptions? options = null)
+    public static Scope Start(AvaloniaHeadlessPlatformOptions? options = null)
     {
         var scope = AvaloniaLocator.EnterScope();
         var oldContext = SynchronizationContext.Current;
@@ -51,7 +51,19 @@ public class HeadlessUnitTestApplication : Application
             throw;
         }
 
-        return Disposable.Create(() =>
+        return new Scope(scope, oldContext);
+    }
+
+    public sealed class Scope(IDisposable locatorScope, SynchronizationContext? oldContext) : IDisposable
+    {
+        /// <summary>
+        /// Runs pending dispatcher jobs, tied to the test's cancellation token. Headless top-levels
+        /// post activation, resizes and rendering, so tests have to let those settle between acts.
+        /// </summary>
+        public void RunJobs(DispatcherPriority? priority = null) =>
+            Dispatcher.UIThread.RunJobs(priority, TestContext.Current.CancellationToken);
+
+        public void Dispose()
         {
             if (Dispatcher.UIThread.CheckAccess())
             {
@@ -63,9 +75,9 @@ public class HeadlessUnitTestApplication : Application
             (AvaloniaLocator.Current.GetService<IInputManager>() as IDisposable)?.Dispose();
 
             Dispatcher.ResetForUnitTests();
-            scope.Dispose();
+            locatorScope.Dispose();
             Dispatcher.ResetBeforeUnitTests();
             SynchronizationContext.SetSynchronizationContext(oldContext);
-        });
+        }
     }
 }
