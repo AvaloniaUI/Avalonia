@@ -17,12 +17,11 @@ namespace Avalonia.Input
     [PrivateApi]
     public class PenDevice : IPenDevice, IDisposable
     {
-        private readonly Dictionary<long, Pointer> _pointers = new();
+        private readonly Dictionary<long, PointerState> _pointers = new();
         private readonly bool _releasePointerOnPenUp;
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
-        private MouseButton _lastMouseDownButton;
 
         private bool _disposed;
 
@@ -41,15 +40,16 @@ namespace Avalonia.Input
         {
             e = e ?? throw new ArgumentNullException(nameof(e));
 
-            if (!_pointers.TryGetValue(e.RawPointerId, out var pointer))
+            if (!_pointers.TryGetValue(e.RawPointerId, out var state))
             {
                 if (e.Type == RawPointerEventType.LeftButtonUp
                     || e.Type == RawPointerEventType.TouchEnd)
                     return;
 
-                _pointers[e.RawPointerId] = pointer = new Pointer(Pointer.GetNextFreeId(),
-                    PointerType.Pen, _pointers.Count == 0);
+                _pointers[e.RawPointerId] = state = new PointerState();
             }
+
+            var pointer = state.Pointer;
             
             var props = new PointerPointProperties(e.InputModifiers, e.Type.ToUpdateKind(),
                 e.Point.Twist, e.Point.Pressure, e.Point.XTilt, e.Point.YTilt, e.Point.ContactRect);
@@ -71,7 +71,7 @@ namespace Avalonia.Input
                     case RawPointerEventType.MiddleButtonDown:
                     case RawPointerEventType.XButton1Down:
                     case RawPointerEventType.XButton2Down:
-                        e.Handled = PenDown(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor, e.PlatformInputEventCookie);
+                        e.Handled = PenDown(state, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor, e.PlatformInputEventCookie);
                         break;
                     case RawPointerEventType.LeftButtonUp:
                     case RawPointerEventType.RightButtonUp:
@@ -82,7 +82,7 @@ namespace Avalonia.Input
                         {
                             shouldReleasePointer = true;
                         }
-                        e.Handled = PenUp(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
+                        e.Handled = PenUp(state, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
                         break;
                     case RawPointerEventType.Move:
                         e.Handled = PenMove(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor, e.IntermediatePoints);
@@ -99,10 +99,11 @@ namespace Avalonia.Input
             }
         }
 
-        private bool PenDown(Pointer pointer, ulong timestamp,
+        private bool PenDown(PointerState state, ulong timestamp,
             IInputRoot root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers, IInputElement? hitTest, object? platformInputEventCookie)
         {
+            var pointer = state.Pointer;
             var source = pointer.Captured ?? hitTest;
 
             if (source != null)
@@ -125,7 +126,7 @@ namespace Avalonia.Input
                         .Inflate(new Thickness(doubleClickSize.Width / 2, doubleClickSize.Height / 2));
                 }
 
-                _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
+                state.LastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
                 var e = new PointerPressedEventArgs(source, pointer, root.RootElement, p, timestamp, properties, inputModifiers, _clickCount, platformInputEventCookie);
                 source.RaiseEvent(e);
                 return e.Handled;
@@ -156,16 +157,17 @@ namespace Avalonia.Input
             return false;
         }
 
-        private bool PenUp(Pointer pointer, ulong timestamp,
+        private bool PenUp(PointerState state, ulong timestamp,
             IInputRoot root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers, IInputElement? hitTest)
         {
+            var pointer = state.Pointer;
             var source = pointer.CapturedGestureRecognizer?.Target ?? pointer.Captured ?? hitTest;
             
             if (source is not null)
             {
                 var e = new PointerReleasedEventArgs(source, pointer, root.RootElement, p, timestamp, properties, inputModifiers,
-                    _lastMouseDownButton);
+                    state.LastMouseDownButton);
 
                 try
                 {
@@ -177,7 +179,7 @@ namespace Avalonia.Input
                 finally
                 {
                     pointer.CaptureLost(CaptureSource.Implicit);
-                    _lastMouseDownButton = default;
+                    state.LastMouseDownButton = default;
                 }
 
                 return e.Handled;
@@ -194,14 +196,25 @@ namespace Avalonia.Input
             _pointers.Clear();
             _disposed = true;
             foreach (var p in values)
-                p.Dispose();
+                p.Pointer.Dispose();
         }
 
         public IPointer? TryGetPointer(RawPointerEventArgs ev)
         {
-            return _pointers.TryGetValue(ev.RawPointerId, out var pointer)
-                ? pointer
+            return _pointers.TryGetValue(ev.RawPointerId, out var state)
+                ? state.Pointer
                 : null;
+        }
+
+        private sealed class PointerState
+        {
+            public PointerState()
+            {
+                Pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Pen, true);
+            }
+
+            public Pointer Pointer { get; }
+            public MouseButton LastMouseDownButton { get; set; }
         }
     }
 }
