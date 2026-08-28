@@ -7,6 +7,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
@@ -135,8 +136,18 @@ namespace Avalonia.Controls
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
-                if (clipboard != null)
+                if (clipboard is null)
+                    return;
+
+                try
+                {
                     await clipboard.SetTextAsync(text);
+                }
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                }
             }
         }
 
@@ -450,10 +461,6 @@ namespace Avalonia.Controls
                 var padding = Padding;
 
                 var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
-
-                point = new Point(
-                    MathUtilities.Clamp(point.X, 0, Math.Max(TextLayout.WidthIncludingTrailingWhitespace, 0)),
-                    MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Height, 0)));
 
                 var hit = TextLayout.HitTestPoint(point);
                 var textPosition = hit.TextPosition;
