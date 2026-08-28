@@ -60,7 +60,17 @@ namespace Avalonia.Media.Fonts.Tables.Name
 
             var span = _stringStorage.Span.Slice(Offset, Length);
 
-            return Encoding.GetString(span);
+            // The encodings NameTable selects substitute U+FFFD for malformed bytes, but guard
+            // against an exception-throwing decoder fallback so a corrupt record degrades to an
+            // empty value instead of denying the font.
+            try
+            {
+                return Encoding.GetString(span);
+            }
+            catch (ArgumentException)
+            {
+                return string.Empty;
+            }
         }
     }
 }
