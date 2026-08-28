@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
@@ -22,20 +23,11 @@ namespace Avalonia.Win32;
 /// Windows Explorer uses FileGroupDescriptorW plus indexed FileContents entries when a file has no
 /// filesystem path yet, for example while dragging an entry from a ZIP folder.
 /// </remarks>
-internal static partial class OleVirtualFileData
+internal static class OleVirtualFileData
 {
-    // FILEGROUPDESCRIPTORW is a UINT count followed by packed FILEDESCRIPTORW structures.
-    // These sizes and offsets match the Windows SDK shlobj_core.h definitions.
-    private const int FileDescriptorSize = 592;
-    private const int FileNameOffset = 72;
-    private const int FileNameCharacterCount = 260;
-    private const int FileSizeHighOffset = 64;
-    private const int FileSizeLowOffset = 68;
-    private const uint FileDescriptorHasFileSize = 0x00000040;
-
-    private static readonly Guid s_iidIStream = new("0000000C-0000-0000-C000-000000000046");
+    private static readonly Guid s_iidIStream = MicroComRuntime.GetGuidFor(typeof(Win32Com.IStream));
     private static readonly Guid s_iidIDataObjectAsyncCapability =
-        new("3D8B0590-F691-11D2-8EA9-006097DF5BD4");
+        MicroComRuntime.GetGuidFor(typeof(Win32Com.IDataObjectAsyncCapability));
 
     internal static readonly DataFormat<byte[]> FileGroupDescriptorFormat =
         DataFormat.CreateBytesPlatformFormat("FileGroupDescriptorW");
@@ -89,8 +81,8 @@ internal static partial class OleVirtualFileData
                 var result = dataObject.GetData(&contentFormat, &contentMedium);
                 if (result != (uint)UnmanagedMethods.HRESULT.S_OK)
                 {
-                    // Some IDataObject implementations reject a combined TYMED mask even though they
-                    // provide FileContents as HGLOBAL, so retry with that medium explicitly.
+                    // Some IDataObject implementations expose FileContents only as HGLOBAL, so retry
+                    // with that medium explicitly when the IStream request fails.
                     contentFormat.tymed = TYMED.TYMED_HGLOBAL;
                     contentMedium = default;
                     result = dataObject.GetData(&contentFormat, &contentMedium);
@@ -109,17 +101,19 @@ internal static partial class OleVirtualFileData
                         // FileContents is obtained on the OLE/UI thread, while consumers commonly copy it
                         // on a worker thread. Marshal IStream explicitly to preserve COM apartment affinity.
                         var iid = s_iidIStream;
-                        var marshalResult = CoMarshalInterThreadInterfaceInStream(
+                        var marshalResult = UnmanagedMethods.CoMarshalInterThreadInterfaceInStream(
                             ref iid, contentMedium.unionmember, out var marshaledStream);
                         if (marshalResult < 0)
                             Marshal.ThrowExceptionForHR(marshalResult);
 
-                        files.Add(new VirtualStorageFile(descriptors[index], marshaledStream, operation));
+                        files.Add(new VirtualStorageFile(
+                            descriptors[index], new MarshaledInterface(marshaledStream), operation));
                     }
                     else if (contentMedium.tymed == TYMED.TYMED_HGLOBAL && contentMedium.unionmember != IntPtr.Zero)
                     {
                         files.Add(new VirtualStorageFile(
-                            descriptors[index], ReadHGlobal(contentMedium.unionmember), operation));
+                            descriptors[index], OleDataObjectHelper.ReadBytesFromHGlobal(contentMedium.unionmember),
+                            operation));
                     }
                     else
                     {
@@ -158,24 +152,29 @@ internal static partial class OleVirtualFileData
                 return [];
 
             var count = *(uint*)pointer;
-            if (count > int.MaxValue || sizeof(uint) + (long)count * FileDescriptorSize > availableSize)
+            if (count > int.MaxValue ||
+                sizeof(uint) + (long)count * sizeof(UnmanagedMethods.FILEDESCRIPTORW) > availableSize)
                 return [];
 
             var descriptors = new List<Descriptor>((int)count);
-            for (var index = 0; index < count; index++)
+            var nativeDescriptors =
+                (UnmanagedMethods.FILEDESCRIPTORW*)((byte*)pointer + sizeof(uint));
+
+            for (var index = 0; index < (int)count; index++)
             {
-                var descriptor = pointer + sizeof(uint) + index * FileDescriptorSize;
-                var flags = *(uint*)descriptor;
-                var name = Marshal.PtrToStringUni(descriptor + FileNameOffset, FileNameCharacterCount)?.TrimEnd('\0')
-                    ?? string.Empty;
+                var descriptor = nativeDescriptors[index];
+                var nameLength = 0;
+                while (nameLength < UnmanagedMethods.FILEDESCRIPTORW.FileNameLength &&
+                    descriptor.cFileName[nameLength] != '\0')
+                {
+                    nameLength++;
+                }
+
+                var name = new string(descriptor.cFileName, 0, nameLength);
                 ulong? size = null;
 
-                if ((flags & FileDescriptorHasFileSize) != 0)
-                {
-                    var high = *(uint*)(descriptor + FileSizeHighOffset);
-                    var low = *(uint*)(descriptor + FileSizeLowOffset);
-                    size = ((ulong)high << 32) | low;
-                }
+                if ((descriptor.dwFlags & UnmanagedMethods.FILEDESCRIPTORW.FD_FILESIZE) != 0)
+                    size = ((ulong)descriptor.nFileSizeHigh << 32) | descriptor.nFileSizeLow;
 
                 descriptors.Add(new Descriptor(name, size));
             }
@@ -188,28 +187,9 @@ internal static partial class OleVirtualFileData
         }
     }
 
-    private static byte[] ReadHGlobal(IntPtr hGlobal)
-    {
-        var pointer = UnmanagedMethods.GlobalLock(hGlobal);
-        if (pointer == IntPtr.Zero)
-            throw new IOException("The virtual file HGLOBAL could not be locked.");
-
-        try
-        {
-            var size = checked((int)UnmanagedMethods.GlobalSize(hGlobal).ToInt64());
-            var contents = new byte[size];
-            Marshal.Copy(pointer, contents, 0, size);
-            return contents;
-        }
-        finally
-        {
-            UnmanagedMethods.GlobalUnlock(hGlobal);
-        }
-    }
-
     internal readonly record struct Descriptor(string Name, ulong? Size);
 
-    private static unsafe IntPtr BeginAsyncOperation(Win32Com.IDataObject dataObject)
+    private static unsafe MarshaledInterface? BeginAsyncOperation(Win32Com.IDataObject dataObject)
     {
         Win32Com.IDataObjectAsyncCapability? capability = null;
         var operationStarted = false;
@@ -224,12 +204,12 @@ internal static partial class OleVirtualFileData
             // EndOperation can run when a consumer disposes the last file on a worker thread. Marshal
             // the capability now so that call uses a proxy for the completing thread's COM apartment.
             var iid = s_iidIDataObjectAsyncCapability;
-            var result = CoMarshalInterThreadInterfaceInStream(
+            var result = UnmanagedMethods.CoMarshalInterThreadInterfaceInStream(
                 ref iid, capability.GetNativeIntPtr(), out var marshaledCapability);
             if (result < 0)
                 Marshal.ThrowExceptionForHR(result);
 
-            return marshaledCapability;
+            return new MarshaledInterface(marshaledCapability);
         }
         catch (COMException)
         {
@@ -244,7 +224,7 @@ internal static partial class OleVirtualFileData
                 }
             }
 
-            return IntPtr.Zero;
+            return null;
         }
         finally
         {
@@ -252,10 +232,10 @@ internal static partial class OleVirtualFileData
         }
     }
 
-    private sealed class Operation(IntPtr marshaledCapability, int remainingCount)
+    private sealed class Operation(MarshaledInterface? marshaledCapability, int remainingCount)
     {
         private readonly int _totalCount = remainingCount;
-        private IntPtr _marshaledCapability = marshaledCapability;
+        private MarshaledInterface? _marshaledCapability = marshaledCapability;
         private int _remainingCount = remainingCount;
 
         public unsafe void Complete()
@@ -263,14 +243,15 @@ internal static partial class OleVirtualFileData
             if (Interlocked.Decrement(ref _remainingCount) != 0)
                 return;
 
-            var marshaled = Interlocked.Exchange(ref _marshaledCapability, IntPtr.Zero);
+            var marshaled = Interlocked.Exchange(ref _marshaledCapability, null)?.Take() ?? IntPtr.Zero;
             if (marshaled == IntPtr.Zero)
                 return;
 
             try
             {
                 var iid = s_iidIDataObjectAsyncCapability;
-                var result = CoGetInterfaceAndReleaseStream(marshaled, ref iid, out var capabilityPointer);
+                var result = UnmanagedMethods.CoGetInterfaceAndReleaseStream(
+                    marshaled, ref iid, out var capabilityPointer);
                 if (result < 0)
                     Marshal.ThrowExceptionForHR(result);
 
@@ -296,10 +277,11 @@ internal static partial class OleVirtualFileData
     {
         private readonly byte[]? _contents;
         private readonly Operation _operation;
-        private IntPtr _marshaledStream;
+        private MarshaledInterface? _marshaledStream;
         private int _disposed;
 
-        public VirtualStorageFile(Descriptor descriptor, IntPtr marshaledStream, Operation operation)
+        public VirtualStorageFile(
+            Descriptor descriptor, MarshaledInterface? marshaledStream, Operation operation)
         {
             Name = descriptor.Name;
             Size = descriptor.Size;
@@ -309,7 +291,7 @@ internal static partial class OleVirtualFileData
         }
 
         public VirtualStorageFile(Descriptor descriptor, byte[] contents, Operation operation)
-            : this(descriptor, IntPtr.Zero, operation)
+            : this(descriptor, (MarshaledInterface?)null, operation)
         {
             _contents = contents;
         }
@@ -324,15 +306,17 @@ internal static partial class OleVirtualFileData
             if (_contents is not null)
                 return Task.FromResult<Stream>(new MemoryStream(_contents, writable: false));
 
-            var marshaledStream = Interlocked.Exchange(ref _marshaledStream, IntPtr.Zero);
+            var marshaledStream = Interlocked.Exchange(ref _marshaledStream, null)?.Take() ?? IntPtr.Zero;
             if (marshaledStream == IntPtr.Zero)
                 throw new IOException("The virtual file stream has already been opened or disposed.");
 
             var iid = s_iidIStream;
-            var result = CoGetInterfaceAndReleaseStream(marshaledStream, ref iid, out var stream);
+            var result = UnmanagedMethods.CoGetInterfaceAndReleaseStream(
+                marshaledStream, ref iid, out var streamPointer);
             if (result < 0)
                 Marshal.ThrowExceptionForHR(result);
 
+            var stream = MicroComRuntime.CreateProxyFor<Win32Com.IStream>(streamPointer, true);
             return Task.FromResult<Stream>(new ComReadStream(stream));
         }
 
@@ -350,17 +334,15 @@ internal static partial class OleVirtualFileData
             if (Interlocked.Exchange(ref _disposed, 1) != 0)
                 return;
 
-            var marshaledStream = Interlocked.Exchange(ref _marshaledStream, IntPtr.Zero);
-            if (marshaledStream != IntPtr.Zero)
-                Marshal.Release(marshaledStream);
+            Interlocked.Exchange(ref _marshaledStream, null)?.Dispose();
 
             _operation.Complete();
         }
     }
 
-    private sealed class ComReadStream(IntPtr stream) : Stream
+    private sealed class ComReadStream(Win32Com.IStream stream) : Stream
     {
-        private IntPtr _stream = stream;
+        private Win32Com.IStream? _stream = stream;
 
         public override bool CanRead => true;
         public override bool CanSeek => false;
@@ -376,31 +358,19 @@ internal static partial class OleVirtualFileData
 
         public override unsafe int Read(Span<byte> buffer)
         {
-            ObjectDisposedException.ThrowIf(_stream == IntPtr.Zero, this);
+            var stream = _stream;
+            ObjectDisposedException.ThrowIf(stream is null, this);
 
             if (buffer.IsEmpty)
                 return 0;
 
-            uint bytesRead = 0;
             fixed (byte* pointer = buffer)
-            {
-                // IStream::Read is slot 3 after IUnknown. Calling it directly avoids an RCW, which keeps
-                // this Windows backend compatible with trimming and NativeAOT.
-                var vtable = *(IntPtr**)_stream;
-                var read = (delegate* unmanaged[Stdcall]<IntPtr, byte*, uint, uint*, int>)vtable[3];
-                var result = read(_stream, pointer, (uint)buffer.Length, &bytesRead);
-                if (result < 0)
-                    Marshal.ThrowExceptionForHR(result);
-            }
-
-            return checked((int)bytesRead);
+                return checked((int)stream.Read(pointer, (uint)buffer.Length));
         }
 
         protected override void Dispose(bool disposing)
         {
-            var stream = Interlocked.Exchange(ref _stream, IntPtr.Zero);
-            if (stream != IntPtr.Zero)
-                Marshal.Release(stream);
+            Interlocked.Exchange(ref _stream, null)?.Dispose();
 
             base.Dispose(disposing);
         }
@@ -411,11 +381,40 @@ internal static partial class OleVirtualFileData
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 
-    [LibraryImport("ole32.dll")]
-    private static partial int CoMarshalInterThreadInterfaceInStream(
-        ref Guid riid, IntPtr unknown, out IntPtr stream);
+    private sealed class MarshaledInterface(IntPtr stream) : CriticalFinalizerObject, IDisposable
+    {
+        private IntPtr _stream = stream;
 
-    [LibraryImport("ole32.dll")]
-    private static partial int CoGetInterfaceAndReleaseStream(
-        IntPtr stream, ref Guid riid, out IntPtr unknown);
+        public IntPtr Take()
+        {
+            var result = Interlocked.Exchange(ref _stream, IntPtr.Zero);
+            GC.SuppressFinalize(this);
+            return result;
+        }
+
+        public void Dispose()
+        {
+            Release();
+            GC.SuppressFinalize(this);
+        }
+
+        private void Release()
+        {
+            var result = Interlocked.Exchange(ref _stream, IntPtr.Zero);
+            if (result != IntPtr.Zero)
+                Marshal.Release(result);
+        }
+
+        ~MarshaledInterface()
+        {
+            try
+            {
+                Release();
+            }
+            catch
+            {
+                // A finalizer must not let a COM cleanup failure terminate the process.
+            }
+        }
+    }
 }

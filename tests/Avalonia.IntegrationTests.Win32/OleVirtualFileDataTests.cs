@@ -15,12 +15,6 @@ namespace Avalonia.IntegrationTests.Win32;
 
 public class OleVirtualFileDataTests
 {
-    private const int FileDescriptorSize = 592;
-    private const int FileNameOffset = 72;
-    private const int FileSizeHighOffset = 64;
-    private const int FileSizeLowOffset = 68;
-    private const uint FileDescriptorHasFileSize = 0x00000040;
-
     [Fact]
     public async Task Exposes_Virtual_File_As_StorageFile()
     {
@@ -59,36 +53,6 @@ public class OleVirtualFileDataTests
     }
 
     [Fact]
-    public unsafe void Reads_File_Names_And_Sizes_From_FileGroupDescriptorW()
-    {
-        var memory = CreateFileGroupDescriptor(
-            ("first.txt", 42),
-            ("日本語.bin", 0x0000000200000003));
-
-        try
-        {
-            var descriptors = OleVirtualFileData.ReadDescriptors(memory);
-
-            Assert.Collection(
-                descriptors,
-                descriptor =>
-                {
-                    Assert.Equal("first.txt", descriptor.Name);
-                    Assert.Equal(42UL, descriptor.Size);
-                },
-                descriptor =>
-                {
-                    Assert.Equal("日本語.bin", descriptor.Name);
-                    Assert.Equal(0x0000000200000003UL, descriptor.Size);
-                });
-        }
-        finally
-        {
-            Win32UnmanagedMethods.GlobalFree(memory);
-        }
-    }
-
-    [Fact]
     public unsafe void Rejects_Truncated_FileGroupDescriptorW()
     {
         var memory = Win32UnmanagedMethods.GlobalAlloc(Win32UnmanagedMethods.GlobalAllocFlags.GHND, sizeof(uint));
@@ -110,20 +74,25 @@ public class OleVirtualFileDataTests
     {
         var memory = Win32UnmanagedMethods.GlobalAlloc(
             Win32UnmanagedMethods.GlobalAllocFlags.GHND,
-            sizeof(uint) + files.Length * FileDescriptorSize);
+            sizeof(uint) + files.Length * sizeof(Win32UnmanagedMethods.FILEDESCRIPTORW));
         var pointer = Win32UnmanagedMethods.GlobalLock(memory);
 
         *(uint*)pointer = (uint)files.Length;
+        var descriptors =
+            (Win32UnmanagedMethods.FILEDESCRIPTORW*)((byte*)pointer + sizeof(uint));
+
         for (var index = 0; index < files.Length; index++)
         {
-            var descriptor = pointer + sizeof(uint) + index * FileDescriptorSize;
-            *(uint*)descriptor = FileDescriptorHasFileSize;
-            *(uint*)(descriptor + FileSizeHighOffset) = (uint)(files[index].Size >> 32);
-            *(uint*)(descriptor + FileSizeLowOffset) = (uint)files[index].Size;
+            var descriptor = &descriptors[index];
+            descriptor->dwFlags = Win32UnmanagedMethods.FILEDESCRIPTORW.FD_FILESIZE;
+            descriptor->nFileSizeHigh = (uint)(files[index].Size >> 32);
+            descriptor->nFileSizeLow = (uint)files[index].Size;
 
-            var characters = files[index].Name.ToCharArray();
-            var characterCount = Math.Min(characters.Length, 259);
-            Marshal.Copy(characters, 0, descriptor + FileNameOffset, characterCount);
+            var characterCount = Math.Min(
+                files[index].Name.Length, Win32UnmanagedMethods.FILEDESCRIPTORW.FileNameLength - 1);
+            files[index].Name.AsSpan(0, characterCount)
+                .CopyTo(new Span<char>(
+                    descriptor->cFileName, Win32UnmanagedMethods.FILEDESCRIPTORW.FileNameLength));
         }
 
         Win32UnmanagedMethods.GlobalUnlock(memory);

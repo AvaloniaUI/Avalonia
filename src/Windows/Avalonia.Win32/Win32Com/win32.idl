@@ -290,6 +290,48 @@ interface IDataObjectAsyncCapability : IUnknown
 }
 
 [
+    object,
+    uuid(0C733A30-2A1C-11CE-ADE5-00AA0044773D),
+    pointer_default(unique)
+]
+interface ISequentialStream : IUnknown
+{
+    HRESULT Read([out] void* pv, [in] ULONG cb, [out] ULONG* pcbRead);
+
+    HRESULT Write([in] void* pv, [in] ULONG cb, [out] ULONG* pcbWritten);
+}
+
+[
+    object,
+    uuid(0000000C-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IStream : ISequentialStream
+{
+    HRESULT Seek([in] INT64 dlibMove, [in] DWORD dwOrigin, [out] UINT64* plibNewPosition);
+
+    HRESULT SetSize([in] UINT64 libNewSize);
+
+    HRESULT CopyTo(
+        [in] IStream* pstm,
+        [in] UINT64 cb,
+        [out] UINT64* pcbRead,
+        [out] UINT64* pcbWritten);
+
+    HRESULT Commit([in] DWORD grfCommitFlags);
+
+    HRESULT Revert();
+
+    HRESULT LockRegion([in] UINT64 libOffset, [in] UINT64 cb, [in] DWORD dwLockType);
+
+    HRESULT UnlockRegion([in] UINT64 libOffset, [in] UINT64 cb, [in] DWORD dwLockType);
+
+    HRESULT Stat([out] void* pstatstg, [in] DWORD grfStatFlag);
+
+    HRESULT Clone([out] IStream** ppstm);
+}
+
+[
     local,
     object,
     uuid(00000121-0000-0000-C000-000000000046)

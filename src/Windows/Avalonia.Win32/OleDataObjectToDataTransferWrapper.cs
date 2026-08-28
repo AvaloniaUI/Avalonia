@@ -33,13 +33,21 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
             formats.Add(format);
 
         bool hasSupportedImageFormat = false;
+        bool hasFile = false;
+        bool hasFileGroupDescriptor = false;
+        bool hasFileContents = false;
 
         foreach (var format in formats)
         {
-            if (ClipboardFormatRegistry.ImageFormats.Contains(format)) {
+            if (ClipboardFormatRegistry.ImageFormats.Contains(format))
                 hasSupportedImageFormat = true;
-                break;
-            }
+
+            if (DataFormat.File.Equals(format))
+                hasFile = true;
+            else if (OleVirtualFileData.FileGroupDescriptorFormat.Equals(format))
+                hasFileGroupDescriptor = true;
+            else if (OleVirtualFileData.FileContentsFormat.Equals(format))
+                hasFileContents = true;
         }
 
         if (hasSupportedImageFormat)
@@ -48,9 +56,7 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
         }
 
         // Shell virtual files have descriptors and indexed contents, but no CF_HDROP path.
-        if (formats.Contains(OleVirtualFileData.FileGroupDescriptorFormat) &&
-            formats.Contains(OleVirtualFileData.FileContentsFormat) &&
-            !formats.Contains(DataFormat.File))
+        if (hasFileGroupDescriptor && hasFileContents && !hasFile)
         {
             formats.Add(DataFormat.File);
         }
@@ -100,7 +106,7 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
                     hasFiles = true;
 
                     foreach (var virtualFile in virtualFiles)
-                        items.Add(PlatformDataTransferItem.Create<IStorageItem>(DataFormat.File, virtualFile));
+                        items.Add(PlatformDataTransferItem.Create(DataFormat.File, virtualFile));
                 }
             }
             else
