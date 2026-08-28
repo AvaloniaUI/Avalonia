@@ -475,7 +475,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         [Theory]
         [InlineData("☝🏿", new int[] { 0 })]
-        [InlineData("☝🏿 ab", new int[] { 0, 3, 0, 1 })]
+        [InlineData("☝🏿 ab", new int[] { 0, 0, 1, 2 })]
         [InlineData("ab ☝🏿", new int[] { 0, 1, 2, 0 })]
         public void Should_Create_Valid_Clusters_For_Text(string text, int[] clusters)
         {
@@ -985,9 +985,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textLine = layout.TextLines[0];
 
+                // Runs come in visual order, so TextRuns[0] is the leftmost one - the last word of
+                // this right-to-left line. Its glyph clusters are relative to its own text, so the
+                // run's start has to be added to compare them with a text source index.
                 var firstRun = (ShapedTextRun)textLine.TextRuns[0];
 
-                var firstCluster = firstRun.ShapedBuffer[0].GlyphCluster;
+                var firstCluster = TextTestHelper.GetStartCharIndex(firstRun.Text)
+                                   + firstRun.ShapedBuffer[0].GlyphCluster;
 
                 var characterHit = textLine.GetCharacterHitFromDistance(0);
 
@@ -1059,13 +1063,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                             return rawClusters;
                         }
 
-                        // Clusters can be either run-local or text-source relative depending on split history.
-                        if (rawClusters.Min() < runStart)
-                        {
-                            return rawClusters.Select(cluster => cluster + runStart);
-                        }
+                        // A run's clusters are relative to the text it was shaped from, which is its
+                        // own text for a freshly shaped run but the parent's for a split child. The
+                        // smallest cluster is the run's first character either way, so rebasing on it
+                        // maps both onto text source indices.
+                        var baseCluster = rawClusters.Min();
 
-                        return rawClusters;
+                        return rawClusters.Select(cluster => cluster - baseCluster + runStart);
                     }).ToList();
 
                     var glyphAdvances = shapedRuns.SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphAdvance).ToList();
@@ -1101,8 +1105,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         [InlineData("mgfg🧐df f sdf", "g🧐d", 20, 40)]
         [InlineData("وه. وقد تعرض لانتقادات", "دات", 5, 30)]
         [InlineData("وه. وقد تعرض لانتقادات", "تعرض", 20, 50)]
-        [InlineData(" علمية 😱ومضللة ،", " علمية 😱ومضللة ،", 40, 100)]
-        [InlineData("في عام 2018 ، رفعت ل", "في عام 2018 ، رفعت ل", 100, 120)]
+        // The spaces of an Arabic line are drawn with the primary font rather than the Arabic
+        // fallback, which is wider at this size - hence the bands sit above where they used to.
+        [InlineData(" علمية 😱ومضللة ،", " علمية 😱ومضللة ،", 80, 120)]
+        [InlineData("في عام 2018 ، رفعت ل", "في عام 2018 ، رفعت ل", 120, 150)]
         [Theory]
         public void HitTestTextRange_Range_ValidLength(string text, string textToSelect, double minWidth, double maxWidth)
         {
@@ -1559,6 +1565,53 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     AssertGreaterThan(afterRuns[i].Size.Width, beforeWidths[i], $"Run {i} should be widened");
                 }
+            }
+        }
+
+        [Fact]
+        public void Justify_Distributes_Across_A_Word_Gap_At_A_Run_Boundary()
+        {
+            using (Start())
+            {
+                // The emoji needs a fallback font, so this line's word gaps sit next to a run
+                // boundary. Break opportunities are collected run by run, and the break the
+                // enumerator always reports at the end of the text it is given is discarded as an
+                // artifact - so a real word gap that coincides with a run boundary yields no
+                // opportunity at all and never widens.
+                const string text = "abc \U0001F600 def";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                TextLine Format()
+                    => formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties))!;
+
+                static double Gap(TextLine line, int spaceIndex)
+                    => line.GetDistanceFromCharacterHit(new CharacterHit(spaceIndex + 1))
+                       - line.GetDistanceFromCharacterHit(new CharacterHit(spaceIndex));
+
+                var reference = Format();
+
+                var firstGapBefore = Gap(reference, 3);
+                var secondGapBefore = Gap(reference, 6);
+
+                var textLine = Format();
+
+                // Confirm the line really is multi-run, otherwise the test proves nothing.
+                AssertGreaterThan(textLine.TextRuns.Count, 1, "The emoji should force a fallback run");
+
+                textLine.Justify(new InterWordJustification(textLine.WidthIncludingTrailingWhitespace + 40));
+
+                var firstGap = Gap(textLine, 3);
+                var secondGap = Gap(textLine, 6);
+
+                AssertGreaterThan(firstGap, firstGapBefore, "The first word gap should be widened");
+                AssertGreaterThan(secondGap, secondGapBefore, "The second word gap should be widened");
+
+                // Both gaps are break opportunities, so they take an equal share of the added width.
+                Assert.Equal(firstGap - firstGapBefore, secondGap - secondGapBefore, 3);
             }
         }
 

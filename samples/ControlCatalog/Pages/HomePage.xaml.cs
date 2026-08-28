@@ -2,77 +2,81 @@ using System;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
-using ControlCatalog.ViewModels;
 
-namespace ControlCatalog.Pages
+namespace ControlCatalog.Pages;
+
+public partial class HomePage : ContentPage
 {
-    public partial class HomePage : ContentPage
+    public HomePage()
     {
-        public HomePage()
+        InitializeComponent();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+
+        StartFloatingAnimation(BannerLogo1, 12, 8, TimeSpan.FromSeconds(12));
+        StartFloatingAnimation(BannerLogo2, -14, 8, TimeSpan.FromSeconds(10));
+        StartFloatingAnimation(BannerLogo3, -12, -12, TimeSpan.FromSeconds(14));
+        StartFloatingAnimation(BannerLogo4, 12, -8, TimeSpan.FromSeconds(11));
+    }
+
+    private static void StartFloatingAnimation(Control target, double dx, double dy, TimeSpan duration)
+    {
+        var transform = new TranslateTransform();
+        target.RenderTransform = transform;
+
+        var animation = new Animation
         {
-            InitializeComponent();
-        }
-
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-
-            // Pages hosted in a NavigationPage inherit the navigator as DataContext;
-            // the card grid binds to MainWindowViewModel, so resolve it from MainView.
-            if (DataContext is not MainWindowViewModel)
-                DataContext = this.FindAncestorOfType<MainView>()?.DataContext;
-
-            StartFloatingAnimation(BannerLogo1, 12, 8, TimeSpan.FromSeconds(12));
-            StartFloatingAnimation(BannerLogo2, -14, 8, TimeSpan.FromSeconds(10));
-            StartFloatingAnimation(BannerLogo3, -12, -12, TimeSpan.FromSeconds(14));
-            StartFloatingAnimation(BannerLogo4, 12, -8, TimeSpan.FromSeconds(11));
-        }
-
-        private static void StartFloatingAnimation(Control target, double dx, double dy, TimeSpan duration)
-        {
-            var transform = new TranslateTransform();
-            target.RenderTransform = transform;
-
-            var animation = new Animation
+            Duration = duration,
+            IterationCount = IterationCount.Infinite,
+            Children =
             {
-                Duration = duration,
-                IterationCount = IterationCount.Infinite,
-                Children =
+                new KeyFrame
                 {
-                    new KeyFrame
+                    Cue = new Cue(0d),
+                    Setters =
                     {
-                        Cue = new Cue(0d),
-                        Setters =
-                        {
-                            new Setter(TranslateTransform.XProperty, 0d),
-                            new Setter(TranslateTransform.YProperty, 0d),
-                        }
-                    },
-                    new KeyFrame
+                        new Setter(TranslateTransform.XProperty, 0d),
+                        new Setter(TranslateTransform.YProperty, 0d),
+                    }
+                },
+                new KeyFrame
+                {
+                    Cue = new Cue(0.5d),
+                    Setters =
                     {
-                        Cue = new Cue(0.5d),
-                        Setters =
-                        {
-                            new Setter(TranslateTransform.XProperty, dx),
-                            new Setter(TranslateTransform.YProperty, dy),
-                        }
-                    },
-                    new KeyFrame
+                        new Setter(TranslateTransform.XProperty, dx),
+                        new Setter(TranslateTransform.YProperty, dy),
+                    }
+                },
+                new KeyFrame
+                {
+                    Cue = new Cue(1d),
+                    Setters =
                     {
-                        Cue = new Cue(1d),
-                        Setters =
-                        {
-                            new Setter(TranslateTransform.XProperty, 0d),
-                            new Setter(TranslateTransform.YProperty, 0d),
-                        }
-                    },
-                }
-            };
+                        new Setter(TranslateTransform.XProperty, 0d),
+                        new Setter(TranslateTransform.YProperty, 0d),
+                    }
+                },
+            }
+        };
 
-            _ = animation.RunAsync(target);
-        }
+        _ = animation.RunAsync(target);
+    }
+
+    private void UniformGrid_OnSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        if (sender is not UniformGrid grid)
+            return;
+
+        const int minItemWidth = 248;
+        grid.Columns = Math.Max(
+            1,
+            (int)((e.NewSize.Width + grid.ColumnSpacing) / (minItemWidth + grid.ColumnSpacing)));
     }
 }

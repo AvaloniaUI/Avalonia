@@ -27,7 +27,6 @@ namespace Avalonia.Headless
         private readonly AvaloniaHeadlessPlatformOptions _options;
         private readonly HeadlessWindowImpl? _popupParent;
         private readonly IPopupPositioner? _popupPositioner;
-        private readonly List<HeadlessWindowImpl> _openPopups = new();
         public bool IsPopup { get; }
 
         public HeadlessWindowImpl(AvaloniaHeadlessPlatformOptions options)
@@ -60,7 +59,6 @@ namespace Avalonia.Headless
 
         public void Dispose()
         {
-            _popupParent?._openPopups.Remove(this);
             Closed?.Invoke();
             _lastRenderedFrame?.Dispose();
             _lastRenderedFrame = null;
@@ -101,9 +99,6 @@ namespace Avalonia.Headless
 
         public void Show(bool activate, bool isDialog)
         {
-            if (_popupParent != null && !_popupParent._openPopups.Contains(this))
-                _popupParent._openPopups.Add(this);
-
             if (activate)
             {
                 ZOrder = _nextGlobalZOrder++;
@@ -113,7 +108,6 @@ namespace Avalonia.Headless
 
         public void Hide()
         {
-            _popupParent?._openPopups.Remove(this);
             Dispatcher.UIThread.Post(() => Deactivated?.Invoke(), DispatcherPriority.Input);
         }
 
@@ -402,21 +396,6 @@ namespace Avalonia.Headless
         }
 
         public IPopupImpl? CreatePopup() => _options.OverlayPopups ? null : new HeadlessWindowImpl(this);
-
-        public IReadOnlyList<TopLevel> GetOpenPopups()
-        {
-            if (_openPopups.Count == 0)
-                return Array.Empty<TopLevel>();
-
-            var result = new List<TopLevel>(_openPopups.Count);
-            foreach (var popup in _openPopups)
-            {
-                if (popup.InputRoot is PresentationSource { FocusRoot: TopLevel topLevel })
-                    result.Add(topLevel);
-            }
-
-            return result;
-        }
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
