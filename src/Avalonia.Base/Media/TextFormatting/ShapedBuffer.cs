@@ -731,20 +731,27 @@ namespace Avalonia.Media.TextFormatting
                 splitGlyphIndex = ~foundIndex;
             }
 
-            // Visual leading = glyphs [0, splitGlyphIndex) → logically text[textLength..]  (our "second")
-            // Visual trailing = glyphs [splitGlyphIndex, end) → logically text[0..textLength] (our "first")
+            // Visual leading = glyphs [0, splitGlyphIndex) → logically the trailing text (our "second")
+            // Visual trailing = glyphs [splitGlyphIndex, end) → logically the leading text (our "first")
             var secondGlyphs = _glyphInfos.Slice(sliceStart, splitGlyphIndex);
             var firstGlyphs = _glyphInfos.Slice(sliceStart + splitGlyphIndex, glyphInfosLength - splitGlyphIndex);
 
-            var firstText = Text.Slice(0, textLength);
-            var secondText = Text.Slice(textLength);
+            // The glyph boundary sits past the requested offset when it falls inside a cluster,
+            // because the whole cluster stays with "first". The text boundary has to follow it so
+            // each half's text matches its glyphs - the ascending path snaps the same way.
+            var splitCharCount = splitGlyphIndex > 0
+                ? Math.Min(glyphInfos[splitGlyphIndex - 1].GlyphCluster - baseCluster, Text.Length)
+                : Text.Length;
+
+            var firstText = Text.Slice(0, splitCharCount);
+            var secondText = Text.Slice(splitCharCount);
 
             // share the parent's cluster cache. The cache stores
             // clusters in logical order, so "first" (text[0..textLength]) gets the
             // leading slice and "second" gets the trailing slice — same indexing
             // as the LTR case.
             EnsureClusterCache();
-            var firstClusterCount = FindClusterOffsetForSplit(textLength);
+            var firstClusterCount = FindClusterOffsetForSplit(splitCharCount);
 
             var first = new ShapedBuffer(
                 firstText, firstGlyphs,
