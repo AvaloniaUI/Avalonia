@@ -2212,7 +2212,7 @@ namespace Avalonia.Controls
                             final = Math.Max(final, definition.MinSizeForArrange);
                             if (final < definition.SizeCache)
                             {
-                                adjustedSize -= dpiIncrement;
+                                adjustedSize = LayoutHelper.RoundLayoutValueUp(adjustedSize - dpiIncrement, dpi);
                             }
                             definition.SizeCache = final;
                             i--;
@@ -2228,7 +2228,7 @@ namespace Avalonia.Controls
                             final = Math.Max(final, definition.MinSizeForArrange);
                             if (final > definition.SizeCache)
                             {
-                                adjustedSize += dpiIncrement;
+                                adjustedSize = LayoutHelper.RoundLayoutValueUp(adjustedSize + dpiIncrement, dpi);
                             }
                             definition.SizeCache = final;
                             i++;
