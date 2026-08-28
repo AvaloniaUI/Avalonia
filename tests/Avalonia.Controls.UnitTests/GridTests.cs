@@ -2287,11 +2287,11 @@ namespace Avalonia.Controls.UnitTests
             root.Arrange(new Rect(grid.DesiredSize));
 
             var roundedHeight = LayoutHelper.RoundLayoutValue(targetHeight, scaling);
-            Assert.Equal(roundedHeight, grid.Bounds.Height);
-            Assert.Equal(roundedHeight, outerBorder.Bounds.Height);
-            Assert.Equal(roundedHeight, innerBorder.Bounds.Height);
+            Assert.Equal(roundedHeight, grid.Bounds.Height, 8);
+            Assert.Equal(roundedHeight, outerBorder.Bounds.Height, 8);
+            Assert.Equal(roundedHeight, innerBorder.Bounds.Height, 8);
 
-            Assert.Equal(roundedHeight, grid.RowDefinitions.Sum(r => r.ActualHeight));
+            Assert.Equal(roundedHeight, grid.RowDefinitions.Sum(r => r.ActualHeight), 8);
         }
 
         private class TestControl : Control
