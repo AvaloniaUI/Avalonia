@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -52,6 +53,37 @@ namespace Avalonia.Base.UnitTests.Input
             pointer.Capture(null);
 
             Assert.Equal(2, pointer.PlatformCaptureCalled);
+        }
+
+        [Fact]
+        public void Gesture_Recognizer_Capture_Should_Keep_Platform_Capture_On_Same_Target()
+        {
+            var pointer = new TestPointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            var target = new Border();
+            var recognizer = new TestGestureRecognizer { Target = target };
+
+            pointer.Capture(target, CaptureSource.Implicit);
+            recognizer.CapturePointer(pointer);
+
+            Assert.Null(pointer.Captured);
+            Assert.Same(recognizer, pointer.CapturedGestureRecognizer);
+            Assert.Equal([target], pointer.PlatformCaptures);
+        }
+
+        [Fact]
+        public void Gesture_Recognizer_Capture_Should_Move_Platform_Capture_To_Target()
+        {
+            var pointer = new TestPointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            var initialCapture = new Border();
+            var target = new Border { Child = initialCapture };
+            var recognizer = new TestGestureRecognizer { Target = target };
+
+            pointer.Capture(initialCapture, CaptureSource.Implicit);
+            recognizer.CapturePointer(pointer);
+
+            Assert.Null(pointer.Captured);
+            Assert.Same(recognizer, pointer.CapturedGestureRecognizer);
+            Assert.Equal([initialCapture, target], pointer.PlatformCaptures);
         }
 
         [Fact]
@@ -108,6 +140,27 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.True(sources.SequenceEqual([CaptureSource.Implicit, CaptureSource.Explicit, CaptureSource.Implicit, CaptureSource.Explicit]));
 
             Assert.Equal(2, pointer.PlatformCaptureCalled);
+        }
+
+        private sealed class TestGestureRecognizer : GestureRecognizer
+        {
+            public void CapturePointer(IPointer pointer) => Capture(pointer);
+
+            protected override void PointerPressed(PointerPressedEventArgs e)
+            {
+            }
+
+            protected override void PointerReleased(PointerReleasedEventArgs e)
+            {
+            }
+
+            protected override void PointerMoved(PointerEventArgs e)
+            {
+            }
+
+            protected override void PointerCaptureLost(IPointer pointer)
+            {
+            }
         }
     }
 }
