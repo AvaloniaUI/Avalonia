@@ -18,6 +18,9 @@
 
   <x:Double x:Key="NavigationItemHeight">36</x:Double>
   <BoxShadows x:Key="NavigationItemShadow">1 1 1 1 #2000, 0 0 1 1 #2fff</BoxShadows>
+  <Thickness x:Key="NavigationItemPadding">8,0,4,0</Thickness>
+  <Thickness x:Key="NavigationItemSelectionPillMargin">2,0,0,0</Thickness>
+  <x:Double x:Key="SelectionPipeHeight">14</x:Double>
 
   <ControlTheme x:Key="ScrollPage" TargetType="ContentPage">
     <Setter Property="Template">
@@ -55,7 +58,7 @@
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
-    <Setter Property="Padding" Value="14,0,4,0" />
+    <Setter Property="Padding" Value="{DynamicResource NavigationItemPadding}" />
     <Setter Property="Margin" Value="4,2,8,0" />
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="ClipToBounds" Value="False" />
@@ -70,8 +73,8 @@
           <Panel>
             <Border Name="PART_SelectedPipe"
                     Width="{DynamicResource TabItemPipeThickness}"
-                    Height="{DynamicResource TabItemVerticalPipeHeight}"
-                    Margin="6,0,0,0"
+                    Height="{DynamicResource SelectionPipeHeight}"
+                    Margin="{DynamicResource NavigationItemSelectionPillMargin}"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
@@ -121,7 +124,7 @@
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
-    <Setter Property="Padding" Value="14,0,4,0" />
+    <Setter Property="Padding" Value="{DynamicResource NavigationItemPadding}" />
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Template">
@@ -135,8 +138,8 @@
           <Panel>
             <Border Name="PART_SelectedPipe"
                     Width="{DynamicResource TabItemPipeThickness}"
-                    Height="{DynamicResource TabItemVerticalPipeHeight}"
-                    Margin="6,0,0,0"
+                    Height="{DynamicResource SelectionPipeHeight}"
+                    Margin="{DynamicResource NavigationItemSelectionPillMargin}"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
@@ -186,7 +189,7 @@
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
-    <Setter Property="Padding" Value="14,0,4,0" />
+    <Setter Property="Padding" Value="{DynamicResource NavigationItemPadding}" />
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Template">
@@ -200,8 +203,8 @@
           <Panel>
             <Border Name="PART_SelectedPipe"
                     Width="{DynamicResource TabItemPipeThickness}"
-                    Height="{DynamicResource TabItemVerticalPipeHeight}"
-                    Margin="6,0,0,0"
+                    Height="{DynamicResource SelectionPipeHeight}"
+                    Margin="{DynamicResource NavigationItemSelectionPillMargin}"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
@@ -243,7 +246,7 @@
       <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
     </Style>
   </ControlTheme>
-  <ControlTheme x:Key="HomeSectionExpander" TargetType="Expander">
+  <ControlTheme x:Key="HomeSectionExpander" TargetType="controls:HomeItemExpander">
     <Setter Property="IsTabStop" Value="False"/>
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -251,7 +254,7 @@
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="MinHeight" Value="{StaticResource NavigationItemHeight}" />
-    <Setter Property="Padding" Value="14,0,4,0" />
+    <Setter Property="Padding" Value="{DynamicResource NavigationItemPadding}" />
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Template">
@@ -262,23 +265,23 @@
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <Grid RowDefinitions="Auto,*">
-            <ToggleButton x:Name="ExpanderHeader"
-                          HorizontalAlignment="Stretch"
-                          MinHeight="{TemplateBinding MinHeight}"
-                          CornerRadius="{TemplateBinding CornerRadius}"
-                          IsEnabled="{TemplateBinding IsEnabled}"
-                          Content="{TemplateBinding Header}"
-                          Theme="{StaticResource ExpanderToggleButton}"
-                          Background="{TemplateBinding Background}"
-                          ContentTemplate="{TemplateBinding HeaderTemplate}"
-                          IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" >
-              <ToggleButton.Resources>
-                <x:Double x:Key="TabItemVerticalPipeHeight">10</x:Double>
-              </ToggleButton.Resources>
-            </ToggleButton>
+            <controls:SelectableButton x:Name="ExpanderHeader"
+                                       HorizontalAlignment="Stretch"
+                                       MinHeight="{TemplateBinding MinHeight}"
+                                       CornerRadius="{TemplateBinding CornerRadius}"
+                                       IsEnabled="{TemplateBinding IsEnabled}"
+                                       Content="{TemplateBinding Header}"
+                                       Command="{TemplateBinding Command}"
+                                       CommandParameter="{TemplateBinding CommandParameter}"
+                                       Theme="{StaticResource SelectableItemButton}"
+                                       Background="{TemplateBinding Background}"
+                                       IsSelected="{TemplateBinding IsSelected}"
+                                       IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                       ContentTemplate="{TemplateBinding HeaderTemplate}" >
+            </controls:SelectableButton>
             <Border x:Name="ExpanderContent"
                     Grid.Row="1"
-                    IsVisible="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                    IsVisible="{TemplateBinding IsEffectivelyExpanded, Mode=TwoWay}"
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"

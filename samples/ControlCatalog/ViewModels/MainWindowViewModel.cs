@@ -17,13 +17,10 @@ namespace ControlCatalog.ViewModels
 {
     partial class MainWindowViewModel : ViewModelBase
     {
-        private bool _ignoreListChange;
-        private PageItem? _homeItem;
-        private PageItem? _settingsItem;
+        public SettingsViewModel SettingsViewModel { get; } = new SettingsViewModel();
 
-        public PageItem HomeItem => _homeItem ??= new PageItem("Home", () => new HomePage(), StreamGeometry.Parse(Icons.Home), "Overview of everything in the catalog", null);
-
-        public PageItem SettingsItem => _settingsItem ??= new PageItem("Settings", () => new SettingsPage(SettingsViewModel), StreamGeometry.Parse(Icons.Settings), "Overview of everything in the catalog", null);
+        public PageItem HomeItem { get; } = new PageItem("Home", () => new HomePage(), StreamGeometry.Parse(Icons.Home), "Overview of everything in the catalog", null);
+        public PageItem SettingsItem { get; }
 
         public MainWindowViewModel()
         {
@@ -40,6 +37,7 @@ namespace ControlCatalog.ViewModels
             {
                 (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
             });
+            SettingsItem = new PageItem("Settings", () => new SettingsPage(SettingsViewModel), StreamGeometry.Parse(Icons.Settings), "Overview of everything in the catalog", null);
             NavigateToPageCommand = MiniCommand.Create<PageItem>(NavigateToItem);
             SettingsCommand = MiniCommand.Create(async () =>
             {
@@ -48,8 +46,7 @@ namespace ControlCatalog.ViewModels
 
                 if (Navigator is { } navigator)
                 {
-                    CurrentPageItem = SettingsItem;
-                    await navigator.ReplaceAsync(SettingsItem.CreatePage());
+                    NavigateToItem(SettingsItem);
                 }
             });
 
@@ -60,12 +57,9 @@ namespace ControlCatalog.ViewModels
 
                 if (Navigator is { } navigator)
                 {
-                    CurrentPageItem = HomeItem;
-                    await navigator.ReplaceAsync(HomeItem.CreatePage());
+                    NavigateToItem(HomeItem);
                 }
             });
-
-            CurrentPageItem = HomeItem;
 
             TitleBarHeight = -1;
             CanResize = true;
@@ -80,8 +74,6 @@ namespace ControlCatalog.ViewModels
             field ??= _pageSections.Where(s => !string.IsNullOrEmpty(s.Title)).ToArray();
 
         public INavigation? Navigator { get; internal set; }
-
-        public SettingsViewModel SettingsViewModel { get; } = new SettingsViewModel();
 
         public bool ExtendClientAreaEnabled
         {
@@ -262,40 +254,31 @@ namespace ControlCatalog.ViewModels
 
         public void Filter(string? query = "")
         {
-            try
+            ExpandAllSections = false;
+
+            // Left panel items are sorted alphabetically
+            var allPages = _pageSections
+                .SelectMany(cat => cat.Items?.ToArray() ?? Array.Empty<PageItem>())
+                .OrderBy(p => p.Header);
+
+            var querySearchKey = query != null ? PageItem.CreateSearchKey(query) : "";
+            var isDefaultVisible = string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(querySearchKey);
+
+            foreach (var page in allPages)
             {
-                _ignoreListChange = true;
+                page.IsVisible = isDefaultVisible;
+            }
 
-                ExpandAllSections = false;
-
-                // Left panel items are sorted alphabetically
-                var allPages = _pageSections
-                    .SelectMany(cat => cat.Items?.ToArray() ?? Array.Empty<PageItem>())
-                    .OrderBy(p => p.Header);
-
-                var querySearchKey = query != null ? PageItem.CreateSearchKey(query) : "";
-                var isDefaultVisible = string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(querySearchKey);
-
-                foreach (var page in allPages)
+            if (!string.IsNullOrWhiteSpace(querySearchKey))
+            {
+                ExpandAllSections = true;
+                foreach (var item in allPages)
                 {
-                    page.IsVisible = isDefaultVisible;
-                }
-
-                if (!string.IsNullOrWhiteSpace(querySearchKey))
-                {
-                    ExpandAllSections = true;
-                    foreach (var item in allPages)
+                    if (item.MatchesSearch(querySearchKey))
                     {
-                        if (item.MatchesSearch(querySearchKey))
-                        {
-                            item.IsVisible = true;
-                        }
+                        item.IsVisible = true;
                     }
                 }
-            }
-            finally
-            {
-                _ignoreListChange = false;
             }
         }
 
@@ -306,7 +289,7 @@ namespace ControlCatalog.ViewModels
 
             var page = item.CreatePage();
 
-            if (page.GetType() != Navigator.NavigationStack.LastOrDefault()?.GetType())
+            if (item != CurrentPageItem)
             {
                 CurrentPageItem = item;
                 OpenedSection = item.Section;

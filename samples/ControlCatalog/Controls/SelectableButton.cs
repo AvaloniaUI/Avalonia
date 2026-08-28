@@ -9,7 +9,7 @@ using Avalonia.Interactivity;
 namespace ControlCatalog.Controls
 {
     [PseudoClasses(":selected")]
-    public class SelectableButton : Button, ISelectable
+    public class SelectableButton : ToggleButton, ISelectable
     {
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.

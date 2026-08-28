@@ -1,0 +1,102 @@
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:controlCatalog="using:ControlCatalog"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             xmlns:models="clr-namespace:ControlCatalog.Models"
+             Header="{Binding HomeSection.Title}"
+             x:DataType="viewModels:SectionViewModel"
+             x:Class="ControlCatalog.Pages.SectionPage">
+  <ContentPage.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+          <SolidColorBrush x:Key="HomeCardBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="HomeCardBorderBrush" Color="#E5E5EA" />
+          <SolidColorBrush x:Key="HomeCardBorderBrushHover" Color="#3E6DF3" />
+          <SolidColorBrush x:Key="HomeSubtleForeground" Color="#64646E" />
+          <SolidColorBrush x:Key="HomeBadgeBackground" Color="#E8EFFD" />
+          <SolidColorBrush x:Key="HomeBadgeForeground" Color="#3462D9" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="HomeCardBackground" Color="#2B2B33" />
+          <SolidColorBrush x:Key="HomeCardBorderBrush" Color="#3A3A45" />
+          <SolidColorBrush x:Key="HomeCardBorderBrushHover" Color="#8AB4FF" />
+          <SolidColorBrush x:Key="HomeSubtleForeground" Color="#9C9CAB" />
+          <SolidColorBrush x:Key="HomeBadgeBackground" Color="#31395A" />
+          <SolidColorBrush x:Key="HomeBadgeForeground" Color="#8AB4FF" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+
+      <ControlTheme x:Key="ButtonCardTheme" TargetType="Button">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Background" Value="{DynamicResource HomeCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource HomeCardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16, 14" />
+        <Setter Property="MinHeight" Value="118" />
+        <Setter Property="Cursor" Value="Hand" />
+
+        <Style Selector="^ /template/ ContentPresenter">
+          <Setter Property="BoxShadow" Value="0 1 3 0 #0D000000" />
+          <Setter Property="Transitions">
+            <Transitions>
+              <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+            </Transitions>
+          </Setter>
+        </Style>
+
+        <Style Selector="^:pointerover /template/ ContentPresenter">
+          <Setter Property="BorderBrush" Value="{DynamicResource HomeCardBorderBrushHover}" />
+        </Style>
+
+      </ControlTheme>
+    </ResourceDictionary>
+  </ContentPage.Resources>
+
+  <StackPanel Margin="0,0,0,26">
+    <ItemsControl ItemsSource="{Binding HomeSection.Items}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <UniformGrid RowSpacing="12" ColumnSpacing="12"
+                       Margin="0, 0, 1, 0"
+                       SizeChanged="UniformGrid_OnSizeChanged" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate DataType="models:PageItem">
+          <Button Theme="{StaticResource ButtonCardTheme}"
+                  Command="{Binding $parent[controlCatalog:MainView].((viewModels:MainWindowViewModel)DataContext).NavigateToPageCommand}"
+                  CommandParameter="{Binding}">
+            <StackPanel Spacing="10">
+              <Border Background="{DynamicResource HomeBadgeBackground}"
+                      CornerRadius="8"
+                      Width="36" Height="36"
+                      HorizontalAlignment="Left">
+                <PathIcon Data="{Binding IconData}"
+                          Foreground="{DynamicResource HomeBadgeForeground}"
+                          Width="18" Height="18"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center" />
+              </Border>
+              <StackPanel Spacing="3">
+                <TextBlock Text="{Binding Header}"
+                           FontSize="14" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Description}"
+                           FontSize="12"
+                           Foreground="{DynamicResource HomeSubtleForeground}"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis"
+                           MaxLines="2" />
+              </StackPanel>
+            </StackPanel>
+          </Button>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+</ContentPage>
