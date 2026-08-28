@@ -565,14 +565,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (dismissLayer != null)
                 {
-                    dismissLayer.IsVisible = true;
-                    dismissLayer.InputPassThroughElement = OverlayInputPassThroughElement;
-                    
-                    Disposable.Create(() =>
-                    {
-                        dismissLayer.IsVisible = false;
-                        dismissLayer.InputPassThroughElement = null;
-                    }).DisposeWith(handlerCleanup);
+                    dismissLayer.Register(OverlayInputPassThroughElement).DisposeWith(handlerCleanup);
                     
                     SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
                         dismissLayer,
