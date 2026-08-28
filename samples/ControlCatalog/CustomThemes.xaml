@@ -23,31 +23,36 @@
   <x:Double x:Key="SelectionPipeHeight">14</x:Double>
 
   <ControlTheme x:Key="ScrollPage" TargetType="ContentPage">
+    <Setter Property="Background" Value="{DynamicResource PageBackgroundColor}"/>
+    <Setter Property="CornerRadius" Value="20,0,0,0"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <DockPanel>
-          <ContentPresenter Name="PART_TopCommandBar"
-                            DockPanel.Dock="Top"
-                            HorizontalContentAlignment="Stretch"
-                            IsVisible="False" />
-          <ContentPresenter Name="PART_BottomCommandBar"
-                            DockPanel.Dock="Bottom"
-                            HorizontalContentAlignment="Stretch"
-                            IsVisible="False" />
+        <Border
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          Background="{TemplateBinding Background}"
+          CornerRadius="{TemplateBinding CornerRadius}">
+          <DockPanel>
+            <ContentPresenter Name="PART_TopCommandBar"
+                              DockPanel.Dock="Top"
+                              HorizontalContentAlignment="Stretch"
+                              IsVisible="False" />
+            <ContentPresenter Name="PART_BottomCommandBar"
+                              DockPanel.Dock="Bottom"
+                              HorizontalContentAlignment="Stretch"
+                              IsVisible="False" />
 
-          <ScrollViewer Padding="20"
-                        HorizontalScrollBarVisibility="Disabled">
-            <ContentPresenter Name="PART_ContentPresenter"
-                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                              Background="{TemplateBinding Background}"
-                              BorderBrush="{TemplateBinding BorderBrush}"
-                              BorderThickness="{TemplateBinding BorderThickness}"
-                              Content="{TemplateBinding Content}"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              CornerRadius="{TemplateBinding CornerRadius}" />
-          </ScrollViewer>
-        </DockPanel>
+            <ScrollViewer Padding="20"
+                          HorizontalScrollBarVisibility="Disabled">
+              <ContentPresenter Name="PART_ContentPresenter"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                CornerRadius="{TemplateBinding CornerRadius}" />
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
       </ControlTemplate>
     </Setter>
   </ControlTheme>
@@ -302,7 +307,7 @@
     </Setter>
 
     <Style Selector="^:pointerover">
-      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+      <Style Selector="^ /template/ controls|SelectableButton#ExpanderHeader">
         <Setter Property="Background" Value="{DynamicResource HamburgerChromeLowColor}" />
       </Style>
     </Style>

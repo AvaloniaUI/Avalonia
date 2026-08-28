@@ -7,8 +7,10 @@
             xmlns:models="using:ControlCatalog.Models"
             xmlns:viewModels="using:ControlCatalog.ViewModels"
             d:DesignWidth="1200"
-            d:DesignHeight="720"
+            d:DesignHeight="720" 
+            CornerRadius="20"
             x:DataType="viewModels:MainWindowViewModel"
+            DrawerBackground="Transparent"
             DrawerLayoutBehavior="Split"
             IsOpen="{Binding IsDrawerOpened , Mode=TwoWay}"
             DisplayMode="{Binding DisplayMode, Mode=TwoWay}"
@@ -27,6 +29,15 @@
       <ControlTheme x:Key="{x:Type local:MainView}"
                     TargetType="local:MainView"
                     BasedOn="{StaticResource {x:Type DrawerPage}}" />
+      
+    <ResourceDictionary.ThemeDictionaries>
+      <ResourceDictionary x:Key="Dark">
+        <Color x:Key="PageBackgroundColor">#FF171717</Color>
+      </ResourceDictionary>
+      <ResourceDictionary x:Key="Default">
+        <Color x:Key="PageBackgroundColor">#FFF2F2F2</Color>
+      </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
   </DrawerPage.Resources>
   <DrawerPage.Styles>
@@ -110,7 +121,7 @@
                     </FlexPanel>
                   </controls:HomeItemExpander.Header>
                   <controls:HomeItemExpander.Content>
-                    <ItemsControl ItemsSource="{Binding Items}" Margin="10,0">
+                    <ItemsControl ItemsSource="{Binding Items}" Margin="10,0,0,0">
                       <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                           <StackPanel Orientation="Vertical"/>
@@ -118,7 +129,7 @@
                       </ItemsControl.ItemsPanel>
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="models:PageItem">
-                          <controls:SelectableButton Margin="1"
+                          <controls:SelectableButton Margin="1,2"
                                                      IsVisible="{Binding IsVisible}"
                                                      Theme="{StaticResource SelectableItemButton}"
                                                      Command="{Binding $parent[local:MainView].ViewModel.NavigateToPageCommand}"
