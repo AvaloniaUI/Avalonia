@@ -349,7 +349,38 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.InRange(offset, 2400, 2500);
             }
         }
-        
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Executes_Within_Layout_Pass_When_Becoming_Visible()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var items = Enumerable.Range(0, 100).Select(i => $"Item {i}").ToList();
+
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemsSource = items,
+                ItemTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock { Height = 50 }),
+                Height = 100,
+                ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel { CacheLength = 0 }),
+                AutoScrollToSelectedItem = true,
+                IsVisible = false
+            };
+
+            target.Width = target.Height = 100;
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 50;
+            target.IsVisible = true;
+
+            target.UpdateLayout();
+
+            var scrollViewer = (ScrollViewer)target.VisualChildren[0];
+            Assert.InRange(scrollViewer.Offset.Y, 2400, 2500);
+        }
+
         private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
