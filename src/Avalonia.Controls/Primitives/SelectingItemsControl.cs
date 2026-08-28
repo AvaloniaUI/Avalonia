@@ -491,14 +491,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            if (AutoScrollToSelectedItem)
-            {
-                Dispatcher.UIThread.Post(static state =>
-                {
-                    var control = (SelectingItemsControl)state!;
-                    control.AutoScrollToSelectedItemIfNecessary(control.GetAnchorIndex());
-                }, this);
-            }
+            AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
         }
 
         internal int GetAnchorIndex()
@@ -1201,53 +1194,25 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private int? _pendingAutoScrollAnchorIndex;
+        private int _autoScrollRequestedIndex = -1;
 
         private void AutoScrollToSelectedItemIfNecessary(int anchorIndex)
         {
-            if (!(AutoScrollToSelectedItem && !_hasScrolledToSelectedItem && Presenter != null && anchorIndex >= 0 && IsAttachedToVisualTree))
+            if (AutoScrollToSelectedItem && Presenter is not null && anchorIndex >= 0 && IsAttachedToVisualTree)
             {
-                ClearPendingAutoScroll();
-                return;
+                if (!_hasScrolledToSelectedItem)
+                {
+                    ScrollIntoView(anchorIndex);
+                    _autoScrollRequestedIndex = anchorIndex;
+                    _hasScrolledToSelectedItem = true;
+                }
             }
-
-            if (!IsEffectivelyVisible)
+            else if (_autoScrollRequestedIndex >= 0)
             {
-                // Defer scroll until the control becomes effectively visible.
-                _pendingAutoScrollAnchorIndex = anchorIndex;
-                IsEffectivelyVisibleChanged -= OnIsEffectivelyVisibleChangedForAutoScroll;
-                IsEffectivelyVisibleChanged += OnIsEffectivelyVisibleChangedForAutoScroll;
-                return;
+                // The conditions for auto-scrolling no longer hold, cancel the scroll we requested earlier.
+                Presenter?.CancelScrollIntoView(_autoScrollRequestedIndex);
+                _autoScrollRequestedIndex = -1;
             }
-
-            ClearPendingAutoScroll();
-            ScrollToAnchorIndex(anchorIndex);
-        }
-
-        private void OnIsEffectivelyVisibleChangedForAutoScroll(object? sender, EventArgs e)
-        {
-            if (!IsEffectivelyVisible || _pendingAutoScrollAnchorIndex is not { } anchorIndex)
-            {
-                return;
-            }
-
-            ClearPendingAutoScroll();
-            ScrollToAnchorIndex(anchorIndex);
-        }
-
-        private void ClearPendingAutoScroll()
-        {
-            _pendingAutoScrollAnchorIndex = null;
-            IsEffectivelyVisibleChanged -= OnIsEffectivelyVisibleChangedForAutoScroll;
-        }
-
-        private void ScrollToAnchorIndex(int anchorIndex)
-        {
-            Dispatcher.UIThread.Post(state =>
-            {
-                ScrollIntoView((int)state!);
-                _hasScrolledToSelectedItem = true;
-            }, anchorIndex);
         }
 
         /// <summary>
