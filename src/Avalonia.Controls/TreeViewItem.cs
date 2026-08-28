@@ -12,7 +12,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -371,7 +370,7 @@ namespace Avalonia.Controls
             if (_deferredBringIntoViewFlag)
             {
                 _deferredBringIntoViewFlag = false;
-                Dispatcher.UIThread.Post(this.BringIntoView); // must use the Dispatcher, otherwise the TreeView doesn't scroll
+                this.BringIntoView();
             }
         }
 
