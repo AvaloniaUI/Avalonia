@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -241,7 +241,16 @@ namespace Avalonia.Win32.DirectX
             return tcs.Task.Result;
         }
 
-        public bool RequiresNoRedirectionBitmap => false;
+        public bool RequiresNoRedirectionBitmap => IsTransparencySupported() 
+            ? true 
+            : false;
+
         public IPlatformRenderSurface CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new DxgiSwapchainWindow(this, info);
+
+        public static bool IsTransparencySupported()
+        {
+            // We can use the DirectComposited+CreateSwapChainForComposition to create the Transparency window.
+            return Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1;
+        }
     }
 }
