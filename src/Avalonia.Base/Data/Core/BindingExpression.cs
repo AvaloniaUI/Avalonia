@@ -240,6 +240,27 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
     }
 
     /// <summary>
+    /// Called by an <see cref="ExpressionNode"/> belonging to this binding when a
+    /// null-conditional operator applied to the node encounters a null source.
+    /// </summary>
+    /// <param name="nodeIndex">The <see cref="ExpressionNode.Index"/>.</param>
+    /// <remarks>
+    /// A null-conditional operator short-circuits the remainder of the binding path, just as it
+    /// does in C#. The nodes after <paramref name="nodeIndex"/> are unsubscribed and their values
+    /// set to null, and null is published as the value of the binding.
+    /// </remarks>
+    internal void OnNodeNullShortCircuit(int nodeIndex)
+    {
+        Debug.Assert(nodeIndex >= 0 && nodeIndex < _nodes.Count);
+
+        for (var i = nodeIndex + 1; i < _nodes.Count; ++i)
+            _nodes[i].PropagateNullShortCircuitValue();
+
+        // Publish the null value as if it were produced by the leaf node.
+        OnNodeValueChanged(_nodes.Count - 1, null, null);
+    }
+
+    /// <summary>
     /// Called by an <see cref="ExpressionNode"/> belonging to this binding when an error occurs
     /// reading its value.
     /// </summary>

@@ -118,9 +118,40 @@ internal abstract class ExpressionNode
     }
 
     /// <summary>
+    /// Sets the value of the node to null without notifying the <see cref="Owner"/>, and
+    /// unsubscribes from the current source.
+    /// </summary>
+    /// <remarks>
+    /// Called on the nodes which follow a short-circuited null-conditional operator.
+    /// </remarks>
+    internal void PropagateNullShortCircuitValue()
+    {
+        // Setting the source to unset unsubscribes from the old source without raising errors
+        // for this or subsequent nodes.
+        SetSource(AvaloniaProperty.UnsetValue, null);
+        _value = null;
+    }
+
+    /// <summary>
     /// Sets the current value to <see cref="AvaloniaProperty.UnsetValue"/>.
     /// </summary>
     protected void ClearValue() => SetValue(AvaloniaProperty.UnsetValue);
+
+    /// <summary>
+    /// Called by a node which has a null-conditional operator applied to it when its source is
+    /// null.
+    /// </summary>
+    /// <remarks>
+    /// The C# null-conditional operator short-circuits the remainder of the expression, so
+    /// <c>a?.b.c</c> evaluates to null when <c>a</c> is null. This method does the same for a
+    /// binding path: the value of this node and all subsequent nodes is set to null and the
+    /// binding produces a null value rather than an error.
+    /// </remarks>
+    protected void ShortCircuitNull()
+    {
+        _value = null;
+        Owner?.OnNodeNullShortCircuit(Index);
+    }
 
     /// <summary>
     /// Notifies the <see cref="Owner"/> of a data validation error.
