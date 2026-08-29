@@ -1,4 +1,6 @@
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input.GestureRecognizers;
 
 namespace ControlCatalog.Pages
 {
@@ -7,6 +9,7 @@ namespace ControlCatalog.Pages
         public TabbedPageGesturePage()
         {
             InitializeComponent();
+            EnableMouseSwipeGesture(DemoTabs);
         }
 
         private void OnGestureEnabledChanged(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -25,6 +28,16 @@ namespace ControlCatalog.Pages
                 3 => TabPlacement.Right,
                 _ => TabPlacement.Top
             };
+        }
+
+        private static void EnableMouseSwipeGesture(Control control)
+        {
+            var recognizer = control.GestureRecognizers
+                .OfType<SwipeGestureRecognizer>()
+                .FirstOrDefault();
+
+            if (recognizer is not null)
+                recognizer.IsMouseEnabled = true;
         }
     }
 }

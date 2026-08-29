@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -7,9 +8,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Moq;
 
 namespace Avalonia.Base.UnitTests.Input;
@@ -19,12 +18,14 @@ public abstract class PointerTestsBase : ScopedTestBase
     protected class TestPointer : Pointer
     {
         internal int PlatformCaptureCalled = 0;
+        internal List<IInputElement?> PlatformCaptures { get; } = new();
 
         internal TestPointer(int id, PointerType type, bool isPrimary) : base(id, type, isPrimary) { }
 
         protected override void PlatformCapture(IInputElement? element)
         {
             PlatformCaptureCalled++;
+            PlatformCaptures.Add(element);
         }
     }
 

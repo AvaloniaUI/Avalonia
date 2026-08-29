@@ -273,10 +273,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="T:Avalonia.DataTemplate" /> used
+        /// Gets or sets the <see cref="T:Avalonia.Controls.Templates.IDataTemplate" /> used
         /// to display each item in the drop-down portion of the control.
         /// </summary>
-        /// <value>The <see cref="T:Avalonia.DataTemplate" /> used to
+        /// <value>The <see cref="T:Avalonia.Controls.Templates.IDataTemplate" /> used to
         /// display each item in the drop-down. The default is null.</value>
         /// <remarks>
         /// You use the ItemTemplate property to specify the visualization

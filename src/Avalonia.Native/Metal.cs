@@ -102,7 +102,7 @@ internal class MetalExternalObjectsFeature : IMetalExternalObjectsFeature
         if (_device.GetIOKitRegistryId(&registryId) != 0)
         {
             var bytes = BitConverter.GetBytes(registryId);
-            bytes.Reverse();
+            bytes.AsSpan().Reverse();
             DeviceLuid = bytes;
         }
     }

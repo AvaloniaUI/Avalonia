@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
@@ -14,11 +15,13 @@ namespace Avalonia.Platform
     [PrivateApi]
     public class DefaultPlatformSettings : IPlatformSettings
     {
+        private const int TouchTapSize = 10;
+        private const int TouchDoubleTapSize = 50; // Default TouchModeN_DtapDist value on win32
         public virtual Size GetTapSize(PointerType type)
         {
             return type switch
             {
-                PointerType.Touch or PointerType.Pen => new(10, 10),
+                PointerType.Touch or PointerType.Pen => new(TouchTapSize, TouchTapSize),
                 _ => new(4, 4),
             };
         }
@@ -27,7 +30,7 @@ namespace Avalonia.Platform
         {
             return type switch
             {
-                PointerType.Touch or PointerType.Pen => new(16, 16),
+                PointerType.Touch or PointerType.Pen => new(TouchDoubleTapSize, TouchDoubleTapSize),
                 _ => new(4, 4),
             };
         }
@@ -39,6 +42,9 @@ namespace Avalonia.Platform
         public PlatformHotkeyConfiguration HotkeyConfiguration =>
             AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
 
+        public virtual string PreferredApplicationLanguage =>
+            CultureInfo.InstalledUICulture.Name;
+
         public virtual PlatformColorValues GetColorValues()
         {
             return new PlatformColorValues
@@ -48,11 +54,18 @@ namespace Avalonia.Platform
         }
 
         public virtual event EventHandler<PlatformColorValues>? ColorValuesChanged;
+        public virtual event EventHandler? PreferredApplicationLanguageChanged;
 
         protected void OnColorValuesChanged(PlatformColorValues colorValues)
         {
             Dispatcher.UIThread.Send(
                 _ => ColorValuesChanged?.Invoke(this, colorValues));
+        }
+
+        protected void OnPreferredApplicationLanguageChanged()
+        {
+            Dispatcher.UIThread.Send(
+                _ => PreferredApplicationLanguageChanged?.Invoke(this, EventArgs.Empty));
         }
     }
 }

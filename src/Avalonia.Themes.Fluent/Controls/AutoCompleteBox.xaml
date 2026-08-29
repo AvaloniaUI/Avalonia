@@ -25,6 +25,7 @@
       <Setter Property="VerticalAlignment" Value="Top" />
       <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
       <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+      <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
       <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
       <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
       <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />

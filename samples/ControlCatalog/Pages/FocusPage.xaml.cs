@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages;
 
-public partial class FocusPage : UserControl
+public partial class FocusPage : ContentPage
 {
     public FocusPage()
     {

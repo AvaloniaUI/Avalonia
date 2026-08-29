@@ -15,9 +15,9 @@
         <TextBlock Text="Live Preview" FontWeight="SemiBold" FontSize="13" />
         <CommandBar x:Name="LiveBar">
           <CommandBar.PrimaryCommands>
-            <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
+            <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Share"><CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon></CommandBarButton>
           </CommandBar.PrimaryCommands>
         </CommandBar>
 
@@ -29,10 +29,19 @@
                   HorizontalAlignment="Stretch"
                   SelectionChanged="OnBgPresetChanged">
           <ComboBoxItem Content="Default" />
-          <ComboBoxItem Content="Blue (#0078D4)" />
-          <ComboBoxItem Content="Dark (#1C1C1E)" />
-          <ComboBoxItem Content="Gradient" />
-          <ComboBoxItem Content="Transparent" />
+          <ComboBoxItem Content="Blue (#0078D4)" Tag="#0078D4" />
+          <ComboBoxItem Content="Indigo (#3F51B5)" Tag="#3F51B5" />
+          <ComboBoxItem Content="Purple (#7B1FA2)" Tag="#7B1FA2" />
+          <ComboBoxItem Content="Pink (#C2185B)" Tag="#C2185B" />
+          <ComboBoxItem Content="Red (#D13438)" Tag="#D13438" />
+          <ComboBoxItem Content="Orange (#FF8C00)" Tag="#FF8C00" />
+          <ComboBoxItem Content="Green (#107C10)" Tag="#107C10" />
+          <ComboBoxItem Content="Teal (#008575)" Tag="#008575" />
+          <ComboBoxItem Content="Slate (#2F3A4A)" Tag="#2F3A4A" />
+          <ComboBoxItem Content="Light Gray (#F3F2F1)" Tag="#F3F2F1" />
+          <ComboBoxItem Content="Dark (#1C1C1E)" Tag="#1C1C1E" />
+          <ComboBoxItem Content="Gradient" Tag="Gradient" />
+          <ComboBoxItem Content="Transparent" Tag="Transparent" />
         </ComboBox>
 
         <TextBlock Text="Foreground" />
@@ -41,8 +50,15 @@
                   HorizontalAlignment="Stretch"
                   SelectionChanged="OnFgChanged">
           <ComboBoxItem Content="Default" />
-          <ComboBoxItem Content="White" />
-          <ComboBoxItem Content="Black" />
+          <ComboBoxItem Content="White (#FFFFFF)" Tag="#FFFFFF" />
+          <ComboBoxItem Content="Black (#000000)" Tag="#000000" />
+          <ComboBoxItem Content="Blue (#0078D4)" Tag="#0078D4" />
+          <ComboBoxItem Content="Purple (#7B1FA2)" Tag="#7B1FA2" />
+          <ComboBoxItem Content="Red (#D13438)" Tag="#D13438" />
+          <ComboBoxItem Content="Orange (#FF8C00)" Tag="#FF8C00" />
+          <ComboBoxItem Content="Green (#107C10)" Tag="#107C10" />
+          <ComboBoxItem Content="Teal (#008575)" Tag="#008575" />
+          <ComboBoxItem Content="Light Gray (#F3F2F1)" Tag="#F3F2F1" />
         </ComboBox>
 
         <TextBlock Text="Corner Radius" />
@@ -74,7 +90,7 @@
         <TextBlock Text="About" FontWeight="SemiBold" />
         <TextBlock Text="CommandBar inherits from TemplatedControl, so Background, Foreground, BorderBrush, BorderThickness, and CornerRadius are available out of the box."
                    FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
-        <TextBlock Text="Foreground is an inherited property: setting it on the CommandBar cascades to all PathIcons inside AppBarButton/AppBarToggleButton."
+        <TextBlock Text="Foreground is an inherited property: setting it on the CommandBar cascades to all PathIcons inside CommandBarButton/CommandBarToggleButton."
                    FontSize="12" Opacity="0.7" TextWrapping="Wrap" Margin="0,4,0,0" />
       </StackPanel>
     </ScrollViewer>
@@ -89,20 +105,20 @@
 
         <TextBlock Text="Default theme" FontSize="12" Opacity="0.7" />
         <CommandBar OverflowButtonVisibility="Collapsed">
-          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar>
 
         <TextBlock Text="Solid color" FontSize="12" Opacity="0.7" />
         <CommandBar Background="#0078D4" Foreground="White" OverflowButtonVisibility="Collapsed">
-          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar>
 
         <TextBlock Text="Dark" FontSize="12" Opacity="0.7" />
         <CommandBar Background="#1C1C1E" Foreground="White" OverflowButtonVisibility="Collapsed">
-          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar>
 
         <TextBlock Text="Pill shape (CornerRadius=20)" FontSize="12" Opacity="0.7" />
@@ -111,8 +127,8 @@
                     BorderBrush="#CCCCCC"
                     BorderThickness="1"
                     OverflowButtonVisibility="Collapsed">
-          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar>
       </StackPanel>
     </ScrollViewer>

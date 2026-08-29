@@ -8,6 +8,7 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageTitlePage : UserControl
     {
+        private bool _initialized;
         private int _pageCount;
 
         public NavigationPageTitlePage()
@@ -18,6 +19,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Home", "Choose a header type and tap 'Push'.", 0), null);
             StatusText.Text = "Current: Home";
         }

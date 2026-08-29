@@ -4,9 +4,11 @@ using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using AndroidX.Core.View;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -18,8 +20,8 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
-using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
 using ClipboardManager = Android.Content.ClipboardManager;
@@ -28,6 +30,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
+        private readonly Context _context;
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<AvaloniaView> _textInputMethod;
@@ -38,7 +41,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly Clipboard _clipboard;
         private readonly AndroidLauncher? _launcher;
         private readonly AndroidScreens? _screens;
-        private SurfaceViewImpl _view;
+        private readonly AndroidPlatformFeedback _feedback;
+        private SurfaceViewImpl? _view;
         private WindowTransparencyLevel _transparencyLevel;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -48,6 +52,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 throw new ArgumentException("AvaloniaView.Context must not be null");
             }
 
+            _context = context;
             _view = new SurfaceViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<AvaloniaView>(avaloniaView);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
@@ -56,6 +61,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>(),
                 context));
             _screens = new AndroidScreens(context);
+            _feedback = new AndroidPlatformFeedback(avaloniaView);
 
             if (context is Activity mainActivity)
             {
@@ -77,8 +83,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IInputRoot? InputRoot { get; private set; }
 
-        public Size ClientSize => _view.Size.ToSize(RenderScaling);
-        public double RenderScaling => _view.Scaling;
+        public Size ClientSize => _view?.Size.ToSize(RenderScaling) ?? default;
+        public double RenderScaling => _view?.Scaling ?? 1;
 
         public Action? Closed { get; set; }
 
@@ -90,9 +96,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<double>? ScalingChanged { get; set; }
 
-        public View View => _view;
+        public View? View => _view;
 
-        internal InvalidationAwareSurfaceView InternalView => _view;
+        internal InvalidationAwareSurfaceView? InternalView => _view;
 
         public double DesktopScaling => RenderScaling;
         public IPlatformHandle Handle { get; }
@@ -125,8 +131,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public virtual void Dispose()
         {
             _systemNavigationManager.Dispose();
-            _view.Dispose();
-            _view = null!;
+            _view?.Dispose();
+            _view = null;
         }
 
         protected void OnResized(Size size)
@@ -144,6 +150,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
             private double _oldScaling;
+            private Paint? _clearPaint;
 
             public SurfaceViewImpl(Context context, TopLevelImpl tl, bool placeOnTop) : base(context)
             {
@@ -159,11 +166,13 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 // can be seen below, but it does not.
                 if (OperatingSystem.IsAndroidVersionAtLeast(29))
                 {
-                    // Android 10+ does this (BlendMode was new)
-                    var paint = new Paint();
-                    paint.SetColor(0);
-                    paint.BlendMode = BlendMode.Clear;
-                    canvas.DrawRect(0, 0, Width, Height, paint);
+                    if (_clearPaint == null)
+                    {
+                        _clearPaint = new Paint();
+                        _clearPaint.SetColor(0);
+                        _clearPaint.BlendMode = BlendMode.Clear;
+                    }
+                    canvas.DrawRect(0, 0, Width, Height, _clearPaint);
                 }
                 else
                 {
@@ -189,7 +198,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (newScaling != _oldScaling)
                 {
-                    _oldScaling =  newScaling;
+                    _oldScaling = newScaling;
                     _tl.ScalingChanged?.Invoke(newScaling);
                 }
             }
@@ -226,9 +235,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            if(_insetsManager != null)
+            if (_insetsManager != null)
             {
                 _insetsManager.SystemBarTheme = themeVariant switch
                 {
@@ -238,23 +247,32 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 };
             }
 
-            AppCompatDelegate.DefaultNightMode = themeVariant == PlatformThemeVariant.Light ? AppCompatDelegate.ModeNightNo : AppCompatDelegate.ModeNightYes;
+            if (_context is AppCompatActivity activity)
+            {
+                var nightMode = themeVariant == PlatformThemeVariant.Dark ?
+                    AppCompatDelegate.ModeNightYes :
+                    AppCompatDelegate.ModeNightNo;
+
+                // Don't use AppCompatDelegate.DefaultNightMode: doing so will force the app to use one night mode,
+                // ignoring the system's configuration and preventing us from detecting system theme changes.
+                activity.Delegate.SetLocalNightMode(nightMode);
+            }
         }
 
-        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new(1, 1, 1);
 
-        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => (_view as IPlatformHandle)?.Handle ?? default;
         bool EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy.SkipWaits => true;
-        PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size => _view.Size;
-        double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => _view.Scaling;
+        PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size => _view?.Size ?? default;
+        double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => _view?.Scaling ?? default;
 
+        internal AndroidInsetsManager? InsetsManager => _insetsManager;
         internal AndroidKeyboardEventsHelper<TopLevelImpl> KeyboardHelper => _keyboardHelper;
-
         internal AndroidMotionEventsHelper PointerHelper => _pointerHelper;
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            if (_view.Context is not AvaloniaActivity activity)
+            if (_view?.Context is not AvaloniaActivity activity)
                 return;
 
             foreach (var level in transparencyLevels)
@@ -337,7 +355,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _insetsManager;
             }
 
-            if(featureType == typeof(IClipboard))
+            if (featureType == typeof(IClipboard))
             {
                 return _clipboard;
             }
@@ -351,7 +369,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 return _screens;
             }
-            
+
+            if(featureType == typeof(IPlatformFeedback))
+            {
+                return _feedback;
+            }
             return null;
         }
 
@@ -382,9 +404,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         internal void TextInput(string text)
         {
-            if(Input != null)
+            if (Input != null)
             {
-                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, InputRoot!, text);
+                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance!, (ulong)SystemClock.UptimeMillis(), InputRoot!, text);
 
                 Input(args);
             }

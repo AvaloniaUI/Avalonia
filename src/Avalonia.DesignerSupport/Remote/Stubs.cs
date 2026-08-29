@@ -44,6 +44,7 @@ namespace Avalonia.DesignerSupport.Remote
         public PixelPoint Position { get; set; }
         public Action<PixelPoint>? PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
@@ -69,16 +70,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         private sealed class DummyRenderTimer : IRenderTimer
         {
-            public event Action<TimeSpan> Tick
-            {
-                add { }
-                remove { }
-            }
-
+            public Action<TimeSpan>? Tick { get; set; }
             public bool RunsInBackground => false;
         }
 
-        public Compositor Compositor { get; } = new(new RenderLoop(new DummyRenderTimer()), null);
+        public Compositor Compositor { get; } = new(RenderLoop.FromTimer(new DummyRenderTimer()), null);
 
         public void Dispose()
         {
@@ -200,7 +196,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public bool NeedsManagedDecorations => false;
 
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
@@ -219,6 +215,8 @@ namespace Avalonia.DesignerSupport.Remote
             return null;
         }
         public void TakeFocus() { }
+
+        public void SetHitTestVisible(bool isHitTestVisible) { }
     }
 
     class ClipboardStub : IClipboard
@@ -276,32 +274,6 @@ namespace Avalonia.DesignerSupport.Remote
                 Bounds = WorkingArea = new PixelRect(0, 0, 4000, 4000);
                 IsPrimary = true;
             }
-        }
-    }
-
-    internal class NoopStorageProvider : BclStorageProvider
-    {
-        public override bool CanOpen => false;
-        public override Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
-        {
-            return Task.FromResult<IReadOnlyList<IStorageFile>>(Array.Empty<IStorageFile>());
-        }
-
-        public override bool CanSave => false;
-        public override Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
-        {
-            return Task.FromResult<IStorageFile?>(null);
-        }
-
-        public override Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
-        {
-            return Task.FromResult(new SaveFilePickerResult());
-        }
-
-        public override bool CanPickFolder => false;
-        public override Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
-        {
-            return Task.FromResult<IReadOnlyList<IStorageFolder>>(Array.Empty<IStorageFolder>());
         }
     }
 }

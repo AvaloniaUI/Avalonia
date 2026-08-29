@@ -1,8 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="using:System"
              xmlns:converter="using:ControlCatalog.Converter"
              xmlns:pages="using:ControlCatalog.Pages"
+             Header="NumericUpDown"
              x:Class="ControlCatalog.Pages.NumericUpDownPage"
              x:DataType="pages:NumbersPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4"
@@ -139,4 +140,4 @@
       </NumericUpDown>
     </StackPanel>
   </StackPanel>
-</UserControl>
+</ContentPage>

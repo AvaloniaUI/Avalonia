@@ -12,7 +12,7 @@
         <Panel>
           <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
           <Border Background="{TemplateBinding Background}">
-            <VisualLayerManager>
+            <VisualLayerManager Name="PART_VisualLayerManager">
               <ContentPresenter Name="PART_ContentPresenter"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 Content="{TemplateBinding Content}"

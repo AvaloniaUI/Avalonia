@@ -71,7 +71,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         Background = Brushes.LightGray,
                         PrimaryCommands =
                         {
-                            new AppBarButton
+                            new CommandBarButton
                             {
                                 Label = "Save",
                                 Icon = new Path
@@ -83,8 +83,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                                     Stretch = Stretch.Uniform
                                 }
                             },
-                            new AppBarSeparator(),
-                            new AppBarToggleButton
+                            new CommandBarSeparator(),
+                            new CommandBarToggleButton
                             {
                                 Label = "Bold",
                                 Icon = new Path
@@ -105,7 +105,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed,
                         PrimaryCommands =
                         {
-                            new AppBarButton
+                            new CommandBarButton
                             {
                                 Icon = new Path
                                 {

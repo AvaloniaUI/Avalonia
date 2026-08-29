@@ -32,11 +32,7 @@ namespace Avalonia.Data.Core.Plugins
         {
             // When building with AOT, don't create ReflectionMethodAccessorPlugin instance.
             // This branch can be eliminated in compile time with AOT.
-#if NET6_0_OR_GREATER
             if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
-#else
-            if (true)
-#endif
             {
                 s_propertyAccessors.Insert(1, new ReflectionMethodAccessorPlugin());
             }

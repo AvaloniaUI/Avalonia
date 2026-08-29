@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -114,6 +115,7 @@ namespace Avalonia.Native
             set => _native.SetWindowState((AvnWindowState)value);
         }
 
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
@@ -153,7 +155,7 @@ namespace Avalonia.Native
                                 return true;
                             });
 
-                    if(visual == null)
+                    if (visual == null || WindowDecorationProperties.GetElementRole(visual) == WindowDecorationsElementRole.TitleBar)
                     {
                         if (_doubleClickHelper.IsDoubleClick(e.Timestamp, e.Position))
                         {

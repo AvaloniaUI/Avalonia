@@ -29,27 +29,21 @@
             CornerRadius="6"
             ClipToBounds="True">
       <TabbedPage x:Name="DemoTabs" TabPlacement="Bottom">
-        <ContentPage Header="Browse">
-          <NavigationPage x:Name="BrowseNav">
-            <NavigationPage.Resources>
-              <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
-            </NavigationPage.Resources>
-          </NavigationPage>
-        </ContentPage>
-        <ContentPage Header="Search">
-          <NavigationPage x:Name="SearchNav">
-            <NavigationPage.Resources>
-              <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
-            </NavigationPage.Resources>
-          </NavigationPage>
-        </ContentPage>
-        <ContentPage Header="Account">
-          <NavigationPage x:Name="AccountNav">
-            <NavigationPage.Resources>
-              <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
-            </NavigationPage.Resources>
-          </NavigationPage>
-        </ContentPage>
+        <NavigationPage x:Name="BrowseNav" Header="Browse">
+          <NavigationPage.Resources>
+            <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+          </NavigationPage.Resources>
+        </NavigationPage>
+        <NavigationPage x:Name="SearchNav" Header="Search">
+          <NavigationPage.Resources>
+            <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+          </NavigationPage.Resources>
+        </NavigationPage>
+        <NavigationPage x:Name="AccountNav" Header="Account">
+          <NavigationPage.Resources>
+            <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+          </NavigationPage.Resources>
+        </NavigationPage>
       </TabbedPage>
     </Border>
   </DockPanel>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -138,6 +138,60 @@ namespace Avalonia.Controls.UnitTests
             target.ScrollIntoView(20);
 
             AssertRealizedItems(target, itemsControl, expectedFirstIndex, expectedCount);
+        }
+
+        [Theory]
+        [InlineData(Orientation.Vertical, 0d)]
+        [InlineData(Orientation.Vertical, 0.5d)]
+        [InlineData(Orientation.Horizontal, 0d)]
+        [InlineData(Orientation.Horizontal, 0.5d)]
+        public void ScrollToEnd_Arrives_At_End_When_Items_Have_Different_Sizes(Orientation orientation, double bufferFactor)
+        {
+            using var app = App();
+            var horizontal = orientation == Orientation.Horizontal;
+            var items = Enumerable.Range(0, 100)
+                .Select(x => horizontal ? (object)new ItemWithWidth(x, x < 60 ? 20 : 50) : new ItemWithHeight(x, x < 60 ? 20 : 50))
+                .ToList();
+            var (target, scroll, itemsControl) = CreateUnrootedTarget<ItemsControl>(
+                items: items,
+                itemTemplate: horizontal ? CanvasWithWidthTemplate : CanvasWithHeightTemplate,
+                orientation: orientation,
+                bufferFactor: bufferFactor);
+            scroll.Template = ScrollViewerTemplateWithScrollBars();
+            CreateRoot(itemsControl).LayoutManager.ExecuteInitialLayoutPass();
+
+            (horizontal ? scroll.HorizontalScrollBar : scroll.VerticalScrollBar)?.ScrollToEnd();
+            Layout(target);
+
+            Assert.Equal(
+                horizontal ? scroll.Extent.Width - scroll.Viewport.Width : scroll.Extent.Height - scroll.Viewport.Height,
+                horizontal ? scroll.Offset.X : scroll.Offset.Y);
+            Assert.Equal(items.Count - 1, target.LastRealizedIndex);
+            Assert.Equal(
+                horizontal ? target.ViewPort.Right : target.ViewPort.Bottom,
+                horizontal ? target.GetRealizedElements().Last()!.Bounds.Right : target.GetRealizedElements().Last()!.Bounds.Bottom);
+        }
+
+        [Fact]
+        public void Item_Of_Content_Sized_Panel_Is_Positioned_At_Start()
+        {
+            using var app = App();
+
+            var items = new ObservableCollection<string>();
+            var (target, _, itemsControl) = CreateUnrootedTarget<ItemsControl>(items: items);
+
+            // Size the control to its content rather than to the viewport.
+            itemsControl.VerticalAlignment = VerticalAlignment.Top;
+
+            CreateRoot(itemsControl).LayoutManager.ExecuteInitialLayoutPass();
+
+            items.Add("Item 0");
+            Layout(target);
+
+            var container = Assert.IsAssignableFrom<Control>(target.ContainerFromIndex(0));
+
+            Assert.Equal(0, container.Bounds.Y);
+            Assert.Equal(container.Bounds.Height, target.Bounds.Height);
         }
 
         [Theory]
@@ -495,6 +549,40 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(0d)]
         [InlineData(0.5d)]
+        public void Focused_Element_Outside_Realized_Range_Is_Not_Arranged_In_Viewport(double bufferFactor)
+        {
+            using var app = App();
+
+            // Item 0 is much taller than the others, so the average-based position estimated for
+            // it once it has left the realized range lands inside the viewport (#17935).
+            var items = Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, x == 0 ? 100 : 10));
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: CanvasWithHeightTemplate,
+                bufferFactor: bufferFactor);
+
+            var focused = target.GetRealizedElements().First()!;
+            focused.Focusable = true;
+            focused.Focus();
+            Assert.True(focused.IsKeyboardFocusWithin);
+
+            scroll.Offset = new Vector(0, 160);
+            Layout(target);
+
+            var viewport = new Rect(scroll.Offset.X, scroll.Offset.Y, scroll.Viewport.Width, scroll.Viewport.Height);
+            Assert.True(focused.IsKeyboardFocusWithin);
+            Assert.False(focused.Bounds.Intersects(viewport));
+
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            Assert.Same(focused, target.GetRealizedElements().First());
+            Assert.Equal(new Rect(0, 0, 100, 100), focused.Bounds);
+        }
+
+        [Theory]
+        [InlineData(0d)]
+        [InlineData(0.5d)]
         public void Focusing_Another_Element_Recycles_Original_Focus_Element(double bufferFactor)
         {
             using var app = App();
@@ -630,6 +718,69 @@ namespace Avalonia.Controls.UnitTests
 
             AssertRealizedItems(target, itemsControl, 0, 5);
             Assert.Equal(new Vector(0, 0), scroll.Offset);
+        }
+
+        [Fact]
+        public void Shrinking_Viewport_Then_Growing_Back_Triggers_Remeasure()
+        {
+            // Regression test for stale _extendedViewport comparison in OnEffectiveViewportChanged.
+            //
+            // When the viewport shrinks (e.g., ComboBox popup shrinks during filtering),
+            // OnEffectiveViewportChanged doesn't trigger a measure (needsMeasure=false because
+            // the smaller viewport is within the old extended viewport). The _extendedViewport
+            // comparison baseline is NOT updated. When the viewport later grows back,
+            // OnEffectiveViewportChanged compares against the stale large _extendedViewport,
+            // concludes "no significant change", and skips the measure. This prevents item
+            // realization when the only measure trigger is OnEffectiveViewportChanged.
+            //
+            // The fix uses a separate _lastKnownExtendedViewport that is always updated,
+            // so the comparison correctly detects viewport growth after a shrink.
+            //
+            // Key: ScrollContentPresenter passes infinite height for vertical scroll, so
+            // the panel's MeasureOverride is NOT called from the layout cascade when only
+            // the root size changes. OnEffectiveViewportChanged is the sole measure trigger.
+            using var app = App();
+
+            var items = Enumerable.Range(0, 20).Select(x => $"Item {x}");
+            var (target, scroll, itemsControl) =
+               CreateUnrootedTarget<ItemsControl, VirtualizingStackPanelCountingMeasureArrange>(
+                  items: items, bufferFactor: 0);
+            var root = CreateRoot(itemsControl, new Size(100, 100));
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Initial state: viewport 0-100, 10 items visible, _extendedViewport = (0,0,100,100)
+            AssertRealizedItems(target, itemsControl, 0, 10);
+
+            // Shrink viewport (simulates popup shrinking when items are filtered).
+            // Panel MeasureOverride is NOT called (ScrollContentPresenter passes infinite height).
+            // OnEffectiveViewportChanged fires with small viewport but needsMeasure=false
+            // because the small viewport is within the old _extendedViewport.
+            root.ClientSize = new Size(100, 10);
+            root.InvalidateMeasure();
+            Layout(target);
+
+            // Reset counters after shrink
+            target.ResetMeasureArrangeCounters();
+
+            // Grow viewport back (simulates popup growing when filter is removed).
+            // Panel MeasureOverride is NOT called from layout cascade (same infinite constraint).
+            // OnEffectiveViewportChanged is the ONLY path to trigger a remeasure.
+            root.ClientSize = new Size(100, 100);
+            root.InvalidateMeasure();
+            Layout(target);
+
+            // Without fix: OnEffectiveViewportChanged compares new viewport (0-100) against
+            // stale _extendedViewport (0-100, never updated during shrink). Sees no change.
+            // needsMeasure=false. No remeasure triggered. Measure count = 0.
+            //
+            // With fix: compares against _lastKnownExtendedViewport (0-10, updated during
+            // shrink). Detects that viewport grew past it (100 > 10). needsMeasure=true.
+            // InvalidateMeasure called. Measure count >= 1.
+            Assert.True(target.Measured >= 1,
+               "Panel should be re-measured when viewport grows back after a previous shrink. " +
+               "OnEffectiveViewportChanged must detect viewport growth by comparing against " +
+               "the last known extended viewport, not the stale _extendedViewport.");
         }
 
         [Theory]
@@ -1554,7 +1705,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Focused_Container_Is_Positioned_Correctly_When_Scrolled_Past_Items_With_Different_Heights()
+        public void Focused_Container_Is_Positioned_Outside_Viewport_When_Scrolled_Past_Items_With_Different_Heights()
         {
             using var app = App();
 
@@ -1562,7 +1713,7 @@ namespace Avalonia.Controls.UnitTests
                 .Select(x => new ItemWithHeight(x, x < 10 ? 10 : 50))
                 .ToList();
 
-            var (target, _, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
 
             var focused = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
             focused.Focusable = true;
@@ -1573,18 +1724,19 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(target.FirstRealizedIndex > 5);
 
-            var firstIndex = target.FirstRealizedIndex;
-            var firstRealized = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(firstIndex));
-            var realized = target.GetRealizedElements()
-                .Where(x => x is not null)
-                .Cast<Control>()
-                .ToList();
-
-            var estimatedSize = realized.Average(x => x.DesiredSize.Height);
-            var expectedTop = firstRealized.Bounds.Top - ((firstIndex - 5) * estimatedSize);
-
+            var firstRealized = Assert.IsType<ContentPresenter>(
+                target.ContainerFromIndex(target.FirstRealizedIndex));
             focused = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
-            Assert.Equal(expectedTop, focused.Bounds.Top, 3);
+
+            // The focused container's position is estimated, as it's outside the realized range.
+            // The estimate must never place it before the panel origin...
+            Assert.True(focused.Bounds.Top >= 0);
+
+            // ...must keep it above the realized range rather than overlapping it...
+            Assert.True(focused.Bounds.Bottom <= firstRealized.Bounds.Top);
+
+            // ...and must keep it out of the viewport, so it can't appear as a ghost item.
+            Assert.True(focused.Bounds.Bottom <= scroll.Offset.Y);
         }
 
         [Theory]
@@ -1595,7 +1747,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(0.5d,
             0, 7,
             0, 7,
-            7, 17)]
+            0, 9)]
         public void Focused_Container_Is_Positioned_Correctly_when_Container_Size_Change_Causes_It_To_Be_Moved_Into_Visible_Viewport(double bufferFactor, 
             int firstIndex1, int lastIndex1,
             int firstIndex2, int lastIndex2,
@@ -1636,6 +1788,40 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 140, 100, 20), container.Bounds);
         }
 
+        [Theory]
+        [InlineData(25, Orientation.Vertical)]
+        [InlineData(99, Orientation.Vertical)]
+        [InlineData(25, Orientation.Horizontal)]
+        [InlineData(99, Orientation.Horizontal)]
+        public void ScrollIntoView_With_Variable_Size_Items_Keeps_Target_In_Viewport(int targetIndex, Orientation orientation)
+        {
+            using var app = App();
+
+            var firstHalfSize = targetIndex < 60 ? 20 : 40;
+            var secondHalfSize = targetIndex < 60 ? 40 : 20;
+            var horizontal = orientation == Orientation.Horizontal;
+            IEnumerable<object> items = horizontal ?
+                Enumerable.Range(0, 100).Select(x => new ItemWithWidth(x, x < 50 ? firstHalfSize : secondHalfSize)) :
+                Enumerable.Range(0, 100).Select(x => new ItemWithHeight(x, x < 50 ? firstHalfSize : secondHalfSize));
+            Optional<IDataTemplate?> itemTemplate = horizontal ? CanvasWithWidthTemplate : CanvasWithHeightTemplate;
+            var (target, scroll, _) = CreateTarget(items: items, itemTemplate: itemTemplate, orientation: orientation);
+
+            target.ScrollIntoView(60);
+            target.ScrollIntoView(targetIndex);
+
+            var container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(targetIndex));
+            var message = $"Bounds={container.Bounds}, Offset={scroll.Offset}, Viewport={scroll.Viewport}, Extent={scroll.Extent}";
+
+            var containerStart = horizontal ? container.Bounds.Left : container.Bounds.Top;
+            var containerEnd = horizontal ? container.Bounds.Right : container.Bounds.Bottom;
+            var viewportStart = horizontal ? scroll.Offset.X : scroll.Offset.Y;
+            var viewportEnd = viewportStart + (horizontal ? scroll.Viewport.Width : scroll.Viewport.Height);
+
+            Assert.True(containerStart > 0, message);
+            Assert.True(containerStart >= viewportStart, message);
+            Assert.True(containerEnd <= viewportEnd, message);
+        }
+
         [Fact]
         public void When_Vertical_Calculates_ViewPort_At_Start_Of_List()
         {
@@ -1655,8 +1841,8 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(0, target.ViewPort.Top);
             Assert.Equal(100, target.ViewPort.Bottom);
 
-            Assert.Equal(0, target.ExtendedViewPort.Top);
-            Assert.Equal(200, target.ExtendedViewPort.Bottom);
+            Assert.Equal(0, target.LastMeasuredExtendedViewPort.Top);
+            Assert.Equal(200, target.LastMeasuredExtendedViewPort.Bottom);
         }
 
         [Fact]
@@ -1680,8 +1866,8 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(900, target.ViewPort.Top);
             Assert.Equal(1000, target.ViewPort.Bottom);
 
-            Assert.Equal(800, target.ExtendedViewPort.Top);
-            Assert.Equal(1000, target.ExtendedViewPort.Bottom);
+            Assert.Equal(800, target.LastMeasuredExtendedViewPort.Top);
+            Assert.Equal(1000, target.LastMeasuredExtendedViewPort.Bottom);
         }
 
         [Fact]
@@ -1705,8 +1891,8 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(500, target.ViewPort.Top);
             Assert.Equal(600, target.ViewPort.Bottom);
 
-            Assert.Equal(450, target.ExtendedViewPort.Top);
-            Assert.Equal(650, target.ExtendedViewPort.Bottom);
+            Assert.Equal(450, target.LastMeasuredExtendedViewPort.Top);
+            Assert.Equal(650, target.LastMeasuredExtendedViewPort.Bottom);
         }
 
         [Fact]
@@ -1729,8 +1915,8 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(0, target.ViewPort.Left);
             Assert.Equal(100, target.ViewPort.Right);
 
-            Assert.Equal(0, target.ExtendedViewPort.Left);
-            Assert.Equal(200, target.ExtendedViewPort.Right);
+            Assert.Equal(0, target.LastMeasuredExtendedViewPort.Left);
+            Assert.Equal(200, target.LastMeasuredExtendedViewPort.Right);
         }
 
         [Fact]
@@ -1754,8 +1940,8 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(900, target.ViewPort.Left);
             Assert.Equal(1000, target.ViewPort.Right);
 
-            Assert.Equal(800, target.ExtendedViewPort.Left);
-            Assert.Equal(1000, target.ExtendedViewPort.Right);
+            Assert.Equal(800, target.LastMeasuredExtendedViewPort.Left);
+            Assert.Equal(1000, target.LastMeasuredExtendedViewPort.Right);
         }
 
         [Fact]
@@ -1780,8 +1966,8 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(500, target.ViewPort.Left);
             Assert.Equal(600, target.ViewPort.Right);
 
-            Assert.Equal(450, target.ExtendedViewPort.Left);
-            Assert.Equal(650, target.ExtendedViewPort.Right);
+            Assert.Equal(450, target.LastMeasuredExtendedViewPort.Left);
+            Assert.Equal(650, target.LastMeasuredExtendedViewPort.Right);
         }
 
         [Fact]
@@ -1806,11 +1992,15 @@ namespace Avalonia.Controls.UnitTests
             // visible are 10 => need to scroll down 100px until the next 5 (visible*BufferFactor) additional items are added.
             // until then no measure-arrange call should happen
 
+            var count = 0;
             // Scroll down until the extended viewport bounds are reached
             while (target.LastRealizedIndex < 20)
             {
                 scroll.Offset = new Vector(0, scroll.Offset.Y + 5);
                 Layout(target);
+                count++;
+                if (count > 1000)
+                    throw new InvalidOperationException("infinite scroll detected");
             }
 
             // Assert
@@ -1862,11 +2052,15 @@ namespace Avalonia.Controls.UnitTests
 
             var initialFirstRealizedIndex = target.FirstRealizedIndex;
 
+            var count = 0;
             // Scroll down until the extended viewport bounds are reached
             while (target.FirstRealizedIndex >= 15)
             {
                 scroll.Offset = new Vector(0, scroll.Offset.Y - 5);
                 Layout(target);
+                count++;
+                if (count > 1000)
+                    throw new InvalidOperationException("infinite scroll detected");
             }
 
             // Assert
@@ -1918,11 +2112,15 @@ namespace Avalonia.Controls.UnitTests
 
             var initialLastRealizedIndex = target.LastRealizedIndex;
 
+            var count = 0;
             // Scroll down until we reached the very last item
             while (target.LastRealizedIndex < 99)
             {
                 scroll.Offset = new Vector(0, scroll.Offset.Y + 5);
                 Layout(target);
+                count++;
+                if (count > 1000)
+                    throw new InvalidOperationException("infinite scroll detected");
             }
 
             // Assert
@@ -1972,11 +2170,15 @@ namespace Avalonia.Controls.UnitTests
             // visible are 10 => need to scroll down 100px until the next 5 (visible*BufferFactor) additional items are added.
             // until then no measure-arrange call should happen
 
+            var count = 0;
             // Scroll down until the extended viewport bounds are reached
             while (target.FirstRealizedIndex > 0)
             {
                 scroll.Offset = new Vector(0, scroll.Offset.Y - 5);
                 Layout(target);
+                count++;
+                if (count > 1000)
+                    throw new InvalidOperationException("infinite scroll detected");
             }
 
             // Assert
@@ -2022,12 +2224,15 @@ namespace Avalonia.Controls.UnitTests
             // shows 20 items, each is 10 high.
             // visible are 10 => need to scroll down 100px until the next 5 (visible*BufferFactor) additional items are added.
             // until then no measure-arrange call should happen
-
+            var count = 0;
             // Scroll down until the extended viewport bounds are reached
             while (target.LastRealizedIndex < 20)
             {
                 scroll.Offset = new Vector(scroll.Offset.X + 5, 0);
                 Layout(target);
+                count++;
+                if (count > 1000)
+                    throw new InvalidOperationException("infinite scroll detected");
             }
 
             // Assert
@@ -2079,12 +2284,15 @@ namespace Avalonia.Controls.UnitTests
             // until then no measure-arrange call should happen
 
             var initialFirstRealizedIndex = target.FirstRealizedIndex;
-
+            var count = 0;
             // Scroll down until the extended viewport bounds are reached
             while (target.FirstRealizedIndex >= 15)
             {
                 scroll.Offset = new Vector(scroll.Offset.X - 5, 0);
                 Layout(target);
+                count++;
+                if (count > 1000)
+                    throw new InvalidOperationException("infinite scroll detected");
             }
 
             // Assert
@@ -2137,11 +2345,15 @@ namespace Avalonia.Controls.UnitTests
 
             var initialLastRealizedIndex = target.LastRealizedIndex;
 
+            var count = 0;
             // Scroll down until we reached the very last item
             while (target.LastRealizedIndex < 99)
             {
                 scroll.Offset = new Vector(scroll.Offset.X + 5, 0);
                 Layout(target);
+                count++;
+                if (count > 1000)
+                    throw new InvalidOperationException("infinite scroll detected");
             }
 
             // Assert
@@ -2192,11 +2404,15 @@ namespace Avalonia.Controls.UnitTests
             // visible are 10 => need to scroll down 100px until the next 5 (visible*BufferFactor) additional items are added.
             // until then no measure-arrange call should happen
 
+            var count = 0;
             // Scroll down until the extended viewport bounds are reached
             while (target.FirstRealizedIndex > 0)
             {
                 scroll.Offset = new Vector(scroll.Offset.X - 5, 0);
                 Layout(target);
+                count++;
+                if (count > 1000)
+                    throw new InvalidOperationException("infinite scroll detected");
             }
 
             // Assert
@@ -2407,6 +2623,33 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Name = "PART_ScrollContentPresenter",
                 }.RegisterInNameScope(ns));
+        }
+
+        private static IControlTemplate ScrollViewerTemplateWithScrollBars()
+        {
+            return new FuncControlTemplate<ScrollViewer>((_, ns) =>
+            {
+                var presenter = new ScrollContentPresenter
+                {
+                    Name = "PART_ScrollContentPresenter",
+                }.RegisterInNameScope(ns);
+
+                var horizontalScrollBar = new ScrollBar
+                {
+                    Name = "PART_HorizontalScrollBar",
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Bottom
+                }.RegisterInNameScope(ns);
+
+                var verticalScrollBar = new ScrollBar
+                {
+                    Name = "PART_VerticalScrollBar",
+                    Orientation = Orientation.Vertical,
+                    HorizontalAlignment = HorizontalAlignment.Right
+                }.RegisterInNameScope(ns);
+
+                return new Panel { Children = { presenter, horizontalScrollBar, verticalScrollBar } };
+            });
         }
 
         private static IDisposable App() => UnitTestApplication.Start(TestServices.RealFocus);

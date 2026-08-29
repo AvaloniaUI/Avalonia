@@ -1,6 +1,4 @@
-﻿using Avalonia.Controls;
-
-namespace Avalonia.Win32;
+﻿namespace Avalonia.Win32;
 
 internal enum BlurEffect
 {
@@ -16,5 +14,4 @@ internal interface ICompositionEffectsSurface
     bool IsBlurSupported(BlurEffect effect);
 
     void SetBlur(BlurEffect enable);
-    void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel);
 }

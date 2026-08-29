@@ -41,6 +41,10 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     {
         if (featureType == typeof(IVulkanContextExternalObjectsFeature))
             return _externalObjectsFeature;
+                
+        if (featureType == typeof(IVulkanKhrSurfacePlatformSurfaceFactory))
+            return _surfaceFactory;
+
         return null;
     }
 
@@ -59,6 +63,9 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     {
         foreach (var surf in surfaces)
         {
+            if (surf is IVulkanRenderTargetPlatformSurface renderTargetSurface)
+                return renderTargetSurface.CreateRenderTarget(this);
+
             IVulkanKhrSurfacePlatformSurface khrSurface;
             if (surf is IVulkanKhrSurfacePlatformSurface khr)
                 khrSurface = khr;

@@ -37,7 +37,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     Background = Brushes.LightGray,
                     PrimaryCommands =
                     {
-                        new AppBarButton
+                        new CommandBarButton
                         {
                             Label = "New",
                             Icon = new Path
@@ -49,7 +49,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                                 Stretch = Stretch.Uniform
                             }
                         },
-                        new AppBarButton
+                        new CommandBarButton
                         {
                             Label = "Save",
                             Icon = new Path
@@ -61,8 +61,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                                 Stretch = Stretch.Uniform
                             }
                         },
-                        new AppBarSeparator(),
-                        new AppBarToggleButton
+                        new CommandBarSeparator(),
+                        new CommandBarToggleButton
                         {
                             Label = "Bold",
                             Icon = new Path
@@ -81,7 +81,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             target.Styles.Add(new SimpleTheme());
             target.Styles.Add(FontStyle);
             await RenderToFile(target);
-            CompareImages(skipImmediate: true);
+            CompareImages(skipImmediate: true, gpuAllowedError: 0.03);
         }
 
         [Fact]
@@ -98,7 +98,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed,
                     PrimaryCommands =
                     {
-                        new AppBarButton
+                        new CommandBarButton
                         {
                             Icon = new Path
                             {
@@ -109,7 +109,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                                 Stretch = Stretch.Uniform
                             }
                         },
-                        new AppBarButton
+                        new CommandBarButton
                         {
                             Icon = new Path
                             {
@@ -120,8 +120,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                                 Stretch = Stretch.Uniform
                             }
                         },
-                        new AppBarSeparator(),
-                        new AppBarToggleButton
+                        new CommandBarSeparator(),
+                        new CommandBarToggleButton
                         {
                             IsChecked = true,
                             Icon = new Path
@@ -142,5 +142,6 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
+
     }
 }

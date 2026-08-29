@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
@@ -12,8 +13,8 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
-using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 using CoreAnimation;
 using Foundation;
@@ -32,20 +33,24 @@ namespace Avalonia.iOS
             => _inputRoot ?? throw new InvalidOperationException($"{nameof(IWindowImpl.SetInputRoot)} must have been called");
         internal TopLevel TopLevel => _topLevel;
 
+        private readonly AutomationPeerWrapper _accessWrapper;
         private readonly TopLevelImpl _topLevelImpl;
         private readonly EmbeddableControlRoot _topLevel;
         private readonly InputHandler _input;
+
         private TextInputMethodClient? _client;
         private IAvaloniaViewController? _controller;
         private IInputRoot? _inputRoot;
         private Metal.MetalRenderTarget? _currentRenderTarget;
         private (PixelSize size, double scaling) _latestLayoutProps;
+        private bool _disposedValue;
 
         public AvaloniaView()
         {
             _topLevelImpl = new TopLevelImpl(this);
             _input = new InputHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+            _accessWrapper = new(this, ControlAutomationPeer.CreatePeerForElement(_topLevel));
 
             _topLevel.Prepare();
 
@@ -132,7 +137,7 @@ namespace Avalonia.iOS
         public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
         {
             base.TraitCollectionDidChange(previousTraitCollection);
-            
+
             var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
             settings?.TraitCollectionDidChange();
         }
@@ -141,7 +146,7 @@ namespace Avalonia.iOS
         public override void TintColorDidChange()
         {
             base.TintColorDidChange();
-            
+
             var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
             settings?.TraitCollectionDidChange();
         }
@@ -152,7 +157,7 @@ namespace Avalonia.iOS
             _controller = controller;
             _topLevelImpl._insetsManager.InitWithController(controller);
         }
-        
+
         internal class TopLevelImpl : ITopLevelImpl
         {
             private readonly AvaloniaView _view;
@@ -161,6 +166,7 @@ namespace Avalonia.iOS
             private readonly IStorageProvider? _storageProvider;
             private readonly IClipboard? _clipboard;
             private readonly IInputPane? _inputPane;
+            private readonly IOSPlatformFeedback _feedback;
             private IDisposable? _paddingInsets;
 
             public AvaloniaView View => _view;
@@ -180,6 +186,7 @@ namespace Avalonia.iOS
                 _clipboard = new Input.Platform.Clipboard(new Clipboard.ClipboardImpl(UIPasteboard.General));
                 _inputPane = UIKitInputPane.Instance;
 #endif
+                _feedback = new IOSPlatformFeedback(view);
                 _insetsManager = new InsetsManager();
                 _insetsManager.DisplayEdgeToEdgeChanged += (_, edgeToEdge) =>
                 {
@@ -252,7 +259,7 @@ namespace Avalonia.iOS
 
             public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
-            public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+            public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
             {
 #if !TVOS
                 // TODO adjust status bar depending on full screen mode.
@@ -269,7 +276,7 @@ namespace Avalonia.iOS
                 }
 #endif
             }
-            
+
             public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } =
                 new AcrylicPlatformCompensationLevels();
 
@@ -313,6 +320,11 @@ namespace Avalonia.iOS
                 if (featureType == typeof(IScreenImpl))
                 {
                     return (iOSScreens)AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();
+                }
+
+                if (featureType == typeof(IPlatformFeedback))
+                {
+                    return _feedback;
                 }
 
                 return null;
@@ -411,6 +423,22 @@ namespace Avalonia.iOS
         {
             _currentRenderTarget = target;
             _currentRenderTarget.PendingLayout = _latestLayoutProps;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                _disposedValue = true;
+
+                if (disposing)
+                {
+                    _accessWrapper.Dispose();
+                    _topLevel.Dispose();
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

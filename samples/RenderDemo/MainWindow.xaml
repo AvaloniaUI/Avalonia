@@ -51,6 +51,9 @@
     <TabItem Header="Animations">
       <pages:AnimationsPage />
     </TabItem>
+    <TabItem Header="Animation Speed">
+      <pages:AnimationSpeedPage />
+    </TabItem>
     <TabItem Header="Transitions">
       <pages:TransitionsPage />
     </TabItem>
@@ -65,6 +68,12 @@
     </TabItem>
     <TabItem Header="Drawing">
       <pages:DrawingPage />
+    </TabItem>
+    <TabItem Header="Hit Testing">
+      <pages:HitTestingPage />
+    </TabItem>
+    <TabItem Header="Geometry Hit Testing">
+      <pages:GeometryHitTestingPage />
     </TabItem>
     <TabItem Header="SkCanvas">
       <pages:CustomSkiaPage />
@@ -95,6 +104,9 @@
     </TabItem>
     <TabItem Header="3D Transformation">
       <pages:Transform3DPage />
+    </TabItem>
+    <TabItem Header="Resize Pattern">
+      <pages:ResizePatternPage />
     </TabItem>
   </controls:HamburgerMenu>
 </Window>

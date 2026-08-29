@@ -1,6 +1,5 @@
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
-using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -15,47 +14,47 @@ namespace Avalonia.Controls.Primitives
         /// This property is usually applied to an item container directly.
         /// </summary>
         public static readonly AttachedProperty<string?> TextProperty
-            = AvaloniaProperty.RegisterAttached<Interactive, string?>("Text", typeof(TextSearch));
+            = AvaloniaProperty.RegisterAttached<AvaloniaObject, string?>("Text", typeof(TextSearch));
 
         /// <summary>
         /// Defines the TextBinding attached property.
         /// The binding will be applied to each item during text search in <see cref="SelectingItemsControl"/> (such as <see cref="ComboBox"/>).
         /// </summary>
         public static readonly AttachedProperty<BindingBase?> TextBindingProperty
-            = AvaloniaProperty.RegisterAttached<Interactive, BindingBase?>("TextBinding", typeof(TextSearch));
+            = AvaloniaProperty.RegisterAttached<AvaloniaObject, BindingBase?>("TextBinding", typeof(TextSearch));
 
         /// <summary>
         /// Sets the value of the <see cref="TextProperty"/> attached property to a given <see cref="Control"/>.
         /// </summary>
-        /// <param name="control">The control.</param>
+        /// <param name="element">The control.</param>
         /// <param name="text">The search text to set.</param>
-        public static void SetText(Interactive control, string? text)
-            => control.SetValue(TextProperty, text);
+        public static void SetText(AvaloniaObject element, string? text)
+            => element.SetValue(TextProperty, text);
 
         /// <summary>
         /// Gets the value of the <see cref="TextProperty"/> attached property from a given <see cref="Control"/>.
         /// </summary>
-        /// <param name="control">The control.</param>
+        /// <param name="element">The control.</param>
         /// <returns>The search text.</returns>
-        public static string? GetText(Interactive control)
-            => control.GetValue(TextProperty);
+        public static string? GetText(AvaloniaObject element)
+            => element.GetValue(TextProperty);
 
         /// <summary>
-        /// Sets the value of the <see cref="TextBindingProperty"/> attached property to a given <see cref="Interactive"/>.
+        /// Sets the value of the <see cref="TextBindingProperty"/> attached property to a given element.
         /// </summary>
-        /// <param name="interactive">The interactive element.</param>
+        /// <param name="element">The element.</param>
         /// <param name="value">The search text binding to set.</param>
-        public static void SetTextBinding(Interactive interactive, BindingBase? value)
-            => interactive.SetValue(TextBindingProperty, value);
+        public static void SetTextBinding(AvaloniaObject element, BindingBase? value)
+            => element.SetValue(TextBindingProperty, value);
 
         /// <summary>
-        /// Gets the value of the <see cref="TextBindingProperty"/> attached property from a given <see cref="Interactive"/>.
+        /// Gets the value of the <see cref="TextBindingProperty"/> attached property from a given element.
         /// </summary>
-        /// <param name="interactive">The interactive element.</param>
+        /// <param name="element">The element.</param>
         /// <returns>The search text binding.</returns>
         [AssignBinding]
-        public static BindingBase? GetTextBinding(Interactive interactive)
-            => interactive.GetValue(TextBindingProperty);
+        public static BindingBase? GetTextBinding(AvaloniaObject element)
+            => element.GetValue(TextBindingProperty);
 
         /// <summary>
         /// <para>Gets the effective text of a given item.</para>
@@ -80,9 +79,9 @@ namespace Avalonia.Controls.Primitives
 
             string? text;
 
-            if (item is Interactive interactive)
+            if (item is AvaloniaObject obj)
             {
-                text = interactive.GetValue(TextProperty);
+                text = obj.GetValue(TextProperty);
                 if (!string.IsNullOrEmpty(text))
                     return text;
             }

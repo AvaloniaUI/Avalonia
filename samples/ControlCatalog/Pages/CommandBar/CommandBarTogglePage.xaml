@@ -28,7 +28,7 @@
         <Separator />
 
         <TextBlock Text="About" FontWeight="SemiBold" />
-        <TextBlock Text="AppBarToggleButton maintains checked/unchecked state. When checked, it shows a highlight background. Bind IsChecked to a boolean property."
+        <TextBlock Text="CommandBarToggleButton maintains checked/unchecked state. When checked, it shows a highlight background. Bind IsChecked to a boolean property."
                    FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
       </StackPanel>
     </ScrollViewer>
@@ -37,25 +37,25 @@
 
     <ScrollViewer>
       <StackPanel Spacing="12" Margin="12,12,12,0">
-        <TextBlock Classes="h2">AppBarToggleButton supports on/off states for formatting and feature toggles.</TextBlock>
+        <TextBlock Classes="h2">CommandBarToggleButton supports on/off states for formatting and feature toggles.</TextBlock>
 
         <TextBlock Text="Text Formatting" FontWeight="SemiBold" />
         <CommandBar x:Name="FormatBar" OverflowButtonVisibility="Collapsed">
-          <AppBarToggleButton x:Name="BoldToggle"
+          <CommandBarToggleButton x:Name="BoldToggle"
                               Label="Bold"
                               IsCheckedChanged="OnFormatChanged">
-            <AppBarToggleButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></AppBarToggleButton.Icon>
-          </AppBarToggleButton>
-          <AppBarToggleButton x:Name="ItalicToggle"
+            <CommandBarToggleButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></CommandBarToggleButton.Icon>
+          </CommandBarToggleButton>
+          <CommandBarToggleButton x:Name="ItalicToggle"
                               Label="Italic"
                               IsCheckedChanged="OnFormatChanged">
-            <AppBarToggleButton.Icon><PathIcon Data="{StaticResource ItalicIcon}" /></AppBarToggleButton.Icon>
-          </AppBarToggleButton>
-          <AppBarToggleButton x:Name="UnderlineToggle"
+            <CommandBarToggleButton.Icon><PathIcon Data="{StaticResource ItalicIcon}" /></CommandBarToggleButton.Icon>
+          </CommandBarToggleButton>
+          <CommandBarToggleButton x:Name="UnderlineToggle"
                               Label="Underline"
                               IsCheckedChanged="OnFormatChanged">
-            <AppBarToggleButton.Icon><PathIcon Data="{StaticResource UnderlineIcon}" /></AppBarToggleButton.Icon>
-          </AppBarToggleButton>
+            <CommandBarToggleButton.Icon><PathIcon Data="{StaticResource UnderlineIcon}" /></CommandBarToggleButton.Icon>
+          </CommandBarToggleButton>
         </CommandBar>
 
         <TextBlock x:Name="FormatStatus"
@@ -67,9 +67,9 @@
 
         <TextBlock Text="Favorite" FontWeight="SemiBold" />
         <CommandBar OverflowButtonVisibility="Collapsed">
-          <AppBarToggleButton Label="Favorite">
-            <AppBarToggleButton.Icon><PathIcon Data="{StaticResource FavoriteIcon}" /></AppBarToggleButton.Icon>
-          </AppBarToggleButton>
+          <CommandBarToggleButton Label="Favorite">
+            <CommandBarToggleButton.Icon><PathIcon Data="{StaticResource FavoriteIcon}" /></CommandBarToggleButton.Icon>
+          </CommandBarToggleButton>
         </CommandBar>
       </StackPanel>
     </ScrollViewer>

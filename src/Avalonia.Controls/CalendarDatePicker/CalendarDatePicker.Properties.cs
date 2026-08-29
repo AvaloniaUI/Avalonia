@@ -1,6 +1,8 @@
 using System;
+using System.Globalization;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Layout;
 
 namespace Avalonia.Controls
@@ -74,6 +76,14 @@ namespace Avalonia.Controls
                 defaultValue: "d",
                 validate: IsValidDateFormatString);
 
+        /// <summary> 
+        /// Defines the <see cref="TextConverter"/> property. 
+        /// </summary> 
+        public static readonly StyledProperty<IValueConverter?> TextConverterProperty = 
+            AvaloniaProperty.Register<CalendarDatePicker, IValueConverter?>(
+                nameof(TextConverter),
+                defaultBindingMode: BindingMode.OneWay);
+
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
@@ -139,6 +149,18 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="IsWeekNumberVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsWeekNumberVisibleProperty =
+            Calendar.IsWeekNumberVisibleProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="WeekNumberRule"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CalendarWeekRule> WeekNumberRuleProperty =
+            Calendar.WeekNumberRuleProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Gets a collection of dates that are marked as not selectable.
@@ -265,11 +287,33 @@ namespace Avalonia.Controls
             set => SetValue(SelectedDateFormatProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the custom date format used for display (and/or parsing)
+        /// the date displayed to the user. Not used unless
+        /// <see cref="SelectedDateFormat"/> is <see cref="CalendarDatePickerFormat.Custom" />.
+        /// </summary>
+        /// <value>
+        /// The default is "d".
+        /// </value>
         public string CustomDateFormatString
         {
             get => GetValue(CustomDateFormatStringProperty);
             set => SetValue(CustomDateFormatStringProperty, value);
         }
+        
+        /// <summary> 
+        /// Gets or sets the custom bidirectional Text-Value converter for custom date
+        /// string formatting (e.g. for converting user input formats to DateTime or 
+        /// displaying a DateTime in a custom string format).
+        /// If set, has priority for formatting over <see cref="CustomDateFormatString"/>.
+        /// Convert: DateTime -> string
+        /// ConvertBack: string -> DateTIme
+        /// </summary> 
+        public IValueConverter? TextConverter 
+        { 
+            get => GetValue(TextConverterProperty); 
+            set => SetValue(TextConverterProperty, value); 
+        } 
 
         /// <summary>
         /// Gets or sets the text that is displayed by the <see cref="CalendarDatePicker" />.
@@ -357,6 +401,20 @@ namespace Avalonia.Controls
         {
             get => GetValue(VerticalContentAlignmentProperty);
             set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+
+        /// <inheritdoc cref="Calendar.IsWeekNumberVisible"/>
+        public bool IsWeekNumberVisible
+        {
+            get => GetValue(IsWeekNumberVisibleProperty);
+            set => SetValue(IsWeekNumberVisibleProperty, value);
+        }
+
+        /// <inheritdoc cref="Calendar.WeekNumberRule"/>
+        public CalendarWeekRule WeekNumberRule
+        {
+            get => GetValue(WeekNumberRuleProperty);
+            set => SetValue(WeekNumberRuleProperty, value);
         }
     }
 }

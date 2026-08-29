@@ -23,7 +23,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (!(node is XamlAstObjectNode on
-                  && on.Type.GetClrType().FullName == "Avalonia.Styling.Setter"))
+                  && on.Type.GetClrType().Is("Avalonia.Styling", "Setter")))
                 return node;
 
             IXamlType? targetType = null;

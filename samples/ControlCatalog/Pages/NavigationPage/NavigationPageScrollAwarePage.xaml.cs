@@ -21,8 +21,10 @@ namespace ControlCatalog.Pages
         }
 
         private IDisposable? _scrollSubscription;
+        private ScrollViewer? _scrollViewer;
         private double _lastScrollY;
         private double _currentTranslateY;
+        private bool _initialized;
 
         public NavigationPageScrollAwarePage()
         {
@@ -33,12 +35,21 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            var scrollViewer = new ScrollViewer { Content = BuildLongContent() };
+            if (_initialized)
+            {
+                if (_scrollViewer != null)
+                    Dispatcher.UIThread.Post(() => AttachScrollWatcher(_scrollViewer), DispatcherPriority.Loaded);
+                return;
+            }
+
+            _initialized = true;
+
+            _scrollViewer = new ScrollViewer { Content = BuildLongContent() };
 
             var rootPage = new ContentPage
             {
                 Header = "Scroll to Hide Bar",
-                Content = scrollViewer,
+                Content = _scrollViewer,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
                 VerticalContentAlignment = VerticalAlignment.Stretch,
             };
@@ -46,13 +57,18 @@ namespace ControlCatalog.Pages
             NavigationPage.SetBarLayoutBehavior(rootPage, BarLayoutBehavior.Overlay);
             await DemoNav.PushAsync(rootPage, null);
 
-            Dispatcher.UIThread.Post(() => AttachScrollWatcher(scrollViewer), DispatcherPriority.Loaded);
+            Dispatcher.UIThread.Post(() => AttachScrollWatcher(_scrollViewer), DispatcherPriority.Loaded);
         }
 
         private void OnUnloaded(object? sender, RoutedEventArgs e) => DetachScrollWatcher();
 
-        private void AttachScrollWatcher(ScrollViewer sv)
+        private void AttachScrollWatcher(ScrollViewer? sv)
         {
+            if (sv == null)
+                return;
+
+            DetachScrollWatcher();
+
             var navBar = DemoNav.GetVisualDescendants().OfType<Border>()
                 .FirstOrDefault(b => b.Name == "PART_NavigationBar");
             if (navBar == null)

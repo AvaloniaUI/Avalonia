@@ -7,7 +7,7 @@ using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ConnectedAnimationDemoPage : UserControl
+    public partial class ConnectedAnimationDemoPage : ContentPage
     {
         private static readonly (string Group, string Title, string Description, Func<UserControl> Factory)[] Demos = [];
 

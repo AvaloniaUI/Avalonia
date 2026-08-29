@@ -22,7 +22,7 @@ namespace Avalonia.X11
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
             var ms = new MemoryStream();
-            bitmap.Save(ms);
+            bitmap.Save(ms, PngBitmapEncoderOptions.Default);
             ms.Position = 0;
             return LoadIcon(ms);
         }
@@ -40,14 +40,15 @@ namespace Avalonia.X11
             _width = Math.Min(bitmap.PixelSize.Width, 128);
             _height = Math.Min(bitmap.PixelSize.Height, 128);
             var pixels = new uint[_width * _height];
+            var size = new PixelSize(_width, _height);
 
-            using (var rtb = new RenderTargetBitmap(new PixelSize(128, 128)))
+            using (var rtb = new RenderTargetBitmap(size))
             {
                 using (var ctx = rtb.CreateDrawingContext(true)) 
                     ctx.DrawImage(bitmap, new Rect(rtb.Size));
                 
                 fixed (void* pPixels = pixels)
-                    rtb.CopyPixels(new LockedFramebuffer((IntPtr)pPixels, new PixelSize(_width, _height), _width * 4,
+                    rtb.CopyPixels(new LockedFramebuffer((IntPtr)pPixels, size, _width * 4,
                         new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul, null));
             }
             
@@ -80,7 +81,7 @@ namespace Avalonia.X11
                             fbp[fbr + x] = Data[r + x + 2].ToUInt32();
                     }
                 }
-                wr.Save(outputStream);
+                wr.Save(outputStream, PngBitmapEncoderOptions.Default);
             }
         }
     }

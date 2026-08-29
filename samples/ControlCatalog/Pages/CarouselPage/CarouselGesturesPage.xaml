@@ -1,0 +1,93 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CarouselGesturesPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Options" FontWeight="SemiBold" FontSize="13" />
+
+        <CheckBox x:Name="SwipeCheck"
+                  Content="Swipe Gesture"
+                  IsChecked="True"
+                  IsCheckedChanged="OnSwipeEnabledChanged" />
+
+        <CheckBox x:Name="WrapCheck"
+                  Content="Wrap Selection"
+                  IsChecked="False"
+                  IsCheckedChanged="OnWrapSelectionChanged" />
+
+        <CheckBox x:Name="KeyboardCheck"
+                  Content="Keyboard Navigation"
+                  IsChecked="True"
+                  IsCheckedChanged="OnKeyboardEnabledChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock x:Name="StatusText"
+                   Text="Item: 1 / 3"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+        <TextBlock x:Name="LastActionText"
+                   Text="Action: —"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+        <TextBlock Text="Swipe left/right or use arrow keys to navigate."
+                   FontSize="11"
+                   Opacity="0.5"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <Carousel x:Name="DemoCarousel"
+                Focusable="True"
+                IsSwipeEnabled="True"
+                Height="300">
+        <Carousel.PageTransition>
+          <PageSlide Duration="0.25" Orientation="Horizontal" />
+        </Carousel.PageTransition>
+
+        <Border Margin="14,12" CornerRadius="12" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/delicate-arch-896885_640.jpg" Stretch="UniformToFill" />
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 1: Delicate Arch" Foreground="White"
+                         HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Border>
+          </Grid>
+        </Border>
+
+        <Border Margin="14,12" CornerRadius="12" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/hirsch-899118_640.jpg" Stretch="UniformToFill" />
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 2: Hirsch" Foreground="White"
+                         HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Border>
+          </Grid>
+        </Border>
+
+        <Border Margin="14,12" CornerRadius="12" ClipToBounds="True">
+          <Grid>
+            <Image Source="/Assets/maple-leaf-888807_640.jpg" Stretch="UniformToFill" />
+            <Border Background="#80000000" VerticalAlignment="Bottom" Padding="12">
+              <TextBlock Text="Item 3: Maple Leaf" Foreground="White"
+                         HorizontalAlignment="Center" FontWeight="SemiBold" />
+            </Border>
+          </Grid>
+        </Border>
+      </Carousel>
+    </Border>
+  </DockPanel>
+</UserControl>

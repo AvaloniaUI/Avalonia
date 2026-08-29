@@ -113,7 +113,7 @@ namespace Avalonia.Layout
         /// Defines the <see cref="Margin"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> MarginProperty =
-            AvaloniaProperty.Register<Layoutable, Thickness>(nameof(Margin));
+            AvaloniaProperty.Register<Layoutable, Thickness>(nameof(Margin), validate: ValidateThickness);
 
         /// <summary>
         /// Defines the <see cref="HorizontalAlignment"/> property.
@@ -160,6 +160,8 @@ namespace Avalonia.Layout
         private static bool ValidateDimension(double value) => double.IsNaN(value) || ValidateMinimumDimension(value);
         private static bool ValidateMinimumDimension(double value) => !double.IsPositiveInfinity(value) && ValidateMaximumDimension(value);
         private static bool ValidateMaximumDimension(double value) => value >= 0;
+
+        private static bool ValidateThickness(Thickness value) => double.IsFinite(value.Left) && double.IsFinite(value.Top) && double.IsFinite(value.Right) && double.IsFinite(value.Bottom);
 
         /// <summary>
         /// Occurs when the element's effective viewport changes.
@@ -541,6 +543,8 @@ namespace Avalonia.Layout
         /// </remarks>
         protected virtual Size MeasureCore(Size availableSize)
         {
+            ApplyStyling();
+
             if (IsVisible)
             {
                 var margin = Margin;
@@ -553,7 +557,6 @@ namespace Avalonia.Layout
                     margin = LayoutHelper.RoundLayoutThickness(margin, scale);
                 }
 
-                ApplyStyling();
                 ApplyTemplate();
 
                 var minMax = new MinMax(this);
@@ -633,13 +636,8 @@ namespace Avalonia.Layout
             double width = 0;
             double height = 0;
 
-            var visualChildren = VisualChildren;
-            var visualCount = visualChildren.Count;
-
-            for (var i = 0; i < visualCount; i++)
+            foreach (var visual in TypedVisualChildren)
             {
-                Visual visual = visualChildren[i];
-
                 if (visual is Layoutable layoutable)
                 {
                     layoutable.Measure(availableSize);
@@ -759,13 +757,8 @@ namespace Avalonia.Layout
         {
             var arrangeRect = new Rect(finalSize);
 
-            var visualChildren = VisualChildren;
-            var visualCount = visualChildren.Count;
-
-            for (var i = 0; i < visualCount; i++)
+            foreach (var visual in TypedVisualChildren)
             {
-                Visual visual = visualChildren[i];
-
                 if (visual is Layoutable layoutable)
                 {
                     layoutable.Arrange(arrangeRect);
@@ -855,11 +848,9 @@ namespace Avalonia.Layout
                     // property then we can piggy-pack on that; for the moment we do this manually.
                     if (this.GetLayoutRoot() is {} layoutRoot)
                     {
-                        var count = VisualChildren.Count;
-
-                        for (var i = 0; i < count; ++i)
+                        foreach (var child in TypedVisualChildren)
                         {
-                            (VisualChildren[i] as Layoutable)?.AncestorBecameVisible(layoutRoot.LayoutManager);
+                            (child as Layoutable)?.AncestorBecameVisible(layoutRoot.LayoutManager);
                         }
                     }
                 }
@@ -902,11 +893,9 @@ namespace Avalonia.Layout
                 InvalidateVisual();
             }
 
-            var count = VisualChildren.Count;
-
-            for (var i = 0; i < count; ++i)
+            foreach (var child in TypedVisualChildren)
             {
-                (VisualChildren[i] as Layoutable)?.AncestorBecameVisible(layoutManager);
+                (child as Layoutable)?.AncestorBecameVisible(layoutManager);
             }
         }
 

@@ -31,7 +31,7 @@ namespace Avalonia.Platform
         }
 
         public async Task<DragDropEffects> DoDragDropAsync(
-            PointerEventArgs triggerEvent,
+            PointerPressedEventArgs triggerEvent,
             IDataTransfer dataTransfer,
             DragDropEffects allowedEffects)
         {
@@ -63,6 +63,7 @@ namespace Avalonia.Platform
                     using (_result.Subscribe(new AnonymousObserver<DragDropEffects>(tcs)))
                     {
                         var effect = await tcs.Task;
+                        dataTransfer.Dispose();
                         return effect;
                     }
                 }

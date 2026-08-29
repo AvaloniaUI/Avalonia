@@ -43,9 +43,8 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(nfo, session);
         }
-
-        public bool IsCorrupted => _renderTarget.IsCorrupted;
-        public bool IsReady => _renderTarget.IsReady;
+        
+        public PlatformRenderTargetState PlatformRenderTargetState => _renderTarget.State;
         public RenderTargetProperties Properties { get; }
 
 

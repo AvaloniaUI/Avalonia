@@ -7,6 +7,8 @@ namespace ControlCatalog.Pages
 {
     public partial class TabbedPageWithNavigationPage : UserControl
     {
+        private bool _initialized;
+
         public TabbedPageWithNavigationPage()
         {
             InitializeComponent();
@@ -15,6 +17,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             await BrowseNav.PushAsync(CreateListPage("Browse", "Items", BrowseNav), null);
             await SearchNav.PushAsync(CreateListPage("Search", "Results", SearchNav), null);
             await AccountNav.PushAsync(CreateListPage("Account", "Options", AccountNav), null);

@@ -11,22 +11,14 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Avalonia.Win32.Automation.Interop;
 using AAP = Avalonia.Automation.Provider;
 using UIA = Avalonia.Win32.Automation.Interop;
 
 namespace Avalonia.Win32.Automation
 {
-#if NET8_0_OR_GREATER
     [GeneratedComClass]
     internal partial class AutomationNode :
-#else
-#if NET6_0_OR_GREATER
-    [RequiresUnreferencedCode("Requires .NET COM interop")]
-#endif
-    internal partial class AutomationNode : MarshalByRefObject,
-#endif
         IRawElementProviderSimple,
         IRawElementProviderSimple2,
         IRawElementProviderFragment,
@@ -34,6 +26,7 @@ namespace Avalonia.Win32.Automation
     {
         private static Dictionary<AutomationProperty, UiaPropertyId> s_propertyMap = new()
         {
+            { AutomationElementIdentifiers.AutomationIdProperty, UiaPropertyId.AutomationId },
             { AutomationElementIdentifiers.BoundingRectangleProperty, UiaPropertyId.BoundingRectangle },
             { AutomationElementIdentifiers.ClassNameProperty, UiaPropertyId.ClassName },
             { AutomationElementIdentifiers.NameProperty, UiaPropertyId.Name },
@@ -82,18 +75,7 @@ namespace Avalonia.Win32.Automation
 
         public virtual Rect GetBoundingRectangle()
         {
-            return InvokeSync(() =>
-            {
-                if (Peer.GetVisualRoot() is ControlAutomationPeer root &&
-                    root.Owner.GetPresentationSource() is not null)
-                {
-                    var originalRect = Peer.GetBoundingRectangle();
-                    return new PixelRect(root.Owner.PointToScreen(originalRect.TopLeft),
-                        root.Owner.PointToScreen(originalRect.BottomRight)).ToRect(1);
-                }
-
-                return default;
-            });
+            return InvokeSync(() => Peer.ToScreen(Peer.GetBoundingRectangle()) ?? default);
         }
 
         public virtual IRawElementProviderFragmentRoot? GetFragmentRoot()
@@ -202,9 +184,7 @@ namespace Avalonia.Win32.Automation
 
         public void SetFocus() => InvokeSync(() => Peer.SetFocus());
 
-#if NET6_0_OR_GREATER
         [return: NotNullIfNotNull(nameof(peer))]
-#endif
         public static AutomationNode? GetOrCreate(AutomationPeer? peer)
         {
             return peer is null ? null : s_nodes.GetValue(peer, Create);
@@ -309,8 +289,8 @@ namespace Avalonia.Win32.Automation
                 UiaCoreProviderApi.UiaRaiseAutomationPropertyChangedEvent(
                     this,
                     (int)id,
-                    e.OldValue as IConvertible,
-                    e.NewValue as IConvertible);
+                    e.OldValue is ExpandCollapseState o ? ToUiaExpandCollapseState(o) : e.OldValue as IConvertible,
+                    e.NewValue is ExpandCollapseState n ? ToUiaExpandCollapseState(n) : e.NewValue as IConvertible);
             }
 
             if (id == UiaPropertyId.Name && Peer.GetLiveSetting() != AutomationLiveSetting.Off)
@@ -381,6 +361,7 @@ namespace Avalonia.Win32.Automation
                 AutomationControlType.TitleBar => UiaControlTypeId.TitleBar,
                 AutomationControlType.Separator => UiaControlTypeId.Separator,
                 AutomationControlType.Expander => UiaControlTypeId.Group,
+                AutomationControlType.ScrollViewer => UiaControlTypeId.Pane,
                 _ => UiaControlTypeId.Custom,
             };
         }
@@ -434,12 +415,7 @@ namespace Avalonia.Win32.Automation
 
         private static int GetProcessId()
         {
-#if NET6_0_OR_GREATER
             return Environment.ProcessId;
-#else
-            using var proccess = Process.GetCurrentProcess();
-            return proccess.Id;
-#endif
         }
     }
 }

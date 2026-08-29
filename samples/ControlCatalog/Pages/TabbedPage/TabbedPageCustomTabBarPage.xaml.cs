@@ -5,7 +5,6 @@ namespace ControlCatalog.Pages
 {
     public partial class TabbedPageCustomTabBarPage : UserControl
     {
-        // Fluent UI icon geometries (24x24 viewbox)
         private static readonly StreamGeometry HomeGeometry =
             StreamGeometry.Parse("M12.9942 2.79444C12.4118 2.30208 11.5882 2.30208 11.0058 2.79444L3.50582 9.39444C3.18607 9.66478 3 10.0634 3 10.4828V20.25C3 20.9404 3.55964 21.5 4.25 21.5H8.25C8.94036 21.5 9.5 20.9404 9.5 20.25V14.75C9.5 14.6119 9.61193 14.5 9.75 14.5H14.25C14.3881 14.5 14.5 14.6119 14.5 14.75V20.25C14.5 20.9404 15.0596 21.5 15.75 21.5H19.75C20.4404 21.5 21 20.9404 21 20.25V10.4828C21 10.0634 20.8139 9.66478 20.4942 9.39444L12.9942 2.79444Z");
         private static readonly StreamGeometry WalletGeometry =
@@ -25,16 +24,11 @@ namespace ControlCatalog.Pages
 
         private void SetupIcons()
         {
-            SetIcon(HomePage, HomeGeometry);
-            SetIcon(WalletPage, WalletGeometry);
-            SetIcon(SendPage, SendGeometry);
-            SetIcon(ActivityPage, ActivityGeometry);
-            SetIcon(ProfilePage, ProfileGeometry);
-        }
-
-        private static void SetIcon(ContentPage page, StreamGeometry geometry)
-        {
-            page.Icon = geometry;
+            HomePage.Icon = new PathIcon { Data = HomeGeometry };
+            WalletPage.Icon = new PathIcon { Data = WalletGeometry };
+            SendPage.Icon = new PathIcon { Data = SendGeometry };
+            ActivityPage.Icon = new PathIcon { Data = ActivityGeometry };
+            ProfilePage.Icon = new PathIcon { Data = ProfileGeometry };
         }
     }
 }

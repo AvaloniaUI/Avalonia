@@ -17,7 +17,7 @@
           <Panel>
             <Border Name="PART_TransparencyFallback"
                     IsHitTestVisible="False" />
-            <VisualLayerManager IsPopup="True">
+            <VisualLayerManager Name="PART_VisualLayerManager">
               <ContentPresenter Name="PART_ContentPresenter"
                                 Padding="{TemplateBinding Padding}"
                                 Background="{TemplateBinding Background}"

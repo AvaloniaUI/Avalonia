@@ -5,6 +5,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
 using SixLabors.ImageSharp;
 using Xunit;
+using Avalonia.Input;
 using Avalonia.Platform;
 using System.Threading.Tasks;
 using System;
@@ -22,6 +23,7 @@ using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
 using Avalonia.Harfbuzz;
+using Avalonia.OpenGL.Egl;
 using Avalonia.Skia;
 
 namespace Avalonia.Skia.RenderTests;
@@ -33,56 +35,121 @@ static class TestRenderHelper
         SkiaPlatform.Initialize();
         AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(new StandardAssetLoader());
         AvaloniaLocator.CurrentMutable.Bind<ITextShaperImpl>().ToConstant(new HarfBuzzTextShaper());
+        AvaloniaLocator.CurrentMutable.Bind<ICursorFactory>().ToConstant(new NullCursorFactory());
+    }
+
+    private sealed class NullCursorFactory : ICursorFactory
+    {
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new NullCursor();
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot) => new NullCursor();
+
+        private sealed class NullCursor : ICursorImpl
+        {
+            public void Dispose() { }
+        }
     }
     
     
     public static Task RenderToFile(Control target, string path, bool immediate, double dpi = 96)
+    {
+        if (immediate)
+        {
+            EnsureOutputDirectory(path);
+
+            var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
+            var size = new Size(target.Width, target.Height);
+            var dpiVector = new Vector(dpi, dpi);
+
+            using (RenderTargetBitmap bitmap = new RenderTargetBitmap(pixelSize, dpiVector))
+            {
+                target.Measure(size);
+                target.Arrange(new Rect(size));
+                bitmap.Render(target);
+                bitmap.Save(path, PngBitmapEncoderOptions.Default);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        return RenderCompositedToFile(target, path, null, dpi);
+    }
+
+    public static Task RenderCompositedToFile(Control target, string path, IPlatformGraphics? gpu, double dpi = 96)
+    {
+        EnsureOutputDirectory(path);
+
+        var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+        var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
+        var dpiVector = new Vector(dpi, dpi);
+        var scaling = dpi / 96;
+
+        var timer = new ManualRenderTimer();
+
+        var compositor = new Compositor(RenderLoop.FromTimer(timer), gpu, true,
+            new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
+        // GPU readback surfaces produce RGBA
+        var pixelFormat = gpu == null ? factory.DefaultPixelFormat : PixelFormats.Rgba8888;
+        using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, pixelFormat,
+                   factory.DefaultAlphaFormat))
+        {
+            try
+            {
+                IPlatformRenderSurface surface = gpu switch
+                {
+                    null => new BitmapFramebufferSurface(writableBitmap),
+                    EglPlatformGraphics => new FboReadbackGlPlatformSurface(writableBitmap, scaling),
+                    _ => new VulkanReadbackPlatformSurface(writableBitmap, scaling)
+                };
+                var root = new TestRenderRoot(scaling, null!);
+                try
+                {
+                    using (var renderer = new CompositingRenderer(root, compositor, () => new[] { surface }))
+                    {
+                        root.Initialize(renderer, target);
+                        renderer.Start();
+                        Dispatcher.UIThread.RunJobs();
+                        renderer.Paint(new Rect(root.Bounds.Size), false);
+                    }
+                }
+                finally
+                {
+                    // Detach the control, so it can be rendered again with a different root
+                    root.Child = null;
+                }
+            }
+            finally
+            {
+                if (gpu != null)
+                    DisposeGpuBackendContext(compositor, gpu);
+            }
+
+            using var fileStream = File.Create(path);
+            writableBitmap.Save(fileStream, PngBitmapEncoderOptions.Default);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    // Compositors are created per render, so their backend contexts (GRContext etc.) have to be
+    // disposed deterministically instead of piling up until finalization
+    private static void DisposeGpuBackendContext(Compositor compositor, IPlatformGraphics gpu)
+    {
+        var renderInterface = compositor.Server.RenderInterface;
+        using (renderInterface.EnsureCurrent())
+            // TODO: Technically it should be disposing the GPU context as well,
+            // but need to re-check wayland code if it's safe to do
+            compositor.Server.ResetAllGpuResources();
+        if (!gpu.UsesSharedContext)
+            renderInterface.GpuContext?.Dispose();
+    }
+
+    private static void EnsureOutputDirectory(string path)
     {
         var dir = Path.GetDirectoryName(path);
         Assert.NotNull(dir);
 
         if (!Directory.Exists(dir))
             Directory.CreateDirectory(dir);
-        
-        var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-        var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
-        var size = new Size(target.Width, target.Height);
-        var dpiVector = new Vector(dpi, dpi);
-
-        if (immediate)
-        {
-            using (RenderTargetBitmap bitmap = new RenderTargetBitmap(pixelSize, dpiVector))
-            {
-                target.Measure(size);
-                target.Arrange(new Rect(size));
-                bitmap.Render(target);
-                bitmap.Save(path);
-            }
-        }
-        else
-        {
-            var timer = new ManualRenderTimer();
-
-            var compositor = new Compositor(new RenderLoop(timer), null, true,
-                new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
-            using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat,
-                       factory.DefaultAlphaFormat))
-            {
-                var root = new TestRenderRoot(dpiVector.X / 96, null!);
-                using (var renderer = new CompositingRenderer(root, compositor,
-                           () => new[] { new BitmapFramebufferSurface(writableBitmap) }))
-                {
-                    root.Initialize(renderer, target);
-                    renderer.Start();
-                    Dispatcher.UIThread.RunJobs();
-                    renderer.Paint(new Rect(root.Bounds.Size), false);
-                }
-
-                writableBitmap.Save(path);
-            }
-        }
-
-        return Task.CompletedTask;
     }
 
     class BitmapFramebufferSurface : IFramebufferPlatformSurface

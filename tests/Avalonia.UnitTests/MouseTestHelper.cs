@@ -68,8 +68,13 @@ namespace Avalonia.UnitTests
 
         public void Move(Interactive target, Interactive source, in Point position, KeyModifiers modifiers = default)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, GetRoot(target), position,
-                Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), modifiers));
+            var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, GetRoot(target), position,
+                Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), modifiers);
+
+            if (_pointer.CapturedGestureRecognizer != null)
+                _pointer.CapturedGestureRecognizer.PointerMovedInternal(e);
+            else
+                target.RaiseEvent(e);
         }
 
         public void Up(Interactive target, MouseButton mouseButton = MouseButton.Left, Point? position = null,
@@ -88,9 +93,15 @@ namespace Avalonia.UnitTests
             );
             if (ButtonCount(props) == 0)
             {
-                target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, GetRoot(target), position ?? MidpointRelativeToRoot(target),
-                    Timestamp(), props, modifiers, _pressedButton));
-                _pointer.Capture(null);
+                var e = new PointerReleasedEventArgs(source, _pointer, GetRoot(target), position ?? MidpointRelativeToRoot(target),
+                    Timestamp(), props, modifiers, _pressedButton);
+
+                if (_pointer.CapturedGestureRecognizer != null)
+                    _pointer.CapturedGestureRecognizer.PointerReleasedInternal(e);
+                else
+                    target.RaiseEvent(e);
+
+                _pointer.CaptureLost(CaptureSource.Explicit);
             }
             else
                 Move(target, source, position ?? default);

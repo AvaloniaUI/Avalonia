@@ -3,18 +3,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -545,12 +540,12 @@ namespace Avalonia.Controls
             // If the newly realized container is the selected container, scroll to it after layout.
             if (AutoScrollToSelectedItem && SelectedItem == item)
             {
-                Dispatcher.UIThread.Post(container.BringIntoView, DispatcherPriority.Loaded);
+                container.BringIntoView();
             }
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             if (e.NavigationMethod == NavigationMethod.Directional)
             {
@@ -681,6 +676,11 @@ namespace Avalonia.Controls
                         ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
                         ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
                         eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true });
+
+                    if (eventArgs is PointerEventArgs)
+                    {
+                        container.PerformFeedback(FeedbackAction.Click);
+                    }
 
                     eventArgs.Handled = true;
                     return true;

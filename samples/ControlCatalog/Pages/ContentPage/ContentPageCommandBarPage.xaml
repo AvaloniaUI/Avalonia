@@ -34,12 +34,32 @@
         <Separator />
 
         <TextBlock Text="About" FontWeight="SemiBold" />
-        <TextBlock Text="• NavigationPage.SetTopCommandBar(page, bar): places a CommandBar inside the navigation bar area at the top."
-                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
-        <TextBlock Text="• NavigationPage.SetBottomCommandBar(page, bar): places a CommandBar below the page content at the bottom."
-                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
-        <TextBlock Text="• Each ContentPage has its own CommandBar. It is replaced when navigating between pages."
-                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+        <StackPanel Spacing="6">
+          <Grid ColumnDefinitions="Auto,*">
+            <TextBlock Text="•" FontSize="12" Opacity="0.7" Margin="0,0,6,0" />
+            <TextBlock Grid.Column="1"
+                       Text="NavigationPage.SetTopCommandBar(page, bar): places a CommandBar inside the navigation bar area at the top."
+                       FontSize="12"
+                       Opacity="0.7"
+                       TextWrapping="Wrap" />
+          </Grid>
+          <Grid ColumnDefinitions="Auto,*">
+            <TextBlock Text="•" FontSize="12" Opacity="0.7" Margin="0,0,6,0" />
+            <TextBlock Grid.Column="1"
+                       Text="NavigationPage.SetBottomCommandBar(page, bar): places a CommandBar below the page content at the bottom."
+                       FontSize="12"
+                       Opacity="0.7"
+                       TextWrapping="Wrap" />
+          </Grid>
+          <Grid ColumnDefinitions="Auto,*">
+            <TextBlock Text="•" FontSize="12" Opacity="0.7" Margin="0,0,6,0" />
+            <TextBlock Grid.Column="1"
+                       Text="Each ContentPage has its own CommandBar. It is replaced when navigating between pages."
+                       FontSize="12"
+                       Opacity="0.7"
+                       TextWrapping="Wrap" />
+          </Grid>
+        </StackPanel>
       </StackPanel>
     </ScrollViewer>
 

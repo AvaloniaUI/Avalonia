@@ -14,16 +14,16 @@ namespace ControlCatalog.Pages
         {
             if (LiveBar == null)
                 return;
-            
-            switch (BgPresetCombo.SelectedIndex)
+
+            if (BgPresetCombo.SelectedItem is not ComboBoxItem { Tag: string preset })
             {
-                case 1:
-                    LiveBar.Background = new SolidColorBrush(Color.Parse("#0078D4"));
-                    break;
-                case 2:
-                    LiveBar.Background = new SolidColorBrush(Color.Parse("#1C1C1E"));
-                    break;
-                case 3:
+                LiveBar.ClearValue(BackgroundProperty);
+                return;
+            }
+
+            switch (preset)
+            {
+                case "Gradient":
                     LiveBar.Background = new LinearGradientBrush
                     {
                         StartPoint = new Avalonia.RelativePoint(0, 0, Avalonia.RelativeUnit.Relative),
@@ -35,11 +35,11 @@ namespace ControlCatalog.Pages
                         }
                     };
                     break;
-                case 4:
+                case "Transparent":
                     LiveBar.Background = Brushes.Transparent;
                     break;
                 default:
-                    LiveBar.ClearValue(BackgroundProperty);
+                    LiveBar.Background = new SolidColorBrush(Color.Parse(preset));
                     break;
             }
         }
@@ -48,19 +48,14 @@ namespace ControlCatalog.Pages
         {
             if (LiveBar == null)
                 return;
-            
-            switch (FgCombo.SelectedIndex)
+
+            if (FgCombo.SelectedItem is ComboBoxItem { Tag: string color })
             {
-                case 1:
-                    LiveBar.Foreground = Brushes.White;
-                    break;
-                case 2:
-                    LiveBar.Foreground = Brushes.Black;
-                    break;
-                default:
-                    LiveBar.ClearValue(ForegroundProperty);
-                    break;
+                LiveBar.Foreground = new SolidColorBrush(Color.Parse(color));
+                return;
             }
+
+            LiveBar.ClearValue(ForegroundProperty);
         }
 
         private void OnRadiusChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)

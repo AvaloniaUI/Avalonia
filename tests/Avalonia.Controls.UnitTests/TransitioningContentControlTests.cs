@@ -371,7 +371,7 @@ namespace Avalonia.Controls.UnitTests
         private static ContentPresenter GetContentPresenters2(TransitioningContentControl target)
         {
             return Assert.IsType<ContentPresenter>(target
-                .GetTemplateChildren()
+                .GetTemplateDescendants()
                 .First(x => x.Name == "PART_ContentPresenter2"));
         }
 

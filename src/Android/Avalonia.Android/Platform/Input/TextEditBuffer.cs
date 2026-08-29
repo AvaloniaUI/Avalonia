@@ -56,14 +56,19 @@ namespace Avalonia.Android.Platform.Input
         {
             get
             {
-                if(_textInputMethod.Client is not { } client || Selection.Start < 0 || Selection.End >= client.SurroundingText.Length)
+                var client = _textInputMethod.Client;
+                var text = client?.SurroundingText;
+
+                if (string.IsNullOrEmpty(text))
                 {
                     return "";
                 }
 
                 var selection = Selection;
+                var start = Math.Max(0, selection.Start);
+                var end = Math.Min(text.Length, selection.End);
 
-                return client.SurroundingText.Substring(selection.Start, selection.End - selection.Start);
+                return start >= end ? "" : text.Substring(start, end - start);
             }
         }
 
@@ -125,6 +130,12 @@ namespace Avalonia.Android.Platform.Input
                 client.Selection = new TextSelection(index, index);
                 Composition = null;
             }
+        }
+
+
+        internal void DispatchKeyEvent(KeyEvent? keyEvent)
+        {
+            _textInputMethod?.View.DispatchKeyEvent(keyEvent);
         }
     }
 }

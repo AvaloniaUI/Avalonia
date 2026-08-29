@@ -5,7 +5,6 @@ using System.Collections.Specialized;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -19,6 +18,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IEnumerable<Page>?> PagesProperty =
             AvaloniaProperty.Register<MultiPage, IEnumerable<Page>?>(nameof(Pages));
+
+        /// <summary>
+        /// Defines the <see cref="ItemsSource"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
+            AvaloniaProperty.Register<MultiPage, IEnumerable?>(nameof(ItemsSource));
 
         /// <summary>
         /// Defines the <see cref="PageTemplate"/> property.
@@ -41,6 +46,18 @@ namespace Avalonia.Controls
         {
             get => GetValue(PagesProperty);
             set => SetValue(PagesProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a view-model collection to bind to. Use together with
+        /// <see cref="PageTemplate"/> to convert each item into a <see cref="Page"/>.
+        /// When set, takes precedence over <see cref="Pages"/> as the item source for
+        /// the inner tab or carousel control.
+        /// </summary>
+        public IEnumerable? ItemsSource
+        {
+            get => GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
 
         /// <summary>
@@ -68,18 +85,18 @@ namespace Avalonia.Controls
 
             if (change.Property == PagesProperty)
             {
+                if (ReferenceEquals(change.OldValue, change.NewValue))
+                    return;
+
                 if (change.OldValue is INotifyCollectionChanged oldNotifyCollection)
                     oldNotifyCollection.CollectionChanged -= NotifyCollection_CollectionChanged;
 
                 LogicalChildren.Clear();
 
-                if (change.NewValue is IEnumerable<Page> newPages)
+                if (change.NewValue is IEnumerable<Page> newItems)
                 {
-                    foreach (var page in newPages)
-                    {
-                        if (page is ILogical logical)
-                            LogicalChildren.Add(logical);
-                    }
+                    foreach (var page in newItems)
+                        LogicalChildren.Add(page);
                 }
 
                 if (change.NewValue is INotifyCollectionChanged newNotifyCollection)
@@ -87,6 +104,8 @@ namespace Avalonia.Controls
 
                 if (change.NewValue != null)
                     UpdateActivePage();
+                else
+                    SetCurrentValue(CurrentPageProperty, null);
             }
             else if (change.Property == CurrentPageProperty)
                 CurrentPageChanged?.Invoke(this, EventArgs.Empty);
@@ -103,6 +122,24 @@ namespace Avalonia.Controls
         /// Called when the active child page changes.
         /// </summary>
         /// <param name="navigationType">The reason for the page change.</param>
+        /// <remarks>
+        /// The base class calls this method in the following situations, passing the corresponding
+        /// <see cref="NavigationType"/> value:
+        /// <list type="bullet">
+        ///   <item><description>
+        ///     <see cref="NavigationType.Replace"/>. The <see cref="Pages"/> collection was
+        ///     assigned, a new item was added, or the active page changed for any reason not
+        ///     covered below.
+        ///   </description></item>
+        ///   <item><description>
+        ///     <see cref="NavigationType.Remove"/>. The currently active page was removed from
+        ///     the <see cref="Pages"/> collection or the collection was reset and the active page
+        ///     is no longer present. Subclasses should select a replacement page.
+        ///   </description></item>
+        /// </list>
+        /// Subclasses may also call this method directly with any <see cref="NavigationType"/>
+        /// value appropriate for their own navigation model.
+        /// </remarks>
         protected virtual void UpdateActivePage(NavigationType navigationType) { }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -132,33 +169,8 @@ namespace Avalonia.Controls
                     LogicalChildren.Clear();
                     if (Pages != null)
                     {
-                        foreach (var item in Pages)
-                        {
-                            if (item is ILogical logical)
-                                LogicalChildren.Add(logical);
-                        }
-                    }
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                case NotifyCollectionChangedAction.Replace:
-                    if (e.OldItems != null)
-                    {
-                        foreach (var old in e.OldItems)
-                        {
-                            if (old is ILogical logical)
-                                LogicalChildren.Remove(logical);
-                        }
-                    }
-
-                    if (e.NewItems != null)
-                    {
-                        int insertIdx = e.NewStartingIndex >= 0 ? e.NewStartingIndex : LogicalChildren.Count;
-                        foreach (var newItem in e.NewItems)
-                        {
-                            if (newItem is ILogical logical)
-                                LogicalChildren.Insert(insertIdx++, logical);
-                        }
+                        foreach (var page in Pages)
+                            LogicalChildren.Add(page);
                     }
                     break;
 
@@ -167,8 +179,8 @@ namespace Avalonia.Controls
                     {
                         foreach (var old in e.OldItems)
                         {
-                            if (old is ILogical logical)
-                                LogicalChildren.Remove(logical);
+                            if (old is Page page)
+                                LogicalChildren.Remove(page);
                         }
                     }
 
@@ -177,8 +189,8 @@ namespace Avalonia.Controls
                         int insertIdx = e.NewStartingIndex >= 0 ? e.NewStartingIndex : LogicalChildren.Count;
                         foreach (var newItem in e.NewItems)
                         {
-                            if (newItem is ILogical logical)
-                                LogicalChildren.Insert(insertIdx++, logical);
+                            if (newItem is Page page)
+                                LogicalChildren.Insert(insertIdx++, page);
                         }
                     }
                     break;
@@ -196,14 +208,22 @@ namespace Avalonia.Controls
                 {
                     if (e.OldItems != null)
                         foreach (var old in e.OldItems)
-                            if (ReferenceEquals(old, current)) { currentRemoved = true; break; }
+                            if (ReferenceEquals(old, current))
+                            {
+                                currentRemoved = true;
+                                break;
+                            }
                 }
                 else if (e.Action == NotifyCollectionChangedAction.Reset)
                 {
                     currentRemoved = true;
                     if (Pages != null)
-                        foreach (var item in Pages)
-                            if (ReferenceEquals(item, current)) { currentRemoved = false; break; }
+                        foreach (var page in Pages)
+                            if (ReferenceEquals(page, current))
+                            {
+                                currentRemoved = false;
+                                break;
+                            }
                 }
 
                 if (currentRemoved)

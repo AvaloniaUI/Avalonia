@@ -7,6 +7,7 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageEventsPage : UserControl
     {
+        private bool _initialized;
         private int _pageCount;
 
         public NavigationPageEventsPage()
@@ -17,6 +18,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             DemoNav.Pushed       += (s, ev) => AddLog($"Pushed → {ev.Page?.Header}");
             DemoNav.Popped       += (s, ev) => AddLog($"Popped ← {ev.Page?.Header}");
             DemoNav.PoppedToRoot += (s, ev) => AddLog("PoppedToRoot");

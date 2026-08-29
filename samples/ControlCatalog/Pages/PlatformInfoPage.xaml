@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ControlCatalog.Pages.PlatformInfoPage"
+﻿<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.PlatformInfoPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,6 +7,7 @@
              d:DesignHeight="800"
              d:DesignWidth="400"
              mc:Ignorable="d"
+             Header="Platform Info"
              x:DataType="viewModels:PlatformInformationViewModel">
   <StackPanel Spacing="20">
     <TextBlock Text="{Binding PlatformInfo}" />
@@ -53,4 +54,4 @@
       </WrapPanel>
     </StackPanel>
   </StackPanel>
-</UserControl>
+</ContentPage>

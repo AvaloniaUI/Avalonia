@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -19,12 +19,13 @@ namespace Avalonia.Controls.Primitives
     /// Represents the currently displayed month or year on a
     /// <see cref="T:Avalonia.Controls.Calendar" />.
     /// </summary>
-    [TemplatePart(PART_ElementHeaderButton,   typeof(Button))]
-    [TemplatePart(PART_ElementMonthView,      typeof(Grid))]
-    [TemplatePart(PART_ElementNextButton,     typeof(Button))]
-    [TemplatePart(PART_ElementPreviousButton, typeof(Button))]
-    [TemplatePart(PART_ElementYearView,       typeof(Grid))]
-    [PseudoClasses(":calendardisabled")]
+    [TemplatePart(PART_ElementHeaderButton,     typeof(Button))]
+    [TemplatePart(PART_ElementMonthView,        typeof(Grid))]
+    [TemplatePart(PART_ElementNextButton,       typeof(Button))]
+    [TemplatePart(PART_ElementPreviousButton,   typeof(Button))]
+    [TemplatePart(PART_ElementYearView,         typeof(Grid))]
+    [TemplatePart(PART_ElementWeekNumberLabels, typeof(Grid))]
+    [PseudoClasses(":calendardisabled", ":hasweeknumbers")]
     public sealed class CalendarItem : TemplatedControl
     {
         /// <summary>
@@ -37,6 +38,7 @@ namespace Avalonia.Controls.Primitives
         private const string PART_ElementNextButton = "PART_NextButton";
         private const string PART_ElementMonthView = "PART_MonthView";
         private const string PART_ElementYearView = "PART_YearView";
+        private const string PART_ElementWeekNumberLabels = "PART_ElementWeekNumberLabels";
 
         private Button? _headerButton;
         private Button? _nextButton;
@@ -164,6 +166,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         internal Grid? YearView { get; set; }
         
+        /// <summary>
+        /// Gets the Grid that hosts the week number labels when in month mode.
+        /// </summary>
+        private Grid? WeekNumberLabels { get; set; }
+        
         private void PopulateGrids()
         {
             if (MonthView != null)
@@ -210,6 +217,21 @@ namespace Avalonia.Controls.Primitives
                 MonthView.Children.AddRange(children);
             }
 
+            if (WeekNumberLabels != null)
+            {
+                using var children = new PooledList<Control>(Calendar.RowsPerMonth);
+                
+                for (int i = 1; i < Calendar.RowsPerMonth; i++)
+                {
+                    var cell = new ContentControl();
+                    cell.SetValue(Grid.RowProperty, i);
+                    cell.TemplatedParent = this;
+                    children.Add(cell);
+                }
+                
+                WeekNumberLabels.Children.AddRange(children);
+            }
+
             if (YearView != null)
             {
                 var childCount = Calendar.RowsPerYear * Calendar.ColumnsPerYear;
@@ -244,7 +266,7 @@ namespace Avalonia.Controls.Primitives
 
         /// <summary>
         /// Builds the visual tree for the
-        /// <see cref="T:System.Windows.Controls.Primitives.CalendarItem" />
+        /// <see cref="T:Avalonia.Controls.Primitives.CalendarItem" />
         /// when a new template is applied.
         /// </summary>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -254,6 +276,7 @@ namespace Avalonia.Controls.Primitives
             NextButton = e.NameScope.Find<Button>(PART_ElementNextButton);
             MonthView = e.NameScope.Find<Grid>(PART_ElementMonthView);
             YearView = e.NameScope.Find<Grid>(PART_ElementYearView);
+            WeekNumberLabels = e.NameScope.Find<Grid>(PART_ElementWeekNumberLabels);
             
             if (Owner != null)
             {
@@ -373,6 +396,7 @@ namespace Avalonia.Controls.Primitives
             {
                 SetDayTitles();
                 SetCalendarDayButtons(_currentMonth);
+                UpdateWeekNumberLabels(_currentMonth);
             }
         }
         private void SetMonthModeHeaderButton()
@@ -586,6 +610,57 @@ namespace Avalonia.Controls.Primitives
                         Owner.HoverStartIndex = Calendar.ColumnsPerMonth * Calendar.RowsPerMonth - 1;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Updates the week number labels if <see cref="Calendar.IsWeekNumberVisible"/> is true and the
+        /// <see cref="Calendar.DisplayMode"/> is set to <see cref="CalendarMode.Month"/>.
+        /// </summary>
+        private void UpdateWeekNumberLabels(DateTime firstDayOfMonth)
+        {
+            // first set the pseudo classes
+            bool show = Owner?.IsWeekNumberVisible ?? false;
+            PseudoClasses.Set(":hasweeknumbers", show);
+            
+            // if we don't have a week number labels grid, or it has no children, then we don't need to update
+            if (WeekNumberLabels is null || WeekNumberLabels.Children.Count == 0)
+                return;
+            
+            UpdateWeekNumberLabelsVisibility();
+            
+            int lastMonthToDisplay = PreviousMonthDays(firstDayOfMonth);
+            DateTime firstDateDisplayed = DateTimeHelper.CompareYearMonth(firstDayOfMonth, DateTime.MinValue) > 0
+                ? _calendar.AddDays(firstDayOfMonth, -lastMonthToDisplay)
+                : firstDayOfMonth;
+
+            var rule = Owner?.WeekNumberRule ?? DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule;
+            var firstDayOfWeek = Owner?.FirstDayOfWeek ?? DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
+
+            // We have 6 rows with weeks. The ControlTheme may have added more children to the Grid (Header, Background, ...).
+            // We only want to update the last 6 children of the Grid, which are the week number labels.
+            var startIndex = WeekNumberLabels.Children.Count - (Calendar.RowsPerMonth - 1);
+            for (int i = startIndex; i < WeekNumberLabels.Children.Count; i++)
+            {
+                var daysToAdd = (i - startIndex) * NumberOfDaysPerWeek;
+                DateTime firstDayOfRow = _calendar.AddDays(firstDateDisplayed, daysToAdd);
+
+                var label = WeekNumberLabels.Children[i] as ContentControl;
+                label?.Content = DateTimeHelper.GetWeekOfYear(firstDayOfRow, rule, firstDayOfWeek, _calendar);
+            }
+        }
+
+        /// <summary>
+        /// Updates the visibility of the week number labels based on the <see cref="Calendar.IsWeekNumberVisible"/> property
+        /// and the <see cref="Calendar.DisplayMode"/>.
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        internal void UpdateWeekNumberLabelsVisibility()
+        {
+            if (WeekNumberLabels is not null && Owner is not null)
+            {
+                WeekNumberLabels.IsVisible =
+                    Owner.IsWeekNumberVisible && Owner.DisplayMode == CalendarMode.Month;
             }
         }
 

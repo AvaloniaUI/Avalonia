@@ -89,7 +89,7 @@ namespace Avalonia.Build.Tasks
 
                 var refWriterParameters = new WriterParameters { WriteSymbols = false };
                 if (!string.IsNullOrWhiteSpace(strongNameKey))
-	                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+	                refWriterParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
                 refAsm?.Write(refOutput, refWriterParameters);
 
                 return new CompileResult(true, true);
@@ -157,6 +157,12 @@ namespace Avalonia.Build.Tasks
                 var arg1 = new CustomAttributeArgument(strType, "AvaloniaUseCompiledBindingsByDefault");
                 var arg2 = new CustomAttributeArgument(strType, defaultCompileBindings.ToString());
                 asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg1, arg2 } });
+                if (createSourceInfo)
+                {
+                    var arg3 = new CustomAttributeArgument(strType, "AvaloniaXamlCreateSourceInfo");
+                    var arg4 = new CustomAttributeArgument(strType, createSourceInfo.ToString());
+                    asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg3, arg4 } });
+                }
             }
 
             TypeDefinition AddClass(string name, TypeAttributes extraAttributes = 0)
@@ -458,8 +464,8 @@ namespace Avalonia.Build.Tasks
                                 .Methods.First(m => m.Name == document.TypeBuilderProvider.PopulateMethod.Name);
 
                             var designLoaderFieldType = typeSystem
-                                .GetType("System.Action`1")
-                                .MakeGenericType(typeSystem.GetType("System.Object"));
+                                .WellKnownTypes.GetActionOfT(1)
+                                .MakeGenericType(typeSystem.WellKnownTypes.Object);
 
                             var designLoaderFieldTypeReference = (GenericInstanceType)typeSystem.GetTypeReference(designLoaderFieldType);
                             designLoaderFieldTypeReference.GenericArguments[0] =

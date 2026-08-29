@@ -52,7 +52,7 @@ partial class ServerCompositionVisual
             // We ignore Visual's RenderTransform completely since it's set by AdornerLayer and can be out of sync
             // with compositor-driver animations
             var ownTransform = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint, Matrix.Identity, Scale,
-                RotationAngle, Orientation, Offset);
+                RotationAngle, Orientation, Offset + Translation);
             if (
                 AdornerLayer_GetExpectedSharedAncestor(this) is {} sharedAncestor
                 && ComputeTransformFromAncestor(AdornedVisual, sharedAncestor, out var adornerLayerToAdornedVisual))
@@ -63,7 +63,7 @@ partial class ServerCompositionVisual
         }
         else
             _ownTransform = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint, TransformMatrix, Scale,
-                RotationAngle, Orientation, Offset);
+                RotationAngle, Orientation, Offset + Translation);
 
         
         PropagateFlags(true, true);

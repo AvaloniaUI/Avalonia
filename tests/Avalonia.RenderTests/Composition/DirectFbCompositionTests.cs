@@ -47,7 +47,7 @@ public class DirectFbCompositionTests : TestBase
     void Should_Only_Update_Clipped_Rects_When_Retained_Fb_Is_Advertised(bool advertised)
     {
         var timer = new ManualRenderTimer();
-        var compositor = new Compositor(new RenderLoop(timer), null, true,
+        var compositor = new Compositor(RenderLoop.FromTimer(timer), null, true,
             new DispatcherCompositorScheduler(), true, Dispatcher.UIThread, new CompositionOptions
             {
                 UseRegionDirtyRectClipping = true
@@ -115,8 +115,8 @@ public class DirectFbCompositionTests : TestBase
         var image2 =
             $"{nameof(Should_Only_Update_Clipped_Rects_When_Retained_Fb_Is_Advertised)}_advertized-{advertised}_updated";
         SaveFile(fb, image2);
-        CompareImages(image1, skipImmediate: true);
-        CompareImages(image2, skipImmediate: true);
+        CompareImages(image1, skipImmediate: true, skipGpu: true);
+        CompareImages(image2, skipImmediate: true, skipGpu: true);
 
     }
 

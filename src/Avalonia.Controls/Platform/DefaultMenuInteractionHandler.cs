@@ -52,7 +52,7 @@ namespace Avalonia.Controls.Platform
 
         public static TimeSpan MenuShowDelay { get; set;} = TimeSpan.FromMilliseconds(400);
 
-        protected internal virtual void GotFocus(object? sender, GotFocusEventArgs e)
+        protected internal virtual void GotFocus(object? sender, FocusChangedEventArgs e)
         {
             var item = GetMenuItemCore(e.Source as Control);
 

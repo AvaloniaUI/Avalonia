@@ -65,6 +65,6 @@ public partial class GlPageKnobs : UserControl
     public string Info
     {
         get => _info;
-        private set => SetAndRaise(InfoProperty, ref _info, value);
+        set => SetAndRaise(InfoProperty, ref _info, value);
     }
 }

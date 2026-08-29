@@ -15,7 +15,7 @@ namespace Avalonia.Base.UnitTests.Input
             using (UnitTestApplication.Start(TestServices.FocusableWindow))
             {
                 var window = new Window();
-                window.FocusManager.ClearFocus();
+                window.FocusManager.Focus(null);
                 int raised = 0;
                 window.KeyDown += (sender, ev) =>
                 {
@@ -71,7 +71,7 @@ namespace Avalonia.Base.UnitTests.Input
             using (UnitTestApplication.Start(TestServices.FocusableWindow))
             {
                 var window = new Window();
-                window.FocusManager.ClearFocus();
+                window.FocusManager.Focus(null);
                 int raised = 0;
                 window.TextInput += (sender, ev) =>
                 {

@@ -47,8 +47,8 @@ namespace Avalonia.Skia
             IsSuitableForDirectRendering = true
         };
 
-
-
+        public PlatformRenderTargetState PlatformRenderTargetState =>
+            _renderTarget?.State ?? PlatformRenderTargetState.Disposed;
 
         /// <inheritdoc />
         public IDrawingContextImpl CreateDrawingContext(IRenderTarget.RenderTargetSceneInfo sceneInfo,
@@ -86,10 +86,7 @@ namespace Avalonia.Skia
             
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
-
-        public bool IsCorrupted => false;
-
-        public bool IsReady => _renderTarget is not IPlatformRenderSurfaceRenderTarget prs || prs.IsReady;
+        
 
         /// <summary>
         /// Check if two images info are compatible.

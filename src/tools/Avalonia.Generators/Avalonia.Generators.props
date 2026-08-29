@@ -7,9 +7,12 @@
     <AvaloniaNameGeneratorFilterByNamespace Condition="'$(AvaloniaNameGeneratorFilterByNamespace)' == ''">*</AvaloniaNameGeneratorFilterByNamespace>
     <AvaloniaNameGeneratorViewFileNamingStrategy Condition="'$(AvaloniaNameGeneratorViewFileNamingStrategy)' == ''">NamespaceAndClassName</AvaloniaNameGeneratorViewFileNamingStrategy>
     <AvaloniaNameGeneratorAttachDevTools Condition="'$(AvaloniaNameGeneratorAttachDevTools)' == ''">true</AvaloniaNameGeneratorAttachDevTools>
+    <AvaloniaPropertyGeneratorIsEnabled Condition="'$(AvaloniaPropertyGeneratorIsEnabled)' == ''">true</AvaloniaPropertyGeneratorIsEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Mark AvaloniaXaml/AvaloniaResource metadata visible for the Roslyn-compiler -->
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup"/>
+    <!-- Mark Avalonia.Generators config properties visible for the Roslyn-compiler  -->
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorIsEnabled" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorBehavior" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorDefaultFieldModifier" />
@@ -17,10 +20,11 @@
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorFilterByNamespace" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorViewFileNamingStrategy" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorAttachDevTools"/>
+    <CompilerVisibleProperty Include="AvaloniaPropertyGeneratorIsEnabled" />
+    <!-- Mark additional Avalonia properties that might be useful for the Roslyn-compiler -->
+    <CompilerVisibleProperty Include="AvaloniaUseCompiledBindingsByDefault" />
+    <CompilerVisibleProperty Include="AvaloniaMainPackageVersion" />
+    <CompilerVisibleProperty Include="AvaloniaPreviewerNetCoreToolPath" />
+    <CompilerVisibleProperty Include="AvaloniaResourcePaths" />
   </ItemGroup>
-  <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
-    <ItemGroup>
-      <AdditionalFiles Include="@(AvaloniaXaml)" SourceItemGroup="AvaloniaXaml" />
-    </ItemGroup>
-  </Target>
 </Project>

@@ -1,4 +1,3 @@
-#pragma warning disable CS0618 // TODO: Temporary workaround until Tmds is replaced.
 using System;
 using System.Threading;
 using Avalonia.Logging;
@@ -8,9 +7,9 @@ namespace Avalonia.FreeDesktop
 {
     internal static class DBusHelper
     {
-        private static Connection? s_defaultConntection;
+        private static DBusConnection? s_defaultConntection;
         private static bool s_defaultConnectionFailed;
-        public static Connection? DefaultConnection
+        public static DBusConnection? DefaultConnection
         {
             get
             {
@@ -25,14 +24,14 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        public static Connection? TryCreateNewConnection(string? dbusAddress = null)
+        public static DBusConnection? TryCreateNewConnection(string? dbusAddress = null)
         {
             var oldContext = SynchronizationContext.Current;
-            Connection? conn = null;
+            DBusConnection? conn = null;
             try
             {
                 SynchronizationContext.SetSynchronizationContext(null);
-                conn = new Connection(new ClientConnectionOptions(dbusAddress ?? Address.Session!)
+                conn = new DBusConnection(new DBusConnectionOptions(dbusAddress ?? DBusAddress.Session!)
                 {
                     AutoConnect = false,
                 });

@@ -41,6 +41,6 @@ public interface IPresentationSource
     /// </summary>
     internal Size ClientSize { get; }
 
-    internal PixelPoint PointToScreen(Point point);
-    internal Point PointToClient(PixelPoint point);
+    internal PixelPoint? PointToScreen(Point point);
+    internal Point? PointToClient(PixelPoint point);
 }

@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="IncludeBuildTestsAvaloniaItems.props" />
+  </Folder>
+  <Project Path="BuildTests.Android/BuildTests.Android.csproj" />
+  <Project Path="BuildTests.Browser/BuildTests.Browser.csproj" />
+  <Project Path="BuildTests.Desktop/BuildTests.Desktop.csproj" />
+  <Project Path="BuildTests.FSharp/BuildTests.FSharp.fsproj" />
+  <Project Path="BuildTests.iOS/BuildTests.iOS.csproj" />
+  <Project Path="BuildTests.NativeAot/BuildTests.NativeAot.csproj" />
+  <Project Path="BuildTests.WpfHybrid/BuildTests.WpfHybrid.csproj" />
+  <Project Path="BuildTests/BuildTests.csproj" />
+</Solution>

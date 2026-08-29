@@ -21,9 +21,7 @@ namespace Avalonia.Skia
 
         public void Dispose() => _surface.Dispose();
 
-        public bool IsCorrupted => _surface.IsCorrupted;
-
-        public bool IsReady => _surface.IsReady;
+        public PlatformRenderTargetState State => _surface.State;
 
         class GlGpuSession : ISkiaGpuRenderSession
         {

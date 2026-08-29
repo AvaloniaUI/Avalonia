@@ -42,13 +42,13 @@ namespace ControlCatalog.Pages
         private void OnAddPrimary(object? sender, RoutedEventArgs e)
         {
             _primaryCount++;
-            DemoBar.PrimaryCommands.Add(new AppBarButton { Label = $"Cmd {_primaryCount}" });
+            DemoBar.PrimaryCommands.Add(new CommandBarButton { Label = $"Cmd {_primaryCount}" });
         }
 
         private void OnAddSecondary(object? sender, RoutedEventArgs e)
         {
             _secondaryCount++;
-            DemoBar.SecondaryCommands.Add(new AppBarButton { Label = $"Sec {_secondaryCount}" });
+            DemoBar.SecondaryCommands.Add(new CommandBarButton { Label = $"Sec {_secondaryCount}" });
         }
     }
 }

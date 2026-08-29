@@ -19,6 +19,7 @@ namespace ControlCatalog.Pages
             new("Emma Brown", "UX Researcher", "Germany", Color.Parse("#F44336")),
         };
 
+        private bool _initialized;
         private bool _isLoaded;
 
         public NavigationPagePassDataPage()
@@ -30,6 +31,11 @@ namespace ControlCatalog.Pages
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
             _isLoaded = true;
+
+            if (_initialized)
+                return;
+
+            _initialized = true;
 
             DemoNav.Pushed += (s, ev) => AppendNavigationLog($"Pushed → {ev.Page?.Header}");
             DemoNav.Popped += (s, ev) => AppendNavigationLog($"Popped ← {ev.Page?.Header}");

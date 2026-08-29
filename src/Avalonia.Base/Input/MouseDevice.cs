@@ -18,6 +18,8 @@ namespace Avalonia.Input
         private static MouseDevice? _primary;
         internal static MouseDevice Primary => _primary ??= new MouseDevice();
 
+        internal static void ResetPrimaryForUnitTests() => _primary = null;
+
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
@@ -89,7 +91,7 @@ namespace Avalonia.Input
                     if (ButtonCount(props) > 1)
                         e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult.firstEnabledAncestor);
                     else
-                        e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor);
+                        e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult.firstEnabledAncestor, e.PlatformInputEventCookie);
                     break;
                 case RawPointerEventType.LeftButtonUp:
                 case RawPointerEventType.RightButtonUp:
@@ -134,7 +136,7 @@ namespace Avalonia.Input
 
         private bool MouseDown(IMouseDevice device, ulong timestamp, IInputRoot root, Point p,
             PointerPointProperties properties,
-            KeyModifiers inputModifiers, IInputElement? hitTest)
+            KeyModifiers inputModifiers, IInputElement? hitTest, object? platformInputEventCookie)
         {
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
@@ -163,7 +165,7 @@ namespace Avalonia.Input
                 }
 
                 _lastMouseDownButton = properties.PointerUpdateKind.GetMouseButton();
-                var e = new PointerPressedEventArgs(source, _pointer, root.RootElement, p, timestamp, properties, inputModifiers, _clickCount);
+                var e = new PointerPressedEventArgs(source, _pointer, root.RootElement, p, timestamp, properties, inputModifiers, _clickCount, platformInputEventCookie);
                 source.RaiseEvent(e);
                 return e.Handled;
             }
@@ -218,9 +220,7 @@ namespace Avalonia.Input
                 }
                 finally
                 {
-                    _pointer.Capture(null, CaptureSource.Implicit);
-                    _pointer.CaptureGestureRecognizer(null);
-                    _pointer.IsGestureRecognitionSkipped = false;
+                    _pointer.CaptureLost(CaptureSource.Implicit);
                     _lastMouseDownButton = default;
                 }
                 return e.Handled;

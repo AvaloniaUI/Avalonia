@@ -1,3 +1,5 @@
+using Avalonia.Collections;
+using Avalonia.Interactivity;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -128,6 +130,77 @@ public class PageNavigationHostTests
             Assert.Equal(2, order.Count);
             Assert.Equal("NavigatedFrom", order[0]);
             Assert.Equal("NavigatedTo",   order[1]);
+        }
+
+        [Fact]
+        public void InitialLayout_WithExistingPage_DoesNotThrow_WhenContentPresenterChildIsAssigned()
+        {
+            var page = new ContentPage { Header = "Home" };
+            var host = new PageNavigationHost { Page = page };
+            var root = new TestRoot { Child = host };
+
+            var exception = Record.Exception(() => root.LayoutManager.ExecuteInitialLayoutPass());
+
+            Assert.Null(exception);
+            Assert.NotNull(host.Presenter);
+            Assert.Same(page, host.Presenter!.Child);
+        }
+
+        [Fact]
+        public void ReplacingPage_ResetsOldPresenterChildSafeAreaPadding()
+        {
+            var first = new ContentPage { Header = "First" };
+            var second = new ContentPage { Header = "Second" };
+            var host = new PageNavigationHost { Page = first };
+            var root = new TestRoot { Child = host };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            first.SafeAreaPadding = new Thickness(1, 2, 3, 4);
+
+            var exception = Record.Exception(() => host.Page = second);
+
+            Assert.Null(exception);
+            Assert.Equal(default, first.SafeAreaPadding);
+            Assert.NotNull(host.Presenter);
+            Assert.Same(second, host.Presenter!.Child);
+        }
+    }
+
+    public class SystemBackButtonTests : ScopedTestBase
+    {
+        [Fact]
+        public void BackRequested_ForwardsToNestedCurrentPageOnce()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var child = new ContentPage { Header = "Child" };
+            var parent = new CarouselPage
+            {
+                Pages = new AvaloniaList<Page> { child }
+            };
+            var host = new PageNavigationHost { Page = parent };
+            var window = new Window
+            {
+                Width = 400,
+                Height = 300,
+                Content = host
+            };
+            var raiseCount = 0;
+            child.PageNavigationSystemBackButtonPressed += (_, e) =>
+            {
+                raiseCount++;
+                e.Handled = true;
+            };
+
+            window.Show();
+
+            Assert.Same(child, parent.CurrentPage);
+            Assert.Same(parent, host.Presenter?.Child);
+
+            var args = new RoutedEventArgs(TopLevel.BackRequestedEvent);
+            window.RaiseEvent(args);
+
+            Assert.Equal(1, raiseCount);
+            Assert.True(args.Handled);
         }
     }
 }

@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
@@ -320,6 +319,19 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
+        /// Gets the first visual in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <returns>A <see cref="GeometryHitTestResult"/> containing the visual intersecting the requested geometry and intersection details, or null if no intersection.</returns>
+        public static GeometryHitTestResult? GetVisualAt(this Visual visual, Geometry geometry)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            return visual.GetVisualAt(geometry, x => x.IsVisible);
+        }
+
+        /// <summary>
         /// Gets the first visual in the visual tree whose bounds contain a point.
         /// </summary>
         /// <param name="visual">The root visual to test.</param>
@@ -334,21 +346,35 @@ namespace Avalonia.VisualTree
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             var source = visual.GetPresentationSource();
-            var root = source?.RootVisual;
-
-            if (source is null || root is null)
+            if (source is null)
             {
                 return null;
             }
 
-            var rootPoint = visual.TranslatePoint(p, (Visual)root);
+            return source.HitTester.HitTestFirst(p, visual, filter);
+        }
 
-            if (rootPoint.HasValue)
+        /// <summary>
+        /// Gets the first visual in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>A <see cref="GeometryHitTestResult"/> containing the visual intersecting the requested geometry and intersection details, or null if no intersection.</returns>
+        public static GeometryHitTestResult? GetVisualAt(this Visual visual, Geometry geometry, Func<Visual, bool> filter)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            var source = visual.GetPresentationSource();
+            if (source is null)
             {
-                return source.HitTester.HitTestFirst(rootPoint.Value, visual, filter);
+                return null;
             }
 
-            return null;
+            return source.HitTester.HitTestFirst(geometry, visual, filter);
         }
 
         /// <summary>
@@ -364,6 +390,21 @@ namespace Avalonia.VisualTree
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
             return visual.GetVisualsAt(p, x => x.IsVisible);
+        }
+
+        /// <summary>
+        /// Enumerates the visible visuals in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <returns>The visuals intersecting the requested geometry with intersection details.</returns>
+        public static IEnumerable<GeometryHitTestResult> GetVisualsAt(
+            this Visual visual,
+            Geometry geometry)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            return visual.GetVisualsAt(geometry, x => x.IsVisible);
         }
 
         /// <summary>
@@ -394,13 +435,40 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
+        /// Enumerates the visible visuals in the visual tree whose bounds intersects a geometry.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="geometry">The geometry.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visuals intersecting the requested geometry with intersection details.</returns>
+        public static IEnumerable<GeometryHitTestResult> GetVisualsAt(
+            this Visual visual,
+            Geometry geometry,
+            Func<Visual, bool> filter)
+        {
+            ThrowHelper.ThrowIfNull(visual, nameof(visual));
+
+            var source = visual.GetPresentationSource();
+
+            if (source is null)
+            {
+                return Array.Empty<GeometryHitTestResult>();
+            }
+
+            return source.HitTester.HitTest(geometry, visual, filter);
+        }
+
+        /// <summary>
         /// Enumerates the children of an <see cref="Visual"/> in the visual tree.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>The visual children.</returns>
         public static IEnumerable<Visual> GetVisualChildren(this Visual visual)
         {
-            return visual.VisualChildren;
+            return visual.TypedVisualChildren;
         }
 
         /// <summary>
@@ -410,7 +478,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual's ancestors.</returns>
         public static IEnumerable<Visual> GetVisualDescendants(this Visual visual)
         {
-            foreach (Visual child in visual.VisualChildren)
+            foreach (Visual child in visual.TypedVisualChildren)
             {
                 yield return child;
 
@@ -526,13 +594,8 @@ namespace Avalonia.VisualTree
 
         private static T? FindDescendantOfTypeCore<T>(Visual visual, Predicate<T>? predicate) where T : class
         {
-            var visualChildren = visual.VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
-
-            for (var i = 0; i < visualChildrenCount; i++)
+            foreach (var child in visual.TypedVisualChildren)
             {
-                Visual child = visualChildren[i];
-
                 if (child is T result)
                 {
                     if (predicate == null || predicate(result))

@@ -1,7 +1,9 @@
 using System;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
 using Avalonia.Styling;
@@ -14,7 +16,8 @@ namespace Avalonia.Controls.Chrome;
 /// TopLevelHost extracts overlay/underlay/popover visuals from the template content
 /// and inserts them into its own visual tree.
 /// </summary>
-[PseudoClasses(pcNormal, pcMaximized, pcFullscreen, pcHasShadow, pcHasBorder, pcHasTitlebar)]
+[PseudoClasses(pcNormal, pcMaximized, pcFullscreen, pcHasShadow, pcHasBorder, pcHasTitlebar,
+    pcHasMaximize, pcHasFullscreen, pcHasMinimize, pcHasClose, pcHasTitle)]
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_MinimizeButton, typeof(Button))]
 [TemplatePart(PART_MaximizeButton, typeof(Button))]
@@ -30,6 +33,11 @@ public class WindowDrawnDecorations : StyledElement
     internal const string pcHasShadow = ":has-shadow";
     internal const string pcHasBorder = ":has-border";
     internal const string pcHasTitlebar = ":has-titlebar";
+    internal const string pcHasMaximize = ":has-maximize";
+    internal const string pcHasFullscreen = ":has-fullscreen";
+    internal const string pcHasMinimize = ":has-minimize";
+    internal const string pcHasClose = ":has-close";
+    internal const string pcHasTitle = ":has-title";
 
     // Template part names for caption buttons
     internal const string PART_CloseButton = "PART_CloseButton";
@@ -58,13 +66,13 @@ public class WindowDrawnDecorations : StyledElement
     /// Defines the <see cref="DefaultFrameThickness"/> property.
     /// </summary>
     public static readonly StyledProperty<Thickness> DefaultFrameThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultFrameThickness));
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultFrameThickness), validate: Border.BorderThicknessProperty.ValidateValue);
 
     /// <summary>
     /// Defines the <see cref="DefaultShadowThickness"/> property.
     /// </summary>
     public static readonly StyledProperty<Thickness> DefaultShadowThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness));
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness), validate: Border.BorderThicknessProperty.ValidateValue);
 
     /// <summary>
     /// Defines the <see cref="TitleBarHeight"/> property.
@@ -121,6 +129,13 @@ public class WindowDrawnDecorations : StyledElement
         AvaloniaProperty.Register<WindowDrawnDecorations, string?>(nameof(Title));
 
     /// <summary>
+    /// Defines the TitleBarDecorations attached property.
+    /// </summary>
+    public static readonly AttachedProperty<TitleBarDecorations> TitleBarDecorationsProperty =
+        AvaloniaProperty.RegisterAttached<WindowDrawnDecorations, StyledElement, TitleBarDecorations>(
+            "TitleBarDecorations", TitleBarDecorations.All);
+
+    /// <summary>
     /// Defines the <see cref="EnabledParts"/> property.
     /// </summary>
     internal static readonly StyledProperty<DrawnWindowDecorationParts> EnabledPartsProperty =
@@ -138,12 +153,29 @@ public class WindowDrawnDecorations : StyledElement
     private IDisposable? _windowSubscriptions;
     private Window? _hostWindow;
     private double _titleBarHeightOverride = -1;
+    private double _renderScaling = 1.0;
 
     /// <summary>
     /// Raised when any property affecting the effective geometry changes
     /// (effective titlebar height, frame thickness, or shadow thickness).
     /// </summary>
     internal event Action? EffectiveGeometryChanged;
+
+    /// <summary>
+    /// Gets or sets the current render scaling factor used for pixel-aligning
+    /// decoration geometry (title bar height, frame/shadow thickness).
+    /// </summary>
+    internal double RenderScaling
+    {
+        get => _renderScaling;
+        set
+        {
+            if (_renderScaling == value)
+                return;
+            _renderScaling = value;
+            UpdateEffectiveGeometry();
+        }
+    }
 
     /// <summary>
     /// Gets or sets the decorations template.
@@ -221,11 +253,37 @@ public class WindowDrawnDecorations : StyledElement
 
     /// <summary>
     /// Gets or sets the window title displayed in the decorations.
+    /// Mirrors the value set on the host <see cref="Window"/>.
     /// </summary>
     public string? Title
     {
         get => GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets which title bar elements to display.
+    /// </summary>
+    public static TitleBarDecorations GetTitleBarDecorations(StyledElement element)
+        => element.GetValue(TitleBarDecorationsProperty);
+
+    /// <summary>
+    /// Sets which title bar elements to display.
+    /// </summary>
+    /// <remarks>
+    /// Set this property on a <see cref="Window"/> to control the elements displayed in its drawn title bar.
+    /// </remarks>
+    public static void SetTitleBarDecorations(StyledElement element, TitleBarDecorations value)
+        => element.SetValue(TitleBarDecorationsProperty, value);
+
+    /// <summary>
+    /// Gets or sets which title bar elements are requested to be displayed.
+    /// Mirrors the value set on the host <see cref="Window"/>.
+    /// </summary>
+    public TitleBarDecorations TitleBarDecorations
+    {
+        get => GetValue(TitleBarDecorationsProperty);
+        set => SetValue(TitleBarDecorationsProperty, value);
     }
 
     /// <summary>
@@ -311,6 +369,7 @@ public class WindowDrawnDecorations : StyledElement
             x.UpdateEffectiveGeometry();
         });
 
+        TitleBarDecorationsProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateTitleBarDecorationsPseudoClasses());
         DefaultTitleBarHeightProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateEffectiveGeometry());
         DefaultFrameThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateEffectiveGeometry());
         DefaultShadowThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateEffectiveGeometry());
@@ -365,10 +424,15 @@ public class WindowDrawnDecorations : StyledElement
         Detach();
         _hostWindow = window;
 
+        window.AllowedWindowActionsChanged += OnAllowedWindowActionsChanged;
+
         _windowSubscriptions = new CompositeDisposable
         {
+            Disposable.Create(() => window.AllowedWindowActionsChanged -= OnAllowedWindowActionsChanged),
             window.GetObservable(Window.TitleProperty)
                 .Subscribe(title => SetCurrentValue(TitleProperty, title)),
+            window.GetObservable(TitleBarDecorationsProperty)
+                .Subscribe(hints => SetCurrentValue(TitleBarDecorationsProperty, hints)),
             window.GetObservable(Window.CanMaximizeProperty)
                 .Subscribe(_ =>
                 {
@@ -389,6 +453,7 @@ public class WindowDrawnDecorations : StyledElement
                 }),
         };
 
+        UpdateTitleBarDecorationsPseudoClasses();
         UpdateMaximizeButtonState();
         UpdateMinimizeButtonState();
         UpdateFullScreenButtonState();
@@ -529,46 +594,78 @@ public class WindowDrawnDecorations : StyledElement
         e.Handled = true;
     }
 
+    private PlatformAllowedWindowActions EffectiveAllowedActions =>
+        _hostWindow?.AllowedWindowActions ?? PlatformAllowedWindowActions.All;
+
     private void UpdateMaximizeButtonState()
     {
         if (_maximizeButton == null)
             return;
-        _maximizeButton.IsEnabled = _hostWindow?.WindowState switch
-        {
-            WindowState.Maximized or WindowState.FullScreen => _hostWindow.CanResize,
-            WindowState.Normal => _hostWindow.CanMaximize,
-            _ => true
-        };
+        _maximizeButton.IsEnabled = EffectiveAllowedActions.HasFlag(PlatformAllowedWindowActions.Maximize)
+            && (_hostWindow?.WindowState switch
+            {
+                WindowState.Maximized or WindowState.FullScreen => _hostWindow.CanResize,
+                WindowState.Normal => _hostWindow.CanMaximize,
+                _ => true
+            });
     }
 
     private void UpdateMinimizeButtonState()
     {
         if (_minimizeButton == null)
             return;
-        _minimizeButton.IsEnabled = _hostWindow?.CanMinimize ?? true;
+        _minimizeButton.IsEnabled = EffectiveAllowedActions.HasFlag(PlatformAllowedWindowActions.Minimize)
+            && (_hostWindow?.CanMinimize ?? true);
     }
 
     private void UpdateFullScreenButtonState()
     {
         if (_fullScreenButton == null)
             return;
-        _fullScreenButton.IsEnabled = _hostWindow?.WindowState == WindowState.FullScreen
-            ? _hostWindow.CanResize
-            : _hostWindow?.CanMaximize ?? true;
+        _fullScreenButton.IsEnabled = EffectiveAllowedActions.HasFlag(PlatformAllowedWindowActions.Fullscreen)
+            && (_hostWindow?.WindowState == WindowState.FullScreen
+                ? _hostWindow.CanResize
+                : _hostWindow?.CanMaximize ?? true);
+    }
+
+    private void OnAllowedWindowActionsChanged(PlatformAllowedWindowActions actions)
+    {
+        UpdateTitleBarDecorationsPseudoClasses();
+        UpdateMaximizeButtonState();
+        UpdateMinimizeButtonState();
+        UpdateFullScreenButtonState();
+    }
+
+    private void UpdateTitleBarDecorationsPseudoClasses()
+    {
+        var actions = EffectiveAllowedActions;
+        var hints = TitleBarDecorations;
+
+        PseudoClasses.Set(pcHasMaximize, actions.HasFlag(PlatformAllowedWindowActions.Maximize)
+                                         && hints.HasFlag(TitleBarDecorations.MaximizeButton));
+        PseudoClasses.Set(pcHasFullscreen, actions.HasFlag(PlatformAllowedWindowActions.Fullscreen)
+                                           && hints.HasFlag(TitleBarDecorations.FullScreenButton));
+        PseudoClasses.Set(pcHasMinimize, actions.HasFlag(PlatformAllowedWindowActions.Minimize)
+                                         && hints.HasFlag(TitleBarDecorations.MinimizeButton));
+        PseudoClasses.Set(pcHasClose, hints.HasFlag(TitleBarDecorations.CloseButton));
+        PseudoClasses.Set(pcHasTitle, hints.HasFlag(TitleBarDecorations.Title));
     }
 
     private void UpdateEffectiveGeometry()
     {
+        var scale = _renderScaling;
+
         TitleBarHeight = EnabledParts.HasFlag(DrawnWindowDecorationParts.TitleBar)
-            ? (TitleBarHeightOverride == -1 ? DefaultTitleBarHeight : TitleBarHeightOverride)
+            ? LayoutHelper.RoundLayoutValue(
+                TitleBarHeightOverride == -1 ? DefaultTitleBarHeight : TitleBarHeightOverride, scale)
             : 0;
 
         FrameThickness = EnabledParts.HasFlag(DrawnWindowDecorationParts.Border)
-            ? (FrameThicknessOverride ?? DefaultFrameThickness)
+            ? LayoutHelper.RoundLayoutThickness(FrameThicknessOverride ?? DefaultFrameThickness, scale)
             : default;
 
         ShadowThickness = EnabledParts.HasFlag(DrawnWindowDecorationParts.Shadow)
-            ? (ShadowThicknessOverride ?? DefaultShadowThickness)
+            ? LayoutHelper.RoundLayoutThickness(ShadowThicknessOverride ?? DefaultShadowThickness, scale)
             : default;
 
         EffectiveGeometryChanged?.Invoke();

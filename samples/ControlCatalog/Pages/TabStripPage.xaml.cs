@@ -3,7 +3,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class TabStripPage : UserControl
+    public partial class TabStripPage : ContentPage
     {
         public TabStripPage()
         {

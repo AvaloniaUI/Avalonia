@@ -239,6 +239,8 @@ namespace Avalonia.Controls
             {
                 IsVisible = false;
 
+                if (IsActive)
+                    HandleDeactivated();
                 if (this is IFocusScope scope)
                 {
                     ((FocusManager?)FocusManager)?.RemoveFocusRoot(scope);
@@ -304,7 +306,7 @@ namespace Avalonia.Controls
         {
             var constraint = ArrangeSetBounds(finalRect.Size);
             var arrangeSize = ArrangeOverride(constraint);
-            Bounds = new Rect(arrangeSize);
+            Bounds = new Rect(finalRect.Position, arrangeSize);
         }
 
         /// <summary>

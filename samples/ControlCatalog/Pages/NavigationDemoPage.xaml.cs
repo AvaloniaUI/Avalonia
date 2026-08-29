@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public partial class NavigationDemoPage : UserControl
+    public partial class NavigationDemoPage : ContentPage
     {
         private static readonly (string Group, string Title, string Description, Func<UserControl> Factory)[] Demos =
         {
@@ -28,6 +28,9 @@ namespace ControlCatalog.Pages
             // Data
             ("Data", "Pass Data", "Pass data during navigation via constructor arguments or DataContext.",
                 () => new NavigationPagePassDataPage()),
+            ("Data", "MVVM Navigation",
+                "Keep navigation decisions in view models by routing NavigationPage push and pop operations through a small INavigationService.",
+                () => new NavigationPageMvvmPage()),
 
             // Features
             ("Features", "Attached Methods",

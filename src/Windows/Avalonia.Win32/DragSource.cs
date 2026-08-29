@@ -10,7 +10,7 @@ namespace Avalonia.Win32
     internal sealed class DragSource : IPlatformDragSource
     {
         public Task<DragDropEffects> DoDragDropAsync(
-            PointerEventArgs triggerEvent,
+            PointerPressedEventArgs triggerEvent,
             IDataTransfer dataTransfer,
             DragDropEffects allowedEffects)
         {

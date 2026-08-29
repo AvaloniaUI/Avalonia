@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Platform;
+using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -152,6 +153,18 @@ namespace Avalonia.Controls
             if (transformToVisual == null)
                 return null;
             var transformedRect = new Rect(default, bounds.Size).TransformToAABB(transformToVisual.Value);
+            // Transformed rect should be pixel-rounded if layout rounding is enabled.
+            // This is important for native controls to align correctly with Avalonia's visual tree.
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                var left = LayoutHelper.RoundLayoutValue(transformedRect.X, scale);
+                var top = LayoutHelper.RoundLayoutValue(transformedRect.Y, scale);
+                var right = LayoutHelper.RoundLayoutValue(transformedRect.Right, scale);
+                var bottom = LayoutHelper.RoundLayoutValue(transformedRect.Bottom, scale);
+                transformedRect = new Rect(new Point(left, top), new Point(right, bottom));
+            }
+
             return transformedRect;
         }
 

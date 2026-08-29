@@ -26,9 +26,16 @@ internal class ServerCompositorAnimations
         _clockItemsToUpdate.Clear();
 
         while (_dirtyAnimatedObjectQueue.Count > 0)
-            _dirtyAnimatedObjectQueue.Dequeue().EvaluateAnimations();
+        {
+            var animation = _dirtyAnimatedObjectQueue.Dequeue();
+            _dirtyAnimatedObjects.Remove(animation);
+            animation.EvaluateAnimations();
+        }
+
         _dirtyAnimatedObjects.Clear();
     }
+
+    public bool NeedNextTick => _clockItems.Count > 0;
 
     public void AddDirtyAnimatedObject(ServerObjectAnimations obj)
     {

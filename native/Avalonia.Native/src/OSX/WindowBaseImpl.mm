@@ -21,13 +21,31 @@
 
 @class AutoFitContentView;
 
+
+// Activates the app, but defers until the run loop is running if it isn't yet.
+// Windows are shown (and the app activated) from OnFrameworkInitializationCompleted,
+// which runs before -[NSApplication run]. Activating that early yields a "degraded"
+// activation: the app looks frontmost but the WindowServer never does a real
+// become-active, which leaves the out-of-process file picker unable to receive
+// clicks in its file list/sidebar until a manual app switch. Deferring makes the first
+// activation a clean transition.
+static void ActivateApplication() {
+    if ([NSApp isRunning]) {
+        [NSApp activateIgnoringOtherApps:YES];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [NSApp activateIgnoringOtherApps:YES];
+        });
+    }
+}
+
 WindowBaseImpl::~WindowBaseImpl() {
     View = nullptr;
     Window = nullptr;
 }
 
 WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) : TopLevelImpl(events) {
-    _children = std::list<WindowBaseImpl*>();
+    _children = std::list<ComObjectWeakPtr<WindowBaseImpl>>();
     _shown = false;
     _inResize = false;
     BaseEvents = events;
@@ -99,7 +117,7 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
             [Window orderFront:Window];
             [Window makeKeyAndOrderFront:Window];
             [Window makeFirstResponder:View];
-            [NSApp activateIgnoringOtherApps:YES];
+            ActivateApplication();
         } else {
             [Window orderFront:Window];
         }
@@ -177,7 +195,7 @@ HRESULT WindowBaseImpl::Activate() {
     @autoreleasepool {
         if (Window != nullptr) {
             [Window makeKeyAndOrderFront:nil];
-            [NSApp activateIgnoringOtherApps:YES];
+            ActivateApplication();
         }
     }
 
@@ -330,6 +348,21 @@ HRESULT WindowBaseImpl::BeginMoveDrag() {
         auto lastEvent = [View lastMouseDownEvent];
 
         if (lastEvent == nullptr) {
+            // A press that begins inside an embedded native view (for example a webview hosted
+            // through NativeControlHost) is consumed by that view and never delivered to the
+            // Avalonia view, so no mouse-down is recorded; fall back to the event the
+            // application is tracking right now, provided it is a left-button press or drag
+            // that belongs to this window.
+            auto currentEvent = [NSApp currentEvent];
+
+            if (currentEvent != nullptr && [currentEvent window] == Window &&
+                ([currentEvent type] == NSEventTypeLeftMouseDown ||
+                 [currentEvent type] == NSEventTypeLeftMouseDragged)) {
+                lastEvent = currentEvent;
+            }
+        }
+
+        if (lastEvent == nullptr) {
             return S_OK;
         }
 
@@ -432,11 +465,21 @@ void WindowBaseImpl::CleanNSWindow() {
 }
 
 void WindowBaseImpl::CreateNSWindow(bool usePanel) {
+    // Anchor the content rect to the primary screen's origin. It's usually at (0,0), but can be offset while the
+    // display server is mid-reconfiguration. This ensures the window is always on a proper screen.
+    // See https://github.com/AvaloniaUI/Avalonia/issues/18895
+    NSPoint origin = NSZeroPoint;
+    NSArray<NSScreen*>* screens = [NSScreen screens];
+    if (screens.count > 0)
+        origin = screens.firstObject.frame.origin;
+
+    NSRect contentRect = NSRect { origin.x, origin.y, lastSize };
+
     if (usePanel) {
-        Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        Window = [[AvnPanel alloc] initWithParent:this contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
         [Window setHidesOnDeactivate:false];
     } else {
-        Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        Window = [[AvnWindow alloc] initWithParent:this contentRect:contentRect styleMask:NSWindowStyleMaskBorderless];
     }
 }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Avalonia.Automation.Peers;
@@ -9,15 +8,8 @@ using Avalonia.Win32.Automation.Interop;
 
 namespace Avalonia.Win32.Automation
 {
-#if NET8_0_OR_GREATER
     [GeneratedComClass]
     internal partial class RootAutomationNode : AutomationNode, IRawElementProviderFragmentRoot
-#else
-#if NET6_0_OR_GREATER
-    [RequiresUnreferencedCode("Requires .NET COM interop")]
-#endif
-    internal partial class RootAutomationNode : AutomationNode, IRawElementProviderFragmentRoot
-#endif
     {
         public RootAutomationNode(AutomationPeer peer)
             : base(peer)

@@ -6,6 +6,7 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageFirstLookPage : UserControl
     {
+        private bool _initialized;
         private int _pageCount;
 
         public NavigationPageFirstLookPage()
@@ -16,6 +17,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Home", "Welcome!\nUse the buttons to push and pop pages.", 0), null);
             UpdateStatus();
         }

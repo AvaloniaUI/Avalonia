@@ -22,34 +22,53 @@ namespace Avalonia.Headless
         private readonly IKeyboardDevice _keyboard;
         private readonly IScreenImpl _screen;
         private readonly Stopwatch _st = Stopwatch.StartNew();
-        private readonly Pointer _mousePointer;
+        private readonly TouchDevice _touchDevice = new();
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
-        private readonly PixelFormat _frameBufferFormat;
+        private readonly AvaloniaHeadlessPlatformOptions _options;
+        private readonly HeadlessWindowImpl? _popupParent;
+        private readonly IPopupPositioner? _popupPositioner;
         public bool IsPopup { get; }
 
-        public HeadlessWindowImpl(bool isPopup, PixelFormat frameBufferFormat)
+        public HeadlessWindowImpl(AvaloniaHeadlessPlatformOptions options)
         {
-            IsPopup = isPopup;
             Surfaces = [this];
             _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
             _screen = new HeadlessScreensStub();
-            _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
-            MouseDevice = new MouseDevice(_mousePointer);
+            MouseDevice = options.UseSharedMouseDevice == true
+                ? Avalonia.Input.MouseDevice.Primary
+                : new MouseDevice(new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true));
             ClientSize = new Size(1024, 768);
-            _frameBufferFormat = frameBufferFormat;
+            _options = options;
+        }
+
+        private HeadlessWindowImpl(HeadlessWindowImpl popupParent)
+            : this(popupParent._options)
+        {
+            IsPopup = true;
+            _popupParent = popupParent;
+            _popupPositioner = new ManagedPopupPositioner(
+                new ManagedPopupPositionerPopupImplHelper(popupParent, PopupMoveResize));
+        }
+
+        private void PopupMoveResize(PixelPoint position, Size size, double scaling)
+        {
+            Position = position;
+            PositionChanged?.Invoke(position);
+            DoResize(size, WindowResizeReason.Unspecified);
         }
 
         public void Dispose()
         {
             Closed?.Invoke();
+            _touchDevice.Dispose();
             _lastRenderedFrame?.Dispose();
             _lastRenderedFrame = null;
         }
 
         public Size ClientSize { get; set; }
         public Size? FrameSize => null;
-        public double RenderScaling { get; } = 1;
+        public double RenderScaling { get; private set; } = 1;
         public double DesktopScaling => RenderScaling;
         public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
@@ -68,9 +87,9 @@ namespace Avalonia.Headless
 
         public IInputRoot? InputRoot { get; set; }
 
-        public Point PointToClient(PixelPoint point) => point.ToPoint(RenderScaling);
+        public Point PointToClient(PixelPoint point) => (point - Position).ToPoint(RenderScaling);
 
-        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
+        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling) + Position;
 
         public void SetCursor(ICursorImpl? cursor)
         {
@@ -141,6 +160,7 @@ namespace Avalonia.Headless
         }
 
         public WindowState WindowState { get; set; }
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
         public void SetTitle(string? title)
         {
@@ -207,7 +227,7 @@ namespace Avalonia.Headless
 
         public ILockedFramebuffer Lock()
         {
-            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, _frameBufferFormat, AlphaFormat.Premul);
+            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, _options.FrameBufferFormat, AlphaFormat.Premul);
             var fb = bmp.Lock();
             return new FramebufferProxy(fb, () =>
             {
@@ -238,8 +258,7 @@ namespace Avalonia.Headless
 
         private ulong Timestamp => (ulong)_st.ElapsedMilliseconds;
 
-        // TODO: Hook recent Popup changes. 
-        IPopupPositioner IPopupImpl.PopupPositioner => null!;
+        IPopupPositioner IPopupImpl.PopupPositioner => _popupPositioner!;
 
         public Size MaxAutoSizeHint => new Size(1920, 1080);
 
@@ -352,10 +371,30 @@ namespace Avalonia.Headless
                 point, delta, modifiers));
         }
 
+        void IHeadlessWindow.Touch(Point point, long touchPointId, RawPointerEventType type, RawInputModifiers modifiers)
+        {
+            Input?.Invoke(new RawTouchEventArgs(_touchDevice, Timestamp, InputRoot!,
+                type, point, modifiers, touchPointId));
+        }
+
         void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers)
         {
             var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
             Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, data, effects, modifiers));
+        }
+
+        void IHeadlessWindow.SetRenderScaling(double scaling)
+        {
+            if (scaling <= 0)
+                throw new ArgumentOutOfRangeException(nameof(scaling), "Scaling must be greater than zero.");
+
+            if (RenderScaling == scaling)
+                return;
+
+            var oldScaledSize = ClientSize;
+            RenderScaling = scaling;
+            ScalingChanged?.Invoke(scaling);
+            Resize(oldScaledSize, WindowResizeReason.DpiChange);
         }
 
         void IWindowImpl.Move(PixelPoint point)
@@ -364,11 +403,7 @@ namespace Avalonia.Headless
             PositionChanged?.Invoke(point);
         }
 
-        public IPopupImpl? CreatePopup()
-        {
-            // TODO: Hook recent Popup changes. 
-            return null;
-        }
+        public IPopupImpl? CreatePopup() => _options.OverlayPopups ? null : new HeadlessWindowImpl(this);
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
@@ -423,12 +458,16 @@ namespace Avalonia.Headless
             
         }
         
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
             
         }
 
-        public void TakeFocus() 
+        public void TakeFocus()
+        {
+        }
+
+        public void SetHitTestVisible(bool isHitTestVisible)
         {
         }
     }

@@ -39,7 +39,7 @@ namespace Avalonia.X11.Glx
                 // No-op
             }
             
-            public bool IsCorrupted => false;
+            public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
             public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 var size = sceneInfo.Size;

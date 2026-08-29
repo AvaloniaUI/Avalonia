@@ -857,6 +857,101 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Resetting_Items_Collection_Should_Raise_SelectionChanged()
+        {
+            var items = new ObservableCollection<Item>
+            {
+                new Item(),
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = items,
+                Template = Template(),
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 1;
+
+            var selectedItem = items[1];
+
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
+
+            items.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Single(receivedArgs);
+            Assert.Empty(receivedArgs[0].AddedItems);
+            Assert.Equal(new[] { selectedItem }, receivedArgs[0].RemovedItems);
+        }
+
+        [Fact]
+        public void Resetting_Items_To_Empty_With_Multiple_Selection_Should_Raise_SelectionChanged()
+        {
+            var items = new ObservableCollection<Item>
+            {
+                new Item(),
+                new Item(),
+                new Item(),
+            };
+
+            var target = new TestSelector
+            {
+                ItemsSource = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 0;
+            target.Selection.Select(2);
+
+            var selected0 = items[0];
+            var selected2 = items[2];
+
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
+
+            items.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Single(receivedArgs);
+            Assert.Empty(receivedArgs[0].AddedItems);
+            Assert.Equal(2, receivedArgs[0].RemovedItems.Count);
+            Assert.Contains(selected0, receivedArgs[0].RemovedItems.Cast<object>());
+            Assert.Contains(selected2, receivedArgs[0].RemovedItems.Cast<object>());
+        }
+
+        [Fact]
+        public void Resetting_Items_With_Preserved_Selection_Should_Not_Report_Deselection()
+        {
+            var items = new ResettingCollection(3);
+
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
+
+            items.Reset(new[] { "Item2", "Item0", "Item1" });
+
+            Assert.Equal("Item1", target.SelectedItem);
+            Assert.Single(receivedArgs);
+            Assert.Empty(receivedArgs[0].RemovedItems);
+        }
+
+        [Fact]
         public void Raising_IsSelectedChanged_On_Item_Should_Update_Selection()
         {
             var items = new[]
@@ -1820,6 +1915,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void AutoScrollToSelectedItem_Scrolls_Synchronously_When_Laid_Out()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                ItemsSource = items,
+            };
+
+            var raised = false;
+
+            Prepare(target);
+            target.AddHandler(Control.RequestBringIntoViewEvent, (_, _) => raised = true);
+            target.SelectedIndex = 2;
+
+            Assert.True(raised);
+        }
+
+        [Fact]
         public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
         {
             using var _ = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
@@ -1940,6 +2062,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // https://github.com/xunit/xunit/issues/2222
             => ThreadRunHelper.RunOnDedicatedThread(() =>
             {
+                using var _ = UnitTestApplication.Start();
                 var target = new TestSelector
                 {
                     Template = Template(),

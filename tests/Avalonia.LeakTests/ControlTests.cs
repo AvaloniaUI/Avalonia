@@ -251,7 +251,7 @@ namespace Avalonia.LeakTests
                 Assert.Same(textBox, window.Presenter!.Child);
 
                 // Get the border from the TextBox template.
-                var border = textBox.GetTemplateChildren().FirstOrDefault(x => x.Name == "border");
+                var border = textBox.GetTemplateDescendants().FirstOrDefault(x => x.Name == "border");
 
                 // The TextBox should have subscriptions to its Classes collection from the
                 // default theme.

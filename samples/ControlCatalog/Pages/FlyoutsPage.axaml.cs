@@ -7,7 +7,7 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public partial class FlyoutsPage : UserControl
+    public partial class FlyoutsPage : ContentPage
     {
         public FlyoutsPage()
         {

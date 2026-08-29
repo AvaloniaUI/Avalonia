@@ -109,14 +109,9 @@ namespace ControlCatalog.Pages
         private void OnShowIconsChanged(object? sender, RoutedEventArgs e)
         {
             bool show = ShowIconsCheck.IsChecked == true;
-            SetIcon(HomePage, show ? HomeGeometry : null);
-            SetIcon(SearchPage, show ? SearchGeometry : null);
-            SetIcon(SettingsPage, show ? SettingsGeometry : null);
-        }
-
-        private static void SetIcon(ContentPage page, StreamGeometry? geometry)
-        {
-            page.Icon = geometry;
+            HomePage.Icon = show ? new PathIcon { Data = HomeGeometry } : null;
+            SearchPage.Icon = show ? new PathIcon { Data = SearchGeometry } : null;
+            SettingsPage.Icon = show ? new PathIcon { Data = SettingsGeometry } : null;
         }
 
         private void OnTabEnabledChanged(object? sender, RoutedEventArgs e)

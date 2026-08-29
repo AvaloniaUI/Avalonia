@@ -1,50 +1,81 @@
+using System;
+using System.Threading;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Input
 {
     /// <summary>
-    /// Specifies the direction of a swipe gesture.
-    /// </summary>
-    public enum SwipeDirection { Left, Right, Up, Down }
-
-    /// <summary>
-    /// Provides data for the <see cref="InputElement.SwipeGestureEvent"/> routed event.
+    /// Provides data for swipe gesture events.
     /// </summary>
     public class SwipeGestureEventArgs : RoutedEventArgs
     {
-        private static int _nextId = 1;
-        internal static int GetNextFreeId() => _nextId++;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SwipeGestureEventArgs"/> class.
+        /// </summary>
+        /// <param name="id">The unique identifier for this gesture.</param>
+        /// <param name="delta">The pixel delta since the last event.</param>
+        /// <param name="velocity">The current swipe velocity in pixels per second.</param>
+        public SwipeGestureEventArgs(int id, Vector delta, Vector velocity)
+            : base(InputElement.SwipeGestureEvent)
+        {
+            Id = id;
+            Delta = delta;
+            Velocity = velocity;
+            SwipeDirection = Math.Abs(delta.X) >= Math.Abs(delta.Y)
+                ? (delta.X <= 0 ? SwipeDirection.Right : SwipeDirection.Left)
+                : (delta.Y <= 0 ? SwipeDirection.Down : SwipeDirection.Up);
+        }
 
         /// <summary>
-        /// Gets the unique identifier for this swipe gesture instance.
+        /// Gets the unique identifier for this gesture sequence.
         /// </summary>
         public int Id { get; }
 
         /// <summary>
-        /// Gets the direction of the swipe gesture.
-        /// </summary>
-        public SwipeDirection SwipeDirection { get; }
-
-        /// <summary>
-        /// Gets the total translation vector of the swipe gesture.
+        /// Gets the pixel delta since the last event.
         /// </summary>
         public Vector Delta { get; }
 
         /// <summary>
-        /// Gets the position, relative to the target element, where the swipe started.
+        /// Gets the current swipe velocity in pixels per second.
         /// </summary>
-        public Point StartPoint { get; }
+        public Vector Velocity { get; }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="SwipeGestureEventArgs"/>.
+        /// Gets the direction of the dominant swipe axis.
         /// </summary>
-        public SwipeGestureEventArgs(int id, SwipeDirection direction, Vector delta, Point startPoint)
-            : base(InputElement.SwipeGestureEvent)
+        public SwipeDirection SwipeDirection { get; }
+
+        private static int s_nextId;
+
+        internal static int GetNextFreeId() => Interlocked.Increment(ref s_nextId);
+    }
+
+    /// <summary>
+    /// Provides data for the swipe gesture ended event.
+    /// </summary>
+    public class SwipeGestureEndedEventArgs : RoutedEventArgs
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SwipeGestureEndedEventArgs"/> class.
+        /// </summary>
+        /// <param name="id">The unique identifier for this gesture.</param>
+        /// <param name="velocity">The swipe velocity at release in pixels per second.</param>
+        public SwipeGestureEndedEventArgs(int id, Vector velocity)
+            : base(InputElement.SwipeGestureEndedEvent)
         {
             Id = id;
-            SwipeDirection = direction;
-            Delta = delta;
-            StartPoint = startPoint;
+            Velocity = velocity;
         }
+
+        /// <summary>
+        /// Gets the unique identifier for this gesture sequence.
+        /// </summary>
+        public int Id { get; }
+
+        /// <summary>
+        /// Gets the swipe velocity at release in pixels per second.
+        /// </summary>
+        public Vector Velocity { get; }
     }
 }

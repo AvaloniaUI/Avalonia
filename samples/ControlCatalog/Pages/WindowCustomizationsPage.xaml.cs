@@ -2,7 +2,7 @@
 
 namespace ControlCatalog.Pages
 {
-    public partial class WindowCustomizationsPage : UserControl
+    public partial class WindowCustomizationsPage : ContentPage
     {
         public WindowCustomizationsPage()
         {
