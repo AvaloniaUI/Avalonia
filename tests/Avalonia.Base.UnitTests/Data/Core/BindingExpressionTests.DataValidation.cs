@@ -335,6 +335,39 @@ public partial class BindingExpressionTests
     }
 
     [Fact]
+    public void Conversion_Error_Is_Cleared_When_Value_Becomes_Valid_OneWayToSource()
+    {
+        // Issue #15378.
+        var data = new ViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.DoubleValue,
+            targetProperty: TargetClass.ObjectProperty,
+            enableDataValidation: true,
+            mode: BindingMode.OneWayToSource);
+
+        target.Object = 5.0;
+
+        Assert.Equal(5.0, data.DoubleValue);
+        AssertNoError(target, TargetClass.ObjectProperty);
+
+        target.Object = null;
+
+        AssertBindingError(
+            target,
+            TargetClass.ObjectProperty,
+            new InvalidCastException("Could not convert '(null)' (null) to System.Double."),
+            BindingErrorType.DataValidationError);
+
+        target.Object = 5.0;
+
+        Assert.Equal(5.0, data.DoubleValue);
+        AssertNoError(target, TargetClass.ObjectProperty);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
     public void Does_Not_Subscribe_To_Indei_Of_Intermediate_Object_In_Chain()
     {
         var data = new IndeiContainerViewModel { Inner = new() };
