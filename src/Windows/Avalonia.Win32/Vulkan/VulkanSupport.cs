@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Vulkan;
+using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.Vulkan;
 
@@ -13,8 +16,16 @@ internal class VulkanSupport
     [DllImport("vulkan-1.dll")]
     private static extern IntPtr vkGetInstanceProcAddr(IntPtr instance, string name);
     
-    public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options) =>
-        VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions
+    public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options)
+    {
+        if (IsParallelsDisplayAdapter())
+        {
+            Logger.TryGet(LogEventLevel.Warning, "Vulkan")?.Log(null,
+                "Parallels Display Adapter detected; skipping Vulkan initialization and falling back to the next configured rendering mode.");
+            return null;
+        }
+
+        return VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions
         {
             RequiredInstanceExtensions = { "VK_KHR_win32_surface" },
             GetProcAddressDelegate = vkGetInstanceProcAddr,
@@ -24,6 +35,35 @@ internal class VulkanSupport
                 [typeof(IVulkanKhrSurfacePlatformSurfaceFactory)] = new VulkanSurfaceFactory()
             }
         });
+    }
+
+    private static unsafe bool IsParallelsDisplayAdapter()
+    {
+        var factoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory1));
+        DirectXUnmanagedMethods.CreateDXGIFactory1(ref factoryGuid, out var factoryPointer);
+
+        if (factoryPointer == null)
+            return false;
+
+        using var factory = MicroComRuntime.CreateProxyFor<IDXGIFactory1>(factoryPointer, true);
+
+        for (uint index = 0; ; index++)
+        {
+            void* adapterPointer = null;
+
+            if (factory.EnumAdapters1(index, &adapterPointer) != 0 || adapterPointer == null)
+                return false;
+
+            using var adapter = MicroComRuntime.CreateProxyFor<IDXGIAdapter1>(adapterPointer, true);
+            var desc = adapter.Desc1;
+            var description = Marshal.PtrToStringUni((IntPtr)desc.Description);
+
+            if (description?.StartsWith(
+                    "Parallels Display Adapter",
+                    StringComparison.OrdinalIgnoreCase) == true)
+                return true;
+        }
+    }
 
     internal class VulkanSurfaceFactory : IVulkanKhrSurfacePlatformSurfaceFactory
     {
