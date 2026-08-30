@@ -97,6 +97,12 @@ namespace Avalonia.Media.TextFormatting
                     case TextWrapping.WrapWithOverflow:
                     case TextWrapping.Wrap:
                         {
+                            if (shapedTextRuns.Count == 0)
+                            {
+                                return CreateUnshapedTextLine(firstTextSourceIndex, textSourceLength,
+                                    paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+                            }
+
                             return PerformTextWrapping(shapedTextRuns, false, firstTextSourceIndex, paragraphWidth,
                                 paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool);
                         }
@@ -143,6 +149,12 @@ namespace Avalonia.Media.TextFormatting
                 case TextWrapping.WrapWithOverflow:
                 case TextWrapping.Wrap:
                     {
+                        if (cached.ShapedRuns.Length == 0)
+                        {
+                            return CreateUnshapedTextLine(firstTextSourceIndex, cached.TextSourceLength,
+                                paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+                        }
+
                         var runs = new List<TextRun>(cached.ShapedRuns.Length);
 
                         for (var i = 0; i < cached.ShapedRuns.Length; i++)
@@ -159,6 +171,23 @@ namespace Avalonia.Media.TextFormatting
                 default:
                     throw new ArgumentOutOfRangeException(nameof(paragraphProperties.TextWrapping));
             }
+        }
+
+        /// <summary>
+        /// Creates a line for text that shaping produced no runs for, which happens when the
+        /// typeface has no glyphs for any of its characters. The line still consumes
+        /// <paramref name="textSourceLength"/> so that callers keep advancing through the text source.
+        /// </summary>
+        private static TextLineImpl CreateUnshapedTextLine(int firstTextSourceIndex, int textSourceLength,
+            double paragraphWidth, TextParagraphProperties paragraphProperties,
+            FlowDirection resolvedFlowDirection, TextLineBreak? textLineBreak)
+        {
+            var textLine = new TextLineImpl(Array.Empty<TextRun>(), firstTextSourceIndex, textSourceLength,
+                paragraphWidth, paragraphProperties, resolvedFlowDirection, textLineBreak);
+
+            textLine.FinalizeLine();
+
+            return textLine;
         }
 
         /// <summary>
