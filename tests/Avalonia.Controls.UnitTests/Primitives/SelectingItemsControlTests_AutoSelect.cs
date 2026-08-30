@@ -84,6 +84,35 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Can_Change_Selection_From_SelectionChanged_When_AlwaysSelected_Reselects()
+        {
+            // Regression test for the #7536 fix: clearing the selection makes AlwaysSelected
+            // reselect the first item (via LostSelection), which raises SelectionChanged. A
+            // handler that changes the selection from there must be honoured rather than
+            // swallowed by the batch update that wraps the LostSelection handler.
+            var target = new TestSelector
+            {
+                ItemsSource = new[] { "foo", "bar", "baz" },
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+
+            var raised = 0;
+            target.SelectionChanged += (s, e) =>
+            {
+                if (++raised == 1)
+                    target.SelectedIndex = 2;
+            };
+
+            target.SelectedIndex = -1;
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal("baz", target.SelectedItem);
+        }
+
+        [Fact]
         public void Selection_Should_Be_Cleared_When_No_Items_Left()
         {
             var items = new AvaloniaList<string>(new[] { "foo", "bar" });
