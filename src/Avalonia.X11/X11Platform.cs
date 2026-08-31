@@ -45,6 +45,7 @@ namespace Avalonia.X11
         public X11PlatformOptions Options { get; private set; } = null!;
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; } = null!;
+        public X11ActiveWindowTracker ActiveWindowTracker { get; private set; } = null!;
         public XResources Resources { get; private set; } = null!;
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
         public IX11PlatformDispatcher DispatcherImpl { get; private set; } = null!;
@@ -75,6 +76,7 @@ namespace Avalonia.X11
 
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
+            ActiveWindowTracker = new X11ActiveWindowTracker(this);
             Resources = new XResources(this);
 
             IRenderTimer timer = options.ShouldRenderOnUIThread

@@ -126,7 +126,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 ctx.Context.DrawGeometry(Brushes.Black, null, geometry.Object);
             }
 
-            Assert.False(ctx.Context.GetRenderResults()!.HitTest(default));
+            Assert.False(ctx.Context.GetRenderResults()!.HitTest(default(Point)));
         }
 
         [Fact]
