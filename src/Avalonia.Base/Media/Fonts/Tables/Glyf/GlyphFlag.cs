@@ -12,7 +12,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         Repeat = 0x08,
         XIsSameOrPositiveXShortVector = 0x10,
         YIsSameOrPositiveYShortVector = 0x20,
-        Reserved1 = 0x40,
-        Reserved2 = 0x80
+        OverlapSimple = 0x40,
+        Reserved = 0x80
     }
 }
