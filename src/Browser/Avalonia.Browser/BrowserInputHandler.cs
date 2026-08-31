@@ -82,7 +82,6 @@ internal class BrowserInputHandler
                 // To minimize JS interop usage, we resolve all points properties in a single call.
                 const int itemsPerPoint = 6;
                 var pointsProps = InputHelper.GetCoalescedEvents(argsObj);
-                argsObj.Dispose();
                 s_intermediatePointsPooledList.Clear();
 
                 var pointsCount = pointsProps.Length / itemsPerPoint;
@@ -101,8 +100,25 @@ internal class BrowserInputHandler
             });
         }
 
-        return RawPointerEvent(type, pointerType!, point, (RawInputModifiers)modifier, pointerId,
-            coalescedEvents);
+        try
+        {
+            // Note: routing here is only synchronous when _rawEventGrouper is null (the branch above
+            // that creates the Lazy referencing argsObj). When _rawEventGrouper is set, ScheduleInput
+            // enqueues the event for later dispatch on the managed dispatcher - but coalescedEvents is
+            // never created (stays null) in that branch, so disposing argsObj below is still safe even
+            // though the deferred dispatch/merge logic (RawEventGrouper.MergeEvents) never touches it.
+            return RawPointerEvent(type, pointerType!, point, (RawInputModifiers)modifier, pointerId,
+                coalescedEvents);
+        }
+        finally
+        {
+            // The JSObject wraps the native PointerEvent. Disposing it here releases the JS-side handle
+            // deterministically instead of relying on the .NET GC to collect the wrapper first (which,
+            // without a dispose, isn't guaranteed to run promptly under continuous allocation pressure) -
+            // regardless of whether the Lazy above was ever evaluated (most consumers never call
+            // GetIntermediatePoints()).
+            argsObj.Dispose();
+        }
     }
 
     public bool OnPointerDown(string pointerType, long pointerId, int buttons, double offsetX, double offsetY,
