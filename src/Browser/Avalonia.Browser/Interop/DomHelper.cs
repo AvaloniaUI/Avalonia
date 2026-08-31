@@ -41,30 +41,26 @@ internal static partial class DomHelper
     public static partial void InitGlobalDomEvents(JSObject globalThis);
 
     [JSExport]
-    public static Task DarkModeChanged(bool isDarkMode, bool isHighContrast)
+    public static void DarkModeChanged(bool isDarkMode, bool isHighContrast)
     {
         (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnColorValuesChanged(isDarkMode, isHighContrast);
-        return Task.CompletedTask;
     }
 
     [JSExport]
-    public static Task DocumentVisibilityChanged(string visibilityState)
+    public static void DocumentVisibilityChanged(string visibilityState)
     {
         (AvaloniaLocator.Current.GetService<IActivatableLifetime>() as BrowserActivatableLifetime)?.OnVisibilityStateChanged(visibilityState);
-        return Task.CompletedTask;
     }
 
     [JSExport]
-    public static Task LanguageChanged(string language)
+    public static void LanguageChanged(string language)
     {
         (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnPreferredLanguageChanged(language);
-        return Task.CompletedTask;
     }
 
     [JSExport]
-    public static Task ScreensChanged()
+    public static void ScreensChanged()
     {
         (AvaloniaLocator.Current.GetService<IScreenImpl>() as BrowserScreens)?.OnChanged();
-        return Task.CompletedTask;
     }
 }

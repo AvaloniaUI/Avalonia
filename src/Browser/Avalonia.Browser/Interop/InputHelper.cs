@@ -6,11 +6,10 @@ namespace Avalonia.Browser.Interop;
 
 internal static partial class InputHelper
 {
-    public static Task RedirectInputAsync(int topLevelId, Action<BrowserTopLevelImpl> handler)
+    public static void RedirectInput(int topLevelId, Action<BrowserTopLevelImpl> handler)
     {
         if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
             handler(topLevelImpl);
-        return Task.CompletedTask;
     }
 
     public static Task<T> RedirectInputRetunAsync<T>(int topLevelId, Func<BrowserTopLevelImpl, T> handler, T @default)
@@ -32,58 +31,58 @@ internal static partial class InputHelper
         RedirectInputRetunAsync(topLevelId, t => t.InputHandler.OnKeyUp(code, key, modifier), false);
 
     [JSExport]
-    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end));
+    public static void OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
+        RedirectInput(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end));
 
     [JSExport]
-    public static Task OnCompositionStart(int topLevelId) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionStart());
+    public static void OnCompositionStart(int topLevelId) =>
+        RedirectInput(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionStart());
 
     [JSExport]
-    public static Task OnCompositionUpdate(int topLevelId, string? data) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionUpdate(data));
+    public static void OnCompositionUpdate(int topLevelId, string? data) =>
+        RedirectInput(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionUpdate(data));
 
     [JSExport]
-    public static Task OnCompositionEnd(int topLevelId, string? data) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd(data));
+    public static void OnCompositionEnd(int topLevelId, string? data) =>
+        RedirectInput(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd(data));
 
     [JSExport]
-    public static Task OnPointerMove(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,
+    public static void OnPointerMove(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,
         double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier, JSObject argsObj) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler
+        RedirectInput(topLevelId, t => t.InputHandler
             .OnPointerMove(pointerType, pointerId, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier, argsObj));
 
     [JSExport]
-    public static Task OnPointerDown(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId, int buttons,
+    public static void OnPointerDown(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId, int buttons,
         double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler
+        RedirectInput(topLevelId, t => t.InputHandler
             .OnPointerDown(pointerType, pointerId, buttons, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier));
 
     [JSExport]
-    public static Task OnPointerUp(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId, int buttons,
+    public static void OnPointerUp(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId, int buttons,
         double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler
+        RedirectInput(topLevelId, t => t.InputHandler
             .OnPointerUp(pointerType, pointerId, buttons, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier));
 
     [JSExport]
-    public static Task OnPointerCancel(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,
+    public static void OnPointerCancel(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,
         double offsetX, double offsetY, double pressure, double tiltX, double tiltY, double twist, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler
+        RedirectInput(topLevelId, t => t.InputHandler
             .OnPointerCancel(pointerType, pointerId, offsetX, offsetY, pressure, tiltX, tiltY, twist, modifier));
 
     [JSExport]
-    public static Task OnWheel(int topLevelId,
+    public static void OnWheel(int topLevelId,
         double offsetX, double offsetY,
         double deltaX, double deltaY, int modifier) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.OnWheel(offsetX, offsetY, deltaX, deltaY, modifier));
+        RedirectInput(topLevelId, t => t.InputHandler.OnWheel(offsetX, offsetY, deltaX, deltaY, modifier));
 
     [JSExport]
-    public static Task OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int modifiers, JSObject dataTransfer, JSObject items) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.OnDragEvent(type, offsetX, offsetY, modifiers, dataTransfer, items));
+    public static void OnDragDrop(int topLevelId, string type, double offsetX, double offsetY, int modifiers, JSObject dataTransfer, JSObject items) =>
+        RedirectInput(topLevelId, t => t.InputHandler.OnDragEvent(type, offsetX, offsetY, modifiers, dataTransfer, items));
 
     [JSExport]
-    public static Task OnKeyboardGeometryChange(int topLevelId, double x, double y, double width, double height) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.InputPane
+    public static void OnKeyboardGeometryChange(int topLevelId, double x, double y, double width, double height) =>
+        RedirectInput(topLevelId, t => t.InputHandler.InputPane
             .OnGeometryChange(x, y, width, height));
 
     [JSImport("InputHelper.getCoalescedEvents", AvaloniaModule.MainModuleName)]
