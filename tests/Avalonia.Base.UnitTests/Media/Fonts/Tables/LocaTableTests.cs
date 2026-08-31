@@ -111,5 +111,35 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.True(loca.TryGetOffsets(letterGlyph, out var start, out var end));
             Assert.True(end > start, "'A' should have a non-empty glyf range.");
         }
+
+        [Fact]
+        public void Glyph_Count_Is_Clamped_To_What_The_Table_Covers()
+        {
+            // Three short-format entries (6 bytes) cover two glyphs (entries = glyphCount + 1),
+            // however many glyphs maxp declares. Lookups past the covered range must fail the
+            // index check instead of reading a truncated entry.
+            var loca = CreateLoca(new byte[6], glyphCount: 10, isShortFormat: true);
+
+            Assert.Equal(2, loca.GlyphCount);
+            Assert.True(loca.TryGetOffsets(1, out _, out _));
+            Assert.False(loca.TryGetOffsets(2, out _, out _));
+        }
+
+        /// <summary>
+        /// Builds a <see cref="LocaTable"/> directly from raw bytes via its internal constructor,
+        /// bypassing the full font-load path (which would require a complete TTF).
+        /// </summary>
+        private static LocaTable CreateLoca(byte[] locaData, int glyphCount, bool isShortFormat)
+        {
+            var ctor = typeof(LocaTable).GetConstructor(
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+                binder: null,
+                new[] { typeof(ReadOnlyMemory<byte>), typeof(int), typeof(bool) },
+                modifiers: null);
+
+            Assert.NotNull(ctor);
+
+            return (LocaTable)ctor!.Invoke(new object[] { (ReadOnlyMemory<byte>)locaData, glyphCount, isShortFormat });
+        }
     }
 }
