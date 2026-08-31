@@ -39,4 +39,7 @@ static class NativeMethods
 
     [DllImport("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")]
     public static extern nint CFGetRetainCount(IntPtr cf);
+
+    [DllImport("libc", SetLastError = true)]
+    public static extern int close(int fd);
 }
