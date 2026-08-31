@@ -12,7 +12,7 @@ public enum ClipboardType
 
     /// <summary>
     /// The primary selection, an implicit clipboard populated by selecting text
-    /// on platforms supporting it (X11/Wayland).
+    /// on platforms supporting it (currently X11).
     /// </summary>
     PrimarySelection
 }

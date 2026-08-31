@@ -1848,7 +1848,7 @@ namespace Avalonia.Controls
             _isInTouchMode = false;
             _isInTouchSelectionMode = false;
             _isDoubleTapped = e.ClickCount == 2;
-            _selectionAtPointerPress = GetNormalizedSelection();
+            _selectionAtPointerPress = GetSelectionRange();
             if (text != null && clickInfo.Pointer?.Captured is not Border)
             {
                 if (e.Pointer.Type == PointerType.Mouse && clickInfo.Properties.IsLeftButtonPressed)
@@ -2162,8 +2162,8 @@ namespace Avalonia.Controls
             }
             else if (e.InitialPressMouseButton == MouseButton.Left)
             {
-                var selection = GetNormalizedSelection();
-                if (!IsPasswordBox && selection.Start != selection.End && selection != _selectionAtPointerPress)
+                var (start, end) = GetSelectionRange();
+                if (!IsPasswordBox && start != end && (start, end) != _selectionAtPointerPress)
                 {
                     // The pointer gesture changed the selection, publish it to the primary selection.
                     PrimarySelectionHelper.PublishText(this, GetSelection);
@@ -2174,9 +2174,6 @@ namespace Avalonia.Controls
             _isInTouchCaretMode = false;
             _hasTouchSelection = false;
         }
-
-        private (int Start, int End) GetNormalizedSelection()
-            => (Math.Min(SelectionStart, SelectionEnd), Math.Max(SelectionStart, SelectionEnd));
 
         private async void PasteFrom(IClipboard clipboard)
             => await PasteCoreAsync(clipboard);

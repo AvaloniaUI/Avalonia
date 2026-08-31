@@ -376,7 +376,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            _selectionAtPointerPress = GetNormalizedSelection();
+            _selectionAtPointerPress = GetSelectionRange();
 
             var text = HasComplexContent ? Inlines?.Text : Text;
             var clickInfo = e.GetCurrentPoint(this);
@@ -527,7 +527,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            var selection = GetNormalizedSelection();
+            var selection = GetSelectionRange();
             if (e.InitialPressMouseButton == MouseButton.Left &&
                 selection.Start != selection.End &&
                 selection != _selectionAtPointerPress)
@@ -539,7 +539,7 @@ namespace Avalonia.Controls
             e.Pointer.Capture(null);
         }
 
-        private (int Start, int End) GetNormalizedSelection()
+        private (int Start, int End) GetSelectionRange()
             => (Math.Min(SelectionStart, SelectionEnd), Math.Max(SelectionStart, SelectionEnd));
 
         private void OnInlinesInvalidated(object? sender, EventArgs e) => OnTextOrInlinesChanged();
