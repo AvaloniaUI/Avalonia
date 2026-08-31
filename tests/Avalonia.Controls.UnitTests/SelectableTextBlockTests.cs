@@ -162,7 +162,7 @@ namespace Avalonia.Controls.UnitTests
                 mouse.Up(target, MouseButton.Left, new Point(700, 300));
 
                 Assert.Equal("0123", target.SelectedText);
-                Assert.Equal("0123", await window.PrimarySelection!.TryGetTextAsync());
+                Assert.Equal("0123", await window.TryGetClipboard(ClipboardType.PrimarySelection)!.TryGetTextAsync());
             }
         }
 

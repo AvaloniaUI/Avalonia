@@ -2147,7 +2147,7 @@ namespace Avalonia.Controls
             if (e.InitialPressMouseButton == MouseButton.Middle)
             {
                 // Middle-click pastes the primary selection at the click position on platforms supporting it.
-                if (!IsReadOnly && TopLevel.GetTopLevel(this)?.PrimarySelection is { } primarySelection)
+                if (!IsReadOnly && TopLevel.GetTopLevel(this)?.TryGetClipboard(ClipboardType.PrimarySelection) is { } primarySelection)
                 {
                     _presenter.MoveCaretToPoint(e.GetPosition(_presenter));
 

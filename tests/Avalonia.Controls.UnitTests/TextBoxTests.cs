@@ -2584,7 +2584,7 @@ namespace Avalonia.Controls.UnitTests
                 mouse.Up(target, MouseButton.Left, new Point(700, 300));
 
                 Assert.Equal("0123", target.SelectedText);
-                Assert.Equal("0123", await window.PrimarySelection!.TryGetTextAsync());
+                Assert.Equal("0123", await window.TryGetClipboard(ClipboardType.PrimarySelection)!.TryGetTextAsync());
             }
         }
 
@@ -2602,7 +2602,7 @@ namespace Avalonia.Controls.UnitTests
                 mouse.Move(target, new Point(700, 300));
                 mouse.Up(target, MouseButton.Left, new Point(700, 300));
 
-                Assert.Null(await window.PrimarySelection!.TryGetTextAsync());
+                Assert.Null(await window.TryGetClipboard(ClipboardType.PrimarySelection)!.TryGetTextAsync());
             }
         }
 
@@ -2615,7 +2615,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = target };
                 window.Show();
 
-                await window.PrimarySelection!.SetTextAsync("abc");
+                await window.TryGetClipboard(ClipboardType.PrimarySelection)!.SetTextAsync("abc");
 
                 PastingFromClipboardEventArgs? pastingArgs = null;
                 target.PastingFromClipboard += (_, e) => pastingArgs = Assert.IsType<PastingFromClipboardEventArgs>(e);
@@ -2626,10 +2626,10 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal("0123abc", target.Text);
                 Assert.NotNull(pastingArgs);
-                Assert.Same(window.PrimarySelection, pastingArgs.Clipboard);
+                Assert.Same(window.TryGetClipboard(ClipboardType.PrimarySelection), pastingArgs.Clipboard);
 
                 // The pasted-over selection was not changed by the gesture, so it must not be published.
-                Assert.Equal("abc", await window.PrimarySelection!.TryGetTextAsync());
+                Assert.Equal("abc", await window.TryGetClipboard(ClipboardType.PrimarySelection)!.TryGetTextAsync());
             }
         }
 
@@ -2642,7 +2642,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = target };
                 window.Show();
 
-                await window.PrimarySelection!.SetTextAsync("abc");
+                await window.TryGetClipboard(ClipboardType.PrimarySelection)!.SetTextAsync("abc");
 
                 var mouse = new MouseTestHelper();
                 mouse.Down(target, MouseButton.Middle, new Point(700, 300));
@@ -2661,7 +2661,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = target };
                 window.Show();
 
-                Assert.Null(window.PrimarySelection);
+                Assert.Null(window.TryGetClipboard(ClipboardType.PrimarySelection));
 
                 var mouse = new MouseTestHelper();
                 mouse.Down(target, MouseButton.Middle, new Point(700, 300));

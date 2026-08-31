@@ -22,7 +22,8 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets the clipboard being pasted from. This is either the system clipboard or, when pasting
-        /// via middle-click on platforms supporting it, <see cref="TopLevel.PrimarySelection"/>.
+        /// via middle-click on platforms supporting it, the primary selection
+        /// (<see cref="ClipboardType.PrimarySelection"/>).
         /// Null when no clipboard is available; a handler can still handle the event to provide custom
         /// paste behavior.
         /// </summary>

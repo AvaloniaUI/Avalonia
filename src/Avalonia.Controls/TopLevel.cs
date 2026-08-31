@@ -541,17 +541,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the platform's clipboard implementation
         /// </summary>
-        public IClipboard? Clipboard =>
-            PlatformImpl?.TryGetFeature<IPlatformClipboardManagerImpl>() is { } clipboardManager
-                ? clipboardManager.Clipboard
-                : PlatformImpl?.TryGetFeature<IClipboard>();
+        public IClipboard? Clipboard => TryGetClipboard(ClipboardType.Default);
 
         /// <summary>
-        /// Gets the platform's primary selection, an implicit clipboard populated by selecting text
-        /// on platforms supporting it (X11/Wayland), or null if the platform doesn't support it.
+        /// Gets the platform's clipboard of the specified type, or null if the platform doesn't provide it.
         /// </summary>
-        public IClipboard? PrimarySelection =>
-            PlatformImpl?.TryGetFeature<IPlatformClipboardManagerImpl>()?.PrimarySelection;
+        public IClipboard? TryGetClipboard(ClipboardType type)
+        {
+            if (PlatformImpl?.TryGetFeature<IPlatformClipboardManagerImpl>() is { } clipboardManager)
+                return clipboardManager.TryGetClipboard(type);
+
+            return type == ClipboardType.Default ? PlatformImpl?.TryGetFeature<IClipboard>() : null;
+        }
 
         /// <summary>
         /// Gets focus manager of the root.

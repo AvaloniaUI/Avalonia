@@ -6,7 +6,10 @@ namespace Avalonia.Input.Platform;
 internal sealed class PlatformClipboardManager(IClipboard? clipboard, IClipboard? primarySelection)
     : IPlatformClipboardManagerImpl
 {
-    public IClipboard? Clipboard { get; } = clipboard;
-
-    public IClipboard? PrimarySelection { get; } = primarySelection;
+    public IClipboard? TryGetClipboard(ClipboardType type) => type switch
+    {
+        ClipboardType.Default => clipboard,
+        ClipboardType.PrimarySelection => primarySelection,
+        _ => null
+    };
 }

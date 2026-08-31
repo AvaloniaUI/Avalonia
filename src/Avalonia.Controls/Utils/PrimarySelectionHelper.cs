@@ -7,12 +7,12 @@ namespace Avalonia.Controls.Utils;
 internal static class PrimarySelectionHelper
 {
     /// <summary>
-    /// Publishes text to <see cref="TopLevel.PrimarySelection"/>, if available. Failures are logged.
+    /// Publishes text to the primary selection clipboard, if available. Failures are logged.
     /// The text is only realized on platforms supporting the primary selection.
     /// </summary>
     public static async void PublishText(Control source, Func<string?> textFactory)
     {
-        if (TopLevel.GetTopLevel(source)?.PrimarySelection is not { } primarySelection)
+        if (TopLevel.GetTopLevel(source)?.TryGetClipboard(ClipboardType.PrimarySelection) is not { } primarySelection)
             return;
 
         var text = textFactory();

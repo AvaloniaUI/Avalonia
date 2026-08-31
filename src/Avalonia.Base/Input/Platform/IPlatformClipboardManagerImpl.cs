@@ -9,12 +9,7 @@ namespace Avalonia.Input.Platform;
 public interface IPlatformClipboardManagerImpl
 {
     /// <summary>
-    /// Gets the system clipboard, if available.
+    /// Gets the clipboard of the specified type, or null if the platform doesn't provide it.
     /// </summary>
-    IClipboard? Clipboard { get; }
-
-    /// <summary>
-    /// Gets the primary selection (implicit clipboard populated by selecting text on X11/Wayland), if available.
-    /// </summary>
-    IClipboard? PrimarySelection { get; }
+    IClipboard? TryGetClipboard(ClipboardType type);
 }
