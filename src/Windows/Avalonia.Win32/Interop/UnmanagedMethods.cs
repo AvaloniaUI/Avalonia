@@ -833,6 +833,11 @@ namespace Avalonia.Win32.Interop
             WM_DISPATCH_WORK_ITEM = WM_USER,
         }
 
+        public enum SystemParametersInfo
+        {
+            SPI_SETWORKAREA = 0x002F
+        }
+
         public enum DwmWindowAttribute : uint
         {
             DWMWA_NCRENDERING_ENABLED = 1,
@@ -963,6 +968,13 @@ namespace Avalonia.Win32.Interop
         }
 
         [Flags]
+        public enum TrackPopupMenuFlags : uint
+        {
+            TPM_RIGHTBUTTON = 0x0002,
+            TPM_RETURNCMD = 0x0100,
+        }
+
+        [Flags]
         public enum PointerFlags
         {
             POINTER_FLAG_NONE = 0x00000000,
@@ -975,8 +987,8 @@ namespace Avalonia.Win32.Interop
             POINTER_FLAG_FOURTHBUTTON = 0x00000080,
             POINTER_FLAG_FIFTHBUTTON = 0x00000100,
             POINTER_FLAG_PRIMARY = 0x00002000,
-            POINTER_FLAG_CONFIDENCE = 0x00000400,
-            POINTER_FLAG_CANCELED = 0x00000800,
+            POINTER_FLAG_CONFIDENCE = 0x00004000,
+            POINTER_FLAG_CANCELED = 0x00008000,
             POINTER_FLAG_DOWN = 0x00010000,
             POINTER_FLAG_UPDATE = 0x00020000,
             POINTER_FLAG_UP = 0x00040000,
@@ -1393,8 +1405,15 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint TrackPopupMenu(IntPtr hMenu, TrackPopupMenuFlags uFlags, int x, int y, int nReserved,
+            IntPtr hWnd, IntPtr prcRect);
+
         [DllImport("user32.dll")]
         public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetMenuDefaultItem(IntPtr hMenu, uint uItem, uint fByPos);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);

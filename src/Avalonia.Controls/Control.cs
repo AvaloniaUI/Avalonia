@@ -93,7 +93,7 @@ namespace Avalonia.Controls
 
         private static bool _isLoadedProcessing = false;
         private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
-        private static readonly HashSet<Control> _loadedProcessingQueue = new HashSet<Control>();
+        private static readonly Queue<Control> _loadedProcessingQueue = new Queue<Control>();
 
         private LoadState _loadState = LoadState.Unloaded;
         private DataTemplates? _dataTemplates;
@@ -244,29 +244,38 @@ namespace Avalonia.Controls
         {
             // Copy the loaded queue for processing
             // There was a possibility of the "Collection was modified; enumeration operation may not execute."
-            // exception when only a single hash set was used. This could happen when new controls are added
-            // within the Loaded callback/event itself. To fix this, two hash sets are used and while one is
+            // exception when only a single collection was used. This could happen when new controls are added
+            // within the Loaded callback/event itself. To fix this, two collections are used and while one is
             // being processed the other accepts adding new controls to process next.
-            _loadedProcessingQueue.Clear();
             foreach (Control control in _loadedQueue)
             {
-                _loadedProcessingQueue.Add(control);
+                _loadedProcessingQueue.Enqueue(control);
             }
             _loadedQueue.Clear();
 
-            foreach (Control control in _loadedProcessingQueue)
+            try
             {
-                control.OnLoadedCore();
+                while (_loadedProcessingQueue.Count > 0)
+                {
+                    _loadedProcessingQueue.Dequeue().OnLoadedCore();
+                }
             }
-
-            _loadedProcessingQueue.Clear();
-            _isLoadedProcessing = false;
-
-            // Restart if any controls were added to the queue while processing
-            if (_loadedQueue.Count > 0)
+            finally
             {
-                _isLoadedProcessing = true;
-                Dispatcher.UIThread.Post(loadedProcessingAction!, DispatcherPriority.Loaded);
+                // An exception from OnLoadedCore (a Loaded handler or override) propagates to the
+                // dispatcher as usual, but the processing machinery must recover: controls left
+                // unprocessed are requeued and a new dispatcher job is posted for them, so a single
+                // faulty handler cannot stop Loaded from ever being raised again (see #18742).
+                _loadedQueue.UnionWith(_loadedProcessingQueue);
+                _loadedProcessingQueue.Clear();
+                _isLoadedProcessing = false;
+
+                // Restart if any controls were added to the queue while processing
+                if (_loadedQueue.Count > 0)
+                {
+                    _isLoadedProcessing = true;
+                    Dispatcher.UIThread.Post(loadedProcessingAction!, DispatcherPriority.Loaded);
+                }
             }
         };
 

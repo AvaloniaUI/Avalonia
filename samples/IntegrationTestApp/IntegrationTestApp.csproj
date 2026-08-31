@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AvaloniaResource Include="$(SharedAssetsPath)\icon.ico" Link="Assets\icon.ico" />
     <AvaloniaResource Include="Assets\*" />
   </ItemGroup>
 

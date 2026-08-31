@@ -161,15 +161,15 @@
                   </Style>
                   <Style Selector="CommandBarButton">
                     <Setter Property="MinHeight" Value="0" />
-                    <Setter Property="Padding" Value="8,0" />
+                    <Setter Property="Padding" Value="{DynamicResource NavigationPageCommandBarButtonPadding}" />
                   </Style>
                   <Style Selector="CommandBarToggleButton">
                     <Setter Property="MinHeight" Value="0" />
-                    <Setter Property="Padding" Value="8,0" />
+                    <Setter Property="Padding" Value="{DynamicResource NavigationPageCommandBarButtonPadding}" />
                   </Style>
                   <Style Selector="Button#PART_OverflowButton">
                     <Setter Property="MinHeight" Value="0" />
-                    <Setter Property="Padding" Value="8,0" />
+                    <Setter Property="Padding" Value="{DynamicResource NavigationPageCommandBarButtonPadding}" />
                   </Style>
                 </ContentPresenter.Styles>
               </ContentPresenter>

@@ -293,24 +293,36 @@ namespace Avalonia.X11
 
         private void OnEnterLeaveEvent(IXI2Client client, ref XIEnterLeaveEvent ev)
         {
+            var detail = ev.detail;
+            if (detail != XiEnterLeaveDetail.XINotifyNonlinearVirtual &&
+                detail != XiEnterLeaveDetail.XINotifyNonlinear &&
+                detail != XiEnterLeaveDetail.XINotifyVirtual)
+                return;
+
+            var buttons = ParsedDeviceEvent.ParseButtonState(ev.buttons.MaskLen, ev.buttons.Mask);
+            if (buttons != default)
+                return;
+
             if (ev.evtype == XiEventType.XI_Leave)
             {
-                var buttons = ParsedDeviceEvent.ParseButtonState(ev.buttons.MaskLen, ev.buttons.Mask);
-                var detail = ev.detail;
-                if ((detail == XiEnterLeaveDetail.XINotifyNonlinearVirtual ||
-                     detail == XiEnterLeaveDetail.XINotifyNonlinear ||
-                     detail == XiEnterLeaveDetail.XINotifyVirtual)
-                    && buttons == default)
+                foreach (var scroller in _pointerDevice.Scrollers)
                 {
-                    foreach (var scroller in _pointerDevice.Scrollers)
-                    {
-                        _pointerDevice.Valuators[scroller.Number].Value = 0;
-                    }
-
-                    client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, (ulong)ev.time.ToInt64(),
-                        client.InputRoot,
-                        RawPointerEventType.LeaveWindow, new Point(ev.event_x, ev.event_y), buttons));
+                    _pointerDevice.Valuators[scroller.Number].Value = 0;
                 }
+
+                client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, (ulong)ev.time.ToInt64(),
+                    client.InputRoot,
+                    RawPointerEventType.LeaveWindow, new Point(ev.event_x, ev.event_y), buttons));
+            }
+            else if (ev.evtype == XiEventType.XI_Enter)
+            {
+                client.ScheduleXI2Input(new RawPointerEventArgs(
+                    client.MouseDevice,
+                    (ulong)ev.time.ToInt64(),
+                    client.InputRoot,
+                    RawPointerEventType.Move,
+                    new Point(ev.event_x, ev.event_y),
+                    ((XModifierMask)ev.mods.Effective).ToRawInputModifiers()));
             }
         }
 

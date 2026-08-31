@@ -133,10 +133,11 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                 return result.Format != CmapFormat.Format0;
             }
 
-            // Tries to find the best Format 4 subtable entry based on platform preferences
+            // Tries to find the best Format 4 subtable entry based on encoding then platform.
             static bool TryFindFormat4Entry(CmapSubtableEntry[] entries, out CmapSubtableEntry result)
             {
                 result = default;
+                var foundEncodingScore = int.MaxValue;
                 var foundPlatformScore = int.MaxValue;
 
                 foreach (var entry in entries)
@@ -146,6 +147,14 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                         continue;
                     }
 
+                    // A Windows 'Symbol' (encoding 0) subtable maps the F000–F0FF private-use range,
+                    // not real Unicode, so it must not be chosen over a Unicode subtable for normal
+                    // text. Score the Symbol encoding worse than everything else.
+                    var encodingScore = entry.Platform == PlatformID.Windows
+                        && entry.Encoding == CmapEncoding.Microsoft_Symbol
+                        ? 1
+                        : 0;
+
                     var platformScore = entry.Platform switch
                     {
                         PlatformID.Unicode => 0,
@@ -153,15 +162,13 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                         _ => 2
                     };
 
-                    if (platformScore < foundPlatformScore)
+                    // Lower is better: encoding dominates, platform breaks ties.
+                    if (encodingScore < foundEncodingScore ||
+                        (encodingScore == foundEncodingScore && platformScore < foundPlatformScore))
                     {
                         result = entry;
+                        foundEncodingScore = encodingScore;
                         foundPlatformScore = platformScore;
-                    }
-
-                    if (foundPlatformScore == 0)
-                    {
-                        break; // Best possible match found
                     }
                 }
 

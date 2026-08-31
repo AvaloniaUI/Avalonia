@@ -238,6 +238,48 @@ public class CodepointTests
         }
     }
 
+    [Theory]
+    [InlineData(0x00ADu, true)]  // SOFT HYPHEN
+    [InlineData(0x200Du, true)]  // ZERO WIDTH JOINER
+    [InlineData(0x034Fu, true)]  // COMBINING GRAPHEME JOINER
+    [InlineData(0xFE0Fu, true)]  // VARIATION SELECTOR-16
+    [InlineData(0xFEFFu, true)]  // ZERO WIDTH NO-BREAK SPACE
+    [InlineData(0xE0100u, true)] // VARIATION SELECTOR-17
+    [InlineData(0x0301u, false)] // COMBINING ACUTE ACCENT
+    [InlineData(0x20E3u, false)] // COMBINING ENCLOSING KEYCAP
+    [InlineData(0x0041u, false)] // 'A'
+    [InlineData(0x0020u, false)] // ' '
+    public void IsDefaultIgnorable_KnownCodepoints(uint value, bool expected)
+    {
+        Assert.Equal(expected, new Codepoint(value).IsDefaultIgnorable);
+    }
+
+    [Theory]
+    [InlineData(0x1F600u, true)]  // 😀 GRINNING FACE
+    [InlineData(0x1F4AFu, true)]  // 💯 HUNDRED POINTS SYMBOL
+    [InlineData(0x2764u, true)]   // ❤ HEAVY BLACK HEART (text presentation by default)
+    [InlineData(0x0023u, true)]   // '#' (an emoji only as part of a keycap sequence)
+    [InlineData(0x0030u, true)]   // '0'
+    [InlineData(0xFE0Fu, false)]  // VARIATION SELECTOR-16 is Emoji_Component, not Emoji
+    [InlineData(0x0041u, false)]  // 'A'
+    public void IsEmoji_KnownCodepoints(uint value, bool expected)
+    {
+        Assert.Equal(expected, new Codepoint(value).IsEmoji);
+    }
+
+    [Theory]
+    [InlineData(0x1F600u, true)]  // 😀 defaults to emoji presentation
+    [InlineData(0x1F4AFu, true)]  // 💯 defaults to emoji presentation
+    [InlineData(0x231Au, true)]   // ⌚ WATCH defaults to emoji presentation
+    [InlineData(0x2764u, false)]  // ❤ needs U+FE0F to be presented as emoji
+    [InlineData(0x0023u, false)]  // '#'
+    [InlineData(0x0030u, false)]  // '0'
+    [InlineData(0x0041u, false)]  // 'A'
+    public void HasEmojiPresentation_KnownCodepoints(uint value, bool expected)
+    {
+        Assert.Equal(expected, new Codepoint(value).HasEmojiPresentation);
+    }
+
     [Fact]
     public void ImplicitConversions_RoundTripValue()
     {

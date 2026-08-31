@@ -5,7 +5,7 @@
     <Setter Property="DefaultFocusAdorner">
       <FocusAdornerTemplate>
         <Rectangle Margin="1"
-                   Stroke="Black"
+                   Stroke="{DynamicResource ThemeForegroundBrush}"
                    StrokeDashArray="1,2"
                    StrokeThickness="1" />
       </FocusAdornerTemplate>

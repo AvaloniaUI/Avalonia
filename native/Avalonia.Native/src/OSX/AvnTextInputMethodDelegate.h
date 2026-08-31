@@ -14,6 +14,7 @@
 -(void) setText:(NSString* _Nonnull) text;
 -(void) setCursorRect:(AvnRect) cursorRect;
 -(void) setSelection: (int) start : (int) end;
+-(void) resetInputMethod;
 
 @end
 

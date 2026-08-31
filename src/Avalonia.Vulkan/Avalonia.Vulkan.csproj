@@ -10,6 +10,10 @@
       <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
     </ItemGroup>
 
+    <ItemGroup Label="InternalsVisibleTo">
+      <InternalsVisibleTo Include="Avalonia.Skia.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
+    </ItemGroup>
+
     <Import Project="..\..\build\DevAnalyzers.props" />
     <Import Project="..\..\build\SourceGenerators.props" />
     <Import Project="..\..\build\TrimmingEnable.props" />

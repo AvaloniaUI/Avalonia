@@ -293,7 +293,7 @@ namespace Avalonia
         /// <summary>
         /// Adds support for validation using <c>System.ComponentModel.DataAnnotations</c>.
         /// </summary>
-        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.DataValidationPluginSuppressUnreferencedCodeMessage)]
         public AppBuilder WithDataAnnotationsValidation()
         {
             if (!BindingPlugins.DataValidators.Any(x => x is DataAnnotationsValidationPlugin))

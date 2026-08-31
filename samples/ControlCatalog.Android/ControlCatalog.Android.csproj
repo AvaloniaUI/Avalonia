@@ -9,19 +9,9 @@
     <AndroidPackageFormat>apk</AndroidPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <AndroidResource Include="..\..\build\Assets\Icon.png">
-      <Link>Resources\drawable\Icon.png</Link>
+    <AndroidResource Include="$(SharedAssetsPath)icon.png">
+      <Link>Resources\drawable\icon.png</Link>
     </AndroidResource>
-  </ItemGroup>
-
-  <PropertyGroup Condition="'$(AndroidEnableProfiler)'=='True'">
-    <IsEmulator Condition="'$(IsEmulator)' == ''">True</IsEmulator>
-    <DebugSymbols>True</DebugSymbols>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <AndroidEnvironment Condition="'$(IsEmulator)'=='True'" Include="environment.emulator.txt" />
-    <AndroidEnvironment Condition="'$(IsEmulator)'!='True'" Include="environment.device.txt" />
   </ItemGroup>
 
   <ItemGroup>

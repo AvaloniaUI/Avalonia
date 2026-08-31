@@ -72,6 +72,29 @@ internal static class GraphemeBreakClassTrieGenerator
             }
         }
 
+        // Single-bit properties riding along in the same trie: Emoji and Emoji_Presentation come from
+        // the emoji data that was already read for Extended_Pictographic, Default_Ignorable_Code_Point
+        // from the same DerivedCoreProperties.txt the Indic conjunct break data comes from.
+        foreach (var (start, end, property) in emojiBreakData)
+        {
+            var flag = property switch
+            {
+                "Emoji" => UnicodeData.EMOJI_FLAG,
+                "Emoji_Presentation" => UnicodeData.EMOJIPRESENTATION_FLAG,
+                _ => 0u,
+            };
+
+            if (flag != 0)
+            {
+                SetFlag(values, start, end, flag);
+            }
+        }
+
+        foreach (var (start, end) in ReadDerivedCoreProperty("Default_Ignorable_Code_Point"))
+        {
+            SetFlag(values, start, end, UnicodeData.DEFAULTIGNORABLE_FLAG);
+        }
+
         foreach (var (start, end, indicConjunctBreakType) in ReadIndicConjunctBreakData())
         {
             if (!s_indicConjunctBreakMap.TryGetValue(indicConjunctBreakType, out var value))
@@ -94,6 +117,15 @@ internal static class GraphemeBreakClassTrieGenerator
         }
 
         return trieBuilder.Freeze();
+    }
+
+    private static void SetFlag(Dictionary<int, uint> values, int start, int end, uint flag)
+    {
+        for (var codepoint = start; codepoint <= end; codepoint++)
+        {
+            values.TryGetValue(codepoint, out var existing);
+            values[codepoint] = existing | flag;
+        }
     }
 
     private static void AddRange(Dictionary<int, uint> values, int start, int end, uint value, int shift, int mask)
@@ -141,6 +173,44 @@ internal static class GraphemeBreakClassTrieGenerator
             }
 
             data.Add((start, end, match.Groups[3].Value));
+        }
+
+        return data;
+    }
+
+    private static List<(int Start, int End)> ReadDerivedCoreProperty(string property)
+    {
+        var data = new List<(int, int)>();
+        var rx = new Regex(@"([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s*;\s*" + property + @"\s*#.*", RegexOptions.Compiled);
+
+        using var stream = UcdDownloader.OpenRead("DerivedCoreProperties.txt");
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            var line = reader.ReadLine();
+
+            if (string.IsNullOrEmpty(line))
+            {
+                continue;
+            }
+
+            var match = rx.Match(line);
+
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var start = Convert.ToInt32(match.Groups[1].Value, 16);
+            var end = start;
+
+            if (!string.IsNullOrEmpty(match.Groups[2].Value))
+            {
+                end = Convert.ToInt32(match.Groups[2].Value, 16);
+            }
+
+            data.Add((start, end));
         }
 
         return data;

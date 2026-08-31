@@ -119,15 +119,20 @@
         </StackPanel>
       </Border>
       <Border>
-        <SelectableTextBlock Margin="10" TextWrapping="Wrap">
-          This <Span FontWeight="Bold">is</Span> a
-          <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
-          with <Span TextDecorations="Underline">several</Span>
-          <Span FontStyle="Italic">Span</Span> elements,
-          <Span Foreground="Blue">
-            using a <Bold>variety</Bold> of <Italic>styles</Italic>
-          </Span>.
-        </SelectableTextBlock>
+        <StackPanel Spacing="8">
+          <SelectableTextBlock Margin="10" TextWrapping="Wrap">
+            This <Span FontWeight="Bold">is</Span> a
+            <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
+            with <Span TextDecorations="Underline">several</Span>
+            <Span FontStyle="Italic">Span</Span> elements,
+            <Span Foreground="Blue">
+              using a <Bold>variety</Bold> of <Italic>styles</Italic>
+            </Span>.
+          </SelectableTextBlock>
+          <SelectableTextBlock Text="Left aligned text" TextAlignment="Left" />
+          <SelectableTextBlock Text="Center aligned text" TextAlignment="Center" />
+          <SelectableTextBlock Text="Right aligned text and wrap text" TextAlignment="Right" TextWrapping="Wrap" />
+        </StackPanel>
       </Border>
       <Border>
         <TextBlock FontFamily="Times New Roman">

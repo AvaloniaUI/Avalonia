@@ -13,7 +13,9 @@ internal sealed class AvaloniaSceneDelegate : UIResponder, IUIWindowSceneDelegat
     [Export("scene:willConnectToSession:options:")]
     public void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
     {
-        if (session.Configuration.Name is not null ||
+        // Protect against non-application scenes, which can be created by the system for external displays, CarPlay, etc. 
+        if (session.Role != UIWindowSceneSessionRole.Application ||
+            session.Configuration.Name is not null ||
             scene is not UIWindowScene windowScene ||
             Application.Current?.ApplicationLifetime is not SingleViewLifetime lifetime)
         {

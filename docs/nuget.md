@@ -25,7 +25,7 @@ The produced NuGet packages will be placed in the `artifacts\nuget` directory.
 > [!NOTE]
 > The rest of this document will assume that you have the Nuke global tool installed, as the invocation is the same on all platforms. You can always replace `nuke` in the instructions below with the `build` script relvant to your platform.
 
-By default the packages will be built in debug configuration. To build in relase configuration add the `--configuration` parameter, e.g.:
+By default the packages will be built in debug configuration. To build in release configuration add the `--configuration` parameter, e.g.:
 
 ```
 nuke CreateNugetPackages --configuration Release

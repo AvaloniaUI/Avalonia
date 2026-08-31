@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
@@ -212,23 +213,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             }
                             else if (GetAllDefinedMethods(targetType)
                                          .Where(p => p.Name == propName.PropertyName)
-                                         .OrderByDescending(m => m.Parameters.Count)
                                          .ToArray()
                                      is { Length: > 0 } methodCandidates)
                             {
-                                var objType = context.Configuration.WellKnownTypes.Object;
-                                var candidate = methodCandidates
-                                    .FirstOrDefault(m => m.Parameters.Count == 0
-                                                         || (m.Parameters.Count == 1 &&
-                                                             m.Parameters[0].Equals(objType)));
-                                if (candidate is null)
-                                {
-                                    throw new XamlX.XamlTransformException(
-                                        $"Unable to resolve method of name '{propName.PropertyName}' on type '{targetType}'." +
-                                        $"Expected method with no parameters or a single object overload.",
-                                        lineInfo);
-                                }
-            
+                                var candidate = GetBestCommandMethod(methodCandidates, propName.PropertyName, targetType);
                                 nodes.Add(new XamlIlClrMethodPathElementNode(candidate, context.Configuration.WellKnownTypes.Delegate, propName.AcceptsNull));
                             }
                             else
@@ -452,6 +440,67 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         yield return currentType;
                     }
                 }
+            }
+
+            // Priority:
+            //  1. One parameter method
+            //    1a. Object parameter (amongst several overloads)
+            //    1b. Single method with one parameter
+            //  2. Zero parameters method
+            IXamlMethod GetBestCommandMethod(IXamlMethod[] candidates, string name, IXamlType targetType)
+            {
+                Debug.Assert(candidates.Length > 0);
+
+                IXamlMethod? zeroParamCandidate = null;
+                HashSet<IXamlMethod>? oneParamCandidates = null;
+
+                foreach (var candidate in candidates)
+                {
+                    Debug.Assert(candidate.Name == name);
+
+                    switch (candidate.Parameters.Count)
+                    {
+                        case 0:
+                            zeroParamCandidate ??= candidate;
+                            break;
+
+                        case 1:
+                            // Object parameter always wins
+                            if (candidate.Parameters[0].Is("System", "Object"))
+                                return candidate;
+
+                            // Our candidates are ordered with the most derived class first:
+                            // By adding the first candidate for a given parameter type, we automatically handle overridden or hidden methods.
+                            oneParamCandidates ??= new HashSet<IXamlMethod>(SingleParameterTypeXamlTypeComparer.Instance);
+                            oneParamCandidates.Add(candidate);
+                            break;
+                    }
+                }
+
+                if (oneParamCandidates is not null)
+                {
+                    Debug.Assert(oneParamCandidates.Count > 0);
+
+                    if (oneParamCandidates.Count == 1)
+                        return oneParamCandidates.First();
+
+                    var parameterTypes = oneParamCandidates
+                        .Select(m => $"'{m.Parameters[0].FullName}'")
+                        .OrderBy(s => s, StringComparer.Ordinal)
+                        .ToArray();
+
+                    throw new XamlTransformException(
+                        $"Unable to resolve method of name '{name}' on type '{targetType}'. " +
+                        $"Found {parameterTypes.Length} overloads accepting one parameter: {string.Join(", ", parameterTypes)}. " +
+                        "Expected either a single overload with one parameter, or an overload accepting System.Object.",
+                        lineInfo);
+                }
+
+                return zeroParamCandidate ?? throw new XamlTransformException(
+                    $"Unable to resolve method of name '{name}' on type '{targetType}'. " +
+                    $"Found {candidates.Length} overloads accepting more than one parameter. " +
+                    $"Expected a method with zero or one parameter.",
+                    lineInfo);
             }
         }
 
@@ -734,8 +783,34 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 _acceptsNull = acceptsNull;
             }
 
+            public IXamlProperty Property => _property;
+
+            public bool EmitTyped { get; set; }
+
+            [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
+                if (EmitTyped)
+                {
+                    var types = context.GetAvaloniaTypes();
+                    var sourceType = _property.Getter?.DeclaringType ?? _property.Setter!.DeclaringType;
+                    var valueType = _property.PropertyType;
+
+                    context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
+                        .EmitTyped(context, codeGen, _property);
+
+                    context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                        .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
+
+                    codeGen.Ldc_I4(_acceptsNull ? 1 : 0);
+
+                    var typedPropertyMethod = types.CompiledBindingPathBuilder.GetMethod(m =>
+                        m is { Name: "Property", IsGenericMethod: true } &&
+                        m.Parameters.Count == 3);
+                    codeGen.EmitCall(typedPropertyMethod.MakeGenericMethod(new[] { sourceType, valueType }));
+                    return;
+                }
+
                 context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
                     .Emit(context, codeGen, _property);
 
@@ -1030,6 +1105,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var types = context.GetAvaloniaTypes();
 
+                TryEnableTypedEmission(_transformElements, Elements);
+
                 codeGen.Newobj(types.CompiledBindingPathBuilder.GetConstructor());
 
                 foreach (var transform in _transformElements)
@@ -1044,6 +1121,31 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 codeGen.EmitCall(types.CompiledBindingPathBuilder.GetMethod(m => m.Name == "Build"));
                 return XamlILNodeEmitResult.Type(0, types.CompiledBindingPath);
+            }
+
+            private static void TryEnableTypedEmission(
+                List<IXamlIlBindingPathElementNode> transformElements,
+                List<IXamlIlBindingPathElementNode> elements)
+            {
+                if (transformElements.Count != 0)
+                    return;
+                if (elements.Count != 1)
+                    return;
+                if (elements[0] is not XamlIlClrPropertyPathElementNode clr)
+                    return;
+
+                var property = clr.Property;
+                var declaringType = property.Getter?.DeclaringType ?? property.Setter?.DeclaringType;
+
+                // TypedBindingExpression<TSource, TValue> requires TSource : class.
+                if (declaringType is null || declaringType.IsValueType)
+                    return;
+
+                // We need an instance getter so the source value can be read.
+                if (property.Getter is null || property.Getter.IsStatic)
+                    return;
+
+                clr.EmitTyped = true;
             }
 
             public override void VisitChildren(IXamlAstVisitor visitor)
@@ -1062,6 +1164,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         Elements[i] = (IXamlIlBindingPathElementNode)ast.Visit(visitor);
                     }
                 }
+            }
+        }
+
+        private sealed class SingleParameterTypeXamlTypeComparer : IEqualityComparer<IXamlMethod>
+        {
+            public static SingleParameterTypeXamlTypeComparer Instance { get; } = new();
+
+            public bool Equals(IXamlMethod? x, IXamlMethod? y)
+            {
+                Debug.Assert(x is { Parameters.Count: 1 });
+                Debug.Assert(y is { Parameters.Count: 1 });
+
+                return x!.Parameters[0].Equals(y!.Parameters[0]);
+            }
+
+            public int GetHashCode(IXamlMethod obj)
+            {
+                Debug.Assert(obj.Parameters.Count == 1);
+
+                return obj.Parameters[0].GetHashCode();
             }
         }
     }

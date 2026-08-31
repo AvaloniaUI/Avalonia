@@ -603,7 +603,7 @@ namespace Avalonia.Media.TextFormatting
 
                     //Fulfill max height constraint
                     if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight)
-                        && Height + textLine.Height > MaxHeight)
+                        && MathUtilities.GreaterThan(Height + textLine.Height, MaxHeight))
                     {
                         if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
                         {
@@ -634,7 +634,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         if (textLine.TextLineBreak is { IsSplit: true })
                         {
-                            textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(WidthIncludingTrailingWhitespace));
+                            textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(textLine.WidthIncludingTrailingWhitespace));
                         }
 
                         break;

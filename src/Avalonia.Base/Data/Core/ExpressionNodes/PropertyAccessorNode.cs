@@ -55,7 +55,7 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
         if (source is null)
         {
             if (_acceptsNull)
-                SetValue(null);
+                ShortCircuitNull();
             else
                 ValidateNonNullSource(source);
             return;

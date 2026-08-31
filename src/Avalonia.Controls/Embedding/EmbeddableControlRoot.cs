@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Embedding
         public void Dispose()
         {
             PlatformImpl?.Dispose();
-            LayoutManager?.Dispose();
+            EnsureClosed();
         }
     }
 }

@@ -224,6 +224,26 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Assert.IsType<BindingExpressionGrammar.StreamNode>(result[1]);
         }
 
+        [Fact]
+        public void Should_Parse_Stream_Node_On_Empty_Expression()
+        {
+            var result = Parse("^");
+
+            Assert.Equal(2, result.Count);
+            Assert.IsType<BindingExpressionGrammar.EmptyExpressionNode>(result[0]);
+            Assert.IsType<BindingExpressionGrammar.StreamNode>(result[1]);
+        }
+
+        [Fact]
+        public void Should_Parse_Stream_Node_After_Dot()
+        {
+            var result = Parse(".^");
+
+            Assert.Equal(2, result.Count);
+            Assert.IsType<BindingExpressionGrammar.EmptyExpressionNode>(result[0]);
+            Assert.IsType<BindingExpressionGrammar.StreamNode>(result[1]);
+        }
+
         private static void AssertIsProperty(
             BindingExpressionGrammar.INode node,
             string name,

@@ -1,0 +1,117 @@
+<UserControl 
+  xmlns="https://github.com/avaloniaui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:viewModels="using:RenderDemo.ViewModels"
+  x:Class="RenderDemo.Pages.AnimationSpeedPage"
+  x:DataType="viewModels:AnimationSpeedPageViewModel"
+  MaxWidth="600">
+  <UserControl.Styles>
+    <Style Selector="TextBlock.rotatorNINF">
+      <Style.Animations>
+        <Animation Duration="0:0:1" IterationCount="INFINITE"
+                   Delay="{Binding Delay, Mode=OneWay}"
+                   DelayBetweenIterations="{Binding DelayIters, Mode=OneWay}"
+                   PlaybackDirection="{Binding PlaybackDirection, Mode=OneWay}"
+                   SpeedRatio="{Binding SpeedRatio, Mode=OneWay}">
+          <KeyFrame Cue="0%">
+            <Setter Property="RotateTransform.Angle" Value="0.0" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="RotateTransform.Angle" Value="360.0" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="TextBlock.rotatorN10">
+      <Style.Animations>
+        <Animation Duration="0:0:1" IterationCount="10"
+                   Delay="{Binding Delay, Mode=OneWay}"
+                   DelayBetweenIterations="{Binding DelayIters, Mode=OneWay}"
+                   PlaybackDirection="{Binding PlaybackDirection, Mode=OneWay}"
+                   SpeedRatio="{Binding SpeedRatio, Mode=OneWay}">
+          <KeyFrame Cue="0%">
+            <Setter Property="RotateTransform.Angle" Value="0.0" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="RotateTransform.Angle" Value="360.0" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="TextBlock.rotatorRINF">
+      <Style.Animations>
+        <Animation Duration="0:0:1" IterationCount="INFINITE"
+                   Delay="{Binding Delay, Mode=OneWay}"
+                   DelayBetweenIterations="{Binding DelayIters, Mode=OneWay}"
+                   PlaybackDirection="{Binding PlaybackDirectionOpposite, Mode=OneWay}"
+                   SpeedRatio="{Binding SpeedRatio, Mode=OneWay}">
+          <KeyFrame Cue="0%">
+            <Setter Property="RotateTransform.Angle" Value="0.0" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="RotateTransform.Angle" Value="360.0" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="TextBlock.rotatorR10">
+      <Style.Animations>
+        <Animation Duration="0:0:1" IterationCount="10"
+                   Delay="{Binding Delay, Mode=OneWay}"
+                   DelayBetweenIterations="{Binding DelayIters, Mode=OneWay}"
+                   PlaybackDirection="{Binding PlaybackDirectionOpposite, Mode=OneWay}"
+                   SpeedRatio="{Binding SpeedRatio, Mode=OneWay}">
+          <KeyFrame Cue="0%">
+            <Setter Property="RotateTransform.Angle" Value="0.0" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="RotateTransform.Angle" Value="360.0" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </UserControl.Styles>
+  <ScrollViewer>
+    <StackPanel Orientation="Vertical">
+      <Grid RowDefinitions="Auto,Auto,Auto,1*" ColumnDefinitions="Auto,5*,Auto">
+        <TextBlock  Grid.Row="0" Grid.Column="0" Text="SpeedRatio:" />
+        <Slider Grid.Row="0" Grid.Column="1"
+                Value="{Binding SpeedRatio, Mode=OneWayToSource}"
+                Minimum="0" Maximum="2" />
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Delay:" />
+        <Slider Grid.Row="1" Grid.Column="1"
+                Value="{Binding DelayInput, Mode=OneWayToSource}"
+                Minimum="0" Maximum="10" />
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="DelayIters:" />
+        <Slider Grid.Row="2" Grid.Column="1"
+                Value="{Binding DelayItersInput, Mode=OneWayToSource}"
+                Minimum="0" Maximum="10" />
+
+        <ComboBox Grid.Row="0" Grid.RowSpan="3" Grid.Column="2"
+                  ItemsSource="{Binding PlaybackDirections}"
+                  SelectedValue="{Binding PlaybackDirection, Mode=OneWayToSource}" />
+      </Grid>
+      <Grid RowDefinitions="Auto,1*,Auto,1*" ColumnDefinitions="Auto,Auto"
+            Grid.Row="3" Grid.ColumnSpan="3" Height="400">
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="PlayDir=AsSelected; Iters=INF" />
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Rotate me" Classes="rotatorNINF"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="PlayDir=AsSelected; Iters=10" />
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Rotate me" Classes="rotatorN10"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <TextBlock Grid.Row="0" Grid.Column="1" Text="PlayDir=Opposite; Iters=INF" />
+        <TextBlock Grid.Row="1" Grid.Column="1" Text="Rotate me" Classes="rotatorRINF"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="PlayDir=Opposite; Iters=10" />
+        <TextBlock Grid.Row="3" Grid.Column="1" Text="Rotate me" Classes="rotatorR10"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Grid>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -94,7 +94,7 @@ namespace Avalonia.Skia.RenderTests
                     var rc = new Rect(0, 0, 60, 60);
                     ctx.DrawBitmap(bmp.PlatformImpl, 1, rc, rc);
                 }
-                rtb.Save(Path.Combine(OutputPath, testName + ".out.png"));
+                rtb.Save(Path.Combine(OutputPath, testName + ".out.png"), PngBitmapEncoderOptions.Default);
             }
             CompareImagesNoRenderer(testName);
         }
@@ -123,7 +123,7 @@ namespace Avalonia.Skia.RenderTests
 
             var name = nameof(WriteableBitmapShouldBeUsable) + "_" + fmt;
 
-            writeableBitmap.Save(Path.Combine(OutputPath, name + ".out.png"));
+            writeableBitmap.Save(Path.Combine(OutputPath, name + ".out.png"), PngBitmapEncoderOptions.Default);
             CompareImagesNoRenderer(name);
 
         }
@@ -215,7 +215,7 @@ namespace Avalonia.Skia.RenderTests
                             Assert.Equal(data.ToArray(), copyTo);
                         }
 
-                        b.Save(path);
+                        b.Save(path, PngBitmapEncoderOptions.Default);
                         CompareImagesNoRenderer(testName, expectedName);
                     }
                     finally

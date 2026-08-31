@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Logging;
+using Avalonia.Media.Imaging;
 using Avalonia.X11.Selections.Clipboard;
 using static Avalonia.X11.XLib;
 
@@ -154,7 +155,7 @@ internal abstract class SelectionDataProvider : IDisposable
                 return null;
 
             using var stream = new MemoryStream();
-            bitmap.Save(stream);
+            bitmap.Save(stream, PngBitmapEncoderOptions.Default);
 
             return stream.ToArray();
         }

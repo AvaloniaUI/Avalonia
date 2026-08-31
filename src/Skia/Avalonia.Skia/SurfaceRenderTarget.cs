@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Avalonia.Media.Imaging;
 using Avalonia.Reactive;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
@@ -126,23 +127,12 @@ namespace Avalonia.Skia
         public PixelSize PixelSize { get; }
 
         public int Version { get; private set; } = 1;
-
-        /// <inheritdoc />
-        public void Save(string fileName, int? quality = null)
+        
+        public void Save(Stream stream, BitmapEncoderOptions options)
         {
-            using (var image = SnapshotImage())
-            {
-                ImageSavingHelper.SaveImage(image, fileName, quality);
-            }
-        }
+            using var image = SnapshotImage();
 
-        /// <inheritdoc />
-        public void Save(Stream stream, int? quality = null)
-        {
-            using (var image = SnapshotImage())
-            {
-                ImageSavingHelper.SaveImage(image, stream, quality);
-            }
+            ImageSavingHelper.SaveImage(image, stream, options);
         }
 
         public void Blit(IDrawingContextImpl contextImpl)

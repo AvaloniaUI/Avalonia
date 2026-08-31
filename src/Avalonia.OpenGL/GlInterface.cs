@@ -103,6 +103,9 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glFinish")]
         public partial void Finish();
 
+        [GetProcAddress("glReadPixels")]
+        public partial void ReadPixels(int x, int y, int width, int height, int format, int type, IntPtr data);
+
         [GetProcAddress("glGenFramebuffers")]
         public partial void GenFramebuffers(int count, int* res);
 

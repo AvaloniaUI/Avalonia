@@ -109,7 +109,7 @@ class WaylandClipboardImpl : IOwnedClipboardImpl
                     await Task.Run(() =>
                     {
                         using (bitmapRef)
-                            bitmapRef.Item.Save(stream);
+                            bitmapRef.Item.Save(stream, PngBitmapEncoderOptions.Default);
                     }).ConfigureAwait(false);
                     return;
                 }

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Logging;
+using Avalonia.Media.Imaging;
 using Avalonia.Native.Interop;
 
 namespace Avalonia.Native;
@@ -35,7 +36,7 @@ internal sealed class DataTransferItemToAvnClipboardDataItemWrapper(IDataTransfe
                 if (_item.TryGetValue(DataFormat.Bitmap) is { } bitmap)
                 {
                     var memoryStream = new MemoryStream();
-                    bitmap.Save(memoryStream);
+                    bitmap.Save(memoryStream, PngBitmapEncoderOptions.Default);
                     memoryStream.Seek(0, SeekOrigin.Begin);
                     return new StreamValue(memoryStream);
                 }

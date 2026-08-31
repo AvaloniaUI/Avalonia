@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
@@ -6,7 +7,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
-{   
+{
     /// <summary>
     /// Displays a <see cref="Bitmap"/> image.
     /// </summary>
@@ -17,7 +18,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IImage?> SourceProperty =
             AvaloniaProperty.Register<Image, IImage?>(nameof(Source));
-        
+
         /// <summary>
         /// Defines the <see cref="BlendMode"/> property.
         /// </summary>
@@ -37,6 +38,9 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Image, StretchDirection>(
                 nameof(StretchDirection),
                 StretchDirection.Both);
+
+        private Rect _currentDrawingBounds;
+        private bool _subscribedToDrawingImageSource;
 
         static Image()
         {
@@ -84,7 +88,7 @@ namespace Avalonia.Controls
 
         /// <inheritdoc />
         protected override bool BypassFlowDirectionPolicies => true;
-        
+
         /// <summary>
         /// Renders the control.
         /// </summary>
@@ -145,6 +149,62 @@ namespace Avalonia.Controls
             else
             {
                 return new Size();
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == SourceProperty)
+            {
+                _currentDrawingBounds = default;
+                if (change.OldValue is DrawingImage oldDrawingImage && _subscribedToDrawingImageSource)
+                {
+                    _subscribedToDrawingImageSource = false;
+                    oldDrawingImage.Invalidated -= OnSourceInvalidated;
+                }
+
+                if (change.NewValue is DrawingImage newDrawingImage && IsAttachedToVisualTree)
+                {
+                    _subscribedToDrawingImageSource = true;
+                    newDrawingImage.Invalidated += OnSourceInvalidated;
+                }
+            }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            if (!_subscribedToDrawingImageSource && Source is DrawingImage drawingImage)
+            {
+                _subscribedToDrawingImageSource = true;
+                drawingImage.Invalidated += OnSourceInvalidated;
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            if (_subscribedToDrawingImageSource && Source is DrawingImage drawingImage)
+            {
+                _subscribedToDrawingImageSource = false;
+                drawingImage.Invalidated -= OnSourceInvalidated;
+            }
+        }
+
+        private void OnSourceInvalidated(object? sender, EventArgs e)
+        {
+            if (IsAttachedToVisualTree && Source is DrawingImage drawingImage && drawingImage.Drawing is { } drawing)
+            {
+                var bounds = drawing.GetBounds();
+                if (bounds != _currentDrawingBounds)
+                {
+                    InvalidateMeasure();
+                }
+                _currentDrawingBounds = bounds;
             }
         }
 

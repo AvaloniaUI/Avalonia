@@ -162,6 +162,9 @@ public partial class Dispatcher : IDispatcher
             _backgroundProcessingImpl.ReadyForBackgroundProcessing += OnReadyForExplicitBackgroundProcessing;
         if (_signaled)
             _impl.Signal();
+        if (_explicitBackgroundProcessingRequested) 
+            _backgroundProcessingImpl?.RequestBackgroundProcessing();
+            
         _osTimerSetTo = null;
         UpdateOSTimer();
     }

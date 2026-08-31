@@ -1,9 +1,6 @@
-using System;
-using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition
 {
@@ -45,7 +42,7 @@ namespace Avalonia.Rendering.Composition
                 var parent = Parent;
                 while (parent != null)
                 {
-                    parent.CustomHitTestCountInSubTree -= CustomHitTestCountInSubTree;
+                    parent.CustomHitTestCountInSubTree += CustomHitTestCountInSubTree;
                     parent = parent.Parent;
                 }
             }
@@ -102,5 +99,6 @@ namespace Avalonia.Rendering.Composition
         internal object? Tag { get; set; }
 
         internal virtual bool HitTest(Point point) => true;
+        internal virtual IntersectionResult HitTest(Geometry geometry) => IntersectionResult.Intersects;
     }
 }

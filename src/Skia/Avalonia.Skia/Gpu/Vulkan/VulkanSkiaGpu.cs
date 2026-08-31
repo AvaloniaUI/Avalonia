@@ -48,7 +48,7 @@ internal class VulkanSkiaGpu : ISkiaGpu
                 GetProcedureAddress = GetProcAddressWrapper
             };
 
-            var avoidStencilBuffers = useStencilBuffers == false;
+            var avoidStencilBuffers = SkiaOptions.ShouldAvoidStencilBuffers(useStencilBuffers);
             
             GrContext = GRContext.CreateVulkan(ctx, new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers }) ??
                          throw new VulkanException("Unable to create GrContext from IVulkanDevice");
@@ -63,6 +63,19 @@ internal class VulkanSkiaGpu : ISkiaGpu
     
     public void Dispose()
     {
+        if (Vulkan.IsLost)
+        {
+            GrContext.AbandonContext();
+            GrContext.Dispose();
+        }
+        else
+            // Releasing resources does vkQueueWaitIdle and destroys API objects,
+            // both of which require external synchronization, i. e. the device lock
+            using (Vulkan.EnsureCurrent())
+            {
+                GrContext.AbandonContext(true);
+                GrContext.Dispose();
+            }
         Vulkan.Dispose();
     }
 
@@ -92,6 +105,7 @@ internal class VulkanSkiaGpu : ISkiaGpu
         foreach (var surface in surfaces)
         {
             if (surface is IVulkanKhrSurfacePlatformSurface
+                || surface is IVulkanRenderTargetPlatformSurface
                 || (factory?.CanRenderToSurface(Vulkan, surface) == true))
             {
                 return surface.IsReady;

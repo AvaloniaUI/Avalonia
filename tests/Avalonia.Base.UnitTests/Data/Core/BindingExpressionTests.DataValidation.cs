@@ -272,6 +272,102 @@ public partial class BindingExpressionTests
     }
 
     [Fact]
+    public void Indei_Validation_Updates_Data_Validation_When_Writing_To_Source_OneWayToSource()
+    {
+        // Issue #8235: validation errors should be displayed for OneWayToSource bindings.
+        var data = new IndeiViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.MustBePositive,
+            enableDataValidation: true,
+            mode: BindingMode.OneWayToSource);
+
+        Assert.Equal(0, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
+
+        target.Int = 5;
+
+        Assert.Equal(5, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
+
+        target.Int = -5;
+
+        Assert.Equal(-5, data.MustBePositive);
+        AssertBindingError(target, TargetClass.IntProperty, new DataValidationException("Must be positive"), BindingErrorType.DataValidationError);
+
+        target.Int = 5;
+
+        Assert.Equal(5, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void DataAnnotations_Validation_Updates_Data_Validation_When_Writing_To_Source_OneWayToSource()
+    {
+        // Issue #8235: validation attributes should be displayed for OneWayToSource bindings.
+        if (!BindingPlugins.DataValidators.Any(x => x is DataAnnotationsValidationPlugin))
+            BindingPlugins.DataValidators.Insert(0, new DataAnnotationsValidationPlugin());
+
+        var data = new DataAnnotationsViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.MaxLengthString,
+            enableDataValidation: true,
+            mode: BindingMode.OneWayToSource);
+
+        target.String = "1234";
+
+        Assert.Equal("1234", data.MaxLengthString);
+        AssertNoError(target, TargetClass.StringProperty);
+
+        target.String = "123456";
+
+        Assert.Equal("123456", data.MaxLengthString);
+        AssertBindingError(
+            target,
+            TargetClass.StringProperty,
+            new DataValidationException("Too long!"),
+            BindingErrorType.DataValidationError);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void Conversion_Error_Is_Cleared_When_Value_Becomes_Valid_OneWayToSource()
+    {
+        // Issue #15378.
+        var data = new ViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.DoubleValue,
+            targetProperty: TargetClass.ObjectProperty,
+            enableDataValidation: true,
+            mode: BindingMode.OneWayToSource);
+
+        target.Object = 5.0;
+
+        Assert.Equal(5.0, data.DoubleValue);
+        AssertNoError(target, TargetClass.ObjectProperty);
+
+        target.Object = null;
+
+        AssertBindingError(
+            target,
+            TargetClass.ObjectProperty,
+            new InvalidCastException("Could not convert '(null)' (null) to System.Double."),
+            BindingErrorType.DataValidationError);
+
+        target.Object = 5.0;
+
+        Assert.Equal(5.0, data.DoubleValue);
+        AssertNoError(target, TargetClass.ObjectProperty);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
     public void Does_Not_Subscribe_To_Indei_Of_Intermediate_Object_In_Chain()
     {
         var data = new IndeiContainerViewModel { Inner = new() };
@@ -444,6 +540,15 @@ public partial class BindingExpressionTests
         {
             get { return _requiredString; }
             set { _requiredString = value; RaisePropertyChanged(); }
+        }
+
+        private string? _maxLengthString;
+
+        [MaxLength(5, ErrorMessage = "Too long!")]
+        public string? MaxLengthString
+        {
+            get { return _maxLengthString; }
+            set { _maxLengthString = value; RaisePropertyChanged(); }
         }
     }
 

@@ -40,5 +40,24 @@ namespace Avalonia.PropertyStore
         /// Called when the value entry is removed from the value store.
         /// </summary>
         void Unsubscribe();
+
+        /// <summary>
+        /// Reads the value of an entry as <typeparamref name="T"/>, preferring the unboxed
+        /// <see cref="IValueEntry{T}"/> path when available.
+        /// </summary>
+        /// <param name="entry">The entry.</param>
+        /// <param name="value">The value, if the entry has one.</param>
+        /// <returns>True if the entry has a value, otherwise false.</returns>
+        static bool TryGetValue<T>(IValueEntry entry, out T value)
+        {
+            if (entry.HasValue())
+            {
+                value = entry is IValueEntry<T> typed ? typed.GetValue() : (T)entry.GetValue()!;
+                return true;
+            }
+
+            value = default!;
+            return false;
+        }
     }
 }

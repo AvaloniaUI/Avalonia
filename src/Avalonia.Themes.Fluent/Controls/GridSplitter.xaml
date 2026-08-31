@@ -3,8 +3,8 @@
                     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type GridSplitter}" TargetType="GridSplitter">
       <Setter Property="Focusable" Value="True" />
-      <Setter Property="MinWidth" Value="6" />
-      <Setter Property="MinHeight" Value="6" />
+      <Setter Property="MinWidth" Value="{DynamicResource GridSplitterThickness}" />
+      <Setter Property="MinHeight" Value="{DynamicResource GridSplitterThickness}" />
       <Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
       <Setter Property="PreviewContent">
         <Template>

@@ -192,6 +192,7 @@ public:
             panel.canChooseDirectories = true;
             panel.canCreateDirectories = true;
             panel.canChooseFiles = false;
+            panel.treatsFilePackagesAsDirectories = true;
             
             if(title != nullptr)
             {

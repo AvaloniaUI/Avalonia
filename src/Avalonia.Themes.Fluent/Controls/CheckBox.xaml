@@ -16,7 +16,7 @@
   <x:Double x:Key="CheckBoxMinHeight">32</x:Double> 
   
   <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
-    <Setter Property="Padding" Value="8,0,0,0" />
+    <Setter Property="Padding" Value="{DynamicResource CheckBoxPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />

@@ -32,7 +32,7 @@ internal unsafe partial class VulkanInstanceApi
     public partial VkResult EnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice, byte* pLayerName,
         ref uint32_t pPropertyCount, VkExtensionProperties* pProperties);
 
-    [GetProcAddress("vkGetPhysicalDeviceSurfaceSupportKHR")]
+    [GetProcAddress("vkGetPhysicalDeviceSurfaceSupportKHR", true)]
     public partial VkResult GetPhysicalDeviceSurfaceSupportKHR(VkPhysicalDevice physicalDevice,
         uint32_t queueFamilyIndex,
         VkSurfaceKHR surface, out VkBool32 pSupported);
@@ -56,10 +56,10 @@ internal unsafe partial class VulkanInstanceApi
     [GetProcAddress("vkGetDeviceProcAddr")]
     public partial IntPtr GetDeviceProcAddr(VkDevice device, IntPtr pName);
 
-    [GetProcAddress("vkDestroySurfaceKHR")]
+    [GetProcAddress("vkDestroySurfaceKHR", true)]
     public partial void DestroySurfaceKHR(VkInstance instance, VkSurfaceKHR surface, IntPtr pAllocator);
 
-    [GetProcAddress("vkGetPhysicalDeviceSurfaceFormatsKHR")]
+    [GetProcAddress("vkGetPhysicalDeviceSurfaceFormatsKHR", true)]
     public partial VkResult GetPhysicalDeviceSurfaceFormatsKHR(
         VkPhysicalDevice physicalDevice,
         VkSurfaceKHR surface,
@@ -70,11 +70,11 @@ internal unsafe partial class VulkanInstanceApi
     public partial void GetPhysicalDeviceMemoryProperties(VkPhysicalDevice physicalDevice,
         out VkPhysicalDeviceMemoryProperties pMemoryProperties);
 
-    [GetProcAddress("vkGetPhysicalDeviceSurfaceCapabilitiesKHR")]
+    [GetProcAddress("vkGetPhysicalDeviceSurfaceCapabilitiesKHR", true)]
     public partial VkResult GetPhysicalDeviceSurfaceCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
         out VkSurfaceCapabilitiesKHR pSurfaceCapabilities);
 
-    [GetProcAddress("vkGetPhysicalDeviceSurfacePresentModesKHR")]
+    [GetProcAddress("vkGetPhysicalDeviceSurfacePresentModesKHR", true)]
     public partial VkResult GetPhysicalDeviceSurfacePresentModesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
         ref uint32_t pPresentModeCount, VkPresentModeKHR* pPresentModes);
     

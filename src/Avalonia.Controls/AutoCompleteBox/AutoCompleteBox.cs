@@ -212,8 +212,6 @@ namespace Avalonia.Controls
         private bool _itemTemplateIsFromValueMemberBinding = true;
         private bool _settingItemTemplateFromValueMemberBinding;
 
-        private bool _isFocused = false;
-
         private string? _searchText = string.Empty;
 
         private readonly EventHandler _populateDropDownHandler;
@@ -751,28 +749,34 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Provides handling for the
-        /// <see cref="E:Avalonia.Controls.Control.GotFocus" /> event.
-        /// </summary>
-        /// <param name="e">A <see cref="T:RoutedEventArgs" />
-        /// that contains the event data.</param>
+        /// <inheritdoc/>
         protected override void OnGotFocus(FocusChangedEventArgs e)
         {
+            if (TextBox is not null && TextBoxSelectionLength <= 0)
+            {
+                TextBox.Focus();
+                TextBox.SelectAll();
+            }
+
             base.OnGotFocus(e);
-            FocusChanged(HasFocus());
         }
 
-        /// <summary>
-        /// Provides handling for the
-        /// <see cref="E:Avalonia.Controls.Control.LostFocus" /> event.
-        /// </summary>
-        /// <param name="e">A <see cref="T:RoutedEventArgs" />
-        /// that contains the event data.</param>
+        /// <inheritdoc/>
         protected override void OnLostFocus(FocusChangedEventArgs e)
         {
+            SetCurrentValue(IsDropDownOpenProperty, false);
+
+            _userCalledPopulate = false;
+
+            var textBoxContextMenuIsOpen = TextBox?.ContextFlyout?.IsOpen == true || TextBox?.ContextMenu?.IsOpen == true;
+            var contextMenuIsOpen = ContextFlyout?.IsOpen == true || ContextMenu?.IsOpen == true;
+
+            if (!textBoxContextMenuIsOpen && !contextMenuIsOpen && ClearSelectionOnLostFocus)
+            {
+                ClearTextBoxSelection();
+            }
+
             base.OnLostFocus(e);
-            FocusChanged(HasFocus());
         }
 
         protected override AutomationPeer OnCreateAutomationPeer() => new AutoCompleteBoxAutomationPeer(this);
@@ -785,78 +789,8 @@ namespace Avalonia.Controls
         /// <returns>true to indicate the
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> has focus;
         /// otherwise, false.</returns>
+        [Obsolete($"Use {nameof(IsKeyboardFocusWithin)} instead.")]
         protected bool HasFocus() => IsKeyboardFocusWithin;
-
-        /// <summary>
-        /// Handles the FocusChanged event.
-        /// </summary>
-        /// <param name="hasFocus">A value indicating whether the control
-        /// currently has the focus.</param>
-        private void FocusChanged(bool hasFocus)
-        {
-            // The OnGotFocus & OnLostFocus are asynchronously and cannot
-            // reliably tell you that have the focus.  All they do is let you
-            // know that the focus changed sometime in the past.  To determine
-            // if you currently have the focus you need to do consult the
-            // FocusManager (see HasFocus()).
-
-            bool wasFocused = _isFocused;
-            _isFocused = hasFocus;
-
-            if (hasFocus)
-            {
-
-                if (!wasFocused && TextBox != null && TextBoxSelectionLength <= 0)
-                {
-                    TextBox.Focus();
-                    TextBox.SelectAll();
-                }
-            }
-            else
-            {
-                // Check if we still have focus in the parent's focus scope
-                if (GetFocusScope() is { } scope &&
-                    (FocusManager.GetFocusManager(this)?.GetFocusedElement(scope) is not { } focused ||
-                    (focused != this &&
-                    (focused is Visual v && !this.IsVisualAncestorOf(v)))))
-                {
-                    SetCurrentValue(IsDropDownOpenProperty, false);
-                }
-
-                _userCalledPopulate = false;
-
-                var textBoxContextMenuIsOpen = TextBox?.ContextFlyout?.IsOpen == true || TextBox?.ContextMenu?.IsOpen == true;
-                var contextMenuIsOpen = ContextFlyout?.IsOpen == true || ContextMenu?.IsOpen == true;
-
-                if (!textBoxContextMenuIsOpen && !contextMenuIsOpen && ClearSelectionOnLostFocus)
-                {
-                    ClearTextBoxSelection();
-                }
-            }
-
-            _isFocused = hasFocus;
-
-            IFocusScope? GetFocusScope()
-            {
-                IInputElement? c = this;
-
-                while (c != null)
-                {
-                    if (c is IFocusScope scope &&
-                        c is Visual v &&
-                        v.VisualRoot is Visual root &&
-                        root.IsVisible)
-                    {
-                        return scope;
-                    }
-
-                    c = (c as Visual)?.GetVisualParent<IInputElement>() ??
-                        ((c as IHostedVisualTreeRoot)?.Host as IInputElement);
-                }
-
-                return null;
-            }
-        }
 
         /// <summary>
         /// Occurs asynchronously when the text in the <see cref="TextBox"/> portion of the

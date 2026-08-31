@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:BuildTests"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="BuildTests.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/icon.ico"
         Title="BuildTests">
   <local:MainView />
 </Window>

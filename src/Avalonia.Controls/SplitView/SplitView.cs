@@ -598,6 +598,9 @@ namespace Avalonia.Controls
             if (!IsInOverlayMode())
                 return;
 
+            if (!IsPaneOpen)
+                return;
+
             SetCurrentValue(IsPaneOpenProperty, false);
             e.Handled = true;
         }
