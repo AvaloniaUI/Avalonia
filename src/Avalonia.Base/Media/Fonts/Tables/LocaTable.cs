@@ -20,8 +20,16 @@ namespace Avalonia.Media.Fonts.Tables
         private LocaTable(ReadOnlyMemory<byte> data, int glyphCount, bool isShortFormat)
         {
             _data = data;
-            _glyphCount = glyphCount;
             _isShortFormat = isShortFormat;
+
+            // The table stores glyphCount + 1 offsets. A truncated table cannot index every
+            // glyph the font declares, so clamp the usable count to what the data covers —
+            // lookups past it then fail the index check up front instead of reading a
+            // partial entry.
+            var entrySize = isShortFormat ? 2 : 4;
+            var coveredGlyphs = data.Length / entrySize - 1;
+
+            _glyphCount = Math.Max(0, Math.Min(glyphCount, coveredGlyphs));
         }
 
         /// <summary>
@@ -44,18 +52,9 @@ namespace Avalonia.Media.Fonts.Tables
             }
 
             var isShortFormat = head.IndexToLocFormat == 0;
-            var glyphCount = maxp.NumGlyphs;
 
-            // Validate table size
-            var expectedSize = isShortFormat ? (glyphCount + 1) * 2 : (glyphCount + 1) * 4;
-            
-            if (locaData.Length < expectedSize)
-            {
-                // Table is shorter than expected, but we can still work with what we have
-                // The GetOffset method will handle out-of-bounds access
-            }
-
-            return new LocaTable(locaData, glyphCount, isShortFormat);
+            // The constructor clamps the glyph count to what the table's data actually covers.
+            return new LocaTable(locaData, maxp.NumGlyphs, isShortFormat);
         }
 
         /// <summary>

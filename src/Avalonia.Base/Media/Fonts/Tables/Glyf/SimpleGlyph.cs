@@ -96,9 +96,9 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// </summary>
         /// <remarks>The returned <see cref="SimpleGlyph"/> uses buffers rented from array pools for
         /// performance. Callers are responsible for disposing or returning these buffers if required by the <see
-        /// cref="SimpleGlyph"/> implementation. The method validates the contour count and that the contour
-        /// endpoints are strictly increasing (returning the default value otherwise); other malformed data may
-        /// result in exceptions.</remarks>
+        /// cref="SimpleGlyph"/> implementation. Malformed data — a non-positive contour count, out-of-order
+        /// contour endpoints, or a body shorter than its counts promise — degrades to the default value
+        /// (an empty outline) rather than throwing.</remarks>
         /// <param name="data">A read-only span of bytes containing the raw glyph data to parse. The data must be formatted according to
         /// the TrueType simple glyph specification.</param>
         /// <param name="numberOfContours">The number of contours in the glyph. Must be greater than zero; otherwise, a default value is returned.</param>
@@ -107,6 +107,13 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         public static SimpleGlyph Create(ReadOnlySpan<byte> data, int numberOfContours)
         {
             if (numberOfContours <= 0)
+            {
+                return default;
+            }
+
+            // The contour count comes from the untrusted glyph header; a body too short to hold
+            // the endpoint array plus the instruction-length field degrades to an empty outline.
+            if (numberOfContours * 2 + 2 > data.Length)
             {
                 return default;
             }
@@ -137,31 +144,49 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             // Instructions
             int instructionsOffset = numberOfContours * 2;
             ushort instructionsLength = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(instructionsOffset, 2));
+
+            // The declared instruction run must also fit — its length is untrusted too.
+            int flagsOffset = instructionsOffset + 2 + instructionsLength;
+
+            if (flagsOffset > data.Length)
+            {
+                return default;
+            }
+
             var instructions = data.Slice(instructionsOffset + 2, instructionsLength);
 
             // Number of points
             int numPoints = endPtsOfContours[numberOfContours - 1] + 1;
-
-            // Rent buffers
-            int flagsOffset = instructionsOffset + 2 + instructionsLength;
             var flagsBuffer = ArrayPool<GlyphFlag>.Shared.Rent(numPoints);
             var xCoordsBuffer = ArrayPool<short>.Shared.Rent(numPoints);
             var yCoordsBuffer = ArrayPool<short>.Shared.Rent(numPoints);
 
             try
             {
-                // Decode flags
+                // Decode flags. The flag and coordinate streams are variable-length, so every
+                // read is bounds-checked: running out of data mid-decode degrades to an empty
+                // outline instead of throwing.
                 int flagIndex = 0;
                 int offset = flagsOffset;
 
                 while (flagIndex < numPoints)
                 {
+                    if (offset >= data.Length)
+                    {
+                        return ReturnBuffersAndDefault(flagsBuffer, xCoordsBuffer, yCoordsBuffer);
+                    }
+
                     var flag = (GlyphFlag)data[offset++];
                     flagsBuffer[flagIndex++] = flag;
 
                     // Repeat flag
                     if ((flag & GlyphFlag.Repeat) != 0)
                     {
+                        if (offset >= data.Length)
+                        {
+                            return ReturnBuffersAndDefault(flagsBuffer, xCoordsBuffer, yCoordsBuffer);
+                        }
+
                         // Read repeat count
                         byte repeatCount = data[offset++];
 
@@ -183,6 +208,11 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     // Short vector
                     if ((flag & GlyphFlag.XShortVector) != 0)
                     {
+                        if (offset >= data.Length)
+                        {
+                            return ReturnBuffersAndDefault(flagsBuffer, xCoordsBuffer, yCoordsBuffer);
+                        }
+
                         byte dx = data[offset++];
 
                         if ((flag & GlyphFlag.XIsSameOrPositiveXShortVector) != 0)
@@ -199,6 +229,11 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                         // Not a short vector
                         if ((flag & GlyphFlag.XIsSameOrPositiveXShortVector) == 0)
                         {
+                            if (offset + 2 > data.Length)
+                            {
+                                return ReturnBuffersAndDefault(flagsBuffer, xCoordsBuffer, yCoordsBuffer);
+                            }
+
                             short dx = BinaryPrimitives.ReadInt16BigEndian(data.Slice(offset, 2));
                             offset += 2;
                             x += dx;
@@ -218,6 +253,11 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     // Short vector
                     if ((flag & GlyphFlag.YShortVector) != 0)
                     {
+                        if (offset >= data.Length)
+                        {
+                            return ReturnBuffersAndDefault(flagsBuffer, xCoordsBuffer, yCoordsBuffer);
+                        }
+
                         byte dy = data[offset++];
                         if ((flag & GlyphFlag.YIsSameOrPositiveYShortVector) != 0)
                         {
@@ -233,6 +273,11 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                         // Not a short vector
                         if ((flag & GlyphFlag.YIsSameOrPositiveYShortVector) == 0)
                         {
+                            if (offset + 2 > data.Length)
+                            {
+                                return ReturnBuffersAndDefault(flagsBuffer, xCoordsBuffer, yCoordsBuffer);
+                            }
+
                             short dy = BinaryPrimitives.ReadInt16BigEndian(data.Slice(offset, 2));
                             offset += 2;
                             y += dy;
@@ -261,6 +306,15 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 ArrayPool<short>.Shared.Return(yCoordsBuffer);
                 throw;
             }
+        }
+
+        private static SimpleGlyph ReturnBuffersAndDefault(GlyphFlag[] flags, short[] xCoords, short[] yCoords)
+        {
+            ArrayPool<GlyphFlag>.Shared.Return(flags);
+            ArrayPool<short>.Shared.Return(xCoords);
+            ArrayPool<short>.Shared.Return(yCoords);
+
+            return default;
         }
 
         /// <summary>
