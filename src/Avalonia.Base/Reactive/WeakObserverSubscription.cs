@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Reactive;
 
@@ -56,9 +57,9 @@ internal sealed class WeakObserverSubscription<T> : IObserver<T>, IDisposable
         _subscription = null;
     }
 
-    private bool TryGetObserver(out IObserver<T> observer)
+    private bool TryGetObserver([NotNullWhen(true)] out IObserver<T>? observer)
     {
-        if (_observer.TryGetTarget(out observer!))
+        if (_observer.TryGetTarget(out observer))
             return true;
 
         // The observer has been collected; unsubscribe from the observable.
