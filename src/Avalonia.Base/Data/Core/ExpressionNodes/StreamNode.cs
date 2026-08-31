@@ -31,7 +31,6 @@ internal sealed class StreamNode : ExpressionNode, IObserver<object?>
 
         if (_plugin.Start(new(source)) is { } accessor)
         {
-            // Subscribe weakly so a long-lived source doesn't keep the binding target alive (#5872).
             _subscription = WeakObserverSubscription<object?>.Subscribe(accessor, this);
         }
         else

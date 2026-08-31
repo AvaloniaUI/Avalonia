@@ -20,7 +20,6 @@ internal class UntypedObservableBindingExpression : UntypedBindingExpressionBase
 
     protected override void StartCore()
     {
-        // Subscribe weakly so a long-lived source doesn't keep the binding target alive (#5872, #18176).
         _subscription = WeakObserverSubscription<object?>.Subscribe(_observable, this);
     }
 
