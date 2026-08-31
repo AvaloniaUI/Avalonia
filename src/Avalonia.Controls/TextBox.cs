@@ -2455,8 +2455,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasSelection()
         {
-            var start = Math.Min(SelectionStart, SelectionEnd);
-            var end = Math.Max(SelectionStart, SelectionEnd);
+            var (start, end) = GetSelectionRange();
 
             if (start == end)
             {
