@@ -1111,15 +1111,17 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 ItemsSource = new ObservableCollection<Item> { new(), new(), new() },
                 SelectedIndex = 0,
             };
+            var raised = 0;
 
             target.SelectionChanged += (s, e) =>
             {
                 target.ItemsSource = new ObservableCollection<Item> { new(), new() };
+                ++raised;
             };
 
-            var ex = Record.Exception(() => target.SelectedIndex = -1);
+            target.SelectedIndex = -1;
 
-            Assert.Null(ex);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
