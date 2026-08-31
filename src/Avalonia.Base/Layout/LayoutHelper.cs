@@ -120,13 +120,8 @@ namespace Avalonia.Layout
                     targetLayoutable.InvalidateMeasure();
                 }
 
-                var visualChildren = target.VisualChildren;
-                var visualChildrenCount = visualChildren.Count;
-
-                for (int i = 0; i < visualChildrenCount; i++)
+                foreach (var child in target.TypedVisualChildren)
                 {
-                    Visual child = visualChildren[i];
-
                     InnerInvalidateMeasure(child);
                 }
             }
