@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -361,11 +362,21 @@ namespace Avalonia.Controls
             public override int GetHashCode() => Text?.GetHashCode() ?? 0;
         }
 
+        private enum TextMutationKind
+        {
+            ExternalReplacement,
+            Edit,
+            InternalSynchronization,
+        }
+
         private TextPresenter? _presenter;
         private ScrollViewer? _scrollViewer;
         private readonly TextBoxTextInputMethodClient _imClient = new();
         private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
+        private TextMutationKind _textMutationKind;
+        // Coercion runs before the new value is committed, so a snapshot taken there would capture the old text.
+        private bool _needsUndoRedoSnapshotAfterTextChange;
         private bool _canCut;
         private bool _canCopy;
         private bool _canPaste;
@@ -420,6 +431,7 @@ namespace Avalonia.Controls
             _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
             _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
             _hasDoneSnapshotOnce = false;
+            UpdateCommandStates();
             UpdatePseudoclasses();
         }
 
@@ -640,16 +652,29 @@ namespace Avalonia.Controls
         /// </remarks>
         protected virtual string? CoerceText(string? value)
         {
-            // Before #9490, snapshot here was done AFTER text change - this doesn't make sense
-            // since initial state would never be no text and you'd always have to make a text
-            // change before undo would be available
-            // The undo/redo stacks were also cleared at this point, which also doesn't make sense
-            // as it is still valid to want to undo a programmatic text set
-            // So we snapshot text now BEFORE the change so we can always revert
-            // Also don't need to check IsUndoEnabled here, that's done in SnapshotUndoRedo
             if (!_isUndoingRedoing)
             {
-                SnapshotUndoRedo();
+                switch (_textMutationKind)
+                {
+                    case TextMutationKind.Edit:
+                        SnapshotUndoRedo();
+
+                        if (!_undoRedoHelper.CanUndo &&
+                            !string.Equals(Text, value, StringComparison.Ordinal))
+                        {
+                            _needsUndoRedoSnapshotAfterTextChange = true;
+                        }
+                        break;
+
+                    case TextMutationKind.InternalSynchronization:
+                        break;
+
+                    case TextMutationKind.ExternalReplacement:
+                    default:
+                        ClearUndoRedo();
+                        _needsUndoRedoSnapshotAfterTextChange = true;
+                        break;
+                }
             }
 
             return value;
@@ -877,9 +902,7 @@ namespace Avalonia.Controls
             // from docs at
             // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
             // "Setting UndoLimit clears the undo queue."
-            _undoRedoHelper.Clear();
-            _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
-            _hasDoneSnapshotOnce = false;
+            ClearUndoRedo();
         }
 
         /// <summary>
@@ -1031,6 +1054,12 @@ namespace Avalonia.Controls
 
             if (change.Property == TextProperty)
             {
+                if (_needsUndoRedoSnapshotAfterTextChange)
+                {
+                    _needsUndoRedoSnapshotAfterTextChange = false;
+                    SnapshotUndoRedo();
+                }
+
                 CoerceValue(CaretIndexProperty);
                 CoerceValue(SelectionStartProperty);
                 CoerceValue(SelectionEndProperty);
@@ -1040,7 +1069,9 @@ namespace Avalonia.Controls
                 UpdatePseudoclasses();
                 UpdateCommandStates();
             }
-            else if (change.Property == IsReadOnlyProperty || change.Property == PasswordCharProperty)
+            else if (change.Property == IsReadOnlyProperty ||
+                change.Property == PasswordCharProperty ||
+                change.Property == RevealPasswordProperty)
             {
                 UpdateCommandStates();
             }
@@ -1075,18 +1106,15 @@ namespace Avalonia.Controls
                 // "Setting this property to false clears the undo stack.
                 // Therefore, if you disable undo and then re-enable it, undo commands still do not work
                 // because the undo stack was emptied when you disabled undo."
-                _undoRedoHelper.Clear();
-                _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
-                _hasDoneSnapshotOnce = false;
+                ClearUndoRedo();
             }
         }
 
         private void UpdateCommandStates()
         {
-            var text = GetSelection();
-            var isSelectionNullOrEmpty = string.IsNullOrEmpty(text);
-            CanCopy = !IsPasswordBox && !isSelectionNullOrEmpty;
-            CanCut = !IsPasswordBox && !isSelectionNullOrEmpty && !IsReadOnly;
+            var hasSelection = HasSelection();
+            CanCopy = !IsPasswordBox && hasSelection;
+            CanCut = !IsPasswordBox && hasSelection && !IsReadOnly;
             CanPaste = !IsReadOnly;
         }
 
@@ -1203,7 +1231,7 @@ namespace Avalonia.Controls
 
                 var text = StringBuilderCache.GetStringAndRelease(textBuilder);
 
-                SetCurrentValue(TextProperty, text);
+                SetTextFromEdit(text);
 
                 ClearSelection();
 
@@ -1279,7 +1307,17 @@ namespace Avalonia.Controls
                 if (clipboard == null)
                     return;
 
-                await clipboard.SetTextAsync(text);
+                try
+                {
+                    await clipboard.SetTextAsync(text);
+                }
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                    return;
+                }
+
                 DeleteSelection();
             }
         }
@@ -1301,9 +1339,18 @@ namespace Avalonia.Controls
             if (!eventArgs.Handled)
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard is null)
+                    return;
 
-                if (clipboard != null)
+                try
+                {
                     await clipboard.SetTextAsync(text);
+                }
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                }
             }
         }
 
@@ -1329,9 +1376,10 @@ namespace Avalonia.Controls
                 {
                     text = await clipboard.TryGetTextAsync();
                 }
-                catch (TimeoutException)
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
                 {
-                    // Silently ignore.
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to read text from clipboard: {Error}", ex);
                 }
             }
 
@@ -1597,7 +1645,7 @@ namespace Avalonia.Controls
                                     sb.Append(text);
                                     sb.Remove(start, end - start);
 
-                                    SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
+                                    SetTextFromEdit(StringBuilderCache.GetStringAndRelease(sb));
 
                                     SetCurrentValue(CaretIndexProperty, start);
 
@@ -1636,7 +1684,7 @@ namespace Avalonia.Controls
                                     sb.Append(text);
                                     sb.Remove(start, end - start);
 
-                                    SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(sb));
+                                    SetTextFromEdit(StringBuilderCache.GetStringAndRelease(sb));
                                 }
                             }
 
@@ -1734,7 +1782,7 @@ namespace Avalonia.Controls
                 else
                 {
                     // We select the current held word, or the whole hidden content
-                    if (IsPasswordBox && !RevealPassword)
+                    if (IsPasswordBox)
                     {
                         _wordSelectionStart = -1;
 
@@ -1869,7 +1917,7 @@ namespace Avalonia.Controls
 
         private void SelectWord(string text, int caretIndex, int selectionStart, int selectionEnd)
         {
-            if (IsPasswordBox && !RevealPassword)
+            if (IsPasswordBox)
             {
                 // double-clicking in a cloaked single-line password box selects all text
                 // see https://github.com/AvaloniaUI/Avalonia/issues/14956
@@ -2096,7 +2144,10 @@ namespace Avalonia.Controls
 
         internal static int CoerceCaretIndex(AvaloniaObject sender, int value)
         {
-            var text = sender.GetValue(TextProperty); // method also used by TextPresenter and SelectableTextBlock
+            // method also used by TextPresenter and SelectableTextBlock
+            var text = sender is SelectableTextBlock { HasComplexContent: true } textBlock
+                ? textBlock.Inlines?.Text
+                : sender.GetValue(TextProperty);
 
             if (text == null)
             {
@@ -2125,7 +2176,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Clears the text in the TextBox
         /// </summary>
-        public void Clear() => SetCurrentValue(TextProperty, string.Empty);
+        public void Clear() => SetTextFromEdit(string.Empty);
 
         private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting, bool moveCaretPosition)
         {
@@ -2382,7 +2433,7 @@ namespace Avalonia.Controls
                 textBuilder.Append(text);
                 textBuilder.Remove(start, end - start);
 
-                SetCurrentValue(TextProperty, StringBuilderCache.GetStringAndRelease(textBuilder));
+                SetTextFromEdit(StringBuilderCache.GetStringAndRelease(textBuilder));
 
                 _presenter?.MoveCaretToTextPosition(start);
 
@@ -2396,6 +2447,24 @@ namespace Avalonia.Controls
             SetCurrentValue(CaretIndexProperty, SelectionStart);
 
             return false;
+        }
+
+        /// <summary>
+        /// Reports the same emptiness conditions as <see cref="GetSelection"/>, without building
+        /// the selected string.
+        /// </summary>
+        private bool HasSelection()
+        {
+            var (start, end) = GetSelectionRange();
+
+            if (start == end)
+            {
+                return false;
+            }
+
+            var textLength = Text?.Length ?? 0;
+
+            return textLength > 0 && end <= textLength;
         }
 
         private string GetSelection()
@@ -2418,6 +2487,27 @@ namespace Avalonia.Controls
             }
 
             return text.Substring(start, end - start);
+        }
+
+        internal void SetTextFromEdit(string? value) => SetTextCore(value, TextMutationKind.Edit);
+
+        internal void SetTextFromInternalSynchronization(string? value) =>
+            SetTextCore(value, TextMutationKind.InternalSynchronization);
+
+        private void SetTextCore(string? value, TextMutationKind mutationKind)
+        {
+            // Stays set through the synchronous TwoWay source echo so it isn't mistaken for an external replacement.
+            var previousMutationKind = _textMutationKind;
+            _textMutationKind = mutationKind;
+
+            try
+            {
+                SetCurrentValue(TextProperty, value);
+            }
+            finally
+            {
+                _textMutationKind = previousMutationKind;
+            }
         }
 
         /// <summary>
@@ -2518,7 +2608,7 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":touch-mode", _isInTouchMode);
         }
 
-        private bool IsPasswordBox => PasswordChar != default(char);
+        private bool IsPasswordBox => PasswordChar != default(char) && !RevealPassword;
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {
@@ -2545,6 +2635,13 @@ namespace Avalonia.Controls
                     _hasDoneSnapshotOnce = true;
                 }
             }
+        }
+
+        private void ClearUndoRedo()
+        {
+            _undoRedoHelper.Clear();
+            _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
+            _hasDoneSnapshotOnce = false;
         }
 
         /// <summary>

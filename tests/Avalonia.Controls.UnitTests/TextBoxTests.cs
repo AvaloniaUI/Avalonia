@@ -1,8 +1,7 @@
-#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -13,7 +12,6 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.TextInput;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -1407,6 +1405,73 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Binding_Source_Change_Clears_Undo_History()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "initial" };
+                var textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    DataContext = source,
+                };
+
+                textBox.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Bar))
+                {
+                    Mode = BindingMode.TwoWay,
+                });
+                textBox.Measure(Size.Infinity);
+                textBox.CaretIndex = textBox.Text!.Length;
+
+                RaiseTextEvent(textBox, " edit");
+                RaiseKeyEvent(textBox, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(textBox, " more");
+
+                Assert.Equal("initial edit more", source.Bar);
+                Assert.True(textBox.CanUndo);
+
+                source.Bar = "replacement";
+
+                Assert.Equal("replacement", textBox.Text);
+                Assert.False(textBox.CanUndo);
+                Assert.False(textBox.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void TwoWay_Binding_Source_Echo_Does_Not_Clear_Undo_History()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "initial" };
+                var textBox = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    DataContext = source,
+                };
+
+                textBox.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Bar))
+                {
+                    Mode = BindingMode.TwoWay,
+                });
+                textBox.Measure(Size.Infinity);
+                textBox.CaretIndex = textBox.Text!.Length;
+
+                RaiseTextEvent(textBox, " edit");
+                RaiseKeyEvent(textBox, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(textBox, " more");
+
+                Assert.Equal("initial edit more", source.Bar);
+                Assert.True(textBox.CanUndo);
+
+                textBox.Undo();
+
+                Assert.Equal("initial edit", textBox.Text);
+                Assert.Equal("initial edit", source.Bar);
+            }
+        }
+
+        [Fact]
         public void Setting_UndoLimit_Clears_Undo_Redo()
         {
             using (UnitTestApplication.Start(Services))
@@ -1483,6 +1548,121 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Empty_TextBox_Initializes_Clipboard_Command_States()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox();
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        public static TheoryData<Type> ExpectedClipboardExceptions =>
+        [
+            typeof(TimeoutException),
+            typeof(OperationCanceledException),
+            typeof(UnauthorizedAccessException),
+            typeof(COMException)
+        ];
+
+        [Theory]
+        [MemberData(nameof(ExpectedClipboardExceptions))]
+        public void Cut_Does_Not_Delete_Selection_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateTextBoxInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+            {
+                var unhandled = RunAndCaptureUnhandledException(target.Cut);
+
+                Assert.Null(unhandled);
+            }
+
+            Assert.Equal(1, clipboardImpl.SetDataCount);
+            Assert.Equal("abcd", target.Text);
+            Assert.Equal(1, target.SelectionStart);
+            Assert.Equal(3, target.SelectionEnd);
+            Assert.Equal(["Failed to write text to clipboard: {Error}"], messages);
+        }
+
+        [Fact]
+        public void Cut_Deletes_Selection_When_Clipboard_Succeeds()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var target = CreateTextBoxInTopLevel(clipboardImpl: null);
+
+            var unhandled = RunAndCaptureUnhandledException(target.Cut);
+
+            Assert.Null(unhandled);
+            Assert.Equal("ad", target.Text);
+        }
+
+        [Theory]
+        [MemberData(nameof(ExpectedClipboardExceptions))]
+        public void Copy_Does_Not_Throw_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateTextBoxInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+            {
+                var unhandled = RunAndCaptureUnhandledException(target.Copy);
+
+                Assert.Null(unhandled);
+            }
+
+            Assert.Equal(1, clipboardImpl.SetDataCount);
+            Assert.Equal("abcd", target.Text);
+            Assert.Equal(["Failed to write text to clipboard: {Error}"], messages);
+        }
+
+        [Theory]
+        [MemberData(nameof(ExpectedClipboardExceptions))]
+        public void Paste_Does_Not_Change_Text_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateTextBoxInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+            {
+                var unhandled = RunAndCaptureUnhandledException(target.Paste);
+
+                Assert.Null(unhandled);
+            }
+
+            Assert.Equal(1, clipboardImpl.TryGetDataCount);
+            Assert.Equal("abcd", target.Text);
+            Assert.False(target.CanUndo);
+            Assert.Equal(["Failed to read text from clipboard: {Error}"], messages);
+        }
+
+        [Fact]
+        public void Clipboard_Operations_Do_Not_Swallow_Unexpected_Exceptions()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var target = CreateTextBoxInTopLevel(new ThrowingClipboardImplStub(typeof(InvalidOperationException)));
+
+            Assert.IsType<InvalidOperationException>(RunAndCaptureUnhandledException(target.Cut));
+            Assert.IsType<InvalidOperationException>(RunAndCaptureUnhandledException(target.Copy));
+            Assert.IsType<InvalidOperationException>(RunAndCaptureUnhandledException(target.Paste));
+        }
+
+        [Fact]
         public void Command_States_Update_When_ReadOnly_And_PasswordChar_Change()
         {
             using (UnitTestApplication.Start(Services))
@@ -1523,6 +1703,40 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(tb.CanCopy);
                 Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+            }
+        }
+
+        [Fact]
+        public void Command_States_Update_When_RevealPassword_Changes()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    PasswordChar = '*',
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                tb.Measure(Size.Infinity);
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = true;
+
+                Assert.True(tb.CanCopy);
+                Assert.True(tb.CanCut);
+                Assert.True(tb.CanPaste);
+
+                tb.RevealPassword = false;
+
+                Assert.False(tb.CanCopy);
+                Assert.False(tb.CanCut);
                 Assert.True(tb.CanPaste);
             }
         }
@@ -2163,6 +2377,46 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void InputMethodClient_SurroundingText_Uses_Full_Document_For_Multiline_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "one\ntwo",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+
+            Assert.Equal("one\ntwo", client.SurroundingText);
+            Assert.Equal(new TextSelection(5, 5), client.Selection);
+        }
+
+        [Fact]
+        public void InputMethodClient_Selection_Setter_Uses_Document_Offsets_For_Multiline_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "one\ntwo",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            client.Selection = new TextSelection(0, 3);
+
+            Assert.Equal(0, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+            Assert.Equal("one", textBox.SelectedText);
+        }
+
+        [Fact]
         public void Backspace_Should_Delete_Last_Character_In_Line_And_Keep_Caret_On_Same_Line()
         {
             using var _ = UnitTestApplication.Start(Services);
@@ -2330,6 +2584,18 @@ namespace Avalonia.Controls.UnitTests
             fontManagerImpl: new TestFontManager(),
             assetLoader: new StandardAssetLoader());
 
+        private static TextInputMethodClient GetInputMethodClient(TextBox textBox)
+        {
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            Assert.NotNull(eventArgs.Client);
+            return eventArgs.Client;
+        }
+
         internal static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<TextBox>((control, scope) =>
@@ -2437,12 +2703,44 @@ namespace Avalonia.Controls.UnitTests
         {
         }
 
-        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
+        private static TextBox CreateTextBoxInTopLevel(IClipboardImpl? clipboardImpl)
+        {
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abcd",
+                SelectionStart = 1,
+                SelectionEnd = 3
+            };
+
+            var topLevel = new TestTopLevel(CreateMockTopLevelImpl(clipboardImpl).Object)
+            {
+                Template = CreateTopLevelTemplate(),
+                Content = textBox
+            };
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            textBox.Measure(Size.Infinity);
+
+            return textBox;
+        }
+
+        private static Exception? RunAndCaptureUnhandledException(Action action)
+        {
+            using var syncContext = UnitTestSynchronizationContext.Begin();
+
+            action();
+
+            return Record.Exception(syncContext.ExecutePostedCallbacks);
+        }
+
+        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl(IClipboardImpl? clipboardImpl = null)
         {
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new Clipboard(new HeadlessClipboardImplStub()));
+                .Returns(new Clipboard(clipboardImpl ?? new HeadlessClipboardImplStub()));
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }

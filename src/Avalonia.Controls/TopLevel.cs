@@ -42,7 +42,8 @@ namespace Avalonia.Controls
     public abstract class TopLevel : ContentControl,
         ICloseable,
         IStyleHost,
-        ILogicalRoot
+        ILogicalRoot,
+        IThemeVariantRoot
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -122,6 +123,7 @@ namespace Avalonia.Controls
         private readonly IDisposable? _backGestureSubscription;
         private readonly Dictionary<AvaloniaProperty, Action> _platformImplBindings = new();
         private double _scaling;
+        private bool _isClosed;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
@@ -130,6 +132,7 @@ namespace Avalonia.Controls
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
+        private List<Popup>? _openedPopups;
         private readonly PresentationSource _source;
         private readonly TopLevelHost _topLevelHost;
         internal TopLevelHost TopLevelHost => _topLevelHost;
@@ -232,18 +235,13 @@ namespace Avalonia.Controls
 
 
 
-            impl.Closed = HandleClosed;
+            impl.Closed = EnsureClosed;
             impl.Paint = HandlePaint;
             impl.Resized = HandleResized;
             impl.ScalingChanged += HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
 
             CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
-            CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
-            {
-                variant ??= ThemeVariant.Default;
-                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant ?? PlatformThemeVariant.Light);
-            });
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -253,11 +251,21 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesAdded += ((IStyleHost)this).StylesAdded;
                 _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
             }
+
             if (_applicationThemeHost is { })
             {
                 SetValue(ActualThemeVariantProperty, _applicationThemeHost.ActualThemeVariant, BindingPriority.Template);
                 _applicationThemeHost.ActualThemeVariantChanged += GlobalActualThemeVariantChanged;
             }
+            else
+            {
+                ThemeVariant.UpdateActualThemeVariant(this);
+            }
+
+            CreatePlatformImplBinding(ActualThemeVariantProperty, variant =>
+            {
+                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)variant);
+            });
 
             ClientSize = impl.ClientSize;
 
@@ -394,6 +402,8 @@ namespace Avalonia.Controls
             get => GetValue(RequestedThemeVariantProperty);
             set => SetValue(RequestedThemeVariantProperty, value);
         }
+
+        bool IThemeVariantRoot.IsThemeVariantRoot => _applicationThemeHost is null;
 
         /// <summary>
         /// Occurs when physical Back Button is pressed or a back navigation has been requested.
@@ -551,6 +561,14 @@ namespace Avalonia.Controls
         private IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         /// <summary>
+        /// Gets the popups that are currently open directly in this top level, in the order they were opened.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="Popup.OpenedPopups"/> for nested popups.
+        /// </remarks>
+        public virtual IReadOnlyList<Popup> OpenedPopups => _openedPopups ?? (IReadOnlyList<Popup>)[];
+
+        /// <summary>
         /// Gets the <see cref="TopLevel" /> for which the given <see cref="Visual"/> is hosted in.
         /// </summary>
         /// <param name="visual">The visual to query its TopLevel</param>
@@ -654,6 +672,18 @@ namespace Avalonia.Controls
         private protected void StopRendering() => MediaContext.Instance.RemoveTopLevel(this);
 
         /// <summary>
+        /// Runs the top level teardown exactly once, no matter whether it was initiated by the
+        /// platform via <see cref="ITopLevelImpl.Closed"/> or by a managed <c>Dispose()</c>.
+        /// </summary>
+        private protected void EnsureClosed()
+        {
+            if (_isClosed)
+                return;
+            _isClosed = true;
+            HandleClosed();
+        }
+
+        /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
         /// </summary>
         private protected virtual void HandleClosed()
@@ -687,6 +717,7 @@ namespace Avalonia.Controls
 
             LayoutManager.Dispose();
             _platformImplBindings.Clear();
+            _openedPopups = null;
         }
 
         /// <summary>
@@ -702,6 +733,10 @@ namespace Avalonia.Controls
             LayoutManager.ExecuteLayoutPass();
             Renderer.Resized(clientSize);
         }
+
+        internal void AddOpenedPopup(Popup popup) => (_openedPopups ??= new List<Popup>(capacity: 2)).Add(popup);
+
+        internal void RemoveOpenedPopup(Popup popup) => _openedPopups?.Remove(popup);
 
         /// <summary>
         /// Handles a window scaling change notification from 

@@ -59,6 +59,9 @@
     <Style Selector="Label.h3">
       <Setter Property="FontSize" Value="12" />
     </Style>
+    <Style Selector="RefreshContainer">
+      <Setter Property="IsMouseEnabled" Value="true" />
+    </Style>
   </Application.Styles>
   <NativeDock.Menu>
     <NativeMenu>
@@ -71,7 +74,7 @@
   </NativeDock.Menu>
   <TrayIcon.Icons>
     <TrayIcons>
-      <TrayIcon Icon="/Assets/test_icon.ico" MacOSProperties.IsTemplateIcon="true" ToolTipText="Avalonia Tray Icon ToolTip">
+      <TrayIcon Icon="/Assets/icon.ico" MacOSProperties.IsTemplateIcon="true" ToolTipText="Avalonia Tray Icon ToolTip">
         <TrayIcon.Menu>
           <NativeMenu>
             <NativeMenuItem Header="Settings">
@@ -80,7 +83,7 @@
                 <NativeMenuItem Header="Option 2" ToggleType="Radio" />
                 <NativeMenuItemSeparator />
                 <NativeMenuItem Header="Option 3" ToggleType="CheckBox" IsChecked="True" />
-                <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Restore Defaults" Command="{Binding RestoreDefault}" />
+                <NativeMenuItem Icon="/Assets/icon.ico" Header="Restore Defaults" Command="{Binding RestoreDefault}" />
                 <NativeMenuItem Header="Disabled option" IsEnabled="False" />
                 <NativeMenuItem Header="Hidden option" IsVisible="False" />
               </NativeMenu>

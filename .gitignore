@@ -228,3 +228,4 @@ src/Browser/Avalonia.Browser/staticwebassets
 /planning
 BenchmarkDotNet.Artifacts.*
 .tokensave
+/CLAUDE.md

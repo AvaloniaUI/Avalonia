@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Text;
+using Avalonia.Logging;
 using Avalonia.Platform;
 
 namespace Avalonia.Styling;
@@ -45,7 +45,12 @@ public sealed record ThemeVariant
     internal static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
         AvaloniaProperty.Register<StyledElement, ThemeVariant?>(
             "RequestedThemeVariant", defaultValue: Default);
-    
+
+    static ThemeVariant()
+    {
+        RequestedThemeVariantProperty.Changed.AddClassHandler<AvaloniaObject>((x, _) => UpdateActualThemeVariant(x));
+    }
+
     /// <summary>
     /// Creates a new instance of the <see cref="ThemeVariant"/>
     /// </summary>
@@ -79,6 +84,42 @@ public sealed record ThemeVariant
     /// </summary>
     public ThemeVariant? InheritVariant { get; }
 
+    internal static void UpdateActualThemeVariant(AvaloniaObject target)
+    {
+        var requested = target.GetValue(RequestedThemeVariantProperty) ?? Default;
+
+        if (requested != Default)
+        {
+            target.SetValue(ActualThemeVariantProperty, requested);
+            return;
+        }
+
+        if (target is IThemeVariantRoot { IsThemeVariantRoot: true })
+        {
+            var actual = GetPlatformThemeVariant();
+
+            Logger.TryGet(LogEventLevel.Debug, LogArea.Platform)
+                ?.Log(target, "Requested Default theme variant, used {ActualThemeVariant} platform variant", actual);
+
+            target.SetValue(ActualThemeVariantProperty, actual);
+        }
+        else
+        {
+            Logger.TryGet(LogEventLevel.Debug, LogArea.Platform)
+                ?.Log(target, "Requested Default theme variant, inheriting from parent");
+
+            target.ClearValue(ActualThemeVariantProperty);
+        }
+    }
+
+    private static ThemeVariant GetPlatformThemeVariant()
+    {
+        var variant = AvaloniaLocator.Current.GetService<IPlatformSettings>()?.GetColorValues().ThemeVariant ??
+                      PlatformThemeVariant.Light;
+
+        return (ThemeVariant)variant;
+    }
+
     public override string ToString()
     {
         return Key.ToString() ?? $"ThemeVariant {{ Key = {Key} }}";
@@ -100,11 +141,11 @@ public sealed record ThemeVariant
         {
             PlatformThemeVariant.Light => Light,
             PlatformThemeVariant.Dark => Dark,
-            _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null)
+            _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null),
         };
     }
 
-    public static explicit operator PlatformThemeVariant?(ThemeVariant themeVariant)
+    public static explicit operator PlatformThemeVariant?(ThemeVariant? themeVariant)
     {
         if (themeVariant == Light)
         {
@@ -114,7 +155,7 @@ public sealed record ThemeVariant
         {
             return PlatformThemeVariant.Dark;
         }
-        else if (themeVariant.InheritVariant is { } inheritVariant)
+        else if (themeVariant?.InheritVariant is { } inheritVariant)
         {
             return (PlatformThemeVariant?)inheritVariant;
         }
