@@ -8,23 +8,25 @@ public record struct PlatformGraphicsExternalImageProperties
     public ulong MemorySize { get; set; }
     public ulong MemoryOffset { get; set; }
     public bool TopLeftOrigin { get; set; }
-    public PlatformGraphicsExternalImageLayout ImageLayout { get; set; }
+
+    /// <summary>
+    /// Vulkan-specific properties of the imported image, ignored by other backends.
+    /// </summary>
+    public PlatformGraphicsExternalImageVulkanProperties? VulkanProperties { get; set; }
+}
+
+public record struct PlatformGraphicsExternalImageVulkanProperties
+{
+    /// <summary>
+    /// The VkImageLayout the underlying memory is currently in.
+    /// </summary>
+    public int Layout { get; set; }
 }
 
 public enum PlatformGraphicsExternalImageFormat
 {
     R8G8B8A8UNorm,
     B8G8R8A8UNorm
-}
-
-public enum PlatformGraphicsExternalImageLayout
-{
-    Undefined,
-    General,
-    ColorAttachmentOptimal,
-    ShaderReadOnlyOptimal,
-    TransferSrcOptimal,
-    TransferDstOptimal
 }
 
 /// <summary>
