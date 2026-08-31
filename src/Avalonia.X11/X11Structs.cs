@@ -1916,7 +1916,7 @@ namespace Avalonia.X11 {
         public UIntPtr shmseg; /* resource id (XID == unsigned long) */
         public int shmid; /* kernel id */
         public IntPtr shmaddr; /* address in client */
-        public bool readOnly; /* how the server should attach it */
+        public int readOnly; /* how the server should attach it */
 
         public override string ToString()
         {
@@ -1930,7 +1930,7 @@ namespace Avalonia.X11 {
     {
         public XEventName type; /* of event */
         public UIntPtr serial; /* # of last request processed by server */
-        public bool send_event; /* true if this came from a SendEvent request */
+        public int send_event; /* true if this came from a SendEvent request */
         public IntPtr display; /* Display the event was read from */
         public IntPtr drawable; /* drawable of request */
 

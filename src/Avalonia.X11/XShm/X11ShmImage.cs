@@ -43,6 +43,7 @@ internal unsafe class X11ShmImage : IDisposable
         {
             shmctl(shmid, IPC_RMID, IntPtr.Zero);
             XDestroyImage(_shmImage);
+            Marshal.FreeHGlobal((IntPtr)_shmSegmentInfo);
             throw new InvalidOperationException("Failed to shmat");
         }
 

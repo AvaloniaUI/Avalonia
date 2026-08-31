@@ -515,6 +515,13 @@ namespace Avalonia
         /// </summary>
         public bool? UseRetainedFramebuffer { get; set; }
 
+        /// <summary>
+        /// Enables the MIT-SHM extension for CPU rendering mode, which uses shared memory
+        /// to transfer the framebuffer contents to the X server instead of sending pixels
+        /// over the connection socket.
+        /// Only used when set to true and the extension is supported by the server.
+        /// The default value is null.
+        /// </summary>
         public bool? UseXShmFramebuffer { get; set; }
 
         /// <summary>

@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using System.Collections.Generic;
 
 namespace RenderDemo
 {
@@ -30,14 +29,6 @@ namespace RenderDemo
                .With(new Win32PlatformOptions
                {
                    OverlayPopups = true,
-               })
-               .With(new X11PlatformOptions()
-               {
-                   UseXShmFramebuffer = true,
-                   RenderingMode = new List<X11RenderingMode>()
-                   {
-                       X11RenderingMode.Software,
-                   }
                })
                 .UsePlatformDetect()
 #if DEBUG
