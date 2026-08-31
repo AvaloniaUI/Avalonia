@@ -11,6 +11,7 @@
     <Manual Name="Avalonia.Media.IImmutableBrush" Passthrough="true"/>
     <Manual Name="Avalonia.Media.IImmutableEffect" Passthrough="true"/>
     <Manual Name="Avalonia.Media.Immutable.ImmutableDashStyle" Passthrough="true"/>
+    <Manual Name="object" Passthrough="true"/>
     <Manual Name="CompositionSurface" />
     <Manual Name="CompositionDrawingSurface" />
     <Object Name="CompositionVisual" Abstract="true">
@@ -60,6 +61,7 @@
         <Property Name="Scaling" Type="double"/>
         <Property Name="Size" Type="Size" />
         <Property Name="TransparencyLevel" Type="CompositionTransparencyLevel" />
+        <Property Name="TopLevelSpecificSceneInfo" Type="object?" />
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>
     <KeyFrameAnimation Name="Double" Type="double"/>

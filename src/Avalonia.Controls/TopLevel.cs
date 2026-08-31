@@ -223,6 +223,7 @@ namespace Avalonia.Controls
 
             _source.Renderer.CompositionTarget.TransparencyLevel =
                 ToCompositionTransparencyLevel(_actualTransparencyLevel);
+            _source.Renderer.CompositionTarget.TopLevelSpecificSceneInfo = impl.TopLevelSpecificSceneInfo;
 
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
@@ -240,6 +241,7 @@ namespace Avalonia.Controls
             impl.Resized = HandleResized;
             impl.ScalingChanged += HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
+            impl.TopLevelSpecificSceneInfoChanged = HandleTopLevelSpecificSceneInfoChanged;
 
             CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
 
@@ -769,6 +771,11 @@ namespace Avalonia.Controls
             ActualTransparencyLevel = transparencyLevel;
             Renderer.CompositionTarget.TransparencyLevel =
                 ToCompositionTransparencyLevel(transparencyLevel);
+        }
+
+        private void HandleTopLevelSpecificSceneInfoChanged(object? sceneInfo)
+        {
+            Renderer.CompositionTarget.TopLevelSpecificSceneInfo = sceneInfo;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
