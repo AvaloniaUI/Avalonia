@@ -156,170 +156,41 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 var flags = simpleGlyph.Flags;
                 var xCoords = simpleGlyph.XCoordinates;
                 var yCoords = simpleGlyph.YCoordinates;
+                var pointCount = flags.Length;
 
-                var startPointIndex = 0;
+                // Materialise the points once so every contour goes through the single
+                // EmitContour walker shared with the composite point-matching path.
+                var points = ArrayPool<Point>.Shared.Rent(pointCount);
+                var onCurve = ArrayPool<bool>.Shared.Rent(pointCount);
 
-                for (var contourIndex = 0; contourIndex < endPtsOfContours.Length; contourIndex++)
+                try
                 {
-                    var endPointIndex = endPtsOfContours[contourIndex];
-                    var pointCount = endPointIndex - startPointIndex + 1;
-
-                    if (pointCount == 0)
+                    for (var i = 0; i < pointCount; i++)
                     {
+                        points[i] = new Point(xCoords[i], yCoords[i]);
+                        onCurve[i] = (flags[i] & GlyphFlag.OnCurvePoint) != 0;
+                    }
+
+                    var startPointIndex = 0;
+
+                    for (var contourIndex = 0; contourIndex < endPtsOfContours.Length; contourIndex++)
+                    {
+                        var endPointIndex = endPtsOfContours[contourIndex];
+                        var contourPointCount = endPointIndex - startPointIndex + 1;
+
+                        EmitContour(
+                            points.AsSpan(startPointIndex, contourPointCount),
+                            onCurve.AsSpan(startPointIndex, contourPointCount),
+                            transform,
+                            context);
+
                         startPointIndex = endPointIndex + 1;
-                        continue;
                     }
-
-                    // Check if first point is on-curve
-                    var firstFlag = flags[startPointIndex];
-                    var firstIsOnCurve = (firstFlag & GlyphFlag.OnCurvePoint) != 0;
-
-                    if (firstIsOnCurve)
-                    {
-                        // Normal case: start from first on-curve point
-                        var firstPoint = new Point(xCoords[startPointIndex], yCoords[startPointIndex]);
-                        context.BeginFigure(transform.Transform(firstPoint), true);
-
-                        // Start processing from the next point (or wrap to first if only one point)
-                        int i = pointCount == 1 ? startPointIndex : startPointIndex + 1;
-                        int processingStartIndex = i;
-
-                        var maxSegments = Math.Max(1, pointCount * 3);
-                        var segmentsProcessed = 0;
-
-                        while (segmentsProcessed++ < maxSegments)
-                        {
-                            // Wrap index to contour range
-                            int currentIdx = startPointIndex + ((i - startPointIndex) % pointCount);
-
-                            var curFlag = flags[currentIdx];
-                            var curIsOnCurve = (curFlag & GlyphFlag.OnCurvePoint) != 0;
-                            var curPoint = new Point(xCoords[currentIdx], yCoords[currentIdx]);
-
-                            if (curIsOnCurve)
-                            {
-                                // Simple line to on-curve point
-                                context.LineTo(transform.Transform(curPoint));
-                                i++;
-                            }
-                            else
-                            {
-                                // Current is off-curve, look ahead
-                                int nextIdx = startPointIndex + ((i + 1 - startPointIndex) % pointCount);
-                                var nextFlag = flags[nextIdx];
-                                var nextIsOnCurve = (nextFlag & GlyphFlag.OnCurvePoint) != 0;
-                                var nextPoint = new Point(xCoords[nextIdx], yCoords[nextIdx]);
-
-                                if (nextIsOnCurve)
-                                {
-                                    // Quadratic curve to next on-curve point
-                                    context.QuadraticBezierTo(
-                                        transform.Transform(curPoint),
-                                        transform.Transform(nextPoint)
-                                    );
-                                    // Advance past the on-curve point
-                                    i += 2;
-                                }
-                                else
-                                {
-                                    // Two consecutive off-curve points -> implied midpoint
-                                    var impliedX = (curPoint.X + nextPoint.X) / 2.0;
-                                    var impliedY = (curPoint.Y + nextPoint.Y) / 2.0;
-                                    var impliedPoint = new Point(impliedX, impliedY);
-
-                                    context.QuadraticBezierTo(
-                                        transform.Transform(curPoint),
-                                        transform.Transform(impliedPoint)
-                                    );
-                                    // Advance to the second off-curve point for next iteration
-                                    i++;
-                                }
-                            }
-
-                            // Check if we've wrapped back to start
-                            int checkIdx = startPointIndex + ((i - startPointIndex) % pointCount);
-                            if (checkIdx == processingStartIndex && segmentsProcessed > 0)
-                            {
-                                break;
-                            }
-                        }
-
-                        context.EndFigure(true);
-                    }
-                    else
-                    {
-                        // First point is off-curve -> create implied start between last and first
-                        var lastIdx = endPointIndex;
-                        var firstX = xCoords[startPointIndex];
-                        var firstY = yCoords[startPointIndex];
-                        var lastX = xCoords[lastIdx];
-                        var lastY = yCoords[lastIdx];
-
-                        var impliedStartX = (lastX + firstX) / 2.0;
-                        var impliedStartY = (lastY + firstY) / 2.0;
-                        var impliedStart = new Point(impliedStartX, impliedStartY);
-
-                        context.BeginFigure(transform.Transform(impliedStart), true);
-
-                        int idxWalker = 0; // offset from startPointIndex
-                        var maxSegments = pointCount * 3;
-                        var segmentsProcessed = 0;
-
-                        while (segmentsProcessed++ < maxSegments)
-                        {
-                            int curIdx = startPointIndex + idxWalker;
-                            int nextIdxOffset = idxWalker == pointCount - 1 ? 0 : idxWalker + 1;
-                            int nextIdx = startPointIndex + nextIdxOffset;
-
-                            var curFlag = flags[curIdx];
-                            var curIsOnCurve = (curFlag & GlyphFlag.OnCurvePoint) != 0;
-                            var curPoint = new Point(xCoords[curIdx], yCoords[curIdx]);
-
-                            if (curIsOnCurve)
-                            {
-                                context.LineTo(transform.Transform(curPoint));
-                                idxWalker = nextIdxOffset;
-                            }
-                            else
-                            {
-                                var nextFlag = flags[nextIdx];
-                                var nextIsOnCurve = (nextFlag & GlyphFlag.OnCurvePoint) != 0;
-                                var nextPoint = new Point(xCoords[nextIdx], yCoords[nextIdx]);
-
-                                if (nextIsOnCurve)
-                                {
-                                    context.QuadraticBezierTo(
-                                        transform.Transform(curPoint),
-                                        transform.Transform(nextPoint)
-                                    );
-                                    idxWalker = nextIdxOffset == pointCount - 1 ? 0 : nextIdxOffset + 1;
-                                }
-                                else
-                                {
-                                    // Two consecutive off-curve points -> implied midpoint
-                                    var impliedX = (curPoint.X + nextPoint.X) / 2.0;
-                                    var impliedY = (curPoint.Y + nextPoint.Y) / 2.0;
-                                    var impliedPoint = new Point(impliedX, impliedY);
-
-                                    context.QuadraticBezierTo(
-                                        transform.Transform(curPoint),
-                                        transform.Transform(impliedPoint)
-                                    );
-                                    idxWalker = nextIdxOffset == pointCount - 1 ? 0 : nextIdxOffset + 1;
-                                }
-                            }
-
-                            // Stop when we've wrapped back to the beginning
-                            if (idxWalker == 0 && segmentsProcessed > 1)
-                            {
-                                break;
-                            }
-                        }
-
-                        context.EndFigure(true);
-                    }
-
-                    startPointIndex = endPointIndex + 1;
+                }
+                finally
+                {
+                    ArrayPool<Point>.Shared.Return(points);
+                    ArrayPool<bool>.Shared.Return(onCurve);
                 }
 
                 return true;
@@ -329,6 +200,105 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 // Return rented buffers to pool
                 simpleGlyph.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Emits one contour's segments to the geometry context, applying <paramref name="transform"/>.
+        /// </summary>
+        /// <remarks>
+        /// Implements the TrueType on/off-curve walk once for every caller: the figure starts at
+        /// the first point when it is on-curve, at the last point when only that one is on-curve,
+        /// and at their implied midpoint when both are off-curve; consecutive off-curve points
+        /// imply an on-curve midpoint between them; the contour closes back to the start through
+        /// a trailing off-curve control point when one is pending.
+        /// </remarks>
+        private static void EmitContour(
+            ReadOnlySpan<Point> points,
+            ReadOnlySpan<bool> onCurve,
+            Matrix transform,
+            IGeometryContext context)
+        {
+            var pointCount = points.Length;
+
+            if (pointCount == 0)
+            {
+                return;
+            }
+
+            Point figureStart;
+            int walkStart;
+            int walkCount;
+
+            if (onCurve[0])
+            {
+                figureStart = points[0];
+                walkStart = 1;
+                walkCount = pointCount - 1;
+            }
+            else if (onCurve[pointCount - 1])
+            {
+                // The last point is consumed as the start; the walk covers the rest.
+                figureStart = points[pointCount - 1];
+                walkStart = 0;
+                walkCount = pointCount - 1;
+            }
+            else
+            {
+                var first = points[0];
+                var last = points[pointCount - 1];
+                figureStart = new Point((first.X + last.X) / 2.0, (first.Y + last.Y) / 2.0);
+                walkStart = 0;
+                walkCount = pointCount;
+            }
+
+            context.BeginFigure(transform.Transform(figureStart), true);
+
+            var pendingControl = default(Point);
+            var hasPendingControl = false;
+
+            for (var i = 0; i < walkCount; i++)
+            {
+                var index = walkStart + i;
+                var point = points[index];
+
+                if (onCurve[index])
+                {
+                    if (hasPendingControl)
+                    {
+                        context.QuadraticBezierTo(transform.Transform(pendingControl), transform.Transform(point));
+                        hasPendingControl = false;
+                    }
+                    else
+                    {
+                        context.LineTo(transform.Transform(point));
+                    }
+                }
+                else
+                {
+                    if (hasPendingControl)
+                    {
+                        // Two consecutive off-curve points -> implied on-curve midpoint.
+                        var implied = new Point((pendingControl.X + point.X) / 2.0, (pendingControl.Y + point.Y) / 2.0);
+                        context.QuadraticBezierTo(transform.Transform(pendingControl), transform.Transform(implied));
+                    }
+
+                    pendingControl = point;
+                    hasPendingControl = true;
+                }
+            }
+
+            // Close back to the start: through the trailing control point when one is pending,
+            // with an explicit line otherwise (EndFigure's implicit close is then zero-length).
+            if (hasPendingControl)
+            {
+                context.QuadraticBezierTo(transform.Transform(pendingControl), transform.Transform(figureStart));
+            }
+            else
+            {
+                context.LineTo(transform.Transform(figureStart));
+            }
+
+            context.EndFigure(true);
         }
 
         /// <summary>
@@ -637,8 +607,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
         /// <summary>
         /// Emits the contours of a materialised outline to the geometry context, applying
-        /// <paramref name="transform"/>. Mirrors the on/off-curve walking of
-        /// <see cref="BuildSimpleGlyphGeometry"/> but over an already-resolved point buffer.
+        /// <paramref name="transform"/>, via the shared <see cref="EmitContour"/> walker.
         /// </summary>
         private static void EmitResolvedOutline(ResolvedOutline outline, Matrix transform, IGeometryContext context)
         {
@@ -653,108 +622,13 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 var endPointIndex = contourEnds[contourIndex];
                 var pointCount = endPointIndex - startPointIndex + 1;
 
-                if (pointCount <= 0)
+                if (pointCount > 0)
                 {
-                    startPointIndex = endPointIndex + 1;
-                    continue;
-                }
-
-                if (onCurve[startPointIndex])
-                {
-                    context.BeginFigure(transform.Transform(points[startPointIndex]), true);
-
-                    int i = pointCount == 1 ? startPointIndex : startPointIndex + 1;
-                    int processingStartIndex = i;
-
-                    var maxSegments = Math.Max(1, pointCount * 3);
-                    var segmentsProcessed = 0;
-
-                    while (segmentsProcessed++ < maxSegments)
-                    {
-                        int currentIdx = startPointIndex + ((i - startPointIndex) % pointCount);
-                        var curPoint = points[currentIdx];
-
-                        if (onCurve[currentIdx])
-                        {
-                            context.LineTo(transform.Transform(curPoint));
-                            i++;
-                        }
-                        else
-                        {
-                            int nextIdx = startPointIndex + ((i + 1 - startPointIndex) % pointCount);
-                            var nextPoint = points[nextIdx];
-
-                            if (onCurve[nextIdx])
-                            {
-                                context.QuadraticBezierTo(transform.Transform(curPoint), transform.Transform(nextPoint));
-                                i += 2;
-                            }
-                            else
-                            {
-                                var implied = new Point((curPoint.X + nextPoint.X) / 2.0, (curPoint.Y + nextPoint.Y) / 2.0);
-                                context.QuadraticBezierTo(transform.Transform(curPoint), transform.Transform(implied));
-                                i++;
-                            }
-                        }
-
-                        int checkIdx = startPointIndex + ((i - startPointIndex) % pointCount);
-                        if (checkIdx == processingStartIndex && segmentsProcessed > 0)
-                        {
-                            break;
-                        }
-                    }
-
-                    context.EndFigure(true);
-                }
-                else
-                {
-                    var firstPoint = points[startPointIndex];
-                    var lastPoint = points[endPointIndex];
-                    var impliedStart = new Point((lastPoint.X + firstPoint.X) / 2.0, (lastPoint.Y + firstPoint.Y) / 2.0);
-
-                    context.BeginFigure(transform.Transform(impliedStart), true);
-
-                    int idxWalker = 0;
-                    var maxSegments = pointCount * 3;
-                    var segmentsProcessed = 0;
-
-                    while (segmentsProcessed++ < maxSegments)
-                    {
-                        int curIdx = startPointIndex + idxWalker;
-                        int nextIdxOffset = idxWalker == pointCount - 1 ? 0 : idxWalker + 1;
-                        int nextIdx = startPointIndex + nextIdxOffset;
-
-                        var curPoint = points[curIdx];
-
-                        if (onCurve[curIdx])
-                        {
-                            context.LineTo(transform.Transform(curPoint));
-                            idxWalker = nextIdxOffset;
-                        }
-                        else
-                        {
-                            var nextPoint = points[nextIdx];
-
-                            if (onCurve[nextIdx])
-                            {
-                                context.QuadraticBezierTo(transform.Transform(curPoint), transform.Transform(nextPoint));
-                                idxWalker = nextIdxOffset == pointCount - 1 ? 0 : nextIdxOffset + 1;
-                            }
-                            else
-                            {
-                                var implied = new Point((curPoint.X + nextPoint.X) / 2.0, (curPoint.Y + nextPoint.Y) / 2.0);
-                                context.QuadraticBezierTo(transform.Transform(curPoint), transform.Transform(implied));
-                                idxWalker = nextIdxOffset == pointCount - 1 ? 0 : nextIdxOffset + 1;
-                            }
-                        }
-
-                        if (idxWalker == 0 && segmentsProcessed > 1)
-                        {
-                            break;
-                        }
-                    }
-
-                    context.EndFigure(true);
+                    EmitContour(
+                        points.Slice(startPointIndex, pointCount),
+                        onCurve.Slice(startPointIndex, pointCount),
+                        transform,
+                        context);
                 }
 
                 startPointIndex = endPointIndex + 1;
