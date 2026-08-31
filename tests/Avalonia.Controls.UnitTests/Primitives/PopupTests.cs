@@ -1391,6 +1391,41 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(true, target.IsUsingOverlayLayer);
             }
         }
+        
+        [Fact]
+        public void Closing_Previous_Light_Dismiss_Popup_Should_Not_Affect_Overlay_For_Next_Popup()
+        {
+            using (CreateServices())
+            {
+                var placementTarget = new Border();
+                var window = PreparedWindow(placementTarget);
+                var first = new Popup
+                {
+                    PlacementTarget = placementTarget,
+                    IsLightDismissEnabled = true,
+                };
+                var second = new Popup
+                {
+                    PlacementTarget = placementTarget,
+                    IsLightDismissEnabled = true,
+                };
+
+                first.Open();
+                second.Open();
+
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                Assert.NotNull(overlay);
+
+                first.Close();
+
+                Assert.True(overlay.IsVisible);
+
+                overlay.RaiseEvent(CreatePointerPressedEventArgs(window, new Point(10, 15)));
+
+                Assert.False(second.IsOpen);
+                Assert.False(overlay.IsVisible);
+            }
+        }
 
         [Fact]
         public void Opened_Popup_Should_Be_In_OpenedPopups()
