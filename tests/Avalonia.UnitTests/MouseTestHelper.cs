@@ -101,9 +101,7 @@ namespace Avalonia.UnitTests
                 else
                     target.RaiseEvent(e);
 
-                _pointer.Capture(null);
-                _pointer.CaptureGestureRecognizer(null);
-                _pointer.IsGestureRecognitionSkipped = false;
+                _pointer.CaptureLost(CaptureSource.Explicit);
             }
             else
                 Move(target, source, position ?? default);

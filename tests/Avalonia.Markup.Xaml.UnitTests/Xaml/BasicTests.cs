@@ -43,6 +43,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void ContentPresenter_Default_Content_Property_Is_Set()
+        {
+            var xaml = @"<ContentPresenter xmlns='https://github.com/avaloniaui'>Foo</ContentPresenter>";
+
+            var target = AvaloniaRuntimeXamlLoader.Parse<ContentPresenter>(xaml);
+
+            Assert.NotNull(target);
+            Assert.Equal("Foo", target.Content);
+        }
+
+        [Fact]
         public void Attached_Property_Is_Set()
         {
             var xaml =
