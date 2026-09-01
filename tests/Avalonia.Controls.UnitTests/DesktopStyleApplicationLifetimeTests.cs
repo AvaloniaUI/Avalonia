@@ -557,32 +557,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void SetupWithClassicDesktopLifetime_Should_Raise_Startup_After_Application_Initialization()
+        public void SetupWithClassicDesktopLifetime_Should_Not_Raise_Startup()
         {
-            var events = new List<string>();
-            string[]? startupArgs = null;
+            var frameworkInitCalled = false;
+            var lifetimeBuilderCalled = false;
+            var startupRaised = false;
             ClassicDesktopStyleApplicationLifetime? lifetime = null;
 
-            CreateAppBuilder(onFrameworkInitializationCompleted: () => events.Add("FrameworkInitializationCompleted"))
+            CreateAppBuilder(onFrameworkInitializationCompleted: () => frameworkInitCalled = true)
                 .SetupWithClassicDesktopLifetime(
                     ["foo", "bar"],
                     l =>
                     {
-                        lifetime = (ClassicDesktopStyleApplicationLifetime)l;
-                        l.Startup += (_, e) =>
-                        {
-                            events.Add("Startup");
-                            startupArgs = e.Args;
-                        };
+                        lifetimeBuilderCalled = true;
+                        l.Startup += (_, _) => startupRaised = true;
                     });
 
-            Assert.NotNull(lifetime);
-
-            using (lifetime)
-            {
-                Assert.Equal(new[] { "FrameworkInitializationCompleted", "Startup" }, events);
-                Assert.Equal(new[] { "foo", "bar" }, startupArgs);
-            }
+            Assert.True(frameworkInitCalled);
+            Assert.True(lifetimeBuilderCalled);
+            Assert.False(startupRaised);
         }
 
         [Fact]
@@ -603,7 +596,7 @@ namespace Avalonia.Controls.UnitTests
 
             using (lifetime)
             {
-                Assert.Equal(1, raised);
+                Assert.Equal(0, raised);
 
                 Dispatcher.UIThread.Post(Dispatcher.UIThread.ExitAllFrames);
                 lifetime.Start([]);

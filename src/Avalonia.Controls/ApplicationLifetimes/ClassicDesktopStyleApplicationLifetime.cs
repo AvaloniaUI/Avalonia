@@ -25,7 +25,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
         private CompositeDisposable? _globalEventsSubscriptions;
         private bool _beforeInitCalled;
         private bool _afterInitCalled;
-        private bool _startupCalled;
         private IPlatformLifetimeEventsImpl? _platformLifetimeEventsImpl;
 
         /// <inheritdoc/>
@@ -122,7 +121,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
         void ISetupApplicationLifetime.AfterAppInit()
         {
             AfterInit();
-            InvokeStartup(Args);
         }
 
         public int Start(string[] args)
@@ -145,7 +143,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             // If somehow they weren't (e.g., for a manually started lifetime), do it now.
             BeforeInit();
             AfterInit();
-            InvokeStartup(args);
+            Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
             _cts = new CancellationTokenSource();
 
@@ -157,19 +155,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
             Dispatcher.UIThread.MainLoop(_cts.Token);
             Environment.ExitCode = _exitCode;
             return _exitCode;
-        }
-
-        private void InvokeStartup(string[]? args)
-        {
-            // Ideally, the Startup event should be invoked only when Start() is called. However, it was historically invoked
-            // in SetupWithClassicDesktopLifetime to account for programs that don't call Start at all, so let's keep this behavior.
-            // Technically, the args could be different between Setup and Start. In practice, they won't for all callers we control.
-            // TODO13: clean this up.
-            if (_startupCalled)
-                return;
-
-            _startupCalled = true;
-            Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args ?? []));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
