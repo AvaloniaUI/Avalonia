@@ -160,10 +160,9 @@ namespace Avalonia.Media
         public Rect Bounds => new Rect(new Point(BaselineOrigin.X, 0),
             new Size(Metrics.WidthIncludingTrailingWhitespace, Metrics.Height));
 
-        // A run with no glyphs marks nothing, so its ink bounds are empty by definition. Answering
-        // from here keeps a run that draws nothing from building a platform glyph run - and the
-        // platform side is not free: the Skia implementation allocates an SKFont and measures glyph
-        // widths in its constructor. TextLineImpl reads InkBounds for every shaped run in a line.
+        /// <summary>
+        ///     Gets the conservative bounding box of the inked area of the <see cref="GlyphRun"/>.
+        /// </summary>
         public Rect InkBounds => _glyphInfos.Count == 0 ? default : PlatformImpl.Item.Bounds;
 
         /// <summary>
