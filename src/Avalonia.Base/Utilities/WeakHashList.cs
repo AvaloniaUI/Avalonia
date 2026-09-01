@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Avalonia.Collections.Pooled;
 
@@ -190,7 +191,7 @@ internal class WeakHashList<T> where T : class
         }
     }
 
-    private static readonly Stack<PooledList<T>> s_listPool = new();
+    private static readonly ConcurrentStack<PooledList<T>> s_listPool = new();
 
     public static void ReturnToSharedPool(PooledList<T> list)
     {
@@ -208,8 +209,8 @@ internal class WeakHashList<T> where T : class
             {
                 if (_arr[c]?.TryGetTarget(out var target) == true)
                     (pooled ??= factory?.Invoke()
-                                ?? (s_listPool.Count > 0
-                                    ? s_listPool.Pop()
+                                ?? (s_listPool.TryPop(out var fromPool)
+                                    ? fromPool
                                     : new PooledList<T>())).Add(target!);
                 else
                 {
@@ -227,8 +228,8 @@ internal class WeakHashList<T> where T : class
             {
                 if (kvp.Key.Weak?.TryGetTarget(out var target) == true)
                     (pooled ??= factory?.Invoke()
-                                ?? (s_listPool.Count > 0
-                                    ? s_listPool.Pop()
+                                ?? (s_listPool.TryPop(out var listFromPool)
+                                    ? listFromPool
                                     : new PooledList<T>()))
                         .Add(target!);
                 else
