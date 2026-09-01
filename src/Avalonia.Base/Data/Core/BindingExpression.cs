@@ -221,6 +221,18 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
                 var forceUpdate = _mode == BindingMode.OneWay || _updateTargetDepth > 0;
                 ConvertAndPublishValue(value, error, forceUpdate);
             }
+            else if (IsDataValidationEnabled)
+            {
+                // In OneWayToSource mode the value must not be published to the target, but any
+                // data validation error produced when writing to the source still has to be
+                // published (or cleared) so that it can be displayed (issue #8235). Publishing
+                // UnchangedValue leaves the target's value untouched.
+                var error = dataValidationError is not null ?
+                    new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
+                    null;
+
+                PublishValue(UnchangedValue, error);
+            }
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)
         {
