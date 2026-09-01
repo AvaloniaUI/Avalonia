@@ -254,15 +254,8 @@ namespace Avalonia.Android
 
             if (!_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
             {
-                // Stale ID: the peer was unregistered when its control left the visual tree,
-                // but the platform can still ask for a node it obtained earlier - it caches
-                // them, and it re-queries the accessibility focused one. Leaving the node
-                // untouched is not an option: ExploreByTouchHelper.createNodeForChild rejects a
-                // node whose text and content description are both null, and throws "Callbacks
-                // must add text or a content description in populateNodeForVirtualViewId()" -
-                // then again for the bounds. That happens inside an accessibility callback, so
-                // the application cannot recover from it and goes down.
-                // There is no peer here, so there is nothing to describe: report an inert node.
+                // The node must still be populated: ExploreByTouchHelper rejects one whose text,
+                // content description or bounds are unset.
                 nodeInfo.ContentDescription = string.Empty;
                 nodeInfo.Enabled = false;
                 nodeInfo.Focusable = false;
@@ -324,17 +317,8 @@ namespace Avalonia.Android
             nodeInfo.Text ??= peer.GetName();
             nodeInfo.ContentDescription ??= peer.GetHelpText();
 
-            // AutomationPeer.GetName()/GetHelpText() never return null - they collapse a missing
-            // value to string.Empty - so the two assignments above always run, and both can assign
-            // an empty string. That is the case for any peer that is a pure container: a Panel, a
-            // Border, the TextSelectorLayer added when a text selection starts. Such a node reaches
-            // the platform carrying no label at all, and a screen reader has nothing to announce
-            // for it.
-            //
-            // Default to the type name, which is what nodeInfo.ClassName already carries:
-            // GetClassNameCore() is abstract and ControlAutomationPeer returns Owner.GetType().Name,
-            // so a peer always has one. It keeps an unnamed control visible as a gap to be fixed
-            // rather than leaving it silent.
+            // GetName() and GetHelpText() collapse a missing value to string.Empty, so a pure
+            // container ends up with no label at all. Fall back to the type name.
             if (string.IsNullOrEmpty(nodeInfo.Text) && string.IsNullOrEmpty(nodeInfo.ContentDescription))
             {
                 nodeInfo.ContentDescription = peer.GetClassName();
