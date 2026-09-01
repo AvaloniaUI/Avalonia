@@ -541,7 +541,12 @@ namespace Avalonia.Media.TextFormatting
 
                 var splitResult = shapedBuffer.Split(previousLength + currentRun.Length);
 
-                if (splitResult.First is null || splitResult.First.Length == 0)
+                // Split by text, not by glyph count: a run can legitimately shape to no glyphs at
+                // all and still own its characters. Shapers drop default ignorables that the font
+                // cannot hide behind a space glyph, so a run holding nothing but a line break can
+                // come back empty. Skipping it there would delete its characters from the line and
+                // leave the caller stuck at the same text position.
+                if (splitResult.First is null || splitResult.First.Text.Length == 0)
                 {
                     previousLength += currentRun.Length;
                 }
