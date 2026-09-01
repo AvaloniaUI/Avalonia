@@ -1633,6 +1633,53 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Focus_Should_Stay_In_Active_Window()
+        {
+            using var app = UnitTestApplication.Start(
+                TestServices.StyledWindow.With(keyboardDevice: () => new KeyboardDevice()));
+            var first = new Button { Name = "FirstButton" };
+            var second = new Button { Name = "SecondButton" };
+
+            var window1 = new Window
+            {
+                Content = first
+            };
+
+            var window2 = new Window
+            {
+                Content = second
+            };
+
+            window1.Show();
+
+            // Focus the first button in the first window
+            first.Focus();
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(first, window1.FocusManager.GetFocusedElement());
+
+            window2.Show();
+
+            // Focus the second button in the second window
+            second.Focus();
+            Assert.Same(second, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(second, window2.FocusManager.GetFocusedElement());
+
+            // Activate the first window again
+            window1.PlatformImpl?.Activated?.Invoke();
+
+            // Focus should have moved back to the first button in the first window
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(first, window1.FocusManager.GetFocusedElement());
+
+            // Close the second window
+            window2.Close();
+
+            // Focus should still be in the first window
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(first, window1.FocusManager.GetFocusedElement());
+        }
+
+        [Fact]
         public void Focus_Should_Not_Be_Restored_To_Detached_Control()
         {
             using var app = UnitTestApplication.Start(
