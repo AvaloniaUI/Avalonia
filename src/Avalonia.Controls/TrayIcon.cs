@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Collections;
@@ -13,35 +14,19 @@ namespace Avalonia.Controls
 {
     public sealed class TrayIcons : AvaloniaList<TrayIcon>
     {
+        public TrayIcons()
+        {
+            ResetBehavior = ResetBehavior.Remove;
+        }
     }
 
     public class TrayIcon : AvaloniaObject, INativeMenuExporterProvider, IDisposable
     {
-        private readonly ITrayIconImpl? _impl;
+        private ITrayIconImpl? _impl;
+        private bool _isAttached;
+        private bool _isDisposed;
 
-        private TrayIcon(ITrayIconImpl? impl)
-        {
-            if (impl != null)
-            {
-                _impl = impl;
-
-                _impl.SetIsVisible(IsVisible);
-
-                _impl.OnClicked = () =>
-                {
-                    Clicked?.Invoke(this, EventArgs.Empty);
-                    
-                    if (Command?.CanExecute(CommandParameter) == true)
-                    {
-                        Command.Execute(CommandParameter);
-                    }
-                };
-            }
-        }
-
-        public TrayIcon() : this(PlatformManager.CreateTrayIcon())
-        {
-        }
+        public TrayIcon() { }
 
         static TrayIcon()
         {
@@ -51,12 +36,14 @@ namespace Avalonia.Controls
                 {
                     if (args.OldValue.Value != null)
                     {
-                        RemoveIcons(args.OldValue.Value);
+                        args.OldValue.Value.CollectionChanged -= Icons_CollectionChanged;
+                        DetachIcons(args.OldValue.Value);
                     }
 
                     if (args.NewValue.Value != null)
                     {
                         args.NewValue.Value.CollectionChanged += Icons_CollectionChanged;
+                        AttachIcons(args.NewValue.Value);
                     }
                 }
                 else
@@ -187,22 +174,85 @@ namespace Avalonia.Controls
 
             if (trayIcons != null)
             {
-                RemoveIcons(trayIcons);
+                DisposeIcons(trayIcons);
             }
         }
 
-        private static void Icons_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private static void Icons_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            if (e.Action == NotifyCollectionChangedAction.Move)
+                return;
+
             if (e.OldItems is not null)
-                RemoveIcons(e.OldItems.Cast<TrayIcon>());
+                DetachIcons(e.OldItems.Cast<TrayIcon>());
+
+            if (e.NewItems is not null)
+                AttachIcons(e.NewItems.Cast<TrayIcon>());
         }
 
-        private static void RemoveIcons(IEnumerable<TrayIcon> icons)
+        private static void AttachIcons(IEnumerable<TrayIcon> icons)
+        {
+            foreach (var icon in icons)
+            {
+                icon.Attach();
+            }
+        }
+
+        private static void DetachIcons(IEnumerable<TrayIcon> icons)
+        {
+            foreach (var icon in icons)
+            {
+                icon.Detach();
+            }
+        }
+
+        private static void DisposeIcons(IEnumerable<TrayIcon> icons)
         {
             foreach (var icon in icons)
             {
                 icon.Dispose();
             }
+        }
+
+        private void Attach()
+        {
+            if (_isAttached || _isDisposed) return;
+            _isAttached = true;
+            
+            _impl = PlatformManager.CreateTrayIcon();
+            if (_impl is null) return;
+
+            // Keep the native icon hidden until all properties have been initialized.
+            _impl.SetIsVisible(false);
+            _impl.OnClicked = () =>
+            {
+                Clicked?.Invoke(this, EventArgs.Empty);
+
+                if (Command?.CanExecute(CommandParameter) == true)
+                {
+                    Command.Execute(CommandParameter);
+                }
+            };
+
+            _impl.SetIcon(Icon?.PlatformImpl);
+            _impl.SetToolTipText(ToolTipText);
+            _impl.MenuExporter?.SetNativeMenu(Menu);
+
+            if (_impl is ITrayIconWithIsTemplateImpl templateImpl)
+            {
+                templateImpl.SetIsTemplateIcon(MacOSProperties.GetIsTemplateIcon(this));
+            }
+
+            _impl.SetIsVisible(IsVisible);
+        }
+
+        private void Detach()
+        {
+            if (!_isAttached) return;
+
+            _isAttached = false;
+            _impl?.Dispose();
+            _impl = null;
         }
 
         /// <inheritdoc />
@@ -231,6 +281,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Disposes the tray icon (removing it from the tray area).
         /// </summary>
-        public void Dispose() => _impl?.Dispose();
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+
+            _isDisposed = true;
+            Detach();
+            GC.SuppressFinalize(this);
+        }
     }
 }
