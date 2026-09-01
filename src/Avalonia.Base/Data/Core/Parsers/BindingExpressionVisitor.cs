@@ -456,14 +456,14 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
         {
             base.SubscribeCore();
             if (_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged incc)
-                WeakEvents.CollectionChanged.Subscribe(incc, this);
+                WeakEvents.ThreadSafeCollectionChanged.Subscribe(incc, this);
         }
 
         protected override void UnsubscribeCore()
         {
             base.UnsubscribeCore();
             if (_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged incc)
-                WeakEvents.CollectionChanged.Unsubscribe(incc, this);
+                WeakEvents.ThreadSafeCollectionChanged.Unsubscribe(incc, this);
         }
 
         public void OnEvent(object? sender, WeakEvent ev, NotifyCollectionChangedEventArgs args)

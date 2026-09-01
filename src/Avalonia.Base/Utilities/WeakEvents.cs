@@ -9,15 +9,30 @@ namespace Avalonia.Utilities;
 public class WeakEvents
 {
     /// <summary>
-    /// Represents CollectionChanged event from <see cref="INotifyCollectionChanged"/>
+    /// Represents CollectionChanged event from <see cref="INotifyCollectionChanged"/> with auto-dispatching to the UI thread
     /// </summary>
     public static readonly WeakEvent<INotifyCollectionChanged, NotifyCollectionChangedEventArgs>
-        CollectionChanged = WeakEvent.Register<INotifyCollectionChanged, NotifyCollectionChangedEventArgs>(
+        ThreadSafeCollectionChanged = WeakEvent.Register<INotifyCollectionChanged, NotifyCollectionChangedEventArgs>(
             (c, s) =>
             {
-                NotifyCollectionChangedEventHandler handler = (_, e) => s(c, e);
+                bool unsubscribed = false;
+                NotifyCollectionChangedEventHandler handler = (_, e) =>
+                {
+                    if (Dispatcher.UIThread.CheckAccess())
+                        s(c, e);
+                    else
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            if (!unsubscribed)
+                                s(c, e);
+                        });
+                };
                 c.CollectionChanged += handler;
-                return () => c.CollectionChanged -= handler;
+                return () =>
+                {
+                    unsubscribed = true;
+                    c.CollectionChanged -= handler;
+                };
             });
     
     /// <summary>

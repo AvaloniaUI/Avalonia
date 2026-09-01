@@ -34,7 +34,7 @@ internal abstract class CollectionNodeBase : ExpressionNode,
     protected override void Unsubscribe(object source)
     {
         if (source is INotifyCollectionChanged incc)
-            WeakEvents.CollectionChanged.Unsubscribe(incc, this);
+            WeakEvents.ThreadSafeCollectionChanged.Unsubscribe(incc, this);
         if (source is INotifyPropertyChanged inpc)
             WeakEvents.ThreadSafePropertyChanged.Unsubscribe(inpc, this);
     }
@@ -71,7 +71,7 @@ internal abstract class CollectionNodeBase : ExpressionNode,
     private void Subscribe(object? source)
     {
         if (source is INotifyCollectionChanged incc)
-            WeakEvents.CollectionChanged.Subscribe(incc, this);
+            WeakEvents.ThreadSafeCollectionChanged.Subscribe(incc, this);
         if (source is INotifyPropertyChanged inpc)
             WeakEvents.ThreadSafePropertyChanged.Subscribe(inpc, this);
     }

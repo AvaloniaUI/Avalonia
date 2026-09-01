@@ -76,13 +76,13 @@ namespace Avalonia.Collections
             protected override void Initialize()
             {
                 if (_sourceReference.TryGetTarget(out var instance))
-                    WeakEvents.CollectionChanged.Subscribe(instance, this);
+                    WeakEvents.ThreadSafeCollectionChanged.Subscribe(instance, this);
             }
 
             protected override void Deinitialize()
             {
                 if (_sourceReference.TryGetTarget(out var instance))
-                    WeakEvents.CollectionChanged.Unsubscribe(instance, this);
+                    WeakEvents.ThreadSafeCollectionChanged.Unsubscribe(instance, this);
             }
         }
     }

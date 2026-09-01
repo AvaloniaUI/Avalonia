@@ -89,14 +89,14 @@ namespace Avalonia.Controls.Utils
             {
                 _collection = collection;
                 Listeners = new List<WeakReference<ICollectionChangedListener>>();
-                WeakEvents.CollectionChanged.Subscribe(_collection, this);
+                WeakEvents.ThreadSafeCollectionChanged.Subscribe(_collection, this);
             }
 
             public List<WeakReference<ICollectionChangedListener>> Listeners { get; }
 
             public void Dispose()
             {
-                WeakEvents.CollectionChanged.Unsubscribe(_collection, this);
+                WeakEvents.ThreadSafeCollectionChanged.Unsubscribe(_collection, this);
             }
 
             void IWeakEventSubscriber<NotifyCollectionChangedEventArgs>.
