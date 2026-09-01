@@ -261,6 +261,56 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 140, 30, 50), target.Children[3].Bounds);
         }
 
+        [Theory]
+        [InlineData(true, 50)]
+        [InlineData(false, 110)]
+        public void Measure_Respects_Layout_Rounding_At_Wrap_Boundary(bool useLayoutRounding, double expectedHeight)
+        {
+            var target = new WrapPanel
+            {
+                UseLayoutRounding = useLayoutRounding,
+                ItemSpacing = 10,
+                LineSpacing = 10,
+                Children =
+                {
+                    new Border { Width = 45, Height = 50 },
+                    new Border { Width = 45, Height = 50 },
+                }
+            };
+
+            target.Measure(new Size(100 - LayoutHelper.LayoutEpsilon / 2, double.PositiveInfinity));
+
+            Assert.Equal(expectedHeight, target.DesiredSize.Height);
+        }
+
+        [Theory]
+        [InlineData(true, 0)]
+        [InlineData(false, 60)]
+        public void Arrange_Respects_Layout_Rounding_At_Wrap_Boundary(bool useLayoutRounding, double expectedSecondChildY)
+        {
+            var target = new WrapPanel
+            {
+                UseLayoutRounding = useLayoutRounding,
+                ItemSpacing = 10,
+                LineSpacing = 10,
+                Children =
+                {
+                    new Border { Width = 45, Height = 50, UseLayoutRounding = false },
+                    new Border
+                    {
+                        Width = 45 + LayoutHelper.LayoutEpsilon / 2,
+                        Height = 50,
+                        UseLayoutRounding = false,
+                    },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 110));
+
+            Assert.Equal(expectedSecondChildY, target.Children[1].Bounds.Y);
+        }
+
         [Fact]
         public void Lays_Out_Horizontally_On_Separate_Lines_With_Spacing_Invisible()
         {
@@ -350,7 +400,7 @@ namespace Avalonia.Controls.UnitTests
                     new Border // line 1
                     {
                         Width = 50,
-                        Height = 50 
+                        Height = 50
                     },
                 }
             };

@@ -113,6 +113,15 @@ namespace Avalonia.Controls
 
                 InvalidateMeasure();
             }
+            else if (change.Property == TemplatedParentProperty)
+            {
+                // Update _containerVisual.TemplateParent, otherwise its descendants aren't reachable
+                // during the template's teardown and incorrectly stay attached to the visual tree.
+                if (change.NewValue is AvaloniaObject templatedParent)
+                {
+                    _containerVisual.TemplatedParent = templatedParent;
+                }
+            }
         }
 
         /// <inheritdoc />

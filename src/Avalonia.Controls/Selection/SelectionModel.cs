@@ -665,8 +665,13 @@ namespace Avalonia.Controls.Selection
 
                 if (operation.SelectedIndex == -1 && LostSelection is not null && !operation.SkipLostSelection)
                 {
+                    // Bump the update count so that any selection change made by a LostSelection
+                    // handler is batched into the current operation. Decrement it again afterwards
+                    // so that the rest of the commit (in particular the SelectionChanged event) runs
+                    // with an update count of 0, allowing handlers to change the source (see #7536).
                     operation.UpdateCount++;
                     LostSelection?.Invoke(this, EventArgs.Empty);
+                    operation.UpdateCount--;
                 }
 
                 _selectedIndex = operation.SelectedIndex;
