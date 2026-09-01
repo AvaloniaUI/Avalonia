@@ -80,7 +80,7 @@ namespace Avalonia.Input
 
             if (_focusRoot?.GetValue(FocusedElementProperty) is { } restore && restore != Current)
             {
-                if (GetFocusScope(restore) != _focusRoot)
+                if (!CanFocus(restore))
                 {
                     // Previous effective focus is no longer part of the focus root's visual tree. We clear the focused element
                     _focusRoot.ClearValue(FocusedElementProperty);
