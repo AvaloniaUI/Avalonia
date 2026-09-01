@@ -562,7 +562,6 @@ namespace Avalonia.Controls.UnitTests
             var frameworkInitCalled = false;
             var lifetimeBuilderCalled = false;
             var startupRaised = false;
-            ClassicDesktopStyleApplicationLifetime? lifetime = null;
 
             CreateAppBuilder(onFrameworkInitializationCompleted: () => frameworkInitCalled = true)
                 .SetupWithClassicDesktopLifetime(
