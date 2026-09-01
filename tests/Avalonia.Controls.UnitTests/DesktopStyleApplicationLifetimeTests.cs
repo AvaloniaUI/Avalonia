@@ -1,11 +1,11 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
@@ -13,8 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    
-    public class DesktopStyleApplicationLifetimeTests
+    public class DesktopStyleApplicationLifetimeTests : ScopedTestBase
     {
         IDispatcherImpl CreateDispatcherWithInstantMainLoop()
         {
@@ -24,14 +23,14 @@ namespace Avalonia.Controls.UnitTests
             mock.Setup(x => x.CurrentThreadIsLoopThread).Returns(true);
             return mock.Object;
         }
-        
+
         [Fact]
         public void Should_Set_ExitCode_After_Shutdown()
         {
             using (UnitTestApplication.Start(new TestServices(dispatcherImpl: new ManagedDispatcherImpl(null))))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())    
             {
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 Dispatcher.UIThread.Post(() => lifetime.Shutdown(1337));
                 var exitCode = lifetime.Start(Array.Empty<string>());
@@ -47,7 +46,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var windows = new List<Window> { new Window(), new Window(), new Window(), new Window() };
 
@@ -69,7 +68,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var hasExit = false;
 
@@ -104,7 +103,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnMainWindowClose;
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var hasExit = false;
 
@@ -133,7 +132,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnMainWindowClose;
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var hasExit = false;
                 var secondaryWindowClosingExecuted = false;
@@ -173,7 +172,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnMainWindowClose;
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var hasExit = false;
                 var secondaryWindowClosingExecuted = false;
@@ -213,7 +212,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnLastWindowClose;
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var hasExit = false;
 
@@ -243,7 +242,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var window = new Window();
 
@@ -259,7 +258,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var window = new Window();
 
@@ -279,7 +278,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var window = new Window();
 
@@ -311,7 +310,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(services))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var window = new Window();
 
@@ -361,7 +360,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnMainWindowClose;
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var hasExit = false;
 
@@ -399,7 +398,7 @@ namespace Avalonia.Controls.UnitTests
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 lifetime.ShutdownMode = ShutdownMode.OnLastWindowClose;
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var hasExit = false;
 
@@ -438,7 +437,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 lifetime.Exit += (_, _) => Assert.Fail("lifetime.Exit was called.");
                 Dispatcher.UIThread.ShutdownStarted += UiThreadOnShutdownStarted;
@@ -478,7 +477,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow.With(dispatcherImpl: CreateDispatcherWithInstantMainLoop())))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var hasExit = false;
                 var closingRaised = 0;
@@ -518,7 +517,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             using(var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.SetupCore(Array.Empty<string>());
+                Setup(lifetime);
 
                 var hasExit = false;
 
@@ -535,6 +534,103 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(0, raised);
                 Assert.True(hasExit);
+            }
+        }
+
+        [Fact]
+        public void SetupWithClassicDesktopLifetime_Should_Subscribe_To_Platform_ShutdownRequested()
+        {
+            var lifetimeEvents = new Mock<IPlatformLifetimeEventsImpl>();
+            ClassicDesktopStyleApplicationLifetime? lifetime = null;
+
+            CreateAppBuilder(lifetimeEvents.Object).SetupWithClassicDesktopLifetime(
+                [],
+                l => lifetime = (ClassicDesktopStyleApplicationLifetime)l);
+
+            Assert.NotNull(lifetime);
+
+            using (lifetime)
+            {
+                var window = new Window();
+                window.Show();
+
+                var raised = 0;
+
+                lifetime.ShutdownRequested += (_, e) =>
+                {
+                    e.Cancel = true;
+                    ++raised;
+                };
+
+                lifetimeEvents.Raise(x => x.ShutdownRequested += null, new ShutdownRequestedEventArgs());
+
+                Assert.Equal(1, raised);
+                Assert.Equal([window], lifetime.Windows);
+            }
+        }
+
+        [Fact]
+        public void SetupWithClassicDesktopLifetime_Should_Not_Raise_Startup()
+        {
+            var frameworkInitCalled = false;
+            var lifetimeBuilderCalled = false;
+            var startupRaised = false;
+
+            CreateAppBuilder(onFrameworkInitializationCompleted: () => frameworkInitCalled = true)
+                .SetupWithClassicDesktopLifetime(
+                    ["foo", "bar"],
+                    l =>
+                    {
+                        lifetimeBuilderCalled = true;
+                        l.Startup += (_, _) => startupRaised = true;
+                    });
+
+            Assert.True(frameworkInitCalled);
+            Assert.True(lifetimeBuilderCalled);
+            Assert.False(startupRaised);
+        }
+
+        private static void Setup(ClassicDesktopStyleApplicationLifetime lifetime)
+        {
+            ISetupApplicationLifetime setupLifetime = lifetime;
+            setupLifetime.BeforeAppInit();
+            setupLifetime.AfterAppInit();
+        }
+
+        private static AppBuilder CreateAppBuilder(
+            IPlatformLifetimeEventsImpl? platformLifetimeEvents = null,
+            Action? onFrameworkInitializationCompleted = null)
+        {
+            AppBuilder.ResetSetupForUnitTests();
+
+            return AppBuilder.Configure(() => new SetupTestApplication(onFrameworkInitializationCompleted))
+                .UseRuntimePlatformSubsystem(() => { })
+                .UseRenderingSubsystem(() => { })
+                .UseWindowingSubsystem(() =>
+                {
+                    if (platformLifetimeEvents is not null)
+                        AvaloniaLocator.CurrentMutable.Bind<IPlatformLifetimeEventsImpl>().ToConstant(platformLifetimeEvents);
+                });
+        }
+
+        private sealed class SetupTestApplication(Action? onFrameworkInitializationCompleted)
+            : UnitTestApplication(TestServices.StyledWindow)
+        {
+            private bool _servicesRegistered;
+
+            public override void RegisterServices()
+            {
+                if (_servicesRegistered)
+                    return;
+
+                _servicesRegistered = true;
+                base.RegisterServices();
+            }
+
+            public override void OnFrameworkInitializationCompleted()
+            {
+                base.OnFrameworkInitializationCompleted();
+                onFrameworkInitializationCompleted?.Invoke();
             }
         }
     }
