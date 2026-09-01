@@ -316,13 +316,6 @@ namespace Avalonia.Android
             // Control text contents
             nodeInfo.Text ??= peer.GetName();
             nodeInfo.ContentDescription ??= peer.GetHelpText();
-
-            // GetName() and GetHelpText() collapse a missing value to string.Empty, so a pure
-            // container ends up with no label at all. Fall back to the type name.
-            if (string.IsNullOrEmpty(nodeInfo.Text) && string.IsNullOrEmpty(nodeInfo.ContentDescription))
-            {
-                nodeInfo.ContentDescription = peer.GetClassName();
-            }
         }
     }
 }
