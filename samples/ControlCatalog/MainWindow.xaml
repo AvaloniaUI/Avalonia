@@ -10,6 +10,7 @@
         CanResize="{Binding CanResize}"
         CanMinimize="{Binding CanMinimize}"
         CanMaximize="{Binding CanMaximize}"
+        WindowDecorationsTheme="{StaticResource CustomDrawnDecorations}"
         WindowDrawnDecorations.TitleBarDecorations="{Binding TitleBarDecorations}"
         Win32Properties.WindowCornerPreference="{Binding Win32WindowCornerPreference}"
         x:Class="ControlCatalog.MainWindow" 
@@ -60,20 +61,5 @@
     <Panel Margin="{Binding $parent[local:MainWindow].OffScreenMargin}">
       <local:MainView Margin="{Binding $parent[local:MainWindow].WindowDecorationMargin}" />
     </Panel>
-    <Border IsVisible="{Binding ExtendClientAreaEnabled}"
-            BorderThickness="1"
-            CornerRadius="4"
-            BorderBrush="#55000000"
-            VerticalAlignment="Top"
-            HorizontalAlignment="Left"
-            Margin="250,0,0,0"
-            Height="{Binding $parent[local:MainWindow].WindowDecorationMargin.Top}">
-      <Border.Background>
-        <SolidColorBrush Color="DodgerBlue" Opacity="0.7" />
-      </Border.Background>
-      <TextBlock Text="Content In Title Bar"
-                 Margin="4"
-                 VerticalAlignment="Center" />
-    </Border>
   </Panel>
 </Window>

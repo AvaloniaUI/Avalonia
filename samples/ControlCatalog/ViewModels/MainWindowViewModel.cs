@@ -183,6 +183,12 @@ namespace ControlCatalog.ViewModels
             set => RaiseAndSetIfChanged(ref field, value);
         } = true;
 
+        public bool ShowSearchInTitleBar
+        {
+            get;
+            set => RaiseAndSetIfChanged(ref field, value);
+        } = false;
+
         public SplitViewDisplayMode DisplayMode
         {
             get;
