@@ -8,6 +8,7 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls.Automation.Peers;
 using Java.Lang;
 
 namespace Avalonia.Android
@@ -83,6 +84,28 @@ namespace Avalonia.Android
                 return null;
             }
         }
+
+        /// <summary>
+        /// Peers of native interop controls (<see cref="Avalonia.Controls.NativeControlHost"/>) must
+        /// never be walked: <c>InteropAutomationPeer</c> throws
+        /// <see cref="System.NotImplementedException"/> from almost every member, because it is meant
+        /// to be special-cased by each platform backend. The other backends already do so
+        /// (<c>AvnAutomationPeer.IsInteropPeer</c>, <c>AutomationNode.InteropAutomationNode</c>);
+        /// Android did not, so any accessibility traversal reaching a native control threw from
+        /// inside an accessibility callback and took the application down.
+        /// <para>
+        /// Skipping is the correct behaviour here, not merely the safe one: a native control is a
+        /// real Android <c>View</c>, already exposed to the accessibility framework on its own.
+        /// Presenting it a second time as an Avalonia virtual view would duplicate it.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// Interop peers are filtered at every point where a virtual view ID could be handed out, so
+        /// that one is never allocated for them. <c>OnPopulateNodeForVirtualView</c> therefore never
+        /// has to deal with one - which matters, because it may not answer with an unpopulated node:
+        /// <c>ExploreByTouchHelper.createNodeForChild</c> rejects that and throws.
+        /// </remarks>
+        private static bool IsInteropPeer(AutomationPeer peer) => peer is InteropAutomationPeer;
 
         private HashSet<INodeInfoProvider> GetOrCreateNodeInfoProvidersFromPeer(AutomationPeer peer, out int virtualViewId)
         {
@@ -175,6 +198,12 @@ namespace Avalonia.Android
             AutomationPeer? peer = embeddedRootProvider?.GetPeerFromPoint(p);
             if (peer is not null)
             {
+                if (IsInteropPeer(peer))
+                {
+                    // The point lands on a native control, which Android already exposes itself.
+                    return InvalidId;
+                }
+
                 int virtualViewId;
                 if (peer.GetParent() is AutomationPeer parent && 
                     !s_containerTypes.Contains(parent.GetAutomationControlType()))
@@ -191,7 +220,7 @@ namespace Avalonia.Android
             else
             {
                 peer = embeddedRootProvider?.GetFocus();
-                return peer is null ? InvalidId : _peerIds[peer];
+                return peer is null || IsInteropPeer(peer) ? InvalidId : _peerIds[peer];
             }
         }
 
@@ -204,6 +233,11 @@ namespace Avalonia.Android
 
             foreach (AutomationPeer peer in _peers[0].GetChildren())
             {
+                if (IsInteropPeer(peer))
+                {
+                    continue;
+                }
+
                 GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
                 virtualViewIds.Add(Integer.ValueOf(virtualViewId));
             }
@@ -255,6 +289,11 @@ namespace Avalonia.Android
             // UI logical structure
             foreach (AutomationPeer child in peer.GetChildren())
             {
+                if (IsInteropPeer(child))
+                {
+                    continue;
+                }
+
                 GetOrCreateNodeInfoProvidersFromPeer(child, out int childId);
                 nodeInfo.AddChild(_view, childId);
             }
