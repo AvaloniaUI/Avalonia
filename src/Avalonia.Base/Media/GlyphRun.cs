@@ -160,7 +160,10 @@ namespace Avalonia.Media
         public Rect Bounds => new Rect(new Point(BaselineOrigin.X, 0),
             new Size(Metrics.WidthIncludingTrailingWhitespace, Metrics.Height));
 
-        public Rect InkBounds => PlatformImpl.Item.Bounds;
+        /// <summary>
+        ///     Gets the conservative bounding box of the inked area of the <see cref="GlyphRun"/>.
+        /// </summary>
+        public Rect InkBounds => _glyphInfos.Count == 0 ? default : PlatformImpl.Item.Bounds;
 
         /// <summary>
         /// 
@@ -246,6 +249,11 @@ namespace Avalonia.Media
         /// </returns>
         public double GetDistanceFromCharacterHit(CharacterHit characterHit)
         {
+            if (_glyphInfos.Count == 0)
+            {
+                return 0;
+            }
+
             var characterIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
             var isTrailingHit = characterHit.TrailingLength > 0;
 
@@ -473,6 +481,11 @@ namespace Avalonia.Media
         /// </returns>
         public int FindGlyphIndex(int characterIndex)
         {
+            if (_glyphInfos.Count == 0)
+            {
+                return 0;
+            }
+
             if (_hasOneCharPerCluster)
             {
                 return characterIndex;
@@ -558,6 +571,14 @@ namespace Avalonia.Media
         public CharacterHit FindNearestCharacterHit(int index, out double width)
         {
             width = 0.0;
+
+            // A run can hold characters and no glyphs at all - a line break in a font that gives the
+            // shaper no way to hide it shapes to nothing. There is no cluster to snap to, and the
+            // whole run sits at one position, so treat it as a single zero-width cluster.
+            if (_glyphInfos.Count == 0)
+            {
+                return new CharacterHit(Metrics.FirstCluster, _characters.Length);
+            }
 
             var glyphIndex = FindGlyphIndex(index);
 

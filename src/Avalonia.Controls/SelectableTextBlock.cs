@@ -539,9 +539,28 @@ namespace Avalonia.Controls
 
         private void UpdateCommandStates()
         {
-            var text = GetSelection();
+            CanCopy = HasSelection();
+        }
 
-            CanCopy = !string.IsNullOrEmpty(text);
+        /// <summary>
+        /// Reports the same emptiness conditions as <see cref="GetSelection"/>, without building
+        /// the selected string.
+        /// </summary>
+        private bool HasSelection()
+        {
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
+            var start = Math.Min(selectionStart, selectionEnd);
+            var end = Math.Max(selectionStart, selectionEnd);
+
+            if (start == end)
+            {
+                return false;
+            }
+
+            var textLength = (HasComplexContent ? Inlines?.Text : Text)?.Length ?? 0;
+
+            return textLength > 0 && end <= textLength;
         }
 
         private string GetSelection()

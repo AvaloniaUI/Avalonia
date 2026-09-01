@@ -49,7 +49,7 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
         if (source is null)
         {
             if (_acceptsNull)
-                SetValue(null);
+                ShortCircuitNull();
             else
                 ValidateNonNullSource(source);
             return;
