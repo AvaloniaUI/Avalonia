@@ -480,7 +480,7 @@ namespace Avalonia.Controls
         /// cannot choose a screen, does not know <paramref name="screen"/>, or refused the request.
         /// </returns>
         /// <remarks>
-        /// Setting <see cref="WindowState"/> to <see cref="Controls.WindowState.FullScreen"/> always
+        /// Setting <see cref="WindowState"/> to <see cref="Avalonia.Controls.WindowState.FullScreen"/> always
         /// leaves the choice of screen to the platform; this is the only way to pick one.
         /// <see cref="WindowState"/> is updated when the platform confirms the change, like any other
         /// state transition.
