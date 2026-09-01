@@ -32,9 +32,15 @@ internal interface IWXdgTopLevel : IWXdgShellSurface
     /// carried by <see cref="Screens.WaylandOutputSnapshot"/> and by the screen's
     /// platform handle; the worker resolves it back to the <c>wl_output</c> it was
     /// minted for. <c>null</c> leaves the choice to the compositor, which is the
-    /// protocol default and the only behaviour available before this overload.
+    /// protocol default.
+    ///
+    /// A non-zero <paramref name="requestId"/> asks for an answer: once the worker
+    /// knows whether the compositor put the surface in the fullscreen state, it
+    /// reports back through <see cref="IWXdgTopLevelEventSink.OnFullscreenRequestCompleted"/>
+    /// with the same id. Only one request is answered at a time; a newer one
+    /// answers the older with <c>false</c>.
     /// </summary>
-    void SetFullscreen(object? outputId);
+    void SetFullscreen(object? outputId, int requestId);
 
     void UnsetFullscreen();
     void SetMinimized();

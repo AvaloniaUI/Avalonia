@@ -470,6 +470,30 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Puts the window into the fullscreen state on the given screen.
+        /// </summary>
+        /// <param name="screen">
+        /// The screen to go fullscreen on, or null to let the platform choose one.
+        /// </param>
+        /// <returns>
+        /// A task that completes with true once the window is fullscreen, or false if the platform
+        /// cannot choose a screen, does not know <paramref name="screen"/>, or refused the request.
+        /// </returns>
+        /// <remarks>
+        /// Setting <see cref="WindowState"/> to <see cref="Controls.WindowState.FullScreen"/> always
+        /// leaves the choice of screen to the platform; this is the only way to pick one.
+        /// <see cref="WindowState"/> is updated when the platform confirms the change, like any other
+        /// state transition.
+        /// </remarks>
+        public Task<bool> TryEnterFullscreenAsync(Screen? screen)
+        {
+            if (PlatformImpl is not { } impl)
+                return Task.FromResult(false);
+
+            return impl.TryEnterFullscreenAsync(screen);
+        }
+
+        /// <summary>
         /// Enables or disables resizing of the window.
         /// </summary>
         public bool CanResize

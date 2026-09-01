@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -29,6 +30,20 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the minimized/maximized state of the window changes.
         /// </summary>
         Action<WindowState>? WindowStateChanged { get; set; }
+
+        /// <summary>
+        /// Puts the window into the fullscreen state on the given screen.
+        /// </summary>
+        /// <param name="screen">The screen to go fullscreen on, or null to let the platform choose.</param>
+        /// <returns>
+        /// A task that completes with true once the window is fullscreen, or false if the platform
+        /// cannot choose a screen, does not know <paramref name="screen"/>, or refused the request.
+        /// </returns>
+        /// <remarks>
+        /// The state change is reported through <see cref="WindowStateChanged"/> as usual.
+        /// The default implementation returns false without changing anything.
+        /// </remarks>
+        Task<bool> TryEnterFullscreenAsync(Screen? screen) => Task.FromResult(false);
 
         /// <summary>
         /// Sets the title of the window.

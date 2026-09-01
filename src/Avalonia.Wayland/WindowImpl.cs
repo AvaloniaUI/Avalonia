@@ -11,6 +11,7 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Platform.Surfaces;
+using Avalonia.Wayland.Screens;
 using Avalonia.Wayland.Server;
 using Avalonia.Wayland.Server.Persistent;
 using NWayland.Protocols.XdgShell;
@@ -37,10 +38,11 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
     private bool _csdSticky;
     private string? _title;
     private FallbackStorageProvider? _storageProvider;
-    // Which output the next fullscreen request should name. Null keeps the
-    // protocol default ("compositor picks"), which is what every caller that
-    // doesn't go through WaylandWindowExtensions gets.
-    private object? _fullscreenOutputId;
+    // The TryEnterFullscreenAsync call waiting for the compositor's answer, if any.
+    // The id travels with the request to the worker and back so a late answer to
+    // a superseded request is told apart from the current one.
+    private TaskCompletionSource<bool>? _fullscreenRequest;
+    private int _fullscreenRequestId;
 
     public WindowImpl(WaylandWorkerClient client) : base(client)
     {
@@ -204,6 +206,8 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
             var proxy = _surfaceProxy;
             if (proxy is null)
                 return;
+            // An explicit state request overrides whatever TryEnterFullscreenAsync was waiting for.
+            CompleteFullscreenRequest(false);
             switch (value)
             {
                 case WindowState.Normal:
@@ -220,7 +224,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
                 case WindowState.FullScreen:
                     if (currentState == WindowState.Maximized)
                         proxy.UnsetMaximized();
-                    proxy.SetFullscreen(_fullscreenOutputId);
+                    proxy.SetFullscreen(null, 0);
                     break;
                 case WindowState.Minimized:
                     proxy.SetMinimized();
@@ -229,25 +233,50 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
         }
     }
     /// <summary>
-    /// Names the output the window should go fullscreen on, for this request and
-    /// every later one until it is changed again. Takes effect immediately when
-    /// the window already is fullscreen; otherwise it is picked up by the next
-    /// transition to <see cref="WindowState.FullScreen"/>, including one requested
-    /// before the window is shown (the surface proxy exists from construction, so
-    /// the request reaches the compositor before the first commit).
+    /// Goes fullscreen on <paramref name="screen"/> by naming its <c>wl_output</c> in the
+    /// <c>xdg_toplevel.set_fullscreen</c> request. This is the only way for an application
+    /// to place a window on a chosen screen under Wayland: there is no way to position a
+    /// surface, and a fullscreen request without an output leaves the choice to the
+    /// compositor — mutter, for one, answers with the same monitor every time regardless
+    /// of where the pointer or the previous window was.
     ///
-    /// This is the only way for an application to place a window on a chosen
-    /// screen under Wayland: there is no way to position a surface, and a
-    /// fullscreen request without an output leaves the choice to the compositor —
-    /// mutter, for one, answers with the same monitor every time regardless of
-    /// where the pointer or the previous window was.
+    /// Works before the window is shown too: the surface proxy exists from construction,
+    /// so the request reaches the compositor before the first commit and the window is
+    /// mapped straight onto that screen.
     /// </summary>
-    internal void SetFullscreenOutput(object? outputId)
+    public Task<bool> TryEnterFullscreenAsync(Screen? screen)
     {
-        _fullscreenOutputId = outputId;
+        object? outputId = null;
+        if (screen is not null)
+        {
+            if (screen.TryGetPlatformHandle() is not WaylandScreenHandle handle)
+                return Task.FromResult(false);
+            outputId = handle.Id;
+        }
 
-        if (_windowState == WindowState.FullScreen)
-            _surfaceProxy?.SetFullscreen(outputId);
+        var proxy = _surfaceProxy;
+        if (proxy is null || IsDisposed)
+            return Task.FromResult(false);
+
+        // Only one request is tracked at a time; a newer one answers the older with false.
+        CompleteFullscreenRequest(false);
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _fullscreenRequest = tcs;
+        var requestId = ++_fullscreenRequestId;
+
+        if (_windowState == WindowState.Maximized)
+            proxy.UnsetMaximized();
+        proxy.SetFullscreen(outputId, requestId);
+        return tcs.Task;
+    }
+
+    private void CompleteFullscreenRequest(bool fullscreen, int? requestId = null)
+    {
+        if (requestId is { } id && id != _fullscreenRequestId)
+            return;
+        var tcs = _fullscreenRequest;
+        _fullscreenRequest = null;
+        tcs?.TrySetResult(fullscreen);
     }
 
     public bool WindowStateGetterIsUsable => true;

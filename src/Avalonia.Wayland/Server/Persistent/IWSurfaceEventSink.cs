@@ -68,6 +68,13 @@ internal interface IWXdgTopLevelEventSink : IWSurfaceEventSink
     void OnConfigure(XdgConfigureBatch batch);
     void OnClose();
     /// <summary>
+    /// Answers a <see cref="IWXdgTopLevel.SetFullscreen"/> call made with a
+    /// non-zero request id: <paramref name="fullscreen"/> is whether the
+    /// compositor's state for the surface includes fullscreen now that the
+    /// request has been processed.
+    /// </summary>
+    void OnFullscreenRequestCompleted(int requestId, bool fullscreen);
+    /// <summary>
     /// The compositor changed the effective decoration mode for this
     /// toplevel via <c>zxdg_toplevel_decoration_v1.configure</c>.
     /// Delivered <em>after</em> the initial-handshake mode (which the
