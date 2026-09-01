@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:models="clr-namespace:ControlCatalog.Models"
+             xmlns:controlCatalog="using:ControlCatalog"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:DataType="models:HomeSection"
+             x:Class="ControlCatalog.Controls.SectionControl">
+  <StackPanel Margin="0,0,0,26">
+    <ItemsControl ItemsSource="{Binding Items}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <UniformGrid RowSpacing="12" ColumnSpacing="12"
+                       Margin="0, 0, 1, 0"
+                       SizeChanged="UniformGrid_OnSizeChanged" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate DataType="models:PageItem">
+          <Button Theme="{StaticResource ButtonCardTheme}"
+                  Command="{Binding $parent[controlCatalog:MainView].((viewModels:MainWindowViewModel)DataContext).NavigateToPageCommand}"
+                  CommandParameter="{Binding}">
+            <StackPanel Spacing="10">
+              <Border Background="{DynamicResource HomeBadgeBackground}"
+                      CornerRadius="8"
+                      Width="36" Height="36"
+                      HorizontalAlignment="Left">
+                <PathIcon Data="{Binding IconData}"
+                          Foreground="{DynamicResource HomeBadgeForeground}"
+                          Width="18" Height="18"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center" />
+              </Border>
+              <StackPanel Spacing="3">
+                <TextBlock Text="{Binding Header}"
+                           FontSize="14" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Description}"
+                           FontSize="12"
+                           Foreground="{DynamicResource HomeSubtleForeground}"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis"
+                           MaxLines="2" />
+              </StackPanel>
+            </StackPanel>
+          </Button>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+</UserControl>
