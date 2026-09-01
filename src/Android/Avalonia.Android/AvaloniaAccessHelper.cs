@@ -245,11 +245,40 @@ namespace Avalonia.Android
             }
         }
 
+        /// <summary>
+        /// Placeholder used when a node would otherwise carry neither text nor content description.
+        /// </summary>
+        /// <remarks>
+        /// A single space, deliberately: <c>ExploreByTouchHelper.createNodeForChild</c> rejects a
+        /// node whose text and content description are both empty, and <c>TextUtils.isEmpty</c>
+        /// treats <c>""</c> as empty - so an empty string does not satisfy the contract. A space
+        /// does, without inventing a label that screen readers would announce.
+        /// </remarks>
+        private const string EmptyNodeDescription = " ";
+
         protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat? nodeInfo)
         {
-            if (nodeInfo is null || !_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
+            if (nodeInfo is null)
             {
                 return; // BAIL!! No work to be done
+            }
+
+            if (!_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
+            {
+                // Stale ID: the peer was unregistered when its control left the visual tree,
+                // but the platform can still ask for a node it obtained earlier - it caches
+                // them, and it re-queries the accessibility focused one. Leaving the node
+                // untouched is not an option: ExploreByTouchHelper.createNodeForChild
+                // validates what the callback produced and throws "Callbacks must add text or
+                // a content description in populateNodeForVirtualViewId()" when both are empty,
+                // then again for the bounds - from inside an accessibility callback, which
+                // takes the whole application down. Describe an inert node instead.
+                nodeInfo.ContentDescription = EmptyNodeDescription;
+                nodeInfo.Enabled = false;
+                nodeInfo.Focusable = false;
+                nodeInfo.ScreenReaderFocusable = false;
+                nodeInfo.SetBoundsInScreen(new(0, 0, 0, 0));
+                return;
             }
 
             // UI logical structure
@@ -304,6 +333,18 @@ namespace Avalonia.Android
             // Control text contents
             nodeInfo.Text ??= peer.GetName();
             nodeInfo.ContentDescription ??= peer.GetHelpText();
+
+            // AutomationPeer.GetName()/GetHelpText() never return null - they collapse a missing
+            // value to string.Empty - so the two assignments above always run, and they can both
+            // assign an empty string. That happens for any peer that is a pure container: a Panel,
+            // a Border, the TextSelectorLayer added when a text selection starts... Such a node is
+            // rejected by ExploreByTouchHelper.createNodeForChild, which throws "Callbacks must add
+            // text or a content description in populateNodeForVirtualViewId()" from inside an
+            // accessibility callback - taking the whole application down.
+            if (string.IsNullOrEmpty(nodeInfo.Text) && string.IsNullOrEmpty(nodeInfo.ContentDescription))
+            {
+                nodeInfo.ContentDescription = EmptyNodeDescription;
+            }
         }
     }
 }
