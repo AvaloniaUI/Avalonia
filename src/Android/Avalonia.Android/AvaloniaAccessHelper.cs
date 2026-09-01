@@ -8,6 +8,7 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls.Automation.Peers;
 using Java.Lang;
 
 namespace Avalonia.Android
@@ -83,6 +84,8 @@ namespace Avalonia.Android
                 return null;
             }
         }
+
+        private static bool IsInteropPeer(AutomationPeer peer) => peer is InteropAutomationPeer;
 
         private HashSet<INodeInfoProvider> GetOrCreateNodeInfoProvidersFromPeer(AutomationPeer peer, out int virtualViewId)
         {
@@ -175,6 +178,11 @@ namespace Avalonia.Android
             AutomationPeer? peer = embeddedRootProvider?.GetPeerFromPoint(p);
             if (peer is not null)
             {
+                if (IsInteropPeer(peer))
+                {
+                    return InvalidId;
+                }
+
                 int virtualViewId;
                 if (peer.GetParent() is AutomationPeer parent && 
                     !s_containerTypes.Contains(parent.GetAutomationControlType()))
@@ -191,7 +199,7 @@ namespace Avalonia.Android
             else
             {
                 peer = embeddedRootProvider?.GetFocus();
-                return peer is null ? InvalidId : _peerIds[peer];
+                return peer is null || IsInteropPeer(peer) ? InvalidId : _peerIds[peer];
             }
         }
 
@@ -204,6 +212,11 @@ namespace Avalonia.Android
 
             foreach (AutomationPeer peer in _peers[0].GetChildren())
             {
+                if (IsInteropPeer(peer))
+                {
+                    continue;
+                }
+
                 GetOrCreateNodeInfoProvidersFromPeer(peer, out int virtualViewId);
                 virtualViewIds.Add(Integer.ValueOf(virtualViewId));
             }
@@ -255,6 +268,11 @@ namespace Avalonia.Android
             // UI logical structure
             foreach (AutomationPeer child in peer.GetChildren())
             {
+                if (IsInteropPeer(child))
+                {
+                    continue;
+                }
+
                 GetOrCreateNodeInfoProvidersFromPeer(child, out int childId);
                 nodeInfo.AddChild(_view, childId);
             }
