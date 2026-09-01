@@ -605,13 +605,15 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
-                MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+            {
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
+                {
+                    MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+                }
+            }
             else if (ev.type == XEventName.EnterNotify)
             {
-                if (ev.CrossingEvent.detail is
-                    NotifyDetail.NotifyNonlinear or
-                    NotifyDetail.NotifyNonlinearVirtual or
-                    NotifyDetail.NotifyVirtual)
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
                 {
                     MouseEvent(RawPointerEventType.Move, ref ev, ev.CrossingEvent.state);
                 }
@@ -757,6 +759,13 @@ namespace Avalonia.X11
                 HandleKeyEvent(ref ev);
             }
         }
+
+        private static bool IsHandledLeaveEnterDetail(NotifyDetail detail)
+            => detail is
+                NotifyDetail.NotifyNonlinear or
+                NotifyDetail.NotifyNonlinearVirtual or
+                NotifyDetail.NotifyVirtual or
+                NotifyDetail.NotifyAncestor;
 
         private void HandleActivation(bool active)
         {
