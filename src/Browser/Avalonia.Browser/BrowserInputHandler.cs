@@ -102,11 +102,6 @@ internal class BrowserInputHandler
 
         try
         {
-            // Note: routing here is only synchronous when _rawEventGrouper is null (the branch above
-            // that creates the Lazy referencing argsObj). When _rawEventGrouper is set, ScheduleInput
-            // enqueues the event for later dispatch on the managed dispatcher - but coalescedEvents is
-            // never created (stays null) in that branch, so disposing argsObj below is still safe even
-            // though the deferred dispatch/merge logic (RawEventGrouper.MergeEvents) never touches it.
             return RawPointerEvent(type, pointerType!, point, (RawInputModifiers)modifier, pointerId,
                 coalescedEvents);
         }
@@ -117,6 +112,10 @@ internal class BrowserInputHandler
             // without a dispose, isn't guaranteed to run promptly under continuous allocation pressure) -
             // regardless of whether the Lazy above was ever evaluated (most consumers never call
             // GetIntermediatePoints()).
+
+            // It is safe to dispose, because when _rawEventGrouper is null the event is processed synchronously. 
+            // At least as long as RawPointerEvent.ImmediatePoints is only accessed synchronously within the 
+            // scope of this method.
             argsObj.Dispose();
         }
     }
