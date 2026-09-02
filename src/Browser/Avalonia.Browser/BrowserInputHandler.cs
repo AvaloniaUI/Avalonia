@@ -107,15 +107,8 @@ internal class BrowserInputHandler
         }
         finally
         {
-            // The JSObject wraps the native PointerEvent. Disposing it here releases the JS-side handle
-            // deterministically instead of relying on the .NET GC to collect the wrapper first (which,
-            // without a dispose, isn't guaranteed to run promptly under continuous allocation pressure) -
-            // regardless of whether the Lazy above was ever evaluated (most consumers never call
-            // GetIntermediatePoints()).
-
-            // It is safe to dispose, because when _rawEventGrouper is null the event is processed synchronously. 
-            // At least as long as RawPointerEvent.ImmediatePoints is only accessed synchronously within the 
-            // scope of this method.
+            // Release the JS handle after processing the event.
+            // ImmediatePoints is only expected to be accessed synchronously during event processing.
             argsObj.Dispose();
         }
     }
