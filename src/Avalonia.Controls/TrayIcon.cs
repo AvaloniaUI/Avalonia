@@ -216,11 +216,13 @@ namespace Avalonia.Controls
 
         private void Attach()
         {
-            if (_isAttached || _isDisposed) return;
+            if (_isAttached || _isDisposed) 
+                return;
             _isAttached = true;
             
             _impl = PlatformManager.CreateTrayIcon();
-            if (_impl is null) return;
+            if (_impl is null) 
+                return;
 
             _impl.OnClicked = () =>
             {
@@ -246,7 +248,8 @@ namespace Avalonia.Controls
 
         private void Detach()
         {
-            if (!_isAttached) return;
+            if (!_isAttached) 
+                return;
 
             _isAttached = false;
             _impl?.Dispose();
@@ -281,7 +284,8 @@ namespace Avalonia.Controls
         /// </summary>
         public void Dispose()
         {
-            if (_isDisposed) return;
+            if (_isDisposed) 
+                return;
 
             _isDisposed = true;
             Detach();
