@@ -348,6 +348,10 @@
 
 - (void)windowWillExitFullScreen:(NSNotification *_Nonnull)notification
 {
+    // Prepare the destination appearance before AppKit starts the exit animation.
+    if (_isExtended)
+        [self setTitlebarAppearsTransparent:true];
+
     auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
