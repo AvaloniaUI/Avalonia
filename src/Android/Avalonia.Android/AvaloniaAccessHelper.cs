@@ -260,9 +260,21 @@ namespace Avalonia.Android
 
         protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat? nodeInfo)
         {
-            if (nodeInfo is null || !_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
+            if (nodeInfo is null)
             {
                 return; // BAIL!! No work to be done
+            }
+
+            if (!_peers.TryGetValue(virtualViewId, out AutomationPeer? peer))
+            {
+                // The node must still be populated: ExploreByTouchHelper rejects one whose text,
+                // content description or bounds are unset.
+                nodeInfo.ContentDescription = string.Empty;
+                nodeInfo.Enabled = false;
+                nodeInfo.Focusable = false;
+                nodeInfo.ScreenReaderFocusable = false;
+                nodeInfo.SetBoundsInScreen(new(0, 0, 0, 0));
+                return;
             }
 
             // UI logical structure
