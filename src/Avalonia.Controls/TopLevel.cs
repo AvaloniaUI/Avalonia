@@ -702,6 +702,7 @@ namespace Avalonia.Controls
             }
 
             _backGestureSubscription?.Dispose();
+            PlatformSettings?.TextScalingChanged -= OnPlatformTextScalingChanged;
 
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);

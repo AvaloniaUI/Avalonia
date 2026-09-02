@@ -50,7 +50,7 @@ public static class TextScaling
     /// <remarks>This value is used only when <see cref="IsEnabledProperty"/> is true.</remarks>
     public static readonly AttachedProperty<ITextScaler?> CustomTextScalerProperty =
         AvaloniaProperty.RegisterAttached<Visual, ITextScaler?>("CustomTextScaler", typeof(TextScaling), inherits: true);
-  
+
     /// <inheritdoc cref="IsEnabledProperty"/> <see cref="IsEnabledProperty"/>
     public static bool GetIsEnabled(Visual visual) => visual.GetValue(IsEnabledProperty);
     /// <inheritdoc cref="IsEnabledProperty"/> <see cref="IsEnabledProperty"/>
@@ -82,22 +82,50 @@ public static class TextScaling
 
         var (oldScaler, newScaler) = args.GetOldAndNewValue<ITextScaler?>();
 
-        if (oldScaler != null && s_customTextScalerSubscribers.TryGetValue(oldScaler, out var oldSubscribers))
+        if (oldScaler != null && s_customTextScalerSubscribers.TryGetValue(oldScaler, out var oldScalerSubscribers))
         {
-            oldSubscribers.Remove(visual);
+            oldScalerSubscribers.Remove(visual);
         }
 
         if (newScaler != null)
         {
-            if (s_customTextScalerSubscribers.TryGetValue(newScaler, out var newSubscribers))
+            visual.AttachedToVisualTree += OnVisualAttachedToTree;
+            visual.DetachedFromVisualTree += OnVisualDetachedFromTree;
+
+            if (!s_customTextScalerSubscribers.TryGetValue(newScaler, out var newScalerSubscribers))
             {
-                newSubscribers.Add(visual);
-            }
-            else
-            {
-                s_customTextScalerSubscribers.Add(newScaler, [visual]);
+                newScalerSubscribers = [];
+                s_customTextScalerSubscribers.Add(newScaler, newScalerSubscribers);
                 newScaler.TextScalingChanged += OnCustomTextScalingChanged;
             }
+
+            if (visual.IsAttachedToVisualTree)
+            {
+                newScalerSubscribers.Add(visual);
+            }
+        }
+        else
+        {
+            visual.AttachedToVisualTree -= OnVisualAttachedToTree;
+            visual.DetachedFromVisualTree -= OnVisualDetachedFromTree;
+        }
+    }
+
+    private static void OnVisualAttachedToTree(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is Visual visual && GetCustomTextScaler(visual) is { } scaler &&
+            s_customTextScalerSubscribers.TryGetValue(scaler, out var subscribers))
+        {
+            subscribers.Add(visual);
+        }
+    }
+
+    private static void OnVisualDetachedFromTree(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is Visual visual && GetCustomTextScaler(visual) is { } scaler &&
+            s_customTextScalerSubscribers.TryGetValue(scaler, out var subscribers))
+        {
+            subscribers.Remove(visual);
         }
     }
 
@@ -125,7 +153,7 @@ public static class TextScaling
     /// are enforced, even when <see cref="CustomTextScalerProperty"/> is in use.</remarks>
     public static double GetScaledFontSize(Visual visual, double baseFontSize)
     {
-        if (double.IsNaN(baseFontSize) || baseFontSize <= 0 || !GetIsEnabled(visual) || 
+        if (double.IsNaN(baseFontSize) || baseFontSize <= 0 || !GetIsEnabled(visual) ||
             (GetCustomTextScaler(visual) ?? visual.GetPlatformSettings()) is not { } scaler)
         {
             return baseFontSize;
