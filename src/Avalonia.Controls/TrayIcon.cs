@@ -224,6 +224,8 @@ namespace Avalonia.Controls
             if (_impl is null) 
                 return;
 
+            // Keep the native icon hidden until all properties have been initialized.
+            _impl.SetIsVisible(false);
             _impl.OnClicked = () =>
             {
                 Clicked?.Invoke(this, EventArgs.Empty);
