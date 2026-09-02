@@ -65,6 +65,8 @@ BEGIN_INTERFACE_MAP()
     virtual HRESULT GetExtendTitleBarHeight (double*ret) override;
 
     virtual HRESULT SetExtendTitleBarHeight (double value) override;
+
+    virtual HRESULT SetTrafficLightPosition (AvnPoint position, bool useCustomLayout) override;
     
     virtual HRESULT GetWindowZOrder (long* zOrder) override;
 
@@ -88,11 +90,40 @@ BEGIN_INTERFACE_MAP()
 
     bool IsTransitioningWindowState() { return _transitioningWindowState; }
 
+    void UpdateTrafficLightLayout();
+
 protected:
     virtual NSWindowStyleMask CalculateStyleMask() override;
     virtual void UpdateAppearance() override;
 
 private:
+    enum class TrafficLightLayout
+    {
+        System,
+        Custom
+    };
+
+    struct TrafficLightViews
+    {
+        NSView* Container;
+        NSButton* Close;
+        NSButton* Miniaturize;
+        NSButton* Zoom;
+    };
+
+    struct TrafficLightFrames
+    {
+        NSRect Container;
+        NSRect Close;
+        NSRect Miniaturize;
+        NSRect Zoom;
+    };
+
+    void UpdateWindowedTrafficLightLayout();
+    void RestoreTrafficLightLayout();
+    bool TryGetTrafficLightViews(TrafficLightViews* views);
+    void UpdateTrafficLightTrackingAreas(const TrafficLightViews& views);
+
     void ZOrderChildWindows();
     void OnInitialiseNSWindow();
     NSString *_lastTitle;
@@ -109,6 +140,10 @@ private:
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
     bool _isModal;
+    bool _hasDefaultTrafficLightFrames;
+    TrafficLightLayout _trafficLightLayout;
+    AvnPoint _trafficLightPosition;
+    TrafficLightFrames _defaultTrafficLightFrames;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWIMPL_H

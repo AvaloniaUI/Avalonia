@@ -109,6 +109,18 @@
     return YES;
 }
 
+- (void)viewDidChangeEffectiveAppearance
+{
+    [super viewDidChangeEffectiveAppearance];
+
+    // AppKit can reset standard button frames when the effective appearance changes.
+    auto window = _parent.tryGetWithCast<WindowImpl>();
+    if (window != nullptr)
+    {
+        window->UpdateTrafficLightLayout();
+    }
+}
+
 - (BOOL)wantsUpdateLayer
 {
     return YES;

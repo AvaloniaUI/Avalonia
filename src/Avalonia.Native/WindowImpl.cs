@@ -12,7 +12,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
-    internal class WindowImpl : WindowBaseImpl, IWindowImpl
+    internal class WindowImpl : WindowBaseImpl, IWindowImpl, IMacOSOptionsTopLevelImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly IAvnWindow _native;
@@ -217,6 +217,12 @@ namespace Avalonia.Native
             _native.SetExtendTitleBarHeight(titleBarHeight);
 
             InvalidateExtendedMargins();
+        }
+
+        /// <inheritdoc/>
+        public void SetTrafficLightPosition(Point? position)
+        {
+            _native.SetTrafficLightPosition(position?.ToAvnPoint() ?? default, position.HasValue.AsComBool());
         }
 
         /// <inheritdoc/>
