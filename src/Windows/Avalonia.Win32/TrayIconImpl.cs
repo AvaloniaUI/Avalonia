@@ -94,7 +94,7 @@ namespace Avalonia.Win32
         {
             _iconImpl = (IconImpl?)icon;
             _iconStale = true;
-            UpdateIcon();
+            UpdateIcon(!_iconAdded);
         }
 
         /// <inheritdoc />
@@ -376,6 +376,10 @@ namespace Avalonia.Win32
             if (!_disposedValue)
             {
                 UpdateIcon(true);
+                
+                s_trayIcons.Remove(_uniqueId);
+                _icon?.Dispose();
+                _icon = null;
 
                 _disposedValue = true;
             }
