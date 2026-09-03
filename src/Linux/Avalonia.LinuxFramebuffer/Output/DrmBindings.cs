@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -93,26 +93,35 @@ namespace Avalonia.LinuxFramebuffer.Output
             if (res == null)
                 throw new Win32Exception("drmModeGetResources failed");
 
-            var crtcs = new drmModeCrtc[res->count_crtcs];
-            for (var c = 0; c < res->count_crtcs; c++)
+            try
             {
-                var crtc = drmModeGetCrtc(fd, res->crtcs[c]);
-                crtcs[c] = *crtc;
-                drmModeFreeCrtc(crtc);
-            }
+                var crtcs = new drmModeCrtc[res->count_crtcs];
+                for (var c = 0; c < res->count_crtcs; c++)
+                {
+                    var crtc = drmModeGetCrtc(fd, res->crtcs[c]);
+                    crtcs[c] = *crtc;
+                    drmModeFreeCrtc(crtc);
+                }
 
-            for (var c = 0; c < res->count_encoders; c++)
-            {
-                var enc = drmModeGetEncoder(fd, res->encoders[c]);
-                Encoders[res->encoders[c]] = new DrmEncoder(*enc, crtcs);
-                drmModeFreeEncoder(enc);
-            }
+                for (var c = 0; c < res->count_encoders; c++)
+                {
+                    var enc = drmModeGetEncoder(fd, res->encoders[c]);
+                    Encoders[res->encoders[c]] = new DrmEncoder(*enc, crtcs);
+                    drmModeFreeEncoder(enc);
+                }
 
-            for (var c = 0; c < res->count_connectors; c++)
+                for (var c = 0; c < res->count_connectors; c++)
+                {
+                    var conn = connectorsForceProbe ?
+                        drmModeGetConnector(fd, res->connectors[c]) :
+                        drmModeGetConnectorCurrent(fd, res->connectors[c]);
+                    Connectors.Add(new DrmConnector(conn));
+                    drmModeFreeConnector(conn);
+                }
+            }
+            finally
             {
-                var conn = connectorsForceProbe ? drmModeGetConnector(fd, res->connectors[c]) : drmModeGetConnectorCurrent(fd, res->connectors[c]);
-                Connectors.Add(new DrmConnector(conn));
-                drmModeFreeConnector(conn);
+                drmModeFreeResources(res);
             }
         }
 
@@ -140,23 +149,37 @@ namespace Avalonia.LinuxFramebuffer.Output
 
     public unsafe class DrmCard : IDisposable
     {
-        public int Fd { get; private set; }
+        public int Fd { get; private set; } = -1;
         public DrmCard(string? path = null)
         {
             if (path == null)
             {
-                var files = Directory.GetFiles("/dev/dri/");
-
-                foreach (var file in files)
+                var files = new SortedDictionary<int, string>();
+                foreach (var file in Directory.GetFiles("/dev/dri/", "card*"))
                 {
-                    var match = Regex.Match(file, "card[0-9]+");
+                    if (int.TryParse(Path.GetFileName(file).AsSpan(4), NumberStyles.None, CultureInfo.InvariantCulture,
+                            out var cardNumber))
+                        files[cardNumber] = file;
+                }
 
-                    if (match.Success)
+                foreach (var file in files.Values)
+                {
+                    var fd = open(file, 2, 0);
+                    if (fd == -1)
+                        continue;
+
+                    var resources = drmModeGetResources(fd);
+                    if (resources != null && resources->count_crtcs > 0 && resources->count_encoders > 0 &&
+                        resources->count_connectors > 0)
                     {
-                        Fd = open(file, 2, 0);
-                        if (Fd != -1)
-                            break;
+                        drmModeFreeResources(resources);
+                        Fd = fd;
+                        break;
                     }
+
+                    if (resources != null)
+                        drmModeFreeResources(resources);
+                    close(fd);
                 }
 
                 if (Fd == -1)
@@ -178,6 +201,8 @@ namespace Avalonia.LinuxFramebuffer.Output
         public DrmResources GetResources(bool connectorsForceProbe = false) => new DrmResources(Fd, connectorsForceProbe);
         public void Dispose()
         {
+            if (Fd == -1)
+                return;
             close(Fd);
             Fd = -1;
         }

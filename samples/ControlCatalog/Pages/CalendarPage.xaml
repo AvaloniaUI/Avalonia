@@ -48,6 +48,17 @@
         <Calendar Name="BlackoutDatesCalendar"
                   SelectionMode="SingleDate" />
       </StackPanel>
+      <StackPanel>
+        <TextBlock Text="WeekNumbers (ISO-Week)" />
+        <Calendar Name="WeekNumbers"
+                  WeekNumberRule="FirstFourDayWeek"
+                  FirstDayOfWeek="Monday"
+                  IsWeekNumberVisible="True">
+          <Calendar.Resources>
+            <x:String x:Key="StringCalendarWeekNumberHeader">#</x:String>
+          </Calendar.Resources>
+        </Calendar>
+      </StackPanel>
     </WrapPanel>
   </StackPanel>
 </ContentPage>

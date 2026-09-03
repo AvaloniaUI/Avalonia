@@ -31,6 +31,12 @@ namespace Avalonia.X11
         public XVisualInfo? TransparentVisualInfo { get; }
         public bool HasXim { get; }
         public bool HasXSync { get; }
+        public bool HasXShm { get; }
+
+        /// <summary>
+        /// Whether XFixes is usable, which is what window input shapes are set through.
+        /// </summary>
+        public bool HasXFixes { get; }
 
         public IntPtr DefaultFontSet { get; }
 
@@ -124,6 +130,29 @@ namespace Avalonia.X11
             catch
             {
                 //Ignore, XSync is not supported
+            }
+
+            try
+            {
+                // XShm rendering happens on the deferred display, so probe the extension there.
+                HasXShm = XShmQueryExtension(deferredDisplay) != 0
+                    && XShmQueryVersion(deferredDisplay, out _, out _, out _) != 0;
+            }
+            catch
+            {
+                //Ignore, MIT-SHM is not supported
+            }
+
+            try
+            {
+                // Input shapes need XFixes 2.0 or newer.
+                HasXFixes = XFixesQueryExtension(display, out _, out _) != 0
+                            && XFixesQueryVersion(display, out var fixesMajor, out _) != 0
+                            && fixesMajor >= 2;
+            }
+            catch
+            {
+                //Ignore, XFixes is not supported
             }
 
             try

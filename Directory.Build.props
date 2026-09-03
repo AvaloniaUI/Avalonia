@@ -4,12 +4,15 @@
   <PropertyGroup>
     <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)build-intermediate/nuget</PackageOutputPath>
     <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)\src\tools\Avalonia.Designer.HostApp\bin\$(Configuration)\$(AvsCurrentTargetFramework)\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
+    <SharedAssetsPath>$(MSBuildThisFileDirectory)\build\Assets\</SharedAssetsPath>
     <!-- https://github.com/dotnet/msbuild/issues/2661 -->
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
     <RunApiCompat>False</RunApiCompat>
     <LangVersion>14.0</LangVersion>
     <TreatWarningsAsErrors Condition="'$(TreatWarningsAsErrors)' == ''">$(AvnTreatWarningsAsErrors)</TreatWarningsAsErrors>
     <TreatWarningsAsErrors Condition="'$(TreatWarningsAsErrors)' == '' And '$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <!-- Suppress NU1507 so local source builds do not warn about the consuming solution's package sources. -->
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
     <CreateHardLinksForCopyAdditionalFilesIfPossible>true</CreateHardLinksForCopyAdditionalFilesIfPossible>
     <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
     <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>

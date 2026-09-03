@@ -1,5 +1,6 @@
 using System.Linq;
 using Avalonia.Layout;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -328,6 +329,39 @@ namespace Avalonia.Controls.UnitTests
             Size sizeWithThreeChildren = targetThreeChildrenOneInvisble.Bounds.Size;
 
             Assert.Equal(sizeWithTwoChildren, sizeWithThreeChildren);
+        }
+
+        [Theory]
+        [InlineData(Orientation.Horizontal)]
+        [InlineData(Orientation.Vertical)]
+        public void Spacing_Not_Added_For_Children_Hidden_By_Style_Applied_During_Measure(Orientation orientation)
+        {
+            var target = new StackPanel
+            {
+                Spacing = 40,
+                Orientation = orientation,
+                Children =
+                {
+                    new StackPanel { Width = 10, Height = 10, Classes = { "hidden" } },
+                    new StackPanel { Width = 10, Height = 10 },
+                    new StackPanel { Width = 10, Height = 10 },
+                }
+            };
+
+            var root = new TestRoot(target);
+
+            root.Styles.Add(new Style(x => x.OfType<StackPanel>().Class("hidden"))
+            {
+                Setters = { new Setter(Visual.IsVisibleProperty, false) }
+            });
+
+            target.Measure(Size.Infinity);
+
+            var expected = orientation == Orientation.Horizontal ?
+                new Size(60, 10) :
+                new Size(10, 60);
+
+            Assert.Equal(expected, target.DesiredSize);
         }
 
         [Theory]

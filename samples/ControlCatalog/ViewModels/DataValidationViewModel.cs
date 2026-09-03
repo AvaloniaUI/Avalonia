@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels;
@@ -11,6 +12,7 @@ public class DataValidationViewModel : ViewModelBase
 
     [Required]
     [EmailAddress]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Does not apply to 'string' type.")]
     [MinLength(5)]
     public string? DataAnnotationsSample
     {

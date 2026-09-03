@@ -18,6 +18,8 @@ namespace Avalonia.Input
         private static MouseDevice? _primary;
         internal static MouseDevice Primary => _primary ??= new MouseDevice();
 
+        internal static void ResetPrimaryForUnitTests() => _primary = null;
+
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
@@ -218,9 +220,7 @@ namespace Avalonia.Input
                 }
                 finally
                 {
-                    _pointer.Capture(null, CaptureSource.Implicit);
-                    _pointer.CaptureGestureRecognizer(null);
-                    _pointer.IsGestureRecognitionSkipped = false;
+                    _pointer.CaptureLost(CaptureSource.Implicit);
                     _lastMouseDownButton = default;
                 }
                 return e.Handled;
