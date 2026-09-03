@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
@@ -198,6 +199,11 @@ namespace ControlCatalog
             }
 
             ViewModel.SelectedPageIndex = 0;
+        }
+
+        private async void AvaloniaIcon_OnTapped(object? sender, TappedEventArgs e)
+        {
+            await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(new Uri("https://avaloniaui.net/"));
         }
     }
 }

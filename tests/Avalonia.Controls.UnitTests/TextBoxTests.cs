@@ -1,8 +1,7 @@
-#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -13,7 +12,6 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.TextInput;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -1562,6 +1560,108 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        public static TheoryData<Type> ExpectedClipboardExceptions =>
+        [
+            typeof(TimeoutException),
+            typeof(OperationCanceledException),
+            typeof(UnauthorizedAccessException),
+            typeof(COMException)
+        ];
+
+        [Theory]
+        [MemberData(nameof(ExpectedClipboardExceptions))]
+        public void Cut_Does_Not_Delete_Selection_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateTextBoxInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+            {
+                var unhandled = RunAndCaptureUnhandledException(target.Cut);
+
+                Assert.Null(unhandled);
+            }
+
+            Assert.Equal(1, clipboardImpl.SetDataCount);
+            Assert.Equal("abcd", target.Text);
+            Assert.Equal(1, target.SelectionStart);
+            Assert.Equal(3, target.SelectionEnd);
+            Assert.Equal(["Failed to write text to clipboard: {Error}"], messages);
+        }
+
+        [Fact]
+        public void Cut_Deletes_Selection_When_Clipboard_Succeeds()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var target = CreateTextBoxInTopLevel(clipboardImpl: null);
+
+            var unhandled = RunAndCaptureUnhandledException(target.Cut);
+
+            Assert.Null(unhandled);
+            Assert.Equal("ad", target.Text);
+        }
+
+        [Theory]
+        [MemberData(nameof(ExpectedClipboardExceptions))]
+        public void Copy_Does_Not_Throw_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateTextBoxInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+            {
+                var unhandled = RunAndCaptureUnhandledException(target.Copy);
+
+                Assert.Null(unhandled);
+            }
+
+            Assert.Equal(1, clipboardImpl.SetDataCount);
+            Assert.Equal("abcd", target.Text);
+            Assert.Equal(["Failed to write text to clipboard: {Error}"], messages);
+        }
+
+        [Theory]
+        [MemberData(nameof(ExpectedClipboardExceptions))]
+        public void Paste_Does_Not_Change_Text_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateTextBoxInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+            {
+                var unhandled = RunAndCaptureUnhandledException(target.Paste);
+
+                Assert.Null(unhandled);
+            }
+
+            Assert.Equal(1, clipboardImpl.TryGetDataCount);
+            Assert.Equal("abcd", target.Text);
+            Assert.False(target.CanUndo);
+            Assert.Equal(["Failed to read text from clipboard: {Error}"], messages);
+        }
+
+        [Fact]
+        public void Clipboard_Operations_Do_Not_Swallow_Unexpected_Exceptions()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var target = CreateTextBoxInTopLevel(new ThrowingClipboardImplStub(typeof(InvalidOperationException)));
+
+            Assert.IsType<InvalidOperationException>(RunAndCaptureUnhandledException(target.Cut));
+            Assert.IsType<InvalidOperationException>(RunAndCaptureUnhandledException(target.Copy));
+            Assert.IsType<InvalidOperationException>(RunAndCaptureUnhandledException(target.Paste));
+        }
+
         [Fact]
         public void Command_States_Update_When_ReadOnly_And_PasswordChar_Change()
         {
@@ -2603,12 +2703,44 @@ namespace Avalonia.Controls.UnitTests
         {
         }
 
-        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
+        private static TextBox CreateTextBoxInTopLevel(IClipboardImpl? clipboardImpl)
+        {
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abcd",
+                SelectionStart = 1,
+                SelectionEnd = 3
+            };
+
+            var topLevel = new TestTopLevel(CreateMockTopLevelImpl(clipboardImpl).Object)
+            {
+                Template = CreateTopLevelTemplate(),
+                Content = textBox
+            };
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            textBox.Measure(Size.Infinity);
+
+            return textBox;
+        }
+
+        private static Exception? RunAndCaptureUnhandledException(Action action)
+        {
+            using var syncContext = UnitTestSynchronizationContext.Begin();
+
+            action();
+
+            return Record.Exception(syncContext.ExecutePostedCallbacks);
+        }
+
+        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl(IClipboardImpl? clipboardImpl = null)
         {
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new Clipboard(new HeadlessClipboardImplStub()));
+                .Returns(new Clipboard(clipboardImpl ?? new HeadlessClipboardImplStub()));
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }

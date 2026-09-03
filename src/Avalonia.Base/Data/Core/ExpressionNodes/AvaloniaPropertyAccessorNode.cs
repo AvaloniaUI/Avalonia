@@ -10,9 +10,12 @@ internal sealed class AvaloniaPropertyAccessorNode :
     ISettableNode,
     IWeakEventSubscriber<AvaloniaPropertyChangedEventArgs>
 {
-    public AvaloniaPropertyAccessorNode(AvaloniaProperty property)
+    private readonly bool _acceptsNull;
+
+    public AvaloniaPropertyAccessorNode(AvaloniaProperty property, bool acceptsNull)
     {
         Property = property;
+        _acceptsNull = acceptsNull;
     }
 
     public AvaloniaProperty Property { get; }
@@ -38,8 +41,14 @@ internal sealed class AvaloniaPropertyAccessorNode :
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
+        if (source is null)
+        {
+            if (_acceptsNull)
+                ShortCircuitNull();
+            else
+                ValidateNonNullSource(source);
             return;
+        }
 
         if (source is AvaloniaObject newObject)
         {

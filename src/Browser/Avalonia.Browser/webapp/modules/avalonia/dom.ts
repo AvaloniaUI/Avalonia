@@ -136,6 +136,10 @@ export class AvaloniaDOM {
             });
         }
 
+        globalThis.addEventListener("languagechange", () => {
+            JsExports.DomHelper.LanguageChanged(globalThis.navigator.language);
+        });
+
         globalThis.document.addEventListener("visibilitychange", () => {
             JsExports.DomHelper.DocumentVisibilityChanged(globalThis.document.visibilityState);
         });
@@ -166,5 +170,9 @@ export class AvaloniaDOM {
             colorSchemeMedia.matches ? 1 : 0,
             prefersContrastMedia.matches ? 1 : 0
         ];
+    }
+
+    public static getNavigatorLanguage(globalThis: Window): string | null {
+        return globalThis.navigator?.language ?? null;
     }
 }
