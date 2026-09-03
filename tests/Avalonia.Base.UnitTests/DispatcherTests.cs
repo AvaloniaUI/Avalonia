@@ -318,6 +318,21 @@ public partial class DispatcherTests
     }
 
     [Fact]
+    public async Task DispatcherFrame_Uses_Current_Dispatcher()
+    {
+        var uiThreadDispatcher = Dispatcher.UIThread;
+
+        await ThreadRunHelper.RunOnDedicatedThread(() =>
+        {
+            var currentDispatcher = Dispatcher.CurrentDispatcher;
+            var frame = new DispatcherFrame();
+
+            Assert.NotSame(uiThreadDispatcher, currentDispatcher);
+            Assert.Same(currentDispatcher, frame.Dispatcher);
+        });
+    }
+
+    [Fact]
     public void ExitAllFramesShouldExitAllFramesAndBeAbleToContinue()
     {
         using (new DispatcherServices(new SimpleControlledDispatcherImpl()))

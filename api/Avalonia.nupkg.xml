@@ -15,6 +15,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.Core.UntypedBindingExpressionBase.get_IsDataValidationEnabled</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.Core.UntypedBindingExpressionBase.Start</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Input.PointerEventArgs.#ctor(Avalonia.Interactivity.RoutedEvent,System.Object,Avalonia.Input.IPointer,Avalonia.Visual,Avalonia.Point,System.UInt64,Avalonia.Input.PointerPointProperties,Avalonia.Input.KeyModifiers,System.Lazy{System.Collections.Generic.IReadOnlyList{Avalonia.Input.Raw.RawPointerPoint}})</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
@@ -69,33 +81,15 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Avalonia.Controls.Chrome.WindowDrawnDecorations.TitleBarDecorationsProperty</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+    <Target>M:Avalonia.Data.Core.UntypedBindingExpressionBase.get_IsDataValidationEnabled</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.Chrome.WindowDrawnDecorations.get_TitleBarDecorations</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.Chrome.WindowDrawnDecorations.GetTitleBarDecorations(Avalonia.StyledElement)</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.Chrome.WindowDrawnDecorations.set_TitleBarDecorations(Avalonia.Controls.Chrome.TitleBarDecorations)</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.Chrome.WindowDrawnDecorations.SetTitleBarDecorations(Avalonia.StyledElement,Avalonia.Controls.Chrome.TitleBarDecorations)</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+    <Target>M:Avalonia.Data.Core.UntypedBindingExpressionBase.Start</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
