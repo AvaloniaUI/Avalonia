@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using ControlCatalog.Pages;
 using Avalonia.Media;
 using ControlCatalog.Models;
+using System.Threading.Tasks;
 
 namespace ControlCatalog.ViewModels;
 

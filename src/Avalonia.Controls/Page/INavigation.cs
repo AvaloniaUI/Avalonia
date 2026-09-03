@@ -7,6 +7,42 @@ using Avalonia.Metadata;
 namespace Avalonia.Controls
 {
     /// <summary>
+    /// Provides extension methods for <see cref="INavigation"/> to simplify navigation operations.
+    /// </summary>
+    public static class PageNavigationExtensions
+    {
+        extension(INavigation navigation)
+        {
+            /// <summary>
+            /// Pushes a new page of type <typeparamref name="T"/> onto the navigation stack, using <paramref name="transition"/> with optional <paramref name="parameter"/>.
+            /// </summary>
+            public Task PushAsync<T>(IPageTransition? transition = null, object? parameter = null) where T : Page, new()
+            {
+                var page = new T();
+                return navigation.PushAsync(page, transition, parameter);
+            }
+
+            /// <summary>
+            /// Replaces the current top page with a new page of type <typeparamref name="T"/>, using <paramref name="transition"/> with optional <paramref name="parameter"/>.
+            /// </summary>
+            public Task ReplaceAsync<T>(IPageTransition? transition = null, object? parameter = null) where T : Page, new()
+            {
+                var page = new T();
+                return navigation.ReplaceAsync(page, transition, parameter);
+            }
+
+            /// <summary>
+            /// Pushes a new modal page of type <typeparamref name="T"/> onto the modal stack, using <paramref name="transition"/> with optional <paramref name="parameter"/>.
+            /// </summary>
+            public Task PushModalAsync<T>(IPageTransition? transition = null, object? parameter = null) where T : Page, new()
+            {
+                var page = new T();
+                return navigation.PushModalAsync(page, transition, parameter);
+            }
+        }
+    }
+
+    /// <summary>
     /// Provides navigation operations for stack-based and modal page navigation.
     /// Exposed via <see cref="Page.Navigation"/> when a page is hosted in a NavigationPage.
     /// </summary>
@@ -38,16 +74,16 @@ namespace Avalonia.Controls
         /// Pushes <paramref name="page"/> using the host's default transition.
         /// </summary>
         Task PushAsync(Page page);
-        Task PushAsync<T>() where T : Page, new() => Task.CompletedTask;
-        Task PushAsync<T>(object parameter) where T : Page, new() => Task.CompletedTask;
 
         /// <summary>
         /// Pushes <paramref name="page"/> using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task PushAsync(Page page, IPageTransition? transition);
-        Task PushAsync(Page page, IPageTransition? transition, object parameter) => Task.CompletedTask;
-        Task PushAsync<T>(IPageTransition? transition) where T : Page, new() => Task.CompletedTask;
-        Task PushAsync<T>(IPageTransition? transition, object parameter) where T : Page, new() => Task.CompletedTask;
+
+        /// <summary>
+        /// Pushes <paramref name="page"/> using <paramref name="transition"/> with optional <paramref name="parameter"/>.
+        /// </summary>
+        Task PushAsync(Page page, IPageTransition? transition, object? parameter = null) => Task.CompletedTask;
 
         /// <summary>
         /// Pops the top page using the host's default transition.
@@ -83,31 +119,31 @@ namespace Avalonia.Controls
         /// Replaces the current top page with <paramref name="page"/> using the host's default transition.
         /// </summary>
         Task ReplaceAsync(Page page);
-        Task ReplaceAsync<T>() where T : Page, new() => Task.CompletedTask;
-        Task ReplaceAsync<T>(object parameter) where T : Page, new() => Task.CompletedTask;
 
         /// <summary>
         /// Replaces the current top page with <paramref name="page"/> using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task ReplaceAsync(Page page, IPageTransition? transition);
-        Task ReplaceAsync(Page page, IPageTransition? transition, object parameter) => Task.CompletedTask;
-        Task ReplaceAsync<T>(IPageTransition? transition) where T : Page, new() => Task.CompletedTask;
-        Task ReplaceAsync<T>(IPageTransition? transition, object parameter) where T : Page, new() => Task.CompletedTask;
+
+        /// <summary>
+        /// Replaces the current top page with <paramref name="page"/> using <paramref name="transition"/> with optional <paramref name="parameter"/>.
+        /// </summary>
+        Task ReplaceAsync(Page page, IPageTransition? transition, object? parameter = null) => Task.CompletedTask;
 
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal using the host's modal transition.
         /// </summary>
         Task PushModalAsync(Page page);
-        Task PushModalAsync<T>() where T : Page, new() => Task.CompletedTask;
-        Task PushModalAsync<T>(object parameter) where T : Page, new() => Task.CompletedTask;
 
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task PushModalAsync(Page page, IPageTransition? transition);
-        Task PushModalAsync(Page page, IPageTransition? transition, object parameter) => Task.CompletedTask;
-        Task PushModalAsync<T>(IPageTransition? transition) where T : Page, new() => Task.CompletedTask;
-        Task PushModalAsync<T>(IPageTransition? transition, object parameter) where T : Page, new() => Task.CompletedTask;
+
+        /// <summary>
+        /// Pushes <paramref name="page"/> as a modal using <paramref name="transition"/> with optional <paramref name="parameter"/>.
+        /// </summary>
+        Task PushModalAsync(Page page, IPageTransition? transition, object? parameter = null) => Task.CompletedTask;
 
         /// <summary>
         /// Pops the top modal page using the host's modal transition.

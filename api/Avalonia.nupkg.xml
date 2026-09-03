@@ -81,18 +81,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Data.Core.UntypedBindingExpressionBase.get_IsDataValidationEnabled</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Data.Core.UntypedBindingExpressionBase.Start</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.SetFrameThemeVariant(Avalonia.Platform.PlatformThemeVariant)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
@@ -108,6 +96,18 @@
     <Target>M:Avalonia.OpenGL.Egl.EglPlatformSurfaceRenderTargetBase.BeginDraw(Avalonia.OpenGL.Egl.EglSurface,Avalonia.PixelSize,System.Double,System.Action,System.Boolean)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.OpenGL.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.Core.UntypedBindingExpressionBase.get_IsDataValidationEnabled</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.Core.UntypedBindingExpressionBase.Start</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
