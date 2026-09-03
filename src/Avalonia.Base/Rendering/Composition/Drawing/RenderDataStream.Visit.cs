@@ -69,7 +69,7 @@ internal partial class RenderDataStream
                             (IBrush?)_resources[p.ServerBrush],
                             (IPen?)_resources[p.ServerPen],
                             (IPen?)_resources[p.ClientPen],
-                            (IGeometryImpl?)_resources[p.Geometry]);
+                            GetGeometryImpl(_resources[p.Geometry]));
                         break;
                     }
                     case RenderDataOpcode.DrawGlyphRun:
@@ -103,7 +103,7 @@ internal partial class RenderDataStream
                     case RenderDataOpcode.PushGeometryClip:
                     {
                         var p = reader.ReadPayload<PushGeometryClipPayload>();
-                        scopes[depth++] = visitor.OnPushGeometryClip((IGeometryImpl?)_resources[p.Geometry]);
+                        scopes[depth++] = visitor.OnPushGeometryClip(GetGeometryImpl(_resources[p.Geometry]));
                         break;
                     }
                     case RenderDataOpcode.PushOpacity:
@@ -174,4 +174,7 @@ internal partial class RenderDataStream
             rest[i] = reader.Read<BoxShadow>();
         return new BoxShadows(first, rest);
     }
+
+    private static IGeometryImpl? GetGeometryImpl(object? resource)
+        => ((IRenderDataGeometry?)resource)?.GeometryImpl;
 }

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\XUnit.props" />
@@ -16,6 +17,8 @@
     <EmbeddedResource Include="..\Avalonia.RenderTests\Assets\**\*.ttf" LinkBase="Assets" />
     <None Remove="Fonts\**\*.ttf" />
     <EmbeddedResource Include="Fonts\**\*.ttf" />
+    <!-- The headless platform's default font, reused here to cover fonts without a space glyph. -->
+    <EmbeddedResource Include="..\..\src\Headless\Avalonia.Headless\BareMinimum.ttf" LinkBase="Fonts" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />

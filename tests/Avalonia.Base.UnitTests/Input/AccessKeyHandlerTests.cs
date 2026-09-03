@@ -131,11 +131,12 @@ namespace Avalonia.Base.UnitTests.Input
             KeyUp(root, Key.A, "a", KeyModifiers.Alt);
             KeyUp(root, Key.LeftAlt);
 
-            // This differs from WPF which doesn't raise the `A` key event, but matches UWP.
+            // AccessKeyHandler marks the Alt+A KeyDown as Handled once it matches a registered
+            // access key, so a plain KeyDown subscriber doesn't see it. KeyUp is unaffected: only
+            // KeyUp for the Alt key itself is handled, not arbitrary registered access keys.
             Assert.Equal(new[]
             {
                 "KeyDown LeftAlt",
-                "KeyDown A",
                 "KeyUp A",
                 "KeyUp LeftAlt",
             }, events);
@@ -280,6 +281,97 @@ namespace Avalonia.Base.UnitTests.Input
                 
                 KeyUp(root, Key.LeftAlt);
                 Assert.Equal(1, menu.TimesOpenCalled);
+            }
+        }
+
+        [Fact]
+        public void Should_Raise_AccessKey_When_Nothing_Is_Focused()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var button = new Button();
+                var root = new TestRoot(button);
+                var target = new AccessKeyHandler();
+                var raised = 0;
+
+                Assert.Null(KeyboardDevice.Instance?.FocusedElement);
+
+                target.SetOwner(root);
+                target.Register("A", button);
+                button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
+
+                KeyDown(root, Key.LeftAlt);
+                KeyDown(root, Key.A, "a", KeyModifiers.Alt);
+
+                Assert.Equal(1, raised);
+            }
+        }
+
+        [Fact]
+        public void Should_Raise_AccessKey_When_Owner_Itself_Is_Focused()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var button = new Button();
+                var root = new TestRoot(button);
+                var target = new AccessKeyHandler();
+                var raised = 0;
+
+                KeyboardDevice.Instance?.SetFocusedElement(root, NavigationMethod.Unspecified, KeyModifiers.None);
+
+                target.SetOwner(root);
+                target.Register("A", button);
+                button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
+
+                KeyDown(root, Key.LeftAlt);
+                KeyDown(root, Key.A, "a", KeyModifiers.Alt);
+
+                Assert.Equal(1, raised);
+            }
+        }
+
+        [Fact]
+        public void Should_Open_MainMenu_On_Alt_KeyUp_When_Nothing_Is_Focused()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new AccessKeyHandler();
+                var menu = new FakeMenu();
+                var root = new TestRoot(menu);
+
+                Assert.Null(KeyboardDevice.Instance?.FocusedElement);
+
+                target.SetOwner(root);
+                target.MainMenu = menu;
+
+                KeyDown(root, Key.LeftAlt);
+                Assert.Equal(0, menu.TimesOpenCalled);
+
+                KeyUp(root, Key.LeftAlt);
+                Assert.Equal(1, menu.TimesOpenCalled);
+            }
+        }
+        
+        [Fact]
+        public void Should_Raise_AccessKey_When_Focus_Is_On_Descendant()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var button = new Button();
+                var root = new TestRoot(button);
+                var target = new AccessKeyHandler();
+                var raised = 0;
+
+                KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
+
+                target.SetOwner(root);
+                target.Register("A", button);
+                button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
+
+                KeyDown(button, Key.LeftAlt);
+                KeyDown(button, Key.A, "a", KeyModifiers.Alt);
+
+                Assert.Equal(1, raised);
             }
         }
 

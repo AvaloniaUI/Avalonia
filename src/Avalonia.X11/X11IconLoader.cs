@@ -22,7 +22,7 @@ namespace Avalonia.X11
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
             var ms = new MemoryStream();
-            bitmap.Save(ms);
+            bitmap.Save(ms, PngBitmapEncoderOptions.Default);
             ms.Position = 0;
             return LoadIcon(ms);
         }
@@ -81,7 +81,7 @@ namespace Avalonia.X11
                             fbp[fbr + x] = Data[r + x + 2].ToUInt32();
                     }
                 }
-                wr.Save(outputStream);
+                wr.Save(outputStream, PngBitmapEncoderOptions.Default);
             }
         }
     }

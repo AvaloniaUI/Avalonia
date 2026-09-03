@@ -4,18 +4,17 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Data.Core;
 using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
-using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -292,6 +291,60 @@ namespace Avalonia.Controls.UnitTests
                 var container = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(child));
                 Assert.False(container.IsSelected);
             }
+        }
+
+        [Fact]
+        public void Swiping_Onto_Child_Should_Not_Select()
+        {
+            using (ConfigureHitTestTreeView(out var target, out var parent, out var child))
+            {
+                _mouse.Down(parent);
+
+                // The pointer is captured on mouse down, so we don't want to issue a mouse up event on child itself
+                // but on parent at a position ABOVE child, which is nested within the parent.
+                _mouse.Up(parent, position: child.GetTransformedBounds()!.Value.Bounds.Center);
+
+                Assert.Null(target.SelectedItem);
+            }
+        }
+
+        [Fact]
+        public void Swiping_Onto_Parent_Should_Not_Select()
+        {
+            using (ConfigureHitTestTreeView(out var target, out var parent, out var child))
+            {
+                _mouse.Down(child);
+
+                // When swiping from a child to a parent, behaviour is a little different: first there is a PointerReleased event
+                // on the child, then on the parent. This is because the PointerPressed event went unhandled and so was seen by the parent.
+                var mouseUpPosition = parent.HeaderPresenter!.GetTransformedBounds()!.Value.Bounds.Center;
+                _mouse.Up(child, position: mouseUpPosition);
+                _mouse.Up(parent, position: mouseUpPosition);
+
+                Assert.Null(target.SelectedItem);
+            }
+        }
+
+        private static CompositorTestServices ConfigureHitTestTreeView(out TreeView target, out TreeViewItem parent, out TreeViewItem child)
+        {
+            var services = new CompositorTestServices();
+            var data = CreateTestTreeData();
+            target = CreateTarget(data, expandAll: true,
+                embeddableRoot: services.TopLevel, styles: [new(x => x.OfType<TreeViewItem>())
+            {
+                Setters =
+                {
+                    new Setter(InputElement.IsHoldingEnabledProperty, true),
+                    new Setter(InputElement.IsHoldWithMouseEnabledProperty, true),
+                },
+            }]);
+
+            services.RunJobs();
+            target.SelectedItem = null;
+
+            parent = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(data[0]));
+            child = Assert.IsType<TreeViewItem>(target.TreeContainerFromItem(data[0].Children[0]));
+            return services;
         }
 
         [Fact]
@@ -1466,7 +1519,7 @@ namespace Avalonia.Controls.UnitTests
             var target = CreateTarget(
                 data: data,
                 expandAll: false,
-                itemContainerTheme: itemTheme, 
+                itemContainerTheme: itemTheme,
                 multiSelect: true);
 
             var rootContainer = Assert.IsType<TreeViewItem>(target.ContainerFromIndex(0));
@@ -1530,7 +1583,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(selected[0], target.SelectedItem);
             Assert.Equal(selected, target.SelectedItems);
         }
-        
+
         [Fact]
         public void CollapseEvent_Can_Be_Captured_By_TreeView_When_Collapsing_TreeViewItem()
         {
@@ -1551,7 +1604,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(raised);
             Assert.Equal(container, source);
         }
-        
+
         [Fact]
         public void CollapseEvent_Should_Be_Raised_When_Collapsing_TreeViewItem()
         {
@@ -1578,7 +1631,8 @@ namespace Avalonia.Controls.UnitTests
             ControlTheme? itemContainerTheme = null,
             IDataTemplate? itemTemplate = null,
             bool multiSelect = false,
-            IEnumerable<Style>? styles = null)
+            IEnumerable<Style>? styles = null,
+            EmbeddableControlRoot? embeddableRoot = null)
         {
             var target = new TreeView
             {
@@ -1588,12 +1642,22 @@ namespace Avalonia.Controls.UnitTests
                 SelectionMode = multiSelect ? SelectionMode.Multiple : SelectionMode.Single,
             };
 
-            var root = CreateRoot(target);
+            if (embeddableRoot == null)
+            {
+                var root = CreateRoot(target);
 
-            if (styles is not null)
-                root.Styles.AddRange(styles);
+                if (styles is not null)
+                    root.Styles.AddRange(styles);
 
-            root.LayoutManager.ExecuteInitialLayoutPass();
+                root.LayoutManager.ExecuteInitialLayoutPass();
+            }
+            else
+            {
+                ConfigureRoot(embeddableRoot);
+                embeddableRoot.Styles.AddRange(styles ?? []);
+                embeddableRoot.Content = target;
+                embeddableRoot.LayoutManager.ExecuteInitialLayoutPass();
+            }
 
             if (expandAll)
             {
@@ -1605,29 +1669,27 @@ namespace Avalonia.Controls.UnitTests
 
         private static TestRoot CreateRoot(Control child)
         {
-            return new TestRoot
+            var root = new TestRoot();
+            ConfigureRoot(root);
+            root.Child = child;
+            return root;
+        }
+
+        private static void ConfigureRoot(Control root)
+        {
+            root.Resources.Add(typeof(TreeView), CreateTreeViewControlTheme());
+            root.Resources.Add(typeof(TreeViewItem), CreateTreeViewItemControlTheme());
+            root.DataTemplates.Add(new TreeDataTemplate
             {
-                Resources =
-                {
-                    { typeof(TreeView), CreateTreeViewControlTheme() },
-                    { typeof(TreeViewItem), CreateTreeViewItemControlTheme() },
-                },
-                DataTemplates =
-                {
-                    new TreeDataTemplate
+                DataType = typeof(Node),
+                ItemsSource = new Binding(nameof(Node.Children)),
+                Content = (IServiceProvider? _) => new TemplateResult<Control>(
+                    new TextBlock
                     {
-                        DataType = typeof(Node),
-                        ItemsSource = new Binding(nameof(Node.Children)),
-                        Content = (IServiceProvider? _) => new TemplateResult<Control>(
-                            new TextBlock
-                            {
-                                [!TextBlock.TextProperty] = new Binding(nameof(Node.Value)),
-                            },
-                            new NameScope())
+                        [!TextBlock.TextProperty] = new Binding(nameof(Node.Value)),
                     },
-                },
-                Child = child,
-            };
+                    new NameScope())
+            });
         }
 
         private static AvaloniaList<Node> CreateTestTreeData()
@@ -1702,6 +1764,7 @@ namespace Avalonia.Controls.UnitTests
                     new Border
                     {
                         Name = "PART_Header",
+                        Background = Brushes.Transparent,
                         Child = new ContentPresenter
                         {
                             Name = "PART_HeaderPresenter",

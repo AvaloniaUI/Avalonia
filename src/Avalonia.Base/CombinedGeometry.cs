@@ -55,6 +55,11 @@ namespace Avalonia.Media
         public static readonly StyledProperty<GeometryCombineMode> GeometryCombineModeProperty =
             AvaloniaProperty.Register<CombinedGeometry, GeometryCombineMode>(nameof(GeometryCombineMode));
 
+        static CombinedGeometry()
+        {
+            AffectsGeometry(Geometry1Property, Geometry2Property, GeometryCombineModeProperty);
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CombinedGeometry"/> class.
         /// </summary>
@@ -144,6 +149,22 @@ namespace Avalonia.Media
         {
             return new CombinedGeometry(GeometryCombineMode, Geometry1, Geometry2, Transform);
         }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == Geometry1Property || change.Property == Geometry2Property)
+            {
+                var (oldValue, newValue) = change.GetOldAndNewValue<Geometry?>();
+
+                oldValue?.Changed -= ChildGeometryChanged;
+                newValue?.Changed += ChildGeometryChanged;
+            }
+        }
+
+        private void ChildGeometryChanged(object? sender, EventArgs e)
+            => InvalidateGeometry();
 
         private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {

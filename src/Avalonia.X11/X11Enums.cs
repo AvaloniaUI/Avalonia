@@ -107,4 +107,15 @@ namespace Avalonia.X11
         CWColormap = (1 << 13),
         CWCursor = (1 << 14),
     }
+
+    /// <summary>
+    /// Shape kinds from the X Nonrectangular Window Shape extension, as accepted by
+    /// XFixesSetWindowShapeRegion.
+    /// </summary>
+    internal enum ShapeKind
+    {
+        ShapeBounding = 0,
+        ShapeClip = 1,
+        ShapeInput = 2,
+    }
 }

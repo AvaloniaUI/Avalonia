@@ -37,12 +37,26 @@ namespace Avalonia.Platform
         /// Holding duration between pointer press and when event is fired.
         /// </summary>
         TimeSpan HoldWaitDuration { get; }
-        
+
         /// <summary>
         /// Get a configuration for platform-specific hotkeys in an Avalonia application.
         /// </summary>
         PlatformHotkeyConfiguration HotkeyConfiguration { get; }
-        
+
+        /// <summary>
+        /// Gets the preferred application language as specified in the operating system settings.
+        /// </summary>
+        /// <value>
+        /// BCP 47 language tag. Examples: <c>en</c>, <c>en-US</c> or <c>zh-Hans-CN</c>.
+        /// Can be empty if the operating system doesn't report a preferred language.
+        /// </value>
+        /// <remarks>
+        /// Most platforms read this value from the operating system instead of the .NET runtime,
+        /// so a language tag can be returned even in globalization-invariant mode.
+        /// When that mode is disabled, the tag can be passed to <see cref="System.Globalization.CultureInfo"/>.
+        /// </remarks>
+        string PreferredApplicationLanguage { get; }
+
         /// <summary>
         /// Gets current system color values including dark mode and accent colors.
         /// </summary>
@@ -52,5 +66,10 @@ namespace Avalonia.Platform
         /// Raises when current system color values are changed. Including changing of a dark mode and accent colors.
         /// </summary>
         event EventHandler<PlatformColorValues>? ColorValuesChanged;
+
+        /// <summary>
+        /// Raises when the preferred application language is changed in the operating system settings.
+        /// </summary>
+        event EventHandler? PreferredApplicationLanguageChanged;
     }
 }

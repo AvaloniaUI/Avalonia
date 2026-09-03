@@ -44,6 +44,13 @@ namespace Avalonia.Media
         private ITextShaperTypeface? _textShaperTypeface;
         private UnicodeRange? _supportedUnicodeRange;
 
+        // Lazily-built set of OpenType script tags the font declares in GSUB/GPOS, used by
+        // CanShapeScript. Parsing copies the layout tables, so it is deferred until a complex script
+        // is actually queried (most text never triggers it). Published via the volatile field.
+        private volatile HashSet<OpenTypeTag>? _shapingScriptTags;
+        private bool _shapingScriptTagsUnknown;
+        private readonly object _shapingScriptTagsLock = new();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GlyphTypeface"/> class with the specified platform typeface and
         /// font simulations.
@@ -541,6 +548,59 @@ namespace Avalonia.Media
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Determines whether this font can <em>shape</em> the specified script, not merely map its
+        /// codepoints. Scripts that need OpenType complex shaping (e.g. Arabic joining, Indic
+        /// conjuncts) require the font to declare the script in its GSUB/GPOS tables; scripts that
+        /// render acceptably from cmap alone always return <c>true</c>. Used by the fallback itemizer
+        /// to avoid selecting a font that has the glyphs but cannot form them correctly.
+        /// </summary>
+        public bool CanShapeScript(Script script)
+        {
+            if (!FontFallbackScriptHints.TryGetComplexShapingTags(script, out var primary, out var secondary))
+            {
+                // Simple script: cmap coverage (checked by the caller) is sufficient.
+                return true;
+            }
+
+            var tags = EnsureShapingScriptTags();
+
+            // A present-but-unparseable GSUB/GPOS leaves capability unknown — don't reject on that
+            // basis; cmap remains the authority as it was before.
+            if (_shapingScriptTagsUnknown)
+            {
+                return true;
+            }
+
+            return tags.Contains(primary) || tags.Contains(secondary);
+        }
+
+        private HashSet<OpenTypeTag> EnsureShapingScriptTags()
+        {
+            var tags = _shapingScriptTags;
+
+            if (tags is not null)
+            {
+                return tags;
+            }
+
+            lock (_shapingScriptTagsLock)
+            {
+                if (_shapingScriptTags is not null)
+                {
+                    return _shapingScriptTags;
+                }
+
+                var set = new HashSet<OpenTypeTag>();
+
+                // Set the "unknown" flag before publishing the set so a lock-free reader that sees the
+                // volatile set also sees the flag.
+                _shapingScriptTagsUnknown = !ScriptListTable.TryReadScriptTags(this, set);
+
+                return _shapingScriptTags = set;
+            }
         }
 
         private UnicodeRange BuildSupportedUnicodeRange()

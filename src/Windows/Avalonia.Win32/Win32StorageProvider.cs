@@ -32,58 +32,67 @@ namespace Avalonia.Win32
 
         public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
         {
-            var (folders, _) = await ShowFilePicker(
-                true, true,
-                options.AllowMultiple, false,
-                options.Title, options.SuggestedFileName, null, options.SuggestedStartLocation, null, null,
+            var (folders, _) = await ShowFilePickerAsync(
+                true,
+                true,
+                options.AllowMultiple,
+                false,
+                options.Title,
+                options.SuggestedFileName,
+                null,
+                options.SuggestedStartLocation,
+                null,
+                null,
                 f => new BclStorageFolder(new DirectoryInfo(f)))
-                .ConfigureAwait(false);
+            .ConfigureAwait(false);
+
             return folders;
         }
 
-        public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+        public override async Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options)
         {
-            var (files, _) = await ShowFilePicker(
-                true, false,
-                options.AllowMultiple, false,
-                options.Title, options.SuggestedFileName, options.SuggestedFileType, options.SuggestedStartLocation,
-                null, options.FileTypeFilter,
+            var (files, typeIndex) = await ShowFilePickerAsync(
+                true,
+                false,
+                options.AllowMultiple,
+                false,
+                options.Title,
+                options.SuggestedFileName,
+                options.SuggestedFileType,
+                options.SuggestedStartLocation,
+                null,
+                options.FileTypeFilter,
                 f => new BclStorageFile(new FileInfo(f)))
-                .ConfigureAwait(false);
-            return files;
-        }
+            .ConfigureAwait(false);
 
-        public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
-        {
-            var (files, _) = await ShowFilePicker(
-                false, false,
-                false, options.ShowOverwritePrompt,
-                options.Title, options.SuggestedFileName, options.SuggestedFileType, options.SuggestedStartLocation,
-                options.DefaultExtension, options.FileTypeChoices,
-                f => new BclStorageFile(new FileInfo(f)))
-                .ConfigureAwait(false);
-            return files.Count > 0 ? files[0] : null;
+            var selectedFileType = TryGetSelectedFileType(options.FileTypeFilter, typeIndex);
+
+            return new OpenFilePickerResult { Files = files, SelectedFileType = selectedFileType };
         }
 
         public override async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
         {
-            var (files, index) = await ShowFilePicker(
-                    false, false,
-                    false, options.ShowOverwritePrompt,
-                    options.Title, options.SuggestedFileName, options.SuggestedFileType, options.SuggestedStartLocation,
-                    options.DefaultExtension, options.FileTypeChoices,
-                    f => new BclStorageFile(new FileInfo(f)))
-                .ConfigureAwait(false);
+            var (files, typeIndex) = await ShowFilePickerAsync(
+                false,
+                false,
+                false,
+                options.ShowOverwritePrompt,
+                options.Title,
+                options.SuggestedFileName,
+                options.SuggestedFileType,
+                options.SuggestedStartLocation,
+                options.DefaultExtension,
+                options.FileTypeChoices,
+                f => new BclStorageFile(new FileInfo(f)))
+            .ConfigureAwait(false);
+
             var file = files.Count > 0 ? files[0] : null;
-            var selectedFileType = options.FileTypeChoices?.Count > 0
-                                   && (index > 0 && index <= options.FileTypeChoices.Count) ?
-                options.FileTypeChoices[index - 1] :
-                null;
+            var selectedFileType = TryGetSelectedFileType(options.FileTypeChoices, typeIndex);
 
             return new SaveFilePickerResult { File = file, SelectedFileType = selectedFileType };
         }
 
-        private unsafe Task<(IReadOnlyList<TStorageItem> items, int typeIndex)> ShowFilePicker<TStorageItem>(
+        private unsafe Task<(IReadOnlyList<TStorageItem> items, int typeIndex)> ShowFilePickerAsync<TStorageItem>(
             bool isOpenFile,
             bool openFolder,
             bool allowMultiple,
@@ -236,6 +245,11 @@ namespace Avalonia.Win32
 
             return tcs.Task;
         }
+
+        private static FilePickerFileType? TryGetSelectedFileType(IReadOnlyList<FilePickerFileType>? fileTypes, int index)
+            => fileTypes is not null && index >= 1 && index <= fileTypes.Count ?
+                fileTypes[index - 1] :
+                null;
 
         private static string? GetParsingName(IShellItem shellItem)
         {

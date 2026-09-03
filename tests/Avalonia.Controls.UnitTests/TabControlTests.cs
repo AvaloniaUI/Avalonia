@@ -1838,5 +1838,42 @@ namespace Avalonia.Controls.UnitTests
             // TabItem without a local value gets the TabControl template
             Assert.Same(tabControlTemplate, tabItems[1].IndicatorTemplate);
         }
+
+        [Fact]
+        public void Only_First_Visible_And_Enabled_Tab_Should_Be_Selected_By_Default()
+        {
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items =
+                {
+                    new TabItem { Header = "hidden", IsVisible = false },
+                    new TabItem { Header = "visible" },
+                }
+            };
+
+            ApplyTemplate(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Only_First_Enabled_Tab_Should_Be_Selected_By_Default()
+        {
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items =
+                {
+                    new TabItem { Header = "disabled", IsEnabled = false },
+                    new TabItem { Header = "enabled" },
+                }
+            };
+
+            ApplyTemplate(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
     }
 }

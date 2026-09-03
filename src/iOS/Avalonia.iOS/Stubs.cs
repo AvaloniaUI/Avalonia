@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.iOS
@@ -34,11 +35,10 @@ namespace Avalonia.iOS
     {
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
-            using (var stream = new MemoryStream())
-            {
-                bitmap.Save(stream);
-                return LoadIcon(stream);
-            }
+            using var stream = new MemoryStream();
+
+            bitmap.Save(stream, PngBitmapEncoderOptions.Default);
+            return LoadIcon(stream);
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)

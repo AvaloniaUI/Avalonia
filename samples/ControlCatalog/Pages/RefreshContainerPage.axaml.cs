@@ -11,9 +11,16 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
 
+            RefreshButton.Click += RefreshButton_Click;
+
             _viewModel = new RefreshContainerViewModel();
 
             DataContext = _viewModel;
+        }
+
+        private void RefreshButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            Refresh.RequestRefresh();
         }
 
         private async void RefreshContainerPage_RefreshRequested(object? sender, RefreshRequestedEventArgs e)

@@ -9,28 +9,58 @@
              x:DataType="viewModels:MainWindowViewModel"
              x:CompileBindings="True"
              DataContext="{Binding $parent[Window].DataContext}">
-  <StackPanel>
+  <StackPanel Spacing="20">
 
     <StackPanel
-      Spacing="10"
-      Margin="25"
       IsEnabled="{OnFormFactor false, Desktop=true}">
 
-      <TextBlock Classes="h2"
+      <TextBlock Classes="h1"
                  Text="Desktop properties"
                  Margin="4" />
 
       <CheckBox Content="Extend Client Area to Decorations"
                 IsChecked="{Binding ExtendClientAreaEnabled}" />
 
-      <DockPanel IsEnabled="{Binding ExtendClientAreaEnabled}">
+      <StackPanel IsVisible="{Binding ExtendClientAreaEnabled}"
+                  Margin="28,0,0,0">
 
-        <Slider Minimum="-1"
-                Maximum="200"
-                Value="{Binding TitleBarHeight}"
-                Margin="8,-10" />
+        <Grid ColumnDefinitions="Auto,*,Auto">
 
-      </DockPanel>
+          <TextBlock Text="Height:"
+                     VerticalAlignment="Center"
+                     Grid.Column="0" />
+
+          <Slider Minimum="-1"
+                  Maximum="200"
+                  Value="{Binding TitleBarHeight}"
+                  TickFrequency="1"
+                  IsSnapToTickEnabled="True"
+                  Margin="8,-10"
+                  Grid.Column="1" />
+
+          <TextBlock Text="{Binding TitleBarHeight, StringFormat=F0}"
+                     MinWidth="50"
+                     VerticalAlignment="Center"
+                     Grid.Column="2" />
+
+        </Grid>
+
+        <CheckBox Content="Title"
+                  IsChecked="{Binding ShowTitle}" />
+
+        <CheckBox Content="Full Screen Button"
+                  IsChecked="{Binding ShowFullScreenButton}" />
+
+        <CheckBox Content="Minimize Button"
+                  IsChecked="{Binding ShowMinimizeButton}" />
+
+        <CheckBox Content="Maximize Button"
+                  IsChecked="{Binding ShowMaximizeButton}" />
+
+        <CheckBox Content="Close Button"
+                  IsChecked="{Binding ShowCloseButton}" />
+
+      </StackPanel>
 
       <CheckBox Content="Can Resize"
                 IsChecked="{Binding CanResize}" />
@@ -45,7 +75,7 @@
       <DockPanel>
 
         <Label Content="Corner Preference (Windows 11+): "
-               Margin="4"
+               Margin="0,4"
                DockPanel.Dock="Left" />
 
         <ComboBox ItemsSource="{Binding Win32WindowCornerPreferences}"
@@ -57,11 +87,12 @@
 
     </StackPanel>
 
-    <StackPanel Spacing="10" Margin="25" IsEnabled="{OnFormFactor false, Mobile=true}">
-      <TextBlock Classes="h2" Text="Mobile properties" Margin="4" />
+    <StackPanel IsEnabled="{OnFormFactor false, Mobile=true}">
+      <TextBlock Classes="h1" Text="Mobile properties" Margin="4" />
       <CheckBox Content="Is System Bar Visible" IsChecked="{Binding IsSystemBarVisible}" />
       <CheckBox Content="Display Edge To Edge" IsChecked="{Binding DisplayEdgeToEdge}" />
-      <TextBlock Text="{Binding SafeAreaPadding, StringFormat='Safe Area Padding: {0}'}" />
+      <TextBlock Text="{Binding SafeAreaPadding, StringFormat='Safe Area Padding: {0}'}"
+                 Margin="0,4" />
     </StackPanel>
 
   </StackPanel>

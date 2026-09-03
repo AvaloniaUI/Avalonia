@@ -31,6 +31,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
     private readonly List<ExpressionNode> _nodes;
     private readonly TargetTypeConverter? _targetTypeConverter;
     private readonly UncommonFields? _uncommon;
+    private int _updateTargetDepth;
     private bool _shouldUpdateOneTimeBindingTarget;
 
     /// <summary>
@@ -167,10 +168,19 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
 
         var source = _nodes[0].Source;
 
-        for (var i = 0; i < _nodes.Count; ++i)
-            _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
+        ++_updateTargetDepth;
 
-        _nodes[0].SetSource(source, null);
+        try
+        {
+            for (var i = 0; i < _nodes.Count; ++i)
+                _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
+
+            _nodes[0].SetSource(source, null);
+        }
+        finally
+        {
+            --_updateTargetDepth;
+        }
     }
 
     /// <summary>
@@ -206,8 +216,22 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
                     new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
                     null;
 
-                var forceUpdate = _mode == BindingMode.OneWay;
+                // UpdateTarget must reapply the source value even if this expression already
+                // has it cached: a two-way target may contain an uncommitted local value.
+                var forceUpdate = _mode == BindingMode.OneWay || _updateTargetDepth > 0;
                 ConvertAndPublishValue(value, error, forceUpdate);
+            }
+            else if (IsDataValidationEnabled)
+            {
+                // In OneWayToSource mode the value must not be published to the target, but any
+                // data validation error produced when writing to the source still has to be
+                // published (or cleared) so that it can be displayed (issue #8235). Publishing
+                // UnchangedValue leaves the target's value untouched.
+                var error = dataValidationError is not null ?
+                    new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
+                    null;
+
+                PublishValue(UnchangedValue, error);
             }
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)
@@ -225,6 +249,27 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
 
             _nodes[nodeIndex + 1].SetSource(value, dataValidationError);
         }
+    }
+
+    /// <summary>
+    /// Called by an <see cref="ExpressionNode"/> belonging to this binding when a
+    /// null-conditional operator applied to the node encounters a null source.
+    /// </summary>
+    /// <param name="nodeIndex">The <see cref="ExpressionNode.Index"/>.</param>
+    /// <remarks>
+    /// A null-conditional operator short-circuits the remainder of the binding path, just as it
+    /// does in C#. The nodes after <paramref name="nodeIndex"/> are unsubscribed and their values
+    /// set to null, and null is published as the value of the binding.
+    /// </remarks>
+    internal void OnNodeNullShortCircuit(int nodeIndex)
+    {
+        Debug.Assert(nodeIndex >= 0 && nodeIndex < _nodes.Count);
+
+        for (var i = nodeIndex + 1; i < _nodes.Count; ++i)
+            _nodes[i].PropagateNullShortCircuitValue();
+
+        // Publish the null value as if it were produced by the leaf node.
+        OnNodeValueChanged(_nodes.Count - 1, null, null);
     }
 
     /// <summary>

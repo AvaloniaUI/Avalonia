@@ -41,7 +41,7 @@ namespace Avalonia.X11
             _handle = PrepareXWindow(platform.Info.Display, parent);
             _platform = platform;
             _ownerEventHandler = eventHandler;
-            _platform.Windows[_handle] = OnEvent;
+            _platform.Windows[_handle] = new X11WindowInfo(OnEvent, null);
         }
 
         internal void Cleanup()

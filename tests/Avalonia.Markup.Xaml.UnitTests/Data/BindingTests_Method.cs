@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Logging;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -33,28 +35,139 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             }
         }
 
-        [Fact]
-        public void Binding_Method_With_Parameter_To_Command_Works()
+        [Theory]
+        [InlineData("ObjectMethod", "<x:String>hello</x:String>", "Called ObjectMethod with hello")]
+        [InlineData("StringMethod", "<x:String>hello</x:String>", "Called StringMethod with hello")]
+        [InlineData("Int32Method", "<x:Int32>42</x:Int32>", "Called Int32Method with 42")]
+        [InlineData("Int32Method", "<x:String>42</x:String>", "Called Int32Method with 42")]
+        [InlineData("VirtualObjectMethod", "<x:String>hello</x:String>", "Called VirtualObjectMethod with hello")]
+        [InlineData("VirtualStringMethod", "<x:String>hello</x:String>", "Called VirtualStringMethod with hello")]
+        [InlineData("VirtualStringMethod", "<x:Null />", "Called VirtualStringMethod with ")]
+        [InlineData("VirtualInt32Method", "<x:Int32>42</x:Int32>", "Called VirtualInt32Method with 42")]
+        [InlineData("MethodWithNewSlot", "<x:Int32>42</x:Int32>", "Called MethodWithNewSlot with 42")]
+        public void Binding_Method_With_Parameter_To_Command_Uses_Single_Parameter_Overload(
+            string methodName,
+            string xamlParameter,
+            string expected)
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                $$"""
+                  <Window xmlns='https://github.com/avaloniaui'
+                          xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                      <Button Name='button' Command='{Binding {{methodName}}}'>
+                        <Button.CommandParameter>
+                          {{xamlParameter}}
+                        </Button.CommandParameter>
+                      </Button>
+                  </Window>
+                  """);
+            var button = window.GetControl<Button>("button");
+            var vm = new ViewModel();
+
+            button.DataContext = vm;
+            window.ApplyTemplate();
+
+            Assert.NotNull(button.Command);
+            PerformClick(button);
+            Assert.Equal(expected, vm.Value);
+        }
+
+        [Fact]
+        public void Binding_Method_With_Parameter_To_Command_Prefers_Object_Overload()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                """
+                <Window xmlns='https://github.com/avaloniaui'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                    <Button Name='button' Command='{Binding MethodWithOverloads}' CommandParameter='foo' />
+                </Window>
+                """);
+            var button = window.GetControl<Button>("button");
+            var vm = new ViewModel();
+
+            button.DataContext = vm;
+            window.ApplyTemplate();
+
+            Assert.NotNull(button.Command);
+            PerformClick(button);
+            Assert.Equal("Called MethodWithOverloads with Object foo", vm.Value);
+        }
+
+        [Fact]
+        public void Binding_Method_With_Parameter_To_Command_Fails_With_Multiple_Single_Parameter_Overloads_Without_Object()
+        {
+            AssertBindingFails(
+                "MethodWithOverloads2",
+                "Unable to resolve method of name 'MethodWithOverloads2' on type " +
+                "'Avalonia.Markup.Xaml.UnitTests.Data.BindingTests_Method+ViewModel'. " +
+                "Found 2 overloads accepting one parameter: 'System.Int32', 'System.String'. " +
+                "Expected either a single overload with one parameter, or an overload accepting System.Object.");
+        }
+
+        [Fact]
+        public void Binding_Method_With_Parameter_To_Command_Uses_Parameterless_Overload_When_No_Overloads_With_Parameter_Exist()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                """
+                <Window xmlns='https://github.com/avaloniaui'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                    <Button Name='button' Command='{Binding MethodWithOverloads3}' CommandParameter='foo' />
+                </Window>
+                """);
+            var button = window.GetControl<Button>("button");
+            var vm = new ViewModel();
+
+            button.DataContext = vm;
+            window.ApplyTemplate();
+
+            Assert.NotNull(button.Command);
+            PerformClick(button);
+            Assert.Equal("Called MethodWithOverloads3 without parameter", vm.Value);
+        }
+
+        [Fact]
+        public void Binding_Method_With_Parameter_To_Command_Fails_Without_Valid_Overloads()
+        {
+            AssertBindingFails(
+                "MethodWithOverloads4",
+                "Unable to resolve method of name 'MethodWithOverloads4' on type " +
+                "'Avalonia.Markup.Xaml.UnitTests.Data.BindingTests_Method+ViewModel'. " +
+                "Found 2 overloads accepting more than one parameter. " +
+                "Expected a method with zero or one parameter.");
+        }
+
+        private static void AssertBindingFails(string methodName, string expectedError)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var errors = new List<string>();
+            using var logSink = TestLogSink.Start((level, area, _, template, values) =>
             {
-                var xaml = @"
-<Window xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <Button Name='button' Command='{Binding Method1}' CommandParameter='5'/>
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.GetControl<Button>("button");
-                var vm = new ViewModel();
+                if (level >= LogEventLevel.Warning && area == LogArea.Binding)
+                    errors.Add(template + " " + string.Join(" ", values));
+            });
 
-                button.DataContext = vm;
-                window.ApplyTemplate();
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                $$"""
+                  <Window xmlns='https://github.com/avaloniaui'
+                          xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                      <Button Name='button' Command='{Binding {{methodName}}}' CommandParameter='foo' />
+                  </Window>
+                  """);
+            var button = window.GetControl<Button>("button");
+            var vm = new ViewModel();
 
-                Assert.NotNull(button.Command);
-                PerformClick(button);
-                Assert.Equal("Called 5", vm.Value);
-            }
+            button.DataContext = vm;
+            window.ApplyTemplate();
+
+            Assert.Null(button.Command);
+            Assert.Contains(errors, error => error.Contains(expectedError, StringComparison.Ordinal));
         }
 
         [Fact]
@@ -142,28 +255,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
-        public void Binding_Method_Preserves_Correct_Order()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
-<Window xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <Button Name='button' Command='{Binding Method3}' CommandParameter='5'/>
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.GetControl<Button>("button");
-                var vm = new ViewModel();
-
-                button.DataContext = vm;
-                window.ApplyTemplate();
-                PerformClick(button);
-                Assert.Equal("Called Method with parameter of object type. Argument value is 5", vm.Value);
-            }
-        }
-
-        [Fact]
         public void Binding_Method_To_Command_Collected()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
@@ -217,15 +308,57 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             });
         }
 
-        private class ViewModel : INotifyPropertyChanged
+        private class ViewModelBase
+        {
+            public virtual void VirtualObjectMethod(object? i) { }
+
+            public virtual void VirtualInt32Method(int i) { }
+
+            public virtual void VirtualStringMethod(string i) { }
+
+            public void MethodWithNewSlot(int i) { }
+        }
+
+        private class ViewModel : ViewModelBase, INotifyPropertyChanged
         {
             public event PropertyChangedEventHandler? PropertyChanged;
 
-            public string Method() => Value = "Called";
-            public string Method1(object i) => Value = $"Called {i}";
-            public string Method2(int i, int j) => Value = $"Called {i},{j}";
-            public string Method3() => Value = "Called";
-            public string Method3(object obj) => Value = $"Called Method with parameter of object type. Argument value is {obj}";
+            public void Method() => Value = "Called";
+
+            public void ObjectMethod(object i) => Value = $"Called ObjectMethod with {i}";
+
+            public void Int32Method(int i) => Value = $"Called Int32Method with {i}";
+
+            public void StringMethod(string i) => Value = $"Called StringMethod with {i}";
+
+            public void MethodWithOverloads() => Value = "Called MethodWithOverloads without parameter";
+            public void MethodWithOverloads(int i) => Value = $"Called MethodWithOverloads with Int32 {i}";
+            public void MethodWithOverloads(string i) => Value = $"Called MethodWithOverloads with String {i}";
+            public void MethodWithOverloads(object i) => Value = $"Called MethodWithOverloads with Object {i}";
+
+            public void MethodWithOverloads2() => Value = "Called MethodWithOverloads2 without parameter";
+            public void MethodWithOverloads2(int i) => Value = $"Called MethodWithOverloads2 with Int32 {i}";
+            public void MethodWithOverloads2(string i) => Value = $"Called MethodWithOverloads2 with String {i}";
+
+            public void MethodWithOverloads3() => Value = "Called MethodWithOverloads3 without parameter";
+            public void MethodWithOverloads3(int a, int b) => throw new InvalidOperationException("MethodWithOverloads3 should not be called");
+            public void MethodWithOverloads3(string a, string b) => throw new InvalidOperationException("MethodWithOverloads3 should not be called");
+
+            public void MethodWithOverloads4(int a, int b) => throw new InvalidOperationException("MethodWithOverloads4 should not be called");
+            public void MethodWithOverloads4(string a, string b) => throw new InvalidOperationException("MethodWithOverloads4 should not be called");
+
+            public override void VirtualObjectMethod(object? i)
+                => Value = $"Called VirtualObjectMethod with {i}";
+
+            public override void VirtualInt32Method(int i)
+                => Value = $"Called VirtualInt32Method with {i}";
+
+            public override void VirtualStringMethod(string i)
+                => Value = $"Called VirtualStringMethod with {i}";
+
+            public new void MethodWithNewSlot(int i)
+                => Value = $"Called MethodWithNewSlot with {i}";
+
             public string Value { get; private set; } = "Not called";
 
             private object? _parameter;

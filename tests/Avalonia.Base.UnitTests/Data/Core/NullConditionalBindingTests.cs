@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -87,7 +88,33 @@ public class NullConditionalBindingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Clr_Property(bool compileBindings)
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Clr_Property_1(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding Second?.Third.Final}'/>
+            </Window>
+            """;
+        var data = new First { Second = null };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Clr_Property_2(bool compileBindings)
     {
         using var app = Start();
         using var log = TestLogger.Create();
@@ -127,6 +154,58 @@ public class NullConditionalBindingTests
                       </Window>
                       """;
         var data = new First { StyledSecond = new Second() };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Stream(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding Second?.Task^}'/>
+            </Window>
+            """;
+        var data = new First { Second = null };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Null(textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Not_Report_Error_With_Null_Conditional_Operator_For_Attached_Property(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding Second?.(Grid.Row)}'/>
+            </Window>
+            """;
+        var data = new First { Second = null };
         var window = CreateTarget(xaml, data);
         var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
 
@@ -240,6 +319,58 @@ public class NullConditionalBindingTests
         Assert.Empty(log.Messages);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Use_TargetNullValue_With_Short_Circuited_Null_Conditional_Operator_For_Clr_Property(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+            <Window xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                    xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                    x:DataType='local:NullConditionalBindingTests+First'
+                    x:CompileBindings='{{{compileBindings}}}'>
+                <local:ErrorCollectingTextBox Text='{Binding Second?.Third.Final, TargetNullValue=ItsNull}'/>
+            </Window>
+            """;
+        var data = new First { Second = null };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("ItsNull", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Should_Use_TargetNullValue_With_Short_Circuited_Null_Conditional_Operator_For_Avalonia_Property(bool compileBindings)
+    {
+        using var app = Start();
+        using var log = TestLogger.Create();
+        var xaml = $$$"""
+                      <Window xmlns='https://github.com/avaloniaui'
+                              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                              xmlns:local='using:Avalonia.Base.UnitTests.Data.Core'
+                              x:DataType='local:NullConditionalBindingTests+First'
+                              x:CompileBindings='{{{compileBindings}}}'>
+                          <local:ErrorCollectingTextBox Text='{Binding StyledSecond?.StyledThird.StyledFinal, TargetNullValue=ItsNull}'/>
+                      </Window>
+                      """;
+        var data = new First { StyledSecond = null };
+        var window = CreateTarget(xaml, data);
+        var textBox = Assert.IsType<ErrorCollectingTextBox>(window.Content);
+
+        Assert.Equal("ItsNull", textBox.Text);
+        Assert.Null(textBox.Error);
+        Assert.Equal(BindingValueType.Value, textBox.ErrorState);
+        Assert.Empty(log.Messages);
+    }
+
     private Window CreateTarget(string xaml, object? data)
     {
         var result = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
@@ -271,6 +402,8 @@ public class NullConditionalBindingTests
     {
         public static readonly StyledProperty<Third?> StyledThirdProperty =
             AvaloniaProperty.Register<Second, Third?>(nameof(StyledThird));
+
+        public Task<string>? Task { get; set; }
 
         public Third? Third { get; set; }
 

@@ -28,7 +28,7 @@ unsafe class WakeupFd : System.IDisposable
     {
         lock (_lock)
         {
-            if(!_signaled)
+            if(_disposed || !_signaled)
                 return;
             var readNow = read(_read, s_readBuf, 1);
             Debug.Assert(readNow <= 1);
@@ -40,7 +40,7 @@ unsafe class WakeupFd : System.IDisposable
     {
         lock (_lock)
         {
-            if(_signaled)
+            if(_disposed || _signaled)
                 return;
             byte b = 0;
             write(_write, &b, 1);

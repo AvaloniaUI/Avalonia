@@ -56,7 +56,7 @@ namespace Avalonia.Native.Interop.Impl
             {
                 using(var ms = new MemoryStream())
                 {
-                    icon.Save(ms);
+                    icon.Save(ms, PngBitmapEncoderOptions.Default);
 
                     var imageData = ms.ToArray();
 

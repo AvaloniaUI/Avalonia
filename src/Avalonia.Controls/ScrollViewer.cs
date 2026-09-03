@@ -806,6 +806,36 @@ namespace Avalonia.Controls
                 PageDown();
                 e.Handled = true;
             }
+            else if (e.Source == this)
+            {
+                bool rtl = FlowDirection == Media.FlowDirection.RightToLeft;
+                if (e.Key == Key.Left)
+                {
+                    if (rtl)
+                        LineRight();
+                    else
+                        LineLeft();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Right)
+                {
+                    if (rtl)
+                        LineLeft();
+                    else
+                        LineRight();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Up)
+                {
+                    LineUp();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Down)
+                {
+                    LineDown();
+                    e.Handled = true;
+                }
+            }
         }
 
         /// <summary>

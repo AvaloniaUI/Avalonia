@@ -123,9 +123,12 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             var calls = new List<string>();
             var context = RecordingContext(calls);
 
+            var geometry = new Mock<IGeometryImpl>();
+            geometry.Setup(g => g.GeometryImpl).Returns(geometry.Object);
+
             using var stream = new RenderDataStream();
             stream.PushClip(new RoundedRect(new Rect(0, 0, 10, 10)));
-            stream.PushGeometryClip(Mock.Of<IGeometryImpl>());
+            stream.PushGeometryClip(geometry.Object);
             stream.Pop();
             stream.Pop();
             stream.Replay(context.Object);

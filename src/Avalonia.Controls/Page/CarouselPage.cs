@@ -129,6 +129,8 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
+            var requestedIndex = SelectedIndex;
+
             if (_carousel != null)
             {
                 _carousel.SelectionChanged -= OnCarouselSelectionChanged;
@@ -139,7 +141,6 @@ namespace Avalonia.Controls
 
             if (_carousel != null)
             {
-                _carousel.SelectionChanged += OnCarouselSelectionChanged;
                 _carousel.ContainerPrepared += OnCarouselContainerPrepared;
                 _carousel.PageTransition = PageTransition;
                 _carousel.ItemsPanel = ItemsPanel;
@@ -147,10 +148,12 @@ namespace Avalonia.Controls
                 _carousel.IsSwipeEnabled = IsGestureEnabled;
                 _carousel.ItemsSource = (IEnumerable?)ItemsSource ?? Pages;
 
-                if (SelectedIndex >= 0)
+                if (requestedIndex >= 0)
                 {
-                    _carousel.SelectedIndex = SelectedIndex;
+                    _carousel.SelectedIndex = requestedIndex;
                 }
+
+                _carousel.SelectionChanged += OnCarouselSelectionChanged;
 
                 UpdateActivePage();
             }

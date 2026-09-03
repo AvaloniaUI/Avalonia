@@ -12,6 +12,31 @@ namespace Avalonia.Controls.UnitTests;
 public class ListBoxVirtualizationIssueTests : ScopedTestBase
 {
     [Fact]
+    public void Removing_First_Item_After_Scrolling_To_End_Should_Allow_Scrolling_To_Start()
+    {
+        using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+        {
+            var items = new ObservableCollection<int>(Enumerable.Range(0, 100));
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemsSource = items,
+                ItemTemplate = new FuncDataTemplate<int>((_, _) => new TextBlock { Height = 50 }),
+                ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
+            };
+
+            Prepare(target);
+            target.ScrollIntoView(99);
+
+            items.RemoveAt(0);
+            target.ScrollIntoView(0);
+
+            var firstContainer = Assert.IsType<ListBoxItem>(target.ContainerFromIndex(0));
+            Assert.Equal(1, firstContainer.Content);
+        }
+    }
+
+    [Fact]
     public void Replaced_ItemsSource_Should_Not_Show_Old_Selected_Item_When_Scrolled_Back()
     {
         using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

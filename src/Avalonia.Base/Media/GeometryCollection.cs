@@ -15,10 +15,12 @@ namespace Avalonia.Media
             this.ForEachItem(
                x =>
                {
+                   x.Changed += ChildChanged;
                    Parent?.Invalidate();
                },
                x =>
                {
+                   x.Changed -= ChildChanged;
                    Parent?.Invalidate();
                },
                () => throw new NotSupportedException());
@@ -31,15 +33,20 @@ namespace Avalonia.Media
             this.ForEachItem(
                x =>
                {
+                   x.Changed += ChildChanged;
                    Parent?.Invalidate();
                },
                x =>
                {
+                   x.Changed -= ChildChanged;
                    Parent?.Invalidate();
                },
                () => throw new NotSupportedException());
         }
 
         public GeometryGroup? Parent { get; set; }
+
+        private void ChildChanged(object? sender, EventArgs e)
+            => Parent?.Invalidate();
     }
 }

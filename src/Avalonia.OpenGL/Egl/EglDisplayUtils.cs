@@ -50,7 +50,8 @@ internal static class EglDisplayUtils
     }
 
     public static EglConfigInfo InitializeAndGetConfig(EglInterface egl, IntPtr display,
-        IEnumerable<GlVersion>? versions, EglConfigProbeCallback? probeConfig = null)
+        IEnumerable<GlVersion>? versions, EglConfigProbeCallback? probeConfig = null,
+        bool allowPbufferOnlyConfigs = false)
     {
         if (!egl.Initialize(display, out _, out _))
             throw OpenGlException.GetFormattedException("eglInitialize", egl);
@@ -123,11 +124,15 @@ internal static class EglDisplayUtils
                 }
             });
 
+        var surfaceTypes = allowPbufferOnlyConfigs
+            ? new[] { EGL_PBUFFER_BIT | EGL_WINDOW_BIT, EGL_WINDOW_BIT, EGL_PBUFFER_BIT }
+            : new[] { EGL_PBUFFER_BIT | EGL_WINDOW_BIT, EGL_WINDOW_BIT };
+
         foreach (var cfg in cfgs)
         {
             if (!egl.BindApi(cfg.Api))
                 continue;
-            foreach (var surfaceType in new[] { EGL_PBUFFER_BIT | EGL_WINDOW_BIT, EGL_WINDOW_BIT })
+            foreach (var surfaceType in surfaceTypes)
             foreach (var stencilSize in new[] { 8, 1, 0 })
             foreach (var depthSize in new[] { 8, 1, 0 })
             {

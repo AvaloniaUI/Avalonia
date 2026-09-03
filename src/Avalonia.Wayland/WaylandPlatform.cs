@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
@@ -16,29 +19,55 @@ namespace Avalonia.Wayland;
 class WaylandPlatform
 {
 
-    public static void Initialize(WaylandPlatformOptions options)
+    public static void Initialize(WaylandPlatformOptions options) => TryInitialize(options)?.Throw();
+
+    internal static ExceptionDispatchInfo? TryInitialize(WaylandPlatformOptions options)
     {
-        var connection = WaylandWorker.Probe(options);
+        // In some cases we aren't allowed to open multiple connections (e. g. WAYLAND_SOCKET env
+        // is used), so we can't do separate usability checks and bail before doing any initialization.
+        // Instead we do full startup sequence with WaylandWorker on compositor thread and wait for it
+        // to get to  WaylandGlobals, which is the point where we can make an informed decision
+        // about wl_display being usable.
+
+        var connection = WaylandWorker.Probe(options, out var connectError);
         if (connection == null)
-            throw new AvaloniaWaylandException("Unable to connect to Wayland display");
-        // TODO: wait for globals to be ready on the wayland thread and perform sanity checks too.
-        // This is needed for UsePlatformDetect() in Avalonia.Desktop: if we detect a compositor we
-        // can't support we should fail here so the caller can fall back to X11. Later we'll also want
-        // feature-detection flags (e.g. xdg-toplevel-drag-v1 for docks) so apps can request features
-        // that force an X11 fallback when the compositor lacks them.
+            return connectError?.SourceException is AvaloniaWaylandException
+                ? connectError
+                : ExceptionDispatchInfo.Capture(
+                    new AvaloniaWaylandException("Unable to connect to Wayland display",
+                        connectError?.SourceException));
 
-        var inputDispatchQueue = new AutomaticRawEventGrouperDispatchQueue();
-        Dispatcher.InitializeUIThreadDispatcher(new ManagedDispatcherImpl(null));
+        WaylandWorker worker;
+        SnapshotScreensImpl screens;
+        TaskCompletionSource<ExceptionDispatchInfo?> initTcs;
+        try
+        {
+            // NOTE: This technically mutates the global state since it touches Dispatcher,
+            // which designates the current thread as the UI one in static ctor, but it's generally safe to do
+            var inputDispatchQueue = new AutomaticRawEventGrouperDispatchQueue();
+
+            worker = new WaylandWorker(inputDispatchQueue);
+
+            screens = new SnapshotScreensImpl();
+            var screensProxy = new WaylandOutputsSinkProxy(screens, WaylandMarshallers.UIThread);
+
+            initTcs = new TaskCompletionSource<ExceptionDispatchInfo?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            worker.Start(options, connection, screensProxy, initTcs);
+        }
+        catch (Exception e)
+        {
+            connection.Dispose();
+            return ExceptionDispatchInfo.Capture(e);
+        }
+
+        if (initTcs.Task.GetAwaiter().GetResult() is { } initError)
+            return initError;
+
+        IDispatcherImpl dispatcherImpl = options.UseGLibMainLoop
+            ? new WaylandGlibDispatcher(options.ExternalGLibMainLoopExceptionLogger)
+            : new ManagedDispatcherImpl(null);
+        Dispatcher.InitializeUIThreadDispatcher(dispatcherImpl);
         
-        var worker = new WaylandWorker(inputDispatchQueue);
-
-        var screens = new SnapshotScreensImpl();
-        var screensProxy = new WaylandOutputsSinkProxy(screens, WaylandMarshallers.UIThread);
-
-        worker.Start(options, connection, screensProxy);
-
-
-
         var clipboardImpl = new WaylandClipboardImpl(worker);
         var clipboard = new Input.Platform.Clipboard(clipboardImpl);
 
@@ -58,5 +87,7 @@ class WaylandPlatform
             .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
             .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
             .Bind<IScreenImpl>().ToConstant(screens);
+
+        return null;
     }
 }

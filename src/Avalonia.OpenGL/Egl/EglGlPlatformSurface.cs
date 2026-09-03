@@ -40,7 +40,7 @@ namespace Avalonia.OpenGL.Egl
             private EglSurface? _glSurface;
             private readonly IEglWindowGlPlatformSurfaceInfo _info;
             private PixelSize _currentSize;
-            private readonly IntPtr _handle;
+            private IntPtr _handle;
 
             public RenderTarget(EglSurface glSurface, EglContext context, IEglWindowGlPlatformSurfaceInfo info) : base(context)
             {
@@ -58,16 +58,19 @@ namespace Avalonia.OpenGL.Egl
             public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 // TODO: use expectedPixelSize
-                if (_info.Size != _currentSize 
-                    || _handle != _info.Handle
+                var handle = _info.Handle;
+                var size = _info.Size;
+                if (size != _currentSize
+                    || _handle != handle
                     || _glSurface == null)
                 {
                     _glSurface?.Dispose();
                     _glSurface = null;
-                    _glSurface = Context.Display.CreateWindowSurface(_info.Handle);
-                    _currentSize = _info.Size;
+                    _glSurface = Context.Display.CreateWindowSurface(handle);
+                    _currentSize = size;
+                    _handle = handle;
                 }
-                return base.BeginDraw(_glSurface, _info.Size, _info.Scaling);
+                return base.BeginDraw(_glSurface, size, _info.Scaling);
             }
         }
     }

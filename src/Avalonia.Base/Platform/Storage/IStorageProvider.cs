@@ -10,40 +10,46 @@ namespace Avalonia.Platform.Storage;
 public interface IStorageProvider
 {
     /// <summary>
-    /// Returns true if it's possible to open file picker on the current platform. 
+    /// Returns true if it's possible to open the file picker on the current platform.
     /// </summary>
     bool CanOpen { get; }
 
     /// <summary>
-    /// Opens file picker dialog.
+    /// Opens the file picker dialog.
     /// </summary>
     /// <returns>Array of selected <see cref="IStorageFile"/> or empty collection if user canceled the dialog.</returns>
     Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options);
 
     /// <summary>
-    /// Returns true if it's possible to open save file picker on the current platform. 
+    /// Opens the file picker dialog and returns additional information about the result.
+    /// </summary>
+    /// <returns><see cref="OpenFilePickerResult"/> with selected files and additional dialog information such as selected file type.</returns>
+    Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options);
+
+    /// <summary>
+    /// Returns true if it's possible to open the save file picker on the current platform.
     /// </summary>
     bool CanSave { get; }
 
     /// <summary>
-    /// Opens save file picker dialog.
+    /// Opens the save file picker dialog.
     /// </summary>
     /// <returns>Saved <see cref="IStorageFile"/> or null if user canceled the dialog.</returns>
     Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options);
 
     /// <summary>
-    /// Opens save file picker dialog and returns additional information about the result.
+    /// Opens the save file picker dialog and returns additional information about the result.
     /// </summary>
     /// <returns><see cref="SaveFilePickerResult"/> with saved file and additional dialog information such as selected file type.</returns>
     Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options);
 
     /// <summary>
-    /// Returns true if it's possible to open folder picker on the current platform. 
+    /// Returns true if it's possible to open the folder picker on the current platform.
     /// </summary>
     bool CanPickFolder { get; }
 
     /// <summary>
-    /// Opens folder picker dialog.
+    /// Opens the folder picker dialog.
     /// </summary>
     /// <returns>Array of selected <see cref="IStorageFolder"/> or empty collection if user canceled the dialog.</returns>
     Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options);

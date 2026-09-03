@@ -105,6 +105,37 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
+        /// Gets whether the codepoint has the Unicode <c>Emoji</c> property.
+        /// </summary>
+        /// <param name="codepoint">The codepoint in question.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool GetIsEmoji(uint codepoint)
+        {
+            return (GraphemeBreakTrie.Trie.Get(codepoint) & EMOJI_FLAG) != 0;
+        }
+
+        /// <summary>
+        /// Gets whether the codepoint has the Unicode <c>Emoji_Presentation</c> property, i.e. whether
+        /// it defaults to an emoji presentation when no variation selector is present.
+        /// </summary>
+        /// <param name="codepoint">The codepoint in question.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool GetHasEmojiPresentation(uint codepoint)
+        {
+            return (GraphemeBreakTrie.Trie.Get(codepoint) & EMOJIPRESENTATION_FLAG) != 0;
+        }
+
+        /// <summary>
+        /// Gets whether the codepoint has the Unicode <c>Default_Ignorable_Code_Point</c> property.
+        /// </summary>
+        /// <param name="codepoint">The codepoint in question.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool GetIsDefaultIgnorable(uint codepoint)
+        {
+            return (GraphemeBreakTrie.Trie.Get(codepoint) & DEFAULTIGNORABLE_FLAG) != 0;
+        }
+
+        /// <summary>
         /// Gets the EastAsianWidth class for the Unicode codepoint.
         /// </summary>
         /// <param name="codepoint">The codepoint in question.</param>

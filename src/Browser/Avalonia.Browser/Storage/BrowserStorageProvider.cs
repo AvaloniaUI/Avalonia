@@ -60,6 +60,12 @@ internal class BrowserStorageProvider : IStorageProvider
         }
     }
 
+    public async Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options)
+    {
+        var files = await OpenFilePickerAsync(options).ConfigureAwait(false);
+        return new OpenFilePickerResult { Files = files };
+    }
+
     public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
         await AvaloniaModule.ImportStorage();

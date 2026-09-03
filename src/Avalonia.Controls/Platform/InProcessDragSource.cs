@@ -63,6 +63,7 @@ namespace Avalonia.Platform
                     using (_result.Subscribe(new AnonymousObserver<DragDropEffects>(tcs)))
                     {
                         var effect = await tcs.Task;
+                        dataTransfer.Dispose();
                         return effect;
                     }
                 }

@@ -537,6 +537,32 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBlock_With_Fractional_LineHeight_Should_Not_Cull_Last_Line_At_Fractional_Scaling()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock
+            {
+                Text = "first second third",
+                FontSize = 16,
+                LineHeight = 20.8,
+                TextWrapping = TextWrapping.Wrap,
+                Width = 50,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+            };
+            var root = new TestRoot(target)
+            {
+                LayoutScaling = 1.25,
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            Assert.Equal(3, target.TextLayout.TextLines.Count);
+        }
+
+        [Fact]
         public void TextBlock_With_UseLayoutRounding_False_Should_Not_Round_Padding_In_MeasureOverride()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);

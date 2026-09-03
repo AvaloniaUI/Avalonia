@@ -17,7 +17,7 @@ struct IAvnAutomationPeer;
 -(void) showAppMenuOnly;
 -(void) showWindowMenuWithAppMenu;
 -(void) applyMenu:(AvnMenu* _Nullable)menu;
--(IAvnAutomationPeer* _Nonnull) automationPeer;
+-(IAvnAutomationPeer* _Nullable) automationPeer;
 
 -(double) getExtendedTitleBarHeight;
 -(void) setIsExtended:(bool)value;

@@ -170,6 +170,39 @@ namespace Avalonia.Base.UnitTests.Media
             }
         }
 
+        // A run can hold characters and no glyphs at all: a line break in a font that gives the shaper
+        // no way to hide it shapes to nothing. Hit-testing has no cluster to snap to there, so it must
+        // degenerate to the run's single zero-width position instead of indexing an empty glyph list.
+        [Fact]
+        public void Should_Hit_Test_Run_Without_Glyphs()
+        {
+            using (Start())
+            using (var glyphRun = new GlyphRun(Typeface.Default.GlyphTypeface, 10, "\r\n".AsMemory(),
+                       Array.Empty<GlyphInfo>()))
+            {
+                Assert.Equal(0, glyphRun.Bounds.Width);
+
+                // Answered without building a platform glyph run for something that marks nothing.
+                Assert.Equal(default, glyphRun.InkBounds);
+
+                Assert.Equal(0, glyphRun.GetDistanceFromCharacterHit(new CharacterHit(0)));
+                Assert.Equal(0, glyphRun.GetDistanceFromCharacterHit(new CharacterHit(0, 2)));
+
+                Assert.Equal(0, glyphRun.FindGlyphIndex(0));
+
+                var nearestHit = glyphRun.FindNearestCharacterHit(0, out var width);
+
+                Assert.Equal(0, nearestHit.FirstCharacterIndex);
+                Assert.Equal(2, nearestHit.TrailingLength);
+                Assert.Equal(0, width);
+
+                var hitFromDistance = glyphRun.GetCharacterHitFromDistance(0, out var isInside);
+
+                Assert.False(isInside);
+                Assert.Equal(0, hitFromDistance.FirstCharacterIndex);
+            }
+        }
+
         private static GlyphRun CreateGlyphRun(double[] glyphAdvances, int[] glyphClusters, int bidiLevel = 0)
         {
             var count = glyphAdvances.Length;

@@ -250,15 +250,41 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.PageUp)
+            if (Orientation == Orientation.Vertical)
             {
-                LargeDecrement();
-                e.Handled = true;
+                if (e.Key == Key.PageUp)
+                {
+                    LargeDecrement();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.PageDown)
+                {
+                    LargeIncrement();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Up)
+                {
+                    SmallDecrement();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Down)
+                {
+                    SmallIncrement();
+                    e.Handled = true;
+                }
             }
-            else if (e.Key == Key.PageDown)
+            else if (Orientation == Orientation.Horizontal)
             {
-                LargeIncrement();
-                e.Handled = true;
+                if (e.Key == Key.Left)
+                {
+                    SmallDecrement();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Right)
+                {
+                    SmallIncrement();
+                    e.Handled = true;
+                }
             }
         }
 
@@ -579,7 +605,7 @@ namespace Avalonia.Controls.Primitives
         public void ScrollToHome()
         {
             SetCurrentValue(ValueProperty, Minimum);
-            OnScroll(ScrollEventType.SmallDecrement);
+            OnScroll(ScrollEventType.LargeDecrement);
         }
 
         /// <summary>
@@ -588,7 +614,7 @@ namespace Avalonia.Controls.Primitives
         public void ScrollToEnd()
         {
             SetCurrentValue(ValueProperty, Maximum);
-            OnScroll(ScrollEventType.SmallIncrement);
+            OnScroll(ScrollEventType.LargeIncrement);
         }
 
         /// <summary>

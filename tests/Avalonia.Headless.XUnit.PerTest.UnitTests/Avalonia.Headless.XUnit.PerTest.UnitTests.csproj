@@ -3,7 +3,7 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
-    <DefineConstants>$(DefineConstants);XUNIT</DefineConstants>
+    <DefineConstants>$(DefineConstants);XUNIT;PERTEST</DefineConstants>
   </PropertyGroup>
 
   <Import Project="..\..\build\UnitTests.NetCore.targets" />

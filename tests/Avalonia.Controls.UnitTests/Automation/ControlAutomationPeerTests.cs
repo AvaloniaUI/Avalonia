@@ -232,6 +232,31 @@ namespace Avalonia.Controls.UnitTests.Automation
             }
         }
 
+        public class ToScreen : ScopedTestBase
+        {
+            [Fact]
+            public void Converts_Rect_When_Attached_To_Rooted_Tree()
+            {
+                var border = new Border();
+                var root = new TestRoot(border);
+                var peer = CreatePeer(border);
+
+                Assert.Equal(new Rect(10, 20, 30, 40), peer.ToScreen(new Rect(10, 20, 30, 40)));
+            }
+
+            [Fact]
+            public void Returns_Null_When_Detached()
+            {
+                var border = new Border();
+                var root = new TestRoot(border);
+                var peer = CreatePeer(border);
+
+                root.Child = null;
+
+                Assert.Null(peer.ToScreen(new Rect(10, 20, 30, 40)));
+            }
+        }
+
         private static AutomationPeer CreatePeer(Control control)
         {
             return ControlAutomationPeer.CreatePeerForElement(control);

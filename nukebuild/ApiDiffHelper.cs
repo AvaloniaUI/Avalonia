@@ -399,7 +399,11 @@ public static class ApiDiffHelper
     {
         var packageSource = new PackageSource(NightlyFeedUri) { ProtocolVersion = 3 };
         var repository = Repository.Factory.GetCoreV3(packageSource);
-        var findPackageByIdResource = await repository.GetResourceAsync<FindPackageByIdResource>();
+
+        var findPackageByIdResource =
+            await repository.GetResourceAsync<FindPackageByIdResource>() ??
+            throw new InvalidOperationException($"{nameof(FindPackageByIdResource)} not found on {packageSource}");
+
         return new NuGetDownloadContext(packageSource, findPackageByIdResource);
     }
 

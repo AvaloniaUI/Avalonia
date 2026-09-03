@@ -48,9 +48,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
             if (executeMethod.Parameters.Count != 0)
             {
-                Debug.Assert(executeMethod.Parameters.Count == 1
-                             && executeMethod.Parameters[0] == context.Configuration.WellKnownTypes.Object);
+                Debug.Assert(executeMethod.Parameters.Count == 1);
                 gen.Ldarg(1);
+
+                if (!executeMethod.Parameters[0].Is("System", "Object"))
+                    gen.Unbox_Any(executeMethod.Parameters[0]);
             }
             gen.EmitCall(executeMethod, swallowResult: true);
             gen.Ret();

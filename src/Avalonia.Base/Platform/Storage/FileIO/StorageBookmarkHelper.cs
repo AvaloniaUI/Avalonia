@@ -86,20 +86,19 @@ internal static class StorageBookmarkHelper
 
         Span<byte> decodedBookmark;
 
-        // Each base64 character represents 6 bits, but to be safe, 
-        var arrayPool = ArrayPool<byte>.Shared.Rent(HeaderLength + base64bookmark.Length * 6);
-        if (Convert.TryFromBase64Chars(base64bookmark, arrayPool, out int bytesWritten))
-        {
-            decodedBookmark = arrayPool.AsSpan().Slice(0, bytesWritten);
-        }
-        else
-        {
-            nativeBookmark = null;
-            return DecodeResult.InvalidFormat;
-        }
+        var arrayPool = ArrayPool<byte>.Shared.Rent(HeaderLength + base64bookmark.Length / 4 * 3);
 
         try
         {
+            // Each base64 character represents 6 bits, but to be safe, 
+            if (!Convert.TryFromBase64Chars(base64bookmark, arrayPool, out int bytesWritten))
+            {
+                nativeBookmark = null;
+                return DecodeResult.InvalidFormat;
+            }
+
+            decodedBookmark = arrayPool.AsSpan(..bytesWritten);
+
             if (decodedBookmark.Length < HeaderLength
                 // Check if decoded string starts with the correct prefix, checking v1 at the same time.
                 && !AvaHeaderPrefix.SequenceEqual(decodedBookmark.Slice(0, AvaHeaderPrefix.Length)))

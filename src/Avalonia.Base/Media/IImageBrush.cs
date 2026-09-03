@@ -17,9 +17,21 @@ namespace Avalonia.Media
         IImageBrushSource? Source { get; }
     }
 
+    /// <summary>
+    /// Provides access to the image source of an <see cref="IImageBrush"/>. 
+    /// </summary>
     [NotClientImplementable]
     public interface IImageBrushSource
     {
         internal IRef<IBitmapImpl>? Bitmap { get; }
+
+        /// <summary>
+        /// Gets the bitmap implementation of the image source.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="IBitmapImpl"/> instance if available; otherwise, <c>null</c>.
+        /// </returns>
+        [PrivateApi]
+        IBitmapImpl? GetBitmap() => Bitmap?.Item;
     }
 }

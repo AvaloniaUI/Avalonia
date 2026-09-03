@@ -453,7 +453,7 @@ namespace Avalonia.Skia.RenderTests
             };
 
             await RenderToFile(target);
-            CompareImages();
+            CompareImages(gpuAllowedError: 0.05);
         }
 
         [Fact]

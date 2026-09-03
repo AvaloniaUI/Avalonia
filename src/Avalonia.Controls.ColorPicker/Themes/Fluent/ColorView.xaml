@@ -426,14 +426,18 @@
                        Margin="12">
                 <ListBox.ItemTemplate>
                   <DataTemplate DataType="{x:Type Color}">
-                    <Border AutomationProperties.Name="{Binding Converter={StaticResource ColorToDisplayNameConverter}}"
-                            ToolTip.Tip="{Binding Converter={StaticResource ColorToDisplayNameConverter}}"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch">
-                      <Border.Background>
-                        <SolidColorBrush Color="{Binding}" />
-                      </Border.Background>
-                    </Border>
+                    <Panel AutomationProperties.Name="{Binding Converter={StaticResource ColorToDisplayNameConverter}}"
+                           ToolTip.Tip="{Binding Converter={StaticResource ColorToDisplayNameConverter}}"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch">
+                      <Border Background="{StaticResource ColorControlCheckeredBackgroundBrush}" />
+                      <Border HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch">
+                        <Border.Background>
+                          <SolidColorBrush Color="{Binding}" />
+                        </Border.Background>
+                      </Border>
+                    </Panel>
                   </DataTemplate>
                 </ListBox.ItemTemplate>
                 <ListBox.ItemsPanel>

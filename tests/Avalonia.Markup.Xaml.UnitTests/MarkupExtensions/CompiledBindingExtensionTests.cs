@@ -640,7 +640,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 // Assert DataGridLikeColumn.Binding data type.
                 var compiledPath = ((CompiledBinding)column.Binding!).Path;
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
 
                 Assert.Equal(typeof(string), node.Property.PropertyType);
                 Assert.Equal(nameof(TestData.StringProperty), node.Property.Name);
@@ -683,7 +683,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 // Assert DataGridLikeColumn.Binding data type.
                 var compiledPath = ((CompiledBinding)column.Binding!).Path;
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(int), node.Property.PropertyType);
                 
                 // Assert DataGridLikeColumn.Template data type by evaluating the template.
@@ -728,7 +728,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 // Assert DataGridLikeColumn.Binding data type.
                 var compiledPath = ((CompiledBinding)column.Binding!).Path;
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(int), node.Property.PropertyType);
                 
                 // Assert DataGridLikeColumn.Template data type by evaluating the template.
@@ -1281,6 +1281,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.DataContext = dataContext;
 
                 Assert.Equal(dataContext.StringProperty, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void BoolPropertyGetterUsesCachedBoxes()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Tag='{CompiledBinding BoolProperty}' Name='textBlock' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                window.DataContext = new TestDataContext { BoolProperty = true };
+                var boxedTrue = textBlock.Tag;
+                window.DataContext = new TestDataContext { BoolProperty = false };
+                var boxedFalse = textBlock.Tag;
+
+                Assert.Equal(true, boxedTrue);
+                Assert.Equal(false, boxedFalse);
+
+                // The getter must return the cached boxes instead of allocating a new box per read.
+                window.DataContext = new TestDataContext { BoolProperty = true };
+                Assert.Same(boxedTrue, textBlock.Tag);
+                window.DataContext = new TestDataContext { BoolProperty = false };
+                Assert.Same(boxedFalse, textBlock.Tag);
             }
         }
 
@@ -1905,31 +1936,172 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Theory]
-        [InlineData("5")]
-        [InlineData("hello")]
-        [InlineData(null)]
-        public void Binding_Method_With_Parameter_To_Command_Works(string? parameter)
+        [InlineData("ObjectMethod", "<x:String>hello</x:String>", "Called ObjectMethod with hello")]
+        [InlineData("StringMethod", "<x:String>hello</x:String>", "Called StringMethod with hello")]
+        [InlineData("StringMethod", "<x:Null />", "Called StringMethod with ")]
+        [InlineData("Int32Method", "<x:Int32>42</x:Int32>", "Called Int32Method with 42")]
+        [InlineData("VirtualObjectMethod", "<x:String>hello</x:String>", "Called VirtualObjectMethod with hello")]
+        [InlineData("VirtualStringMethod", "<x:String>hello</x:String>", "Called VirtualStringMethod with hello")]
+        [InlineData("VirtualStringMethod", "<x:Null />", "Called VirtualStringMethod with ")]
+        [InlineData("VirtualInt32Method", "<x:Int32>42</x:Int32>", "Called VirtualInt32Method with 42")]
+        [InlineData("MethodWithNewSlot", "<x:Int32>42</x:Int32>", "Called MethodWithNewSlot with 42")]
+        public void Binding_Method_With_Parameter_To_Command_Uses_Single_Parameter_Overload(
+            string methodName,
+            string xamlParameter,
+            string expected)
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = $@"
-<Window xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataType='local:MethodAsCommandDataContext'>
-    <Button Name='button' Command='{{CompiledBinding Method1}}' CommandParameter='{ parameter ?? "{x:Null}" }'/>
-</Window>";
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.GetControl<Button>("button");
-                var vm = new MethodAsCommandDataContext();
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
 
-                button.DataContext = vm;
-                window.ApplyTemplate();
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                $$"""
+                  <Window xmlns='https://github.com/avaloniaui'
+                          xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                          xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+                          x:DataType='local:MethodAsCommandDataContext'>
+                      <Button Name='button' Command='{CompiledBinding {{methodName}}}'>
+                        <Button.CommandParameter>
+                          {{xamlParameter}}
+                        </Button.CommandParameter>
+                      </Button>
+                  </Window>
+                  """);
+            var button = window.GetControl<Button>("button");
+            var vm = new MethodAsCommandDataContext();
 
-                Assert.NotNull(button.Command);
-                PerformClick(button);
-                Assert.Equal("Called " + parameter, vm.Value);
-            }
+            button.DataContext = vm;
+            window.ApplyTemplate();
+
+            Assert.NotNull(button.Command);
+            PerformClick(button);
+            Assert.Equal(expected, vm.Value);
+        }
+
+        [Theory]
+        [InlineData("Int32Method", "<x:String>hello</x:String>", typeof(InvalidCastException))]
+        [InlineData("Int32Method", "<x:Null />", typeof(NullReferenceException))]
+        [InlineData("StringMethod", "<x:Int32>42</x:Int32>", typeof(InvalidCastException))]
+        public void Binding_Method_With_Parameter_To_Command_With_Single_Parameter_Overload_Throws_At_Runtime_If_Mismatched_Types(
+            string methodName,
+            string xamlParameter,
+            Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                $$"""
+                  <Window xmlns='https://github.com/avaloniaui'
+                          xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                          xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+                          x:DataType='local:MethodAsCommandDataContext'>
+                      <Button Name='button' Command='{CompiledBinding {{methodName}}}'>
+                        <Button.CommandParameter>
+                          {{xamlParameter}}
+                        </Button.CommandParameter>
+                      </Button>
+                  </Window>
+                  """);
+            var button = window.GetControl<Button>("button");
+            var vm = new MethodAsCommandDataContext();
+
+            button.DataContext = vm;
+            window.ApplyTemplate();
+
+            Assert.NotNull(button.Command);
+            Assert.Throws(exceptionType, () => PerformClick(button));
+        }
+
+        [Fact]
+        public void Binding_Method_With_Parameter_To_Command_Prefers_Object_Overload()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                """
+                <Window xmlns='https://github.com/avaloniaui'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+                        x:DataType='local:MethodAsCommandDataContext'>
+                    <Button Name='button' Command='{CompiledBinding MethodWithOverloads}' CommandParameter="foo" />
+                </Window>
+                """);
+            var button = window.GetControl<Button>("button");
+            var vm = new MethodAsCommandDataContext();
+
+            button.DataContext = vm;
+            window.ApplyTemplate();
+
+            Assert.NotNull(button.Command);
+            PerformClick(button);
+            Assert.Equal("Called MethodWithOverloads with Object foo", vm.Value);
+        }
+
+        [Fact]
+        public void Binding_Method_With_Parameter_To_Command_Fails_With_Multiple_Single_Parameter_Overloads_Without_Object()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var exception = Assert.ThrowsAny<XmlException>(() => (Window)AvaloniaRuntimeXamlLoader.Load(
+                """
+                <Window xmlns='https://github.com/avaloniaui'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+                        x:DataType='local:MethodAsCommandDataContext'>
+                    <Button Name='button' Command='{CompiledBinding MethodWithOverloads2}' CommandParameter="foo" />
+                </Window>
+                """));
+
+            Assert.StartsWith(
+                "Unable to resolve method of name 'MethodWithOverloads2' on type 'Avalonia.Markup.Xaml.UnitTests.MarkupExtensions.MethodAsCommandDataContext'. " +
+                "Found 2 overloads accepting one parameter: 'System.Int32', 'System.String'. " +
+                "Expected either a single overload with one parameter, or an overload accepting System.Object.",
+                exception.Message);
+        }
+
+        [Fact]
+        public void Binding_Method_With_Parameter_To_Command_Uses_Parameterless_Overload_When_No_Overloads_With_Parameter_Exist()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(
+                """
+                <Window xmlns='https://github.com/avaloniaui'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+                        x:DataType='local:MethodAsCommandDataContext'>
+                    <Button Name='button' Command='{CompiledBinding MethodWithOverloads3}' CommandParameter="foo" />
+                </Window>
+                """);
+            var button = window.GetControl<Button>("button");
+            var vm = new MethodAsCommandDataContext();
+
+            button.DataContext = vm;
+            window.ApplyTemplate();
+
+            Assert.NotNull(button.Command);
+            PerformClick(button);
+            Assert.Equal("Called MethodWithOverloads3 without parameter", vm.Value);
+        }
+
+        [Fact]
+        public void Binding_Method_With_Parameter_To_Command_Fails_Without_Valid_Overloads()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var exception = Assert.ThrowsAny<XmlException>(() => (Window)AvaloniaRuntimeXamlLoader.Load(
+                """
+                <Window xmlns='https://github.com/avaloniaui'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+                        x:DataType='local:MethodAsCommandDataContext'>
+                    <Button Name='button' Command='{CompiledBinding MethodWithOverloads4}' CommandParameter="foo" />
+                </Window>
+                """));
+
+            Assert.StartsWith(
+                "Unable to resolve method of name 'MethodWithOverloads4' on type 'Avalonia.Markup.Xaml.UnitTests.MarkupExtensions.MethodAsCommandDataContext'. " +
+                "Found 2 overloads accepting more than one parameter. " +
+                "Expected a method with zero or one parameter. ",
+                exception.Message);
         }
 
         [Fact]
@@ -2063,7 +2235,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var compiledPath = ((CompiledBinding)control.X!).Path;
 
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }
@@ -2081,7 +2253,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var compiledPath = ((CompiledBinding)control.X!).Path;
 
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }
@@ -2100,7 +2272,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     new RuntimeXamlLoaderConfiguration { UseCompiledBindingsByDefault = true });
                 var compiledPath = ((CompiledBinding)control.X!).Path;
 
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }
@@ -2401,6 +2573,196 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void Emits_TypedBindingExpression_For_Simple_DataContext_Binding()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "hello" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<TypedBindingExpression<TestDataContext, string>>(expression);
+                Assert.Equal("hello", textBlock.Text);
+            }
+        }
+
+        [Theory]
+        [InlineData("OneWay")]
+        [InlineData("TwoWay")]
+        [InlineData("OneWayToSource")]
+        [InlineData("OneTime")]
+        public void Emits_TypedBindingExpression_For_All_Standard_Modes(string mode)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load($@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{{CompiledBinding StringProperty, Mode={mode}}}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "x" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<TypedBindingExpression<TestDataContext, string>>(expression);
+            }
+        }
+
+        [Fact]
+        public void Emits_TypedBindingExpression_For_Binding_With_CompileBindings_True()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:CompileBindings='True'>
+    <TextBlock Text='{Binding StringProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "hi" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<TypedBindingExpression<TestDataContext, string>>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_For_Nested_Path()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding NestedGenericString.Value}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { NestedGenericString = new TestDataContext.NestedGeneric<string> { Value = "v" } };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<BindingExpression>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_When_Converter_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding StringProperty, Converter={x:Static local:AppendConverter.Instance}, ConverterParameter=suffix}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "x" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<BindingExpression>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_For_DataValidation_Enabled_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                // TextBox.Text enables data validation, which TypedBindingExpression does not
+                // support, so the binding must fall back to the untyped BindingExpression even
+                // though it is otherwise eligible for the typed path.
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBox Text='{CompiledBinding StringProperty}' Name='textBox' />
+</Window>");
+                var textBox = window.GetControl<TextBox>("textBox");
+                window.DataContext = new TestDataContext { StringProperty = "hello" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBox, TextBox.TextProperty);
+                Assert.IsType<BindingExpression>(expression);
+                Assert.Equal("hello", textBox.Text);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_When_StringFormat_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding DecimalValue, StringFormat=c2}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext();
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<BindingExpression>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_For_Negated_Binding()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Tag='{CompiledBinding !BoolProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { BoolProperty = true };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TagProperty);
+                Assert.IsType<BindingExpression>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_For_DataContext_Target()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock DataContext='{CompiledBinding StringProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "x" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, StyledElement.DataContextProperty);
+                Assert.IsType<BindingExpression>(expression);
+            }
+        }
+
         static void Throws(string type, Action cb)
         {
             try
@@ -2541,15 +2903,57 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public object CustomDelegateTypeInt(object i) => i;
     }
 
-    public class MethodAsCommandDataContext : INotifyPropertyChanged
+    public class MethodAsCommandDataContextBase
+    {
+        public virtual void VirtualObjectMethod(object? i) { }
+
+        public virtual void VirtualInt32Method(int i) { }
+
+        public virtual void VirtualStringMethod(string i) { }
+
+        public void MethodWithNewSlot(int i) { }
+    }
+
+    public class MethodAsCommandDataContext : MethodAsCommandDataContextBase, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public string Method() => Value = "Called";
-        public string Method1() => Value = "Called";
-        public string Method1(int i) => throw new InvalidOperationException("Binding to method with typed parameters is not supported");
-        public string Method1(object i) => Value = $"Called {i}";
-        public string Method2(int i, int j) => Value = $"Called {i},{j}";
+        public void Method() => Value = "Called";
+
+        public void ObjectMethod(object i) => Value = $"Called ObjectMethod with {i}";
+
+        public void Int32Method(int i) => Value = $"Called Int32Method with {i}";
+
+        public void StringMethod(string i) => Value = $"Called StringMethod with {i}";
+
+        public void MethodWithOverloads() => Value = "Called MethodWithOverloads without parameter";
+        public void MethodWithOverloads(int i) => Value = $"Called MethodWithOverloads with Int32 {i}";
+        public void MethodWithOverloads(string i) => Value = $"Called MethodWithOverloads with String {i}";
+        public void MethodWithOverloads(object i) => Value = $"Called MethodWithOverloads with Object {i}";
+
+        public void MethodWithOverloads2() => Value = "Called MethodWithOverloads2 without parameter";
+        public void MethodWithOverloads2(int i) => Value = $"Called MethodWithOverloads2 with Int32 {i}";
+        public void MethodWithOverloads2(string i) => Value = $"Called MethodWithOverloads2 with String {i}";
+
+        public void MethodWithOverloads3() => Value = "Called MethodWithOverloads3 without parameter";
+        public void MethodWithOverloads3(int a, int b) => throw new InvalidOperationException("MethodWithOverloads3 should not be called");
+        public void MethodWithOverloads3(string a, string b) => throw new InvalidOperationException("MethodWithOverloads3 should not be called");
+
+        public void MethodWithOverloads4(int a, int b) => throw new InvalidOperationException("MethodWithOverloads4 should not be called");
+        public void MethodWithOverloads4(string a, string b) => throw new InvalidOperationException("MethodWithOverloads4 should not be called");
+
+        public override void VirtualObjectMethod(object? i)
+            => Value = $"Called VirtualObjectMethod with {i}";
+
+        public override void VirtualInt32Method(int i)
+            => Value = $"Called VirtualInt32Method with {i}";
+
+        public override void VirtualStringMethod(string i)
+            => Value = $"Called VirtualStringMethod with {i}";
+
+        public new void MethodWithNewSlot(int i)
+            => Value = $"Called MethodWithNewSlot with {i}";
+
         public string Value { get; private set; } = "Not called";
 
         private object? _parameter;

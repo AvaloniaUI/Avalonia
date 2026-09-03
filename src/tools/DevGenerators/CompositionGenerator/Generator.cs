@@ -436,6 +436,8 @@ return;
             "Quaternion",
             "Color",
             "Avalonia.Media.Color",
+            "Avalonia.RelativePoint",
+            "Avalonia.RelativeScalar",
             "Vector",
             "Vector3D"
         };
