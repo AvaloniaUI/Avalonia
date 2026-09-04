@@ -172,6 +172,28 @@ namespace Avalonia.Controls.UnitTests
                 horizontal ? target.GetRealizedElements().Last()!.Bounds.Right : target.GetRealizedElements().Last()!.Bounds.Bottom);
         }
 
+        [Fact]
+        public void Item_Of_Content_Sized_Panel_Is_Positioned_At_Start()
+        {
+            using var app = App();
+
+            var items = new ObservableCollection<string>();
+            var (target, _, itemsControl) = CreateUnrootedTarget<ItemsControl>(items: items);
+
+            // Size the control to its content rather than to the viewport.
+            itemsControl.VerticalAlignment = VerticalAlignment.Top;
+
+            CreateRoot(itemsControl).LayoutManager.ExecuteInitialLayoutPass();
+
+            items.Add("Item 0");
+            Layout(target);
+
+            var container = Assert.IsAssignableFrom<Control>(target.ContainerFromIndex(0));
+
+            Assert.Equal(0, container.Bounds.Y);
+            Assert.Equal(container.Bounds.Height, target.Bounds.Height);
+        }
+
         [Theory]
         [InlineData(0d, 10)]
         [InlineData(0.5d, 20)]

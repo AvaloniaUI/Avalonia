@@ -22,6 +22,7 @@ namespace Avalonia.Headless
         private readonly IKeyboardDevice _keyboard;
         private readonly IScreenImpl _screen;
         private readonly Stopwatch _st = Stopwatch.StartNew();
+        private readonly TouchDevice _touchDevice = new();
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
         private readonly AvaloniaHeadlessPlatformOptions _options;
@@ -60,6 +61,7 @@ namespace Avalonia.Headless
         public void Dispose()
         {
             Closed?.Invoke();
+            _touchDevice.Dispose();
             _lastRenderedFrame?.Dispose();
             _lastRenderedFrame = null;
         }
@@ -367,6 +369,12 @@ namespace Avalonia.Headless
         {
             Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot!,
                 point, delta, modifiers));
+        }
+
+        void IHeadlessWindow.Touch(Point point, long touchPointId, RawPointerEventType type, RawInputModifiers modifiers)
+        {
+            Input?.Invoke(new RawTouchEventArgs(_touchDevice, Timestamp, InputRoot!,
+                type, point, modifiers, touchPointId));
         }
 
         void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers)

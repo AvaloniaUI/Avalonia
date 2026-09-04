@@ -941,7 +941,9 @@ namespace Avalonia.Controls
             var horizontal = Orientation == Orientation.Horizontal;
             var u = viewport.anchorU;
             var viewportEnd = horizontal ? _viewport.Right : _viewport.Bottom;
+
             var anchorAtEnd = !_hasReachedEnd && index == items.Count - 1 &&
+                !MathUtilities.IsZero(viewport.viewportUStart) &&
                 MathUtilities.GreaterThanOrClose(viewportEnd, horizontal ? Bounds.Width : Bounds.Height);
 
             // Reset boundary flags
