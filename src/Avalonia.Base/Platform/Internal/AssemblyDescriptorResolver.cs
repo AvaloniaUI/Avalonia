@@ -26,6 +26,7 @@ internal class AssemblyDescriptorResolver: IAssemblyDescriptorResolver
         if (!_assemblyNameCache.TryGetValue(name, out var rv))
         {
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            // Select assembly by ManifestModule.ScopeName instead of GetName().Name to avoid CultureInfo dependency.
             var match = loadedAssemblies.Where(a => a.ManifestModule.ScopeName.StartsWith(name, StringComparison.InvariantCultureIgnoreCase)).OrderBy(a => a.ManifestModule.ScopeName.Length).FirstOrDefault();
             if (match != null)
             {
