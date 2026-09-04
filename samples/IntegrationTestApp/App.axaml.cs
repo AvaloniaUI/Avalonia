@@ -18,7 +18,8 @@ namespace IntegrationTestApp
         {
             TrayIconCommand = MiniCommand.Create<string>(name =>
             {
-                _mainWindow!.Get<CheckBox>(name).IsChecked = true;
+                var checkbox = _mainWindow!.GetLogicalDescendants().OfType<CheckBox>().FirstOrDefault(x => x.Name == name);
+                checkbox?.IsChecked = true;
             });
             DockMenuCommand = MiniCommand.Create<string>(name =>
             {
