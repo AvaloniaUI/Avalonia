@@ -65,7 +65,19 @@ namespace Avalonia.Controls.Documents
             control.SetValue(TextDecorationsProperty, value);
         }
         
-        internal abstract void BuildTextRun(IList<TextRun> textRuns, Size blockSize);
+        internal abstract void BuildTextRun(IList<TextRun> textRuns);
+
+        /// <summary>
+        /// Measures the controls this inline embeds against the width available to the block.
+        /// </summary>
+        /// <remarks>
+        /// Text runs depend on the content alone, so they survive a constraint change. An embedded
+        /// control is the exception: its size answers to the available width, and the run reports
+        /// that size live, so re-measuring the control is what resizes the line.
+        /// </remarks>
+        internal virtual void MeasureEmbeddedControls(Size blockSize)
+        {
+        }
 
         internal abstract void AppendText(StringBuilder stringBuilder);
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Automation.Peers;
@@ -186,7 +186,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public TextLayout TextLayout => _textLayout ??= CreateTextLayout(Text);
+        public TextLayout TextLayout => _textLayout ??= CreateTextLayoutCore();
+
+        private TextLayout CreateTextLayoutCore()
+        {
+            // A layout can be created outside of a measure pass - a render pass that runs before a
+            // queued measure, or a read of this property - so it cannot rely on the measure pass
+            // having brought the complex content up to date.
+            EnsureTextRuns();
+            MeasureEmbeddedControls(GetMaxSizeFromConstraint());
+
+            return CreateTextLayout(Text);
+        }
 
         /// <summary>
         /// Gets or sets the padding to place around the <see cref="Text"/>.
@@ -674,9 +685,11 @@ namespace Avalonia.Controls
 
             ITextSource textSource;
 
-            if (_textRuns != null)
+            if (HasComplexContent)
             {
-                textSource = new InlinesTextSource(_textRuns);
+                EnsureTextRuns();
+
+                textSource = new InlinesTextSource(_textRuns!);
             }
             else
             {
@@ -701,6 +714,7 @@ namespace Avalonia.Controls
         protected void InvalidateTextLayout()
         {
             _textRunCache?.Invalidate();
+            _textRuns = null;
             InvalidateVisual();
             InvalidateMeasure();
         }
@@ -719,9 +733,52 @@ namespace Avalonia.Controls
         {
             _textLayout?.Dispose();
             _textLayout = null;
-            _textRuns = null;
 
             base.OnMeasureInvalidated();
+        }
+
+        /// <summary>
+        /// Builds the text runs for <see cref="Inlines"/> unless they are already in sync with the
+        /// content. The runs are derived from the content alone, so only a content change discards
+        /// them; the constraint does not.
+        /// </summary>
+        /// <remarks>
+        /// Missing runs are not the same as no inlines: shaping without them falls back to
+        /// <see cref="Text"/>, which is null whenever the content lives in <see cref="Inlines"/>,
+        /// and that empty result is what the <see cref="TextRunCache"/> stores for the rest of the
+        /// control's life.
+        /// </remarks>
+        private protected void EnsureTextRuns()
+        {
+            if (_textRuns != null || !HasComplexContent)
+            {
+                return;
+            }
+
+            var textRuns = new List<TextRun>();
+
+            foreach (var inline in Inlines!)
+            {
+                inline.BuildTextRun(textRuns);
+            }
+
+            _textRuns = textRuns;
+        }
+
+        /// <summary>
+        /// Measures the controls the inlines embed against the width available to the block.
+        /// </summary>
+        private void MeasureEmbeddedControls(Size constraint)
+        {
+            if (!HasComplexContent)
+            {
+                return;
+            }
+
+            foreach (var inline in Inlines!)
+            {
+                inline.MeasureEmbeddedControls(constraint);
+            }
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -747,19 +804,8 @@ namespace Avalonia.Controls
                 InvalidateArrange();
             }
            
-            var inlines = Inlines;
-
-            if (HasComplexContent)
-            {
-                var textRuns = new List<TextRun>();
-
-                foreach (var inline in inlines!)
-                {
-                    inline.BuildTextRun(textRuns, deflatedSize);
-                }
-
-                _textRuns = textRuns;
-            }
+            EnsureTextRuns();
+            MeasureEmbeddedControls(deflatedSize);
 
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
