@@ -614,6 +614,127 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(default, expectedSize), target.Bounds);
         }
 
+        [Fact]
+        public void Should_Shape_Inlines_When_TextLayout_Is_Created_Before_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Inlines = new InlineCollection { new Run("Hello World") } };
+
+            // A render pass that runs before the queued measure reads the layout while the
+            // runs have not been built yet.
+            _ = target.TextLayout;
+
+            target.Measure(new Size(1000, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
+        }
+
+        [Fact]
+        public void Should_Shape_Inlines_When_TextLayout_Is_Created_Between_Content_Change_And_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Inlines = new InlineCollection() };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.Inlines = new InlineCollection { new Run("Hello World") };
+
+            _ = target.TextLayout;
+
+            target.Measure(new Size(1000, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
+        }
+
+        [Fact]
+        public void Should_Not_Cache_Shaped_Runs_Built_Outside_Of_Measure_From_Text()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Inlines = new InlineCollection() };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.Inlines = new InlineCollection { new Run("Hello World") };
+
+            _ = target.TextLayout;
+
+            // Measuring at a different constraint drops the layout, so a wrong result here can
+            // only come from shaped runs that were cached outside of the measure pass.
+            target.Measure(new Size(900, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
+        }
+
+        [Fact]
+        public void Should_Shape_Inlines_Added_To_The_Collection_Before_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Inlines = new InlineCollection() };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.Inlines!.Add(new Run("Hello World"));
+
+            _ = target.TextLayout;
+
+            target.Measure(new Size(1000, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
+        }
+
+        [Fact]
+        public void Should_Remeasure_Embedded_Controls_When_The_Constraint_Changes()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var child = new TextBlock { Text = "Hello World Hello World", TextWrapping = TextWrapping.Wrap };
+            var target = new TextBlock { Inlines = new InlineCollection { new InlineUIContainer(child) } };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            var wide = target.DesiredSize;
+
+            target.Measure(new Size(60, 1000));
+            target.Arrange(new Rect(0, 0, 60, 1000));
+
+            var narrow = target.DesiredSize;
+
+            Assert.True(narrow.Width < wide.Width, $"wide {wide}, narrow {narrow}");
+            Assert.True(narrow.Height > wide.Height, $"wide {wide}, narrow {narrow}");
+        }
+
+        [Fact]
+        public void Should_Remeasure_Embedded_Controls_When_The_Child_Invalidates_Its_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var child = new Border { Width = 20, Height = 20 };
+            var target = new TextBlock { Inlines = new InlineCollection { new InlineUIContainer(child) } };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            var before = target.DesiredSize;
+
+            child.Width = 80;
+
+            // Stands in for the layout manager propagating the child's invalidation to its parent.
+            target.InvalidateMeasure();
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            Assert.True(target.DesiredSize.Width > before.Width, $"before {before}, after {target.DesiredSize}");
+        }
+
         private class TestTextBlock : TextBlock
         {
             public Size Constraint => _constraint;
