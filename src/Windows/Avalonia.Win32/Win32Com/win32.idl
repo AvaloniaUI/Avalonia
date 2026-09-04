@@ -326,7 +326,7 @@ interface IStream : ISequentialStream
 
     HRESULT UnlockRegion([in] UINT64 libOffset, [in] UINT64 cb, [in] DWORD dwLockType);
 
-    HRESULT Stat([out] void* pstatstg, [in] DWORD grfStatFlag);
+    int Stat([out] void* pstatstg, [in] DWORD grfStatFlag);
 
     HRESULT Clone([out] IStream** ppstm);
 }

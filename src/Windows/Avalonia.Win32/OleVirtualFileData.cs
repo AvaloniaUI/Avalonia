@@ -69,7 +69,7 @@ internal static class OleVirtualFileData
             if (TryCreateFile(dataObject, fileContentsFormat, descriptors[index], index, operation) is { } file)
                 files.Add(file);
             else
-                operation.Complete();
+                operation.CompleteFile();
         }
 
         return files.Count == 0 ? null : files;
@@ -144,7 +144,7 @@ internal static class OleVirtualFileData
         catch (Exception exception)
         {
             Logger.TryGet(LogEventLevel.Warning, LogArea.Win32Platform)?.Log(
-                null, $"Failed to create virtual file at index {index}: {exception.Message}");
+                null, "Failed to create virtual file at index {Index}: {Exception}", index, exception);
             return null;
         }
     }
@@ -247,7 +247,7 @@ internal static class OleVirtualFileData
         private Win32Com.IStream? _marshaledCapability = marshaledCapability;
         private int _remainingCount = remainingCount;
 
-        public unsafe void Complete()
+        public unsafe void CompleteFile()
         {
             if (Interlocked.Decrement(ref _remainingCount) != 0)
                 return;
@@ -354,7 +354,7 @@ internal static class OleVirtualFileData
 
             Interlocked.Exchange(ref _marshaledStream, null)?.Dispose();
 
-            _operation.Complete();
+            _operation.CompleteFile();
         }
     }
 
@@ -365,7 +365,22 @@ internal static class OleVirtualFileData
         public override bool CanRead => true;
         public override bool CanSeek => true;
         public override bool CanWrite => false;
-        public override long Length => throw new NotSupportedException();
+        public override unsafe long Length
+        {
+            get
+            {
+                var stream = _stream;
+                ObjectDisposedException.ThrowIf(stream is null, this);
+
+                UnmanagedMethods.STATSTG stat = default;
+                var result = stream.Stat(&stat, UnmanagedMethods.STATFLAG_NONAME);
+                if (result != (int)UnmanagedMethods.HRESULT.S_OK)
+                    Marshal.ThrowExceptionForHR(result);
+
+                return checked((long)stat.cbSize);
+            }
+        }
+
         public override long Position
         {
             get => Seek(0, SeekOrigin.Current);
@@ -401,7 +416,10 @@ internal static class OleVirtualFileData
             base.Dispose(disposing);
         }
 
-        public override void Flush() { }
+        public override void Flush()
+        {
+        }
+
         public override unsafe long Seek(long offset, SeekOrigin origin)
         {
             var stream = _stream;
@@ -422,7 +440,9 @@ internal static class OleVirtualFileData
 
             return checked((long)position);
         }
+
         public override void SetLength(long value) => throw new NotSupportedException();
+
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 

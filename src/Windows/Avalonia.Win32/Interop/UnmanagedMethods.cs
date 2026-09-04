@@ -2654,6 +2654,7 @@ namespace Avalonia.Win32.Interop
         public const uint DV_E_FORMATETC = 0x80040064;
         public const uint OLE_E_ADVISENOTSUPPORTED = 0x80040003;
         public const uint COR_E_OBJECTDISPOSED = 0x80131622;
+        public const int STATFLAG_NONAME = 1;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct DROPFILES
@@ -2699,6 +2700,22 @@ namespace Avalonia.Win32.Interop
             public uint nFileSizeHigh;
             public uint nFileSizeLow;
             public fixed char cFileName[FileNameLength];
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct STATSTG
+        {
+            public IntPtr pwcsName;
+            public uint type;
+            public ulong cbSize;
+            public FILETIME mtime;
+            public FILETIME ctime;
+            public FILETIME atime;
+            public uint grfMode;
+            public uint grfLocksSupported;
+            public Guid clsid;
+            public uint grfStateBits;
+            public uint reserved;
         }
 
         [Flags]
