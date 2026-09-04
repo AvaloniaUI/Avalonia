@@ -60,6 +60,9 @@
         <CheckBox Content="Close Button"
                   IsChecked="{Binding ShowCloseButton}" />
 
+        <CheckBox Content="Custom Search Bar"
+                  IsChecked="{Binding ShowSearchInTitleBar}" />
+
       </StackPanel>
 
       <CheckBox Content="Can Resize"

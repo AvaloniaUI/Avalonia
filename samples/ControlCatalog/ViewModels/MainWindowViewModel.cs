@@ -1,25 +1,26 @@
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Chrome;
-using Avalonia.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia;
-using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Chrome;
+using Avalonia.Dialogs;
+using Avalonia.Media;
 using ControlCatalog.Models;
+using ControlCatalog.Pages;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
     partial class MainWindowViewModel : ViewModelBase
     {
-        private readonly AvaloniaList<PageItem> _filteredPages = [];
+        public SettingsViewModel SettingsViewModel { get; } = new SettingsViewModel();
 
-        private bool _ignoreListChange;
-        private PageItem? _currentItem;
+        public PageItem HomeItem { get; } = new PageItem("Home", () => new HomePage(), StreamGeometry.Parse(Icons.Home), "Overview of everything in the catalog", null);
+        public PageItem SettingsItem { get; }
 
         public MainWindowViewModel()
         {
@@ -36,17 +37,29 @@ namespace ControlCatalog.ViewModels
             {
                 (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
             });
-            NavigateToPageCommand = MiniCommand.Create<PageItem>(NavigateToPage);
-
-            WindowState = WindowState.Normal;
-
-            WindowStates = new WindowState[]
+            SettingsItem = new PageItem("Settings", () => new SettingsPage(SettingsViewModel), StreamGeometry.Parse(Icons.Settings), "Overview of everything in the catalog", null);
+            NavigateToPageCommand = MiniCommand.Create<PageItem>(NavigateToItem);
+            SettingsCommand = MiniCommand.Create(async () =>
             {
-                WindowState.Minimized,
-                WindowState.Normal,
-                WindowState.Maximized,
-                WindowState.FullScreen,
-            };
+                if (CurrentPageItem == SettingsItem)
+                    return;
+
+                if (Navigator is { } navigator)
+                {
+                    NavigateToItem(SettingsItem);
+                }
+            });
+
+            HomeCommand = MiniCommand.Create(async () =>
+            {
+                if (CurrentPageItem == HomeItem)
+                    return;
+
+                if (Navigator is { } navigator)
+                {
+                    NavigateToItem(HomeItem);
+                }
+            });
 
             TitleBarHeight = -1;
             CanResize = true;
@@ -60,8 +73,6 @@ namespace ControlCatalog.ViewModels
             // Home page doesn't have a section title and should be excluded from this list
             field ??= _pageSections.Where(s => !string.IsNullOrEmpty(s.Title)).ToArray();
 
-        public IReadOnlyList<PageItem> Pages => _filteredPages;
-
         public INavigation? Navigator { get; internal set; }
 
         public bool ExtendClientAreaEnabled
@@ -71,18 +82,6 @@ namespace ControlCatalog.ViewModels
         }
 
         public double TitleBarHeight
-        {
-            get;
-            set => RaiseAndSetIfChanged(ref field, value);
-        }
-
-        public WindowState WindowState
-        {
-            get;
-            set => RaiseAndSetIfChanged(ref field, value);
-        }
-
-        public WindowState[] WindowStates
         {
             get;
             set => RaiseAndSetIfChanged(ref field, value);
@@ -124,7 +123,13 @@ namespace ControlCatalog.ViewModels
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
-        public int SelectedDecorationIndex
+        public bool ExpandAllSections
+        {
+            get;
+            set => RaiseAndSetIfChanged(ref field, value);
+        }
+
+        public string? OpenedSection
         {
             get;
             set => RaiseAndSetIfChanged(ref field, value);
@@ -166,21 +171,10 @@ namespace ControlCatalog.ViewModels
             set => SetTitleBarDecoration(TitleBarDecorations.CloseButton, value);
         }
 
-        public int SelectedPageIndex
+        public PageItem? CurrentPageItem
         {
             get;
-            set
-            {
-                RaiseAndSetIfChanged(ref field, value);
-
-                if (!_ignoreListChange)
-                {
-                    NavigateTo(field);
-
-                    if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
-                        IsDrawerOpened = false;
-                }
-            }
+            set => RaiseAndSetIfChanged(ref field, value);
         }
 
         public bool IsDrawerOpened
@@ -188,6 +182,12 @@ namespace ControlCatalog.ViewModels
             get;
             set => RaiseAndSetIfChanged(ref field, value);
         } = true;
+
+        public bool ShowSearchInTitleBar
+        {
+            get;
+            set => RaiseAndSetIfChanged(ref field, value);
+        } = false;
 
         public SplitViewDisplayMode DisplayMode
         {
@@ -226,6 +226,10 @@ namespace ControlCatalog.ViewModels
 
         public MiniCommand NavigateToPageCommand { get; }
 
+        public MiniCommand SettingsCommand { get; }
+
+        public MiniCommand HomeCommand { get; }
+
         /// <summary>
         ///    A required DateTime which should demonstrate validation for the DateTimePicker
         /// </summary>
@@ -245,80 +249,60 @@ namespace ControlCatalog.ViewModels
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
-        public void NavigateToPage(PageItem item)
+        public void NavigateToItem(PageItem item)
         {
             // Clear any active search so the target is present in the filtered list.
             if (!string.IsNullOrEmpty(Query))
                 Query = "";
 
-            var index = _filteredPages.IndexOf(item);
-            if (index >= 0)
-                SelectedPageIndex = index;
+            NavigateTo(item);
         }
 
         public void Filter(string? query = "")
         {
-            try
+            ExpandAllSections = false;
+
+            // Left panel items are sorted alphabetically
+            var allPages = _pageSections
+                .SelectMany(cat => cat.Items?.ToArray() ?? Array.Empty<PageItem>())
+                .OrderBy(p => p.Header);
+
+            var querySearchKey = query != null ? PageItem.CreateSearchKey(query) : "";
+            var isDefaultVisible = string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(querySearchKey);
+
+            foreach (var page in allPages)
             {
-                _ignoreListChange = true;
-                _filteredPages.Clear();
-
-                // Left panel items are sorted alphabetically
-                var allPages = _pageSections
-                    .SelectMany(cat => cat.Items)
-                    .OrderBy(p => p.Header == "Home" ? 0 : 1)
-                    .ThenBy(p => p.Header);
-
-                if (string.IsNullOrWhiteSpace(query))
-                {
-                    _filteredPages.AddRange(allPages);
-                }
-                else
-                {
-                    var querySearchKey = PageItem.CreateSearchKey(query);
-
-                    if (querySearchKey.Length == 0)
-                    {
-                        _filteredPages.AddRange(allPages);
-                    }
-                    else
-                    {
-                        foreach (var item in allPages)
-                        {
-                            if (item.MatchesSearch(querySearchKey))
-                            {
-                                _filteredPages.Add(item);
-                            }
-                        }
-                    }
-                }
+                page.IsVisible = isDefaultVisible;
             }
-            finally
+
+            if (!string.IsNullOrWhiteSpace(querySearchKey))
             {
-                _ignoreListChange = false;
-                if (_currentItem != null)
+                ExpandAllSections = true;
+                foreach (var item in allPages)
                 {
-                    var newIndex = _filteredPages.IndexOf(_currentItem);
-                    if (newIndex != -1)
+                    if (item.MatchesSearch(querySearchKey))
                     {
-                        SelectedPageIndex = newIndex;
+                        item.IsVisible = true;
                     }
                 }
             }
         }
 
-        private async void NavigateTo(int pageIndex)
+        private async void NavigateTo(PageItem? item)
         {
-            if (pageIndex < 0 || pageIndex >= Pages.Count || Navigator is null)
+            if (item is null || Navigator is null)
                 return;
 
-            var item = Pages[pageIndex];
             var page = item.CreatePage();
 
-            if (page.GetType() != Navigator.NavigationStack.LastOrDefault()?.GetType())
+            if (item != CurrentPageItem)
             {
-                _currentItem = item;
+                CurrentPageItem = item;
+                OpenedSection = item.Section;
                 await Navigator.ReplaceAsync(page);
+
+                if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
+                    IsDrawerOpened = false;
             }
         }
     }

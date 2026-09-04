@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
-using ControlCatalog.Pages;
 using Avalonia.Media;
 using ControlCatalog.Models;
+using ControlCatalog.Pages;
 
 namespace ControlCatalog.ViewModels;
 
@@ -11,11 +11,7 @@ partial class MainWindowViewModel
 {
     private readonly HomeSection[] _pageSections =
     [
-        Section("", s =>
-        {
-            s.Add<HomePage>("Home", Icons.Home, "Overview of everything in the catalog");
-        }),
-        Section("Basic Input", s =>
+        Section("Basic Input", Icons.Cursor2, s =>
         {
             s.Add<ButtonsPage>("Buttons", Icons.CursorClick, "Button, RepeatButton, ToggleButton and friends");
             s.Add<ButtonSpinnerPage>("ButtonSpinner", Icons.Spinner, "Content with increment and decrement buttons");
@@ -27,14 +23,14 @@ partial class MainWindowViewModel
             s.Add<SliderPage>("Slider", Icons.Tune, "Select a value from a continuous range");
             s.Add<ToggleSwitchPage>("ToggleSwitch", Icons.Toggle, "An on/off switch with a sliding knob");
         }),
-        Section("Text", s => 
+        Section("Text", Icons.TextBox, s =>
         {
             s.Add<AutoCompleteBoxPage>("AutoCompleteBox", Icons.TextInput, "Text input with completion suggestions");
             s.Add<LabelsPage>("Label", Icons.Tag, "Captions with access keys for other controls");
             s.Add<TextBoxPage>("TextBox", Icons.TextInput, "Single- and multi-line text editing");
             s.Add<TextBlockPage>("TextBlock", Icons.TextInput, "Styled read-only text display");
         }),
-        Section("Collections & Data", s => 
+        Section("Collections & Data", Icons.Lists, s =>
         {
             s.Add<Pages.CarouselPage>("Carousel", Icons.Slides, "Cycle through a collection of items");
             s.Add<ListBoxPage>("ListBox", Icons.List, "A selectable, virtualized list of items");
@@ -43,13 +39,13 @@ partial class MainWindowViewModel
             s.Add<TableViewPage>("TableView", Icons.Grid, "Tabular data with resizable, sortable columns");
             s.Add<TreeViewPage>("TreeView", Icons.Tree, "Hierarchical data with expandable nodes");
         }),
-        Section("Date & Time", s => 
+        Section("Date & Time", Icons.Date, s =>
         {
             s.Add<CalendarPage>("Calendar", Icons.Calendar, "A month calendar for selecting dates");
             s.Add<CalendarDatePickerPage>("CalendarDatePicker", Icons.Calendar, "A date picker with a drop-down calendar");
             s.Add<DateTimePickerPage>("Date/Time Picker", Icons.Clock, "Spinner-style date and time pickers");
         }),
-        Section("Menus & Flyouts", s => 
+        Section("Menus & Flyouts", Icons.Menus, s =>
         {
             s.Add<CommandBarPage>("CommandBar", Icons.Terminal, "A toolbar of commands with an overflow menu");
             s.Add<ContextFlyoutPage>("ContextFlyout", Icons.Menu, "Attach flyouts shown on right-click");
@@ -57,7 +53,7 @@ partial class MainWindowViewModel
             s.Add<FlyoutsPage>("Flyouts", Icons.Flyout, "Lightweight popups anchored to controls");
             s.Add<MenuPage>("Menu", Icons.Menu, "Menu bars with nested menu items");
         }),
-        Section("Navigation & Pages", s => 
+        Section("Navigation & Pages", Icons.HamburgerUnread, s =>
         {
             s.Add<CarouselDemoPage>("CarouselPage", Icons.Slides, "Swipeable page-based navigation");
             s.Add<ContentDemoPage>("ContentPage", Icons.Document, "A page that hosts a single content view");
@@ -68,7 +64,7 @@ partial class MainWindowViewModel
             s.Add<TabControlPage>("TabControl", Icons.Tab, "Switch between tabbed content views");
             s.Add<TabStripPage>("TabStrip", Icons.Tab, "A standalone strip of selectable tabs");
         }),
-        Section("Layout", s => 
+        Section("Layout", Icons.Layouts, s =>
         {
             s.Add<BorderPage>("Border", Icons.Border, "Decorate elements with borders and corner radii");
             s.Add<CanvasPage>("Canvas", Icons.Canvas, "Position children at explicit coordinates");
@@ -82,7 +78,7 @@ partial class MainWindowViewModel
             s.Add<ViewboxPage>("Viewbox", Icons.Viewbox, "Scale content to fit available space");
             s.Add<WrapPanelPage>("WrapPanel", Icons.Layout, "Wrap children onto multiple lines");
         }),
-        Section("Media & Graphics", s => 
+        Section("Media & Graphics", Icons.Media, s =>
         {
             s.Add<AcrylicPage>("Acrylic", Icons.Blur, "Translucent acrylic window materials");
             s.Add<BitmapCachePage>("BitmapCache", Icons.Lightning, "Cache visuals as bitmaps for performance");
@@ -93,7 +89,7 @@ partial class MainWindowViewModel
             s.Add<OpenGlLeasePage>("OpenGL Lease", Icons.Cube3D, "Low-level access to the OpenGL context");
             s.Add<TransitioningContentControlPage>("TransitioningContentControl", Icons.Transition, "Animate between content changes");
         }),
-        Section("Status & Feedback", s => 
+        Section("Status & Feedback", Icons.Chat, s =>
         {
             s.Add<AdornerLayerPage>("AdornerLayer", Icons.Sparkle, "Overlay visuals on top of other controls");
             s.Add<DataValidationPage>("Data Validation", Icons.Shield, "Display validation errors from bindings");
@@ -102,7 +98,7 @@ partial class MainWindowViewModel
             s.Add<ProgressBarPage>("ProgressBar", Icons.Progress, "Determinate and indeterminate progress");
             s.Add<ToolTipPage>("ToolTip", Icons.Tooltip, "Hover hints for any control");
         }),
-        Section("Interaction", s => 
+        Section("Interaction", Icons.KeyboardFloat, s =>
         {
             s.Add<AcceleratorPage>("Accelerator", Icons.Keyboard, "Keyboard shortcuts that invoke commands");
             s.Add<ClipboardPage>("Clipboard", Icons.Clipboard, "Read from and write to the system clipboard");
@@ -112,7 +108,7 @@ partial class MainWindowViewModel
             s.Add<GesturePage>("Gestures", Icons.Gesture, "Tap, scroll and pinch gesture recognition");
             s.Add<PointersPage>("Pointers", Icons.Cursor, "Raw pointer input and capture");
         }),
-        Section("Window & Platform", s => 
+        Section("Window & Platform", Icons.DesktopMobile, s =>
         {
             s.Add<NativeEmbedPage>("Native Embed", Icons.Puzzle, "Host native platform controls");
             s.Add<PlatformInfoPage>("Platform Information", Icons.Info, "Runtime platform and capability info");
@@ -123,19 +119,22 @@ partial class MainWindowViewModel
         })
     ];
 
-    private static HomeSection Section(string title, Action<HomeSectionBuilder> builderCallback)
+    private static HomeSection Section(string title, string iconPath, Action<HomeSectionBuilder> builderCallback)
     {
-        var builder = new HomeSectionBuilder(title);
+        var iconGeometry = StreamGeometry.Parse(iconPath);
+        var section = new HomeSection(title, iconGeometry);
+        var builder = new HomeSectionBuilder(section);
         builderCallback(builder);
-        return new HomeSection(title, builder.ToArray());
+        section.Items = builder.ToArray();
+        return section;
     }
 
-    private class HomeSectionBuilder(string title) : List<PageItem>
+    private class HomeSectionBuilder(HomeSection section) : List<PageItem>
     {
         public void Add<TPageType>(string header, string iconPath, string description) where TPageType : Page, new()
         {
             var iconGeometry = StreamGeometry.Parse(iconPath);
-            Add(new PageItem(header, () => new TPageType(), iconGeometry, description, title));
+            Add(new PageItem(header, () => new TPageType(), iconGeometry, description, section));
         }
     }
 }
