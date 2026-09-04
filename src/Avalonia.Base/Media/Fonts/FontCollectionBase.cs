@@ -17,8 +17,14 @@ namespace Avalonia.Media.Fonts
         private static readonly Comparer<FontFamily> FontFamilyNameComparer =
             Comparer<FontFamily>.Create((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
 
+        // Family names are matched case-insensitively everywhere else - the sorted family array, the
+        // binary search in TryGetGlyphTypeface, AddFontFamily's de-duplication - so the cache has to
+        // agree. With an ordinal comparer "arial" and "Arial" occupy separate buckets while
+        // AddFontFamily publishes only the first of them, stranding every entry under the other
+        // casing where no family-name search can reach it.
         // Make this internal for testing purposes
-        internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache = new();
+        internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache =
+            new(StringComparer.OrdinalIgnoreCase);
 
         // Cache of resolved script/culture fallback family names. A non-null value is the preferred
         // fallback family for that script bucket: a Tier B hint that is still re-checked for coverage
