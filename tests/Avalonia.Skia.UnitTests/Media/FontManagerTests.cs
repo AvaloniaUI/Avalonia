@@ -397,6 +397,40 @@ namespace Avalonia.Skia.UnitTests.Media
         }
 
         [Fact]
+        public void Should_Map_FontFamily_Regardless_Of_Casing()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new FontManagerOptions
+                    {
+                        DefaultFamilyName = s_fontUri,
+                        FontFamilyMappings = new Dictionary<string, FontFamily>
+                        {
+                            { "Segoe UI", new FontFamily("fonts:Inter#Inter") }
+                        }
+                    });
+
+                    FontManager.Current.AddFontCollection(new InterFontCollection());
+
+                    // The mapping table is configuration; its casing has nothing to do with the casing
+                    // a control asks in. Both the composite and the plain family path must still find
+                    // the mapping.
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("Abc, segoe ui"), out var fromComposite));
+
+                    Assert.Equal("Inter", fromComposite.FamilyName);
+
+                    Assert.True(FontManager.Current.TryGetGlyphTypeface(
+                        new Typeface("SEGOE UI"), out var fromPlainFamily));
+
+                    Assert.Equal("Inter", fromPlainFamily.FamilyName);
+                }
+            }
+        }
+
+        [Fact]
         public void Should_Get_FamilyTypefaces()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
