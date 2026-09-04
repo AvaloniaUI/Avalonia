@@ -195,7 +195,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
         /// <summary>
         /// Font manager whose <c>MyAlias</c> family resolves through the platform but is absent from
-        /// the installed family list — the shape of a platform alias (for instance Android's
+        /// the installed family list, the shape of a platform alias (for instance Android's
         /// <c>&lt;alias name="arial" to="sans-serif"/&gt;</c> in <c>/system/etc/fonts.xml</c>).
         /// Such a family cannot be found again by the family-name search, so nothing repairs a
         /// missing cache entry.
@@ -219,7 +219,9 @@ namespace Avalonia.Skia.UnitTests.Media
                 _alias = alias;
             }
 
-            /// <summary>Number of typefaces created from a stream, i.e. of synthetic emboldenings.</summary>
+            /// <summary>Number of typefaces created from a stream: both the alias resolution and every
+            /// synthetic emboldening go through this overload, so the counter also proves that a cached
+            /// result short-circuits the platform call.</summary>
             public int StreamTypefaceCreations { get; private set; }
 
             public string GetDefaultFontFamilyName() => _inner.GetDefaultFontFamilyName();
@@ -231,7 +233,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 FontStretch stretch, [NotNullWhen(true)] out IPlatformTypeface? platformTypeface)
             {
                 // The alias always resolves to the regular face of the backing font, never to the
-                // requested weight — exactly what a platform alias does.
+                // requested weight, exactly what a platform alias does.
                 if (string.Equals(familyName, _alias, StringComparison.OrdinalIgnoreCase))
                 {
                     using var stream = OpenBackingFont();
