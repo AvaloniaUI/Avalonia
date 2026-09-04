@@ -5,6 +5,8 @@ using Avalonia.SourceGenerator;
 using Avalonia.Wayland.Server.Interop;
 using NWayland.Interop;
 using NWayland.Protocols.Wayland;
+using static Avalonia.Wayland.Server.Interop.UnsafeNativeMethods;
+using static NWayland.Protocols.CursorShapeV1.WpCursorShapeDeviceV1;
 
 namespace Avalonia.Wayland.Server.Transient;
 
@@ -45,6 +47,32 @@ partial class WaylandCursorManager : IDisposable
         { StandardCursorType.DragLink, ["alias", "dnd-link"] },
     };
 
+    private static readonly Dictionary<StandardCursorType, ShapeEnum> CursorShapes = new()
+    {
+        { StandardCursorType.Arrow, ShapeEnum.Default },
+        { StandardCursorType.Ibeam, ShapeEnum.Text },
+        { StandardCursorType.Wait, ShapeEnum.Wait },
+        { StandardCursorType.Cross, ShapeEnum.Crosshair },
+        { StandardCursorType.UpArrow, ShapeEnum.NResize },
+        { StandardCursorType.SizeWestEast, ShapeEnum.EwResize },
+        { StandardCursorType.SizeNorthSouth, ShapeEnum.NsResize },
+        { StandardCursorType.SizeAll, ShapeEnum.AllResize},
+        { StandardCursorType.No, ShapeEnum.NotAllowed },
+        { StandardCursorType.Hand, ShapeEnum.Pointer },
+        { StandardCursorType.AppStarting, ShapeEnum.Progress },
+        { StandardCursorType.Help, ShapeEnum.Help },
+        { StandardCursorType.TopSide, ShapeEnum.NResize },
+        { StandardCursorType.BottomSide, ShapeEnum.SResize },
+        { StandardCursorType.LeftSide, ShapeEnum.WResize },
+        { StandardCursorType.RightSide, ShapeEnum.EResize },
+        { StandardCursorType.TopLeftCorner, ShapeEnum.NwResize },
+        { StandardCursorType.TopRightCorner, ShapeEnum.NeResize },
+        { StandardCursorType.BottomLeftCorner, ShapeEnum.SwResize },
+        { StandardCursorType.BottomRightCorner, ShapeEnum.SeResize },
+        { StandardCursorType.DragMove, ShapeEnum.Grabbing },
+        { StandardCursorType.DragCopy, ShapeEnum.Copy },
+        { StandardCursorType.DragLink, ShapeEnum.Alias },
+    };
     public WaylandCursorManager(WlDisplay display, WlShm shm, WlCompositor compositor)
     {
         _display = display;
@@ -85,7 +113,7 @@ partial class WaylandCursorManager : IDisposable
         }
 
         var surface = _compositor.CreateSurface(null);
-        var wlBuffer =  WlBuffer.Import(this._display, null, buffer, true, null);
+        var wlBuffer = WlBuffer.Import(this._display, null, buffer, true, null);
         surface.Attach(wlBuffer, 0, 0);
         surface.Commit();
 
@@ -108,6 +136,16 @@ partial class WaylandCursorManager : IDisposable
         return GetCursor(StandardCursorType.Arrow);
     }
 
+    /// <summary>
+    /// Gets the wayland cursor shape enum member that corresponds to the Cursor Type 
+    /// </summary>
+    public static ShapeEnum? GetCursorShape(StandardCursorType cursorType)
+    {
+        if (cursorType == StandardCursorType.None)
+            return null;
+        return CursorShapes.GetValueOrDefault(cursorType);
+    }
+
     public void Dispose()
     {
         foreach (var entry in _cursors.Values)
@@ -117,4 +155,5 @@ partial class WaylandCursorManager : IDisposable
         if (_theme != IntPtr.Zero)
             UnsafeNativeMethods.wl_cursor_theme_destroy(_theme);
     }
+
 }
