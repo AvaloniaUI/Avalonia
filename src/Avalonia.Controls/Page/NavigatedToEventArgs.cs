@@ -18,6 +18,11 @@ namespace Avalonia.Controls
             NavigationType = navigationType;
         }
 
+        public NavigatedToEventArgs(Page? previousPage, NavigationType navigationType, object? parameter) : this (previousPage, navigationType)
+        {
+            Parameter = parameter;
+        }
+
         /// <summary>
         /// Gets the page that was active before this navigation.
         /// </summary>
@@ -27,5 +32,7 @@ namespace Avalonia.Controls
         /// Gets the type of navigation that triggered this event.
         /// </summary>
         public NavigationType NavigationType { get; }
+
+        public object? Parameter { get; }
     }
 }
