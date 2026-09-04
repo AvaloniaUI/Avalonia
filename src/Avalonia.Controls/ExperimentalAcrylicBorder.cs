@@ -1,17 +1,13 @@
-﻿using Avalonia.Controls.Utils;
+﻿using System;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Platform;
-using System;
 using Avalonia.Reactive;
-using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition;
-using Avalonia.Rendering.Composition.Server;
-using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
-    public class ExperimentalAcrylicBorder : Decorator
+    public class ExperimentalAcrylicBorder : Decorator, IVisualWithRoundRectClip
     {
         public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
             Border.CornerRadiusProperty.AddOwner<ExperimentalAcrylicBorder>();
@@ -28,7 +24,6 @@ namespace Avalonia.Controls
                 MaterialProperty,
                 CornerRadiusProperty);
         }
-
 
         /// <summary>
         /// Gets or sets the radius of the border rounded corners.
@@ -75,7 +70,7 @@ namespace Avalonia.Controls
             UpdateMaterialSubscription();
         }
 
-        void UpdateMaterialSubscription()
+        private void UpdateMaterialSubscription()
         {
             _materialSubscription?.Dispose();
             _materialSubscription = null;
@@ -89,7 +84,7 @@ namespace Avalonia.Controls
                 .Subscribe(_ => UpdateMaterialSubscription());
             SyncMaterial(CompositionVisual);
         }
-        
+
         private void SyncMaterial(CompositionVisual? visual)
         {
             if (visual is CompositionExperimentalAcrylicVisual v)
@@ -100,12 +95,12 @@ namespace Avalonia.Controls
                     : default(ImmutableExperimentalAcrylicMaterial);
             }
         }
-        
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            if(change.Property == MaterialProperty)
+            if (change.Property == MaterialProperty)
                 UpdateMaterialSubscription();
-            if(change.Property == CornerRadiusProperty)
+            if (change.Property == CornerRadiusProperty)
                 SyncMaterial(CompositionVisual);
             base.OnPropertyChanged(change);
         }
@@ -119,7 +114,10 @@ namespace Avalonia.Controls
 
         private protected override CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
         {
-            var v = new CompositionExperimentalAcrylicVisual(compositor, this);
+            var v = new CompositionExperimentalAcrylicVisual(compositor, this)
+            {
+                CornerRadius = CornerRadius
+            };
             SyncMaterial(v);
 
             return v;
@@ -144,5 +142,7 @@ namespace Avalonia.Controls
         {
             return LayoutHelper.ArrangeChild(Child, finalSize, Padding);
         }
+
+        public CornerRadius ClipToBoundsRadius => CornerRadius;
     }
 }
