@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -378,6 +379,167 @@ namespace Avalonia.Base.UnitTests.Media
             {
                 Assert.True(map.ContainsGlyph(ch), $"Character '{ch}' not found in glyph map");
             }
+        }
+
+        [Fact]
+        public void AsReadOnlyDictionary_Returns_NonNull_Dictionary()
+        {
+            var dict = LoadInterCharacterToGlyphMap().AsReadOnlyDictionary();
+
+            Assert.NotNull(dict);
+        }
+
+        [Fact]
+        public void AsReadOnlyDictionary_ContainsKey_Matches_Underlying_Map()
+        {
+            var map = LoadInterCharacterToGlyphMap();
+            var dict = map.AsReadOnlyDictionary();
+
+            // 'A' is in Inter.
+            Assert.True(map.ContainsGlyph('A'));
+            Assert.True(dict.ContainsKey('A'));
+
+            // U+10FFFD is the last code point of the supplementary private-use
+            // Plane 16 — Inter does not map it and a Format 4 cmap cannot.
+            Assert.False(map.ContainsGlyph(0x10FFFD));
+            Assert.False(dict.ContainsKey(0x10FFFD));
+        }
+
+        [Theory]
+        [InlineData('A')]
+        [InlineData('z')]
+        [InlineData('0')]
+        [InlineData(' ')]
+        public void AsReadOnlyDictionary_Indexer_Returns_Same_GlyphId_As_Map(int codePoint)
+        {
+            var map = LoadInterCharacterToGlyphMap();
+            var dict = map.AsReadOnlyDictionary();
+
+            Assert.Equal(map.GetGlyph(codePoint), dict[codePoint]);
+        }
+
+        [Fact]
+        public void AsReadOnlyDictionary_Indexer_Throws_For_Unmapped_CodePoint()
+        {
+            var dict = LoadInterCharacterToGlyphMap().AsReadOnlyDictionary();
+
+            Assert.Throws<KeyNotFoundException>(() => _ = dict[0x10FFFD]);
+        }
+
+        [Fact]
+        public void AsReadOnlyDictionary_TryGetValue_Returns_True_With_GlyphId_For_Known_CodePoint()
+        {
+            var map = LoadInterCharacterToGlyphMap();
+            var dict = map.AsReadOnlyDictionary();
+
+            Assert.True(dict.TryGetValue('A', out var glyphId));
+            Assert.Equal(map.GetGlyph('A'), glyphId);
+            Assert.NotEqual(0, glyphId);
+        }
+
+        [Fact]
+        public void AsReadOnlyDictionary_TryGetValue_Returns_False_For_Unmapped_CodePoint()
+        {
+            var dict = LoadInterCharacterToGlyphMap().AsReadOnlyDictionary();
+
+            Assert.False(dict.TryGetValue(0x10FFFD, out var glyphId));
+            Assert.Equal((ushort)0, glyphId);
+        }
+
+        [Fact]
+        public void AsReadOnlyDictionary_Count_Is_Positive_And_Matches_Enumeration()
+        {
+            var dict = LoadInterCharacterToGlyphMap().AsReadOnlyDictionary();
+
+            Assert.True(dict.Count > 0);
+
+            var enumerated = 0;
+            foreach (var _ in dict)
+            {
+                enumerated++;
+            }
+
+            Assert.Equal(dict.Count, enumerated);
+        }
+
+        [Fact]
+        public void AsReadOnlyDictionary_Enumeration_Yields_Pairs_That_Round_Trip_Through_The_Map()
+        {
+            var map = LoadInterCharacterToGlyphMap();
+            var dict = map.AsReadOnlyDictionary();
+
+            var checkedPairs = 0;
+            foreach (var kvp in dict)
+            {
+                // Every (key, value) the dictionary yields must agree with the
+                // underlying map. The dictionary is a view, not a snapshot.
+                Assert.Equal(map.GetGlyph(kvp.Key), kvp.Value);
+                Assert.True(map.ContainsGlyph(kvp.Key));
+
+                if (++checkedPairs >= 500)
+                {
+                    // Inter has thousands of mappings; sampling the first 500
+                    // is enough to exercise the enumerator without making the
+                    // test prohibitively slow.
+                    break;
+                }
+            }
+
+            Assert.True(checkedPairs > 0);
+        }
+
+        [Fact]
+        public void AsReadOnlyDictionary_Keys_Match_Dictionary_Enumeration_Keys()
+        {
+            var dict = LoadInterCharacterToGlyphMap().AsReadOnlyDictionary();
+
+            var keysFromEnumeration = new HashSet<int>();
+            var pairsKeysFromEnumeration = new HashSet<int>();
+
+            foreach (var key in dict.Keys)
+            {
+                keysFromEnumeration.Add(key);
+                if (keysFromEnumeration.Count >= 500)
+                {
+                    break;
+                }
+            }
+
+            foreach (var kvp in dict)
+            {
+                pairsKeysFromEnumeration.Add(kvp.Key);
+                if (pairsKeysFromEnumeration.Count >= 500)
+                {
+                    break;
+                }
+            }
+
+            Assert.True(keysFromEnumeration.Count > 0);
+            Assert.Equal(pairsKeysFromEnumeration, keysFromEnumeration);
+        }
+
+        [Fact]
+        public void AsReadOnlyDictionary_Returns_A_Fresh_View_That_Is_Functionally_Equivalent()
+        {
+            var map = LoadInterCharacterToGlyphMap();
+
+            var first = map.AsReadOnlyDictionary();
+            var second = map.AsReadOnlyDictionary();
+
+            // The dictionary is a lightweight wrapper that may or may not be
+            // the same instance; what matters is that two views of the same
+            // map agree on lookups.
+            Assert.True(first.ContainsKey('A'));
+            Assert.True(second.ContainsKey('A'));
+            Assert.Equal(first['A'], second['A']);
+        }
+
+        private static Avalonia.Media.Fonts.Tables.Cmap.CharacterToGlyphMap LoadInterCharacterToGlyphMap()
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+            return typeface.CharacterToGlyphMap;
         }
 
         [Fact]

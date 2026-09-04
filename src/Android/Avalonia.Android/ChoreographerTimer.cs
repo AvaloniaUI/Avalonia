@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Reactive;
 using Avalonia.Rendering;
 using static Avalonia.Android.Platform.SkiaPlatform.AndroidFramebuffer;
 
@@ -17,7 +15,6 @@ namespace Avalonia.Android
         private readonly TaskCompletionSource<IntPtr> _choreographer = new();
         private readonly AutoResetEvent _event = new(false);
         private readonly GCHandle _timerHandle;
-        private readonly HashSet<AvaloniaView> _views = new();
         private Action<TimeSpan>? _tick;
         private bool _pendingCallback;
         private long _lastTime;
@@ -49,23 +46,6 @@ namespace Avalonia.Android
             }
         }
 
-        internal IDisposable SubscribeView(AvaloniaView view)
-        {
-            lock (_lock)
-            {
-                _views.Add(view);
-                PostFrameCallbackIfNeeded();
-            }
-
-            return Disposable.Create(
-                () =>
-                {
-                    lock (_lock) 
-                        _views.Remove(view);
-                }
-            );
-        }
-
         private void Loop()
         {
             Looper.Prepare();
@@ -94,7 +74,7 @@ namespace Avalonia.Android
                 if(_pendingCallback)
                     return;
                 
-                if (_tick == null || _views.Count == 0)
+                if (_tick == null)
                     return;
 
                 _pendingCallback = true;

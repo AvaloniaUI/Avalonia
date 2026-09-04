@@ -128,7 +128,9 @@
                       FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
                       IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
                       SelectedDate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedDate,
-                                                     Mode=TwoWay}" />
+                                                     Mode=TwoWay}"
+                      IsWeekNumberVisible="{TemplateBinding IsWeekNumberVisible}"
+                      WeekNumberRule="{TemplateBinding WeekNumberRule}" />
           </Popup>
         </Grid>
       </ControlTemplate>

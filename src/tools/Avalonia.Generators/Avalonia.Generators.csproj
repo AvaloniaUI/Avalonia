@@ -18,6 +18,10 @@
     <Compile Include="$(XamlXSourcePath)/**/*.cs"
              Exclude="$(XamlXSourcePath)/obj/**/*.cs;$(XamlXSourcePath)/IL/SreTypeSystem.cs"
              LinkBase="Compiler/XamlX" />
+    <Compile Include="../Avalonia.Analyzers.CSharp/GeneratedProperties/GeneratedPropertyShape.cs"
+             Link="PropertyGenerator/GeneratedPropertyShape.cs" />
+    <Compile Include="../Avalonia.Analyzers.CSharp/GeneratedProperties/GeneratedPropertyAttributeArgs.cs"
+             Link="PropertyGenerator/GeneratedPropertyAttributeArgs.cs" />
     <Compile Include="../../Shared/IsExternalInit.cs" Link="IsExternalInit.cs" Visible="False" />
     <Compile Include="../../Avalonia.Base/Compatibility/TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
     <Compile Include="../../Avalonia.Base/Compatibility/NullableAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />

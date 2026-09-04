@@ -776,7 +776,7 @@ namespace Avalonia.Controls
                 LogicalChildren.RemoveAll(toRemove);
         }
 
-        private IDataTemplate? GetEffectiveItemTemplate()
+        private protected IDataTemplate? GetEffectiveItemTemplate()
         {
             if (ItemTemplate is { } itemTemplate)
                 return itemTemplate;

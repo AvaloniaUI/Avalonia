@@ -1391,6 +1391,144 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(true, target.IsUsingOverlayLayer);
             }
         }
+        
+        [Fact]
+        public void Closing_Previous_Light_Dismiss_Popup_Should_Not_Affect_Overlay_For_Next_Popup()
+        {
+            using (CreateServices())
+            {
+                var placementTarget = new Border();
+                var window = PreparedWindow(placementTarget);
+                var first = new Popup
+                {
+                    PlacementTarget = placementTarget,
+                    IsLightDismissEnabled = true,
+                };
+                var second = new Popup
+                {
+                    PlacementTarget = placementTarget,
+                    IsLightDismissEnabled = true,
+                };
+
+                first.Open();
+                second.Open();
+
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                Assert.NotNull(overlay);
+
+                first.Close();
+
+                Assert.True(overlay.IsVisible);
+
+                overlay.RaiseEvent(CreatePointerPressedEventArgs(window, new Point(10, 15)));
+
+                Assert.False(second.IsOpen);
+                Assert.False(overlay.IsVisible);
+            }
+        }
+
+        [Fact]
+        public void Opened_Popup_Should_Be_In_OpenedPopups()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                var window = PreparedWindow(target);
+
+                target.Open();
+
+                Assert.Equal(new[] { target }, window.OpenedPopups);
+
+                target.Close();
+
+                Assert.Empty(window.OpenedPopups);
+            }
+        }
+
+        [Fact]
+        public void Closing_Popup_With_IsOpen_Should_Remove_It_From_OpenedPopups()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                var window = PreparedWindow(target);
+
+                target.IsOpen = true;
+
+                Assert.Equal(new[] { target }, window.OpenedPopups);
+
+                target.IsOpen = false;
+
+                Assert.Empty(window.OpenedPopups);
+            }
+        }
+
+        [Fact]
+        public void Closing_Window_Should_Clear_OpenedPopups()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                var window = PreparedWindow(target);
+
+                target.Open();
+                window.Close();
+
+                Assert.Empty(window.OpenedPopups);
+            }
+        }
+
+        [Fact]
+        public void Nested_Popup_Should_Be_In_Parent_Popup_OpenedPopups()
+        {
+            using (CreateServices())
+            {
+                var nestedTarget = new Border { Width = 20, Height = 20 };
+                var nestedPopup = new Popup
+                {
+                    PlacementTarget = nestedTarget,
+                    Child = new Border { Width = 10, Height = 10 }
+                };
+                var target = new Border();
+                var popup = new Popup
+                {
+                    PlacementTarget = target,
+                    Child = new Panel { Children = { nestedTarget, nestedPopup } }
+                };
+                var window = PreparedWindow(new Panel { Children = { target, popup } });
+
+                popup.Open();
+
+                if (popup.Host is OverlayPopupHost host)
+                {
+                    //Need to measure/arrange for visual children to show up
+                    //in OverlayPopupHost
+                    host.Measure(Size.Infinity);
+                    host.Arrange(new Rect(host.DesiredSize));
+                }
+
+                nestedPopup.Open();
+
+                Assert.Equal([popup], window.OpenedPopups);
+                Assert.Equal([nestedPopup], popup.OpenedPopups);
+                Assert.Empty(nestedPopup.OpenedPopups);
+
+                if (popup.Host is PopupRoot popupRoot)
+                {
+                    // A popup root exposes the popups opened by its own popup.
+                    Assert.Equal([nestedPopup], popupRoot.OpenedPopups);
+                }
+
+                nestedPopup.Close();
+
+                Assert.Equal([popup], window.OpenedPopups);
+                Assert.Empty(popup.OpenedPopups);
+
+                popup.Close();
+
+                Assert.Empty(window.OpenedPopups);
+            }
+        }
 
         private IDisposable CreateServices()
         {
@@ -1430,11 +1568,20 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     if (UsePopupHost)
                         return null;
-                    return MockWindowingPlatform.CreatePopupMock(mock.Object).Object;
+                    return CreatePopupMock(mock.Object);
                 });
 
                 return mock.Object;
             }, null);
+        }
+
+        private static IPopupImpl CreatePopupMock(IWindowBaseImpl parent)
+        {
+            var mock = MockWindowingPlatform.CreatePopupMock(parent);
+
+            mock.Setup(x => x.CreatePopup()).Returns(() => CreatePopupMock(mock.Object));
+
+            return mock.Object;
         }
 
         private static Window PreparedWindow(object? content = null)

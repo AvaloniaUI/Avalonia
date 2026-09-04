@@ -115,7 +115,7 @@ namespace Avalonia.Data.Core.Parsers
             var type = LookupType(typeResolver, attached.Namespace, attached.TypeName);
             var property = AvaloniaPropertyRegistry.Instance.FindRegistered(type, attached.PropertyName) ??
                 throw new InvalidOperationException($"Cannot find property {type}.{attached.PropertyName}.");
-            return new AvaloniaPropertyAccessorNode(property);
+            return new AvaloniaPropertyAccessorNode(property, attached.AcceptsNull);
         }
 
         private static LogicalAncestorElementNode LogicalAncestorNode(

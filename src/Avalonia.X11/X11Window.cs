@@ -26,6 +26,7 @@ using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using Avalonia.X11.Selections.DragDrop;
 using static Avalonia.X11.XLib;
+using Avalonia.X11.XShm;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -229,6 +230,15 @@ namespace Avalonia.X11
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
+
+            // XShm needs a 32-bit visual (other depths would require a slow XShmPutImage conversion) and the
+            // MIT-SHM extension, probed once by X11Info on the deferred display.
+            if (_platform.Options.UseXShmFramebuffer is true && depth == 32 && _x11.HasXShm)
+            {
+                surfaces.Insert(0,
+                    new X11ShmFramebufferSurface(_x11.DeferredDisplay, _renderHandle, visual, depth,
+                        platform.DeferredDisplayDispatcher));
+            }
             
             if (egl != null)
                 surfaces.Insert(0,
@@ -595,13 +605,15 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
-                MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+            {
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
+                {
+                    MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+                }
+            }
             else if (ev.type == XEventName.EnterNotify)
             {
-                if (ev.CrossingEvent.detail is
-                    NotifyDetail.NotifyNonlinear or
-                    NotifyDetail.NotifyNonlinearVirtual or
-                    NotifyDetail.NotifyVirtual)
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
                 {
                     MouseEvent(RawPointerEventType.Move, ref ev, ev.CrossingEvent.state);
                 }
@@ -747,6 +759,13 @@ namespace Avalonia.X11
                 HandleKeyEvent(ref ev);
             }
         }
+
+        private static bool IsHandledLeaveEnterDetail(NotifyDetail detail)
+            => detail is
+                NotifyDetail.NotifyNonlinear or
+                NotifyDetail.NotifyNonlinearVirtual or
+                NotifyDetail.NotifyVirtual or
+                NotifyDetail.NotifyAncestor;
 
         private void HandleActivation(bool active)
         {
@@ -1720,12 +1739,8 @@ namespace Avalonia.X11
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
 
-        public async void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            if (themeVariant == null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is DBusPlatformSettings platformSettings)
-            {
-                platformSettings.OnRequestDefaultThemeVariant();
-            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);

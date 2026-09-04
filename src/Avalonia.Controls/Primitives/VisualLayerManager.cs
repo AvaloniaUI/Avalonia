@@ -109,10 +109,7 @@ namespace Avalonia.Controls.Primitives
                 var rv = FindLayer<LightDismissOverlayLayer>();
                 if (rv == null)
                 {
-                    rv = new LightDismissOverlayLayer
-                    {
-                        IsVisible = false
-                    };
+                    rv = new LightDismissOverlayLayer();
 
                     AddLayer(rv, LightDismissOverlayZIndex);
                 }
