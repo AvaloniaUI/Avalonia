@@ -18,7 +18,8 @@ namespace Avalonia.Media.Fonts
             Comparer<FontFamily>.Create((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
 
         // Make this internal for testing purposes
-        internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache = new();
+        internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache =
+            new(StringComparer.OrdinalIgnoreCase);
 
         // Cache of resolved script/culture fallback family names. A non-null value is the preferred
         // fallback family for that script bucket: a Tier B hint that is still re-checked for coverage
