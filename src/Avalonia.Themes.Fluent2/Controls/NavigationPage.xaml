@@ -1,12 +1,15 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="NavigationBarBackground" ResourceKey="SolidBackgroundFillColorBaseAltBrush" />
+      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="NavigationBarBackground" ResourceKey="SolidBackgroundFillColorBaseAltBrush" />
+      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
@@ -15,6 +18,10 @@
       <NavigationPage />
     </Border>
   </Design.PreviewWith>
+
+  <sys:Double x:Key="NavigationPageHeaderSize">14</sys:Double>
+  <Thickness x:Key="NavigationPageHeaderMargin">56,44,0,0</Thickness>
+  <FontWeight x:Key="NavigationPageHeaderFontWeight">SemiBold</FontWeight>
 
   <StreamGeometry x:Key="NavigationPageMenuIcon">M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z</StreamGeometry>
 
@@ -84,7 +91,7 @@
                   VerticalAlignment="Top"
                   ClipToBounds="True"
                   BackgroundSizing="InnerBorderEdge"
-                  BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                  BorderBrush="{DynamicResource NavigationBarBorderBrush}"
                   BorderThickness="0,0,0,1"
                   Height="{TemplateBinding EffectiveBarHeight}">
             <Grid Margin="12,0,0,0" ColumnDefinitions="Auto, *, Auto">
@@ -151,8 +158,8 @@
 
               <ContentPresenter Name="PART_Header"
                                 Grid.Column="1"
-                                FontSize="14"
-                                FontWeight="SemiBold"
+                                FontSize="{DynamicResource NavigationPageHeaderSize}"
+                                FontWeight="{DynamicResource NavigationPageHeaderFontWeight}"
                                 Foreground="{DynamicResource NavigationBarForeground}"
                                 Content="{Binding CurrentPage?.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
                                 ContentTemplate="{Binding CurrentPage?.HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
