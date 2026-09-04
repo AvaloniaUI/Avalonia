@@ -918,6 +918,7 @@ namespace Avalonia.Controls
                 case nameof(TextAlignment):
                 case nameof(Padding):
                 case nameof(LineHeight):
+                case nameof(LineSpacing):
                 case nameof(MaxLines):
                     {
                         InvalidateTextLayoutKeepCache();
