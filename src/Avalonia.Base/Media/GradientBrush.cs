@@ -16,7 +16,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Base class for brushes that draw with a gradient.
     /// </summary>
-    public abstract class GradientBrush : Brush, IGradientBrush, IMutableBrush
+    public abstract class GradientBrush : Brush, IGradientBrush, IMutableBrush, IRelativeTransformBrush
     {
         /// <summary>
         /// Defines the <see cref="SpreadMethod"/> property.
@@ -29,6 +29,12 @@ namespace Avalonia.Media
         /// </summary>
         public static readonly StyledProperty<GradientStops> GradientStopsProperty =
             AvaloniaProperty.Register<GradientBrush, GradientStops>(nameof(GradientStops));
+
+        /// <summary>
+        /// Defines the <see cref="RelativeTransform"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ITransform?> RelativeTransformProperty =
+            AvaloniaProperty.Register<GradientBrush, ITransform?>(nameof(RelativeTransform));
 
         private IDisposable? _gradientStopsSubscription;
 
@@ -59,6 +65,13 @@ namespace Avalonia.Media
 
         /// <inheritdoc/>
         IReadOnlyList<IGradientStop> IGradientBrush.GradientStops => GradientStops;
+
+        /// <inheritdoc cref="IRelativeTransformBrush.RelativeTransform"/>
+        public ITransform? RelativeTransform
+        {
+            get { return GetValue(RelativeTransformProperty); }
+            set { SetValue(RelativeTransformProperty, value); }
+        }
 
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -97,9 +110,10 @@ namespace Avalonia.Media
             base.SerializeChanges(c, writer);
             writer.Write(SpreadMethod);
             writer.Write(GradientStops.Count);
-            foreach (var stop in GradientStops) 
+            foreach (var stop in GradientStops)
                 // TODO: Technically it allocates, so it would be better to sync stops individually
                 writer.WriteObject(new ImmutableGradientStop(stop.Offset, stop.Color));
+            writer.WriteObject(RelativeTransform?.ToImmutable());
         }
 
         public abstract IImmutableBrush ToImmutable();

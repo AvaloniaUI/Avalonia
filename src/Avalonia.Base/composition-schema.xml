@@ -129,6 +129,7 @@
         <Property Name="Opacity" Type="double" Animated="true" DefaultValue="1"/>
         <Property Name="TransformOrigin" Type="RelativePoint" />
         <Property Name="Transform" Type="Avalonia.Media.ITransform?" />
+        <Property Name="RelativeTransform" Type="Avalonia.Media.ITransform?" />
     </Object>
     <Object Name="CompositionSolidColorBrush" Inherits="CompositionBrush" ServerBase="ServerCompositionBrush">
         <Property Name="Color" Type="Avalonia.Media.Color" Animated="true"/>

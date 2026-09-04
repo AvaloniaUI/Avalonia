@@ -14,17 +14,18 @@ namespace Avalonia.Rendering.Composition.Server
         ITransform? IBrush.Transform => Transform;
     }
 
-    internal class ServerCompositionSimpleGradientBrush : ServerCompositionSimpleBrush, IGradientBrush
+    internal class ServerCompositionSimpleGradientBrush : ServerCompositionSimpleBrush, IGradientBrush, IRelativeTransformBrush
     {
-        
+
         internal ServerCompositionSimpleGradientBrush(ServerCompositor compositor) : base(compositor)
         {
-            
+
         }
 
         private readonly List<IGradientStop> _gradientStops = new();
         public IReadOnlyList<IGradientStop> GradientStops => _gradientStops;
         public GradientSpreadMethod SpreadMethod { get; private set; }
+        public ITransform? RelativeTransform { get; private set; }
 
         protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
         {
@@ -34,6 +35,7 @@ namespace Avalonia.Rendering.Composition.Server
             var count = reader.Read<int>();
             for (var c = 0; c < count; c++)
                 _gradientStops.Add(reader.ReadObject<ImmutableGradientStop>());
+            RelativeTransform = reader.ReadObject<ImmutableTransform?>();
         }
     }
 
