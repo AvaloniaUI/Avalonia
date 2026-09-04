@@ -52,10 +52,8 @@ internal unsafe class WindowsInputPane : InputPaneBase, IDisposable
 
     private void OnStateChanged(bool showing, UnmanagedMethods.RECT? prcInputPaneScreenLocation)
     {
-        // Unadvise can deliver one last notification while it unwinds, and the shell can call back
-        // after teardown. Either would dereference a disposed _windowImpl, and this frame is invoked
-        // from native code, so the resulting NullReferenceException cannot unwind: it terminates the
-        // process with 0xC0000005 rather than raising a managed exception.
+        // Unadvise can deliver last notification while it unwinds, and the shell can call back after teardown.
+        // Either would dereference a disposed _windowImpl, crashing the process.
         if (_disposed)
             return;
 
