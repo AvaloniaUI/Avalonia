@@ -65,16 +65,16 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.True(map.ContainsGlyph('A'));
 
-            var glyphId = map['A'];
+            var glyphIndex = map['A'];
 
             // Ensure metrics are available for this glyph
-            Assert.True(typeface.TryGetGlyphMetrics(glyphId, out var metrics));
+            Assert.True(typeface.TryGetGlyphMetrics(glyphIndex, out var metrics));
 
             // Ensure advance can be retrieved
-            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphId, out var advance));
+            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphIndex, out var advance));
 
-            // Advance returned by GetGlyphAdvance should match the metrics width
-            Assert.Equal(metrics.Width, advance);
+            // The advance lives on AdvanceWidth; Width is the ink bounding-box width.
+            Assert.Equal(metrics.AdvanceWidth, advance);
         }
 
         [Theory]
@@ -270,11 +270,76 @@ namespace Avalonia.Base.UnitTests.Media
             var map = typeface.CharacterToGlyphMap;
             Assert.True(map.ContainsGlyph('A'));
 
-            var glyphId = map['A'];
-            var result = typeface.TryGetGlyphMetrics(glyphId, out var metrics);
+            var glyphIndex = map['A'];
+            var result = typeface.TryGetGlyphMetrics(glyphIndex, out var metrics);
 
             Assert.True(result);
             Assert.True(metrics.Width > 0);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Width_Is_Ink_Box_Not_Advance()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var glyphIndex = typeface.CharacterToGlyphMap['A'];
+
+            Assert.True(typeface.TryGetGlyphMetrics(glyphIndex, out var metrics));
+            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphIndex, out var advance));
+
+            // The advance belongs on AdvanceWidth...
+            Assert.Equal(advance, metrics.AdvanceWidth);
+
+            // ...and Width is the ink bounding-box width, a distinct value.
+            Assert.True(metrics.Width > 0);
+            Assert.NotEqual(metrics.AdvanceWidth, metrics.Width);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Empty_Glyph_Has_Advance_But_No_Ink()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var spaceGlyph = typeface.CharacterToGlyphMap[' '];
+
+            Assert.True(typeface.TryGetGlyphMetrics(spaceGlyph, out var metrics));
+
+            // The space glyph has a horizontal advance but no ink.
+            Assert.True(metrics.AdvanceWidth > 0);
+            Assert.Equal((ushort)0, metrics.Width);
+            Assert.Equal((ushort)0, metrics.Height);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Batch_Matches_Single()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphIndices = new ushort[] { map['A'], map['B'], map['g'], map[' '] };
+
+            var batch = new GlyphMetrics[glyphIndices.Length];
+            Assert.True(typeface.TryGetGlyphMetrics(glyphIndices, batch));
+
+            for (var i = 0; i < glyphIndices.Length; i++)
+            {
+                Assert.True(typeface.TryGetGlyphMetrics(glyphIndices[i], out var single));
+
+                // GlyphMetrics is a record struct, so this is structural equality.
+                Assert.Equal(single, batch[i]);
+            }
         }
 
         [Fact]
@@ -432,9 +497,9 @@ namespace Avalonia.Base.UnitTests.Media
             var map = LoadInterCharacterToGlyphMap();
             var dict = map.AsReadOnlyDictionary();
 
-            Assert.True(dict.TryGetValue('A', out var glyphId));
-            Assert.Equal(map.GetGlyph('A'), glyphId);
-            Assert.NotEqual(0, glyphId);
+            Assert.True(dict.TryGetValue('A', out var glyphIndex));
+            Assert.Equal(map.GetGlyph('A'), glyphIndex);
+            Assert.NotEqual(0, glyphIndex);
         }
 
         [Fact]
@@ -442,8 +507,8 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var dict = LoadInterCharacterToGlyphMap().AsReadOnlyDictionary();
 
-            Assert.False(dict.TryGetValue(0x10FFFD, out var glyphId));
-            Assert.Equal((ushort)0, glyphId);
+            Assert.False(dict.TryGetValue(0x10FFFD, out var glyphIndex));
+            Assert.Equal((ushort)0, glyphIndex);
         }
 
         [Fact]
