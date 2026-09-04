@@ -70,8 +70,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Raised when the TrayIcon is clicked.
-        /// Note, this is only supported on Win32 and some Linux DEs, 
-        /// on OSX this event is not raised.
+        /// Note, this is only supported on Win32, macOS and some Linux DEs.
         /// </summary>
         public event EventHandler? Clicked;
         

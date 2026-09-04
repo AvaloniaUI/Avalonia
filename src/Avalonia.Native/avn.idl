@@ -1154,6 +1154,7 @@ interface IAvnTrayIcon : IUnknown
     HRESULT SetIsVisible(bool isVisible);
     HRESULT SetToolTipText(char* text);
     HRESULT SetIsTemplateIcon(bool text);
+    HRESULT SetClickedCallback(IAvnActionCallback* callback);
 }
 
 [uuid(a7724dc1-cf6b-4fa8-9d23-228bf2593edc)]

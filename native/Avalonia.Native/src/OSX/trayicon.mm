@@ -2,6 +2,54 @@
 #include "trayicon.h"
 #include "menu.h"
 
+@implementation AvnStatusItem
+{
+    ComObjectWeakPtr<AvnTrayIcon> _owner;
+    NSStatusItem* _native;
+}
+
+- (NSStatusItem*) statusItem
+{
+    return _native;
+}
+
+- (instancetype) initWithOwner: (AvnTrayIcon*) owner
+{
+    self = [super init];
+    if (self != nullptr)
+    {
+        _owner = owner;
+        _native = [[NSStatusBar systemStatusBar] statusItemWithLength: NSSquareStatusItemLength];
+
+        auto button = [_native button];
+        [button setTarget: self];
+        [button setAction: @selector(clicked:)];
+        [button sendActionOn: NSEventMaskLeftMouseUp | NSEventMaskRightMouseUp];
+    }
+    return self;
+}
+
+- (void) clicked: (id) sender
+{
+    auto owner = _owner.tryGet();
+    if (owner != nullptr)
+    {
+        owner->OnClicked([NSApp currentEvent]);
+    }
+}
+
+- (void) dispose
+{
+    _owner = nullptr;
+
+    if (_native != nullptr)
+    {
+        [[_native statusBar] removeStatusItem: _native];
+        _native = nullptr;
+    }
+}
+@end
+
 extern IAvnTrayIcon* CreateTrayIcon()
 {
     @autoreleasepool
@@ -12,17 +60,18 @@ extern IAvnTrayIcon* CreateTrayIcon()
 
 AvnTrayIcon::AvnTrayIcon()
 {
-    _native = [[NSStatusBar systemStatusBar] statusItemWithLength: NSSquareStatusItemLength];
-    
+    _isTemplateIcon = false;
+    _menu = nullptr;
+    _native = [[AvnStatusItem alloc] initWithOwner: this];
 }
 
 AvnTrayIcon::~AvnTrayIcon()
 {
-    if(_native != nullptr)
-    {
-        [[_native statusBar] removeStatusItem:_native];
-        _native = nullptr;
-    }
+    [_native dispose];
+    
+    _menu = nullptr;
+    _native = nullptr;
+    _clickedCallback = nullptr;
 }
 
 HRESULT AvnTrayIcon::SetIcon (void* data, size_t length)
@@ -46,11 +95,11 @@ HRESULT AvnTrayIcon::SetIcon (void* data, size_t length)
             
             [image setSize: size];
             [image setTemplate: _isTemplateIcon];
-            [_native setImage:image];
+            [[[_native statusItem] button] setImage: image];
         }
         else
         {
-            [_native setImage:nullptr];
+            [[[_native statusItem] button] setImage: nullptr];
         }
         return S_OK;
     }
@@ -63,11 +112,7 @@ HRESULT AvnTrayIcon::SetMenu (IAvnMenu* menu)
     @autoreleasepool
     {
         auto appMenu = dynamic_cast<AvnAppMenu*>(menu);
-        
-        if(appMenu != nullptr)
-        {
-            [_native setMenu:appMenu->GetNative()];	
-        }
+        _menu = appMenu != nullptr ? appMenu->GetNative() : nullptr;
     }
     
     return  S_OK;
@@ -79,7 +124,7 @@ HRESULT AvnTrayIcon::SetIsVisible(bool isVisible)
     
     @autoreleasepool
     {
-        [_native setVisible:isVisible];
+        [[_native statusItem] setVisible: isVisible];
     }
     
     return  S_OK;
@@ -93,7 +138,7 @@ HRESULT AvnTrayIcon::SetToolTipText(char* text)
     {
         if (text != nullptr)
         {
-            [[_native button] setToolTip:[NSString stringWithUTF8String:(const char*)text]];
+            [[[_native statusItem] button] setToolTip: [NSString stringWithUTF8String:(const char*)text]];
         }
     }
     
@@ -110,7 +155,7 @@ HRESULT AvnTrayIcon::SetIsTemplateIcon(bool isTemplateIcon)
         {
             _isTemplateIcon = isTemplateIcon;
 
-            NSImage *image = [_native image];
+            NSImage* image = [[[_native statusItem] button] image];
             if (image)
             {
                 [image setTemplate: _isTemplateIcon];
@@ -119,4 +164,34 @@ HRESULT AvnTrayIcon::SetIsTemplateIcon(bool isTemplateIcon)
     }
     
     return  S_OK;
+}
+
+HRESULT AvnTrayIcon::SetClickedCallback(IAvnActionCallback* callback)
+{
+    START_COM_CALL;
+
+    @autoreleasepool
+    {
+        _clickedCallback = callback;
+    }
+
+    return S_OK;
+}
+
+void AvnTrayIcon::OnClicked(NSEvent* event)
+{
+    if ([event type] == NSEventTypeRightMouseUp)
+    {
+        if (_menu != nullptr)
+        {
+            [NSMenu
+             popUpContextMenu: _menu
+             withEvent: event
+             forView: [[_native statusItem] button]];
+        }
+    }
+    else if ([event type] == NSEventTypeLeftMouseUp)
+    {
+        _clickedCallback->Run();
+    }
 }
