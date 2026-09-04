@@ -735,6 +735,24 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.DesiredSize.Width > before.Width, $"before {before}, after {target.DesiredSize}");
         }
 
+        [Fact]
+        public void Changing_LineSpacing_Should_Invalidate_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Text = "Hello World\nHello World" };
+
+            target.Measure(new Size(1000, 1000));
+
+            var before = target.DesiredSize;
+
+            target.LineSpacing = 20;
+
+            target.Measure(new Size(1000, 1000));
+
+            Assert.True(target.DesiredSize.Height > before.Height, $"before {before}, after {target.DesiredSize}");
+        }
+
         private class TestTextBlock : TextBlock
         {
             public Size Constraint => _constraint;
