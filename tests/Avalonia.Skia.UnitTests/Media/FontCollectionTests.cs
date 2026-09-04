@@ -248,6 +248,37 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Should_Reuse_An_Already_Cached_Synthetic_Glyph_Typeface()
+        {
+            var fontManager = new AliasFontManagerImpl(alias: "MyAlias");
+
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: fontManager)))
+            {
+                var fontCollection = new TestSystemFontCollection(fontManager);
+
+                Assert.True(fontCollection.TryGetGlyphTypeface(
+                    "MyAlias", FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, out var regular));
+
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    regular, FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var first));
+
+                Assert.Equal(FontSimulations.Bold, first.FontSimulations);
+
+                var creationsAfterFirstCall = fontManager.StreamTypefaceCreations;
+
+                Assert.True(fontCollection.TryCreateSyntheticGlyphTypeface(
+                    regular, FontStyle.Normal, FontWeight.Black, FontStretch.Normal, out var second));
+
+                // A second synthesis builds a GlyphTypeface that then loses the cache slot to the
+                // first one, so it is returned to the caller but never cached and never disposed -
+                // and GlyphTypeface has no finalizer, so its native typeface is retained until the
+                // process exits.
+                Assert.Same(first, second);
+                Assert.Equal(creationsAfterFirstCall, fontManager.StreamTypefaceCreations);
+            }
+        }
+
         /// <summary>
         /// Font manager whose <c>MyAlias</c> family resolves through the platform but is absent from
         /// the installed family list, the shape of a platform alias (for instance Android's
