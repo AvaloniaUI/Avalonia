@@ -953,7 +953,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Pushes <paramref name="page"/> onto the navigation stack asynchronously using <see cref="PageTransition"/>, with optional <paramref name="parameter"/>.
         /// </summary>
-        public Task PushAsync(Page page, IPageTransition? transition, object? parameter = null) => PushAsyncPrivate(page, transition, parameter);
+        public Task PushAsync(Page page, IPageTransition? transition, object? parameter) => PushAsyncPrivate(page, transition, parameter);
 
         /// <summary>
         /// Pops the top page from the navigation stack asynchronously using <see cref="PageTransition"/>.
@@ -1335,7 +1335,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal page using <paramref name="transition"/>, with optional <paramref name="parameter"/>.
         /// </summary>
-        public Task PushModalAsync(Page page, IPageTransition? transition, object? parameter = null) => PushModalAsyncPrivate(page, transition, parameter);
+        public Task PushModalAsync(Page page, IPageTransition? transition, object? parameter) => PushModalAsyncPrivate(page, transition, parameter);
 
         /// <summary>
         /// Pops the top modal page using <see cref="ModalTransition"/>.
@@ -1795,7 +1795,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Replaces the top page with <paramref name="page"/> using <paramref name="transition"/>, with optional <paramref name="parameter"/>.
         /// </summary>
-        public Task ReplaceAsync(Page page, IPageTransition? transition, object? parameter = null) => ReplaceAsyncPrivate(page, transition, parameter);
+        public Task ReplaceAsync(Page page, IPageTransition? transition, object? parameter) => ReplaceAsyncPrivate(page, transition, parameter);
 
         // navigationType is intentionally unused; lifecycle events are fired in each navigation
         // method directly and transition direction is controlled by _isPop.

@@ -48,7 +48,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Pushes <paramref name="page"/> using <paramref name="transition"/> with optional <paramref name="parameter"/>.
         /// </summary>
-        Task PushAsync(Page page, IPageTransition? transition, object? parameter = null) => Task.CompletedTask;
+        Task PushAsync(Page page, IPageTransition? transition, object? parameter) => Task.CompletedTask;
 
         /// <summary>
         /// Pops the top page using the host's default transition.
@@ -93,7 +93,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Replaces the current top page with <paramref name="page"/> using <paramref name="transition"/> with optional <paramref name="parameter"/>.
         /// </summary>
-        Task ReplaceAsync(Page page, IPageTransition? transition, object? parameter = null) => Task.CompletedTask;
+        Task ReplaceAsync(Page page, IPageTransition? transition, object? parameter) => Task.CompletedTask;
 
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal using the host's modal transition.
@@ -108,7 +108,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal using <paramref name="transition"/> with optional <paramref name="parameter"/>.
         /// </summary>
-        Task PushModalAsync(Page page, IPageTransition? transition, object? parameter = null) => Task.CompletedTask;
+        Task PushModalAsync(Page page, IPageTransition? transition, object? parameter) => Task.CompletedTask;
 
         /// <summary>
         /// Pops the top modal page using the host's modal transition.
