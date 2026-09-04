@@ -507,7 +507,27 @@ namespace Avalonia.Media.Fonts
                 fontSimulations |= FontSimulations.Bold;
             }
 
-            if (fontSimulations != FontSimulations.None && glyphTypeface.PlatformTypeface.TryGetStream(out var stream))
+            if (fontSimulations == FontSimulations.None)
+            {
+                return false;
+            }
+
+            // The synthetic for this key may already be cached under the source family: the request
+            // can arrive through another of the family's names, or another thread can get here first.
+            // Reuse it. Building a second one copies the whole font file through TryGetStream, and
+            // the copy then loses the slot below to the instance already holding it - so nothing
+            // caches it, nothing disposes it, and its native typeface is retained until the process
+            // exits.
+            if (glyphTypefaces.TryGetValue(key, out var cachedGlyphTypeface) &&
+                cachedGlyphTypeface is not null &&
+                cachedGlyphTypeface.FontSimulations == fontSimulations)
+            {
+                syntheticGlyphTypeface = cachedGlyphTypeface;
+
+                return true;
+            }
+
+            if (glyphTypeface.PlatformTypeface.TryGetStream(out var stream))
             {
                 using (stream)
                 {
