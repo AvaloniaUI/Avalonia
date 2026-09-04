@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using Avalonia.Browser.Interop;
@@ -14,8 +13,8 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
-using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 
 [assembly: SupportedOSPlatform("browser")]
@@ -57,7 +56,7 @@ namespace Avalonia.Browser
 
             _topLevelId = ++s_lastTopLevelId;
             s_topLevels.Add(_topLevelId, new WeakReference<BrowserTopLevelImpl>(this));
-            _inputHandler = new BrowserInputHandler(this, container, inputElement, _topLevelId);
+            _inputHandler = new BrowserInputHandler(this, container, _topLevelId, inputElement);
             _insetsManager = new BrowserInsetsManager();
             _nativeControlHost = new BrowserNativeControlHost(nativeControlHost);
             _storageProvider = new BrowserStorageProvider();
