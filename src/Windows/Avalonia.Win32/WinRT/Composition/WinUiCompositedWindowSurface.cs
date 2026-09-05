@@ -14,7 +14,6 @@ namespace Avalonia.Win32.WinRT.Composition
         private readonly WinUiCompositionShared _shared;
         private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
         private WinUiCompositedWindow? _window;
-        private BlurEffect _blurEffect;
 
         public WinUiCompositedWindowSurface(WinUiCompositionShared shared, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
         {
@@ -29,10 +28,11 @@ namespace Avalonia.Win32.WinRT.Composition
 
         public IDirect3D11TextureRenderTarget2 CreateRenderTarget(IPlatformGraphicsContext context, IntPtr d3dDevice)
         {
-            var cornerRadius = AvaloniaLocator.Current.GetService<Win32PlatformOptions>()
-                ?.WinUICompositionBackdropCornerRadius;
-            _window ??= new WinUiCompositedWindow(_info, _shared, cornerRadius);
-            _window.SetBlur(_blurEffect);
+            var options = AvaloniaLocator.Current.GetService<Win32PlatformOptions>();
+            _window ??= new WinUiCompositedWindow(_info, _shared, options?.WinUICompositionBackdropCornerRadius);
+
+            if (options?.UseCompositionSwapchain ?? false)
+                return new CompositionSwapchainRenderTarget(context, d3dDevice, _window);
 
             return new WinUiCompositedWindowRenderTarget(context, _window, d3dDevice, _shared.Compositor);
         }
@@ -51,12 +51,6 @@ namespace Avalonia.Win32.WinRT.Composition
             BlurEffect.MicaDark => Win32Platform.WindowsVersion >= WinUiCompositionShared.MinHostBackdropVersion,
             _ => false
         };
-
-        public void SetBlur(BlurEffect enable)
-        {
-            _blurEffect = enable;
-            _window?.SetBlur(enable);
-        }
     }
 
     internal class WinUiCompositedWindowRenderTarget : IDirect3D11TextureRenderTarget, IDirect3D11TextureRenderTarget2
@@ -171,6 +165,9 @@ namespace Avalonia.Win32.WinRT.Composition
                 var size = sceneInfo.Size;
                 var scale = sceneInfo.Scaling;
                 _window.ResizeIfNeeded(size);
+                _window.ApplyEffects(sceneInfo.TransparencyLevel,
+                    (sceneInfo.TopLevelSpecificSceneInfo as Win32TopLevelSceneInfo)?.ThemeVariant ??
+                    PlatformThemeVariant.Light);
                 _window.SetSurface(_surface);
                 
                 void* pTexture;
