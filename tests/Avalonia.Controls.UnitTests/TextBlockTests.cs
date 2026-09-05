@@ -753,6 +753,32 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.DesiredSize.Height > before.Height, $"before {before}, after {target.DesiredSize}");
         }
 
+        [Fact]
+        public void Should_Shape_The_Latest_Inlines_When_Content_Changes_Twice_Before_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Inlines = new InlineCollection { new Run("Hello World") } };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.Inlines = new InlineCollection { new Run("A") };
+
+            // A render pass builds the layout from the first change, before the queued measure.
+            _ = target.TextLayout;
+
+            target.Inlines = new InlineCollection { new Run("Hello World Hello World") };
+
+            target.Measure(new Size(1000, 1000));
+
+            var expected = new TextBlock { Inlines = new InlineCollection { new Run("Hello World Hello World") } };
+
+            expected.Measure(new Size(1000, 1000));
+
+            Assert.Equal(expected.DesiredSize, target.DesiredSize);
+        }
+
         private class TestTextBlock : TextBlock
         {
             public Size Constraint => _constraint;
