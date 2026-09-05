@@ -1,0 +1,30 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <ControlTheme x:Key="{x:Type TransitioningContentControl}" TargetType="TransitioningContentControl">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="{TemplateBinding Padding}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+          <ContentPresenter Name="PART_ContentPresenter2"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="{TemplateBinding Padding}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

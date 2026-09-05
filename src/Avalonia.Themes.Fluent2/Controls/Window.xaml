@@ -1,0 +1,39 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <!-- No WinUI XAML reference: window chrome is native on Windows. The window canvas
+       uses the Fluent 2 solid background base fill (#F3F3F3 light / #202020 dark),
+       matching the WinUI 3 window background. -->
+  <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
+    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}"/>
+    <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource SystemControlBackgroundAltHighBrush}" />
+    <Setter Property="TopLevel.SystemBarColor" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}"/>
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
+          <!-- Default canvas painted via a tree-anchored DynamicResource: styled-setter
+               DynamicResources on TopLevels have failed to resolve in hosted/reopened
+               window scenarios, leaving the white transparency fallback visible.
+               A user-set Background still paints over this via the border above it. -->
+          <Border Name="PART_Fluent2CanvasBackground"
+                  Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                  IsHitTestVisible="False" />
+          <Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
+          <Panel Background="Transparent" Margin="{TemplateBinding WindowDecorationMargin}" />
+          <VisualLayerManager Name="PART_VisualLayerManager">
+            <ContentPresenter Name="PART_ContentPresenter"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+          </VisualLayerManager>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

@@ -1,0 +1,477 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20" Width="600">
+      <StackPanel Spacing="12">
+        <CommandBar>
+          <CommandBarButton Label="New">
+            <CommandBarButton.Icon>
+              <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+            </CommandBarButton.Icon>
+          </CommandBarButton>
+          <CommandBarButton Label="Save">
+            <CommandBarButton.Icon>
+              <PathIcon Data="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" />
+            </CommandBarButton.Icon>
+          </CommandBarButton>
+          <CommandBarSeparator />
+          <CommandBarToggleButton Label="Bold">
+            <CommandBarToggleButton.Icon>
+              <PathIcon Data="M15.6,10.79C17.04,10.07 18,8.64 18,7C18,4.79 16.21,3 14,3H7V21H14.73C16.78,21 18.5,19.37 18.5,17.32C18.5,15.82 17.72,14.53 16.5,13.77C16.2,13.59 15.9,13.44 15.6,13.32V10.79M10,6.5H13C13.83,6.5 14.5,7.17 14.5,8C14.5,8.83 13.83,9.5 13,9.5H10V6.5M13.5,17.5H10V14H13.5C14.33,14 15,14.67 15,15.5C15,16.33 14.33,17.5 13.5,17.5Z" />
+            </CommandBarToggleButton.Icon>
+          </CommandBarToggleButton>
+        </CommandBar>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- WinUI reference: CommandBar_themeresources.xaml, AppBarButton_themeresources.xaml (winui3/release/1.6.4),
+       AppBarToggleButton_themeresources.xaml, AppBarSeparator_themeresources.xaml (via Uno.UI.FluentTheme.v2).
+       AppBar idiom: transparent bar (CommandBarBackground = ControlFillColorTransparent; the open state uses
+       AcrylicInAppFillColorDefault with a 1px CardStrokeColorDefaultSolid border), subtle-fill command pills
+       with ControlCornerRadius and an 83ms fill cross-fade, 16px icons (AppBarButtonContentHeight) with 12px
+       labels, checked toggles on AccentFillColorDefault with TextOnAccent text, and 1px
+       DividerStrokeColorDefault separators (AppBarSeparatorMargin 2,8). WinUI's default closed CommandBar has
+       no bottom divider, so none is drawn here. The v1 SystemControl* brush references were re-pointed to the
+       Fluent 2 tokens in this file; no shared-file keys are defined for these controls. -->
+
+  <!-- CommandBar ellipsis (more) button: same subtle-fill treatment as AppBarButton. -->
+  <ControlTheme x:Key="Fluent2CommandBarMoreButtonTheme" TargetType="Button">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter x:Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Padding="{TemplateBinding Padding}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+          <ContentPresenter.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </ContentPresenter.Transitions>
+        </ContentPresenter>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorDisabledBrush}" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+    </Style>
+  </ControlTheme>
+
+  <!-- CommandBarButton ControlTheme (WinUI DefaultAppBarButtonStyle) -->
+  <ControlTheme x:Key="{x:Type CommandBarButton}" TargetType="CommandBarButton">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Padding" Value="8,4" />
+    <Setter Property="Width" Value="68" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="PART_Border"
+                Background="{TemplateBinding Background}"
+                BackgroundSizing="InnerBorderEdge"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </Border.Transitions>
+          <StackPanel x:Name="PART_LayoutRoot"
+                      Spacing="4"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
+            <ContentPresenter x:Name="PART_IconPresenter"
+                              Content="{TemplateBinding Icon}"
+                              Foreground="{TemplateBinding Foreground}"
+                              Width="16"
+                              Height="16"
+                              HorizontalAlignment="Center" />
+            <TextBlock x:Name="PART_Label"
+                       Text="{TemplateBinding Label}"
+                       Foreground="{TemplateBinding Foreground}"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Hover -->
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+    </Style>
+
+    <!-- Pressed -->
+    <Style Selector="^:pressed /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+
+    <!-- Disabled -->
+    <Style Selector="^:disabled /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorDisabledBrush}" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+    </Style>
+
+    <!-- Compact: hide label, reduce width -->
+    <Style Selector="^[IsCompact=True]">
+      <Setter Property="Width" Value="40" />
+    </Style>
+    <Style Selector="^[IsCompact=True] /template/ TextBlock#PART_Label">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- LabelPosition=Right: horizontal layout, auto-width -->
+    <Style Selector="^[LabelPosition=Right]">
+      <Setter Property="Width" Value="NaN" />
+      <Setter Property="MinWidth" Value="40" />
+    </Style>
+    <Style Selector="^[LabelPosition=Right] /template/ StackPanel#PART_LayoutRoot">
+      <Setter Property="Orientation" Value="Horizontal" />
+    </Style>
+    <Style Selector="^[LabelPosition=Right] /template/ ContentPresenter#PART_IconPresenter">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="^[LabelPosition=Right] /template/ TextBlock#PART_Label">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- IsInOverflow: full-width horizontal layout -->
+    <Style Selector="^[IsInOverflow=True]">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Width" Value="NaN" />
+      <Setter Property="MinHeight" Value="36" />
+    </Style>
+    <Style Selector="^[IsInOverflow=True] /template/ StackPanel#PART_LayoutRoot">
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="Orientation" Value="Horizontal" />
+      <Setter Property="Spacing" Value="0" />
+    </Style>
+    <Style Selector="^[IsInOverflow=True] /template/ ContentPresenter#PART_IconPresenter">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+      <Setter Property="Margin" Value="4,0,10,0" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="^[IsInOverflow=True] /template/ TextBlock#PART_Label">
+      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </ControlTheme>
+
+  <!-- CommandBarToggleButton ControlTheme (WinUI DefaultAppBarToggleButtonStyle) -->
+  <ControlTheme x:Key="{x:Type CommandBarToggleButton}" TargetType="CommandBarToggleButton">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Padding" Value="8,4" />
+    <Setter Property="Width" Value="68" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="PART_Border"
+                Background="{TemplateBinding Background}"
+                BackgroundSizing="InnerBorderEdge"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+            </Transitions>
+          </Border.Transitions>
+          <StackPanel x:Name="PART_LayoutRoot"
+                      Spacing="4"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
+            <ContentPresenter x:Name="PART_IconPresenter"
+                              Content="{TemplateBinding Icon}"
+                              Foreground="{TemplateBinding Foreground}"
+                              Width="16"
+                              Height="16"
+                              HorizontalAlignment="Center" />
+            <TextBlock x:Name="PART_Label"
+                       Text="{TemplateBinding Label}"
+                       Foreground="{TemplateBinding Foreground}"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Hover -->
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+    </Style>
+
+    <!-- Pressed -->
+    <Style Selector="^:pressed /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+
+    <!-- Disabled -->
+    <Style Selector="^:disabled /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorDisabledBrush}" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+    </Style>
+
+    <!-- Checked: accent fill with on-accent text, per AppBarToggleButton_themeresources -->
+    <Style Selector="^:checked /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+    </Style>
+    <Style Selector="^:checked">
+      <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+    </Style>
+    <Style Selector="^:checked:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+    </Style>
+    <Style Selector="^:checked:pressed /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+    </Style>
+    <Style Selector="^:checked:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorSecondaryBrush}" />
+    </Style>
+    <Style Selector="^:checked:disabled /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+    </Style>
+    <Style Selector="^:checked:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
+    </Style>
+
+    <!-- Compact: hide label, reduce width -->
+    <Style Selector="^[IsCompact=True]">
+      <Setter Property="Width" Value="40" />
+    </Style>
+    <Style Selector="^[IsCompact=True] /template/ TextBlock#PART_Label">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- LabelPosition=Right: horizontal layout, auto-width -->
+    <Style Selector="^[LabelPosition=Right]">
+      <Setter Property="Width" Value="NaN" />
+      <Setter Property="MinWidth" Value="40" />
+    </Style>
+    <Style Selector="^[LabelPosition=Right] /template/ StackPanel#PART_LayoutRoot">
+      <Setter Property="Orientation" Value="Horizontal" />
+    </Style>
+    <Style Selector="^[LabelPosition=Right] /template/ ContentPresenter#PART_IconPresenter">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="^[LabelPosition=Right] /template/ TextBlock#PART_Label">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- IsInOverflow: full-width horizontal layout -->
+    <Style Selector="^[IsInOverflow=True]">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Width" Value="NaN" />
+      <Setter Property="MinHeight" Value="36" />
+    </Style>
+    <Style Selector="^[IsInOverflow=True] /template/ StackPanel#PART_LayoutRoot">
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="Orientation" Value="Horizontal" />
+      <Setter Property="Spacing" Value="0" />
+    </Style>
+    <Style Selector="^[IsInOverflow=True] /template/ ContentPresenter#PART_IconPresenter">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+      <Setter Property="Margin" Value="4,0,10,0" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="^[IsInOverflow=True] /template/ TextBlock#PART_Label">
+      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </ControlTheme>
+
+  <!-- CommandBarSeparator ControlTheme (WinUI DefaultAppBarSeparatorStyle:
+       1px DividerStrokeColorDefault, AppBarSeparatorMargin 2,8, corner radius 0.5) -->
+  <ControlTheme x:Key="{x:Type CommandBarSeparator}" TargetType="CommandBarSeparator">
+    <Setter Property="Width" Value="1" />
+    <Setter Property="MinHeight" Value="24" />
+    <Setter Property="Margin" Value="2,8" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{DynamicResource DividerStrokeColorDefaultBrush}"
+                CornerRadius="0.5"
+                Width="{TemplateBinding Width}"
+                Height="{TemplateBinding Height}"
+                MinHeight="{TemplateBinding MinHeight}" />
+      </ControlTemplate>
+    </Setter>
+
+    <!-- IsInOverflow: horizontal separator (AppBarOverflowSeparatorMargin 0,4) -->
+    <Style Selector="^[IsInOverflow=True]">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="Width" Value="NaN" />
+      <Setter Property="Height" Value="1" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Margin" Value="0,4" />
+    </Style>
+  </ControlTheme>
+
+  <!-- CommandBar ControlTheme (WinUI XamlDefaultCommandBar) -->
+  <ControlTheme x:Key="{x:Type CommandBar}" TargetType="CommandBar">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <!-- CommandBarBackground = ControlFillColorTransparentBrush; the open state swaps to
+         AcrylicInAppFillColorDefault with a CardStrokeColorDefaultSolid border (see IsOpen style). -->
+    <Setter Property="Background" Value="{DynamicResource ControlFillColorTransparentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Padding" Value="4,0" />
+    <Setter Property="ItemWidthBottom" Value="70" />
+    <Setter Property="ItemWidthRight" Value="102" />
+    <Setter Property="ItemWidthCollapsed" Value="42" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="LayoutRoot"
+                Background="{TemplateBinding Background}"
+                BackgroundSizing="InnerBorderEdge"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}"
+                MinHeight="{TemplateBinding MinHeight}">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083" />
+              <BrushTransition Property="BorderBrush" Duration="0:0:0.083" />
+            </Transitions>
+          </Border.Transitions>
+          <Panel>
+            <DockPanel KeyboardNavigation.TabNavigation="Cycle">
+              <!-- Overflow (more/ellipsis) button (docked right) -->
+              <Button x:Name="PART_OverflowButton"
+                      DockPanel.Dock="Right"
+                      Theme="{StaticResource Fluent2CommandBarMoreButtonTheme}"
+                      Margin="2,6"
+                      Padding="12,0"
+                      MinWidth="40"
+                      VerticalAlignment="Stretch"
+                      FontSize="16"
+                      IsVisible="{TemplateBinding IsOverflowButtonVisible}">
+                <PathIcon Width="16" Height="16"
+                          Data="M6,10A2,2 0 0,0 4,12A2,2 0 0,0 6,14A2,2 0 0,0 8,12A2,2 0 0,0 6,10M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10M18,10A2,2 0 0,0 16,12A2,2 0 0,0 18,14A2,2 0 0,0 20,12A2,2 0 0,0 18,10Z" />
+              </Button>
+
+              <!-- Custom content area (docked left) -->
+              <ContentPresenter x:Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                DockPanel.Dock="Left"
+                                VerticalAlignment="Center" />
+
+              <!-- Primary commands (fills remaining space, right-aligned) -->
+              <ItemsControl x:Name="PART_PrimaryCommands"
+                            ItemsSource="{Binding VisiblePrimaryCommands, RelativeSource={RelativeSource TemplatedParent}}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Stretch"
+                            ClipToBounds="True">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="2" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ItemsControl>
+            </DockPanel>
+
+            <!-- Overflow popup (WinUI overflow presenter: AcrylicInAppFillColorDefault surface,
+                 SurfaceStrokeColorFlyout 1px border, OverlayCornerRadius, min width 160) -->
+            <Popup x:Name="PART_OverflowPopup"
+                   IsOpen="{TemplateBinding IsOpen, Mode=TwoWay}"
+                   PlacementTarget="{Binding #PART_OverflowButton}"
+                   Placement="Bottom"
+                   IsLightDismissEnabled="True"
+                   WindowManagerAddShadowHint="True">
+              <Border Background="{DynamicResource AcrylicInAppFillColorDefaultBrush}"
+                      BackgroundSizing="InnerBorderEdge"
+                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                      BorderThickness="1"
+                      CornerRadius="{DynamicResource OverlayCornerRadius}"
+                      Padding="4"
+                      MinWidth="160">
+                <ItemsControl x:Name="PART_OverflowPresenter"
+                              ItemsSource="{Binding OverflowItems, RelativeSource={RelativeSource TemplatedParent}}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel Spacing="2" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                </ItemsControl>
+              </Border>
+            </Popup>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Open state: CommandBarBackgroundOpen / CommandBarBorderBrushOpen (thickness stays 1 to avoid
+         a layout jump; the rest-state border is transparent). -->
+    <Style Selector="^[IsOpen=True] /template/ Border#LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultSolidBrush}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

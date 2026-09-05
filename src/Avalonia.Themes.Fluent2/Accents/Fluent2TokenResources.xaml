@@ -1,0 +1,309 @@
+<!--
+  Fluent 2 (WinUI 3) token brushes, elevation gradient borders and acrylic fallbacks.
+  Ported from Uno.UI Common_themeresources_any.xaml, TextBox_themeresources.xaml and
+  AcrylicBrush_themeresources.xaml (MUX Reference, tag winui3/release/1.5.2).
+  Variant roles are swapped relative to the UWP/Uno source (UWP "Light" -> Avalonia "Default",
+  UWP "Default" -> Avalonia "Dark").
+  Acrylic keys are shipped as their solid FallbackColor equivalents (WinUI's own fallback mode);
+  translucent acrylic is a possible later enhancement.
+  Accent-family brushes use DynamicResource so palette/OS accent changes propagate live.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="{StaticResource TextFillColorPrimary}" />
+      <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="{StaticResource TextFillColorSecondary}" />
+      <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="{StaticResource TextFillColorTertiary}" />
+      <SolidColorBrush x:Key="TextFillColorDisabledBrush" Color="{StaticResource TextFillColorDisabled}" />
+      <SolidColorBrush x:Key="TextFillColorInverseBrush" Color="{StaticResource TextFillColorInverse}" />
+      <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="{DynamicResource SystemAccentColorDark2}" />
+      <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="{DynamicResource SystemAccentColorDark3}" />
+      <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="{DynamicResource SystemAccentColorDark1}" />
+      <SolidColorBrush x:Key="AccentTextFillColorDisabledBrush" Color="{StaticResource AccentTextFillColorDisabled}" />
+      <SolidColorBrush x:Key="TextOnAccentFillColorSelectedTextBrush" Color="{StaticResource TextOnAccentFillColorSelectedText}" />
+      <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="{StaticResource TextOnAccentFillColorPrimary}" />
+      <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="{StaticResource TextOnAccentFillColorSecondary}" />
+      <SolidColorBrush x:Key="TextOnAccentFillColorDisabledBrush" Color="{StaticResource TextOnAccentFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="{StaticResource ControlFillColorDefault}" />
+      <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="{StaticResource ControlFillColorSecondary}" />
+      <SolidColorBrush x:Key="ControlFillColorTertiaryBrush" Color="{StaticResource ControlFillColorTertiary}" />
+      <SolidColorBrush x:Key="ControlFillColorDisabledBrush" Color="{StaticResource ControlFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlFillColorTransparentBrush" Color="{StaticResource ControlFillColorTransparent}" />
+      <SolidColorBrush x:Key="ControlFillColorInputActiveBrush" Color="{StaticResource ControlFillColorInputActive}" />
+      <SolidColorBrush x:Key="ControlStrongFillColorDefaultBrush" Color="{StaticResource ControlStrongFillColorDefault}" />
+      <SolidColorBrush x:Key="ControlStrongFillColorDisabledBrush" Color="{StaticResource ControlStrongFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlSolidFillColorDefaultBrush" Color="{StaticResource ControlSolidFillColorDefault}" />
+      <SolidColorBrush x:Key="SubtleFillColorTransparentBrush" Color="{StaticResource SubtleFillColorTransparent}" />
+      <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="{StaticResource SubtleFillColorSecondary}" />
+      <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="{StaticResource SubtleFillColorTertiary}" />
+      <SolidColorBrush x:Key="SubtleFillColorDisabledBrush" Color="{StaticResource SubtleFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlAltFillColorTransparentBrush" Color="{StaticResource ControlAltFillColorTransparent}" />
+      <SolidColorBrush x:Key="ControlAltFillColorSecondaryBrush" Color="{StaticResource ControlAltFillColorSecondary}" />
+      <SolidColorBrush x:Key="ControlAltFillColorTertiaryBrush" Color="{StaticResource ControlAltFillColorTertiary}" />
+      <SolidColorBrush x:Key="ControlAltFillColorQuarternaryBrush" Color="{StaticResource ControlAltFillColorQuarternary}" />
+      <SolidColorBrush x:Key="ControlAltFillColorDisabledBrush" Color="{StaticResource ControlAltFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlOnImageFillColorDefaultBrush" Color="{StaticResource ControlOnImageFillColorDefault}" />
+      <SolidColorBrush x:Key="ControlOnImageFillColorSecondaryBrush" Color="{StaticResource ControlOnImageFillColorSecondary}" />
+      <SolidColorBrush x:Key="ControlOnImageFillColorTertiaryBrush" Color="{StaticResource ControlOnImageFillColorTertiary}" />
+      <SolidColorBrush x:Key="ControlOnImageFillColorDisabledBrush" Color="{StaticResource ControlOnImageFillColorDisabled}" />
+      <SolidColorBrush x:Key="AccentFillColorSelectedTextBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorDark1}" />
+      <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{DynamicResource SystemAccentColorDark1}" Opacity="0.9" />
+      <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{DynamicResource SystemAccentColorDark1}" Opacity="0.8" />
+      <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
+      <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{StaticResource ControlStrokeColorSecondary}" />
+      <SolidColorBrush x:Key="ControlStrokeColorOnAccentDefaultBrush" Color="{StaticResource ControlStrokeColorOnAccentDefault}" />
+      <SolidColorBrush x:Key="ControlStrokeColorOnAccentSecondaryBrush" Color="{StaticResource ControlStrokeColorOnAccentSecondary}" />
+      <SolidColorBrush x:Key="ControlStrokeColorOnAccentTertiaryBrush" Color="{StaticResource ControlStrokeColorOnAccentTertiary}" />
+      <SolidColorBrush x:Key="ControlStrokeColorOnAccentDisabledBrush" Color="{StaticResource ControlStrokeColorOnAccentDisabled}" />
+      <SolidColorBrush x:Key="ControlStrokeColorForStrongFillWhenOnImageBrush" Color="{StaticResource ControlStrokeColorForStrongFillWhenOnImage}" />
+      <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="{StaticResource CardStrokeColorDefault}" />
+      <SolidColorBrush x:Key="CardStrokeColorDefaultSolidBrush" Color="{StaticResource CardStrokeColorDefaultSolid}" />
+      <SolidColorBrush x:Key="ControlStrongStrokeColorDefaultBrush" Color="{StaticResource ControlStrongStrokeColorDefault}" />
+      <SolidColorBrush x:Key="ControlStrongStrokeColorDisabledBrush" Color="{StaticResource ControlStrongStrokeColorDisabled}" />
+      <SolidColorBrush x:Key="SurfaceStrokeColorDefaultBrush" Color="{StaticResource SurfaceStrokeColorDefault}" />
+      <SolidColorBrush x:Key="SurfaceStrokeColorFlyoutBrush" Color="{StaticResource SurfaceStrokeColorFlyout}" />
+      <SolidColorBrush x:Key="SurfaceStrokeColorInverseBrush" Color="{StaticResource SurfaceStrokeColorInverse}" />
+      <SolidColorBrush x:Key="DividerStrokeColorDefaultBrush" Color="{StaticResource DividerStrokeColorDefault}" />
+      <SolidColorBrush x:Key="FocusStrokeColorOuterBrush" Color="{StaticResource FocusStrokeColorOuter}" />
+      <SolidColorBrush x:Key="FocusStrokeColorInnerBrush" Color="{StaticResource FocusStrokeColorInner}" />
+      <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+      <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+      <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="{StaticResource SmokeFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="{StaticResource LayerFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerFillColorAltBrush" Color="{StaticResource LayerFillColorAlt}" />
+      <SolidColorBrush x:Key="LayerOnAcrylicFillColorDefaultBrush" Color="{StaticResource LayerOnAcrylicFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerOnAccentAcrylicFillColorDefaultBrush" Color="{StaticResource LayerOnAccentAcrylicFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorDefaultBrush" Color="{StaticResource LayerOnMicaBaseAltFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorSecondaryBrush" Color="{StaticResource LayerOnMicaBaseAltFillColorSecondary}" />
+      <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorTertiaryBrush" Color="{StaticResource LayerOnMicaBaseAltFillColorTertiary}" />
+      <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorTransparentBrush" Color="{StaticResource LayerOnMicaBaseAltFillColorTransparent}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{StaticResource SolidBackgroundFillColorSecondary}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="{StaticResource SolidBackgroundFillColorQuarternary}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorBaseAltBrush" Color="{StaticResource SolidBackgroundFillColorBaseAlt}" />
+      <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="{StaticResource SystemFillColorSuccess}" />
+      <SolidColorBrush x:Key="SystemFillColorCautionBrush" Color="{StaticResource SystemFillColorCaution}" />
+      <SolidColorBrush x:Key="SystemFillColorCriticalBrush" Color="{StaticResource SystemFillColorCritical}" />
+      <SolidColorBrush x:Key="SystemFillColorNeutralBrush" Color="{StaticResource SystemFillColorNeutral}" />
+      <SolidColorBrush x:Key="SystemFillColorSolidNeutralBrush" Color="{StaticResource SystemFillColorSolidNeutral}" />
+      <SolidColorBrush x:Key="SystemFillColorAttentionBackgroundBrush" Color="{StaticResource SystemFillColorAttentionBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorSuccessBackgroundBrush" Color="{StaticResource SystemFillColorSuccessBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorCautionBackgroundBrush" Color="{StaticResource SystemFillColorCautionBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="{StaticResource SystemFillColorCriticalBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="{StaticResource SystemFillColorNeutralBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorSolidAttentionBackgroundBrush" Color="{StaticResource SystemFillColorSolidAttentionBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorSolidNeutralBackgroundBrush" Color="{StaticResource SystemFillColorSolidNeutralBackground}" />
+
+      <!-- Elevation borders. Light: strong edge flipped to the bottom via scaleY(-1). -->
+      <LinearGradientBrush x:Key="ControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,3" TransformOrigin="50%,50%">
+        <LinearGradientBrush.Transform>
+          <ScaleTransform ScaleY="-1" />
+        </LinearGradientBrush.Transform>
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.33" Color="{StaticResource ControlStrokeColorSecondary}" />
+          <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="CircleElevationBorderBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.50" Color="{StaticResource ControlStrokeColorDefault}" />
+          <GradientStop Offset="0.70" Color="{StaticResource ControlStrokeColorSecondary}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="AccentControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,3" TransformOrigin="50%,50%">
+        <LinearGradientBrush.Transform>
+          <ScaleTransform ScaleY="-1" />
+        </LinearGradientBrush.Transform>
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.33" Color="{StaticResource ControlStrokeColorOnAccentSecondary}" />
+          <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorOnAccentDefault}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+      <!-- Text input borders: hairline with a stronger bottom edge; focused variant paints the
+           2px bottom edge in accent (two stops at the same offset create the hard edge). -->
+      <LinearGradientBrush x:Key="TextControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,2" TransformOrigin="50%,50%">
+        <LinearGradientBrush.Transform>
+          <ScaleTransform ScaleY="-1" />
+        </LinearGradientBrush.Transform>
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.5" Color="{StaticResource ControlStrongStrokeColorDefault}" />
+          <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="TextControlElevationBorderFocusedBrush" StartPoint="0,0" EndPoint="0,2" TransformOrigin="50%,50%">
+        <LinearGradientBrush.Transform>
+          <ScaleTransform ScaleY="-1" />
+        </LinearGradientBrush.Transform>
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="1.0" Color="{DynamicResource SystemAccentColorDark1}" />
+          <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+
+      <!-- Acrylic surfaces as solid fallback colors. -->
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="#F9F9F9" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="#F9F9F9" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#2C2C2C" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverseBrush" Color="#2C2C2C" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="#EEEEEE" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorBaseBrush" Color="#EEEEEE" />
+      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorBaseBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="{StaticResource TextFillColorPrimary}" />
+      <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="{StaticResource TextFillColorSecondary}" />
+      <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="{StaticResource TextFillColorTertiary}" />
+      <SolidColorBrush x:Key="TextFillColorDisabledBrush" Color="{StaticResource TextFillColorDisabled}" />
+      <SolidColorBrush x:Key="TextFillColorInverseBrush" Color="{StaticResource TextFillColorInverse}" />
+      <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="{DynamicResource SystemAccentColorLight2}" />
+      <SolidColorBrush x:Key="AccentTextFillColorDisabledBrush" Color="{StaticResource AccentTextFillColorDisabled}" />
+      <SolidColorBrush x:Key="TextOnAccentFillColorSelectedTextBrush" Color="{StaticResource TextOnAccentFillColorSelectedText}" />
+      <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="{StaticResource TextOnAccentFillColorPrimary}" />
+      <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="{StaticResource TextOnAccentFillColorSecondary}" />
+      <SolidColorBrush x:Key="TextOnAccentFillColorDisabledBrush" Color="{StaticResource TextOnAccentFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="{StaticResource ControlFillColorDefault}" />
+      <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="{StaticResource ControlFillColorSecondary}" />
+      <SolidColorBrush x:Key="ControlFillColorTertiaryBrush" Color="{StaticResource ControlFillColorTertiary}" />
+      <SolidColorBrush x:Key="ControlFillColorDisabledBrush" Color="{StaticResource ControlFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlFillColorTransparentBrush" Color="{StaticResource ControlFillColorTransparent}" />
+      <SolidColorBrush x:Key="ControlFillColorInputActiveBrush" Color="{StaticResource ControlFillColorInputActive}" />
+      <SolidColorBrush x:Key="ControlStrongFillColorDefaultBrush" Color="{StaticResource ControlStrongFillColorDefault}" />
+      <SolidColorBrush x:Key="ControlStrongFillColorDisabledBrush" Color="{StaticResource ControlStrongFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlSolidFillColorDefaultBrush" Color="{StaticResource ControlSolidFillColorDefault}" />
+      <SolidColorBrush x:Key="SubtleFillColorTransparentBrush" Color="{StaticResource SubtleFillColorTransparent}" />
+      <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="{StaticResource SubtleFillColorSecondary}" />
+      <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="{StaticResource SubtleFillColorTertiary}" />
+      <SolidColorBrush x:Key="SubtleFillColorDisabledBrush" Color="{StaticResource SubtleFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlAltFillColorTransparentBrush" Color="{StaticResource ControlAltFillColorTransparent}" />
+      <SolidColorBrush x:Key="ControlAltFillColorSecondaryBrush" Color="{StaticResource ControlAltFillColorSecondary}" />
+      <SolidColorBrush x:Key="ControlAltFillColorTertiaryBrush" Color="{StaticResource ControlAltFillColorTertiary}" />
+      <SolidColorBrush x:Key="ControlAltFillColorQuarternaryBrush" Color="{StaticResource ControlAltFillColorQuarternary}" />
+      <SolidColorBrush x:Key="ControlAltFillColorDisabledBrush" Color="{StaticResource ControlAltFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlOnImageFillColorDefaultBrush" Color="{StaticResource ControlOnImageFillColorDefault}" />
+      <SolidColorBrush x:Key="ControlOnImageFillColorSecondaryBrush" Color="{StaticResource ControlOnImageFillColorSecondary}" />
+      <SolidColorBrush x:Key="ControlOnImageFillColorTertiaryBrush" Color="{StaticResource ControlOnImageFillColorTertiary}" />
+      <SolidColorBrush x:Key="ControlOnImageFillColorDisabledBrush" Color="{StaticResource ControlOnImageFillColorDisabled}" />
+      <SolidColorBrush x:Key="AccentFillColorSelectedTextBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorLight2}" />
+      <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{DynamicResource SystemAccentColorLight2}" Opacity="0.9" />
+      <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{DynamicResource SystemAccentColorLight2}" Opacity="0.8" />
+      <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{StaticResource AccentFillColorDisabled}" />
+      <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{StaticResource ControlStrokeColorDefault}" />
+      <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{StaticResource ControlStrokeColorSecondary}" />
+      <SolidColorBrush x:Key="ControlStrokeColorOnAccentDefaultBrush" Color="{StaticResource ControlStrokeColorOnAccentDefault}" />
+      <SolidColorBrush x:Key="ControlStrokeColorOnAccentSecondaryBrush" Color="{StaticResource ControlStrokeColorOnAccentSecondary}" />
+      <SolidColorBrush x:Key="ControlStrokeColorOnAccentTertiaryBrush" Color="{StaticResource ControlStrokeColorOnAccentTertiary}" />
+      <SolidColorBrush x:Key="ControlStrokeColorOnAccentDisabledBrush" Color="{StaticResource ControlStrokeColorOnAccentDisabled}" />
+      <SolidColorBrush x:Key="ControlStrokeColorForStrongFillWhenOnImageBrush" Color="{StaticResource ControlStrokeColorForStrongFillWhenOnImage}" />
+      <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="{StaticResource CardStrokeColorDefault}" />
+      <SolidColorBrush x:Key="CardStrokeColorDefaultSolidBrush" Color="{StaticResource CardStrokeColorDefaultSolid}" />
+      <SolidColorBrush x:Key="ControlStrongStrokeColorDefaultBrush" Color="{StaticResource ControlStrongStrokeColorDefault}" />
+      <SolidColorBrush x:Key="ControlStrongStrokeColorDisabledBrush" Color="{StaticResource ControlStrongStrokeColorDisabled}" />
+      <SolidColorBrush x:Key="SurfaceStrokeColorDefaultBrush" Color="{StaticResource SurfaceStrokeColorDefault}" />
+      <SolidColorBrush x:Key="SurfaceStrokeColorFlyoutBrush" Color="{StaticResource SurfaceStrokeColorFlyout}" />
+      <SolidColorBrush x:Key="SurfaceStrokeColorInverseBrush" Color="{StaticResource SurfaceStrokeColorInverse}" />
+      <SolidColorBrush x:Key="DividerStrokeColorDefaultBrush" Color="{StaticResource DividerStrokeColorDefault}" />
+      <SolidColorBrush x:Key="FocusStrokeColorOuterBrush" Color="{StaticResource FocusStrokeColorOuter}" />
+      <SolidColorBrush x:Key="FocusStrokeColorInnerBrush" Color="{StaticResource FocusStrokeColorInner}" />
+      <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+      <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+      <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="{StaticResource SmokeFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="{StaticResource LayerFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerFillColorAltBrush" Color="{StaticResource LayerFillColorAlt}" />
+      <SolidColorBrush x:Key="LayerOnAcrylicFillColorDefaultBrush" Color="{StaticResource LayerOnAcrylicFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerOnAccentAcrylicFillColorDefaultBrush" Color="{StaticResource LayerOnAccentAcrylicFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorDefaultBrush" Color="{StaticResource LayerOnMicaBaseAltFillColorDefault}" />
+      <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorSecondaryBrush" Color="{StaticResource LayerOnMicaBaseAltFillColorSecondary}" />
+      <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorTertiaryBrush" Color="{StaticResource LayerOnMicaBaseAltFillColorTertiary}" />
+      <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorTransparentBrush" Color="{StaticResource LayerOnMicaBaseAltFillColorTransparent}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="{StaticResource SolidBackgroundFillColorSecondary}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="{StaticResource SolidBackgroundFillColorTertiary}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="{StaticResource SolidBackgroundFillColorQuarternary}" />
+      <SolidColorBrush x:Key="SolidBackgroundFillColorBaseAltBrush" Color="{StaticResource SolidBackgroundFillColorBaseAlt}" />
+      <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{DynamicResource SystemAccentColorLight2}" />
+      <SolidColorBrush x:Key="SystemFillColorSuccessBrush" Color="{StaticResource SystemFillColorSuccess}" />
+      <SolidColorBrush x:Key="SystemFillColorCautionBrush" Color="{StaticResource SystemFillColorCaution}" />
+      <SolidColorBrush x:Key="SystemFillColorCriticalBrush" Color="{StaticResource SystemFillColorCritical}" />
+      <SolidColorBrush x:Key="SystemFillColorNeutralBrush" Color="{StaticResource SystemFillColorNeutral}" />
+      <SolidColorBrush x:Key="SystemFillColorSolidNeutralBrush" Color="{StaticResource SystemFillColorSolidNeutral}" />
+      <SolidColorBrush x:Key="SystemFillColorAttentionBackgroundBrush" Color="{StaticResource SystemFillColorAttentionBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorSuccessBackgroundBrush" Color="{StaticResource SystemFillColorSuccessBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorCautionBackgroundBrush" Color="{StaticResource SystemFillColorCautionBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorCriticalBackgroundBrush" Color="{StaticResource SystemFillColorCriticalBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="{StaticResource SystemFillColorNeutralBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorSolidAttentionBackgroundBrush" Color="{StaticResource SystemFillColorSolidAttentionBackground}" />
+      <SolidColorBrush x:Key="SystemFillColorSolidNeutralBackgroundBrush" Color="{StaticResource SystemFillColorSolidNeutralBackground}" />
+
+      <!-- Elevation borders. Dark: the standard control border keeps the stronger edge at the top. -->
+      <LinearGradientBrush x:Key="ControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,3">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.33" Color="{StaticResource ControlStrokeColorSecondary}" />
+          <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="CircleElevationBorderBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.50" Color="{StaticResource ControlStrokeColorDefault}" />
+          <GradientStop Offset="0.70" Color="{StaticResource ControlStrokeColorSecondary}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="AccentControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,3" TransformOrigin="50%,50%">
+        <LinearGradientBrush.Transform>
+          <ScaleTransform ScaleY="-1" />
+        </LinearGradientBrush.Transform>
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.33" Color="{StaticResource ControlStrokeColorOnAccentSecondary}" />
+          <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorOnAccentDefault}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="TextControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,2" TransformOrigin="50%,50%">
+        <LinearGradientBrush.Transform>
+          <ScaleTransform ScaleY="-1" />
+        </LinearGradientBrush.Transform>
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.5" Color="{StaticResource ControlStrongStrokeColorDefault}" />
+          <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="TextControlElevationBorderFocusedBrush" StartPoint="0,0" EndPoint="0,2" TransformOrigin="50%,50%">
+        <LinearGradientBrush.Transform>
+          <ScaleTransform ScaleY="-1" />
+        </LinearGradientBrush.Transform>
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="1.0" Color="{DynamicResource SystemAccentColorLight2}" />
+          <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+
+      <!-- Acrylic surfaces as solid fallback colors. -->
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="#2C2C2C" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="#2C2C2C" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#F9F9F9" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverseBrush" Color="#F9F9F9" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="#1C1C1C" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorBaseBrush" Color="#1C1C1C" />
+      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorDark1}" />
+      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorDark1}" />
+      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush" Color="{DynamicResource SystemAccentColorDark2}" />
+      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorBaseBrush" Color="{DynamicResource SystemAccentColorDark2}" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <!-- Canonical WinUI animation constants (variant independent). -->
+  <x:String x:Key="ControlFastOutSlowInKeySpline">0,0,0,1</x:String>
+  <x:String x:Key="ControlNormalAnimationDuration">00:00:00.250</x:String>
+  <x:String x:Key="ControlFastAnimationDuration">00:00:00.167</x:String>
+  <x:String x:Key="ControlFastAnimationAfterDuration">00:00:00.168</x:String>
+  <x:String x:Key="ControlFasterAnimationDuration">00:00:00.083</x:String>
+</ResourceDictionary>

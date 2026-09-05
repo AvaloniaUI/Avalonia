@@ -1,0 +1,71 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
+                    x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <GroupBox Header="Header" Padding="10" Margin="10">
+      <TextBlock Text="Hello World" />
+    </GroupBox>
+  </Design.PreviewWith>
+
+  <!-- Kept for compatibility: the WPF-style gap-border template used this converter.
+       The Fluent 2 card template below no longer masks the border. -->
+  <converters:BorderGapMaskConverter x:Key="BorderGapMaskConverter" />
+
+  <!-- No WinUI counterpart (GroupBox is WPF-style). Harmonized with the WinUI card idiom:
+       a 1px CardStrokeColorDefault stroke with 4px corner radius over
+       CardBackgroundFillColorDefault, and the header rendered above the card as
+       BodyStrong text (14px SemiBold, TextFillColorPrimary). -->
+  <ControlTheme x:Key="{x:Type GroupBox}"
+                TargetType="GroupBox">
+    <Setter Property="BorderThickness" Value="{DynamicResource GroupBoxBorderThickness}" />
+    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+    <Setter Property="Padding" Value="{DynamicResource GroupBoxPadding}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid x:Name="RootGrid" UseLayoutRounding="true" RowDefinitions="Auto,*">
+          <!-- Header above the card content area -->
+          <Border x:Name="Header"
+                  Grid.Row="0"
+                  Padding="0,0,0,8">
+            <ContentPresenter Name="PART_HeaderPresenter"
+                              Content="{TemplateBinding Header}"
+                              FontSize="{DynamicResource ControlContentThemeFontSize}"
+                              FontWeight="SemiBold"
+                              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              UseLayoutRounding="{TemplateBinding UseLayoutRounding}" />
+          </Border>
+          <!-- Card surface with the primary content -->
+          <Border Grid.Row="1"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  Background="{TemplateBinding Background}"
+                  BackgroundSizing="InnerBorderEdge">
+            <ContentPresenter Name="PART_ContentPresenter"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              UseLayoutRounding="{TemplateBinding UseLayoutRounding}"
+                              Margin="{TemplateBinding Padding}" />
+          </Border>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
+
+  </ControlTheme>
+</ResourceDictionary>

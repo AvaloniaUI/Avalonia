@@ -30,6 +30,7 @@
 
       <!-- Styles attached dynamically depending on current theme (simple or fluent) -->
       <FluentTheme x:Key="FluentTheme" />
+      <Fluent2Theme x:Key="Fluent2Theme" />
       <SimpleTheme x:Key="SimpleTheme" />
       <StyleInclude x:Key="ColorPickerFluent" Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
       <StyleInclude x:Key="ColorPickerSimple" Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml" />

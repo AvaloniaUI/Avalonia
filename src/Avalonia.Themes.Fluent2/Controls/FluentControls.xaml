@@ -1,0 +1,87 @@
+﻿<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:ClassModifier="internal">
+
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/AdornerLayer.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/Button.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/CommandBar.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/CarouselPage.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ContentPage.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/DrawerPage.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/NavigationPage.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TabbedPage.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/RadioButton.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/Expander.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ProgressBar.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/AutoCompleteBox.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ButtonSpinner.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/Calendar.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/CalendarButton.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/CalendarDatePicker.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/CalendarDayButton.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/CalendarItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/Carousel.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/CheckBox.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/FlyoutPresenter.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/GroupBox.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/GridSplitter.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/HyperlinkButton.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ItemsControl.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/Label.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ListBox.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ListBoxItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/MenuScrollViewer.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/Menu.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/MenuItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/MenuFlyoutPresenter.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/NotificationCard.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/NumericUpDown.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/OverlayPopupHost.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/PopupRoot.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/PathIcon.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/PipsPager.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/RepeatButton.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ScrollBar.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ScrollViewer.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/Separator.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/SplitButton.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/SplitView.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TabControl.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TabItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TabStrip.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TabStripItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TextBox.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ToggleButton.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ToggleSwitch.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ToolTip.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TransitioningContentControl.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TreeView.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TreeViewItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/WindowNotificationManager.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/Window.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/WindowDrawnDecorations.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ComboBox.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ComboBoxItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ContextMenu.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/DataValidationErrors.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/DateTimePickerShared.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/DatePicker.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TimePicker.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/DropDownButton.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/EmbeddableControlRoot.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/Slider.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ManagedFileChooser.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/SelectableTextBlock.xaml"/>
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/RefreshContainer.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/RefreshVisualizer.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/ThemeVariantScope.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/HeaderedContentControl.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent2/Controls/TextSelectionHandle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Styles.Resources>
+</Styles>
