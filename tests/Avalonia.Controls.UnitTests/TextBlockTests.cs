@@ -614,6 +614,68 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(default, expectedSize), target.Bounds);
         }
 
+        [Fact]
+        public void Reading_TextLayout_Before_Measure_Should_Not_Poison_Inlines_Shaping()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock
+            {
+                Inlines = new InlineCollection { new Run("Hello World") }
+            };
+
+            // Something outside of the layout pass (e.g. a render pass that runs before the
+            // queued measure) reads TextLayout while _textRuns has not been built yet.
+            _ = target.TextLayout;
+
+            target.Measure(new Size(1000, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
+        }
+
+        [Fact]
+        public void Reading_TextLayout_Between_Invalidation_And_Measure_Should_Not_Poison_Inlines_Shaping()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            // Starts out empty, exactly like a title bound through a converter that yields an
+            // empty InlineCollection until the view model delivers the real value.
+            var target = new TextBlock { Inlines = new InlineCollection() };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.Inlines = new InlineCollection { new Run("Hello World") };
+
+            // Render runs before the queued measure is processed.
+            _ = target.TextLayout;
+
+            target.Measure(new Size(1000, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
+        }
+
+        [Fact]
+        public void Reading_TextLayout_Before_Measure_Should_Not_Poison_TextRunCache_Across_Constraints()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new TextBlock { Inlines = new InlineCollection() };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.Inlines = new InlineCollection { new Run("Hello World") };
+
+            _ = target.TextLayout;
+
+            // A *different* constraint forces MeasureOverride to drop _textLayout, so anything
+            // still wrong here comes from the TextRunCache rather than the stale layout.
+            target.Measure(new Size(900, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
+        }
+
         private class TestTextBlock : TextBlock
         {
             public Size Constraint => _constraint;
