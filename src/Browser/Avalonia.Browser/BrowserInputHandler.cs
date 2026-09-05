@@ -79,6 +79,9 @@ internal class BrowserInputHandler
         {
             coalescedEvents = new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
             {
+                if (argsObj.IsDisposed)
+                    return [];
+
                 // To minimize JS interop usage, we resolve all points properties in a single call.
                 const int itemsPerPoint = 6;
                 var pointsProps = InputHelper.GetCoalescedEvents(argsObj);
