@@ -852,11 +852,15 @@ namespace Avalonia.Media.Fonts
                         {
                             glyphTypeface = syntheticGlyphTypeface;
                         }
-                        else
-                        {
-                            // Cache the nearest match for future lookups
-                            TryAddGlyphTypeface(familyName, key, glyphTypeface);
-                        }
+
+                        // Cache the resolved typeface under the REQUESTED family name, whether it is
+                        // the nearest match or a synthetic one. TryCreateSyntheticGlyphTypeface only
+                        // registers the synthetic under the *source font's own* family names, so a
+                        // request coming through a different name (an alias, or a "Family Style"
+                        // composite normalized by Typeface.Normalize) never hits the cache and
+                        // re-enters synthesis on every single call — and synthesis copies the whole
+                        // font file through TryGetStream.
+                        TryAddGlyphTypeface(familyName, key, glyphTypeface);
                     }
 
                     return true;
