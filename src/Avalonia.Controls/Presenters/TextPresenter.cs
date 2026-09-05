@@ -2,20 +2,18 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
-using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
-    public class TextPresenter : Control
+    public class TextPresenter : Control, ITextScaleable
     {
         public static readonly StyledProperty<bool> ShowSelectionHighlightProperty =
             AvaloniaProperty.Register<TextPresenter, bool>(nameof(ShowSelectionHighlight), defaultValue: true);
@@ -337,6 +335,8 @@ namespace Avalonia.Controls.Presenters
         internal TextSelectionHandleCanvas? TextSelectionHandleCanvas { get; set; }
         internal TextBoxTextInputMethodClient? CurrentImClient { get; set; }
 
+        void ITextScaleable.OnTextScalingChanged() => InvalidateTextLayout();
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -351,10 +351,13 @@ namespace Avalonia.Controls.Presenters
             var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
             var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
 
+            var effectiveFontSize = TextScaling.GetScaledFontSize(this, FontSize);
+            var fontScaleFactor = effectiveFontSize / FontSize;
+
             var textLayout = new TextLayout(
                 text,
                 typeface,
-                FontSize,
+                effectiveFontSize,
                 Foreground,
                 TextAlignment,
                 TextWrapping,
@@ -363,8 +366,8 @@ namespace Avalonia.Controls.Presenters
                 FlowDirection,
                 maxWidth,
                 maxHeight,
-                LineHeight,
-                LetterSpacing,
+                LineHeight * fontScaleFactor,
+                LetterSpacing * fontScaleFactor,
                 0,
                 FontFeatures,
                 textStyleOverrides,
@@ -556,6 +559,7 @@ namespace Avalonia.Controls.Presenters
             var preeditText = PreeditText;
             var text = GetCombinedText(Text, caretIndex, preeditText);
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+            var effectiveFontSize = TextScaling.GetScaledFontSize(this, FontSize);
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
@@ -570,7 +574,7 @@ namespace Avalonia.Controls.Presenters
                 var preeditHighlight = new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
                         new GenericTextRunProperties(
                             typeface,
-                            FontSize,
+                            effectiveFontSize,
                             TextDecorations.Underline,
                             foreground,
                             fontFeatures: FontFeatures));
@@ -589,7 +593,7 @@ namespace Avalonia.Controls.Presenters
                         new ValueSpan<TextRunProperties>(start, length,
                         new GenericTextRunProperties(
                             typeface,
-                            FontSize,
+                            effectiveFontSize,
                             foregroundBrush: SelectionForegroundBrush,
                             fontFeatures: FontFeatures))
                     };
@@ -1046,6 +1050,11 @@ namespace Avalonia.Controls.Presenters
             if (change.Property == CaretBlinkIntervalProperty)
             {
                 ResetCaretTimer();
+            }
+
+            if (change.Property.OwnerType == typeof(TextScaling))
+            {
+                InvalidateTextLayout();
             }
 
             switch (change.Property.Name)
