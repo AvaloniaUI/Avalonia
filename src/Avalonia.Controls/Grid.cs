@@ -2137,7 +2137,10 @@ namespace Avalonia.Controls
                 for (int i = 0; i < definitions.Count; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = LayoutHelper.RoundLayoutValue(def.SizeCache, dpi);
+                    // round midpoints to zero instead of even so equivalent decimal values
+                    // always round in the same direction, regardless of the preceding integer
+                    // (e.g., 3.5 and 4.5 round to 3 and 4, respectively, instead of both rounding to 4
+                    double roundedSize = LayoutHelper.RoundLayoutValueWithMidpoint(def.SizeCache, dpi, MidpointRounding.ToZero);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
@@ -2209,7 +2212,7 @@ namespace Avalonia.Controls
                             final = Math.Max(final, definition.MinSizeForArrange);
                             if (final < definition.SizeCache)
                             {
-                                adjustedSize -= dpiIncrement;
+                                adjustedSize = LayoutHelper.RoundLayoutValueUp(adjustedSize - dpiIncrement, dpi);
                             }
                             definition.SizeCache = final;
                             i--;
@@ -2225,7 +2228,7 @@ namespace Avalonia.Controls
                             final = Math.Max(final, definition.MinSizeForArrange);
                             if (final > definition.SizeCache)
                             {
-                                adjustedSize += dpiIncrement;
+                                adjustedSize = LayoutHelper.RoundLayoutValueUp(adjustedSize + dpiIncrement, dpi);
                             }
                             definition.SizeCache = final;
                             i++;
