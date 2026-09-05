@@ -84,7 +84,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         public void Update(PopupPositionerParameters parameters)
         {
             var rect = Calculate(
-                parameters.Size * _popup.Scaling,
+                parameters.Size.Deflate(parameters.Deflate) * _popup.Scaling,
                 new Rect(
                     parameters.AnchorRectangle.TopLeft * _popup.Scaling,
                     parameters.AnchorRectangle.Size * _popup.Scaling),
@@ -92,14 +92,16 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 parameters.Gravity,
                 parameters.ConstraintAdjustment,
                 parameters.Offset * _popup.Scaling);
-           
+
+            rect = rect.Inflate(parameters.Deflate * _popup.Scaling);
+
             _popup.MoveAndResize(
                 rect.Position,
                 rect.Size / _popup.Scaling);
         }
 
         
-        private Rect Calculate(Size translatedSize, 
+        private Rect Calculate(Size translatedSize,
             Rect anchorRect, PopupAnchor anchor, PopupGravity gravity,
             PopupPositionerConstraintAdjustment constraintAdjustment, Point offset)
         {
