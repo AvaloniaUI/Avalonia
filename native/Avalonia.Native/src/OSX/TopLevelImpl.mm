@@ -140,7 +140,7 @@ HRESULT TopLevelImpl::CreateGlRenderTarget(IAvnGlContext* glContext, IAvnGlSurfa
     return S_OK;
 }
 
-HRESULT TopLevelImpl::CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget **ppv) {
+HRESULT TopLevelImpl::CreateMetalRenderTarget(IAvnMetalDevice* device, AvnColorSpace colorSpace, IAvnMetalRenderTarget **ppv) {
     START_COM_CALL;
 
     if(![NSThread isMainThread])
@@ -149,7 +149,7 @@ HRESULT TopLevelImpl::CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetal
     if (View == NULL)
         return E_FAIL;
 
-    auto target = [[MetalRenderTarget alloc] initWithDevice: device];
+    auto target = [[MetalRenderTarget alloc] initWithDevice: device colorSpace: colorSpace];
     [View setRenderTarget: target];
     [target getRenderTarget: ppv];
     return S_OK;

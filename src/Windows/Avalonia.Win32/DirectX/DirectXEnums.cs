@@ -221,6 +221,26 @@ namespace Avalonia.Win32.DirectX
         DXGI_MWA_NO_PRINT_SCREEN = 4
     }
     
+    /// <summary>
+    /// Subset of DXGI_COLOR_SPACE_TYPE. Only the RGB entries which can be set on a swap chain are
+    /// listed, the numeric values are the ones from dxgicommon.h.
+    /// </summary>
+    internal enum DXGI_COLOR_SPACE_TYPE : uint
+    {
+        /// <summary>sRGB. Gamma 2.2 with BT.709 primaries, used with 8 or 10 bit channels.</summary>
+        DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 = 0,
+
+        /// <summary>
+        /// scRGB. Linear light with BT.709 primaries, used with 16 bit float channels. Values
+        /// outside of 0..1 reach colors outside of the sRGB gamut, so this is the wide gamut option
+        /// on Windows. There is no Display P3 color space in DXGI.
+        /// </summary>
+        DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 = 1,
+
+        /// <summary>HDR10. ST.2084 with BT.2020 primaries, used with 10 or 12 bit channels.</summary>
+        DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 = 12
+    }
+
     internal static class DxgiErrorExtensions
     {
         public static bool IsDeviceLostError(this DXGI_ERROR error)

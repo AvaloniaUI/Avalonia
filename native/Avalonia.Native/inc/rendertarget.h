@@ -20,6 +20,6 @@
 @end
 
 @interface MetalRenderTarget : NSObject<IRenderTarget>
--(MetalRenderTarget*) initWithDevice: (IAvnMetalDevice*) device;
+-(MetalRenderTarget*) initWithDevice: (IAvnMetalDevice*) device colorSpace: (AvnColorSpace) colorSpace;
 -(void) getRenderTarget: (IAvnMetalRenderTarget**) ppv;
 @end

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -336,6 +337,50 @@ namespace Avalonia.Skia
         public static SKPath? Clone(this SKPath? src)
         {
             return src != null ? new SKPath(src) : null;
+        }
+
+        // A surface is created on every rendering session, so these are not allocated per frame.
+        private static readonly SKColorSpace s_srgb = SKColorSpace.CreateSrgb();
+
+        private static readonly SKColorSpace s_displayP3 =
+            SKColorSpace.CreateRgb(SKColorSpaceTransferFn.Srgb, SKColorSpaceXyz.DisplayP3);
+
+        private static readonly SKColorSpace s_srgbLinear = SKColorSpace.CreateSrgbLinear();
+
+        // Null leaves the surface untagged, which is how content was presented before color
+        // management was added.
+        internal static SKColorSpace? ToSKColorSpace(this PresentationColorSpace colorSpace)
+        {
+            return colorSpace switch
+            {
+                PresentationColorSpace.Unspecified => null,
+                PresentationColorSpace.Srgb => s_srgb,
+                PresentationColorSpace.DisplayP3 => s_displayP3,
+                // WideGamut only says what the application wants. A render target always reports the
+                // concrete color space it applied, so getting it here means a backend forgot to
+                // resolve the request.
+                PresentationColorSpace.WideGamut => throw new ArgumentException(
+                    $"{nameof(PresentationColorSpace.WideGamut)} is a request, a render target has to report " +
+                    "the color space it really applied.", nameof(colorSpace)),
+                // scRGB is linear light, the extra gamut lives in the values outside of 0..1.
+                PresentationColorSpace.ScRgb => s_srgbLinear,
+                _ => throw new ArgumentOutOfRangeException(nameof(colorSpace), colorSpace, null)
+            };
+        }
+
+        /// <summary>
+        /// Returns the color type a surface has to use for the given color space, or
+        /// <paramref name="defaultColorType"/> when the color space works with the backend default.
+        /// </summary>
+        internal static SKColorType ToSKColorType(this PresentationColorSpace colorSpace, SKColorType defaultColorType)
+        {
+            // scRGB stores values outside of 0..1, so 8 bit per channel can not hold it.
+            return colorSpace == PresentationColorSpace.ScRgb ? SKColorType.RgbaF16 : defaultColorType;
+        }
+
+        internal static PresentationColorSpace GetPresentationColorSpace(this IPlatformRenderSurfaceRenderTarget target)
+        {
+            return (target as IColorManagedRenderTarget)?.ColorSpace ?? PresentationColorSpace.Unspecified;
         }
     }
 }

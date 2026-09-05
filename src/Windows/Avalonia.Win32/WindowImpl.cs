@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
@@ -34,7 +35,8 @@ namespace Avalonia.Win32
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
-    internal partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo, IWin32OptionsTopLevelImpl
+    internal partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
+        IWin32OptionsTopLevelImpl, IColorManagedPresentation
     {
         private static readonly List<WindowImpl> s_instances = new();
 
@@ -174,6 +176,11 @@ namespace Avalonia.Win32
                     else if (glPlatform is WglPlatformOpenGlInterface)
                         _glSurface = new WglGlPlatformSurface(this);
                 }
+
+                // Only the WinUI composition surface implements this today; everything else keeps
+                // reporting Unspecified via the CurrentColorSpace getter above and never raises this.
+                if (_glSurface is WinUiCompositedWindowSurface colorManagedSurface)
+                    colorManagedSurface.CurrentColorSpaceChanged += (_, e) => CurrentColorSpaceChanged?.Invoke(this, e);
             }
 
             _storageProvider = new Win32StorageProvider(this);
@@ -332,6 +339,14 @@ namespace Avalonia.Win32
 
         private bool IsMouseInPointerEnabled => _wmPointerEnabled && IsMouseInPointerEnabled();
 
+        // Only the WinUI composition surface can pick a wide gamut pixel format today, so this stays
+        // unspecified on the other composition modes.
+        public PresentationColorSpace CurrentColorSpace =>
+            (_glSurface as WinUiCompositedWindowSurface)?.CurrentColorSpace ?? PresentationColorSpace.Unspecified;
+
+        /// <inheritdoc cref="IColorManagedPresentation.CurrentColorSpaceChanged"/>
+        public event EventHandler? CurrentColorSpaceChanged;
+
         public object? TryGetFeature(Type featureType)
         {
             if (featureType == typeof(IScreenImpl))
@@ -357,6 +372,11 @@ namespace Avalonia.Win32
             if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(IColorManagedPresentation))
+            {
+                return this;
             }
 
             if (featureType == typeof(IInputPane))

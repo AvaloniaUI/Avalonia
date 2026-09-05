@@ -27,6 +27,16 @@ public class EglDisplayOptions
     public Action? DisposeCallback { get; set; }
     public IEnumerable<GlVersion>? GlVersions { get; set; }
     public EglConfigProbeCallback? ProbeConfig { get; set; }
+
+    /// <summary>
+    /// Prefers a half float config (EGL_EXT_pixel_format_float) over the ordinary 8 bit one, for
+    /// presenting in a colour space such as scRGB that keeps values outside 0..1. Falls back to
+    /// the 8 bit config when the driver offers no float one, so this is a preference rather than
+    /// a requirement. The context and its surfaces must agree on this: eglMakeCurrent fails with
+    /// EGL_BAD_MATCH for a float surface on a fixed point context unless the driver supports
+    /// EGL_ANGLE_flexible_surface_compatibility, which most do not.
+    /// </summary>
+    public bool PreferFloat16Config { get; set; }
 }
 
 public class EglContextOptions

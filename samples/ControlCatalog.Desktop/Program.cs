@@ -11,6 +11,7 @@ using Avalonia.Headless;
 using Avalonia.LinuxFramebuffer;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -36,6 +37,25 @@ namespace ControlCatalog.Desktop
             }
 
             var builder = BuildAvaloniaApp();
+
+            // The presentation color space is read once per window when it is created, so it has to
+            // be in the locator before the lifetime starts. Defaults to Unspecified, so the catalog
+            // presents exactly as it did before unless it is asked to. See the "Wide Gamut" page.
+            var colorSpace = PresentationColorSpace.Unspecified;
+            var colorSpaceIndex = Array.IndexOf(args, "--color-space");
+            if (colorSpaceIndex >= 0)
+            {
+                if (args.Length <= colorSpaceIndex + 1 ||
+                    !Enum.TryParse(args[colorSpaceIndex + 1], true, out colorSpace))
+                {
+                    throw new ArgumentException(
+                        "--color-space needs one of these values: " +
+                        string.Join(", ", Enum.GetNames<PresentationColorSpace>()));
+                }
+            }
+
+            AvaloniaLocator.CurrentMutable.Bind<PresentationOptions>().ToConstant(
+                new PresentationOptions { PreferredColorSpace = colorSpace });
 
             double GetScaling()
             {
