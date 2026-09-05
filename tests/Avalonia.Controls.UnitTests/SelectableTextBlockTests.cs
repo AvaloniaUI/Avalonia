@@ -358,6 +358,25 @@ namespace Avalonia.Controls.UnitTests
             return target;
         }
 
+        [Fact]
+        public void Should_Shape_Inlines_When_TextLayout_Is_Created_Between_Content_Change_And_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new SelectableTextBlock { Inlines = new InlineCollection() };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.Inlines = new InlineCollection { new Run("Hello World") };
+
+            _ = target.TextLayout;
+
+            target.Measure(new Size(1000, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
+        }
+
         private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl);
     }
 }

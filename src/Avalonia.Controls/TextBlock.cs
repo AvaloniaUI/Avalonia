@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Automation.Peers;
@@ -186,7 +186,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public TextLayout TextLayout => _textLayout ??= CreateTextLayout(Text);
+        public TextLayout TextLayout => _textLayout ??= CreateTextLayoutCore();
+
+        private TextLayout CreateTextLayoutCore()
+        {
+            // A layout can be created outside of a measure pass - a render pass that runs before a
+            // queued measure, or a read of this property - so it cannot rely on the measure pass
+            // having brought the complex content up to date.
+            EnsureTextRuns();
+            MeasureEmbeddedControls(GetMaxSizeFromConstraint());
+
+            return CreateTextLayout(Text);
+        }
 
         /// <summary>
         /// Gets or sets the padding to place around the <see cref="Text"/>.
@@ -674,9 +685,11 @@ namespace Avalonia.Controls
 
             ITextSource textSource;
 
-            if (_textRuns != null)
+            if (HasComplexContent)
             {
-                textSource = new InlinesTextSource(_textRuns);
+                EnsureTextRuns();
+
+                textSource = new InlinesTextSource(_textRuns!);
             }
             else
             {
@@ -701,6 +714,8 @@ namespace Avalonia.Controls
         protected void InvalidateTextLayout()
         {
             _textRunCache?.Invalidate();
+            _textRuns = null;
+            DisposeTextLayout();
             InvalidateVisual();
             InvalidateMeasure();
         }
@@ -711,17 +726,76 @@ namespace Avalonia.Controls
         /// </summary>
         private void InvalidateTextLayoutKeepCache()
         {
+            DisposeTextLayout();
             InvalidateVisual();
             InvalidateMeasure();
         }
 
-        protected override void OnMeasureInvalidated()
+        /// <remarks>
+        /// InvalidateMeasure only raises OnMeasureInvalidated while the measure is still
+        /// valid, so a second invalidation before the next measure pass would leave the
+        /// layout built from the content the first one replaced.
+        /// </remarks>
+        private void DisposeTextLayout()
         {
             _textLayout?.Dispose();
             _textLayout = null;
-            _textRuns = null;
+        }
+
+        protected override void OnMeasureInvalidated()
+        {
+            DisposeTextLayout();
 
             base.OnMeasureInvalidated();
+        }
+
+        /// <summary>
+        /// Builds the text runs for <see cref="Inlines"/> unless they are already in sync with the
+        /// content. The runs are derived from the content alone, so only a content change discards
+        /// them; the constraint does not.
+        /// </summary>
+        /// <remarks>
+        /// Missing runs are not the same as no inlines: shaping without them falls back to
+        /// <see cref="Text"/>, which is null whenever the content lives in <see cref="Inlines"/>,
+        /// and that empty result is what the <see cref="TextRunCache"/> stores for the rest of the
+        /// control's life.
+        /// </remarks>
+        private protected void EnsureTextRuns()
+        {
+            if (_textRuns != null || !HasComplexContent)
+            {
+                return;
+            }
+
+            var textRuns = new List<TextRun>();
+
+            foreach (var inline in Inlines!)
+            {
+                inline.BuildTextRun(textRuns);
+            }
+
+            _textRuns = textRuns;
+        }
+
+        /// <summary>
+        /// Measures the controls the inlines embed against the width available to the block, and
+        /// reports whether any of them came back a different size.
+        /// </summary>
+        private bool MeasureEmbeddedControls(Size constraint)
+        {
+            if (!HasComplexContent)
+            {
+                return false;
+            }
+
+            var resized = false;
+
+            foreach (var inline in Inlines!)
+            {
+                resized |= inline.MeasureEmbeddedControls(constraint);
+            }
+
+            return resized;
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -739,26 +813,20 @@ namespace Avalonia.Controls
             if (_constraint != deflatedSize)
             {
                 //Reset TextLayout when the constraint is not matching.
-                _textLayout?.Dispose();
-                _textLayout = null;
+                DisposeTextLayout();
                 _constraint = deflatedSize;
 
                 //Force arrange so text will be properly aligned.
                 InvalidateArrange();
             }
            
-            var inlines = Inlines;
+            EnsureTextRuns();
 
-            if (HasComplexContent)
+            if (MeasureEmbeddedControls(deflatedSize))
             {
-                var textRuns = new List<TextRun>();
-
-                foreach (var inline in inlines!)
-                {
-                    inline.BuildTextRun(textRuns, deflatedSize);
-                }
-
-                _textRuns = textRuns;
+                // A line snapshots its metrics when it is formatted, so an existing layout still
+                // reports the width and height the child had before it was measured again.
+                DisposeTextLayout();
             }
 
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
@@ -782,8 +850,7 @@ namespace Avalonia.Controls
             var availableSize = finalSize.Deflate(padding);
 
             // Dispose the TextLayout but preserve the TextRunCache so shaped runs are reused.
-            _textLayout?.Dispose();
-            _textLayout = null;
+            DisposeTextLayout();
             _constraint = availableSize;
 
             //This implicitly recreated the TextLayout with a new constraint.
@@ -870,6 +937,7 @@ namespace Avalonia.Controls
                 case nameof(TextAlignment):
                 case nameof(Padding):
                 case nameof(LineHeight):
+                case nameof(LineSpacing):
                 case nameof(MaxLines):
                     {
                         InvalidateTextLayoutKeepCache();

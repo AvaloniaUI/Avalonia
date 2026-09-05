@@ -38,12 +38,24 @@ namespace Avalonia.Controls.Documents
             set => SetValue(InlinesProperty, value);
         }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns, Size blockSize)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
             foreach (var inline in Inlines)
             {
-                inline.BuildTextRun(textRuns, blockSize);
+                inline.BuildTextRun(textRuns);
             }
+        }
+
+        internal override bool MeasureEmbeddedControls(Size blockSize)
+        {
+            var resized = false;
+
+            foreach (var inline in Inlines)
+            {
+                resized |= inline.MeasureEmbeddedControls(blockSize);
+            }
+
+            return resized;
         }
 
         internal override void AppendText(StringBuilder stringBuilder)
