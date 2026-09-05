@@ -151,6 +151,15 @@ public partial class Visual
         if (!comp.Effect.EffectEquals(Effect))
             comp.Effect = Effect?.ToImmutable();
 
+        if (!comp.BackdropEffect.EffectEquals(BackdropEffect))
+            comp.BackdropEffect = BackdropEffect?.ToImmutable();
+
+        comp.BackdropEffectBounds = BackdropEffectBounds;
+
+        var backdropEffectCache = BackdropEffectCache?.GetForCompositor(comp.Compositor);
+        if (!ReferenceEquals(comp.BackdropEffectCache, backdropEffectCache))
+            comp.BackdropEffectCache = backdropEffectCache;
+
         comp.RenderOptions = RenderOptions;
         comp.TextOptions = TextOptions;
 

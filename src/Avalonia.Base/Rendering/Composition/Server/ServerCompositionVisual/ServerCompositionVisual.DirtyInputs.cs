@@ -17,7 +17,9 @@ partial class ServerCompositionVisual
           | CompositionVisualChangedFields.Size
           | CompositionVisualChangedFields.SizeAnimated
           | CompositionVisualChangedFields.RenderOptions
-          | CompositionVisualChangedFields.Effect;
+          | CompositionVisualChangedFields.Effect
+          | CompositionVisualChangedFields.BackdropEffect
+          | CompositionVisualChangedFields.BackdropEffectBounds;
 
     private const CompositionVisualChangedFields OwnBoundsUpdateFieldsMask =
         CompositionVisualChangedFields.Clip
@@ -151,9 +153,10 @@ partial class ServerCompositionVisual
     {
         if (Parent != null && _transformedSubTreeBounds.HasValue)
             Parent.AddExtraDirtyRect(_transformedSubTreeBounds.Value);
+        Backdrop_OnParentChanging();
         AttHelper_ParentChanging();
     }
-    
+
     partial void OnParentChanged()
     {
         if (Parent != null)
@@ -161,6 +164,7 @@ partial class ServerCompositionVisual
             _delayPropagateNeedsBoundsUpdate = _delayPropagateIsDirtyForRender = true;
             EnqueueOwnPropertiesRecompute();
         }
+        Backdrop_OnParentChanged();
         AttHelper_ParentChanged();
     }
     
