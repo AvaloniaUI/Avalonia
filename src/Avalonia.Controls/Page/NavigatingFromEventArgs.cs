@@ -18,6 +18,11 @@ namespace Avalonia.Controls
             NavigationType = navigationType;
         }
 
+        public NavigatingFromEventArgs(Page? destinationPage, NavigationType navigationType, object? parameter) : this(destinationPage, navigationType)
+        {
+            Parameter = parameter;
+        }
+
         /// <summary>
         /// Gets the page that will become active after this navigation.
         /// </summary>
@@ -32,5 +37,7 @@ namespace Avalonia.Controls
         /// Gets or sets a value indicating whether the navigation should be cancelled.
         /// </summary>
         public bool Cancel { get; set; }
+
+        public object? Parameter { get; }
     }
 }

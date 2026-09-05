@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using ControlCatalog.Pages;
 using Avalonia.Media;
 using ControlCatalog.Models;
+using System.Threading.Tasks;
 
 namespace ControlCatalog.ViewModels;
 
@@ -137,5 +138,7 @@ partial class MainWindowViewModel
             var iconGeometry = StreamGeometry.Parse(iconPath);
             Add(new PageItem(header, () => new TPageType(), iconGeometry, description, title));
         }
+
+        public async virtual Task Navigate(INavigation navigation) { }
     }
 }
