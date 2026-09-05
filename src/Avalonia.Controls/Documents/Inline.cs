@@ -70,14 +70,17 @@ namespace Avalonia.Controls.Documents
         /// <summary>
         /// Measures the controls this inline embeds against the width available to the block.
         /// </summary>
+        /// <returns>
+        /// True when a control came back a different size, so the caller can drop line metrics
+        /// that were measured against the old one.
+        /// </returns>
         /// <remarks>
         /// Text runs depend on the content alone, so they survive a constraint change. An embedded
-        /// control is the exception: its size answers to the available width, and the run reports
-        /// that size live, so re-measuring the control is what resizes the line.
+        /// control is the exception: its size answers to the available width. The run reports that
+        /// size live, but a formatted line snapshots its metrics, so a layout built before the
+        /// control resized keeps reporting the old width and height.
         /// </remarks>
-        internal virtual void MeasureEmbeddedControls(Size blockSize)
-        {
-        }
+        internal virtual bool MeasureEmbeddedControls(Size blockSize) => false;
 
         internal abstract void AppendText(StringBuilder stringBuilder);
 

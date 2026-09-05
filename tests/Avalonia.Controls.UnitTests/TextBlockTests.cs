@@ -779,6 +779,34 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(expected.DesiredSize, target.DesiredSize);
         }
 
+        [Fact]
+        public void Should_Remeasure_Embedded_Controls_When_The_Child_Changes_While_Measure_Is_Invalid()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var child = new Border { Width = 20, Height = 20 };
+            var target = new TextBlock { Inlines = new InlineCollection { new InlineUIContainer(child) } };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.InvalidateMeasure();
+
+            // A render pass builds the layout while the child still has its old size.
+            _ = target.TextLayout;
+
+            // The block is already measure invalid, so this raises no further invalidation on it.
+            child.Width = 80;
+
+            target.Measure(new Size(1000, 1000));
+
+            var expected = new TextBlock { Inlines = new InlineCollection { new InlineUIContainer(new Border { Width = 80, Height = 20 }) } };
+
+            expected.Measure(new Size(1000, 1000));
+
+            Assert.Equal(expected.DesiredSize, target.DesiredSize);
+        }
+
         private class TestTextBlock : TextBlock
         {
             public Size Constraint => _constraint;

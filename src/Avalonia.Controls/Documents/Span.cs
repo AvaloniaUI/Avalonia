@@ -46,12 +46,16 @@ namespace Avalonia.Controls.Documents
             }
         }
 
-        internal override void MeasureEmbeddedControls(Size blockSize)
+        internal override bool MeasureEmbeddedControls(Size blockSize)
         {
+            var resized = false;
+
             foreach (var inline in Inlines)
             {
-                inline.MeasureEmbeddedControls(blockSize);
+                resized |= inline.MeasureEmbeddedControls(blockSize);
             }
+
+            return resized;
         }
 
         internal override void AppendText(StringBuilder stringBuilder)
