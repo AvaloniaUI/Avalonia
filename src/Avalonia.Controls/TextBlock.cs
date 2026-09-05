@@ -715,6 +715,7 @@ namespace Avalonia.Controls
         {
             _textRunCache?.Invalidate();
             _textRuns = null;
+            DisposeTextLayout();
             InvalidateVisual();
             InvalidateMeasure();
         }
@@ -725,14 +726,25 @@ namespace Avalonia.Controls
         /// </summary>
         private void InvalidateTextLayoutKeepCache()
         {
+            DisposeTextLayout();
             InvalidateVisual();
             InvalidateMeasure();
         }
 
-        protected override void OnMeasureInvalidated()
+        /// <remarks>
+        /// InvalidateMeasure only raises OnMeasureInvalidated while the measure is still
+        /// valid, so a second invalidation before the next measure pass would leave the
+        /// layout built from the content the first one replaced.
+        /// </remarks>
+        private void DisposeTextLayout()
         {
             _textLayout?.Dispose();
             _textLayout = null;
+        }
+
+        protected override void OnMeasureInvalidated()
+        {
+            DisposeTextLayout();
 
             base.OnMeasureInvalidated();
         }
