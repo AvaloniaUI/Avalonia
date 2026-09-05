@@ -778,19 +778,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Measures the controls the inlines embed against the width available to the block.
+        /// Measures the controls the inlines embed against the width available to the block, and
+        /// reports whether any of them came back a different size.
         /// </summary>
-        private void MeasureEmbeddedControls(Size constraint)
+        private bool MeasureEmbeddedControls(Size constraint)
         {
             if (!HasComplexContent)
             {
-                return;
+                return false;
             }
+
+            var resized = false;
 
             foreach (var inline in Inlines!)
             {
-                inline.MeasureEmbeddedControls(constraint);
+                resized |= inline.MeasureEmbeddedControls(constraint);
             }
+
+            return resized;
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -808,8 +813,7 @@ namespace Avalonia.Controls
             if (_constraint != deflatedSize)
             {
                 //Reset TextLayout when the constraint is not matching.
-                _textLayout?.Dispose();
-                _textLayout = null;
+                DisposeTextLayout();
                 _constraint = deflatedSize;
 
                 //Force arrange so text will be properly aligned.
@@ -817,7 +821,13 @@ namespace Avalonia.Controls
             }
            
             EnsureTextRuns();
-            MeasureEmbeddedControls(deflatedSize);
+
+            if (MeasureEmbeddedControls(deflatedSize))
+            {
+                // A line snapshots its metrics when it is formatted, so an existing layout still
+                // reports the width and height the child had before it was measured again.
+                DisposeTextLayout();
+            }
 
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
@@ -840,8 +850,7 @@ namespace Avalonia.Controls
             var availableSize = finalSize.Deflate(padding);
 
             // Dispose the TextLayout but preserve the TextRunCache so shaped runs are reused.
-            _textLayout?.Dispose();
-            _textLayout = null;
+            DisposeTextLayout();
             _constraint = availableSize;
 
             //This implicitly recreated the TextLayout with a new constraint.
