@@ -61,4 +61,7 @@ public partial class WindowDecorationsPage : UserControl
         SetWindowDecorations(window);
         window.Show();
     }
+
+    private void ShowTrafficLightPositionWindow_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) =>
+        new TrafficLightPositionWindow().Show();
 }

@@ -1,0 +1,26 @@
+<Window
+  ExtendClientAreaToDecorationsHint="True"
+  Height="300"
+  MacOSProperties.TrafficLightPosition="50,50"
+  Name="TrafficLightPositionTestWindow"
+  Title="Traffic Light Position"
+  Width="400"
+  WindowDecorations="Full"
+  x:Class="IntegrationTestApp.TrafficLightPositionWindow"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel Margin="40,100,40,40" Spacing="8">
+    <Button Click="SetCustomTrafficLightPosition_Click" Name="SetCustomTrafficLightPosition">
+      Set custom traffic light position
+    </Button>
+    <Button Click="ResetTrafficLightPosition_Click" Name="ResetTrafficLightPosition">
+      Reset traffic light position
+    </Button>
+    <Button Click="ToggleTrafficLightAppearance_Click" Name="ToggleTrafficLightAppearance">
+      Toggle appearance
+    </Button>
+    <Button Click="ResizeTrafficLightWindow_Click" Name="ResizeTrafficLightWindow">
+      Resize window
+    </Button>
+  </StackPanel>
+</Window>

@@ -810,6 +810,7 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT SetExtendClientArea(bool enable);
      HRESULT GetExtendTitleBarHeight(double*ret);
      HRESULT SetExtendTitleBarHeight(double value);
+     HRESULT SetTrafficLightPosition(AvnPoint position, bool useCustomLayout);
      HRESULT GetWindowZOrder(long*ret);
 }
 
