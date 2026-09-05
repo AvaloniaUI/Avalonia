@@ -5,8 +5,13 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseMicroComGeneratorRoslyn>true</UseMicroComGeneratorRoslyn>
 
+    <BuildAvaloniaNativeXcodeProject Condition="'$(BuildAvaloniaNativeXcodeProject)' == ''">$([MSBuild]::IsOSPlatform(OSX))</BuildAvaloniaNativeXcodeProject>
+    <AvaloniaNativeSourceDir>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../../native/Avalonia.Native))</AvaloniaNativeSourceDir>
+    <AvaloniaNativeXcodeProject>$(AvaloniaNativeSourceDir)/src/OSX/Avalonia.Native.OSX.xcodeproj</AvaloniaNativeXcodeProject>
+    <AvaloniaNativeBuildDir>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../../Build/Products/$(Configuration)))</AvaloniaNativeBuildDir>
+
     <!-- Include libAvaloniaNative.dylib, only if we are on macOS host or dylib was manually copied -->
-    <AvaloniaNativeDylibPath>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../../Build/Products/Release/libAvalonia.Native.OSX.dylib))</AvaloniaNativeDylibPath>
+    <AvaloniaNativeDylibPath>$(AvaloniaNativeBuildDir)/libAvalonia.Native.OSX.dylib</AvaloniaNativeDylibPath>
     <IncludeAvaloniaDylib Condition="'$(IncludeAvaloniaDylib)' == '' AND Exists($(AvaloniaNativeDylibPath))">true</IncludeAvaloniaDylib>
     <IncludeAvaloniaDylib Condition="'$(IncludeAvaloniaDylib)' == ''">$([MSBuild]::IsOSPlatform(OSX))</IncludeAvaloniaDylib>
 
@@ -23,6 +28,30 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- On macOS, build the underlying Xcode project whenever one of its sources changed -->
+  <ItemGroup Condition="'$(BuildAvaloniaNativeXcodeProject)' == 'true'">
+    <AvaloniaNativeSource Include="$(AvaloniaNativeSourceDir)/**/*.mm;$(AvaloniaNativeSourceDir)/**/*.h" />
+    <AvaloniaNativeSource Include="$(AvaloniaNativeXcodeProject)/**/*" Exclude="$(AvaloniaNativeXcodeProject)/**/xcuserdata/**/*" />
+  </ItemGroup>
+
+  <Target Name="CompileAvaloniaNativeXcodeProject"
+          Condition="'$(BuildAvaloniaNativeXcodeProject)' == 'true'"
+          BeforeTargets="DispatchToInnerBuilds;BeforeBuild"
+          Inputs="@(AvaloniaNativeSource)"
+          Outputs="$(AvaloniaNativeDylibPath)">
+    <Message Importance="high" Text="Building native library $([System.IO.Path]::GetFileName($(AvaloniaNativeDylibPath)))" />
+    <!-- TODO: Don't ignore xcode warnings, fix them instead -->
+    <Exec Command="xcodebuild -quiet -project &quot;$(AvaloniaNativeXcodeProject)&quot; -configuration $(Configuration) CONFIGURATION_BUILD_DIR=&quot;$(AvaloniaNativeBuildDir)&quot; GCC_WARN_INHIBIT_ALL_WARNINGS=YES ONLY_ACTIVE_ARCH=NO"
+          ConsoleToMSBuild="true"
+          IgnoreExitCode="false"
+          IgnoreStandardErrorWarningFormat="false"
+          StandardOutputImportance="low"
+          StandardErrorImportance="low"
+          EchoOff="true" />
+    <!-- Make sure the dylib is newer than its inputs, so the incremental check above doesn't run xcodebuild again -->
+    <Touch Files="$(AvaloniaNativeDylibPath)" Condition="Exists($(AvaloniaNativeDylibPath))" />
+  </Target>
 
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
