@@ -9,12 +9,14 @@ namespace Avalonia.X11.Selections.Clipboard;
 
 internal sealed class X11ClipboardImpl : SelectionDataProvider, IOwnedClipboardImpl
 {
+    private readonly IntPtr _selection;
     private TaskCompletionSource? _storeAtomTcs;
     private IntPtr _handle;
 
-    public X11ClipboardImpl(AvaloniaX11Platform platform)
-        : base(platform, platform.Info.Atoms.CLIPBOARD)
+    public X11ClipboardImpl(AvaloniaX11Platform platform, IntPtr selection)
+        : base(platform, selection)
     {
+        _selection = selection;
         _handle = CreateEventWindow(platform, OnEvent);
     }
 
@@ -45,11 +47,15 @@ internal sealed class X11ClipboardImpl : SelectionDataProvider, IOwnedClipboardI
     }
 
     private SelectionReadSession OpenReadSession()
-        => ClipboardReadSessionFactory.CreateSession(Platform);
+        => ClipboardReadSessionFactory.CreateSession(Platform, _selection);
 
     private Task StoreAtomsInClipboardManager(IAsyncDataTransfer dataTransfer)
     {
         var atoms = Platform.Info.Atoms;
+
+        // The clipboard manager (SAVE_TARGETS) protocol only applies to the CLIPBOARD selection.
+        if (_selection != atoms.CLIPBOARD)
+            return Task.CompletedTask;
 
         var clipboardManager = XGetSelectionOwner(Platform.Display, atoms.CLIPBOARD_MANAGER);
         if (clipboardManager == IntPtr.Zero)
@@ -105,7 +111,7 @@ internal sealed class X11ClipboardImpl : SelectionDataProvider, IOwnedClipboardI
             return null;
 
         // Get the items while we're in an async method. This does not get values, except for DataFormat.File.
-        var reader = new ClipboardDataReader(Platform, textFormatAtoms, dataFormats, owner);
+        var reader = new ClipboardDataReader(Platform, _selection, textFormatAtoms, dataFormats, owner);
         var items = await reader.CreateItemsAsync();
         return new ClipboardDataTransfer(reader, dataFormats, items);
     }

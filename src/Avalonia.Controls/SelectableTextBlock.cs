@@ -45,6 +45,7 @@ namespace Avalonia.Controls
 
         private bool _canCopy;
         private int _wordSelectionStart = -1;
+        private (int Start, int End) _selectionAtPointerPress;
 
         static SelectableTextBlock()
         {
@@ -375,6 +376,8 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
+            _selectionAtPointerPress = GetSelectionRange();
+
             var text = HasComplexContent ? Inlines?.Text : Text;
             var clickInfo = e.GetCurrentPoint(this);
 
@@ -524,8 +527,20 @@ namespace Avalonia.Controls
                 }
             }
 
+            var selection = GetSelectionRange();
+            if (e.InitialPressMouseButton == MouseButton.Left &&
+                selection.Start != selection.End &&
+                selection != _selectionAtPointerPress)
+            {
+                // The pointer gesture changed the selection, publish it to the primary selection.
+                PrimarySelectionHelper.PublishText(this, GetSelection);
+            }
+
             e.Pointer.Capture(null);
         }
+
+        private (int Start, int End) GetSelectionRange()
+            => (Math.Min(SelectionStart, SelectionEnd), Math.Max(SelectionStart, SelectionEnd));
 
         private void OnInlinesInvalidated(object? sender, EventArgs e) => OnTextOrInlinesChanged();
 
