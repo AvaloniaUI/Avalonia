@@ -33,7 +33,10 @@ namespace Avalonia.Platform
         /// </summary>
         PlatformRenderTargetState PlatformRenderTargetState => PlatformRenderTargetState.Ready;
         
-        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize, CompositionTransparencyLevel TransparencyLevel)
+        // TopLevelSpecificSceneInfo is an opaque immutable object provided by the platform's
+        // ITopLevelImpl.TopLevelSpecificSceneInfo.
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize,
+            CompositionTransparencyLevel TransparencyLevel, object? TopLevelSpecificSceneInfo = null)
         {
             public RenderTargetSceneInfo(PixelSize size, double scaling, CompositionTransparencyLevel transparencyLevel) : this(size, scaling, size.ToSize(scaling), transparencyLevel)
             {
