@@ -173,6 +173,45 @@ internal partial class RenderDataStream
             return IntersectionResult.Empty;
         }
 
+        public void OnDrawRecording(ServerCompositionRenderData? server, CompositionRenderData? client,
+            RenderDataStream? stream, Matrix transform)
+        {
+            if (!Live)
+                return;
+
+            var inverted = Matrix.Identity;
+            if (!transform.IsIdentity && !transform.TryInvert(out inverted))
+                return;
+
+            // Hit testing is a client-side query, so compositor-bound children
+            // answer from their client data.
+            if (CurrentPoint is { } point)
+            {
+                if (!transform.IsIdentity)
+                    point = point.Transform(inverted);
+
+                if (client != null ? client.HitTest(point) : stream?.HitTest(point) == true)
+                    Hit();
+            }
+            else if (CurrentGeometry is { } currentGeometry)
+            {
+                var geometry = currentGeometry;
+                if (!transform.IsIdentity)
+                {
+                    geometry = geometry.Clone();
+                    geometry.Transform = new MatrixTransform((geometry.Transform?.Value ?? Matrix.Identity) * inverted);
+                }
+
+                // The child answers for all of its content, so its Empty must not
+                // stop the walk - later ops in this stream can still intersect.
+                var result = client != null
+                    ? client.HitTest(geometry)
+                    : stream?.HitTest(geometry) ?? IntersectionResult.Empty;
+                if (result > IntersectionResult.Empty)
+                    Hit(result);
+            }
+        }
+
         public HitTestScope OnPushClip(RoundedRect clip)
         {
             var scope = new HitTestScope { SavedLive = Live };

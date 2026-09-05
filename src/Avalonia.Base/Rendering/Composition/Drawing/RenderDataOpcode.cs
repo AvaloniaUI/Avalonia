@@ -10,6 +10,7 @@ internal enum RenderDataOpcode : byte
     DrawGlyphRun,
     DrawBitmap,
     DrawCustom,
+    DrawRecording,
     PushClip,
     PushGeometryClip,
     PushOpacity,
