@@ -9,10 +9,13 @@ namespace Avalonia.Native
     internal class TrayIconImpl : ITrayIconWithIsTemplateImpl
     {
         private readonly IAvnTrayIcon _native;
+        private readonly MenuActionCallback _clickedCallback;
 
         public TrayIconImpl(IAvaloniaNativeFactory factory)
         {
             _native = factory.CreateTrayIcon();
+            _clickedCallback = new MenuActionCallback(() => OnClicked?.Invoke());
+            _native.SetClickedCallback(_clickedCallback);
 
             MenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
@@ -22,6 +25,7 @@ namespace Avalonia.Native
         public void Dispose()
         {
             _native.Dispose();
+            _clickedCallback.Dispose();
         }
 
         public unsafe void SetIcon(IWindowIconImpl? icon)

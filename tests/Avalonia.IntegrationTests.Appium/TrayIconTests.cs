@@ -25,8 +25,7 @@ public class TrayIconTests : TestBase
         }
     }
 
-    // Left click is only supported on Windows.
-    [PlatformFact(TestPlatforms.Windows, Skip = "Flaky test")]
+    [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS, Skip = "Flaky test")]
     public void Should_Handle_Left_Click()
     {
         var avaloniaTrayIconButton = GetTrayIconButton(_rootSession ?? Session, TrayIconName);
@@ -134,8 +133,11 @@ public class TrayIconTests : TestBase
         }
         else
         {
-            trayIcon.Click();
-            return trayIcon.FindElementByXPath("//XCUIElementTypeStatusItem/XCUIElementTypeMenu");
+            new Actions(trayIcon.WrappedDriver).ContextClick(trayIcon).Perform();
+            
+            Thread.Sleep(100);
+            
+            return trayIcon.FindElementByXPath("//XCUIElementTypeMenu");
         }
     }
 
