@@ -633,6 +633,45 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
+        [Fact]
+        public void TabNavigation_None_Is_Skipped_When_An_Item_Is_Selected()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Button before;
+                Button after;
+
+                // Selecting an item records it as the tab-once active element, and the
+                // navigation code follows that without consulting the navigation mode.
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    ItemsSource = new[] { "Foo", "Bar" },
+                    SelectedIndex = 0,
+                    Width = 100,
+                    Height = 100,
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
+                };
+
+                var root = new TestRoot(new StackPanel
+                {
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                    Children =
+                    {
+                        (before = new Button()),
+                        target,
+                        (after = new Button()),
+                    }
+                });
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                var result = KeyboardNavigationHandler.GetNext(before, NavigationDirection.Next);
+
+                Assert.Same(after, result);
+            }
+        }
+
         private static void Prepare(ListBox target)
         {
             target.Width = target.Height = 100;
