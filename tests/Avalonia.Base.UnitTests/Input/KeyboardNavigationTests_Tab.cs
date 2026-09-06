@@ -640,6 +640,76 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Next_None_Skips_Container_With_Active_Element_Inside()
+        {
+            StackPanel container;
+            Button current;
+            Button inside;
+            Button next;
+
+            var top = new StackPanel
+            {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                Children =
+                {
+                    (current = new Button { Name = "Button1" }),
+                    (container = new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
+                        Children =
+                        {
+                            (inside = new Button { Name = "Button2" }),
+                            new Button { Name = "Button3" },
+                        }
+                    }),
+                    (next = new Button { Name = "Button4" }),
+                }
+            };
+
+            // ItemsControl.OnGotFocus records the last focused child as the active
+            // element, so a ListBox whose item has been focused has one set.
+            KeyboardNavigation.SetTabOnceActiveElement(container, inside);
+
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
+
+            Assert.Equal(next, result);
+        }
+
+        [Fact]
+        public void Previous_None_Skips_Container_With_Active_Element_Inside()
+        {
+            StackPanel container;
+            Button current;
+            Button inside;
+            Button previous;
+
+            var top = new StackPanel
+            {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                Children =
+                {
+                    (previous = new Button { Name = "Button1" }),
+                    (container = new StackPanel
+                    {
+                        [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
+                        Children =
+                        {
+                            new Button { Name = "Button2" },
+                            (inside = new Button { Name = "Button3" }),
+                        }
+                    }),
+                    (current = new Button { Name = "Button4" }),
+                }
+            };
+
+            KeyboardNavigation.SetTabOnceActiveElement(container, inside);
+
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
+
+            Assert.Equal(previous, result);
+        }
+
+        [Fact]
         public void Previous_Continue_Returns_Previous_Control_In_Container()
         {
             Button current;
