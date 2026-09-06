@@ -186,12 +186,14 @@ namespace Avalonia.Native
             Compositor = new Compositor(_platformGraphics, true);
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
 
-            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+            Dispatcher.UIThread.ShutdownFinished += OnShutdown;
+            AppDomain.CurrentDomain.ProcessExit += OnShutdown;
         }
 
-        private void OnProcessExit(object? sender, EventArgs e)
+        private void OnShutdown(object? sender, EventArgs e)
         {
-            AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+            Dispatcher.UIThread.ShutdownFinished -= OnShutdown;
+            AppDomain.CurrentDomain.ProcessExit -= OnShutdown;
             _factory.Dispose();
         }
 
