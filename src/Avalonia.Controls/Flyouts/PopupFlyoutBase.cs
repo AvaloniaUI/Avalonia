@@ -178,7 +178,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         public event EventHandler<CancelEventArgs>? Closing;
-        public event EventHandler? Opening;
+        public event EventHandler<CancelEventArgs>? Opening;
 
         /// <summary>
         /// Pre-registers a control as the default placement target for this flyout.

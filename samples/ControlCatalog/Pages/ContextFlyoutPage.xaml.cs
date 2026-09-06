@@ -32,12 +32,9 @@ namespace ControlCatalog.Pages
             e.Cancel = CancelCloseCheckBox?.IsChecked ?? false;
         }
 
-        private void ContextFlyoutPage_Opening(object? sender, EventArgs e)
+        private void ContextFlyoutPage_Opening(object? sender, CancelEventArgs e)
         {
-            if (e is CancelEventArgs cancelArgs)
-            {
-                cancelArgs.Cancel = CancelCloseCheckBox?.IsChecked ?? false;
-            }
+            e.Cancel = CancelCloseCheckBox?.IsChecked ?? false;
         }
 
         private void CloseFlyout(object? sender, RoutedEventArgs e)

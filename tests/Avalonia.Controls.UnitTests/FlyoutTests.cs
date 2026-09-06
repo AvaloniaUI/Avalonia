@@ -77,10 +77,7 @@ namespace Avalonia.Controls.UnitTests
                 f.Opening += (s, e) =>
                 {
                     tracker++;
-                    if (e is CancelEventArgs cancelEventArgs)
-                    {
-                        cancelEventArgs.Cancel = true;
-                    }
+                    e.Cancel = true;
                 };
                 f.ShowAt(window);
 
@@ -834,8 +831,7 @@ namespace Avalonia.Controls.UnitTests
 
                 flyout.Opening += (s, e) =>
                 {
-                    if (e is CancelEventArgs cancelArgs)
-                        cancelArgs.Cancel = true;
+                    e.Cancel = true;
                 };
 
                 flyout.IsOpen = true;
