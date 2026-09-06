@@ -23,10 +23,16 @@ namespace Avalonia.Input.Navigation
                 if (IsTabStop(container))
                     return container;
 
-                // Using ActiveElement if set
-                var activeElement = GetActiveElement(container);
-                if (activeElement != null)
-                    return GetNextTab(null, activeElement, true);
+                // Using ActiveElement if set. A None group never hands out an element
+                // inside itself, not even a remembered one: ItemsControl records the
+                // last focused child as the active element, so without this an
+                // ItemsControl with TabNavigation="None" is still entered.
+                if (tabbingType != KeyboardNavigationMode.None)
+                {
+                    var activeElement = GetActiveElement(container);
+                    if (activeElement != null)
+                        return GetNextTab(null, activeElement, true);
+                }
             }
             else
             {
@@ -95,8 +101,11 @@ namespace Avalonia.Input.Navigation
 
             if (e == null)
             {
-                // Using ActiveElement if set
-                var activeElement = GetActiveElement(container);
+                // Using ActiveElement if set, except for None groups, which never hand
+                // out an element inside themselves. See the matching note in GetNextTab.
+                var activeElement = tabbingType == KeyboardNavigationMode.None
+                    ? null
+                    : GetActiveElement(container);
                 if (activeElement != null)
                     return GetPrevTab(null, activeElement, true);
                 else
