@@ -595,6 +595,40 @@ namespace Avalonia.Automation.Peers
             PropertyChanged?.Invoke(this, new AutomationPropertyChangedEventArgs(property, oldValue, newValue));
         }
 
+        /// <summary>
+        /// Occurs when the text of a peer that exposes a text pattern has changed.
+        /// </summary>
+        /// <remarks>
+        /// The event carries no payload: UIA clients re-query the text pattern after
+        /// Text_TextChanged, and a backend that needs the change itself (AT-SPI text-changed) reads
+        /// it from the peer's <see cref="IAccessibleText"/>.
+        /// </remarks>
+        [Unstable]
+        public event EventHandler? TextChanged;
+
+        /// <summary>
+        /// Occurs when the text selection or caret of a peer that exposes a text pattern has moved.
+        /// </summary>
+        /// <remarks>
+        /// Raised once per action, after the selection and caret have settled. Like
+        /// <see cref="TextChanged"/> it carries no payload.
+        /// </remarks>
+        [Unstable]
+        public event EventHandler? TextSelectionChanged;
+
+        /// <summary>
+        /// Raises <see cref="TextChanged"/> to notify automation clients that the peer's text changed.
+        /// </summary>
+        [Unstable]
+        public void RaiseTextChangedEvent() => TextChanged?.Invoke(this, EventArgs.Empty);
+
+        /// <summary>
+        /// Raises <see cref="TextSelectionChanged"/> to notify automation clients that the text selection
+        /// or caret moved.
+        /// </summary>
+        [Unstable]
+        public void RaiseTextSelectionChangedEvent() => TextSelectionChanged?.Invoke(this, EventArgs.Empty);
+
         protected virtual string GetLocalizedControlTypeCore()
         {
             var controlType = GetAutomationControlType();

@@ -2770,6 +2770,444 @@ namespace Avalonia.Controls.UnitTests
                 windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
         }
 
+        [Fact]
+        public void AutomationTextRange_Over_TextNavigation_Expands_Moves_And_Reads()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            var doc = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentEnd);
+            Assert.Equal("foo bar", doc.GetText(-1));
+
+            // A degenerate range inside "foo" expands to the enclosing word, which owns
+            // its trailing space.
+            var inFoo = At(nav, 1);
+            var word = new Avalonia.Automation.AutomationTextRange(nav, inFoo, inFoo);
+            word.ExpandToEnclosingUnit(TextUnit.Word);
+            Assert.Equal("foo ", word.GetText(-1));
+
+            // Clone is independent; moving the clone's end back one character does not affect the original.
+            var clone = (Avalonia.Automation.AutomationTextRange)word.Clone();
+            clone.MoveEndpointByUnit(Avalonia.Automation.Provider.TextRangeEndpoint.End, TextUnit.Character, -1);
+            Assert.Equal("foo", clone.GetText(-1));
+            Assert.Equal("foo ", word.GetText(-1));
+
+            Assert.True(word.CompareEndpoints(
+                Avalonia.Automation.Provider.TextRangeEndpoint.End,
+                clone,
+                Avalonia.Automation.Provider.TextRangeEndpoint.End) > 0);
+        }
+
+        [Fact]
+        public void AutomationTextRange_GetText_Caps_The_Read()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello world" };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            var doc = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentEnd);
+
+            Assert.Equal("Hello", doc.GetText(5));
+            Assert.Equal(string.Empty, doc.GetText(0));
+            Assert.Equal("Hello world", doc.GetText(100));
+        }
+
+        [Fact]
+        public void AutomationTextRange_FindText_Searches_The_Range()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar baz", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            Avalonia.Automation.AutomationTextRange Doc() => new(nav, nav.DocumentStart, nav.DocumentEnd);
+
+            Assert.Equal("bar", Doc().FindText("bar", false, false)!.GetText(-1));
+            Assert.Null(Doc().FindText("BAR", false, false));                     // case-sensitive miss
+            Assert.Equal("bar", Doc().FindText("BAR", false, true)!.GetText(-1)); // ignore case
+            Assert.Null(Doc().FindText("qux", false, false));
+
+            // Forward finds the first "ba" (in "bar"); backward finds the last (in "baz").
+            var forward = Doc().FindText("ba", false, false)!;
+            var backward = Doc().FindText("ba", true, false)!;
+            Assert.True(forward.CompareEndpoints(
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start, backward,
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start) < 0);
+
+            // A search inside a sub-range finds only matches that lie entirely inside it: "bar" starts
+            // at 4, before this range.
+            var tail = new Avalonia.Automation.AutomationTextRange(nav, At(nav, 5), nav.DocumentEnd);
+            Assert.Null(tail.FindText("bar", false, false));
+            Assert.Equal("baz", tail.FindText("baz", false, false)!.GetText(-1));
+        }
+
+        [Fact]
+        public void AutomationTextRange_Reads_And_Searches_A_Masked_Password_As_Drawn()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "secret", PasswordChar = '*' };
+            textBox.ApplyTemplate();
+
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox));
+
+            Assert.Equal("******", textProvider.DocumentRange.GetText(-1));
+
+            // Searching cannot confirm guesses about the password one prefix at a time.
+            Assert.Null(textProvider.DocumentRange.FindText("s", false, false));
+            Assert.Null(textProvider.DocumentRange.FindText("secret", false, true));
+        }
+
+        [Fact]
+        public void AutomationTextRange_Keeps_Covering_Its_Content_Across_Edits()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar" };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            var bar = new Avalonia.Automation.AutomationTextRange(nav, At(nav, 4), At(nav, 7));
+            var doc = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentEnd);
+
+            textBox.Text = "say foo bar";
+            Assert.Equal("bar", bar.GetText(-1));
+
+            // Text typed at the edges of a range joins it, so the document range stays the document.
+            textBox.Text = "say foo bar!";
+            Assert.Equal("say foo bar!", doc.GetText(-1));
+        }
+
+        [Fact]
+        public void AutomationTextRange_Move_Advances_By_Whole_Units()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar baz", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+            var nav = GetNavigation(textBox);
+
+            var word = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentStart);
+            word.ExpandToEnclosingUnit(TextUnit.Word);
+            Assert.Equal("foo ", word.GetText(-1));
+
+            // Forward moves a whole word unit at a time; the whitespace travels with it.
+            Assert.Equal(1, word.Move(TextUnit.Word, 1));
+            Assert.Equal("bar ", word.GetText(-1));
+            Assert.Equal(1, word.Move(TextUnit.Word, 1));
+            Assert.Equal("baz", word.GetText(-1));
+
+            // No more words forward.
+            Assert.Equal(0, word.Move(TextUnit.Word, 1));
+            Assert.Equal("baz", word.GetText(-1));
+
+            // Backward two words returns to the first.
+            Assert.Equal(-2, word.Move(TextUnit.Word, -2));
+            Assert.Equal("foo ", word.GetText(-1));
+
+            // Character units tile.
+            var ch = new Avalonia.Automation.AutomationTextRange(nav, nav.DocumentStart, nav.DocumentStart);
+            ch.ExpandToEnclosingUnit(TextUnit.Character);
+            Assert.Equal("f", ch.GetText(-1));
+            Assert.Equal(2, ch.Move(TextUnit.Character, 2));
+            Assert.Equal("o", ch.GetText(-1));
+        }
+
+        [Fact]
+        public void AutomationTextRange_Rejects_A_Range_From_Another_Provider()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var a = GetNavigation(new TextBox { Text = "aaa" });
+            var b = GetNavigation(new TextBox { Text = "bbb" });
+
+            var rangeA = new Avalonia.Automation.AutomationTextRange(a, a.DocumentStart, a.DocumentEnd);
+            var rangeB = new Avalonia.Automation.AutomationTextRange(b, b.DocumentStart, b.DocumentEnd);
+
+            Assert.False(rangeA.Compare(rangeB));
+            Assert.Throws<ArgumentException>(() => rangeA.CompareEndpoints(
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start, rangeB,
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start));
+            Assert.Throws<ArgumentException>(() => rangeA.MoveEndpointByRange(
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start, rangeB,
+                Avalonia.Automation.Provider.TextRangeEndpoint.Start));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Exposes_Text_Via_ITextProvider()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(peer);
+
+            Assert.Equal("foo bar", textProvider.DocumentRange.GetText(-1));
+            Assert.Equal(Avalonia.Automation.Provider.SupportedTextSelection.Single, textProvider.SupportedTextSelection);
+
+            textBox.SelectionStart = 0;
+            textBox.SelectionEnd = 3;
+
+            var selection = textProvider.GetSelection();
+            Assert.Single(selection);
+            Assert.Equal("foo", selection[0].GetText(-1));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Raises_TextChanged_Once_Per_Edit()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "abc" };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+
+            var count = 0;
+            peer.TextChanged += (_, _) => count++;
+
+            textBox.Text = "abXc";
+            Assert.Equal(1, count);
+
+            textBox.Text = "aZXc";
+            Assert.Equal(2, count);
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Raises_TextChanged_When_A_Password_Is_Revealed()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "secret", PasswordChar = '*' };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var textProvider = (Avalonia.Automation.Provider.ITextProvider)peer;
+
+            var count = 0;
+            peer.TextChanged += (_, _) => count++;
+
+            textBox.RevealPassword = true;
+            Assert.Equal(1, count);
+            Assert.Equal("secret", textProvider.DocumentRange.GetText(-1));
+
+            textBox.RevealPassword = false;
+            Assert.Equal(2, count);
+            Assert.Equal("******", textProvider.DocumentRange.GetText(-1));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Raises_TextSelectionChanged_Once_Per_Action()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var textProvider = (Avalonia.Automation.Provider.ITextProvider)peer;
+
+            var seen = new List<string>();
+            peer.TextSelectionChanged += (_, _) => seen.Add(textProvider.GetSelection()[0].GetText(-1));
+
+            // A caret move collapses the selection through CaretIndex, SelectionStart and SelectionEnd;
+            // only the final state is reported.
+            textBox.CaretIndex = 2;
+            Assert.Equal(new[] { string.Empty }, seen);
+
+            // A selection an automation client makes is reported once, with its final extent.
+            var range = textProvider.DocumentRange;
+            range.ExpandToEnclosingUnit(TextUnit.Word);
+            range.Select();
+            Assert.Equal(new[] { string.Empty, "hello" }, seen);
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_Exposes_The_Caret_Via_TextPattern2()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "hello", CaretIndex = 3 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var provider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider2>(peer);
+
+            var caret = provider.GetCaretRange(out var isActive);
+
+            Assert.NotNull(caret);
+            Assert.False(isActive); // the box is not focused in this harness
+            Assert.Equal(string.Empty, caret!.GetText(-1)); // an insertion caret is an empty range
+
+            // Expanding the caret range to a character lands on the character at the caret index.
+            caret.ExpandToEnclosingUnit(TextUnit.Character);
+            Assert.Equal("l", caret.GetText(-1));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_ITextRange_Select_Updates_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox));
+
+            // Expand the document range to the first word unit (which owns its trailing
+            // space) and select it through the UIA-shaped range.
+            var range = textProvider.DocumentRange;
+            range.ExpandToEnclosingUnit(TextUnit.Word);
+            range.Select();
+
+            Assert.Equal(0, textBox.SelectionStart);
+            Assert.Equal(4, textBox.SelectionEnd);
+            Assert.Equal(4, textBox.CaretIndex);
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_IAccessibleText_GetSelection_Round_Trips_The_Control_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "foo bar", CaretIndex = 0 };
+            textBox.ApplyTemplate();
+
+            var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox);
+            var accessible = Assert.IsAssignableFrom<Avalonia.Automation.Provider.IAccessibleText>(
+                peer.GetProvider<Avalonia.Automation.Provider.IAccessibleText>());
+
+            // A reversed selection keeps its direction; the range view normalizes it.
+            textBox.SelectionStart = 7;
+            textBox.SelectionEnd = 4;
+            var selection = accessible.GetSelection();
+            Assert.True(selection.IsReversed);
+            Assert.Equal(4, Offset(accessible, selection.Start));
+            Assert.Equal(7, Offset(accessible, selection.End));
+            Assert.Equal("bar", ((Avalonia.Automation.Provider.ITextProvider)peer).GetSelection()[0].GetText(-1));
+
+            // A collapsed selection (the caret) is empty.
+            textBox.SelectionStart = textBox.SelectionEnd = 2;
+            Assert.True(accessible.GetSelection().IsEmpty);
+
+            // SetSelection writes back through the control.
+            accessible.SetSelection(new DirectedTextRange(At(accessible, 0), At(accessible, 3)));
+            Assert.Equal(0, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_IAccessibleText_Reports_Font_Attributes_Over_A_Uniform_Run()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "foo bar",
+                FontFamily = new FontFamily("Courier New"),
+                FontSize = 17,
+                FontWeight = FontWeight.Bold,
+                FontStyle = FontStyle.Italic,
+                Foreground = Brushes.Red,
+            };
+            textBox.ApplyTemplate();
+
+            var accessible = Assert.IsAssignableFrom<Avalonia.Automation.Provider.IAccessibleText>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox)
+                    .GetProvider<Avalonia.Automation.Provider.IAccessibleText>());
+
+            var (attributes, run) = accessible.GetTextAttributes(accessible.DocumentStart);
+
+            Assert.Equal("Courier New", attributes[TextAttribute.FontFamily]);
+            Assert.Equal(17d, attributes[TextAttribute.FontSize]);
+            Assert.Equal(FontWeight.Bold, attributes[TextAttribute.FontWeight]);
+            Assert.Equal(FontStyle.Italic, attributes[TextAttribute.FontStyle]);
+            Assert.Equal(Colors.Red, attributes[TextAttribute.Foreground]);
+            Assert.Equal(false, attributes[TextAttribute.IsReadOnly]);
+
+            // Uniform formatting: the run spans the whole document.
+            Assert.Equal(0, Offset(accessible, run.Start));
+            Assert.Equal(7, Offset(accessible, run.End));
+
+            // The UIA-shaped range reports the same value uniformly over any sub-range.
+            var word = new Avalonia.Automation.AutomationTextRange(accessible, accessible.DocumentStart, At(accessible, 3));
+            Assert.Equal(FontWeight.Bold, word.GetAttributeValue(TextAttribute.FontWeight));
+            Assert.Equal(Colors.Red, word.GetAttributeValue(TextAttribute.Foreground));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_GetPositionFromPoint_Hit_Tests_Back_To_The_Character()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello world" };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object) { Template = CreateTopLevelTemplate() };
+            topLevel.Content = textBox;
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+            textBox.Measure(Size.Infinity);
+
+            var accessible = Assert.IsAssignableFrom<Avalonia.Automation.Provider.IAccessibleText>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox)
+                    .GetProvider<Avalonia.Automation.Provider.IAccessibleText>());
+
+            // Top-level bounding rect of 'w' (offset 6 in "Hello world").
+            var rects = accessible.GetBoundingRectangles(accessible.GetLinearScope(accessible.DocumentStart).GetRange(6, 1));
+            Assert.NotEmpty(rects);
+
+            // A point just inside that rect hit-tests back into the same character (the inverse of
+            // GetBoundingRectangles round-trips).
+            var probe = new Point(rects[0].X + 1, rects[0].Center.Y);
+            var hit = accessible.GetPositionFromPoint(probe);
+
+            Assert.NotNull(hit);
+            Assert.Equal("w", accessible.GetPlainText(accessible.GetRangeEnclosing(hit!, TextUnit.Character)));
+        }
+
+        [Fact]
+        public void TextBoxAutomationPeer_GetVisibleRanges_Covers_The_Visible_Text()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "Hello world" };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object) { Template = CreateTopLevelTemplate() };
+            topLevel.Content = textBox;
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+            textBox.Measure(Size.Infinity);
+
+            var textProvider = Assert.IsAssignableFrom<Avalonia.Automation.Provider.ITextProvider>(
+                Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(textBox));
+
+            var visible = textProvider.GetVisibleRanges();
+            Assert.Single(visible);
+            Assert.Equal("Hello world", visible[0].GetText(-1));
+        }
+
+        private static Avalonia.Automation.Provider.IAccessibleText GetNavigation(TextBox textBox)
+            => new TextBoxTextNavigation(textBox);
+
+        private static ITextPointer At(ITextNavigation nav, int offset)
+            => nav.GetLinearScope(nav.DocumentStart).GetPosition(offset, Avalonia.Media.TextFormatting.LogicalDirection.Forward);
+
+        private static int Offset(ITextNavigation nav, ITextPointer position)
+            => nav.GetLinearScope(position).GetOffset(position);
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
