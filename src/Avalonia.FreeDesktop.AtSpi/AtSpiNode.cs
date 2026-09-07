@@ -10,6 +10,7 @@ using Avalonia.Automation.Provider;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
+using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
@@ -61,7 +62,10 @@ namespace Avalonia.FreeDesktop.AtSpi
         internal AtSpiActionHandler? ActionHandler { get; private set; }
         internal AtSpiValueHandler? ValueHandler { get; private set; }
         internal AtSpiSelectionHandler? SelectionHandler { get; private set; }
-        internal AtSpiTextHandler? TextHandler { get; private set; }
+        internal IOrgA11yAtspiText? TextHandler { get; private set; }
+
+        // The AT-SPI character view of the peer's accessible text, alive while the node is attached.
+        internal AtSpiTextModel? TextModel { get; private set; }
         internal AtSpiEditableTextHandler? EditableTextHandler { get; private set; }
         internal AtSpiImageHandler? ImageHandler { get; private set; }
         internal AtSpiEventObjectHandler? EventObjectHandler { get; private set; }
@@ -99,14 +103,15 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (Peer.GetProvider<ISelectionProvider>() is not null)
                 targets.Add(SelectionHandler = new AtSpiSelectionHandler(Server, this));
 
-            if (Peer.GetProvider<IValueProvider>() is { } valueProvider
-                && Peer.GetProvider<IRangeValueProvider>() is null)
-            {
+            // A control that navigates its text gets the full Text interface; one that only exposes a
+            // value gets the value read as text.
+            if (TextModel is { } textModel)
+                targets.Add(TextHandler = new AtSpiAccessibleTextHandler(this, textModel));
+            else if (Peer.GetProvider<IValueProvider>() is not null && Peer.GetProvider<IRangeValueProvider>() is null)
                 targets.Add(TextHandler = new AtSpiTextHandler(this));
 
-                if (!valueProvider.IsReadOnly)
-                    targets.Add(EditableTextHandler = new AtSpiEditableTextHandler(this));
-            }
+            if (TextHandler is not null && Peer.GetProvider<IValueProvider>() is { IsReadOnly: false })
+                targets.Add(EditableTextHandler = new AtSpiEditableTextHandler(this));
 
             if (Peer.GetAutomationControlType() == AutomationControlType.Image)
                 targets.Add(ImageHandler = new AtSpiImageHandler(Server, this));
@@ -203,6 +208,16 @@ namespace Avalonia.FreeDesktop.AtSpi
             Parent = parent;
             Peer.ChildrenChanged += OnPeerChildrenChanged;
             Peer.PropertyChanged += OnPeerPropertyChanged;
+
+            if (Peer.GetProvider<IAccessibleText>() is { } accessibleText)
+            {
+                TextModel = new AtSpiTextModel(accessibleText);
+                TextModel.RecordBaseline();
+                _lastCaretOffset = TextModel.ToOffset(accessibleText.GetCaret().Start);
+                _hadTextSelection = !accessibleText.GetSelection().IsEmpty;
+                accessibleText.PlainTextChanged += OnPlainTextChanged;
+                accessibleText.SelectionChanged += OnTextSelectionChanged;
+            }
 
             if (Server.A11yConnection is { } connection)
                 BuildAndRegisterHandlers(connection, Server.SyncContext);
@@ -388,6 +403,15 @@ namespace Avalonia.FreeDesktop.AtSpi
             Parent = null;
             Peer.ChildrenChanged -= OnPeerChildrenChanged;
             Peer.PropertyChanged -= OnPeerPropertyChanged;
+
+            if (TextModel is { } textModel)
+            {
+                textModel.Text.PlainTextChanged -= OnPlainTextChanged;
+                textModel.Text.SelectionChanged -= OnTextSelectionChanged;
+                textModel.Detach();
+                TextModel = null;
+            }
+
             DisposePathRegistration();
         }
 
@@ -506,6 +530,56 @@ namespace Avalonia.FreeDesktop.AtSpi
             {
                 eventHandler.EmitBoundsChangedSignal();
             }
+        }
+
+        private void OnPlainTextChanged(object? sender, TextChange e)
+        {
+            // Always advance the model's baseline so the next change is diffed against what was last
+            // drawn, even while nobody listens.
+            if (TextModel?.TakeChange() is not { } change)
+                return;
+
+            if (Server.A11yConnection is null || !Server.HasEventListeners || EventObjectHandler is not { } eventHandler)
+                return;
+
+            // AT-SPI models a replacement as a delete followed by an insert, each signal carrying the
+            // affected text (as drawn) so clients do not have to re-read the document. Offsets and
+            // lengths are characters.
+            if (change.Removed.Length > 0)
+                eventHandler.EmitTextChangedSignal(
+                    "delete", change.Offset, AtSpiTextModel.CodePoints(change.Removed), change.Removed);
+
+            if (change.Inserted.Length > 0)
+                eventHandler.EmitTextChangedSignal(
+                    "insert", change.Offset, AtSpiTextModel.CodePoints(change.Inserted), change.Inserted);
+        }
+
+        // The last reported caret offset and whether a non-empty selection was last reported, so a
+        // caret move is announced once and collapsing a selection still emits a final
+        // text-selection-changed.
+        private int _lastCaretOffset;
+        private bool _hadTextSelection;
+
+        private void OnTextSelectionChanged(object? sender, EventArgs e)
+        {
+            if (TextModel is not { } textModel)
+                return;
+
+            var caretOffset = textModel.ToOffset(textModel.Text.GetCaret().Start);
+            var hasSelection = !textModel.Text.GetSelection().IsEmpty;
+            var caretMoved = caretOffset != _lastCaretOffset;
+            var selectionChanged = hasSelection || _hadTextSelection;
+            _lastCaretOffset = caretOffset;
+            _hadTextSelection = hasSelection;
+
+            if (Server.A11yConnection is null || !Server.HasEventListeners || EventObjectHandler is not { } eventHandler)
+                return;
+
+            if (caretMoved)
+                eventHandler.EmitTextCaretMovedSignal(caretOffset);
+
+            if (selectionChanged)
+                eventHandler.EmitTextSelectionChangedSignal();
         }
     }
 }
