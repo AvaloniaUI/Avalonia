@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Logging;
 using Avalonia.Threading;
 
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -272,10 +275,46 @@ namespace Avalonia.Win32.Input
             // we're skipping this. not usable on windows
         }
 
+        // Sink-gated diagnostics for the whole IMM conversation; enable the TextInput log
+        // area to see which messages an IME actually sends (candidate navigation, clause
+        // updates, reconversion probes) next to the client-side trace. Typed overloads so
+        // the values reach the sink individually instead of boxed into one array.
+        private void TraceIme(string message)
+            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, message);
+
+        private void TraceIme<T0>(string template, T0 value0)
+            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, template, value0);
+
+        private void TraceIme<T0, T1>(string template, T0 value0, T1 value1)
+            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, template, value0, value1);
+
+        private void TraceIme<T0, T1, T2>(string template, T0 value0, T1 value1, T2 value2)
+            => Logger.TryGet(LogEventLevel.Debug, LogArea.TextInput)?.Log(this, template, value0, value1, value2);
+
+        /// <summary>Traces WM_IME_NOTIFY; the message itself stays system-handled.</summary>
+        public void HandleNotify(IntPtr wParam)
+        {
+            TraceIme("WM_IME_NOTIFY {Code}", (int)wParam switch
+            {
+                0x0003 => "IMN_CHANGECANDIDATE",
+                0x0004 => "IMN_CLOSECANDIDATE",
+                0x0005 => "IMN_OPENCANDIDATE",
+                0x0006 => "IMN_SETCONVERSIONMODE",
+                0x0007 => "IMN_SETSENTENCEMODE",
+                0x0008 => "IMN_SETOPENSTATUS",
+                0x000B => "IMN_SETCOMPOSITIONWINDOW",
+                0x000F => "IMN_PRIVATE",
+                var other => $"0x{other:X4}",
+            });
+        }
+
         public void CompositionChanged(string? composition, int? cursorPosition)
         {
             Composition = composition;
             _compositionCursorPosition = cursorPosition;
+
+            TraceIme("CompositionChanged text={Text} cursor={Cursor} structured={Structured}",
+                composition, cursorPosition, Client is IStructuredTextInput);
 
             if (!IsActive || !Client.SupportsInlineComposition())
             {
@@ -325,12 +364,25 @@ namespace Avalonia.Win32.Input
 
         public void HandleCompositionStart()
         {
+            TraceIme("WM_IME_STARTCOMPOSITION structured={Structured}", Client is IStructuredTextInput);
+
             Composition = null;
             _compositionCursorPosition = null;
 
             if (IsActive)
             {
+                // Structured clients need nothing here: a reconversion target armed as the
+                // composition range must survive until the first update replaces it in
+                // place, and a fresh composition replaces the selection itself on the
+                // first SetCompositionText.
+                if (Client is IStructuredTextInput)
+                {
+                    IsComposing = true;
+                    return;
+                }
+
                 Client.DeliverComposition(null, null);
+                ClearCompositionDecorations();
 
                 if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
                 {
@@ -343,8 +395,23 @@ namespace Avalonia.Win32.Input
 
         public void HandleCompositionEnd(uint timestamp)
         {
+            TraceIme("WM_IME_ENDCOMPOSITION pending={Pending}", Composition);
+
             //Cleanup composition state.
             IsComposing = false;
+
+            if (IsActive && Client is IStructuredTextInput structured)
+            {
+                // In-document composition: whatever sits in the composition range stays in
+                // the document as the committed result (the focus-loss implicit commit);
+                // re-raising it as text input would insert it a second time.
+                structured.CommitComposition();
+                ClearCompositionDecorations();
+
+                Composition = null;
+                _compositionCursorPosition = null;
+                return;
+            }
 
             if (_parent != null && !string.IsNullOrEmpty(Composition))
             {
@@ -364,6 +431,7 @@ namespace Avalonia.Win32.Input
             if (IsActive)
             {
                 Client.DeliverComposition(null, null);
+                ClearCompositionDecorations();
             }
         }
 
@@ -372,16 +440,19 @@ namespace Avalonia.Win32.Input
             if (_ignoreComposition)
             {
                 _ignoreComposition = false;
+                TraceIme("WM_IME_COMPOSITION ignored (self-inflicted)");
 
                 return;
             }
 
             var flags = (GCS)ToInt32(lParam);
+            TraceIme("WM_IME_COMPOSITION flags={Flags}", flags);
             var resultChanged = (flags & GCS.GCS_RESULTSTR) != 0;
-            
+
             if (flags == 0)
             {
                 CompositionChanged("", null);
+                ClearCompositionDecorations();
             }
 
             if (resultChanged)
@@ -391,12 +462,36 @@ namespace Avalonia.Win32.Input
                 Composition = null;
                 _compositionCursorPosition = null;
 
-                if (IsActive)
+                // Structured client (in-document composition, e.g. the rich text editor): replace the
+                // composition range with the result in one atomic edit and commit. The legacy path below
+                // clears the preedit first and then re-inserts the result as a separate text-input event -
+                // a clear-then-reinsert that, for an in-document composition, resets the composition range
+                // before the text input arrives, so the client's composition-commit handling is bypassed.
+                var committedInDocument = false;
+
+                if (IsActive && !string.IsNullOrEmpty(resultString) &&
+                    Client is IStructuredTextInput structured &&
+                    structured.CompositionRange is { IsEmpty: false } compositionRange)
+                {
+                    structured.ReplaceText(compositionRange, resultString);
+                    structured.CommitComposition();
+
+                    committedInDocument = true;
+
+                    if (_parent != null)
+                    {
+                        // The result is already in the document; ignore the WM_CHAR the IME posts next.
+                        _parent._ignoreWmChar = true;
+                    }
+                }
+                else if (IsActive && Client is not IStructuredTextInput)
                 {
                     Client.DeliverComposition(null, null);
                 }
 
-                if (_parent != null && !string.IsNullOrEmpty(resultString))
+                ClearCompositionDecorations();
+
+                if (!committedInDocument && _parent != null && !string.IsNullOrEmpty(resultString))
                 {
                     var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, resultString);
 
@@ -423,6 +518,299 @@ namespace Avalonia.Win32.Input
                     : _compositionCursorPosition;
 
                 CompositionChanged(compositionString, cursorPosition);
+
+                // Feed the per-clause composition attributes (GCS_COMPATTR) to a structured client so the IME
+                // chooses the clause highlighting instead of the framework hard-coding a preedit underline.
+                UpdateCompositionDecorations();
+            }
+        }
+
+        // GCS_COMPATTR clause attribute bytes (immdev.h ATTR_*), one per composition WCHAR.
+        private const byte ATTR_TARGET_CONVERTED = 0x01;
+        private const byte ATTR_CONVERTED = 0x02;
+        private const byte ATTR_TARGET_NOTCONVERTED = 0x03;
+        private const byte ATTR_INPUT_ERROR = 0x04;
+
+        // Reads GCS_COMPATTR (per-character clause attributes), groups it into contiguous clause runs, and
+        // reports them to a structured client as transient decorations over the composition range. A client
+        // without a structured CompositionRange (e.g. TextBox's legacy preedit overlay) is skipped, so its
+        // existing preedit underline is unaffected.
+        private void UpdateCompositionDecorations()
+        {
+            if (!IsActive || Client is not IStructuredTextInput structured)
+            {
+                return;
+            }
+
+            var range = structured.CompositionRange;
+            if (range is null || range.IsEmpty)
+            {
+                structured.SetInputDecorations(Array.Empty<TextInputDecoration>());
+                return;
+            }
+
+            var attributes = GetCompositionAttributes();
+            if (attributes is null || attributes.Length == 0)
+            {
+                structured.SetInputDecorations(Array.Empty<TextInputDecoration>());
+                return;
+            }
+
+            var decorations = BuildCompositionDecorations(structured, range.Start, attributes);
+            structured.SetInputDecorations(decorations);
+        }
+
+        private void ClearCompositionDecorations()
+        {
+            if (IsActive && Client is IStructuredTextInput structured)
+            {
+                structured.SetInputDecorations(Array.Empty<TextInputDecoration>());
+            }
+        }
+
+        private static IReadOnlyList<TextInputDecoration> BuildCompositionDecorations(
+            IStructuredTextInput structured, ITextPointer compositionStart, byte[] attributes)
+        {
+            var decorations = new List<TextInputDecoration>();
+
+            var runStart = 0;
+            for (var i = 1; i <= attributes.Length; i++)
+            {
+                if (i < attributes.Length && attributes[i] == attributes[runStart])
+                {
+                    continue;
+                }
+
+                var kind = MapAttribute(attributes[runStart]);
+                decorations.Add(structured.CreateClauseDecoration(compositionStart, runStart, i - runStart, kind));
+                runStart = i;
+            }
+
+            return decorations;
+        }
+
+        private static TextInputDecorationKind MapAttribute(byte attribute) => attribute switch
+        {
+            ATTR_TARGET_CONVERTED => TextInputDecorationKind.ConvertedTarget,
+            ATTR_CONVERTED => TextInputDecorationKind.Converted,
+            ATTR_TARGET_NOTCONVERTED => TextInputDecorationKind.TargetNotConverted,
+            ATTR_INPUT_ERROR => TextInputDecorationKind.InputError,
+            _ => TextInputDecorationKind.Input
+        };
+
+        private byte[]? GetCompositionAttributes()
+        {
+            if (!IsComposing)
+            {
+                return null;
+            }
+
+            var himc = ImmGetContext(Hwnd);
+            if (himc == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            try
+            {
+                var size = ImmGetCompositionString(himc, GCS.GCS_COMPATTR, IntPtr.Zero, 0);
+                if (size <= 0)
+                {
+                    return null;
+                }
+
+                var buffer = Marshal.AllocHGlobal(size);
+                try
+                {
+                    var written = ImmGetCompositionString(himc, GCS.GCS_COMPATTR, buffer, (uint)size);
+                    if (written <= 0)
+                    {
+                        return null;
+                    }
+
+                    var attributes = new byte[written];
+                    Marshal.Copy(buffer, attributes, 0, written);
+                    return attributes;
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+            finally
+            {
+                ImmReleaseContext(Hwnd, himc);
+            }
+        }
+
+        /// <summary>
+        /// Handles a WM_IME_REQUEST message. Returns <c>true</c> when the request was handled and
+        /// <paramref name="result"/> holds the value to return to the IME; otherwise the caller should
+        /// fall back to the default window procedure.
+        /// </summary>
+        public bool HandleImeRequest(IntPtr wParam, IntPtr lParam, out IntPtr result)
+        {
+            TraceIme("WM_IME_REQUEST {Code}", (int)wParam switch
+            {
+                0x0004 => "IMR_RECONVERTSTRING",
+                0x0005 => "IMR_CONFIRMRECONVERTSTRING",
+                0x0006 => "IMR_QUERYCHARPOSITION",
+                0x0007 => "IMR_DOCUMENTFEED",
+                var other => $"0x{other:X4}",
+            });
+
+            result = IntPtr.Zero;
+
+            if (!IsActive || !Client.SupportsSurroundingText)
+            {
+                return false;
+            }
+
+            switch (ToInt32(wParam))
+            {
+                case IMR_RECONVERTSTRING:
+                    result = WriteReconvertString(lParam);
+                    return true;
+                case IMR_DOCUMENTFEED:
+                    // TSF based IMEs (modern Microsoft IME, Google Japanese Input) reconvert through
+                    // the CUAS bridge, which asks for the document via IMR_DOCUMENTFEED first and only
+                    // follows up with IMR_RECONVERTSTRING once it gets an answer. Feed it the caret line
+                    // and selection while there is no active composition; during composition the default
+                    // handling is left alone, exactly as for ordinary typing.
+                    if (IsComposing)
+                    {
+                        return false;
+                    }
+                    result = WriteReconvertString(lParam);
+                    return true;
+                case IMR_CONFIRMRECONVERTSTRING:
+                    result = HandleConfirmReconvertString(lParam);
+                    return true;
+                default:
+                    // Composition window/font, candidate window and char-position requests are left
+                    // to the default window procedure.
+                    return false;
+            }
+        }
+
+        // Writes the document the IME reconverts: the caret line as the string and the current
+        // selection as the composition/target range. Serves IMR_RECONVERTSTRING and IMR_DOCUMENTFEED.
+        private IntPtr WriteReconvertString(IntPtr lParam)
+        {
+            var text = Client!.SurroundingText;
+            var selection = Client.Selection;
+
+            var start = Math.Min(selection.Start, selection.End);
+            var length = Math.Abs(selection.End - selection.Start);
+
+            return (IntPtr)Imm32ReconversionHelper.Write(lParam, text.AsSpan(), start, length);
+        }
+
+        // The IME echoes back the range it settled on (it may snap to word boundaries). Record it as
+        // the reconversion target so the following composition replaces exactly that text.
+        private IntPtr HandleConfirmReconvertString(IntPtr lParam)
+        {
+            if (!Imm32ReconversionHelper.ReadCompRange(lParam, out var start, out var length))
+            {
+                return IntPtr.Zero;
+            }
+
+            SetReconversionTarget(start, length);
+
+            return new IntPtr(1);
+        }
+
+        // The composition the IME opens next replaces exactly this range (surrounding-text space).
+        // An in-document client anchors the structured composition range directly: the composition
+        // updates then replace the target in place and the IME's clause attributes decorate it, so
+        // no transient selection highlight is needed. Overlay clients keep the selection sync -
+        // their composition replaces the selection.
+        private void SetReconversionTarget(int start, int length)
+        {
+            if (Client is IStructuredTextInput structured && Client.SupportsInDocumentComposition)
+            {
+                // Legacy Selection is relative to SurroundingText; the structured selection is the
+                // same range in document space. Their difference locates the surrounding text.
+                var legacySelection = Client.Selection;
+                var origin = structured.Selection.Start.Offset -
+                             Math.Min(legacySelection.Start, legacySelection.End);
+
+                structured.CompositionRange = structured.RangeAt(origin + start, length);
+                return;
+            }
+
+            Client!.Selection = new TextSelection(start, start + length);
+        }
+
+        /// <summary>
+        /// Starts reconversion of the current selection without waiting for the IME to ask. Used for
+        /// gestures the IME does not own (e.g. Ctrl+Backspace): we push the selected text into the IME
+        /// with <c>SCS_SETRECONVERTSTRING</c>. Returns <c>true</c> when reconversion was started.
+        /// </summary>
+        public bool TryReconvert()
+        {
+            if (!IsActive || !Client.SupportsSurroundingText)
+            {
+                return false;
+            }
+
+            var selection = Client.Selection;
+            var start = Math.Min(selection.Start, selection.End);
+            var length = Math.Abs(selection.End - selection.Start);
+
+            // Only take over the key when the user actually selected text to reconvert; otherwise leave
+            // the gesture to its normal handling (e.g. delete word).
+            if (length == 0)
+            {
+                return false;
+            }
+
+            var himc = ImmGetContext(Hwnd);
+
+            if (himc == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Bail unless the active IME accepts an application-supplied reconvert string.
+                var caps = ImmGetProperty(GetKeyboardLayout(0), IGP_SETCOMPSTR);
+
+                if ((caps & SCS_CAP_SETRECONVERTSTRING) == 0)
+                {
+                    return false;
+                }
+
+                var text = Client.SurroundingText;
+                var size = Imm32ReconversionHelper.GetRequiredSize(text.Length);
+                var buffer = Marshal.AllocHGlobal(size);
+
+                try
+                {
+                    // Set dwSize so the helper fills the buffer we own.
+                    Marshal.WriteInt32(buffer, 0, size);
+                    Imm32ReconversionHelper.Write(buffer, text.AsSpan(), start, length);
+
+                    // Let the IME snap the range to its dictionary boundaries, then record the target
+                    // so the composition that follows replaces exactly that text.
+                    ImmSetCompositionString(himc, SCS_QUERYRECONVERTSTRING, buffer, (uint)size, IntPtr.Zero, 0);
+
+                    if (Imm32ReconversionHelper.ReadCompRange(buffer, out var compStart, out var compLength))
+                    {
+                        SetReconversionTarget(compStart, compLength);
+                    }
+
+                    return ImmSetCompositionString(himc, SCS_SETRECONVERTSTRING, buffer, (uint)size, IntPtr.Zero, 0);
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+            finally
+            {
+                ImmReleaseContext(Hwnd, himc);
             }
         }
 
