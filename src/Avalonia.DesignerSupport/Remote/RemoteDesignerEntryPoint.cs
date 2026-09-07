@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -12,6 +13,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
+    [RequiresUnreferencedCode("Remote designer relies on reflection")]
     public class RemoteDesignerEntryPoint
     {
         private static ClientSupportedPixelFormatsMessage s_supportedPixelFormats;
@@ -132,6 +134,7 @@ namespace Avalonia.DesignerSupport.Remote
            IAvaloniaRemoteTransportConnection ConfigureApp(IAvaloniaRemoteTransportConnection transport, CommandLineArgs args, object obj);
         }
 
+        [RequiresUnreferencedCode("Remote designer relies on reflection")]
         class AppInitializer : IAppInitializer
         {
             public IAvaloniaRemoteTransportConnection ConfigureApp(IAvaloniaRemoteTransportConnection transport,

@@ -8,7 +8,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
-    <ProjectReference Include="..\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />    
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />

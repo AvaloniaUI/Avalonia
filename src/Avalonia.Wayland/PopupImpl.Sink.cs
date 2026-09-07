@@ -43,6 +43,10 @@ partial class PopupImpl
             // Re-apply cursor (defaults to Arrow on a fresh worker WSurface).
             if (Parent.CurrentCursor is not null)
                 Parent.ApplyCurrentCursor(_surfaceProxy);
+
+            // A fresh worker WSurface starts hit-test visible.
+            if (!Parent._isHitTestVisible)
+                _surfaceProxy.SetHitTestVisible(false);
         }
 
         protected override void DisconnectFromSurface()

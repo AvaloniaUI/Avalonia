@@ -9,8 +9,10 @@
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj" />
     <ProjectReference Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.csproj" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <!-- The testing packages float on ancient minimum Roslyn versions; pin the repo version. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="5.6.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" VersionOverride="5.6.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="5.6.0" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\*.xml" />

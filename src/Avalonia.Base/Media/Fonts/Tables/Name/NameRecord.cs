@@ -48,9 +48,29 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 return string.Empty;
             }
 
+            // Offset/Length come straight from the untrusted 'name' record. NameTable.Load validates
+            // the record array but not each record's storage slice, and GetValue runs later during
+            // typeface construction, so a record pointing past the string storage must degrade to an
+            // empty value rather than throw out of the GlyphTypeface constructor and deny the font.
+            // Offset and Length are both ushort, so the sum cannot overflow uint.
+            if ((uint)Offset + Length > (uint)_stringStorage.Length)
+            {
+                return string.Empty;
+            }
+
             var span = _stringStorage.Span.Slice(Offset, Length);
 
-            return Encoding.GetString(span);
+            // The encodings NameTable selects substitute U+FFFD for malformed bytes, but guard
+            // against an exception-throwing decoder fallback so a corrupt record degrades to an
+            // empty value instead of denying the font.
+            try
+            {
+                return Encoding.GetString(span);
+            }
+            catch (ArgumentException)
+            {
+                return string.Empty;
+            }
         }
     }
 }

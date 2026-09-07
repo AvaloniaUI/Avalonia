@@ -47,7 +47,9 @@ class WaylandFramebuffer(IWaylandFramebufferSurface surface) : IFramebufferPlatf
                 throw new RenderTargetNotReadyException();
 
             var size = sceneInfo.Size;
-            var bufferLen = sceneInfo.Size.Width * sceneInfo.Size.Height * 4;
+            size = new PixelSize(Math.Max(1, size.Width), Math.Max(1, size.Height));
+
+            var bufferLen = size.Width * size.Height * 4;
             var stride = size.Width * 4;
             
             var fd = memfd_create("avalonia-wayland-framebuffer", MFD_CLOEXEC);

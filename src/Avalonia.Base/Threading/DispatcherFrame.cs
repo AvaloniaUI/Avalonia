@@ -38,7 +38,7 @@ public class DispatcherFrame
     ///        for their important criteria to be met.  These frames
     ///        should have a timeout associated with them.
     /// </param>
-    public DispatcherFrame(bool exitWhenRequested) : this(Dispatcher.UIThread, exitWhenRequested)
+    public DispatcherFrame(bool exitWhenRequested) : this(Dispatcher.CurrentDispatcher, exitWhenRequested)
     {
         Dispatcher.VerifyAccess();
     }

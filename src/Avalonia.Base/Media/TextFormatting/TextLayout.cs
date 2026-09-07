@@ -634,7 +634,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         if (textLine.TextLineBreak is { IsSplit: true })
                         {
-                            textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(WidthIncludingTrailingWhitespace));
+                            textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(textLine.WidthIncludingTrailingWhitespace));
                         }
 
                         break;

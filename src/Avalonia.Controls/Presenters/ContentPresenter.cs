@@ -364,6 +364,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the content to be displayed by the presenter.
         /// </summary>
+        [Content]
         [DependsOn(nameof(ContentTemplate))]
         public object? Content
         {

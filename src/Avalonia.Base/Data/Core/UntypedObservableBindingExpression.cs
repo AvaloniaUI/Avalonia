@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core;
 
@@ -19,7 +20,7 @@ internal class UntypedObservableBindingExpression : UntypedBindingExpressionBase
 
     protected override void StartCore()
     {
-        _subscription = _observable.Subscribe(this);
+        _subscription = WeakObserverSubscription<object?>.Subscribe(_observable, this);
     }
 
     protected override void StopCore()

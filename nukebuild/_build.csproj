@@ -13,10 +13,9 @@
   <ItemGroup>
     <PackageReference Include="Nuke.Common" />
     <PackageReference Include="Numerge" />
-    <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" />
-    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
     <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="System.Security.Cryptography.Xml" VersionOverride="10.0.11" /> <!-- Local override to avoid security warnings --> 
     <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[10.0.100]" />
     <PackageDownload Include="Microsoft.DotNet.ApiDiff.Tool" Version="[10.0.100-rtm.25531.102]" />
     <PackageDownload Include="dotnet-ilrepack" Version="[2.0.44]" />

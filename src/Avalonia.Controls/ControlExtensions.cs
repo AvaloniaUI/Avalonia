@@ -1,5 +1,7 @@
 using System;
+using Avalonia.Layout;
 using Avalonia.Reactive;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -14,9 +16,9 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public static void BringIntoView(this Control control)
         {
-            _ = control ?? throw new ArgumentNullException(nameof(control));
+            ArgumentNullException.ThrowIfNull(control);
 
-            control.BringIntoView(new Rect(control.Bounds.Size));
+            BringIntoViewCore(control, null);
         }
 
         /// <summary>
@@ -26,19 +28,37 @@ namespace Avalonia.Controls
         /// <param name="rect">The area of the control to being into view.</param>
         public static void BringIntoView(this Control control, Rect rect)
         {
-            _ = control ?? throw new ArgumentNullException(nameof(control));
+            ArgumentNullException.ThrowIfNull(control);
 
-            if (control.IsEffectivelyVisible)
+            BringIntoViewCore(control, rect);
+        }
+
+        private static void BringIntoViewCore(Control control, Rect? rect)
+        {
+            if (TryExecuteBringIntoView(control, rect))
+                return;
+
+            var layoutManager = control.GetLayoutRoot()?.LayoutManager as IBringIntoViewLayoutManager;
+            layoutManager?.EnqueueBringIntoView(new ControlBringIntoViewRequest(control, rect));
+        }
+
+        private static bool TryExecuteBringIntoView(Control control, Rect? rect)
+        {
+            if (!control.IsEffectivelyVisible)
+                return true; // BringIntoView on an invisible control just does nothing.
+
+            if (!control.IsMeasureValid || !control.IsArrangeValid)
+                return false;
+
+            var ev = new RequestBringIntoViewEventArgs
             {
-                var ev = new RequestBringIntoViewEventArgs
-                {
-                    RoutedEvent = Control.RequestBringIntoViewEvent,
-                    TargetObject = control,
-                    TargetRect = rect,
-                };
+                RoutedEvent = Control.RequestBringIntoViewEvent,
+                TargetObject = control,
+                TargetRect = rect ?? new Rect(control.Bounds.Size),
+            };
 
-                control.RaiseEvent(ev);
-            }
+            control.RaiseEvent(ev);
+            return true;
         }
 
         /// <summary>
@@ -98,6 +118,13 @@ namespace Avalonia.Controls
             _ = classes ?? throw new ArgumentNullException(nameof(classes));
 
             return trigger.Subscribe(x => classes.Set(name, x));
+        }
+
+        private sealed class ControlBringIntoViewRequest(Control target, Rect? rect)
+            : BringIntoViewRequest(target)
+        {
+            public override bool TryExecute()
+                => TryExecuteBringIntoView(target, rect);
         }
     }
 }

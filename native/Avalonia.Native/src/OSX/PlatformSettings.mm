@@ -1,12 +1,19 @@
 #include "common.h"
+#include "AvnString.h"
 
 @interface CocoaThemeObserver : NSObject
 -(id)initWithCallback:(IAvnActionCallback *)callback;
 @end
 
+@interface CocoaLocaleObserver : NSObject
+-(id)initWithCallback:(IAvnActionCallback *)callback;
+-(void)localeDidChange:(NSNotification *)notification;
+@end
+
 class PlatformSettings : public ComSingleObject<IAvnPlatformSettings, &IID_IAvnPlatformSettings>
 {
     CocoaThemeObserver* observer;
+    CocoaLocaleObserver* localeObserver;
 
 public:
     FORWARD_IUNKNOWN()
@@ -38,9 +45,20 @@ public:
     {
         @autoreleasepool
         {
-            if (@available(macOS 10.14, *))
+            if (@available(macOS 11.0, *))
             {
-                auto color = [NSColor controlAccentColor];
+                __block NSColor* color;
+                [[NSApp effectiveAppearance] performAsCurrentDrawingAppearance:^{
+                    color = [[NSColor controlAccentColor] colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+                }];
+                return to_argb(color);
+            }
+            else if (@available(macOS 10.14, *))
+            {
+                auto previousAppearance = NSAppearance.currentAppearance;
+                NSAppearance.currentAppearance = [NSApp effectiveAppearance];
+                auto color = [[NSColor controlAccentColor] colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+                NSAppearance.currentAppearance = previousAppearance;
                 return to_argb(color);
             }
             else
@@ -57,6 +75,28 @@ public:
             observer = [[CocoaThemeObserver alloc] initWithCallback: callback];
             [[NSApplication sharedApplication] addObserver:observer forKeyPath:@"effectiveAppearance" options:NSKeyValueObservingOptionNew context:nil];
         }
+    }
+
+    virtual HRESULT GetPreferredLanguage(IAvnString** ret) override
+    {
+        @autoreleasepool
+        {
+            if (ret == nullptr)
+                return E_POINTER;
+
+            auto language = [[NSLocale preferredLanguages] firstObject];
+            *ret = language == nil ? nullptr : CreateAvnString(language);
+            return S_OK;
+        }
+    }
+
+    virtual void RegisterLanguageChange(IAvnActionCallback *callback) override
+    {
+        localeObserver = [[CocoaLocaleObserver alloc] initWithCallback: callback];
+        [[NSNotificationCenter defaultCenter] addObserver:localeObserver
+                                                 selector:@selector(localeDidChange:)
+                                                     name:NSCurrentLocaleDidChangeNotification
+                                                   object:nil];
     }
     
 private:
@@ -104,6 +144,23 @@ private:
                                change:change
                               context:context];
     }
+}
+@end
+
+@implementation CocoaLocaleObserver
+{
+    ComPtr<IAvnActionCallback> _callback;
+}
+- (id) initWithCallback:(IAvnActionCallback *)callback {
+    self = [super init];
+    if (self) {
+        _callback = callback;
+    }
+    return self;
+}
+
+- (void)localeDidChange:(NSNotification *)notification {
+    _callback->Run();
 }
 @end
 

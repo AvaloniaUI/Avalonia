@@ -8,6 +8,7 @@ namespace Avalonia.Native
     class PopupImpl : WindowBaseImpl, IPopupImpl
     {
         private readonly ITopLevelImpl _parent;
+        private readonly IAvnPopup _native;
 
         public PopupImpl(IAvaloniaNativeFactory factory,
             ITopLevelImpl parent) : base(factory)
@@ -16,7 +17,7 @@ namespace Avalonia.Native
             
             using (var e = new PopupEvents(this))
             {
-                Init(new MacOSTopLevelHandle(factory.CreatePopup(e)));
+                Init(new MacOSTopLevelHandle(_native = factory.CreatePopup(e)));
             }
             
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
@@ -85,6 +86,11 @@ namespace Avalonia.Native
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
+        }
+
+        public void SetHitTestVisible(bool isHitTestVisible)
+        {
+            _native.SetHitTestVisible(isHitTestVisible.AsComBool());
         }
 
         public void TakeFocus()

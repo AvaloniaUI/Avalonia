@@ -169,7 +169,7 @@ namespace Avalonia.Input
         {
             if (element is Visual v)
             {
-                foreach (var el in v.VisualChildren)
+                foreach (var el in v.TypedVisualChildren)
                 {
                     if (el is IInputElement { IsPointerOver: true } child)
                     {

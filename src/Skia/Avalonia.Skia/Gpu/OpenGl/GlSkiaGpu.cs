@@ -40,7 +40,7 @@ namespace Avalonia.Skia
                 
                 using(iface)
                 {
-                    var avoidStencilBuffers = useStencilBuffers == false;
+                    var avoidStencilBuffers = SkiaOptions.ShouldAvoidStencilBuffers(useStencilBuffers);
                     _grContext = GRContext.CreateGl(iface, new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers });
                     if (maxResourceBytes.HasValue)
                     {
