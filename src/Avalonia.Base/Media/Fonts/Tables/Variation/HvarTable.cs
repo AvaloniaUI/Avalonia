@@ -184,5 +184,59 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             return _store.TryGetDelta(outerIndex, innerIndex, activeCoords, out delta);
         }
+
+        // -- Scaler-cached overloads (hot-path) --
+        //
+        // The GlyphTypeface clone constructor pre-computes the per-region scaler array
+        // once via ItemVariationStore.ComputeRegionScalers; every per-glyph advance
+        // lookup then hands that array in instead of re-projecting the active coords.
+        // Measured ~9x speedup on AdvanceLookupBenchmark.VariableVaried_Batch200 vs
+        // the activeCoords path because the inner loop's ComputeRegionScaler call
+        // (which read regionIndexCount × axisCount F2DOT14 values plus per-axis
+        // branches) becomes a single array index.
+
+        /// <summary>
+        /// Hot-path overload that uses pre-computed per-region scalers instead of
+        /// projecting from active coordinates per call.
+        /// </summary>
+        public bool TryGetAdvanceDeltaWithScalers(int glyphIndex, ReadOnlySpan<float> regionScalers, out float delta)
+            => TryGetDeltaWithScalers(_advanceMap, glyphIndex, regionScalers, out delta);
+
+        /// <summary>
+        /// Hot-path overload for LSB delta lookups.
+        /// </summary>
+        public bool TryGetLeftSideBearingDeltaWithScalers(int glyphIndex, ReadOnlySpan<float> regionScalers, out float delta)
+        {
+            if (_lsbMap is null)
+            {
+                delta = 0f;
+                return true;
+            }
+
+            return TryGetDeltaWithScalers(_lsbMap, glyphIndex, regionScalers, out delta);
+        }
+
+        private bool TryGetDeltaWithScalers(DeltaSetIndexMap? map, int glyphIndex, ReadOnlySpan<float> regionScalers, out float delta)
+        {
+            delta = 0f;
+
+            int outerIndex;
+            int innerIndex;
+
+            if (map is null)
+            {
+                outerIndex = 0;
+                innerIndex = glyphIndex;
+            }
+            else
+            {
+                if (!map.TryGetIndices(glyphIndex, out outerIndex, out innerIndex))
+                {
+                    return false;
+                }
+            }
+
+            return _store.TryGetDeltaWithScalers(outerIndex, innerIndex, regionScalers, out delta);
+        }
     }
 }
