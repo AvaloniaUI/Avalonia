@@ -710,7 +710,9 @@ namespace Avalonia.Controls
                     _scrollToElement = null;
                     _scrollToIndex = -1;
                     RecycleElement(scrollToElement, scrollToIndex);
+                    return null;
                 }
+
                 return scrollToElement;
             }
 
