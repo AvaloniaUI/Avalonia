@@ -56,14 +56,27 @@
   <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
   <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
   <x:Double x:Key="ComboBoxMinHeight">32</x:Double>
+  <x:Double x:Key="ComboBoxItemPillCornerRadius">1.5</x:Double>
+  <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
+  <StreamGeometry x:Key="ComboBoxDropDownPathData">M4.293 8.293a1 1 0 0 1 1.414 0L12 14.586l6.293-6.293a1 1 0 1 1 1.414 1.414l-7 7a1 1 0 0 1-1.414 0l-7-7a1 1 0 0 1 0-1.414Z</StreamGeometry>
+
+  <ControlTheme TargetType="Rectangle" x:Key="ComboBoxItemPill">
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Height" Value="{StaticResource ComboBoxItemPillHeight}" />
+    <Setter Property="Width" Value="{StaticResource ComboBoxItemPillWidth}" />
+    <Setter Property="Fill" Value="{StaticResource ComboBoxItemPillFillBrush}" />
+    <Setter Property="RadiusX" Value="{StaticResource ComboBoxItemPillCornerRadius}" />
+    <Setter Property="RadiusY" Value="{StaticResource ComboBoxItemPillCornerRadius}" />
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+  </ControlTheme>
 
   <!-- WinUI reference: ComboBox_themeresources.xaml (DefaultComboBoxStyle), 820 lines.
-       Closed control is Button-like: ControlFillColorDefault fill with a ControlElevationBorder
-       (both via the re-pointed ComboBox* aliases), radius 4 (ControlCornerRadius), background
-       sized to the inner border edge, 12px chevron in TextFillColorSecondary. The dropdown is an
-       acrylic flyout: OverlayCornerRadius 8, 1px SurfaceStrokeColorFlyout border and 0,4 content
-       margin (ComboBoxDropdownContentMargin). Press feedback is a fill change with an 83ms
-       cross-fade; WinUI has no press scale. -->
+  Closed control is Button-like: ControlFillColorDefault fill with a ControlElevationBorder
+  (both via the re-pointed ComboBox* aliases), radius 4 (ControlCornerRadius), background
+  sized to the inner border edge, 12px chevron in TextFillColorSecondary. The dropdown is an
+  acrylic flyout: OverlayCornerRadius 8, 1px SurfaceStrokeColorFlyout border and 0,4 content
+  margin (ComboBoxDropdownContentMargin). Press feedback is a fill change with an 83ms
+  cross-fade; WinUI has no press scale. -->
   <ControlTheme x:Key="{x:Type ComboBox}" TargetType="ComboBox">
     <Setter Property="Padding" Value="{DynamicResource ComboBoxPadding}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
@@ -85,7 +98,17 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Grid ColumnDefinitions="*,32">
+          <Grid Name="LayoutRoot" ColumnDefinitions="*,32">
+            <Border x:Name="HighlightBackground"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Margin="-4"
+                    Background="{DynamicResource ComboBoxBackgroundUnfocused}"
+                    BackgroundSizing="InnerBorderEdge"
+                    BorderBrush="{DynamicResource ComboBoxBackgroundBorderBrushUnfocused}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    IsVisible="False"/>
             <Border x:Name="Background"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
@@ -101,15 +124,20 @@
                 </Transitions>
               </Border.Transitions>
             </Border>
-            <Border x:Name="HighlightBackground"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Background="{DynamicResource ComboBoxBackgroundUnfocused}"
-                    BackgroundSizing="InnerBorderEdge"
-                    BorderBrush="{DynamicResource ComboBoxBackgroundBorderBrushUnfocused}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="{TemplateBinding CornerRadius}"
-                    IsVisible="False"/>
+            <Rectangle x:Name="Pill" Theme="{DynamicResource ComboBoxItemPill}" Margin="1,0,0,0" Grid.Column="0" Opacity="0">
+              <Rectangle.RenderTransform>
+                <ScaleTransform ScaleY="1"/>
+              </Rectangle.RenderTransform>
+            </Rectangle>
+            <ContentControl x:Name="ContentPresenter"
+                            Content="{TemplateBinding SelectionBoxItem}"
+                            Grid.Column="0"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            IsVisible="{TemplateBinding IsEditable, Converter={x:Static BoolConverters.Not}}">
+            </ContentControl>
             <TextBlock x:Name="PlaceholderTextBlock"
                        Grid.Column="0"
                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -125,15 +153,6 @@
                 </MultiBinding>
               </TextBlock.IsVisible>
             </TextBlock>
-            <ContentControl x:Name="ContentPresenter"
-                            Content="{TemplateBinding SelectionBoxItem}"
-                            Grid.Column="0"
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            IsVisible="{TemplateBinding IsEditable, Converter={x:Static BoolConverters.Not}}">
-            </ContentControl>
 
             <TextBox Name="PART_EditableTextBox"
                      Grid.Column="0"
@@ -148,7 +167,7 @@
                      IsVisible="{TemplateBinding IsEditable}">
               <TextBox.Resources>
                 <!-- WinUI's editable ComboBox hosts a chromeless TextBox (ComboBoxTextBoxStyle):
-                     no fill and, unlike a standalone TextBox, no focus accent underline. -->
+                no fill and, unlike a standalone TextBox, no focus accent underline. -->
                 <SolidColorBrush x:Key="TextControlBackgroundFocused">Transparent</SolidColorBrush>
                 <SolidColorBrush x:Key="TextControlBackgroundPointerOver">Transparent</SolidColorBrush>
                 <SolidColorBrush x:Key="TextControlBorderBrushFocused">Transparent</SolidColorBrush>
@@ -159,6 +178,7 @@
             <Border x:Name="DropDownOverlay"
                     Grid.Column="1"
                     Background="Transparent"
+                    CornerRadius="{StaticResource ComboBoxDropDownButtonBackgroundCornerRadius}"
                     Margin="0,1,1,1"
                     Width="30"
                     IsVisible="False"
@@ -170,11 +190,11 @@
                       IsHitTestVisible="False"
                       Height="12"
                       Width="12"
-                      Margin="0,0,10,0"
+                      Margin="0,0,14,0"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Center"
                       Foreground="{DynamicResource ComboBoxDropDownGlyphForeground}"
-                      Data="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z"/>
+                      Data="{StaticResource ComboBoxDropDownPathData}" />
 
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
@@ -190,6 +210,7 @@
                       BorderBrush="{DynamicResource ComboBoxDropDownBorderBrush}"
                       BorderThickness="{DynamicResource ComboBoxDropdownBorderThickness}"
                       Padding="{DynamicResource ComboBoxDropdownBorderPadding}"
+                      Margin="0,-0.5,0,-1"
                       HorizontalAlignment="Stretch"
                       CornerRadius="{DynamicResource OverlayCornerRadius}">
                 <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
@@ -229,6 +250,9 @@
       <Style Selector="^ /template/ ContentControl#ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundFocusedPressed}" />
       </Style>
+      <Style Selector="^ /template/ Rectangle#Pill">
+        <Setter Property="Opacity" Value="1" />
+      </Style>
       <Style Selector="^ /template/ TextBlock#PlaceholderTextBlock">
         <Setter Property="Foreground" Value="{DynamicResource ComboBoxPlaceHolderForegroundFocusedPressed}" />
       </Style>
@@ -242,6 +266,9 @@
       <Style Selector="^ /template/ Border#HighlightBackground">
         <Setter Property="IsVisible" Value="True" />
         <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBackgroundBorderBrushFocused}" />
+      </Style>
+      <Style Selector="^ /template/ Rectangle#Pill">
+        <Setter Property="Opacity" Value="1" />
       </Style>
       <Style Selector="^ /template/ ContentControl#ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />

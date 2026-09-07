@@ -165,6 +165,7 @@
       <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
       <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
       <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
+      <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="AccentFillColorDefaultBrush" />
 
       <!-- Resources for ListBox.xaml -->
       <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
@@ -856,6 +857,7 @@
       <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
       <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
       <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
+      <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="AccentFillColorDefaultBrush" />
 
       <!-- Resources for ListBox.xaml -->
       <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
