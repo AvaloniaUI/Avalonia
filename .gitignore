@@ -203,7 +203,6 @@ Build/Intermediates.noindex/
 build-intermediate
 obj-Direct2D1/
 obj-Skia/
-DerivedData/
 
 ##################
 # Vim

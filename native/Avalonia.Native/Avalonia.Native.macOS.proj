@@ -38,14 +38,41 @@
   <ItemGroup Condition="'$(BuildAvaloniaNativeXcodeProject)' == 'true'">
     <AvaloniaNativeSource Include="$(AvaloniaNativeSourceDir)/**/*.mm;$(AvaloniaNativeSourceDir)/**/*.cpp;$(AvaloniaNativeSourceDir)/**/*.h" />
     <AvaloniaNativeSource Include="$(AvaloniaNativeXcodeProject)/**/*"
-                          Exclude="$(AvaloniaNativeXcodeProject)/**/xcuserdata/**/*" />
+                          Exclude="$(AvaloniaNativeXcodeProject)/build/**/*;$(AvaloniaNativeXcodeProject)/DerivedData/**/*;$(AvaloniaNativeXcodeProject)/**/xcuserdata/**/*" />
   </ItemGroup>
+
+  <Target Name="_GenerateAvaloniaNativeDependencyCache"
+          DependsOnTargets="GenerateMicroComItems"
+          Condition="'$(BuildAvaloniaNativeXcodeProject)' == 'true'">
+    <PropertyGroup>
+      <_AvaloniaNativeInputsCacheFilePath>$(IntermediateOutputPath)/AvaloniaNative/Sources.Inputs.cache</_AvaloniaNativeInputsCacheFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <CustomAdditionalCompileAvaloniaNativeInputs Include="$(_AvaloniaNativeInputsCacheFilePath)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(AvaloniaNativeSource);$(MSBuildAllProjects)">
+      <Output TaskParameter="HashResult" PropertyName="AvaloniaNativeDependencyHash" />
+    </Hash>
+
+    <MakeDir Directories="$(IntermediateOutputPath)/AvaloniaNative" />
+    <WriteLinesToFile File="$(_AvaloniaNativeInputsCacheFilePath)"
+                      Lines="$(AvaloniaNativeDependencyHash)"
+                      WriteOnlyWhenDifferent="True"
+                      Overwrite="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_AvaloniaNativeInputsCacheFilePath)" />
+      <UpToDateCheckInput Include="@(CustomAdditionalCompileAvaloniaNativeInputs)"/>
+    </ItemGroup>
+  </Target>
 
   <Target Name="CompileAvaloniaNativeXcodeProject"
           Condition="'$(BuildAvaloniaNativeXcodeProject)' == 'true'"
-          DependsOnTargets="GenerateMicroComItems"
+          DependsOnTargets="GenerateMicroComItems;_GenerateAvaloniaNativeDependencyCache"
           BeforeTargets="CoreBuild"
-          Inputs="@(AvaloniaNativeSource)"
+          Inputs="@(AvaloniaNativeSource);@(CustomAdditionalCompileAvaloniaNativeInputs)"
           Outputs="$(AvaloniaNativeDylibPath)">
 
     <Message Text="Building native library $([System.IO.Path]::GetFileName($(AvaloniaNativeDylibPath)))"
@@ -57,8 +84,7 @@
           IgnoreExitCode="false"
           IgnoreStandardErrorWarningFormat="false"
           StandardOutputImportance="low"
-          StandardErrorImportance="high"
-          EchoOff="true" />
+          StandardErrorImportance="high" />
 
     <!-- Make sure the dylib is newer than its inputs, so the incremental check above doesn't run xcodebuild again -->
     <Touch Files="$(AvaloniaNativeDylibPath)"
