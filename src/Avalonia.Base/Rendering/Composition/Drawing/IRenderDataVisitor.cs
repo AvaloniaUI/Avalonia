@@ -25,6 +25,6 @@ internal interface IRenderDataVisitor<TScope> where TScope : unmanaged
     TScope OnPushTransform(Matrix matrix);
     TScope OnPushRenderOptions(RenderOptions options);
     TScope OnPushTextOptions(TextOptions options);
-    TScope OnPushEffect(IEffect? effect, Rect bounds);
+    TScope OnPushEffect(IEffect? effect, Rect? bounds);
     void OnPop(in TScope scope);
 }

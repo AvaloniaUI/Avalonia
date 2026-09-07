@@ -97,6 +97,12 @@ internal sealed class PlatformDrawingContext : DrawingContext
         }
     }
 
+    private protected override void PushEffectCore(IEffect effect)
+    {
+        if (_impl is IDrawingContextImplWithEffects effectImpl)
+            effectImpl.PushEffect(null, effect);
+    }
+
     protected override void PopClipCore() => _impl.PopClip();
 
     protected override void PopGeometryClipCore() => _impl.PopGeometryClip();

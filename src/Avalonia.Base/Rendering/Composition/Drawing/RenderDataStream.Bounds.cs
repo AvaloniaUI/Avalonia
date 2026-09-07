@@ -70,7 +70,7 @@ internal partial class RenderDataStream
         public BoundsScope OnPushRenderOptions(RenderOptions options) => EnterChildScope();
         public BoundsScope OnPushTextOptions(TextOptions options) => EnterChildScope();
 
-        public BoundsScope OnPushEffect(IEffect? effect, Rect bounds)
+        public BoundsScope OnPushEffect(IEffect? effect, Rect? bounds)
             => EnterChildScope(effectPadding: effect.GetEffectOutputPadding());
 
         public void OnPop(in BoundsScope scope)

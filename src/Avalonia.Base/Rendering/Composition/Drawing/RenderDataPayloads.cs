@@ -128,5 +128,5 @@ internal struct PushEffectPayload : IRenderDataPayload<PushEffectPayload>
     public static RenderDataOpcode Opcode => RenderDataOpcode.PushEffect;
 
     public int Effect;
-    public Rect Bounds;
+    public Rect? Bounds;
 }

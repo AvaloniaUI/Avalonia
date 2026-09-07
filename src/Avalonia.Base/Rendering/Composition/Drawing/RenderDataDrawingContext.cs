@@ -244,6 +244,13 @@ internal class RenderDataDrawingContext : DrawingContext
         PushedScope(before);
     }
 
+    private protected override void PushEffectCore(IEffect effect)
+    {
+        var before = Stream.OpcodeLength;
+        Stream.PushEffect(effect.ToImmutable(), null);
+        PushedScope(before);
+    }
+
     protected override void PopClipCore() => PopCore();
 
     protected override void PopGeometryClipCore() => PopCore();

@@ -238,7 +238,7 @@ internal partial class RenderDataStream
         public HitTestScope OnPushTextOptions(TextOptions options)
             => new HitTestScope { SavedLive = Live };
 
-        public HitTestScope OnPushEffect(IEffect? effect, Rect bounds)
+        public HitTestScope OnPushEffect(IEffect? effect, Rect? bounds)
             => new HitTestScope { SavedLive = Live };
 
         public void OnPop(in HitTestScope scope)

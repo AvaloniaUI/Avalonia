@@ -178,7 +178,7 @@ internal partial class RenderDataStream : IDisposable
         EnterScope();
     }
 
-    public void PushEffect(IImmutableEffect? effect, Rect bounds)
+    public void PushEffect(IImmutableEffect? effect, Rect? bounds)
     {
         _writer.WritePayload(new PushEffectPayload
         {

@@ -105,7 +105,7 @@ internal partial class RenderDataStream
             return new ReplayScope { Kind = RenderDataOpcode.PushTextOptions, Active = true };
         }
 
-        public ReplayScope OnPushEffect(IEffect? effect, Rect bounds)
+        public ReplayScope OnPushEffect(IEffect? effect, Rect? bounds)
         {
             var active = false;
             if (effect != null && _context is IDrawingContextImplWithEffects effectImpl)

@@ -458,8 +458,15 @@ namespace Avalonia.Media
         /// </param>
         /// <returns>A disposable used to undo the effect.</returns>
         public PushedState PushEffect(IEffect effect, Rect bounds)
+            => PushEffect(effect, (Rect?)bounds);
+
+        // Visual effects cannot use layout bounds: strokes and descendants may render outside them.
+        internal PushedState PushEffect(IEffect effect, Rect? bounds)
         {
-            PushEffectCore(effect, bounds);
+            if (bounds is { } rect)
+                PushEffectCore(effect, rect);
+            else
+                PushEffectCore(effect);
             _states ??= StateStackPool.Get();
             _states.Push(new RestoreState(this, RestoreState.PushedStateType.Effect));
             return new PushedState(this);
@@ -475,6 +482,9 @@ namespace Avalonia.Media
         /// <param name="effect">The effect.</param>
         /// <param name="bounds">The bounds of the effect.</param>
         protected abstract void PushEffectCore(IEffect effect, Rect bounds);
+
+        private protected virtual void PushEffectCore(IEffect effect)
+            => throw new NotSupportedException("This drawing context requires explicit effect bounds.");
 
         protected abstract void PopClipCore();
         protected abstract void PopGeometryClipCore();

@@ -418,6 +418,12 @@ namespace Avalonia.Media
                 drawingGroup.EffectBounds = bounds;
             }
 
+            private protected override void PushEffectCore(IEffect effect)
+            {
+                var drawingGroup = PushNewDrawingGroup();
+                drawingGroup.Effect = effect;
+            }
+
             protected override void PopClipCore() => Pop();
 
             protected override void PopGeometryClipCore() => Pop();
