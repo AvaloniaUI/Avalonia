@@ -159,7 +159,7 @@ partial class Build : NukeBuild
         });
 
     Target Compile => _ => _
-        .DependsOn(Clean, CompileNative, InitDnx)
+        .DependsOn(Clean, InitDnx)
         .Executes(() =>
         {
             DotNetBuild(c => ApplySetting(c)

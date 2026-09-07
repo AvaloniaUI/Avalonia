@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <UseMicroComGeneratorRoslyn>true</UseMicroComGeneratorRoslyn> <!-- .cs generation -->
+    <UseMicroComGeneratorRoslyn>true</UseMicroComGeneratorRoslyn>
 
     <!-- Include libAvaloniaNative.dylib, only if we are on macOS host or dylib was manually copied -->
     <IncludeAvaloniaDylib Condition="'$(IncludeAvaloniaDylib)' == '' AND Exists($(AvaloniaNativeDylibPath))">true</IncludeAvaloniaDylib>
