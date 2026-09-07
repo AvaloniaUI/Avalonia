@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Generates inc/avalonia-native.h from avn.idl and builds the Xcode project producing libAvalonia.Native.OSX.dylib,
+    which Avalonia.Native.csproj then copies and packs.
+
+    This lives in a project of its own rather than in Avalonia.Native.csproj because the latter is multi-targeted:
+    a target hosted there would run once per inner build, concurrently.
+  -->
+
+  <Import Project="../../build/AvaloniaNative.props" />
+
+  <PropertyGroup>
+    <!-- Only needed so that PackageReference can be restored: nothing is compiled here. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <SkipCopyBuildProduct>true</SkipCopyBuildProduct>
+    <IsPackable>false</IsPackable>
+
+    <UseMicroComGeneratorMSBuild>true</UseMicroComGeneratorMSBuild>
+    <BuildAvaloniaNativeXcodeProject Condition="'$(BuildAvaloniaNativeXcodeProject)' == ''">$([MSBuild]::IsOSPlatform(OSX))</BuildAvaloniaNativeXcodeProject>
+  </PropertyGroup>
+
+  <!-- A .proj file doesn't import any language targets, so stub out the common ones. -->
+  <Target Name="CreateManifestResourceNames" />
+  <Target Name="CoreCompile" />
+
+  <ItemGroup>
+    <MicroComIdl Include="$(AvaloniaNativeIdl)"
+                 Link="avn.idl"
+                 CppHeaderPath="$(AvaloniaNativeHeader)" />
+  </ItemGroup>
+
+  <!-- Build the underlying Xcode project whenever one of its sources changed -->
+  <ItemGroup Condition="'$(BuildAvaloniaNativeXcodeProject)' == 'true'">
+    <AvaloniaNativeSource Include="$(AvaloniaNativeSourceDir)/**/*.mm;$(AvaloniaNativeSourceDir)/**/*.cpp;$(AvaloniaNativeSourceDir)/**/*.h" />
+    <AvaloniaNativeSource Include="$(AvaloniaNativeXcodeProject)/**/*"
+                          Exclude="$(AvaloniaNativeXcodeProject)/**/xcuserdata/**/*" />
+  </ItemGroup>
+
+  <Target Name="CompileAvaloniaNativeXcodeProject"
+          Condition="'$(BuildAvaloniaNativeXcodeProject)' == 'true'"
+          DependsOnTargets="GenerateMicroComItems"
+          BeforeTargets="CoreBuild"
+          Inputs="@(AvaloniaNativeSource)"
+          Outputs="$(AvaloniaNativeDylibPath)">
+
+    <Message Text="Building native library $([System.IO.Path]::GetFileName($(AvaloniaNativeDylibPath)))"
+             Importance="high" />
+
+    <!-- TODO: Don't ignore xcode warnings, fix them instead -->
+    <Exec Command="xcodebuild -quiet -project &quot;$(AvaloniaNativeXcodeProject)&quot; -configuration $(Configuration) CONFIGURATION_BUILD_DIR=&quot;$(AvaloniaNativeBuildDir)&quot; GCC_WARN_INHIBIT_ALL_WARNINGS=YES ONLY_ACTIVE_ARCH=NO"
+          ConsoleToMSBuild="true"
+          IgnoreExitCode="false"
+          IgnoreStandardErrorWarningFormat="false"
+          StandardOutputImportance="low"
+          StandardErrorImportance="high"
+          EchoOff="true" />
+
+    <!-- Make sure the dylib is newer than its inputs, so the incremental check above doesn't run xcodebuild again -->
+    <Touch Files="$(AvaloniaNativeDylibPath)"
+           Condition="Exists($(AvaloniaNativeDylibPath))" />
+
+  </Target>
+
+  <Target Name="CleanAvaloniaNativeOutput"
+          Condition="'$(BuildAvaloniaNativeXcodeProject)' == 'true'"
+          BeforeTargets="CoreClean">
+    <Delete Files="$(AvaloniaNativeDylibPath)" />
+  </Target>
+
+  <Import Project="../../build/MicroCOM.props" />
+</Project>
