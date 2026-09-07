@@ -11,6 +11,7 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Avalonia.Win32.Automation.Interop;
 using AAP = Avalonia.Automation.Provider;
 using UIA = Avalonia.Win32.Automation.Interop;
@@ -66,6 +67,8 @@ namespace Avalonia.Win32.Automation
             s_nodes.Add(peer, this);
             peer.ChildrenChanged += OnPeerChildrenChanged;
             peer.PropertyChanged += OnPeerPropertyChanged;
+            peer.TextChanged += OnPeerTextChanged;
+            peer.TextSelectionChanged += OnPeerTextSelectionChanged;
 
             if (Peer.GetProvider<AAP.IEmbeddedRootProvider>() is { } embeddedRoot)
                 embeddedRoot.FocusChanged += OnEmbeddedRootFocusChanged;
@@ -76,6 +79,51 @@ namespace Avalonia.Win32.Automation
         public virtual Rect GetBoundingRectangle()
         {
             return InvokeSync(() => Peer.ToScreen(Peer.GetBoundingRectangle()) ?? default);
+        }
+
+        // Converts text-range rectangles (in top-level coordinates) to a flat screen-pixel
+        // [x, y, w, h, ...] array, as UIA GetBoundingRectangles expects.
+        internal double[] PointsToScreen(IReadOnlyList<Rect> topLevelRects)
+        {
+            return InvokeSync(() =>
+            {
+                if (topLevelRects.Count == 0 ||
+                    Peer.GetVisualRoot() is not ControlAutomationPeer root ||
+                    root.Owner.GetPresentationSource() is null)
+                {
+                    return Array.Empty<double>();
+                }
+
+                var result = new double[topLevelRects.Count * 4];
+                for (var i = 0; i < topLevelRects.Count; i++)
+                {
+                    var screen = new PixelRect(
+                        root.Owner.PointToScreen(topLevelRects[i].TopLeft),
+                        root.Owner.PointToScreen(topLevelRects[i].BottomRight)).ToRect(1);
+                    result[i * 4] = screen.X;
+                    result[i * 4 + 1] = screen.Y;
+                    result[i * 4 + 2] = screen.Width;
+                    result[i * 4 + 3] = screen.Height;
+                }
+
+                return result;
+            });
+        }
+
+        // Converts a screen-pixel point to top-level coordinates (the inverse of the PointToScreen used
+        // by PointsToScreen), for UIA RangeFromPoint hit-testing. Null when the element is not on screen.
+        internal Point? PointFromScreen(double x, double y)
+        {
+            return InvokeSync<Point?>(() =>
+            {
+                if (Peer.GetVisualRoot() is not ControlAutomationPeer root ||
+                    root.Owner.GetPresentationSource() is null)
+                {
+                    return null;
+                }
+
+                return root.Owner.PointToClient(new PixelPoint((int)x, (int)y));
+            });
         }
 
         public virtual IRawElementProviderFragmentRoot? GetFragmentRoot()
@@ -99,6 +147,8 @@ namespace Avalonia.Win32.Automation
                 UiaPatternId.ScrollItem => this,
                 UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
                 UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
+                UiaPatternId.Text => ThisIfPeerImplementsProvider<AAP.ITextProvider>(),
+                UiaPatternId.Text2 => ThisIfPeerImplementsProvider<AAP.ITextProvider2>(),
                 UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
                 UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
                 _ => null,
@@ -224,7 +274,9 @@ namespace Avalonia.Win32.Automation
                 DispatcherPriority.Input);
         }
 
-        protected void InvokeSync(Action action)
+        // protected internal so the text-range provider (a separate COM object) can marshal its
+        // cross-platform calls onto the UI thread - UIA invokes those on its own thread.
+        protected internal void InvokeSync(Action action)
         {
             if (Dispatcher.UIThread.CheckAccess())
                 action();
@@ -232,7 +284,7 @@ namespace Avalonia.Win32.Automation
                 Dispatcher.UIThread.InvokeAsync(action).Wait();
         }
 
-        protected T InvokeSync<T>(Func<T> func)
+        protected internal T InvokeSync<T>(Func<T> func)
         {
             if (Dispatcher.UIThread.CheckAccess())
                 return func();
@@ -325,6 +377,17 @@ namespace Avalonia.Win32.Automation
             {
                 RaiseLiveRegionChanged();
             }
+        }
+
+        // UIA text events carry no payload; clients re-query the text pattern after the event.
+        private void OnPeerTextChanged(object? sender, EventArgs e)
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)UiaEventId.Text_TextChanged);
+        }
+
+        private void OnPeerTextSelectionChanged(object? sender, EventArgs e)
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)UiaEventId.Text_TextSelectionChanged);
         }
 
         private void OnEmbeddedRootFocusChanged(object? sender, EventArgs e)
