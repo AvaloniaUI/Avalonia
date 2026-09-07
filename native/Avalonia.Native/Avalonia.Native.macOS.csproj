@@ -11,8 +11,10 @@
   <Import Project="../../build/AvaloniaNative.props" />
 
   <PropertyGroup>
-    <!-- Only needed so that PackageReference can be restored: nothing is compiled here. -->
+    <!-- There is nothing to compile here: the target framework is only needed so that PackageReference
+         can be restored, and SkipCompilerExecution keeps csc from producing an assembly. -->
     <TargetFramework>netstandard2.0</TargetFramework>
+    <SkipCompilerExecution>true</SkipCompilerExecution>
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDependencyFile>false</GenerateDependencyFile>
@@ -23,10 +25,6 @@
     <UseMicroComGeneratorMSBuild>true</UseMicroComGeneratorMSBuild>
     <BuildAvaloniaNativeXcodeProject Condition="'$(BuildAvaloniaNativeXcodeProject)' == ''">$([MSBuild]::IsOSPlatform(OSX))</BuildAvaloniaNativeXcodeProject>
   </PropertyGroup>
-
-  <!-- A .proj file doesn't import any language targets, so stub out the common ones. -->
-  <Target Name="CreateManifestResourceNames" />
-  <Target Name="CoreCompile" />
 
   <ItemGroup>
     <MicroComIdl Include="$(AvaloniaNativeIdl)"

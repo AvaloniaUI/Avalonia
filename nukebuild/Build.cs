@@ -154,7 +154,7 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             DotNetBuild(c => ApplySetting(c)
-                .SetProjectFile(RootDirectory / "native" / "Avalonia.Native" / "Avalonia.Native.macOS.proj")
+                .SetProjectFile(RootDirectory / "native" / "Avalonia.Native" / "Avalonia.Native.macOS.csproj")
                 .AddProperty("BuildAvaloniaNativeXcodeProject", "True"));
         });
 

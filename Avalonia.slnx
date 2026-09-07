@@ -30,7 +30,7 @@
     <Project Path="src/Markup/Avalonia.Markup/Avalonia.Markup.csproj" />
   </Folder>
   <Folder Name="/Native/">
-    <Project Path="native/Avalonia.Native/Avalonia.Native.macOS.proj" Type="C#" />
+    <Project Path="native/Avalonia.Native/Avalonia.Native.macOS.csproj" />
     <Project Path="src/Avalonia.Native/Avalonia.Native.csproj" />
   </Folder>
   <Folder Name="/Packages/">

@@ -32,7 +32,7 @@
   <ItemGroup>
     <!-- Generates avalonia-native.h and, on macOS, libAvalonia.Native.OSX.dylib.
          TargetFramework is undefined so that this builds once, not once per inner build. -->
-    <ProjectReference Include="..\..\native\Avalonia.Native\Avalonia.Native.macOS.proj"
+    <ProjectReference Include="..\..\native\Avalonia.Native\Avalonia.Native.macOS.csproj"
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
                       UndefineProperties="TargetFramework"
@@ -41,11 +41,6 @@
 
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\native\Avalonia.Native\Avalonia.Native.macOS.proj"
-          Link="Avalonia.Native.macOS.proj" />
   </ItemGroup>
 
   <Import Project="..\..\build\MicroCOM.props" />
