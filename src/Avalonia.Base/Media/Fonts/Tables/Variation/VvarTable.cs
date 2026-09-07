@@ -184,5 +184,44 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             return _store.TryGetDelta(outerIndex, innerIndex, activeCoords, out delta);
         }
+
+        // -- Scaler-cached overloads (hot-path) — see HvarTable for the design rationale. --
+
+        public bool TryGetAdvanceHeightDeltaWithScalers(int glyphIndex, ReadOnlySpan<float> regionScalers, out float delta)
+            => TryGetDeltaWithScalers(_advanceMap, glyphIndex, regionScalers, out delta);
+
+        public bool TryGetTopSideBearingDeltaWithScalers(int glyphIndex, ReadOnlySpan<float> regionScalers, out float delta)
+        {
+            if (_tsbMap is null)
+            {
+                delta = 0f;
+                return true;
+            }
+
+            return TryGetDeltaWithScalers(_tsbMap, glyphIndex, regionScalers, out delta);
+        }
+
+        private bool TryGetDeltaWithScalers(DeltaSetIndexMap? map, int glyphIndex, ReadOnlySpan<float> regionScalers, out float delta)
+        {
+            delta = 0f;
+
+            int outerIndex;
+            int innerIndex;
+
+            if (map is null)
+            {
+                outerIndex = 0;
+                innerIndex = glyphIndex;
+            }
+            else
+            {
+                if (!map.TryGetIndices(glyphIndex, out outerIndex, out innerIndex))
+                {
+                    return false;
+                }
+            }
+
+            return _store.TryGetDeltaWithScalers(outerIndex, innerIndex, regionScalers, out delta);
+        }
     }
 }

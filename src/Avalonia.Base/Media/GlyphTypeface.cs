@@ -100,13 +100,14 @@ namespace Avalonia.Media
         // touching this field.
         private readonly float[]? _activeCoords;
 
-        // Pre-computed per-region scaler array for HVAR's ItemVariationStore. Built once
-        // at clone construction so per-glyph delta lookups become array indices instead
-        // of per-axis F2DOT14 ramps. The active coordinates are fixed for a clone's
-        // lifetime, and the regions are fixed for the font's, so the scaler vector is
-        // invariant - no point computing it per call. Measured ~4x speedup on a
-        // paragraph-size batch advance lookup.
+        // Pre-computed per-region scaler arrays for each variation table's
+        // ItemVariationStore. Built once at clone construction so per-glyph delta
+        // lookups become array indices instead of per-axis F2DOT14 ramps. The active
+        // coordinates are fixed for a clone's lifetime, and the regions are fixed
+        // for the font's, so the scaler vector is invariant — no point computing it
+        // per call. Measured ~4x speedup on a paragraph-size batch advance lookup.
         private readonly float[]? _hvarRegionScalers;
+        private readonly float[]? _vvarRegionScalers;
 
         // Per-source variation cache. Only populated on the source typeface (clones
         // delegate WithVariation through _sourceTypeface so a single cache is shared).
@@ -490,12 +491,17 @@ namespace Avalonia.Media
             }
 
             // Pre-compute per-region scalers for every ItemVariationStore that's likely
-            // to be queried per-glyph. Done once here so HVAR per-glyph delta lookups
-            // become array indices.
+            // to be queried per-glyph. Done once here so HVAR / VVAR per-glyph delta
+            // lookups become array indices.
             if (source._hvarTable is not null)
             {
                 _hvarRegionScalers = new float[source._hvarTable.Store.RegionCount];
                 source._hvarTable.Store.ComputeRegionScalers(_activeCoords, _hvarRegionScalers);
+            }
+            if (source._vvarTable is not null)
+            {
+                _vvarRegionScalers = new float[source._vvarTable.Store.RegionCount];
+                source._vvarTable.Store.ComputeRegionScalers(_activeCoords, _vvarRegionScalers);
             }
         }
 
@@ -1238,15 +1244,15 @@ namespace Avalonia.Media
             // VVAR mirrors HVAR for vertical metrics. Only fires for fonts that actually
             // ship a VVAR table (most horizontal-text fonts don't); _vvarTable stays null
             // otherwise and we keep the unvaried vmtx values.
-            if (hasVertical && _vvarTable is not null && _activeCoords is not null)
+            if (hasVertical && _vvarTable is not null && _vvarRegionScalers is not null)
             {
-                if (_vvarTable.TryGetAdvanceHeightDelta(glyph, _activeCoords, out var advDelta) && advDelta != 0f)
+                if (_vvarTable.TryGetAdvanceHeightDeltaWithScalers(glyph, _vvarRegionScalers, out var advDelta) && advDelta != 0f)
                 {
                     var adjusted = advanceHeight + (int)MathF.Round(advDelta);
                     advanceHeight = adjusted < 0 ? (ushort)0 : (ushort)Math.Min(adjusted, ushort.MaxValue);
                 }
 
-                if (_vvarTable.TryGetTopSideBearingDelta(glyph, _activeCoords, out var tsbDelta) && tsbDelta != 0f)
+                if (_vvarTable.TryGetTopSideBearingDeltaWithScalers(glyph, _vvarRegionScalers, out var tsbDelta) && tsbDelta != 0f)
                 {
                     var adjusted = topSideBearing + (int)MathF.Round(tsbDelta);
                     topSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);
@@ -1328,14 +1334,12 @@ namespace Avalonia.Media
                 }
             }
 
-            // vmtx + VVAR fuse in the same fashion HVAR fuses with hmtx — the v-side
-            // batch reader applies VVAR deltas inline when both the table and active
-            // coords are present.
+            // vmtx + VVAR fuse in the same fashion HVAR fuses with hmtx.
             if (_hasVerticalMetrics && _vmTable != null)
             {
-                if (_vvarTable is not null && _activeCoords is not null)
+                if (_vvarTable is not null && _vvarRegionScalers is not null)
                 {
-                    hasVertical = _vmTable.TryGetMetrics(glyphIndices, vMetrics, _vvarTable, _activeCoords);
+                    hasVertical = _vmTable.TryGetMetrics(glyphIndices, vMetrics, _vvarTable, _vvarRegionScalers);
                 }
                 else
                 {
