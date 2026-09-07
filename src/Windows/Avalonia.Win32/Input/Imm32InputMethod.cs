@@ -8,6 +8,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using Avalonia.Threading;
+using Avalonia.Win32.Input.Tsf;
 
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -92,7 +93,9 @@ namespace Avalonia.Win32.Input
 
             var langId = PRIMARYLANGID(LGID(HKL));
 
-            if (IsActive)
+            // Under TSF ownership the window deliberately has no IMM context, so a layout
+            // change must not re-associate one.
+            if (IsActive && !TsfOwnsFocus)
             {
                 if (langId != _langId)
                 {
@@ -106,6 +109,10 @@ namespace Avalonia.Win32.Input
 
         public void ClearLanguageAndWindow()
         {
+            // The window is going away: release its TSF association (when one exists)
+            // alongside the IMM context.
+            TsfThreadManager.Existing?.NotifyWindowDestroyed(Hwnd);
+
             DisableImm();
 
             Hwnd = IntPtr.Zero;
@@ -165,9 +172,31 @@ namespace Avalonia.Win32.Input
 
             Client = client;
 
+            // The focus router: with the experimental TSF integration active, a structured
+            // client is driven through the TSF text store and the window keeps no IMM
+            // context, so CUAS cannot deliver the same composition a second time through
+            // WM_IME_* messages. Every other client is routed to IMM.
+            var tsfManager = TsfThreadManager.Current;
+            var tsfOwnsFocus = tsfManager is not null && client is IStructuredTextInput;
+
+            tsfManager?.NotifyClient(Hwnd, _parent, client);
+
+            if (tsfManager is not null && !tsfOwnsFocus)
+            {
+                // Do not let a previous editable's scope hint (e.g. Password) leak into
+                // the next focus.
+                TsfInputScope.Clear(Hwnd);
+            }
+
             Dispatcher.UIThread.Post(() =>
             {
-                if (IsActive)
+                if (tsfOwnsFocus)
+                {
+                    // Completes any in-flight IMM composition (Reset inside) before the
+                    // context is dropped, then TSF alone drives this focus.
+                    DisableImm();
+                }
+                else if (IsActive)
                 {
                     EnableImm();
                 }
@@ -183,6 +212,13 @@ namespace Avalonia.Win32.Input
                 }
             });
         }
+
+        /// <summary>
+        /// True while the focused client is routed to the TSF text store instead of IMM.
+        /// Reads the already-created thread manager only, so consulting it never
+        /// activates TSF by itself.
+        /// </summary>
+        private bool TsfOwnsFocus => Client is IStructuredTextInput && TsfThreadManager.Existing is not null;
 
         public void SetCursorRect(Rect rect)
         {
@@ -272,7 +308,13 @@ namespace Avalonia.Win32.Input
         
         public void SetOptions(TextInputOptions options)
         {
-            // we're skipping this. not usable on windows
+            // IMM has no use for the options, but under TSF ownership the content type is
+            // published as the window's input scope so text services pick matching
+            // conversion modes and layouts.
+            if (TsfOwnsFocus)
+            {
+                TsfInputScope.Apply(Hwnd, options.ContentType);
+            }
         }
 
         // Sink-gated diagnostics for the whole IMM conversation; enable the TextInput log

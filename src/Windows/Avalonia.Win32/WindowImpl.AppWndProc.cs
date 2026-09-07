@@ -161,6 +161,11 @@ namespace Avalonia.Win32
                             Imm32InputMethod.Current.ClearLanguageAndWindow();
                         }
 
+                        // The TSF association can outlive the IMM current window (it
+                        // tracks the last structured focus), so release it for this
+                        // window independently.
+                        TsfThreadManager.Existing?.NotifyWindowDestroyed(_hwnd);
+
                         // Cleanup render targets
                         (_glSurface as IDisposable)?.Dispose();
 
@@ -229,11 +234,21 @@ namespace Avalonia.Win32
                     return LoadIcon(requestIcon, requestDpi)?.Handle ?? default;
 
                 case WindowsMessage.WM_KEYDOWN:
+                    // The active text service gets first claim on the key; an eaten key must
+                    // not be dispatched, and its already-translated WM_CHAR is suppressed.
+                    if (TsfThreadManager.Current?.FilterKeyMessage(_hwnd, message, wParam, lParam) == true)
+                    {
+                        _ignoreWmChar = true;
+                        return IntPtr.Zero;
+                    }
                     // Ctrl+Backspace is not an IME key, so the IME never offers reconversion for it.
-                    // Drive it ourselves when there is a selection the active IME can reconvert.
+                    // Drive it ourselves when there is a selection the active IME can reconvert:
+                    // through the TSF function provider when TSF owns the focus, through the
+                    // IMM reconvert-string path otherwise.
                     if (ToInt32(wParam) == (int)VirtualKeyStates.VK_BACK
                         && WindowsKeyboardDevice.Instance.Modifiers.HasAllFlags(RawInputModifiers.Control)
-                        && Imm32InputMethod.Current.TryReconvert())
+                        && (TsfThreadManager.Existing?.TryReconvert() == true
+                            || Imm32InputMethod.Current.TryReconvert()))
                     {
                         return IntPtr.Zero;
                     }
@@ -241,6 +256,11 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SYSKEYDOWN:
+                    if (TsfThreadManager.Current?.FilterKeyMessage(_hwnd, message, wParam, lParam) == true)
+                    {
+                        _ignoreWmChar = true;
+                        return IntPtr.Zero;
+                    }
                     e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyDown, timestamp, wParam, lParam, false);
                     break;
 
@@ -257,11 +277,21 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_KEYUP:
+                    if (TsfThreadManager.Current?.FilterKeyMessage(_hwnd, message, wParam, lParam) == true)
+                    {
+                        _ignoreWmChar = false;
+                        return IntPtr.Zero;
+                    }
                     e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam, true);
                     _ignoreWmChar = false;
                     break;
 
                 case WindowsMessage.WM_SYSKEYUP:
+                    if (TsfThreadManager.Current?.FilterKeyMessage(_hwnd, message, wParam, lParam) == true)
+                    {
+                        _ignoreWmChar = false;
+                        return IntPtr.Zero;
+                    }
                     e = TryCreateRawKeyEventArgs(RawKeyEventType.KeyUp, timestamp, wParam, lParam, false);
                     _ignoreWmChar = false;
                     break;
