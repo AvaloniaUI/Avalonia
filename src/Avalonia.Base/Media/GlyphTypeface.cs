@@ -828,25 +828,17 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Read all bounding boxes in one batch (spans fetched once), then combine. When
-            // the font has no glyf table, bearings fall back to hmtx/vmtx and the box is zero.
-            var hasGlyf = _glyfTable != null;
-
-            // No glyf table (CFF / CFF2) → no ink bounds to read; keep the buffer empty so
-            // those fonts don't allocate a per-glyph bounds array that is never used.
-            var boundsCount = hasGlyf ? glyphIndices.Length : 0;
-            Span<GlyphBounds> bounds = boundsCount <= 256
-                ? stackalloc GlyphBounds[boundsCount]
-                : new GlyphBounds[boundsCount];
-
-            if (hasGlyf)
+            if (_glyfTable != null)
             {
-                _glyfTable!.GetGlyphBounds(glyphIndices, bounds);
-            }
+                // Read all bounding boxes in one batch, so the glyf and loca spans are fetched once
+                // for the whole run rather than per glyph.
+                Span<GlyphBounds> bounds = glyphIndices.Length <= 256
+                    ? stackalloc GlyphBounds[glyphIndices.Length]
+                    : new GlyphBounds[glyphIndices.Length];
 
-            for (int i = 0; i < glyphIndices.Length; i++)
-            {
-                if (hasGlyf)
+                _glyfTable.GetGlyphBounds(glyphIndices, bounds);
+
+                for (int i = 0; i < glyphIndices.Length; i++)
                 {
                     var b = bounds[i];
 
@@ -860,7 +852,12 @@ namespace Avalonia.Media
                         AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0,
                     };
                 }
-                else
+            }
+            else
+            {
+                // No glyf table (CFF / CFF2): there are no ink bounds to read, so bearings fall
+                // back to hmtx/vmtx and the box stays zero. No bounds buffer is allocated either.
+                for (int i = 0; i < glyphIndices.Length; i++)
                 {
                     metrics[i] = new GlyphMetrics
                     {
