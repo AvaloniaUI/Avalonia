@@ -374,6 +374,55 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// One rendered composition clause: offsets into <see cref="Text"/>, an optional
+        /// explicit background, and the underline the input method requested (None means
+        /// the default single underline; emphasized clauses draw thick).
+        /// </summary>
+        /// <param name="Start">The clause start offset into <see cref="Text"/>.</param>
+        /// <param name="End">The clause end offset into <see cref="Text"/>.</param>
+        /// <param name="Background">An explicit background, or null for none.</param>
+        /// <param name="Underline">The requested underline style.</param>
+        /// <param name="Emphasized">Whether the clause is the conversion target and draws thick.</param>
+        internal readonly record struct CompositionHighlight(
+            int Start,
+            int End,
+            Color? Background,
+            Avalonia.Input.TextInput.TextInputUnderline Underline,
+            bool Emphasized);
+
+        private IReadOnlyList<CompositionHighlight>? _compositionHighlights;
+
+        /// <summary>
+        /// Sets the clause highlights rendered over the in-document composition, or null
+        /// to clear. The composition region always renders decorated; the hosting client
+        /// supplies the resolved offsets.
+        /// </summary>
+        internal void SetCompositionRegion(IReadOnlyList<CompositionHighlight>? highlights)
+        {
+            _compositionHighlights = highlights is { Count: > 0 } ? highlights : null;
+            InvalidateVisual();
+        }
+
+        private ImmutablePen CreateCompositionUnderlinePen(in CompositionHighlight highlight)
+        {
+            var foreground = Foreground?.ToImmutable()
+                ?? new ImmutableSolidColorBrush(Colors.Black);
+
+            var thickness = highlight.Emphasized || highlight.Underline == Avalonia.Input.TextInput.TextInputUnderline.Thick
+                ? 2.0
+                : 1.0;
+
+            ImmutableDashStyle? dashStyle = highlight.Underline switch
+            {
+                Avalonia.Input.TextInput.TextInputUnderline.Dotted => new ImmutableDashStyle(new[] { 1.0, 2.0 }, 0),
+                Avalonia.Input.TextInput.TextInputUnderline.Dashed => new ImmutableDashStyle(new[] { 3.0, 3.0 }, 0),
+                _ => null,
+            };
+
+            return new ImmutablePen(foreground, thickness, dashStyle);
+        }
+
+        /// <summary>
         /// Renders the <see cref="TextPresenter"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
@@ -427,6 +476,25 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
+            // Clause backgrounds fill before the text so an opaque IME background stays behind it.
+            if (_compositionHighlights is { } highlights)
+            {
+                foreach (var highlight in highlights)
+                {
+                    if (highlight.Background is not { } backgroundColor)
+                    {
+                        continue;
+                    }
+
+                    var highlightBrush = new ImmutableSolidColorBrush(backgroundColor);
+
+                    foreach (var rect in TextLayout.HitTestTextRange(highlight.Start, highlight.End - highlight.Start))
+                    {
+                        context.FillRectangle(highlightBrush, PixelRect.FromRect(rect, 1).ToRect(1));
+                    }
+                }
+            }
+
             if (VisualRoot is Visual root)
             {
                 var offset = this.TranslatePoint(Bounds.Position, root);
@@ -438,6 +506,22 @@ namespace Avalonia.Controls.Presenters
             }
 
             RenderInternal(context);
+
+            // Composition underlines draw over the text so the in-document composition is
+            // always visibly marked, clause by clause when the IME supplied decorations.
+            if (_compositionHighlights is { } underlines)
+            {
+                foreach (var highlight in underlines)
+                {
+                    var pen = CreateCompositionUnderlinePen(highlight);
+
+                    foreach (var rect in TextLayout.HitTestTextRange(highlight.Start, highlight.End - highlight.Start))
+                    {
+                        var y = Math.Round(rect.Bottom) - pen.Thickness / 2;
+                        context.DrawLine(pen, new Point(rect.Left, y), new Point(rect.Right, y));
+                    }
+                }
+            }
 
             if ((selectionStart != selectionEnd || !_caretBlink))
             {
