@@ -49,7 +49,7 @@ namespace Avalonia.Automation.Peers
         }
 
         // Expose the text as drawn so a masked password is not reported in clear.
-        private static string? GetDisplayedText(string? text, char passwordChar, bool revealPassword)
+        internal static string? GetDisplayedText(string? text, char passwordChar, bool revealPassword)
         {
             if (text is null || passwordChar == default(char) || revealPassword)
                 return text;
