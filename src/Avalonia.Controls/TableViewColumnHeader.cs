@@ -78,6 +78,7 @@ public class TableViewColumnHeader : ContentControl
 
     private void ClearProperties()
     {
+        ClearValue(IsVisibleProperty);
         ClearValue(ThemeProperty);
         ClearValue(HorizontalContentAlignmentProperty);
         ClearValue(ContentTemplateProperty);
@@ -86,6 +87,7 @@ public class TableViewColumnHeader : ContentControl
 
     private void SetProperties(TableViewColumn column)
     {
+        SetValue(IsVisibleProperty, column.IsVisible);
         SetOrClearValue(ThemeProperty, column.HeaderTheme);
         SetValue(HorizontalContentAlignmentProperty, column.HorizontalContentAlignment);
         SetOrClearValue(ContentTemplateProperty, column.HeaderTemplate);

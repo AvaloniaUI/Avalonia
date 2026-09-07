@@ -26,6 +26,9 @@ internal static class TableViewLayoutHelper
 
         for (var i = 0; i < columns.Count; i++)
         {
+            if (!columns[i].IsVisible)
+                continue;
+
             var width = columns[i].Width;
             if (width.IsAbsolute)
             {
@@ -68,6 +71,9 @@ internal static class TableViewLayoutHelper
 
         for (var i = 0; i < columns.Count; i++)
         {
+            if (!columns[i].IsVisible)
+                continue;
+
             var width = columns[i].Width;
             if (!width.IsAbsolute)
             {
@@ -97,12 +103,23 @@ internal static class TableViewLayoutHelper
     }
 
     public static bool NeedsActualWidths(AvaloniaList<TableViewColumn> columns)
-        => columns.Count > 0 && double.IsNaN(columns[0].ActualWidth);
+    {
+        foreach (var column in columns)
+        {
+            if (column.IsVisible)
+                return double.IsNaN(column.ActualWidth);
+        }
+
+        return false;
+    }
 
     public static void ResetActualWidths(AvaloniaList<TableViewColumn> columns)
     {
         foreach (var column in columns)
-            column.ActualWidth = double.NaN;
+        {
+            if (column.IsVisible)
+                column.ActualWidth = double.NaN;
+        }
     }
 
     public static Size MeasureRow(AvaloniaList<TableViewColumn> columns, Controls cells, Size availableSize)
@@ -115,6 +132,9 @@ internal static class TableViewLayoutHelper
 
         for (var i = 0; i < cells.Count; i++)
         {
+            if (!columns[i].IsVisible)
+                continue;
+
             var child = cells[i];
             var columnWidth = columns[i].ActualWidth;
             child.Measure(new Size(columnWidth, availableSize.Height));
@@ -133,6 +153,9 @@ internal static class TableViewLayoutHelper
         var x = offset;
         for (var i = 0; i < cells.Count; i++)
         {
+            if (!columns[i].IsVisible)
+                continue;
+
             var width = columns[i].ActualWidth;
             cells[i].Arrange(new Rect(x, 0, width, finalSize.Height));
             x += width;
