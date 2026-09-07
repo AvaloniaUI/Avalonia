@@ -140,7 +140,7 @@ namespace Avalonia.Native
             {
                 if (_client.SupportsPreedit)
                 {
-                    _client.SetPreeditText(preeditText);
+                    _client.DeliverComposition(preeditText, null);
                 }
             }
 

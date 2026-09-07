@@ -3234,6 +3234,61 @@ namespace Avalonia.Controls.UnitTests
         private static (int Start, int End) ImeSpan(ITextNavigation nav, ITextRange range)
             => (ImeOffset(nav, range.Start), ImeOffset(nav, range.End));
 
+        [Fact]
+        public void DeliverComposition_Composes_In_The_Document_Of_A_Structured_Client()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "ab", CaretIndex = 2 };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+
+            // A structured client still reports preedit support, so backends gating on it keep
+            // delivering composition text.
+            Assert.True(client.SupportsPreedit);
+
+            client.DeliverComposition("かな", 2);
+            Assert.Equal("abかな", textBox.Text);
+            Assert.NotNull(((IStructuredTextInput)client).CompositionRange);
+
+            client.DeliverComposition(null, null);
+            Assert.Equal("ab", textBox.Text);
+        }
+
+        [Fact]
+        public void CommitComposition_Commits_A_Structured_Client_In_One_Change()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "ab", CaretIndex = 2 };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+            client.DeliverComposition("かな", 2);
+
+            var changes = 0;
+            ((IStructuredTextInput)client).TextChanged += (_, _) => changes++;
+
+            Assert.True(client.CommitComposition("仮名"));
+
+            Assert.Equal("ab仮名", textBox.Text);
+            Assert.Equal(1, changes);
+            Assert.Null(((IStructuredTextInput)client).CompositionRange);
+        }
+
+        [Fact]
+        public void CommitComposition_Leaves_A_Legacy_Client_To_The_Caller()
+        {
+            var client = new Mock<TextInputMethodClient>();
+            client.SetupGet(c => c.SupportsPreedit).Returns(true);
+
+            // The caller then sends the result as text input, as it did before.
+            Assert.False(client.Object.CommitComposition("x"));
+            client.Verify(c => c.SetPreeditText(null, null));
+        }
+
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),

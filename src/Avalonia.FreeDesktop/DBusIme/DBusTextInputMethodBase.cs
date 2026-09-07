@@ -272,8 +272,12 @@ namespace Avalonia.FreeDesktop.DBusIme
         {
             _client = client;
             UpdateActive();
+
             UpdateCapabilities(client?.SupportsPreedit ?? false, client?.SupportsSurroundingText ?? false);
         }
+
+        private protected void DeliverComposition(string? text, int? cursor)
+            => Client?.DeliverComposition(text, cursor);
 
         bool IX11InputMethodControl.IsEnabled => IsConnected && _imeActive == true;
 

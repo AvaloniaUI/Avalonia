@@ -127,7 +127,7 @@ internal class BrowserTextInputMethod(
         if (_client == null)
             return;
 
-        _client.SetPreeditText(null);
+        _client.DeliverComposition(null, null);
         IsComposing = true;
     }
 
@@ -136,7 +136,7 @@ internal class BrowserTextInputMethod(
         if (_client == null)
             return;
 
-        _client.SetPreeditText(data);
+        _client.DeliverComposition(data, null);
     }
 
     public void OnCompositionEnd(ulong timestamp, string? data)
@@ -146,8 +146,15 @@ internal class BrowserTextInputMethod(
 
         IsComposing = false;
 
+        // The composition already sits in a structured client's document; committing it again
+        // through a raw text event would insert it twice.
+        if (_client.CommitComposition(data))
+        {
+            return;
+        }
+
         _client.SetPreeditText(null);
-        
+
         if (data != null)
         {
             _inputHandler.RawTextEvent(timestamp, data);

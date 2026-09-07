@@ -277,7 +277,7 @@ partial class AvaloniaView
                     selectedRange.Location, markedText);
 
             _markedText = markedText;
-            _client.SetPreeditText(markedText);
+            _client.DeliverComposition(markedText, null);
         }
 
         void IUITextInput.UnmarkText()
@@ -287,7 +287,10 @@ partial class AvaloniaView
                 return;
             var commitString = _markedText;
             _markedText = null;
-            _client.SetPreeditText(null);
+            // A structured client keeps the marked text in its document and commits it there in one
+            // change; any other client gets it as text input.
+            if (_client.CommitComposition(commitString))
+                return;
             if (string.IsNullOrWhiteSpace(commitString))
                 return;
             TextInput(commitString);

@@ -68,7 +68,7 @@ partial class WindowImpl
             // Abort any in-flight composition on the old client (if any).
             if (oldClient != null && _hasPreedit)
             {
-                try { oldClient.SetPreeditText(null, null); } catch { }
+                try { oldClient.DeliverComposition(null, null); } catch { }
             }
             _hasPreedit = false;
 
@@ -166,9 +166,16 @@ partial class WindowImpl
             // Clear the existing preedit before we mutate the document with
             // delete or commit (it's about to be replaced anyway, and any
             // ongoing composition needs to be torn down first).
+            var committed = false;
             if (_hasPreedit && (hasDelete || hasCommit))
             {
-                client.SetPreeditText(null, null);
+                // A plain commit replaces the composition with its result in one change; with a delete
+                // in between, the composition is torn down first as the spec orders.
+                if (!hasDelete && client.CommitComposition(commitText))
+                    committed = true;
+                else
+                    client.DeliverComposition(null, null);
+
                 _hasPreedit = false;
             }
 
@@ -193,19 +200,19 @@ partial class WindowImpl
                     PhysicalKey.Backspace, "\b"));
             }
 
-            if (hasCommit)
+            if (hasCommit && !committed)
                 input?.Invoke(new RawTextInputEventArgs(_owner.Keyboard, 0, inputRoot, commitText!));
 
             if (!newPreeditEmpty)
             {
                 _hasPreedit = true;
-                client.SetPreeditText(preeditText,
+                client.DeliverComposition(preeditText,
                     preeditCursorEndChar < 0 ? null : preeditCursorEndChar);
             }
             else if (_hasPreedit)
             {
                 // No new preedit: clear any leftover composition.
-                client.SetPreeditText(null, null);
+                client.DeliverComposition(null, null);
                 _hasPreedit = false;
             }
         }

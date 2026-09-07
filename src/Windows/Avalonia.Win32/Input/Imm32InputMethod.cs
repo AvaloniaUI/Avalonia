@@ -157,7 +157,7 @@ namespace Avalonia.Win32.Input
                 Composition = null;
                 _compositionCursorPosition = null;
 
-                Client.SetPreeditText(null, null);
+                Client.DeliverComposition(null, null);
             }
 
             Client = client;
@@ -282,7 +282,7 @@ namespace Avalonia.Win32.Input
                 return;
             }
 
-            Client.SetPreeditText(composition, cursorPosition);
+            Client.DeliverComposition(composition, cursorPosition);
         }
         
         public string? GetCompositionString(GCS flag)
@@ -330,7 +330,7 @@ namespace Avalonia.Win32.Input
 
             if (IsActive)
             {
-                Client.SetPreeditText(null, null);
+                Client.DeliverComposition(null, null);
 
                 if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
                 {
@@ -363,7 +363,7 @@ namespace Avalonia.Win32.Input
 
             if (IsActive)
             {
-                Client.SetPreeditText(null, null);
+                Client.DeliverComposition(null, null);
             }
         }
 
@@ -391,12 +391,16 @@ namespace Avalonia.Win32.Input
                 Composition = null;
                 _compositionCursorPosition = null;
 
-                if (IsActive)
+                if (IsActive && Client.CommitComposition(resultString))
                 {
-                    Client.SetPreeditText(null, null);
+                    // The result replaced the composition in the document. The WM_CHAR messages the
+                    // IME sends for it next would insert it a second time.
+                    if (_parent != null && !string.IsNullOrEmpty(resultString))
+                    {
+                        _parent._ignoreWmChar = true;
+                    }
                 }
-
-                if (_parent != null && !string.IsNullOrEmpty(resultString))
+                else if (_parent != null && !string.IsNullOrEmpty(resultString))
                 {
                     var e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _parent.Owner, resultString);
 
