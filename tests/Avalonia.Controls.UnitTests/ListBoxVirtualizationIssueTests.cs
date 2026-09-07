@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
@@ -12,9 +13,10 @@ namespace Avalonia.Controls.UnitTests;
 public class ListBoxVirtualizationIssueTests : ScopedTestBase
 {
     [Fact]
-    public void Expanding_ListBox_After_Scrolling_In_Zero_Width_Pane_Does_Not_Show_Unrealized_Containers()
+    public void Opening_SplitView_Pane_After_Scrolling_ListBox_Does_Not_Show_Unrealized_Containers()
     {
-        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow
+            .With(globalClock: new MockGlobalClock()));
 
         var items = new[]
         {
@@ -27,9 +29,6 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
         };
         var target = new ListBox
         {
-            Width = 0,
-            Height = 774,
-            Template = new FuncControlTemplate(CreateListBoxTemplate),
             ItemsSource = items,
             ItemTemplate = new FuncDataTemplate<SizedItem>((item, _) => new Border
             {
@@ -40,19 +39,46 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
             SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
         };
 
-        var root = new TestRoot(target) { ClientSize = new Size(300, 774) };
-        root.LayoutManager.ExecuteInitialLayoutPass();
+        var splitView = new SplitView
+        {
+            DisplayMode = SplitViewDisplayMode.CompactInline,
+            CompactPaneLength = 0,
+            OpenPaneLength = 300,
+            Pane = target,
+            Content = new TextBlock(),
+        };
+        var window = new Window
+        {
+            Width = 800,
+            Height = 804,
+            Content = new Grid
+            {
+                RowDefinitions = new RowDefinitions("30,*"),
+                Children = { new TextBlock(), splitView },
+            },
+        };
+        Grid.SetRow(splitView, 1);
+        window.Show();
+
+        Assert.Equal(0, target.Bounds.Width);
 
         // Scroll the selected item into view while the SplitView pane is effectively hidden.
         for (var index = 1; index <= 3; ++index)
         {
             target.SelectedIndex = index;
-            root.LayoutManager.ExecuteLayoutPass();
+            window.LayoutManager.ExecuteLayoutPass();
         }
 
-        // Opening the pane increases the ListBox viewport to 300.
-        target.Width = 300;
-        root.LayoutManager.ExecuteLayoutPass();
+        // Disable the theme animation so the assertion observes the opened-pane layout directly.
+        var paneRoot = splitView.GetVisualDescendants()
+            .OfType<Panel>()
+            .Single(x => x.Name == "PART_PaneRoot");
+        paneRoot.Transitions = null;
+
+        splitView.IsPaneOpen = true;
+        window.LayoutManager.ExecuteLayoutPass();
+
+        Assert.Equal(300, target.Bounds.Width);
 
         var panel = Assert.IsType<VirtualizingStackPanel>(target.Presenter!.Panel);
         var realized = target.GetRealizedContainers().ToHashSet();
