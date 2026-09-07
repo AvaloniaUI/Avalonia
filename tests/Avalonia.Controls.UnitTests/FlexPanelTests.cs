@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
 using Avalonia.UnitTests;
 using Xunit;
@@ -410,6 +411,21 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(50, 15), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 25, 15), target.Children[0].Bounds);
             Assert.Equal(new Rect(25, 0, 25, 15), target.Children[1].Bounds);
+        }
+
+        [Fact]
+        public void Empty_Panel_Does_Not_Take_Up_Available_Space()
+        {
+            var target = new FlexPanel();
+            var stack = new StackPanel { Children = { new Border { Width = 100, Height = 50 }, target } };
+
+            var presenter = new ScrollContentPresenter { CanVerticallyScroll = true, Content = stack };
+
+            presenter.UpdateChild();
+            presenter.Measure(new Size(100, 100));
+
+            Assert.Equal(default, target.DesiredSize);
+            Assert.Equal(new Size(100, 50), stack.DesiredSize);
         }
     }
 }

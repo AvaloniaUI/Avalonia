@@ -354,11 +354,20 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Allows <see cref="Setup"/> to be called again after it has already been called once.
+        /// </summary>
+        internal static void ResetSetupForUnitTests()
+            => s_setupWasAlreadyCalled = false;
+
+        /// <summary>
         /// Setup method that doesn't check for input initalizers being set.
         /// Nor 
         /// </summary>
         internal void SetupUnsafe()
         {
+            var setupLifetime = _lifetime as ISetupApplicationLifetime;
+            setupLifetime?.BeforeAppInit();
+
             _optionsInitializers?.Invoke();
             RuntimePlatformServicesInitializer?.Invoke();
             TextShapingSubsystemInitializer?.Invoke();
@@ -373,6 +382,8 @@ namespace Avalonia
             AfterApplicationSetupCallback?.Invoke(Self);
             AfterSetupCallback?.Invoke(Self);
             Instance.OnFrameworkInitializationCompleted();
+
+            setupLifetime?.AfterAppInit();
         }
     }
 }

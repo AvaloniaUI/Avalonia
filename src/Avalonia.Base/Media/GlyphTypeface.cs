@@ -5,6 +5,7 @@ using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
+using Avalonia.Media.Fonts.Tables.Glyf;
 using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Name;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -25,6 +26,8 @@ namespace Avalonia.Media
         private static readonly IReadOnlyDictionary<CultureInfo, string> s_emptyStringDictionary =
             new Dictionary<CultureInfo, string>(0);
 
+        private static readonly IPlatformRenderInterface _renderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+
         private bool _isDisposed;
 
         private readonly NameTable? _nameTable;
@@ -34,6 +37,9 @@ namespace Avalonia.Media
         private readonly VerticalHeaderTable _vhTable;
         private readonly HorizontalMetricsTable? _hmTable;
         private readonly VerticalMetricsTable? _vmTable;
+
+        private readonly GlyfTable? _glyfTable;
+
         private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
         private readonly bool _hasVerticalMetrics;
@@ -145,6 +151,12 @@ namespace Avalonia.Media
             }
 
             HeadTable.TryLoad(this, out var headTable);
+
+            if (headTable is not null)
+            {
+                // Load glyf table once and cache for reuse by GetGlyphOutline
+                GlyfTable.TryLoad(this, headTable, maxpTable, out _glyfTable);
+            }
 
             IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
                            _cmapTable.Format == CmapFormat.Format13;
@@ -660,11 +672,11 @@ namespace Avalonia.Media
         /// </summary>
         /// <remarks>Returns false if horizontal metrics are not available or if the specified glyph is
         /// not present in the metrics table.</remarks>
-        /// <param name="glyphId">The identifier of the glyph for which to obtain the horizontal advance width.</param>
+        /// <param name="glyphIndex">The identifier of the glyph for which to obtain the horizontal advance width.</param>
         /// <param name="advance">When this method returns, contains the horizontal advance width of the glyph if found; otherwise, zero. This
         /// parameter is passed uninitialized.</param>
         /// <returns>true if the horizontal advance width was successfully retrieved; otherwise, false.</returns>
-        public bool TryGetHorizontalGlyphAdvance(ushort glyphId, out ushort advance)
+        public bool TryGetHorizontalGlyphAdvance(ushort glyphIndex, out ushort advance)
         {
             advance = default;
 
@@ -673,7 +685,7 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (!_hmTable.TryGetAdvance(glyphId, out advance))
+            if (!_hmTable.TryGetAdvance(glyphIndex, out advance))
             {
                 return false;
             }
@@ -688,17 +700,17 @@ namespace Avalonia.Media
         /// multiple times as it minimizes memory access overhead and exploits data locality. This is the preferred method
         /// for batch glyph metrics retrieval in text layout and rendering scenarios. Returns false if horizontal metrics
         /// are not available.</remarks>
-        /// <param name="glyphIds">Read-only span of glyph identifiers for which to retrieve advance widths.</param>
-        /// <param name="advances">Output span to write the advance widths. Must be at least as long as <paramref name="glyphIds"/>.</param>
+        /// <param name="glyphIndices">Read-only span of glyph identifiers for which to retrieve advance widths.</param>
+        /// <param name="advances">Output span to write the advance widths. Must be at least as long as <paramref name="glyphIndices"/>.</param>
         /// <returns>true if horizontal metrics are available and all advances were successfully retrieved; otherwise, false.</returns>
-        public bool TryGetHorizontalGlyphAdvances(ReadOnlySpan<ushort> glyphIds, Span<ushort> advances)
+        public bool TryGetHorizontalGlyphAdvances(ReadOnlySpan<ushort> glyphIndices, Span<ushort> advances)
         {
             if (!_hasHorizontalMetrics || _hmTable is null)
             {
                 return false;
             }
 
-            return _hmTable.TryGetAdvances(glyphIds, advances);
+            return _hmTable.TryGetAdvances(glyphIndices, advances);
         }
 
         /// <summary>
@@ -754,12 +766,12 @@ namespace Avalonia.Media
         /// multiple times as it minimizes memory access overhead and exploits data locality. This is the preferred
         /// method for batch glyph metrics retrieval in text layout and rendering scenarios. Returns false if neither
         /// horizontal nor vertical metrics are available.</remarks>
-        /// <param name="glyphIds">Read-only span of glyph identifiers for which to retrieve metrics.</param>
-        /// <param name="metrics">Output span to write the glyph metrics. Must be at least as long as <paramref name="glyphIds"/>.</param>
+        /// <param name="glyphIndices">Read-only span of glyph identifiers for which to retrieve metrics.</param>
+        /// <param name="metrics">Output span to write the glyph metrics. Must be at least as long as <paramref name="glyphIndices"/>.</param>
         /// <returns>true if metrics are available and all were successfully retrieved; otherwise, false.</returns>
-        public bool TryGetGlyphMetrics(ReadOnlySpan<ushort> glyphIds, Span<GlyphMetrics> metrics)
+        public bool TryGetGlyphMetrics(ReadOnlySpan<ushort> glyphIndices, Span<GlyphMetrics> metrics)
         {
-            if (metrics.Length < glyphIds.Length)
+            if (metrics.Length < glyphIndices.Length)
             {
                 throw new ArgumentException("Output span must be at least as long as input span", nameof(metrics));
             }
@@ -769,14 +781,18 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Use stackalloc for temporary buffers to avoid heap allocations
-            Span<HorizontalGlyphMetric> hMetrics = glyphIds.Length <= 256
-                ? stackalloc HorizontalGlyphMetric[glyphIds.Length]
-                : new HorizontalGlyphMetric[glyphIds.Length];
+            // Size each temporary buffer to zero (a free, empty stackalloc) when its source
+            // table is absent, so a font without hmtx / vmtx never pays for a buffer that is
+            // never read. Only a present-but-large (> 256) source falls back to the heap.
+            var hCount = _hasHorizontalMetrics && _hmTable != null ? glyphIndices.Length : 0;
+            Span<HorizontalGlyphMetric> hMetrics = hCount <= 256
+                ? stackalloc HorizontalGlyphMetric[hCount]
+                : new HorizontalGlyphMetric[hCount];
 
-            Span<VerticalGlyphMetric> vMetrics = glyphIds.Length <= 256
-                ? stackalloc VerticalGlyphMetric[glyphIds.Length]
-                : new VerticalGlyphMetric[glyphIds.Length];
+            var vCount = _hasVerticalMetrics && _vmTable != null ? glyphIndices.Length : 0;
+            Span<VerticalGlyphMetric> vMetrics = vCount <= 256
+                ? stackalloc VerticalGlyphMetric[vCount]
+                : new VerticalGlyphMetric[vCount];
 
             bool hasHorizontal = false;
             bool hasVertical = false;
@@ -784,13 +800,13 @@ namespace Avalonia.Media
             // Batch retrieve horizontal metrics
             if (_hasHorizontalMetrics && _hmTable != null)
             {
-                hasHorizontal = _hmTable.TryGetMetrics(glyphIds, hMetrics);
+                hasHorizontal = _hmTable.TryGetMetrics(glyphIndices, hMetrics);
             }
 
             // Batch retrieve vertical metrics
             if (_hasVerticalMetrics && _vmTable != null)
             {
-                hasVertical = _vmTable.TryGetMetrics(glyphIds, vMetrics);
+                hasVertical = _vmTable.TryGetMetrics(glyphIndices, vMetrics);
             }
 
             if (!hasHorizontal && !hasVertical)
@@ -799,7 +815,7 @@ namespace Avalonia.Media
             }
 
             // Combine horizontal and vertical metrics
-            for (int i = 0; i < glyphIds.Length; i++)
+            for (int i = 0; i < glyphIndices.Length; i++)
             {
                 metrics[i] = new GlyphMetrics
                 {
@@ -811,6 +827,52 @@ namespace Avalonia.Media
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Retrieves the vector outline geometry for the specified glyph, in font design-unit space.
+        /// </summary>
+        /// <remarks>
+        /// Returns <c>null</c> when the glyph ID is out of range, the font has no <c>glyf</c> table
+        /// (e.g. CFF / CFF2), or the glyph data cannot be parsed (malformed font, cyclic composite,
+        /// depth limit exceeded). The outline is in font design units (Y-up): apply the
+        /// <c>emSize / DesignEmHeight</c> scale, the Y-flip, and the glyph position yourself — via
+        /// <c>IGeometryImpl.WithTransform</c> or a drawing-context transform. Variable-font axis
+        /// configuration is taken from the typeface instance itself.
+        /// </remarks>
+        /// <param name="glyphIndex">The identifier of the glyph to retrieve.</param>
+        /// <returns>
+        /// An immutable <see cref="IGeometryImpl"/> outline — safe to cache and share, and drawable
+        /// via the <c>DrawGeometry</c> overload that takes an <see cref="IGeometryImpl"/> — or
+        /// <c>null</c> when no outline is available. Returned as the lightweight platform geometry
+        /// rather than a <see cref="Geometry"/> (<see cref="AvaloniaObject"/>) so it can be cached
+        /// and used on the hot path; do not mutate it.
+        /// </returns>
+        public IGeometryImpl? GetGlyphOutline(ushort glyphIndex)
+        {
+            if (glyphIndex >= GlyphCount)
+            {
+                return null;
+            }
+
+            if (_glyfTable is null)
+            {
+                return null;
+            }
+
+            var geometry = _renderInterface.CreateStreamGeometry();
+
+            using (var ctx = geometry.Open())
+            {
+                // Build the outline in font design-unit space (identity transform); callers apply
+                // the scale / position. Wrapped so the shared, cacheable result is immutable.
+                if (_glyfTable.TryBuildGlyphGeometry((int)glyphIndex, Matrix.Identity, ctx))
+                {
+                    return new ImmutableGeometryImpl(geometry);
+                }
+            }
+
+            return null;
         }
 
         public void Dispose()

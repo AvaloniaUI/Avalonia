@@ -65,13 +65,13 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.True(map.ContainsGlyph('A'));
 
-            var glyphId = map['A'];
+            var glyphIndex = map['A'];
 
             // Ensure metrics are available for this glyph
-            Assert.True(typeface.TryGetGlyphMetrics(glyphId, out var metrics));
+            Assert.True(typeface.TryGetGlyphMetrics(glyphIndex, out var metrics));
 
             // Ensure advance can be retrieved
-            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphId, out var advance));
+            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphIndex, out var advance));
 
             // Advance returned by GetGlyphAdvance should match the metrics width
             Assert.Equal(metrics.Width, advance);
@@ -270,8 +270,8 @@ namespace Avalonia.Base.UnitTests.Media
             var map = typeface.CharacterToGlyphMap;
             Assert.True(map.ContainsGlyph('A'));
 
-            var glyphId = map['A'];
-            var result = typeface.TryGetGlyphMetrics(glyphId, out var metrics);
+            var glyphIndex = map['A'];
+            var result = typeface.TryGetGlyphMetrics(glyphIndex, out var metrics);
 
             Assert.True(result);
             Assert.True(metrics.Width > 0);
@@ -432,9 +432,9 @@ namespace Avalonia.Base.UnitTests.Media
             var map = LoadInterCharacterToGlyphMap();
             var dict = map.AsReadOnlyDictionary();
 
-            Assert.True(dict.TryGetValue('A', out var glyphId));
-            Assert.Equal(map.GetGlyph('A'), glyphId);
-            Assert.NotEqual(0, glyphId);
+            Assert.True(dict.TryGetValue('A', out var glyphIndex));
+            Assert.Equal(map.GetGlyph('A'), glyphIndex);
+            Assert.NotEqual(0, glyphIndex);
         }
 
         [Fact]
@@ -442,8 +442,8 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var dict = LoadInterCharacterToGlyphMap().AsReadOnlyDictionary();
 
-            Assert.False(dict.TryGetValue(0x10FFFD, out var glyphId));
-            Assert.Equal((ushort)0, glyphId);
+            Assert.False(dict.TryGetValue(0x10FFFD, out var glyphIndex));
+            Assert.Equal((ushort)0, glyphIndex);
         }
 
         [Fact]
