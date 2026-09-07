@@ -10,7 +10,7 @@ namespace Avalonia.Styling.Activators
     {
         private List<IStyleActivator>? _sources;
 
-        public AndQueryActivator(Visual visual) : base(visual)
+        public AndQueryActivator(StyledElement target) : base(target)
         {
         }
 
