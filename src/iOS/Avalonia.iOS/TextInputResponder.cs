@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
+using Avalonia.Media.TextFormatting;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -75,6 +76,7 @@ partial class AvaloniaView
             _view = view;
             NextResponder = view;
             _client = client;
+            _structured = client as IStructuredTextInput;
             _tokenizer = new UITextInputStringTokenizer(this);
         }
 
@@ -86,6 +88,7 @@ partial class AvaloniaView
         private readonly UITextInputStringTokenizer _tokenizer;
         private readonly NSString _textInputContextIdentifier = new NSString(Guid.NewGuid().ToString());
         private bool _isInUpdate;
+        private NSWritingDirection _baseWritingDirection = NSWritingDirection.LeftToRight;
 
         public TextInputMethodClient? Client => _client;
 
@@ -150,8 +153,6 @@ partial class AvaloniaView
         private readonly AvaloniaView _view;
         private string? _markedText;
 
-
-
         private void SurroundingTextChanged(object? sender, EventArgs e)
         {
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "SurroundingTextChanged");
@@ -170,6 +171,8 @@ partial class AvaloniaView
                 _inSurroundingTextUpdateEvent--;
             }
         }
+
+        private void ClientStateChanged(object? sender, EventArgs e) => SurroundingTextChanged(sender, e);
 
         private void KeyPress(Key key, PhysicalKey physicalKey, string? keySymbol)
         {
@@ -190,14 +193,14 @@ partial class AvaloniaView
         private void TextInput(string text)
         {
             _isInUpdate = true;
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "Triggering text input {text}", text);
+            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "Triggering text input {length}", text.Length);
             _view._topLevelImpl.Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice.Instance!, 0, _view.InputRoot, text));
             _isInUpdate = false;
         }
 
         void IUIKeyInput.InsertText(string text)
         {
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.InsertText {text}", text);
+            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.InsertText {length}", text.Length);
 
             if (text == "\n")
             {
@@ -219,15 +222,29 @@ partial class AvaloniaView
                 return;
             }
 
+            if (_structured is { } structured)
+            {
+                StructuredInsertText(structured, text);
+                return;
+            }
+
             TextInput(text);
         }
 
         void IUIKeyInput.DeleteBackward() => KeyPress(Key.Back, PhysicalKey.Backspace, "\b");
 
-        bool IUIKeyInput.HasText => true;
+        bool IUIKeyInput.HasText =>
+            _structured is { } structured ? !structured.DocumentRange.IsEmpty :
+            !string.IsNullOrEmpty(_client.SurroundingText) ||
+            !string.IsNullOrEmpty(_markedText);
 
         string IUITextInput.TextInRange(UITextRange range)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredTextInRange(structured, range);
+            }
+
             if (range is AvaloniaTextRange r)
             {
                 var surroundingText = _client.SurroundingText;
@@ -252,7 +269,6 @@ partial class AvaloniaView
                     span.CopyTo(buf, r.StartIndex);
                     result = new string(buf);
                 }
-                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "result: {res}", result);
 
                 return result;
             }
@@ -262,9 +278,16 @@ partial class AvaloniaView
 
         void IUITextInput.ReplaceText(UITextRange range, string text)
         {
+            if (_structured is { } structured)
+            {
+                StructuredReplaceText(structured, range, text);
+                return;
+            }
+
             if (range is AvaloniaTextRange r)
             {
-                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.ReplaceText {start} {end} {text}", r.StartIndex, r.EndIndex, text);
+                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.ReplaceText {start} {end} {length}", r.StartIndex, r.EndIndex, text.Length);
+
                 _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
                 TextInput(text);
             }
@@ -273,8 +296,14 @@ partial class AvaloniaView
         void IUITextInput.SetMarkedText(string markedText, NSRange selectedRange)
         {
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
-                .Log(null, "IUIKeyInput.SetMarkedText {start} {len} {text}", selectedRange.Location,
-                    selectedRange.Location, markedText);
+                .Log(null, "IUIKeyInput.SetMarkedText {start} {len} {length}", selectedRange.Location,
+                    selectedRange.Length, markedText?.Length ?? 0);
+
+            if (_structured is { } structured)
+            {
+                StructuredSetMarkedText(structured, markedText, selectedRange);
+                return;
+            }
 
             _markedText = markedText;
             _client.DeliverComposition(markedText, null);
@@ -283,6 +312,13 @@ partial class AvaloniaView
         void IUITextInput.UnmarkText()
         {
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.UnmarkText");
+
+            if (_structured is { } structured)
+            {
+                StructuredUnmarkText(structured);
+                return;
+            }
+
             if (_markedText == null)
                 return;
             var commitString = _markedText;
@@ -298,6 +334,11 @@ partial class AvaloniaView
 
         public UITextRange GetTextRange(UITextPosition fromPosition, UITextPosition toPosition)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredGetTextRange(structured, fromPosition, toPosition);
+            }
+
             if (fromPosition is AvaloniaTextPosition f && toPosition is AvaloniaTextPosition t)
             {
                 Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.GetTextRange {start} {end}", f.Index, t.Index);
@@ -309,6 +350,11 @@ partial class AvaloniaView
 
         UITextPosition IUITextInput.GetPosition(UITextPosition fromPosition, nint offset)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredGetPosition(structured, fromPosition, offset);
+            }
+
             if (fromPosition is AvaloniaTextPosition pos)
             {
                 Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.GetPosition {start} {offset}", pos.Index, (int)offset);
@@ -340,6 +386,11 @@ partial class AvaloniaView
 
         UITextPosition IUITextInput.GetPosition(UITextPosition fromPosition, UITextLayoutDirection inDirection, nint offset)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredGetPosition(structured, fromPosition, inDirection, offset);
+            }
+
             if (fromPosition is AvaloniaTextPosition pos)
             {
                 Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.GetPosition {start} {direction} {offset}", pos.Index, inDirection, (int)offset);
@@ -384,6 +435,11 @@ partial class AvaloniaView
 
         NSComparisonResult IUITextInput.ComparePosition(UITextPosition first, UITextPosition second)
         {
+            if (_structured is not null)
+            {
+                return StructuredComparePosition(first, second);
+            }
+
             if (first is AvaloniaTextPosition f && second is AvaloniaTextPosition s)
             {
                 if (f.Index < s.Index)
@@ -400,6 +456,11 @@ partial class AvaloniaView
 
         nint IUITextInput.GetOffsetFromPosition(UITextPosition fromPosition, UITextPosition toPosition)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredGetOffset(structured, fromPosition, toPosition);
+            }
+
             if (fromPosition is AvaloniaTextPosition f && toPosition is AvaloniaTextPosition t)
             {
                 return t.Index - f.Index;
@@ -410,6 +471,11 @@ partial class AvaloniaView
 
         UITextPosition IUITextInput.GetPositionWithinRange(UITextRange range, UITextLayoutDirection direction)
         {
+            if (_structured is not null)
+            {
+                return StructuredGetPositionWithinRange(range, direction);
+            }
+
             if (range is AvaloniaTextRange r)
             {
                 if (direction is UITextLayoutDirection.Right or UITextLayoutDirection.Down)
@@ -422,6 +488,11 @@ partial class AvaloniaView
 
         UITextRange IUITextInput.GetCharacterRange(UITextPosition byExtendingPosition, UITextLayoutDirection direction)
         {
+            if (_structured is { } structured)
+            {
+                return StructuredGetCharacterRange(structured, byExtendingPosition, direction);
+            }
+
             if (byExtendingPosition is AvaloniaTextPosition p)
             {
                 if (direction is UITextLayoutDirection.Left or UITextLayoutDirection.Up)
@@ -436,14 +507,12 @@ partial class AvaloniaView
         NSWritingDirection IUITextInput.GetBaseWritingDirection(UITextPosition forPosition,
             UITextStorageDirection direction)
         {
-            return NSWritingDirection.LeftToRight;
-
-            // todo query and retyrn RTL.
+            return _baseWritingDirection;
         }
 
         void IUITextInput.SetBaseWritingDirectionforRange(NSWritingDirection writingDirection, UITextRange range)
         {
-            // todo ? ignore?
+            _baseWritingDirection = writingDirection;
         }
 
         CGRect IUITextInput.GetFirstRectForRange(UITextRange range)
@@ -451,7 +520,23 @@ partial class AvaloniaView
 
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetFirstRectForRange");
-            // TODO: Query from the input client
+            if (_structured is { } structured)
+            {
+                return AsRange(range) is { } textRange
+                    ? ToCGRect(structured.GetFirstRectForRange(textRange))
+                    : CGRect.Null;
+            }
+
+            if (range is AvaloniaTextRange fallbackRange && _client.TextViewVisual is TextPresenter fallbackPresenter)
+            {
+                foreach (var rect in fallbackPresenter.TextLayout.HitTestTextRange(
+                             fallbackRange.StartIndex,
+                             Math.Max(0, fallbackRange.EndIndex - fallbackRange.StartIndex)))
+                {
+                    return new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
+                }
+            }
+
             var r = _view._cursorRect;
 
             return new CGRect(r.Left, r.Top, r.Width, r.Height);
@@ -459,9 +544,23 @@ partial class AvaloniaView
 
         CGRect IUITextInput.GetCaretRectForPosition(UITextPosition? position)
         {
-            // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetCaretRectForPosition");
+
+            if (_structured is { } structured)
+            {
+                return AsPointer(position) is { } pointer
+                    ? ToCGRect(structured.GetCaretRect(pointer))
+                    : CGRect.Null;
+            }
+
+            if (position is AvaloniaTextPosition fallbackPosition && _client.TextViewVisual is TextPresenter fallbackPresenter)
+            {
+                var clamped = Math.Clamp(fallbackPosition.Index, 0, DocumentLength);
+                var fallbackRect = fallbackPresenter.TextLayout.HitTestTextPosition(clamped);
+                return new CGRect(fallbackRect.X, fallbackRect.Y, fallbackRect.Width, fallbackRect.Height);
+            }
+
             var rect = _client.CursorRectangle;
 
             return new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
@@ -471,6 +570,13 @@ partial class AvaloniaView
         {
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetClosestPositionToPoint");
+
+            if (_structured is { } structured)
+            {
+                return structured.GetClosestPosition(new Point(point.X, point.Y)) is { } closest
+                    ? new PointerPosition(closest)
+                    : null!;
+            }
 
             var presenter = _client.TextViewVisual as TextPresenter;
 
@@ -486,25 +592,79 @@ partial class AvaloniaView
 
         UITextPosition IUITextInput.GetClosestPositionToPoint(CGPoint point, UITextRange withinRange)
         {
-            // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetClosestPositionToPoint");
-            return new AvaloniaTextPosition(0);
+
+            if (_structured is { } structured)
+            {
+                return AsRange(withinRange) is { } range &&
+                    structured.GetClosestPosition(new Point(point.X, point.Y), range) is { } closest
+                        ? new PointerPosition(closest)
+                        : null!;
+            }
+
+            if (withinRange is AvaloniaTextRange fallbackRange)
+            {
+                var closest = ((IUITextInput)this).GetClosestPositionToPoint(point);
+                if (closest is AvaloniaTextPosition fallbackPosition)
+                {
+                    var clamped = Math.Clamp(fallbackPosition.Index, fallbackRange.StartIndex, fallbackRange.EndIndex);
+                    return new AvaloniaTextPosition(clamped);
+                }
+            }
+
+            return ((IUITextInput)this).GetClosestPositionToPoint(point);
         }
 
         UITextRange IUITextInput.GetCharacterRangeAtPoint(CGPoint point)
         {
-            // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetCharacterRangeAtPoint");
+
+            // nil when no character is under the point.
+            if (_structured is { } structured)
+            {
+                return structured.GetCharacterRangeAtPoint(new Point(point.X, point.Y)) is { } range
+                    ? new PointerRange(range)
+                    : null!;
+            }
+
+            var closest = ((IUITextInput)this).GetClosestPositionToPoint(point);
+            if (closest is AvaloniaTextPosition fallbackPosition)
+            {
+                var start = Math.Clamp(fallbackPosition.Index, 0, DocumentLength);
+                var end = Math.Min(DocumentLength, start + 1);
+                return new AvaloniaTextRange(start, end);
+            }
+
             return new AvaloniaTextRange(0, 0);
         }
 
         UITextSelectionRect[] IUITextInput.GetSelectionRects(UITextRange range)
         {
-            // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetSelectionRect");
+
+            if (_structured is { } structured)
+            {
+                return StructuredGetSelectionRects(structured, range);
+            }
+
+            if (range is AvaloniaTextRange fallbackRange && _client.TextViewVisual is TextPresenter fallbackPresenter)
+            {
+                var hitRects = fallbackPresenter.TextLayout.HitTestTextRange(
+                    fallbackRange.StartIndex,
+                    Math.Max(0, fallbackRange.EndIndex - fallbackRange.StartIndex));
+
+                var selectionRects = new System.Collections.Generic.List<UITextSelectionRect>();
+                foreach (var rect in hitRects)
+                {
+                    selectionRects.Add(new AvaloniaSelectionRect(rect, false, false));
+                }
+
+                return selectionRects.ToArray();
+            }
+
             return Array.Empty<UITextSelectionRect>();
         }
 
@@ -518,12 +678,23 @@ partial class AvaloniaView
         {
             get
             {
+                if (_structured is { } structured)
+                {
+                    return StructuredSelectedTextRange(structured);
+                }
+
                 return new AvaloniaTextRange(_client.Selection.Start, _client.Selection.End);
             }
             set
             {
                 if (_inSurroundingTextUpdateEvent > 0)
                     return;
+
+                if (_structured is { } structured)
+                {
+                    StructuredSetSelectedTextRange(structured, value);
+                    return;
+                }
 
                 if (value is AvaloniaTextRange r)
                 {
@@ -542,19 +713,51 @@ partial class AvaloniaView
             set { }
         }
 
-        UITextPosition IUITextInput.BeginningOfDocument => _beginningOfDocument;
+        UITextPosition IUITextInput.BeginningOfDocument => _structured is { } structured
+            ? new PointerPosition(Scope(structured).Range.Start)
+            : _beginningOfDocument;
 
         private int DocumentLength => (_client.SurroundingText?.Length ?? 0) + (_markedText?.Length ?? 0);
-        UITextPosition IUITextInput.EndOfDocument => new AvaloniaTextPosition(DocumentLength);
+
+        UITextPosition IUITextInput.EndOfDocument => _structured is { } structured
+            ? new PointerPosition(Scope(structured).Range.End)
+            : new AvaloniaTextPosition(DocumentLength);
 
         UITextRange IUITextInput.MarkedTextRange
         {
             get
             {
+                if (_structured is { } structured)
+                {
+                    return structured.CompositionRange is { } range ? new PointerRange(range) : null!;
+                }
+
                 if (string.IsNullOrWhiteSpace(_markedText))
                     return null!;
                 return new AvaloniaTextRange(_client.Selection.Start, _client.Selection.Start + _markedText.Length);
             }
+        }
+
+        private sealed class AvaloniaSelectionRect : UITextSelectionRect
+        {
+            private readonly CGRect _rect;
+            private readonly bool _containsStart;
+            private readonly bool _containsEnd;
+
+            public AvaloniaSelectionRect(Rect rect, bool containsStart, bool containsEnd)
+            {
+                _rect = new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
+                _containsStart = containsStart;
+                _containsEnd = containsEnd;
+            }
+
+            public override CGRect Rect => _rect;
+
+            public override bool ContainsStart => _containsStart;
+
+            public override bool ContainsEnd => _containsEnd;
+
+            public override bool IsVertical => false;
         }
 
         public override bool BecomeFirstResponder()
@@ -564,7 +767,17 @@ partial class AvaloniaView
             {
                 Logger.TryGet(LogEventLevel.Debug, "IOSIME")
                     ?.Log(null, "Became first responder");
-                _client.SurroundingTextChanged += SurroundingTextChanged;
+
+                if (_structured is { } structured)
+                {
+                    SubscribeStructured(structured);
+                }
+                else
+                {
+                    _client.SurroundingTextChanged += ClientStateChanged;
+                    _client.SelectionChanged += ClientStateChanged;
+                }
+
                 CurrentAvaloniaResponder = this;
             }
 
@@ -580,7 +793,17 @@ partial class AvaloniaView
 
                 Logger.TryGet(LogEventLevel.Debug, "IOSIME")
                     ?.Log(null, "Resigned first responder");
-                _client.SurroundingTextChanged -= SurroundingTextChanged;
+
+                if (_structured is { } structured)
+                {
+                    UnsubscribeStructured(structured);
+                }
+                else
+                {
+                    _client.SurroundingTextChanged -= ClientStateChanged;
+                    _client.SelectionChanged -= ClientStateChanged;
+                }
+
                 CurrentAvaloniaResponder = null;
             }
 
