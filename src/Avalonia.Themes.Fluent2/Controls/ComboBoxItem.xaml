@@ -40,7 +40,7 @@
     <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackground}" />
     <Setter Property="Padding" Value="{DynamicResource ComboBoxItemThemePadding}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ComboBoxItemCornerRadius}" />
-    <!--Winui uses system focus visuals, which ignores visual clipping. Avalonia focus visual is clipped by the target, thus we disable clipping on the combobox item and clip instead in the root border-->
+    <!--Winui uses system focus visuals, which ignores visual clipping. Avalonia focus visual is clipped by the target, thus we disable clipping on the combobox item and clip instead in the contained grid-->
     <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="Template">
@@ -51,7 +51,6 @@
                  BorderBrush="{TemplateBinding BorderBrush}"
                  BorderThickness="{TemplateBinding BorderThickness}"
                  TemplatedControl.IsTemplateFocusTarget="True"
-                 ClipToBounds="True"
                  CornerRadius="{TemplateBinding CornerRadius}">
           <Grid ClipToBounds="True">
             <Rectangle Name="Pill"
