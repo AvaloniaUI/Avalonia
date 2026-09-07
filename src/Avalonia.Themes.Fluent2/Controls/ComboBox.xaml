@@ -60,16 +60,6 @@
   <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
   <StreamGeometry x:Key="ComboBoxDropDownPathData">M4.293 8.293a1 1 0 0 1 1.414 0L12 14.586l6.293-6.293a1 1 0 1 1 1.414 1.414l-7 7a1 1 0 0 1-1.414 0l-7-7a1 1 0 0 1 0-1.414Z</StreamGeometry>
 
-  <ControlTheme TargetType="Rectangle" x:Key="ComboBoxItemPill">
-    <Setter Property="HorizontalAlignment" Value="Left" />
-    <Setter Property="Height" Value="{StaticResource ComboBoxItemPillHeight}" />
-    <Setter Property="Width" Value="{StaticResource ComboBoxItemPillWidth}" />
-    <Setter Property="Fill" Value="{StaticResource ComboBoxItemPillFillBrush}" />
-    <Setter Property="RadiusX" Value="{StaticResource ComboBoxItemPillCornerRadius}" />
-    <Setter Property="RadiusY" Value="{StaticResource ComboBoxItemPillCornerRadius}" />
-    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
-  </ControlTheme>
-
   <!-- WinUI reference: ComboBox_themeresources.xaml (DefaultComboBoxStyle), 820 lines.
   Closed control is Button-like: ControlFillColorDefault fill with a ControlElevationBorder
   (both via the re-pointed ComboBox* aliases), radius 4 (ControlCornerRadius), background
@@ -108,10 +98,11 @@
                     BorderBrush="{DynamicResource ComboBoxBackgroundBorderBrushUnfocused}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
-                    IsVisible="False"/>
+                    Opacity="0"/>
             <Border x:Name="Background"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
+                    TemplatedControl.IsTemplateFocusTarget="True"
                     Background="{TemplateBinding Background}"
                     BackgroundSizing="{TemplateBinding BackgroundSizing}"
                     BorderBrush="{TemplateBinding BorderBrush}"
@@ -124,7 +115,7 @@
                 </Transitions>
               </Border.Transitions>
             </Border>
-            <Rectangle x:Name="Pill" Theme="{DynamicResource ComboBoxItemPill}" Margin="1,0,0,0" Grid.Column="0" Opacity="0">
+            <Rectangle x:Name="Pill" Theme="{StaticResource ComboBoxItemPill}" Margin="1,0,0,0" Grid.Column="0" Opacity="0">
               <Rectangle.RenderTransform>
                 <ScaleTransform ScaleY="1"/>
               </Rectangle.RenderTransform>
@@ -264,7 +255,7 @@
     <!--  Focused State  -->
     <Style Selector="^:focus-visible">
       <Style Selector="^ /template/ Border#HighlightBackground">
-        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Opacity" Value="1" />
         <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBackgroundBorderBrushFocused}" />
       </Style>
       <Style Selector="^ /template/ Rectangle#Pill">
