@@ -855,6 +855,23 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     return (AvnInputModifiers)rv;
 }
 
+// The composition range is owned by the managed client for a structured client - the composition is
+// part of the document there, so asking the client is the only way to stay in one index space. The
+// locally tracked _markedRange remains the source of truth for a legacy client.
+- (IAvnTextInputMethodClient*) tryGetStructuredClient
+{
+    auto parent = _parent.tryGet();
+
+    if(parent == nullptr || !parent->InputMethod->IsActive())
+    {
+        return nullptr;
+    }
+
+    auto client = parent->InputMethod->Client;
+
+    return client->IsStructured() ? client : nullptr;
+}
+
 // Clamps a range so that it can never be used to index outside of _text.
 // Ranges reaching us from AppKit or from the managed side are not guaranteed to be valid.
 - (NSRange)clampRangeToText:(NSRange)range
@@ -871,21 +888,36 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     return NSMakeRange(range.location, MIN(range.length, length - range.location));
 }
 
-- (BOOL)hasMarkedText
-{
-    return _markedRange.location != NSNotFound && _markedRange.length > 0;
-}
-
 - (NSRange)markedRange
 {
+    if(auto client = [self tryGetStructuredClient])
+    {
+        int start = -1, end = -1;
+        client->GetCompositionRange(&start, &end);
+
+        if(start < 0 || end < start)
+        {
+            return NSMakeRange(NSNotFound, 0);
+        }
+
+        return NSMakeRange((NSUInteger)start, (NSUInteger)(end - start));
+    }
+
     // From the docs: returns {NSNotFound, 0} if there is no marked range.
-    if (![self hasMarkedText])
+    if (_markedRange.location == NSNotFound || _markedRange.length == 0)
         return NSMakeRange(NSNotFound, 0);
 
     // The preedit isn't necessarily part of the surrounding text we got from the managed side,
     // so only the location is clamped here. An overlong length is handled by
     // attributedSubstringForProposedRange:actualRange:, as the docs require.
     return NSMakeRange(MIN(_markedRange.location, _text.length), _markedRange.length);
+}
+
+- (BOOL)hasMarkedText
+{
+    NSRange marked = [self markedRange];
+
+    return marked.location != NSNotFound && marked.length > 0;
 }
 
 - (NSRange)selectedRange
@@ -923,13 +955,34 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
         parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
         parent->TopLevelEvents->RawKeyEvent(KeyUp, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
     }
-
-    auto markedLocation = [self selectedRange].location;
-
-    _markedRange = NSMakeRange(markedLocation == NSNotFound ? 0 : markedLocation, [markedText length]);
-
-    if (parent != nullptr && parent->InputMethod->IsActive())
+    
+    if (parent == nullptr || !parent->InputMethod->IsActive())
     {
+        return;
+    }
+
+    // selectedRange.location is the caret offset within the marked text.
+    if (parent->InputMethod->Client->IsStructured())
+    {
+        // The client splices the composition into the document and owns its range, so there is no
+        // local marked range to maintain and no second index space to reconcile.
+        if ([markedText length] == 0)
+        {
+            // AppKit marks with an empty string to abandon the composition, so the composition
+            // region itself has to go. Passing null deletes it.
+            parent->InputMethod->Client->SetCompositionText(nullptr, 0);
+        }
+        else
+        {
+            parent->InputMethod->Client->SetCompositionText((char*)[markedText UTF8String], (int)selectedRange.location);
+        }
+    }
+    else
+    {
+        auto markedLocation = [self selectedRange].location;
+
+        _markedRange = NSMakeRange(markedLocation == NSNotFound ? 0 : markedLocation, [markedText length]);
+
         const char* utf8MarkedText = [markedText UTF8String];
         parent->InputMethod->Client->SetPreeditText((char*)(utf8MarkedText != nullptr ? utf8MarkedText : ""));
     }
@@ -938,8 +991,16 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
 - (void)unmarkText
 {
     auto parent = _parent.tryGet();
+
     if(parent != nullptr && parent->InputMethod->IsActive()){
-        parent->InputMethod->Client->SetPreeditText(nullptr);
+        // unmarkText keeps the text and drops only the marking, which is exactly CommitComposition.
+        // For a legacy client the preedit lives outside the document, so clearing it is the
+        // equivalent teardown.
+        if(parent->InputMethod->Client->IsStructured()){
+            parent->InputMethod->Client->CommitComposition();
+        } else {
+            parent->InputMethod->Client->SetPreeditText(nullptr);
+        }
     }
 
     auto selectionLocation = [self selectedRange].location;
@@ -1013,6 +1074,19 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
         parent->InputMethod->Client->SelectInSurroundingText((int)finalReplacementRange.location, (int)(finalReplacementRange.location + finalReplacementRange.length));
     }
 
+    // The composition text is already in the document, so committing it replaces the composition
+    // range; re-raising it as text input would duplicate it.
+    if([self hasMarkedText] && parent->InputMethod->Client->IsStructured())
+    {
+        parent->InputMethod->Client->SetCompositionText((char*)[text UTF8String], (int)[text length]);
+        parent->InputMethod->Client->CommitComposition();
+
+        if([self inputContext]) {
+            [[self inputContext] discardMarkedText];
+        }
+
+        return;
+    }
     [self unmarkText];
 
     uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
@@ -1024,7 +1098,21 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
 {
-    return NSNotFound;
+    auto client = [self tryGetStructuredClient];
+
+    if(client == nullptr){
+        return NSNotFound;
+    }
+
+    // point is in screen coordinates; convert to the top level space the client works in, the same
+    // way the pointer path does.
+    NSPoint windowPoint = [[self window] convertPointFromScreen:point];
+    auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
+    auto localPoint = NSMakePoint(windowPoint.x - viewLocation.x, viewLocation.y - windowPoint.y);
+
+    int index = client->GetCharacterIndexFromPoint(ToAvnPoint(localPoint));
+
+    return index < 0 ? NSNotFound : (NSUInteger)index;
 }
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
@@ -1040,8 +1128,29 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
         return NSZeroRect;
     }
 
-    return _cursorRect;
-}
+    auto client = [self tryGetStructuredClient];
+
+    if(client == nullptr){
+        return _cursorRect;
+    }
+
+    AvnRect avnRect = {};
+    client->GetFirstRectForRange((int)range.location, (int)(range.location + range.length), &avnRect);
+
+    if(avnRect.Width <= 0 || avnRect.Height <= 0){
+        // No geometry for that range - fall back to the caret rect rather than reporting an empty
+        // rectangle as if it were real, which would park the candidate window at the origin.
+        return _cursorRect;
+    }
+
+    // avnRect is top level space and Y-down; convert to a screen rect with the same math setCursorRect uses.
+    NSRect rect = ToNSRect(avnRect);
+    NSRect viewRectOnScreen = [[self window] convertRectToScreen:self.frame];
+    viewRectOnScreen.origin = NSMakePoint(viewRectOnScreen.origin.x + rect.origin.x,
+                                          viewRectOnScreen.origin.y + self.frame.size.height - rect.origin.y - rect.size.height);
+    viewRectOnScreen.size = rect.size;
+
+    return viewRectOnScreen;}
 
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
 {
@@ -1224,7 +1333,14 @@ static bool KeyboardInputSourceComposes(NSString* sourceId)
     auto parent = _parent.tryGet();
 
     if(parent != nullptr && parent->InputMethod->IsActive()){
-        parent->InputMethod->Client->SetPreeditText(nullptr);
+        // The composition text keeps its place in the document and only the marking is dropped.
+        // Clearing the preedit property would touch nothing and leave CompositionRange marking
+        // committed text.
+        if(parent->InputMethod->Client->IsStructured()){
+            parent->InputMethod->Client->CommitComposition();
+        } else {
+            parent->InputMethod->Client->SetPreeditText(nullptr);
+        }
     }
 
     _markedRange = NSMakeRange(_selectedRange.location, 0);
