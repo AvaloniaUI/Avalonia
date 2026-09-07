@@ -12,6 +12,60 @@ namespace Avalonia.Controls.UnitTests;
 public class ListBoxVirtualizationIssueTests : ScopedTestBase
 {
     [Fact]
+    public void Expanding_ListBox_After_Scrolling_In_Zero_Width_Pane_Does_Not_Show_Unrealized_Containers()
+    {
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+        var items = new[]
+        {
+            new SizedItem(196, 331),
+            new SizedItem(186, 258),
+            new SizedItem(196, 321),
+            new SizedItem(186, 296),
+            new SizedItem(150, 340),
+            new SizedItem(196, 319),
+        };
+        var target = new ListBox
+        {
+            Width = 0,
+            Height = 774,
+            Template = new FuncControlTemplate(CreateListBoxTemplate),
+            ItemsSource = items,
+            ItemTemplate = new FuncDataTemplate<SizedItem>((item, _) => new Border
+            {
+                Width = item?.Width ?? 0,
+                Height = item?.Height ?? 0,
+            }),
+            ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
+            SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
+        };
+
+        var root = new TestRoot(target) { ClientSize = new Size(300, 774) };
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        // Scroll the selected item into view while the SplitView pane is effectively hidden.
+        for (var index = 1; index <= 3; ++index)
+        {
+            target.SelectedIndex = index;
+            root.LayoutManager.ExecuteLayoutPass();
+        }
+
+        // Opening the pane increases the ListBox viewport to 300.
+        target.Width = 300;
+        root.LayoutManager.ExecuteLayoutPass();
+
+        var panel = Assert.IsType<VirtualizingStackPanel>(target.Presenter!.Panel);
+        var realized = target.GetRealizedContainers().ToHashSet();
+        var visibleChildren = panel.Children.Where(x => x.IsVisible).ToList();
+
+        Assert.All(visibleChildren, child =>
+        {
+            Assert.NotEqual(-1, target.IndexFromContainer(child));
+            Assert.Contains(child, realized);
+        });
+    }
+
+    [Fact]
     public void Removing_First_Item_After_Scrolling_To_End_Should_Allow_Scrolling_To_Start()
     {
         using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -357,5 +411,17 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
             Id = id;
         }
         public int Id { get; }
+    }
+
+    private class SizedItem
+    {
+        public SizedItem(double width, double height)
+        {
+            Width = width;
+            Height = height;
+        }
+
+        public double Width { get; }
+        public double Height { get; }
     }
 }
