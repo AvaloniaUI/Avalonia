@@ -83,6 +83,12 @@
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePressed" ResourceKey="ControlStrokeColorDefaultBrush" />
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
 
+      <!--Resources for ButtonSpinner-->      
+      <StaticResource x:Key="SpinnerPopupIndicatorForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+
       <!--  GroupBox  -->
       <Thickness x:Key="GroupBoxPadding">12</Thickness>
       <x:Double x:Key="GroupBoxHeaderFontSize">16</x:Double>
@@ -733,7 +739,13 @@
       <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
       <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
       <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />      
+
+      <!--Resources for ButtonSpinner-->      
+      <StaticResource x:Key="SpinnerPopupIndicatorForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
 
       <!-- Resources for ToggleButton.xaml -->
       <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
