@@ -210,7 +210,6 @@ public class TableViewColumn : StyledElement, IHeadered
     /// <summary>
     /// Gets the actual width of the column, in device independent pixels.
     /// If the column hasn't yet been measured, returns <see cref="double.NaN"/>.
-    /// Hidden columns retain their current value.
     /// </summary>
     public double ActualWidth
     {
