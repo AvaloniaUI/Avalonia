@@ -96,7 +96,6 @@ public class TableViewColumn : StyledElement, IHeadered
     /// <summary>
     /// Gets or sets whether the column is visible. The default is true.
     /// </summary>
-    /// <remarks>Hidden columns do not occupy layout space and retain their configured <see cref="Width"/>.</remarks>
     public bool IsVisible
     {
         get => GetValue(IsVisibleProperty);
