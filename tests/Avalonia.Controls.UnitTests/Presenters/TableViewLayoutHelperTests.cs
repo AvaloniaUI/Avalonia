@@ -100,6 +100,34 @@ public sealed class TableViewLayoutHelperTests : ScopedTestBase
         Assert.Equal(100, columns[1].ActualWidth);
     }
 
+    [Theory]
+    [InlineData(GridUnitType.Pixel)]
+    [InlineData(GridUnitType.Star)]
+    [InlineData(GridUnitType.Auto)]
+    public void UpdateActualWidths_Excludes_Hidden_Columns_And_Preserves_Their_Widths(GridUnitType unit)
+    {
+        var hidden = new TableViewColumn { Width = new GridLength(2, unit) };
+        var columns = new AvaloniaList<TableViewColumn>
+        {
+            hidden,
+            new() { Width = new GridLength(1, GridUnitType.Star) },
+        };
+        TableViewLayoutHelper.UpdateActualWidths(columns, 200, false, 1);
+        var actualWidth = hidden.ActualWidth;
+
+        hidden.IsVisible = false;
+        TableViewLayoutHelper.UpdateActualWidths(columns, 200, false, 1);
+
+        Assert.Equal(new GridLength(2, unit), hidden.Width);
+        Assert.Equal(actualWidth, hidden.ActualWidth);
+        Assert.Equal(200, columns[1].ActualWidth);
+
+        hidden.IsVisible = true;
+        TableViewLayoutHelper.UpdateActualWidths(columns, 200, false, 1);
+
+        Assert.Equal(actualWidth, hidden.ActualWidth);
+    }
+
     [Fact]
     public void UpdateActualWidths_Falls_Back_To_1000_For_Infinite_Width()
     {
@@ -211,6 +239,29 @@ public sealed class TableViewLayoutHelperTests : ScopedTestBase
     }
 
     [Fact]
+    public void UpdateActualWidths_Ignores_Hidden_Columns()
+    {
+        var columns = new AvaloniaList<TableViewColumn>
+        {
+            new() { Width = new GridLength(3, GridUnitType.Star) },
+            new() { Width = new GridLength(100), IsVisible = false },
+            new() { Width = new GridLength(1, GridUnitType.Star) },
+            new() { Width = new GridLength(5, GridUnitType.Star), IsVisible = false },
+            new() { Width = new GridLength(3, GridUnitType.Star) },
+        };
+
+        TableViewLayoutHelper.UpdateActualWidths(columns, 100, useLayoutRounding: true, layoutScale: 2);
+
+        // Hidden columns are skipped, so their uncalculated widths remain NaN.
+        Assert.Equal(43, columns[0].ActualWidth);
+        Assert.Equal(double.NaN, columns[1].ActualWidth);
+        Assert.Equal(14, columns[2].ActualWidth);
+        Assert.Equal(double.NaN, columns[3].ActualWidth);
+        Assert.Equal(43, columns[4].ActualWidth);
+        Assert.Equal(100, columns[0].ActualWidth + columns[2].ActualWidth + columns[4].ActualWidth);
+    }
+
+    [Fact]
     public void UpdateActualWidths_Rounds_Fixed_Column_Width_And_Star_Absorbs_Remainder()
     {
         var columns = new AvaloniaList<TableViewColumn>
@@ -256,6 +307,27 @@ public sealed class TableViewLayoutHelperTests : ScopedTestBase
 
         TableViewLayoutHelper.UpdateActualWidths(columns, 200, false, 1.0);
 
+        Assert.False(TableViewLayoutHelper.NeedsActualWidths(columns));
+    }
+
+    [Fact]
+    public void NeedsActualWidths_Ignores_Hidden_Columns_After_Reset()
+    {
+        var columns = new AvaloniaList<TableViewColumn> { new(), new() };
+        TableViewLayoutHelper.UpdateActualWidths(columns, 200, false, 1);
+        columns[0].IsVisible = false;
+
+        TableViewLayoutHelper.ResetActualWidths(columns);
+
+        Assert.Equal(100, columns[0].ActualWidth);
+        Assert.True(TableViewLayoutHelper.NeedsActualWidths(columns));
+
+        TableViewLayoutHelper.UpdateActualWidths(columns, 200, false, 1);
+
+        Assert.Equal(200, columns[1].ActualWidth);
+        Assert.False(TableViewLayoutHelper.NeedsActualWidths(columns));
+
+        columns[1].IsVisible = false;
         Assert.False(TableViewLayoutHelper.NeedsActualWidths(columns));
     }
 
