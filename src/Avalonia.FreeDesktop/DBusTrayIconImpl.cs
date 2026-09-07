@@ -29,6 +29,7 @@ namespace Avalonia.FreeDesktop
         private Task? _sysTrayServiceNameRelease;
         private string? _tooltipText;
         private bool _isDisposed;
+        private bool _itemExported;
         private bool _serviceConnected;
         private bool _isVisible = true;
 
@@ -167,8 +168,13 @@ namespace Avalonia.FreeDesktop
                     return;
 
                 // Export the object only while the connection owns the name. If not, a host that scans
-                // the bus adds a second item.
-                _connection.AddMethodHandler(_statusNotifierItemDbusObj);
+                // the bus adds a second item. Two calls can get here together, and a second export
+                // throws.
+                if (!_itemExported)
+                {
+                    _connection.AddMethodHandler(_statusNotifierItemDbusObj);
+                    _itemExported = true;
+                }
 
                 await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
@@ -200,6 +206,7 @@ namespace Avalonia.FreeDesktop
                 return;
 
             _connection.RemoveMethodHandler(_statusNotifierItemDbusObj.Path);
+            _itemExported = false;
         }
 
         /// <summary>
