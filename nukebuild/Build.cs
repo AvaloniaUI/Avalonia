@@ -12,7 +12,6 @@ using Nuke.Common.Tools.DotNet;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Serilog.Log;
-using MicroCom.CodeGenerator;
 using NuGet.Configuration;
 using NuGet.Versioning;
 using Nuke.Common.CI.AzurePipelines;
@@ -151,13 +150,12 @@ partial class Build : NukeBuild
 
     Target CompileNative => _ => _
         .DependsOn(Clean)
-        .DependsOn(GenerateCppHeaders)
         .OnlyWhenStatic(() => EnvironmentInfo.IsOsx)
         .Executes(() =>
         {
-            var project = $"{RootDirectory}/native/Avalonia.Native/src/OSX/Avalonia.Native.OSX.xcodeproj/";
-            var args = $"-project {project} -configuration {Parameters.Configuration} CONFIGURATION_BUILD_DIR={RootDirectory}/Build/Products/Release";
-            ProcessTasks.StartProcess("xcodebuild", args).AssertZeroExitCode();
+            DotNetBuild(c => ApplySetting(c)
+                .SetProjectFile(RootDirectory / "native" / "Avalonia.Native" / "Avalonia.Native.macOS.proj")
+                .AddProperty("BuildAvaloniaNativeXcodeProject", "True"));
         });
 
     Target Compile => _ => _
@@ -477,14 +475,6 @@ partial class Build : NukeBuild
 }");
             }
         });
-
-    Target GenerateCppHeaders => _ => _.Executes(() =>
-    {
-        var file = MicroComCodeGenerator.Parse(
-            File.ReadAllText(RootDirectory / "src" / "Avalonia.Native" / "avn.idl"));
-        File.WriteAllText(RootDirectory / "native" / "Avalonia.Native" / "inc" / "avalonia-native.h",
-            file.GenerateCppHeader());
-    });
 
     Target GenerateUnicodeData => _ => _.Executes(() =>
     {
