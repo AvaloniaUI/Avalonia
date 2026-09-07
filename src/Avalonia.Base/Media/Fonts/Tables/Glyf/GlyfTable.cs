@@ -196,6 +196,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
                 if (shortFormat)
                 {
+                    // Short format: uint16 values stored divided by 2
                     start = BinaryPrimitives.ReadUInt16BigEndian(loca.Slice(locaOffset)) * 2;
                     end = BinaryPrimitives.ReadUInt16BigEndian(loca.Slice(locaOffset + 2)) * 2;
                 }
