@@ -138,9 +138,9 @@ namespace Avalonia.Native
 
             public void SetPreeditText(string preeditText)
             {
-                if (_client.SupportsPreedit)
+                if (_client.SupportsInlineComposition())
                 {
-                    _client.SetPreeditText(preeditText);
+                    _client.DeliverComposition(preeditText, null);
                 }
             }
 

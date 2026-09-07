@@ -271,8 +271,14 @@ namespace Avalonia.FreeDesktop.DBusIme
         {
             _client = client;
             UpdateActive();
-            UpdateCapabilities(client?.SupportsPreedit ?? false, client?.SupportsSurroundingText ?? false);
+
+            // A structured client always displays the composition inline (in-document),
+            // so the IME keeps sending preedit updates even without the overlay flag.
+            UpdateCapabilities(client?.SupportsInlineComposition() ?? false, client?.SupportsSurroundingText ?? false);
         }
+
+        private protected void DeliverComposition(string? text, int? cursor)
+            => Client?.DeliverComposition(text, cursor);
 
         bool IX11InputMethodControl.IsEnabled => IsConnected && _imeActive == true;
 

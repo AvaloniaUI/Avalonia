@@ -277,7 +277,7 @@ partial class AvaloniaView
                     selectedRange.Location, markedText);
 
             _markedText = markedText;
-            _client.SetPreeditText(markedText);
+            _client.DeliverComposition(markedText, null);
         }
 
         void IUITextInput.UnmarkText()
@@ -287,7 +287,7 @@ partial class AvaloniaView
                 return;
             var commitString = _markedText;
             _markedText = null;
-            _client.SetPreeditText(null);
+            _client.DeliverComposition(null, null);
             if (string.IsNullOrWhiteSpace(commitString))
                 return;
             TextInput(commitString);

@@ -40,9 +40,13 @@ namespace Avalonia.Input.TextInput
         public abstract Visual TextViewVisual { get; }
 
         /// <summary>
-        /// Indicates if TextViewVisual is capable of displaying non-committed input on the cursor position
+        /// Indicates if the client renders non-committed input through the legacy preedit
+        /// overlay (<see cref="SetPreeditText(string?)"/>). Defaults to false: clients that
+        /// compose in the document do so through
+        /// <c>IStructuredTextInput.SetCompositionText</c> instead, and backends deliver
+        /// composition text through <c>DeliverComposition</c>.
         /// </summary>
-        public abstract bool SupportsPreedit { get; }
+        public virtual bool SupportsPreedit => false;
 
         /// <summary>
         /// The text of the active composition as presented to the user, readable by
@@ -80,7 +84,10 @@ namespace Avalonia.Input.TextInput
         public abstract TextSelection Selection { get; set; }
 
         /// <summary>
-        /// Sets the non-committed input string
+        /// Legacy entry point for the non-committed input string. Backends deliver
+        /// composition through <c>DeliverComposition</c>, which routes here only for clients
+        /// that declare <see cref="SupportsPreedit"/>, so overlay clients are the only ones
+        /// that need to override it.
         /// </summary>
         public virtual void SetPreeditText(string? preeditText) { }
 

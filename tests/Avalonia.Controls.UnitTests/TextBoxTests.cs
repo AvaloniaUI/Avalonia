@@ -2865,6 +2865,21 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "text", "composition", "caret" }, events);
         }
 
+        [Fact]
+        public void TextBox_Client_Declares_In_Document_Composition_Only()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox { Template = CreateTemplate(), Text = "" };
+            textBox.ApplyTemplate();
+
+            var client = GetInputMethodClient(textBox);
+
+            Assert.False(client.SupportsPreedit);
+            Assert.True(client.SupportsInDocumentComposition);
+            Assert.True(client.SupportsInlineComposition());
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),

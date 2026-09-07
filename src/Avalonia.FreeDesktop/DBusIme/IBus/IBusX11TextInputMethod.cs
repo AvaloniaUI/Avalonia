@@ -38,14 +38,14 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnHidePreedit()
         {
-            if (Client?.SupportsPreedit != true || string.IsNullOrEmpty(_preeditText))
+            if (Client is null || string.IsNullOrEmpty(_preeditText))
             {
                 return;
             }
 
             _preeditText = "";
 
-            Client?.SetPreeditText(_preeditText, 0);
+            DeliverComposition(_preeditText, 0);
         }
 
         private void OnShowPreedit()
@@ -65,19 +65,19 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                 preeditText = "";
             }
 
-            if (Client?.SupportsPreedit != true || preeditText == _preeditText)
+            if (Client is null || preeditText == _preeditText)
             {
                 return;
             }
-            
+
             _preeditText = preeditText;
 
             _preeditCursor = !string.IsNullOrEmpty(_preeditText) ?
                 Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
                     (int)Math.Min(preeditComponents.CursorPos, int.MaxValue), false) :
                 0;
-            
-            Client.SetPreeditText(_preeditText, _preeditCursor);
+
+            DeliverComposition(_preeditText, _preeditCursor);
         }
 
         private void OnForwardKey((uint keyval, uint keycode, uint state) k)

@@ -67,9 +67,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
                 }
             }
 
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(preeditString, cursor);
-
+            DeliverComposition(preeditString, cursor);
         }
 
         protected override Task DisconnectAsync() => _context?.DestroyICAsync() ?? Task.CompletedTask;

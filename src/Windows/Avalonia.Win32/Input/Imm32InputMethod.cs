@@ -157,7 +157,7 @@ namespace Avalonia.Win32.Input
                 Composition = null;
                 _compositionCursorPosition = null;
 
-                Client.SetPreeditText(null, null);
+                Client.DeliverComposition(null, null);
             }
 
             Client = client;
@@ -277,12 +277,12 @@ namespace Avalonia.Win32.Input
             Composition = composition;
             _compositionCursorPosition = cursorPosition;
 
-            if (!IsActive || !Client.SupportsPreedit)
+            if (!IsActive || !Client.SupportsInlineComposition())
             {
                 return;
             }
 
-            Client.SetPreeditText(composition, cursorPosition);
+            Client.DeliverComposition(composition, cursorPosition);
         }
         
         public string? GetCompositionString(GCS flag)
@@ -330,7 +330,7 @@ namespace Avalonia.Win32.Input
 
             if (IsActive)
             {
-                Client.SetPreeditText(null, null);
+                Client.DeliverComposition(null, null);
 
                 if (Client.SupportsSurroundingText && Client.Selection.Start != Client.Selection.End)
                 {
@@ -363,7 +363,7 @@ namespace Avalonia.Win32.Input
 
             if (IsActive)
             {
-                Client.SetPreeditText(null, null);
+                Client.DeliverComposition(null, null);
             }
         }
 
@@ -393,7 +393,7 @@ namespace Avalonia.Win32.Input
 
                 if (IsActive)
                 {
-                    Client.SetPreeditText(null, null);
+                    Client.DeliverComposition(null, null);
                 }
 
                 if (_parent != null && !string.IsNullOrEmpty(resultString))

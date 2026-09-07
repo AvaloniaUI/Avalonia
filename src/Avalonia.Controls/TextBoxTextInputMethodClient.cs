@@ -97,10 +97,6 @@ namespace Avalonia.Controls
         // Backends and other legacy consumers read the pending composition through PreeditText.
         public override bool SupportsInDocumentComposition => true;
 
-        // The composition is spliced into the text buffer, so the presenter's preedit overlay
-        // is never set; the flag stays true because legacy backends gate delivery on it.
-        public override bool SupportsPreedit => true;
-
         public override string? PreeditText
         {
             get
