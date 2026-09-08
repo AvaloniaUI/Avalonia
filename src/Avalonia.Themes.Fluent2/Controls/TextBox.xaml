@@ -106,6 +106,7 @@
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
     <Setter Property="ContextFlyout" Value="{OnFormFactor Desktop={StaticResource DefaultTextBoxContextFlyout}, Mobile={StaticResource HorizontalTextBoxContextFlyout}}" />
@@ -114,18 +115,18 @@
         <DataValidationErrors>
           <Panel>
             <Border
-            Name="PART_BorderElement"
-            Background="{TemplateBinding Background}"
-            BackgroundSizing="InnerBorderEdge"
-            BorderBrush="{TemplateBinding BorderBrush}"
-            BorderThickness="{TemplateBinding BorderThickness}"
-            CornerRadius="{TemplateBinding CornerRadius}"
-            MinWidth="{TemplateBinding MinWidth}"
-            MinHeight="{TemplateBinding MinHeight}">
+              Name="PART_BorderElement"
+              Background="{TemplateBinding Background}"
+              BackgroundSizing="InnerBorderEdge"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              MinWidth="{TemplateBinding MinWidth}"
+              MinHeight="{TemplateBinding MinHeight}">
             </Border>
 
             <Border
-            Margin="{TemplateBinding BorderThickness}">
+              Margin="{TemplateBinding BorderThickness}">
               <Grid ColumnDefinitions="Auto,*,Auto" >
                 <ContentPresenter Grid.Column="0"
                                   Grid.ColumnSpan="1"
