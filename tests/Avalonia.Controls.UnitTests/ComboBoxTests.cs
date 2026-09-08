@@ -44,6 +44,7 @@ namespace Avalonia.Controls.UnitTests
                 target.IsDropDownOpen = true;
                 window.LayoutManager.ExecuteLayoutPass();
                 target.IsDropDownOpen = false;
+                window.LayoutManager.ExecuteLayoutPass();
 
                 Application.Current!.Styles.Clear();
                 Application.Current.Styles.Add(CreateTheme());
@@ -55,6 +56,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.NotNull(target.ContainerFromIndex(0));
                 Assert.Equal(0, target.SelectedIndex);
                 target.IsDropDownOpen = false;
+                window.LayoutManager.ExecuteLayoutPass();
             }
             window.Close();
         }
