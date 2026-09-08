@@ -57,7 +57,6 @@ namespace Avalonia.FreeDesktop
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusMenuPath, _connection);
 
-            // CreateTrayIcon exports this object when the connection owns the name.
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
             _statusNotifierItemDbusObj.ActivationDelegate += () => OnClicked?.Invoke();
 
@@ -100,12 +99,14 @@ namespace Avalonia.FreeDesktop
             }
             catch (OperationCanceledException)
             {
-                // Dispose cancels this task. The continuation runs after Dispose sets _isDisposed.
+                // Dispose cancels this task.
             }
-            catch (Exception e) when (!_isDisposed)
+            catch (Exception e)
             {
-                Logger.TryGet(LogEventLevel.Error, "DBUS")
-                    ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.\n{Exception}", e);
+                // An exception that leaves this method ends the process.
+                if (!_isDisposed)
+                    Logger.TryGet(LogEventLevel.Error, "DBUS")
+                        ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.\n{Exception}", e);
             }
         }
 
@@ -150,7 +151,7 @@ namespace Avalonia.FreeDesktop
                     _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
                 }
 
-                if (_sysTrayServiceNameRelease is { } release)
+                while (_sysTrayServiceNameRelease is { } release)
                 {
                     await release;
                     if (ReferenceEquals(_sysTrayServiceNameRelease, release))
@@ -162,14 +163,12 @@ namespace Avalonia.FreeDesktop
                 request = _sysTrayServiceNameRequest ??= _connection.RequestNameAsync(_sysTrayServiceName);
                 await request;
 
-                // The icon can become hidden or disposed while the bus answers. The release then runs
-                // after this line.
+                // A hide while the bus answers queues the release after this line.
                 if (!ShouldShowTrayIcon || !ReferenceEquals(_sysTrayServiceNameRequest, request))
                     return;
 
-                // Export the object only while the connection owns the name. If not, a host that scans
-                // the bus adds a second item. Two calls can get here together, and a second export
-                // throws.
+                // A host that scans the bus adds a second item if the object is exported before the
+                // connection owns the name. Two calls can reach this line, and a second export throws.
                 if (!_itemExported)
                 {
                     _connection.AddMethodHandler(_statusNotifierItemDbusObj);
@@ -188,7 +187,7 @@ namespace Avalonia.FreeDesktop
             {
                 // Clear only this request, and only if it did not complete. The next call then asks for
                 // the name again.
-                if (request is { Status: not TaskStatus.RanToCompletion } && ReferenceEquals(_sysTrayServiceNameRequest, request))
+                if (request is { IsCompletedSuccessfully: false } && ReferenceEquals(_sysTrayServiceNameRequest, request))
                     _sysTrayServiceNameRequest = null;
 
                 if (!_isDisposed)
@@ -202,32 +201,38 @@ namespace Avalonia.FreeDesktop
 
         private void DestroyTrayIcon()
         {
-            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _sysTrayServiceName is null)
+            if (_connection is null || _statusNotifierItemDbusObj is null || !_itemExported)
                 return;
 
             _connection.RemoveMethodHandler(_statusNotifierItemDbusObj.Path);
             _itemExported = false;
         }
 
-        /// <summary>
-        /// Releases the bus name. A host removes the item when the name goes away.
-        /// Call this after <see cref="DestroyTrayIcon"/>, but not when the watcher stops.
-        /// </summary>
+        // A host removes the item when the name goes away. Keep the name when only the watcher stops.
         private void ReleaseTrayServiceName()
         {
             if (_connection is null || _sysTrayServiceName is null || _sysTrayServiceNameRequest is not { } request)
                 return;
 
             _sysTrayServiceNameRequest = null;
-            _sysTrayServiceNameRelease = ReleaseTrayServiceName(request, _connection, _sysTrayServiceName);
+            _sysTrayServiceNameRelease = ReleaseTrayServiceNameAsync(request, _connection, _sysTrayServiceName);
         }
 
-        private async Task ReleaseTrayServiceName(Task request, DBusConnection connection, string name)
+        private async Task ReleaseTrayServiceNameAsync(Task request, DBusConnection connection, string name)
         {
             try
             {
                 // Wait for the request. A release before the connection owns the name has no effect.
-                await request;
+                try
+                {
+                    await request;
+                }
+                catch
+                {
+                    // CreateTrayIcon logs this failure. There is no name to release.
+                    return;
+                }
+
                 await connection.ReleaseNameAsync(name);
             }
             catch (Exception e)
