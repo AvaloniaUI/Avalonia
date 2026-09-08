@@ -66,6 +66,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// Gets the text content of this segment as a slice of the source span.
         /// </summary>
+        /// <remarks>
+        /// Empty for segments created through the constructor that takes a code-unit length
+        /// instead of a slice, whose source span is unknown. Use <see cref="Length"/> when the
+        /// segment may come from an arbitrary caller rather than from <see cref="WordBreakEnumerator"/>.
+        /// </remarks>
         public ReadOnlySpan<char> Text { get; }
     }
 }
