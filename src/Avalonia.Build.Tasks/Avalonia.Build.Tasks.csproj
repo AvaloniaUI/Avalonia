@@ -123,6 +123,18 @@
       <Compile Include="../Avalonia.Base/RelativePoint.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
+      <Compile Include="../Avalonia.Base/Media/FillRule.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Avalonia.Base/Media/SweepDirection.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Avalonia.Base/Platform/IGeometryContext.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Avalonia.Base/Media/PathMarkupParser.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
       <Compile Include="../Avalonia.Base/Compatibility/NullableAttributes.cs" Link="Compatibility/NullableAttributes.cs" />
       <Compile Include="../Avalonia.Base/Compatibility/TrimmingAttributes.cs" Link="Compatibility/TrimmingAttributes.cs" />
       <Compile Include="../Avalonia.Base/Utilities/SpanHelpers.cs" Link="Utilities/SpanHelpers.cs" />

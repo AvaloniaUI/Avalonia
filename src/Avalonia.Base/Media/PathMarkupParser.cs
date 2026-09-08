@@ -10,7 +10,10 @@ namespace Avalonia.Media
     /// <summary>
     /// Parses a path markup string.
     /// </summary>
-    public class PathMarkupParser : IDisposable
+#if !BUILDTASK
+    public
+#endif
+    class PathMarkupParser : IDisposable
     {
         private static readonly Dictionary<char, Command> s_commands =
             new Dictionary<char, Command>

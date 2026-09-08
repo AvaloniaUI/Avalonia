@@ -1,6 +1,9 @@
 namespace Avalonia.Media
 {
-    public enum FillRule
+#if !BUILDTASK
+    public
+#endif
+    enum FillRule
     {
         EvenOdd,
         NonZero

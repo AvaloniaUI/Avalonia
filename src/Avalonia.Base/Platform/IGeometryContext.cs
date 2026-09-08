@@ -6,7 +6,10 @@ namespace Avalonia.Platform
     /// <summary>
     /// Describes a geometry using drawing commands.
     /// </summary>
-    public interface IGeometryContext : IDisposable
+#if !BUILDTASK
+    public
+#endif
+    interface IGeometryContext : IDisposable
     {
         /// <summary>
         /// Draws an arc to the specified point.
