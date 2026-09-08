@@ -19,7 +19,7 @@ namespace Avalonia.Controls.UnitTests
             bold.Inlines.Add(span);
 
             var textRuns = new List<TextRun>();
-            bold.BuildTextRun(textRuns, default);
+            bold.BuildTextRun(textRuns);
 
             var runProperties = textRuns[0].Properties;
             Assert.NotNull(runProperties);
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
             italic.Inlines.Add(span);
 
             var textRuns = new List<TextRun>();
-            italic.BuildTextRun(textRuns, default);
+            italic.BuildTextRun(textRuns);
 
             var runProperties = textRuns[0].Properties;
             Assert.NotNull(runProperties);
@@ -54,7 +54,7 @@ namespace Avalonia.Controls.UnitTests
             span.Inlines.Add(innerSpan);
 
             var textRuns = new List<TextRun>();
-            span.BuildTextRun(textRuns, default);
+            span.BuildTextRun(textRuns);
 
             var runProperties = textRuns[0].Properties;
             Assert.NotNull(runProperties);
@@ -74,7 +74,7 @@ namespace Avalonia.Controls.UnitTests
             span.Inlines.Add(innerSpan);
 
             var textRuns = new List<TextRun>();
-            span.BuildTextRun(textRuns, default);
+            span.BuildTextRun(textRuns);
 
             var runProperties = textRuns[0].Properties;
             Assert.NotNull(runProperties);
