@@ -5,17 +5,17 @@
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
-         <NumericUpDown Minimum="0"
-                        Maximum="10"
-                        Increment="0.5"
-                        PlaceholderText="Enter text" />
         <NumericUpDown Minimum="0"
-                        Maximum="10"
-                        Increment="0.5"
-                        VerticalContentAlignment="Center"
-                        HorizontalContentAlignment="Center"
-                        ButtonSpinnerLocation="Left"
-                        PlaceholderText="Enter text" />
+                       Maximum="10"
+                       Increment="0.5"
+                       PlaceholderText="Enter text" />
+        <NumericUpDown Minimum="0"
+                       Maximum="10"
+                       Increment="0.5"
+                       VerticalContentAlignment="Center"
+                       HorizontalContentAlignment="Center"
+                       ButtonSpinnerLocation="Left"
+                       PlaceholderText="Enter text" />
         <NumericUpDown ButtonSpinnerLocation="Left">
           <NumericUpDown.InnerLeftContent>
             <TextBlock Text="m"
@@ -50,10 +50,10 @@
   </Design.PreviewWith>
 
   <!-- WinUI reference: NumberBox.xaml, tag winui3/release/1.7.1.
-       The control composes a Fluent 2 ButtonSpinner (the TextBox-like field with inline spin
-       buttons) around a chromeless TextBox part. Padding follows TextControlThemePadding, and
-       the inner TextBox supplies the input-active fill and accent focus underline over the text
-       area while the ButtonSpinner mirrors them across the whole field via :focus-within. -->
+  The control composes a Fluent 2 ButtonSpinner (the TextBox-like field with inline spin
+  buttons) around a chromeless TextBox part. Padding follows TextControlThemePadding, and
+  the inner TextBox supplies the input-active fill and accent focus underline over the text
+  area while the ButtonSpinner mirrors them across the whole field via :focus-within. -->
   <ControlTheme x:Key="{x:Type NumericUpDown}" TargetType="NumericUpDown">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
@@ -94,17 +94,18 @@
                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                      Text="{TemplateBinding Text}"
                      TextAlignment="{TemplateBinding TextAlignment}"
+                     Theme="{DynamicResource FluentNumericUpDownTextBox}"
                      AcceptsReturn="False"
                      TextWrapping="NoWrap"
-                     InnerLeftContent="{Binding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
-                     InnerRightContent="{Binding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+                     InnerLeftContent="{TemplateBinding InnerLeftContent}"
+                     InnerRightContent="{TemplateBinding InnerRightContent}"/>
           </ButtonSpinner>
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
 
     <!-- Square off the inner TextBox corners on the spinner side so its focus underline runs
-         straight into the spin-button strip instead of curling up at the rounded corner. -->
+    straight into the spin-button strip instead of curling up at the rounded corner. -->
     <Style Selector="^ /template/ TextBox#PART_TextBox">
       <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
     </Style>
@@ -115,8 +116,186 @@
       <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
     </Style>
 
+    <Style Selector="^.clearButton:focus-within[IsReadOnly=False] /template/ TextBox#PART_TextBox:not(TextBox:empty)">
+      <Setter Property="InnerRightContent">
+        <Template>
+          <Button Theme="{StaticResource DeleteButtonStyle}"
+                  Command="{Binding $parent[TextBox].Clear}"
+                  BorderThickness="{Binding $parent[NumericUpDown].BorderThickness}"
+                  CornerRadius="{Binding  $parent[NumericUpDown].CornerRadius}"
+                  HorizontalAlignment="Right"
+                  MinWidth="40"
+                  VerticalAlignment="Stretch"
+                  ClipToBounds="True">
+            <PathIcon Data="{StaticResource TextBoxClearButtonData}"
+                      Foreground="{DynamicResource TextControlButtonForeground}"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Center"
+                      Width="{DynamicResource TextBoxIconSize}"
+                      Height="{DynamicResource TextBoxIconSize}"/>
+          </Button>
+        </Template>
+      </Setter>
+    </Style>
+
     <Style Selector="^:error /template/ ButtonSpinner#PART_Spinner">
       <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}" />
     </Style>
   </ControlTheme>
+
+  <ControlTheme x:Key="DeleteButtonStyle" TargetType="Button">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="ButtonLayoutBorder"
+                          Margin="{DynamicResource TextBoxInnerButtonMargin}"
+                          BorderBrush="{DynamicResource TextControlButtonBorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          Background="{DynamicResource TextControlButtonBackground}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          CornerRadius="{TemplateBinding CornerRadius}"/>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="FluentNumericUpDownTextBox" TargetType="TextBox">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
+    <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
+    <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
+    <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
+    <Setter Property="ContextFlyout" Value="{OnFormFactor Desktop={StaticResource DefaultTextBoxContextFlyout}, Mobile={StaticResource HorizontalTextBoxContextFlyout}}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DataValidationErrors>
+          <Grid ColumnDefinitions="Auto,*,Auto" >
+            <ContentPresenter Grid.Column="0"
+                              Grid.ColumnSpan="1"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding InnerLeftContent}"/>
+            <DockPanel x:Name="PART_InnerDockPanel"
+                       Grid.Column="1"
+                       Grid.ColumnSpan="1"
+                       Margin="{TemplateBinding Padding}">
+              <TextBlock Name="PART_FloatingPlaceholder"
+                         Foreground="{TemplateBinding PlaceholderForeground}"
+                         IsVisible="False"
+                         Text="{TemplateBinding PlaceholderText}"
+                         DockPanel.Dock="Top" />
+
+              <ScrollViewer Name="PART_ScrollViewer"
+                            HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                            VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                            IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                            AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                            BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
+                <Panel>
+                  <TextBlock Name="PART_Placeholder"
+                             Foreground="{TemplateBinding PlaceholderForeground}"
+                             Opacity="{DynamicResource TextControlPlaceholderOpacity}"
+                             Text="{TemplateBinding PlaceholderText}"
+                             TextAlignment="{TemplateBinding TextAlignment}"
+                             TextWrapping="{TemplateBinding TextWrapping}"
+                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                    <TextBlock.IsVisible>
+                      <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding ElementName="PART_TextPresenter" Path="PreeditText" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                        <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                      </MultiBinding>
+                    </TextBlock.IsVisible>
+                  </TextBlock>
+
+                  <TextPresenter Name="PART_TextPresenter"
+                                 Text="{TemplateBinding Text, Mode=TwoWay}"
+                                 CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
+                                 CaretIndex="{TemplateBinding CaretIndex}"
+                                 SelectionStart="{TemplateBinding SelectionStart}"
+                                 SelectionEnd="{TemplateBinding SelectionEnd}"
+                                 TextAlignment="{TemplateBinding TextAlignment}"
+                                 TextWrapping="{TemplateBinding TextWrapping}"
+                                 LineHeight="{TemplateBinding LineHeight}"
+                                 LetterSpacing="{TemplateBinding LetterSpacing}"
+                                 PasswordChar="{TemplateBinding PasswordChar}"
+                                 RevealPassword="{TemplateBinding RevealPassword}"
+                                 SelectionBrush="{TemplateBinding SelectionBrush}"
+                                 SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                 CaretBrush="{TemplateBinding CaretBrush}"
+                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Panel>
+                <ScrollViewer.Styles>
+                  <Style Selector="ScrollContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Cursor" Value="IBeam" />
+                  </Style>
+                </ScrollViewer.Styles>
+              </ScrollViewer>
+            </DockPanel>
+            <ContentPresenter Grid.Column="2"
+                              Grid.ColumnSpan="1"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding InnerRightContent}"/>
+          </Grid>
+        </DataValidationErrors>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:touch-mode">
+      <Setter Property="ContextFlyout" Value="{StaticResource HorizontalTextBoxContextFlyout}" />
+    </Style>
+
+    <!-- Disabled State -->
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundDisabled}" />
+
+      <Style Selector="^ /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource TextControlBackgroundDisabled}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
+      </Style>
+
+    </Style>
+
+    <!-- PointerOver State-->
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundPointerOver}" />
+
+      <Style Selector="^ /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushPointerOver}"/>
+        <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
+      </Style>
+
+    </Style>
+
+    <!-- Focused State -->
+    <Style Selector="^:focus">
+      <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundFocused}" />
+
+      <Style Selector="^ /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}"/>
+        <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:error /template/ Border#PART_BorderElement">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
+    </Style>
+
+    <Style Selector="^ /template/ TextBlock#PART_FloatingPlaceholder">
+      <Setter Property="Cursor" Value="IBeam"/>
+    </Style>
+
+    <Style Selector="^[UseFloatingPlaceholder=true]:not(:empty) /template/ TextBlock#PART_FloatingPlaceholder">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+  </ControlTheme>
+
 </ResourceDictionary>
