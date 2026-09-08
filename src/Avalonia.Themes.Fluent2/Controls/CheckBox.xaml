@@ -16,7 +16,7 @@
   <StreamGeometry x:Key="CheckMarkPathData">M5.5 10.586 1.707 6.793A1 1 0 0 0 .293 8.207l4.5 4.5a1 1 0 0 0 1.414 0l11-11A1 1 0 0 0 15.793.293L5.5 10.586Z</StreamGeometry>
   <x:Double x:Key="CheckBoxMinHeight">32</x:Double>
   <!-- WinUI forces MinWidth=120, which breaks desktop form layouts (and v1 never had it).
-       Deliberately 0 here; override this resource to restore the WinUI metric. -->
+  Deliberately 0 here; override this resource to restore the WinUI metric. -->
   <x:Double x:Key="CheckBoxMinWidth">0</x:Double>
   <x:Double x:Key="CheckBoxSize">20</x:Double>
   <x:Double x:Key="CheckBoxGlyphSize">12</x:Double>
@@ -24,7 +24,7 @@
   <!-- WinUI reference: CheckBox_themeresources.xaml (DefaultCheckBoxStyle), tag winui3/release/1.5.2 -->
   <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
     <!-- WinUI pads 8,5,0,0 and relies on MinWidth for trailing space; with MinWidth dropped,
-         8px right padding keeps a sane hit target (same amendment FluentAvalonia made). -->
+    8px right padding keeps a sane hit target (same amendment FluentAvalonia made). -->
     <Setter Property="Padding" Value="8,5,8,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -55,27 +55,27 @@
                     UseLayoutRounding="False"
                     Height="{DynamicResource CheckBoxSize}"
                     Width="{DynamicResource CheckBoxSize}" />
+            <Panel
+              Height="{DynamicResource CheckBoxGlyphSize}"
+              Width="{DynamicResource CheckBoxGlyphSize}">
+              <Path x:Name="CheckGlyph"
+                    Opacity="0"
+                    Fill="{DynamicResource CheckBoxCheckGlyphForegroundUnchecked}"
+                    Stretch="Uniform"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    FlowDirection="LeftToRight" />
 
-            <Viewbox UseLayoutRounding="False">
-              <Panel>
-                <Panel Height="{DynamicResource CheckBoxGlyphSize}" Width="{DynamicResource CheckBoxGlyphSize}" />
-                <Path x:Name="CheckGlyph"
-                      Opacity="0"
-                      Fill="{DynamicResource CheckBoxCheckGlyphForegroundUnchecked}"
-                      Stretch="Uniform"
-                      VerticalAlignment="Center"
-                      FlowDirection="LeftToRight" />
-              </Panel>
-            </Viewbox>
+            </Panel>
           </Grid>
           <ContentPresenter x:Name="PART_ContentPresenter"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          Content="{TemplateBinding Content}"
-                          Margin="{TemplateBinding Padding}"
-                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                          TextWrapping="Wrap"
-                          Grid.Column="1" />
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            TextWrapping="Wrap"
+                            Grid.Column="1" />
         </Grid>
       </ControlTemplate>
     </Setter>
