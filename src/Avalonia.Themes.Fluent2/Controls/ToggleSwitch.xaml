@@ -1,7 +1,7 @@
 <ResourceDictionary
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:ClassModifier="internal">
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  x:ClassModifier="internal">
   <Design.PreviewWith>
     <StackPanel Margin="20" Width="250" Spacing="24">
       <StackPanel Spacing="12" >
@@ -19,72 +19,77 @@
   <Thickness x:Key="ToggleSwitchTopHeaderMargin">0,0,0,4</Thickness>
   <GridLength x:Key="ToggleSwitchPreContentMargin">10</GridLength>
   <GridLength x:Key="ToggleSwitchPostContentMargin">10</GridLength>
-  <x:Double x:Key="ToggleSwitchThemeMinWidth">0</x:Double>
   <x:Double x:Key="ToggleSwitchKnobSize">12</x:Double>
   <x:Double x:Key="ToggleSwitchKnobPointerOverSize">14</x:Double>
   <x:Double x:Key="ToggleSwitchKnobPressedLength">17</x:Double>
   <x:Double x:Key="ToggleSwitchKnobPressedSize">14</x:Double>
-  <!-- WinUI ControlFastOutSlowInKeySpline -->
+  <x:Double x:Key="ToggleSwitchThemeMinWidth">154</x:Double>
   <Easing x:Key="ToggleSwitchKnobEasing">0,0,0,1</Easing>
 
   <!-- WinUI reference: ToggleSwitch_themeresources.xaml (DefaultToggleSwitchStyle), tag winui3/release/1.5.2.
-       Track is 40x20 with a 10px corner radius; off = 1px strong stroke over a subtle alt fill,
-       on = accent fill with zero stroke. The 12px knob grows to 14px on hover and stretches to a
-       17x14 pill anchored to the near track edge while pressed; knob size and slide changes use a
-       167ms fast-out-slow-in spline. -->
+  Track is 40x20 with a 10px corner radius; off = 1px strong stroke over a subtle alt fill,
+  on = accent fill with zero stroke. The 12px knob grows to 14px on hover and stretches to a
+  17x14 pill anchored to the near track edge while pressed; knob size and slide changes use a
+  167ms fast-out-slow-in spline. -->
   <ControlTheme x:Key="{x:Type ToggleSwitch}" TargetType="ToggleSwitch">
     <Setter Property="Foreground" Value="{DynamicResource ToggleSwitchContentForeground}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
     <Setter Property="KnobTransitions">
       <Transitions>
-          <DoubleTransition
-              Easing="{StaticResource ToggleSwitchKnobEasing}"
-              Property="Canvas.Left"
-              Duration="{StaticResource ControlFastAnimationDuration}" />
-        </Transitions>
+        <DoubleTransition
+          Easing="{StaticResource ToggleSwitchKnobEasing}"
+          Property="Canvas.Left"
+          Duration="{StaticResource ControlFastAnimationDuration}" />
+      </Transitions>
     </Setter>
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid Background="{TemplateBinding Background}" RowDefinitions="Auto,*">
-
-          <ContentPresenter
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid RowDefinitions="Auto,*">
+            <ContentPresenter
               x:Name="PART_ContentPresenter"
               Grid.Row="0"
+              IsHitTestVisible="False"
               VerticalAlignment="Top"
               Content="{TemplateBinding Content}"
               ContentTemplate="{TemplateBinding ContentTemplate}"
               Margin="{DynamicResource ToggleSwitchTopHeaderMargin}" />
 
-          <Grid
+            <Grid
               Grid.Row="1"
               MinWidth="{DynamicResource ToggleSwitchThemeMinWidth}"
               HorizontalAlignment="Left"
               VerticalAlignment="Top">
 
-            <Grid.RowDefinitions>
-              <RowDefinition Height="{DynamicResource ToggleSwitchPreContentMargin}" />
-              <RowDefinition Height="Auto" />
-              <RowDefinition Height="{DynamicResource ToggleSwitchPostContentMargin}" />
-            </Grid.RowDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="{DynamicResource ToggleSwitchPreContentMargin}" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="{DynamicResource ToggleSwitchPostContentMargin}" />
+              </Grid.RowDefinitions>
 
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="12" MaxWidth="12" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="12" MaxWidth="12" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
 
-            <Grid
-                x:Name="SwitchAreaGrid"
+              <Border
+                x:Name="SwitchAreaBorder"
                 Grid.RowSpan="3"
                 Grid.ColumnSpan="3"
                 Background="{DynamicResource ToggleSwitchContainerBackground}"
+                CornerRadius="{TemplateBinding CornerRadius}"
                 Margin="0,5"
                 TemplatedControl.IsTemplateFocusTarget="True" />
 
-            <ContentPresenter
+              <ContentPresenter
                 x:Name="PART_OffContentPresenter"
                 Grid.RowSpan="3"
                 Grid.Column="2"
@@ -93,7 +98,7 @@
                 Content="{TemplateBinding OffContent}"
                 ContentTemplate="{TemplateBinding OffContentTemplate}" />
 
-            <ContentPresenter
+              <ContentPresenter
                 x:Name="PART_OnContentPresenter"
                 Grid.RowSpan="3"
                 Grid.Column="2"
@@ -102,7 +107,7 @@
                 Content="{TemplateBinding OnContent}"
                 ContentTemplate="{TemplateBinding OnContentTemplate}" />
 
-            <Border
+              <Border
                 x:Name="OuterBorder"
                 Grid.Row="1"
                 Width="40"
@@ -112,7 +117,7 @@
                 BorderThickness="{DynamicResource ToggleSwitchOuterBorderStrokeThickness}"
                 CornerRadius="10" />
 
-            <Border
+              <Border
                 x:Name="SwitchKnobBounds"
                 Grid.Row="1"
                 Width="40"
@@ -122,42 +127,43 @@
                 BorderThickness="{DynamicResource ToggleSwitchOnStrokeThickness}"
                 CornerRadius="10" />
 
-            <Canvas
+              <Canvas
                 x:Name="PART_SwitchKnob"
                 Grid.Row="1"
                 Width="20"
                 Height="20"
                 HorizontalAlignment="Left">
 
-              <Grid x:Name="PART_MovingKnobs" Width="20" Height="20">
-                <Ellipse
-                  x:Name="SwitchKnobOn"
-                  Fill="{DynamicResource ToggleSwitchKnobFillOn}"
-                  Width="{DynamicResource ToggleSwitchKnobSize}"
-                  Height="{DynamicResource ToggleSwitchKnobSize}">
-                  <Ellipse.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Width" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
-                      <DoubleTransition Property="Height" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
-                    </Transitions>
-                  </Ellipse.Transitions>
-                </Ellipse>
-                <Ellipse
-                  x:Name="SwitchKnobOff"
-                  Fill="{DynamicResource ToggleSwitchKnobFillOff}"
-                  Width="{DynamicResource ToggleSwitchKnobSize}"
-                  Height="{DynamicResource ToggleSwitchKnobSize}">
-                  <Ellipse.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Width" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
-                      <DoubleTransition Property="Height" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
-                    </Transitions>
-                  </Ellipse.Transitions>
-                </Ellipse>
-              </Grid>
-            </Canvas>
+                <Grid x:Name="PART_MovingKnobs" Width="20" Height="20">
+                  <Ellipse
+                    x:Name="SwitchKnobOn"
+                    Fill="{DynamicResource ToggleSwitchKnobFillOn}"
+                    Width="{DynamicResource ToggleSwitchKnobSize}"
+                    Height="{DynamicResource ToggleSwitchKnobSize}">
+                    <Ellipse.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Width" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                        <DoubleTransition Property="Height" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                      </Transitions>
+                    </Ellipse.Transitions>
+                  </Ellipse>
+                  <Ellipse
+                    x:Name="SwitchKnobOff"
+                    Fill="{DynamicResource ToggleSwitchKnobFillOff}"
+                    Width="{DynamicResource ToggleSwitchKnobSize}"
+                    Height="{DynamicResource ToggleSwitchKnobSize}">
+                    <Ellipse.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Width" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                        <DoubleTransition Property="Height" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                      </Transitions>
+                    </Ellipse.Transitions>
+                  </Ellipse>
+                </Grid>
+              </Canvas>
+            </Grid>
           </Grid>
-        </Grid>
+        </Border>
       </ControlTemplate>
     </Setter>
 
@@ -208,7 +214,7 @@
     </Style>
 
     <!-- While held, the knob stretches into a 17x14 pill anchored to the near edge of the
-         track (WinUI Pressed state setters). Each knob is only visible in its own state. -->
+    track (WinUI Pressed state setters). Each knob is only visible in its own state. -->
     <Style Selector="^:pressed /template/ Ellipse#SwitchKnobOff">
       <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOffPressed}" />
       <Setter Property="Width" Value="{DynamicResource ToggleSwitchKnobPressedLength}" />
