@@ -37,7 +37,7 @@ namespace ControlCatalog
             _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
             _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
 
-            SetCatalogThemes(CatalogTheme.Fluent2);
+            SetCatalogThemes(CatalogTheme.Fluent2, skipWindowCreation: true);
         }
 
         public override void OnFrameworkInitializationCompleted()
@@ -108,12 +108,12 @@ namespace ControlCatalog
 
         private CatalogTheme _prevTheme;
         public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme;
-        public static void SetCatalogThemes(CatalogTheme theme)
+        public static void SetCatalogThemes(CatalogTheme theme, bool skipWindowCreation = false)
         {
             var app = (App)Current!;
             var prevTheme = app._prevTheme;
             app._prevTheme = theme;
-            var shouldReopenWindow = prevTheme != theme;
+            var shouldReopenWindow = prevTheme != theme && !skipWindowCreation;
 
             if (app._themeStylesContainer.Count == 0)
             {
