@@ -286,25 +286,22 @@ namespace Avalonia.FreeDesktop
 
         public void SetIsVisible(bool visible)
         {
-            if (_isDisposed || !_serviceConnected)
-            {
-                _isVisible = visible;
+            if (_isDisposed || visible == _isVisible)
                 return;
-            }
 
-            switch (visible)
-            {
-                case true when !_isVisible:
-                    DestroyTrayIcon();
-                    CreateTrayIcon();
-                    break;
-                case false when _isVisible:
-                    DestroyTrayIcon();
-                    ReleaseTrayServiceName();
-                    break;
-            }
-
+            // CreateTrayIcon reads _isVisible. Set it first.
             _isVisible = visible;
+
+            if (visible)
+            {
+                CreateTrayIcon();
+            }
+            else
+            {
+                DestroyTrayIcon();
+                // Release the name also when the watcher is away. A hidden icon must not own a name.
+                ReleaseTrayServiceName();
+            }
         }
 
         public void SetToolTipText(string? text)
