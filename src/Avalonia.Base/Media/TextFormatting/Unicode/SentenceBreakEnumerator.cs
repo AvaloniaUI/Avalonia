@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -9,12 +10,36 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// The enumerator is a <see langword="ref struct"/> operating on a <see cref="ReadOnlySpan{T}"/>
     /// so every operation is allocation-free. It reads codepoints with
     /// <see cref="Codepoint.ReadAt"/> and classifies them via the <see cref="SentenceBreakClass"/>
-    /// property backed by the <c>SentenceBreak</c> trie.
+    /// property backed by the <c>SentenceBreak</c> trie. Each codepoint is visited a constant
+    /// number of times: the left-hand context every rule needs is folded into a few fields as the
+    /// walk advances, and the one rule that looks ahead reuses the scan it already made.
     /// </remarks>
     public ref struct SentenceBreakEnumerator
     {
         private readonly ReadOnlySpan<char> _text;
         private int _offset;
+
+        // The left-hand context, updated one codepoint at a time as the walk advances.
+        // _significant and _priorSignificant hold the last two classes that are not
+        // Extend/Format, _ignorable the class of the last codepoint when that one is.
+        private SentenceBreakClass _significant;
+        private SentenceBreakClass _priorSignificant;
+        private SentenceBreakClass _ignorable;
+        private bool _hasSignificant;
+        private bool _hasPriorSignificant;
+        private bool _lastIsIgnorable;
+
+        // How far the text to the left matches the (STerm | ATerm) Close* Sp* (Sep | CR | LF)?
+        // grammar shared by SB8 through SB11, and which terminator opened it.
+        private SentenceBreakClass _terminator;
+        private TerminatorStage _terminatorStage;
+
+        // The SB8 lookahead, memoized. A scan that ran from _lookaheadStart and stopped at
+        // _lookaheadEnd gives the same answer for every start position in between, so the
+        // Close* Sp* run following an ATerm is scanned once rather than once per position.
+        private int _lookaheadStart;
+        private int _lookaheadEnd;
+        private bool _lookaheadResult;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SentenceBreakEnumerator"/> struct.
@@ -24,6 +49,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             _text = text;
             _offset = 0;
+            _significant = SentenceBreakClass.Other;
+            _priorSignificant = SentenceBreakClass.Other;
+            _ignorable = SentenceBreakClass.Other;
+            _hasSignificant = false;
+            _hasPriorSignificant = false;
+            _lastIsIgnorable = false;
+            _terminator = SentenceBreakClass.Other;
+            _terminatorStage = TerminatorStage.None;
+            _lookaheadStart = -1;
+            _lookaheadEnd = -1;
+            _lookaheadResult = false;
         }
 
         /// <summary>
@@ -41,6 +77,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             var segmentStart = _offset;
             var current = ReadForward(_offset);
+
+            Consume(current.SentenceBreakClass);
+
             var currentEnd = current.End;
 
             while (currentEnd < _text.Length)
@@ -53,6 +92,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 }
 
                 current = next;
+
+                Consume(current.SentenceBreakClass);
+
                 currentEnd = current.End;
             }
 
@@ -66,7 +108,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         // Rules are tested in order; the first matching rule wins.
         // SB1 (sot ÷) and SB2 (÷ eot) are implicit: the loop above starts at the
         // start of text and stops at text.Length.
-        private readonly bool IsBoundary(in SentenceBreakUnit current, in SentenceBreakUnit next)
+        private bool IsBoundary(in SentenceBreakUnit current, in SentenceBreakUnit next)
         {
             // SB3: CR × LF — no break between CR and LF.
             if (current.SentenceBreakClass == SentenceBreakClass.CarriageReturn &&
@@ -81,30 +123,28 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 return true;
             }
 
-            // SB5: X (Extend | Format) × X  — Extend/Format do not break from the preceding char.
-            // The right-side ignorable check ensures the main loop doesn't advance past them.
-            // The left-side GetEffectivePrevious helper resolves the effective previous class.
-            if (IsIgnored(next.SentenceBreakClass))
+            // SB5: X (Extend | Format) × X — Extend/Format do not break from the preceding char.
+            // The right-side check keeps the walk from advancing past them; the left side is
+            // resolved by Left, which reports the base an ignorable attaches to.
+            if (IsIgnorable(next.SentenceBreakClass))
             {
                 return false;
             }
 
-            // Resolve the effective left class, skipping any trailing Extend/Format per SB5.
-            var left = GetEffectivePrevious(current);
+            var left = Left;
             var right = next.SentenceBreakClass;
 
             // SB6: ATerm × Numeric
-            if (left.SentenceBreakClass == SentenceBreakClass.ATerm &&
-                right == SentenceBreakClass.Numeric)
+            if (left == SentenceBreakClass.ATerm && right == SentenceBreakClass.Numeric)
             {
                 return false;
             }
 
             // SB7: (Upper | Lower) ATerm × Upper
-            if (left.SentenceBreakClass == SentenceBreakClass.ATerm &&
+            if (left == SentenceBreakClass.ATerm &&
                 right == SentenceBreakClass.Upper &&
-                TryGetPreviousSignificant(left.Start, out var beforeATerm) &&
-                IsUpperOrLower(beforeATerm.SentenceBreakClass))
+                _hasPriorSignificant &&
+                IsUpperOrLower(_priorSignificant))
             {
                 return false;
             }
@@ -112,13 +152,15 @@ namespace Avalonia.Media.TextFormatting.Unicode
             // SB8: ATerm Close* Sp* × (¬{OLetter|Upper|Sep|CR|LF|STerm|ATerm})* Lower
             // If the left context is ATerm Close* Sp*, and scanning right we find a Lower
             // (without hitting a blocker first), do not break.
-            if (HasATermContext(current) && ScanForwardSb8(right, next.End))
+            if (_terminator == SentenceBreakClass.ATerm &&
+                MatchesTerminatorContext(TerminatorStage.Space) &&
+                HasLowerAhead(next.Start))
             {
                 return false;
             }
 
             // SB8a: (STerm | ATerm) Close* Sp* × (SContinue | STerm | ATerm)
-            if (HasTerminatorContext(current, includeSpaces: true) &&
+            if (MatchesTerminatorContext(TerminatorStage.Space) &&
                 (right == SentenceBreakClass.SContinue ||
                  right == SentenceBreakClass.STerm ||
                  right == SentenceBreakClass.ATerm))
@@ -127,7 +169,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             // SB9: (STerm | ATerm) Close* × (Close | Sp | Sep | CR | LF)
-            if (HasTerminatorContext(current, includeSpaces: false) &&
+            if (MatchesTerminatorContext(TerminatorStage.Close) &&
                 (right == SentenceBreakClass.Close ||
                  right == SentenceBreakClass.Sp ||
                  IsSep(right)))
@@ -136,14 +178,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             // SB10: (STerm | ATerm) Close* Sp* × (Sp | Sep | CR | LF)
-            if (HasTerminatorContext(current, includeSpaces: true) &&
+            if (MatchesTerminatorContext(TerminatorStage.Space) &&
                 (right == SentenceBreakClass.Sp || IsSep(right)))
             {
                 return false;
             }
 
             // SB11: (STerm | ATerm) Close* Sp* (Sep | CR | LF)? ÷
-            if (HasCompleteTerminatorContext(current))
+            if (MatchesTerminatorContext(TerminatorStage.Separator))
             {
                 return true;
             }
@@ -152,218 +194,107 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return false;
         }
 
-        // SB8 forward scan from the first right-side character.
-        // Returns true iff we can reach a Lower without hitting a "blocker" class.
-        // Blocker: OLetter | Upper | Sep | CR | LF | STerm | ATerm
-        // (Note: Lower itself is the TARGET, not a blocker.)
-        private readonly bool ScanForwardSb8(SentenceBreakClass firstRight, int restStart)
+        // Folds one codepoint into the left-hand context.
+        private void Consume(SentenceBreakClass cls)
         {
-            if (firstRight == SentenceBreakClass.Lower)
+            if (IsIgnorable(cls))
             {
-                return true;
-            }
+                _ignorable = cls;
+                _lastIsIgnorable = true;
 
-            if (IsSb8Blocker(firstRight))
-            {
-                return false;
-            }
-
-            // firstRight is neither Lower nor a blocker: scan forward for Lower/blocker.
-            var scanStart = restStart;
-
-            while (TryReadForward(scanStart, out var ahead))
-            {
-                var cls = ahead.SentenceBreakClass;
-
-                // Apply SB5: skip Extend/Format transparently.
-                if (IsIgnored(cls))
+                // SB5 attaches an ignorable to the preceding base, leaving the context as it
+                // was. After a paragraph separator there is no base to attach to, so the
+                // ignorable stands on its own and matches no terminator grammar.
+                if (!_hasSignificant || IsSep(_significant))
                 {
-                    scanStart = ahead.End;
-                    continue;
+                    _terminator = SentenceBreakClass.Other;
+                    _terminatorStage = TerminatorStage.None;
                 }
+
+                return;
+            }
+
+            _priorSignificant = _significant;
+            _hasPriorSignificant = _hasSignificant;
+            _significant = cls;
+            _hasSignificant = true;
+            _lastIsIgnorable = false;
+
+            // Walk the (STerm | ATerm) Close* Sp* (Sep | CR | LF)? grammar. Its stages are
+            // ordered, so a class that would move back through them ends the match instead.
+            if (cls is SentenceBreakClass.ATerm or SentenceBreakClass.STerm)
+            {
+                _terminator = cls;
+                _terminatorStage = TerminatorStage.Terminator;
+            }
+            else if (_terminatorStage == TerminatorStage.None)
+            {
+                // No terminator to the left, so there is nothing to advance.
+            }
+            else if (cls == SentenceBreakClass.Close && _terminatorStage <= TerminatorStage.Close)
+            {
+                _terminatorStage = TerminatorStage.Close;
+            }
+            else if (cls == SentenceBreakClass.Sp && _terminatorStage <= TerminatorStage.Space)
+            {
+                _terminatorStage = TerminatorStage.Space;
+            }
+            else if (IsSep(cls) && _terminatorStage <= TerminatorStage.Space)
+            {
+                _terminatorStage = TerminatorStage.Separator;
+            }
+            else
+            {
+                _terminator = SentenceBreakClass.Other;
+                _terminatorStage = TerminatorStage.None;
+            }
+        }
+
+        // The effective class to the left of the next codepoint, per SB5: the base an
+        // Extend/Format attaches to, or the ignorable itself when it has no base.
+        private readonly SentenceBreakClass Left
+            => _lastIsIgnorable && (!_hasSignificant || IsSep(_significant)) ? _ignorable : _significant;
+
+        // True when the text to the left matches (STerm | ATerm) Close* Sp* (Sep | CR | LF)?
+        // truncated at the given stage: Close for SB9, Space for SB8/SB8a/SB10, Separator for SB11.
+        private readonly bool MatchesTerminatorContext(TerminatorStage upTo)
+            => _terminatorStage != TerminatorStage.None && _terminatorStage <= upTo;
+
+        // SB8 lookahead: true iff a Lower is reachable from start without passing a blocker
+        // (OLetter | Upper | Sep | CR | LF | STerm | ATerm). Extend/Format are transparent per SB5.
+        private bool HasLowerAhead(int start)
+        {
+            if (start >= _lookaheadStart && start <= _lookaheadEnd)
+            {
+                return _lookaheadResult;
+            }
+
+            var position = start;
+            var result = false;
+
+            while (position < _text.Length)
+            {
+                var cls = Codepoint.ReadAt(_text, position, out var count).SentenceBreakClass;
 
                 if (cls == SentenceBreakClass.Lower)
                 {
-                    return true;
+                    result = true;
+                    break;
                 }
 
                 if (IsSb8Blocker(cls))
                 {
-                    return false;
+                    break;
                 }
 
-                scanStart = ahead.End;
+                position += count;
             }
 
-            return false;
-        }
+            _lookaheadStart = start;
+            _lookaheadEnd = position;
+            _lookaheadResult = result;
 
-        // Returns true if the left context (at and before `current`) ends with
-        // (STerm | ATerm) Close* [Sp*]
-        // when includeSpaces=true the Sp* is included; false means only Close*.
-        private readonly bool HasTerminatorContext(in SentenceBreakUnit current, bool includeSpaces)
-        {
-            var ec = GetEffectivePrevious(current);
-            var cls = ec.SentenceBreakClass;
-            var scanEnd = ec.Start;
-
-            // Skip Sp* (only when includeSpaces=true)
-            if (includeSpaces)
-            {
-                while (cls == SentenceBreakClass.Sp)
-                {
-                    if (!TryGetPreviousSignificant(scanEnd, out var prev))
-                    {
-                        return false;
-                    }
-
-                    cls = prev.SentenceBreakClass;
-                    scanEnd = prev.Start;
-                }
-            }
-
-            // Skip Close*
-            while (cls == SentenceBreakClass.Close)
-            {
-                if (!TryGetPreviousSignificant(scanEnd, out var prev))
-                {
-                    return false;
-                }
-
-                cls = prev.SentenceBreakClass;
-                scanEnd = prev.Start;
-            }
-
-            return cls == SentenceBreakClass.ATerm || cls == SentenceBreakClass.STerm;
-        }
-
-        // Returns true if the left context matches:
-        //   (STerm | ATerm) Close* Sp* (Sep | CR | LF)?
-        // i.e., the complete context for SB11 which allows an optional trailing paragraph separator.
-        private readonly bool HasCompleteTerminatorContext(in SentenceBreakUnit current)
-        {
-            var ec = GetEffectivePrevious(current);
-            var cls = ec.SentenceBreakClass;
-            var scanEnd = ec.Start;
-
-            // Skip optional trailing Sep/CR/LF (at most one paragraph separator).
-            if (IsSep(cls))
-            {
-                if (!TryGetPreviousSignificant(scanEnd, out var prev))
-                {
-                    return false;
-                }
-
-                cls = prev.SentenceBreakClass;
-                scanEnd = prev.Start;
-            }
-
-            // Skip Sp*
-            while (cls == SentenceBreakClass.Sp)
-            {
-                if (!TryGetPreviousSignificant(scanEnd, out var prev))
-                {
-                    return false;
-                }
-
-                cls = prev.SentenceBreakClass;
-                scanEnd = prev.Start;
-            }
-
-            // Skip Close*
-            while (cls == SentenceBreakClass.Close)
-            {
-                if (!TryGetPreviousSignificant(scanEnd, out var prev))
-                {
-                    return false;
-                }
-
-                cls = prev.SentenceBreakClass;
-                scanEnd = prev.Start;
-            }
-
-            return cls == SentenceBreakClass.ATerm || cls == SentenceBreakClass.STerm;
-        }
-
-        // Returns true if the left context ends with ATerm Close* Sp*
-        // (ATerm-specific version; STerm does not apply for SB8).
-        private readonly bool HasATermContext(in SentenceBreakUnit current)
-        {
-            var ec = GetEffectivePrevious(current);
-            var cls = ec.SentenceBreakClass;
-            var scanEnd = ec.Start;
-
-            // Skip Sp*
-            while (cls == SentenceBreakClass.Sp)
-            {
-                if (!TryGetPreviousSignificant(scanEnd, out var prev))
-                {
-                    return false;
-                }
-
-                cls = prev.SentenceBreakClass;
-                scanEnd = prev.Start;
-            }
-
-            // Skip Close*
-            while (cls == SentenceBreakClass.Close)
-            {
-                if (!TryGetPreviousSignificant(scanEnd, out var prev))
-                {
-                    return false;
-                }
-
-                cls = prev.SentenceBreakClass;
-                scanEnd = prev.Start;
-            }
-
-            return cls == SentenceBreakClass.ATerm;
-        }
-
-        // Follows the SB5 "ignore" rule: if `current` is ignored (Extend/Format),
-        // scan backward to find the effective preceding non-ignored unit. If no
-        // non-ignored unit is found, returns `current` unchanged (edge case:
-        // leading ignored chars have no base to attach to).
-        private readonly SentenceBreakUnit GetEffectivePrevious(in SentenceBreakUnit current)
-        {
-            if (!IsIgnored(current.SentenceBreakClass))
-            {
-                return current;
-            }
-
-            var scanEnd = current.Start;
-
-            while (TryReadBackward(scanEnd, out var previous))
-            {
-                if (!IsIgnored(previous.SentenceBreakClass))
-                {
-                    // SB4: do not carry the ignored attachment across a paragraph separator.
-                    return IsSep(previous.SentenceBreakClass) ? current : previous;
-                }
-
-                scanEnd = previous.Start;
-            }
-
-            return current;
-        }
-
-        private readonly bool TryGetPreviousSignificant(int end, out SentenceBreakUnit codepoint)
-        {
-            var scanEnd = end;
-
-            while (TryReadBackward(scanEnd, out codepoint))
-            {
-                if (!IsIgnored(codepoint.SentenceBreakClass))
-                {
-                    return true;
-                }
-
-                scanEnd = codepoint.Start;
-            }
-
-            codepoint = default;
-
-            return false;
+            return result;
         }
 
         private readonly SentenceBreakUnit ReadForward(int start)
@@ -372,69 +303,65 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return new SentenceBreakUnit(codepoint, start, start + count);
         }
 
-        private readonly bool TryReadForward(int start, out SentenceBreakUnit codepoint)
-        {
-            if (start >= _text.Length)
-            {
-                codepoint = default;
-                return false;
-            }
-
-            codepoint = ReadForward(start);
-            return true;
-        }
-
-        private readonly bool TryReadBackward(int end, out SentenceBreakUnit codepoint)
-        {
-            if (end <= 0)
-            {
-                codepoint = default;
-                return false;
-            }
-
-            var start = end - 1;
-
-            if (start > 0 &&
-                char.IsLowSurrogate(_text[start]) &&
-                char.IsHighSurrogate(_text[start - 1]))
-            {
-                start--;
-            }
-
-            codepoint = ReadForward(start);
-            return true;
-        }
-
         // SB4: Sep | CR | LF are paragraph separators.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsSep(SentenceBreakClass cls)
         {
-            return cls is SentenceBreakClass.Sep
-                or SentenceBreakClass.CarriageReturn
-                or SentenceBreakClass.LineFeed;
+            const ulong mask =
+                (1UL << (int)SentenceBreakClass.Sep) |
+                (1UL << (int)SentenceBreakClass.CarriageReturn) |
+                (1UL << (int)SentenceBreakClass.LineFeed);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
         }
 
         // SB5: Extend and Format are transparent (ignored) for sentence-boundary rules.
-        private static bool IsIgnored(SentenceBreakClass cls)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsIgnorable(SentenceBreakClass cls)
         {
-            return cls is SentenceBreakClass.Extend or SentenceBreakClass.Format;
+            const ulong mask =
+                (1UL << (int)SentenceBreakClass.Extend) |
+                (1UL << (int)SentenceBreakClass.Format);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsUpperOrLower(SentenceBreakClass cls)
         {
-            return cls is SentenceBreakClass.Upper or SentenceBreakClass.Lower;
+            const ulong mask =
+                (1UL << (int)SentenceBreakClass.Upper) |
+                (1UL << (int)SentenceBreakClass.Lower);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
         }
 
         // SB8 forward-scan blocker set: classes that terminate the lookahead without
         // matching Lower. Lower itself is the TARGET and is NOT included here.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsSb8Blocker(SentenceBreakClass cls)
         {
-            return cls is SentenceBreakClass.OLetter
-                or SentenceBreakClass.Upper
-                or SentenceBreakClass.Sep
-                or SentenceBreakClass.CarriageReturn
-                or SentenceBreakClass.LineFeed
-                or SentenceBreakClass.STerm
-                or SentenceBreakClass.ATerm;
+            const ulong mask =
+                (1UL << (int)SentenceBreakClass.OLetter) |
+                (1UL << (int)SentenceBreakClass.Upper) |
+                (1UL << (int)SentenceBreakClass.Sep) |
+                (1UL << (int)SentenceBreakClass.CarriageReturn) |
+                (1UL << (int)SentenceBreakClass.LineFeed) |
+                (1UL << (int)SentenceBreakClass.STerm) |
+                (1UL << (int)SentenceBreakClass.ATerm);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
+        }
+
+        // Stages of the (STerm | ATerm) Close* Sp* (Sep | CR | LF)? grammar, in the order
+        // they may appear. A match only ever moves forward through them.
+        private enum TerminatorStage : byte
+        {
+            None,
+            Terminator,
+            Close,
+            Space,
+            Separator
         }
 
         private readonly struct SentenceBreakUnit
