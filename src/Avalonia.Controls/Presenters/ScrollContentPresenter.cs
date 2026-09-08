@@ -330,6 +330,15 @@ namespace Avalonia.Controls.Presenters
             AttachToScrollViewer();
         }
 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            // A replaced template no longer has the ScrollViewer as an ancestor and must
+            // release its content. Keep the bindings when the entire owner is detached.
+            AttachToScrollViewer();
+        }
+
         /// <summary>
         /// Locates the first <see cref="ScrollViewer"/> ancestor and binds to it. Properties which have been set through other means are not bound.
         /// </summary>
