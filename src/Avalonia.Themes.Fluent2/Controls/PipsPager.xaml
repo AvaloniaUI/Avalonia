@@ -97,8 +97,8 @@
                    StrokeThickness="1">
             <Ellipse.Transitions>
               <Transitions>
-                <BrushTransition Property="Fill" Duration="0:0:0.167" />
-                <BrushTransition Property="Stroke" Duration="0:0:0.167" />
+                <BrushTransition Property="Fill" Duration="{StaticResource ControlFastAnimationDuration}" />
+                <BrushTransition Property="Stroke" Duration="{StaticResource ControlFastAnimationDuration}" />
               </Transitions>
             </Ellipse.Transitions>
           </Ellipse>
@@ -110,9 +110,9 @@
                    Fill="{DynamicResource PipsPagerSelectionIndicatorForeground}">
             <Ellipse.Transitions>
               <Transitions>
-                <DoubleTransition Property="Width" Duration="0:0:0.167" />
-                <DoubleTransition Property="Height" Duration="0:0:0.167" />
-                <BrushTransition Property="Fill" Duration="0:0:0.167" />
+                <DoubleTransition Property="Width" Duration="{StaticResource ControlFastAnimationDuration}" />
+                <DoubleTransition Property="Height" Duration="{StaticResource ControlFastAnimationDuration}" />
+                <BrushTransition Property="Fill" Duration="{StaticResource ControlFastAnimationDuration}" />
               </Transitions>
             </Ellipse.Transitions>
           </Ellipse>

@@ -43,7 +43,7 @@
           <DoubleTransition
               Easing="{StaticResource ToggleSwitchKnobEasing}"
               Property="Canvas.Left"
-              Duration="0:0:0.167" />
+              Duration="{StaticResource ControlFastAnimationDuration}" />
         </Transitions>
     </Setter>
     <Setter Property="Template">
@@ -137,8 +137,8 @@
                   Height="{DynamicResource ToggleSwitchKnobSize}">
                   <Ellipse.Transitions>
                     <Transitions>
-                      <DoubleTransition Property="Width" Duration="0:0:0.167" Easing="{StaticResource ToggleSwitchKnobEasing}" />
-                      <DoubleTransition Property="Height" Duration="0:0:0.167" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                      <DoubleTransition Property="Width" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                      <DoubleTransition Property="Height" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
                     </Transitions>
                   </Ellipse.Transitions>
                 </Ellipse>
@@ -149,8 +149,8 @@
                   Height="{DynamicResource ToggleSwitchKnobSize}">
                   <Ellipse.Transitions>
                     <Transitions>
-                      <DoubleTransition Property="Width" Duration="0:0:0.167" Easing="{StaticResource ToggleSwitchKnobEasing}" />
-                      <DoubleTransition Property="Height" Duration="0:0:0.167" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                      <DoubleTransition Property="Width" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
+                      <DoubleTransition Property="Height" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ToggleSwitchKnobEasing}" />
                     </Transitions>
                   </Ellipse.Transitions>
                 </Ellipse>

@@ -6,6 +6,9 @@
   <FontFamily x:Key="ContentControlThemeFontFamily">fonts:Inter#Inter, $Default</FontFamily>
   <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
 
+  <sys:TimeSpan x:Key="ControlFastAnimationDuration">00:00:00.167</sys:TimeSpan>
+  <SplineEasing x:Key="ControlFastOutSlowInKeySpline" X1="0" Y1="0" X2="0" Y2="1" />
+
   <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
   <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
   <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
@@ -53,7 +56,7 @@
 
   <!-- Moved from Menu.xaml -->
   <Thickness x:Key="MenuBarItemPadding">10,4,10,4</Thickness>
-  
+
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <SolidColorBrush x:Key="SystemControlBackgroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />

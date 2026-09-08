@@ -50,7 +50,7 @@
     <Setter Property="Transitions">
       <Transitions>
         <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.1" />
-        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.167" Delay="0:0:0.1">
+        <TransformOperationsTransition Property="RenderTransform" Duration="{StaticResource ControlFastAnimationDuration}" Delay="0:0:0.1">
           <TransformOperationsTransition.Easing>
             <SplineEasing X1="0" Y1="0" X2="0" Y2="1" />
           </TransformOperationsTransition.Easing>

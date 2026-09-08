@@ -18,8 +18,7 @@
   <x:Double x:Key="RadioButtonCheckGlyphSize">12</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphPointerOverSize">14</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphPressedOverSize">10</x:Double>
-  <!-- WinUI ControlFastOutSlowInKeySpline -->
-  <Easing x:Key="RadioButtonCheckGlyphEasing">0,0,0,1</Easing>
+  <StaticResource x:Key="RadioButtonCheckGlyphEasing" ResourceKey="ControlFastOutSlowInKeySpline"/>
 
   <!-- WinUI reference: RadioButton_themeresources.xaml (DefaultRadioButtonStyle), tag winui3/release/1.5.2.
        The check glyph is a white dot on an accent-filled outer circle; it grows to 14px on hover and
@@ -79,8 +78,8 @@
                   UseLayoutRounding="False">
                 <Ellipse.Transitions>
                   <Transitions>
-                    <DoubleTransition Property="Width" Duration="0:0:0.167" Easing="{StaticResource RadioButtonCheckGlyphEasing}" />
-                    <DoubleTransition Property="Height" Duration="0:0:0.167" Easing="{StaticResource RadioButtonCheckGlyphEasing}" />
+                    <DoubleTransition Property="Width" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource RadioButtonCheckGlyphEasing}" />
+                    <DoubleTransition Property="Height" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource RadioButtonCheckGlyphEasing}" />
                   </Transitions>
                 </Ellipse.Transitions>
               </Ellipse>

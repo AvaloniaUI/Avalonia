@@ -63,7 +63,7 @@
                      Fill="{DynamicResource AccentFillColorDefaultBrush}">
             <Rectangle.Transitions>
               <Transitions>
-                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.167" Easing="0,0 0,1" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="{StaticResource ControlFastAnimationDuration}" Easing="0,0 0,1" />
               </Transitions>
             </Rectangle.Transitions>
           </Rectangle>
