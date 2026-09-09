@@ -18,10 +18,10 @@
   <ItemGroup>
     <PackageReference Include="Moq" />
     <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="SkiaSharp" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\SharedVersion.props" />
 </Project>
