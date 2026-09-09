@@ -26,6 +26,16 @@ internal static class TableViewLayoutHelper
 
         for (var i = 0; i < columns.Count; i++)
         {
+            if (!columns[i].IsVisible)
+            {
+                if (columns[i].ActualWidth != 0)
+                {
+                    columns[i].ActualWidth = 0;
+                    modified = true;
+                }
+                continue;
+            }
+
             var width = columns[i].Width;
             if (width.IsAbsolute)
             {
@@ -68,6 +78,9 @@ internal static class TableViewLayoutHelper
 
         for (var i = 0; i < columns.Count; i++)
         {
+            if (!columns[i].IsVisible)
+                continue;
+
             var width = columns[i].Width;
             if (!width.IsAbsolute)
             {
@@ -96,6 +109,11 @@ internal static class TableViewLayoutHelper
         return modified;
     }
 
+    /// <remarks>
+    /// Contract between <see cref="UpdateActualWidths"/>, <see cref="NeedsActualWidths"/> and <see cref="ResetActualWidths"/>: <br/>
+    /// If <see cref="TableViewColumn.ActualWidth"/> is NaN, a recalculation of the ActualWidths is needed.
+    /// All column widths are reset and recalculated together, so checking the first one is sufficient.
+    /// </remarks>
     public static bool NeedsActualWidths(AvaloniaList<TableViewColumn> columns)
         => columns.Count > 0 && double.IsNaN(columns[0].ActualWidth);
 
@@ -115,6 +133,9 @@ internal static class TableViewLayoutHelper
 
         for (var i = 0; i < cells.Count; i++)
         {
+            if (!columns[i].IsVisible)
+                continue;
+
             var child = cells[i];
             var columnWidth = columns[i].ActualWidth;
             child.Measure(new Size(columnWidth, availableSize.Height));
@@ -133,6 +154,9 @@ internal static class TableViewLayoutHelper
         var x = offset;
         for (var i = 0; i < cells.Count; i++)
         {
+            if (!columns[i].IsVisible)
+                continue;
+
             var width = columns[i].ActualWidth;
             cells[i].Arrange(new Rect(x, 0, width, finalSize.Height));
             x += width;
