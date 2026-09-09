@@ -508,7 +508,7 @@ namespace Avalonia.Controls.Presenters
         {
             _caretBlink = false;
             _caretTimer?.Stop();
-            InvalidateTextLayout();
+            InvalidateVisual();
         }
 
         internal void CaretChanged()
