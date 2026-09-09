@@ -16,6 +16,7 @@ namespace Avalonia.Wayland.Server.Persistent;
 /// to the wayland buffer-vs-geometry distinction.
 /// </summary>
 /// <param name="Size">The size of the popup, in logical surface-local coordinates. Both width and height must be positive.</param>
+/// <param name="Deflate">The popup child's margin, in logical pixels, excluded from the surface's window geometry.</param>
 /// <param name="AnchorRect">The anchor rectangle in the parent's <b>buffer-relative</b> logical coordinates (true top-left, includes shadow).</param>
 /// <param name="Anchor">The edge/corner of the anchor rect that the popup is anchored to. Uses the NWayland-provided wire enum directly — Avalonia's bitfield <see cref="Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor"/> must be translated explicitly UI-side.</param>
 /// <param name="Gravity">The direction the popup expands from the anchor point. Uses the NWayland-provided wire enum directly — same translation note as <paramref name="Anchor"/>.</param>
@@ -24,6 +25,7 @@ namespace Avalonia.Wayland.Server.Persistent;
 [DefinitelyNotARecord]
 internal readonly partial struct XdgPopupPositionerParams(
     Size Size,
+    Thickness Deflate,
     Rect AnchorRect,
     XdgPositioner.AnchorEnum Anchor,
     XdgPositioner.GravityEnum Gravity,
