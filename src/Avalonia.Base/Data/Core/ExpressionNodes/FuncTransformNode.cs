@@ -23,9 +23,8 @@ internal sealed class FuncTransformNode : ExpressionNode
 
     protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
-        if (!ValidateNonNullSource(source))
-            return;
-
+        // Only used for type casts, which produce null from null as in C#. Any error belongs to
+        // the member access which follows, where a null-conditional operator can short-circuit it.
         SetValue(_transform(source));
     }
 }
