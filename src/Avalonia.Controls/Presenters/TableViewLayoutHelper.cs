@@ -109,6 +109,11 @@ internal static class TableViewLayoutHelper
         return modified;
     }
 
+    /// <remarks>
+    /// Contract between <see cref="UpdateActualWidths"/>, <see cref="NeedsActualWidths"/> and <see cref="ResetActualWidths"/>: <br/>
+    /// If <see cref="TableViewColumn.ActualWidth"/> is NaN, a recalculation of the ActualWidths is needed.
+    /// All column widths are reset and recalculated together, so checking the first one is sufficient.
+    /// </remarks>
     public static bool NeedsActualWidths(AvaloniaList<TableViewColumn> columns)
         => columns.Count > 0 && double.IsNaN(columns[0].ActualWidth);
 
