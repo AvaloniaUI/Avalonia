@@ -15,6 +15,7 @@ jobs:
     inputs:
       packageType: sdk
       useGlobalJson: true
+      includePreviewVersions: true
 
   - script: system_profiler SPDisplaysDataType |grep Resolution
     displayName: 'Get Resolution'
@@ -70,6 +71,7 @@ jobs:
     inputs:
       packageType: sdk
       useGlobalJson: true
+      includePreviewVersions: true
 
   - task: Windows Application Driver@0
     inputs:
