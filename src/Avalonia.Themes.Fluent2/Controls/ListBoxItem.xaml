@@ -16,18 +16,23 @@
   </Design.PreviewWith>
 
   <!-- WinUI reference: ListViewItem_themeresources.xaml (ListViewItemExpanded, the live default).
-       Rounded WinUI 3 list items: backplate inset from the list edges, CornerRadius 4, MinHeight 40,
-       transparent rest state, subtle-fill hover/press/selection and an accent selection pill
-       (3x16, r1.5, vertically centered on the left edge) that only shows when selected.
-       The 4,2 backplate inset and the pill metrics are baked into WinUI's ListViewItemPresenter
-       rather than exposed as theme resources, so they are approximated here from the WinUI visuals. -->
-  <Thickness x:Key="ListBoxItemPadding">12,0,12,0</Thickness>
+  Rounded WinUI 3 list items: backplate inset from the list edges, CornerRadius 4, MinHeight 40,
+  transparent rest state, subtle-fill hover/press/selection and an accent selection pill
+  (3x16, r1.5, vertically centered on the left edge) that only shows when selected.
+  The 4,2 backplate inset and the pill metrics are baked into WinUI's ListViewItemPresenter
+  rather than exposed as theme resources, so they are approximated here from the WinUI visuals. -->
+  <Thickness x:Key="ListBoxItemFluentPadding">12,0,12,0</Thickness>
+  <Thickness x:Key="ListBoxItemPadding">12,9,12,12</Thickness>
   <x:Double x:Key="ListBoxItemMinHeight">40</x:Double>
-  <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
+  <x:Double x:Key="ListBoxItemMinWidth">88</x:Double>
+  <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem" BasedOn="{StaticResource FluentListBoxItemTheme}"/>
+  <ControlTheme x:Key="FluentListBoxItemTheme" TargetType="ListBoxItem">
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-    <Setter Property="Padding" Value="{DynamicResource ListBoxItemPadding}" />
+    <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
+    <Setter Property="Padding" Value="{DynamicResource ListBoxItemFluentPadding}" />
     <Setter Property="MinHeight" Value="{DynamicResource ListBoxItemMinHeight}" />
+    <Setter Property="MinWidth" Value="{DynamicResource ListBoxItemMinWidth}" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
@@ -35,13 +40,12 @@
         <!-- WinUI's ListViewItemPresenter insets the rounded backplate from the item bounds. -->
         <Panel Margin="4,2">
           <ContentPresenter Name="PART_ContentPresenter"
-                            Background="{TemplateBinding Background}"
-                            BackgroundSizing="InnerBorderEdge"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Content="{TemplateBinding Content}"
                             Padding="{TemplateBinding Padding}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
@@ -56,7 +60,7 @@
                      RadiusX="1.5"
                      RadiusY="1.5"
                      HorizontalAlignment="Left"
-                     VerticalAlignment="Center"
+                    VerticalAlignment="Center"
                      IsHitTestVisible="False"
                      UseLayoutRounding="False"
                      RenderTransform="scaleY(0)"
@@ -72,19 +76,19 @@
     </Setter>
 
     <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForegroundDisabled}" />
     </Style>
 
     <!--  PointerOver State  -->
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
     </Style>
 
     <!--  Pressed State  -->
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
     </Style>
 
     <!--  Selected State  -->
@@ -92,7 +96,7 @@
 
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
       </Style>
 
       <Style Selector="^ /template/ Rectangle#SelectionIndicator">
@@ -107,19 +111,96 @@
       <!--  Selected Unfocused State  -->
       <Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
       </Style>
 
       <!--  Selected PointerOver State  -->
       <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
       </Style>
 
       <!--  Selected Pressed State  -->
       <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
+      </Style>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="DefaultListBoxItemStyle" TargetType="ListBoxItem">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Padding" Value="{DynamicResource ListBoxItemPadding}" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="LayoutRoot" Background="{TemplateBinding Background}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <Grid>
+            <Rectangle x:Name="PressedBackground" Fill="Transparent" TemplatedControl.IsTemplateFocusTarget="True" />
+            <ContentPresenter x:Name="PART_ContentPresenter"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              TextWrapping="NoWrap"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Margin="{TemplateBinding Padding}" />
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForegroundDisabled}" />
+    </Style>
+
+    <!--  PointerOver State  -->
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Rectangle#PressedBackground">
+      <Setter Property="Fill" Value="{DynamicResource ListBoxItemBackgroundPointerOver}" />
+    </Style>
+
+    <!--  Pressed State  -->
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Rectangle#PressedBackground">
+      <Setter Property="Fill" Value="{DynamicResource ListBoxItemBackgroundPressed}" />
+    </Style>
+
+    <!--  Selected State  -->
+    <Style Selector="^:selected">
+
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
+      </Style>
+      <Style Selector="^ /template/ Rectangle#PressedBackground">
+        <Setter Property="Fill" Value="{DynamicResource ListBoxItemBackgroundSelected}" />
+      </Style>
+
+      <!--  Selected Unfocused State  -->
+      <Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
+      </Style>
+      <Style Selector="^:not(:focus) /template/ Rectangle#PressedBackground">
+        <Setter Property="Fill" Value="{DynamicResource ListBoxItemBackgroundSelected}" />
+      </Style>
+
+      <!--  Selected PointerOver State  -->
+      <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
+      </Style>
+      <Style Selector="^:pointerover /template/ Rectangle#PressedBackground">
+        <Setter Property="Fill" Value="{DynamicResource ListBoxItemBackgroundSelectedPointerOver}" />
+      </Style>
+
+      <!--  Selected Pressed State  -->
+      <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
+      </Style>
+      <Style Selector="^:pressed /template/ Rectangle#PressedBackground">
+        <Setter Property="Fill" Value="{DynamicResource ListBoxItemBackgroundSelectedPressed}" />
       </Style>
     </Style>
   </ControlTheme>
