@@ -7,7 +7,7 @@ jobs:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 10.0 SDK'
+    displayName: 'Use .NET SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -32,7 +32,7 @@ jobs:
       version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 10.0 SDK'
+    displayName: 'Use .NET SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -71,7 +71,7 @@ jobs:
       version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 10.0 SDK'
+    displayName: 'Use .NET SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
@@ -151,7 +151,7 @@ jobs:
       version: 8.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 10.0 SDK'
+    displayName: 'Use .NET SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
