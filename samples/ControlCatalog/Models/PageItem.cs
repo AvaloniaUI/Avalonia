@@ -28,7 +28,8 @@ public class PageItem(string header, Func<Page> factory, StreamGeometry iconData
 
         foreach (var value in values)
         {
-            var normalizedValue = value.Normalize(NormalizationForm.FormKD);
+            // FormKD would be ideal for the search, but it's not supported on Browser.
+            var normalizedValue = value.Normalize(NormalizationForm.FormD);
 
             foreach (var c in normalizedValue)
             {
