@@ -64,7 +64,7 @@
                      IsHitTestVisible="False"
                      UseLayoutRounding="False"
                      RenderTransform="scaleY(0)"
-                     Fill="{DynamicResource AccentFillColorDefaultBrush}">
+                     Fill="{DynamicResource ListViewItemSelectionIndicatorBrush}">
             <Rectangle.Transitions>
               <Transitions>
                 <TransformOperationsTransition Property="RenderTransform" Duration="{StaticResource ControlFastAnimationDuration}" Easing="0,0 0,1" />
@@ -81,13 +81,13 @@
 
     <!--  PointerOver State  -->
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource ListBoxItemBackgroundPointerOver}" />
       <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
     </Style>
 
     <!--  Pressed State  -->
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource ListBoxItemBackgroundPressed}" />
       <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
     </Style>
 
@@ -95,7 +95,7 @@
     <Style Selector="^:selected">
 
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ListBoxItemBackgroundPointerOver}" />
         <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
       </Style>
 
@@ -105,24 +105,24 @@
       </Style>
 
       <Style Selector="^:disabled /template/ Rectangle#SelectionIndicator">
-        <Setter Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+        <Setter Property="Fill" Value="{DynamicResource ListViewItemSelectionIndicatorDisabledBrush}" />
       </Style>
 
       <!--  Selected Unfocused State  -->
       <Style Selector="^:not(:focus) /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ListBoxItemBackgroundPointerOver}" />
         <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
       </Style>
 
       <!--  Selected PointerOver State  -->
       <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ListBoxItemBackgroundPressed}" />
         <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
       </Style>
 
       <!--  Selected Pressed State  -->
       <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ListBoxItemBackgroundPointerOver}" />
         <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
       </Style>
     </Style>
