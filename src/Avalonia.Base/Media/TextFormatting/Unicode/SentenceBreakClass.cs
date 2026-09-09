@@ -3,11 +3,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// <summary>
     /// Sentence_Break property values, as defined by UAX #29.
     /// </summary>
-    /// <remarks>
-    /// The trailing comment on each member is the property value alias used by the Unicode
-    /// Character Database. <see cref="SentenceBreakEnumerator"/> applies rules SB1 to SB11 and
-    /// SB998 to these classes to place sentence boundaries.
-    /// </remarks>
     public enum SentenceBreakClass
     {
         /// <summary>
