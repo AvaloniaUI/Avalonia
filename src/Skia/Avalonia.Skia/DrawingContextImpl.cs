@@ -1147,18 +1147,19 @@ namespace Avalonia.Skia
                 tileTransform,
                 SKMatrix.CreateScale((float)(96.0 / _intermediateSurfaceDpi.X), (float)(96.0 / _intermediateSurfaceDpi.Y)));
 
+            if (tileBrush.DestinationRect.Unit == RelativeUnit.Relative)
+                paintTransform =
+                    paintTransform.PreConcat(SKMatrix.CreateTranslation((float)targetBox.X, (float)targetBox.Y));
+
+            // The brush transform acts on the tile once it sits in target space.
             if (tileBrush.Transform is { })
             {
                 var origin = tileBrush.TransformOrigin.ToPixels(targetBox);
                 var offset = Matrix.CreateTranslation(origin);
                 var transform = (-offset) * tileBrush.Transform.Value * (offset);
 
-                paintTransform = paintTransform.PreConcat(transform.ToSKMatrix());
+                paintTransform = paintTransform.PostConcat(transform.ToSKMatrix());
             }
-
-            if (tileBrush.DestinationRect.Unit == RelativeUnit.Relative)
-                paintTransform =
-                    paintTransform.PreConcat(SKMatrix.CreateTranslation((float)targetBox.X, (float)targetBox.Y));
 
             using (var shader = image.ToShader(tileX, tileY, paintTransform))
             {
@@ -1268,19 +1269,19 @@ namespace Avalonia.Skia
             
             // If there is no BrushTransform and destinationRect is at (0,0) we don't need any transforms
             Matrix shaderTransform = Matrix.Identity;
-            
+
+            // Apply destinationRect position
+            if (destinationRect.Position != default)
+                shaderTransform = Matrix.CreateTranslation(destinationRect.X, destinationRect.Y);
+
             // Apply Brush.Transform to SKShader
             if (content.Transform != null)
             {
                 
                 var transformOrigin = content.TransformOrigin.ToPixels(targetRect);
                 var offset = Matrix.CreateTranslation(transformOrigin);
-                shaderTransform = (-offset) * content.Transform.Value * (offset);
+                shaderTransform *= (-offset) * content.Transform.Value * (offset);
             }
-
-            // Apply destinationRect position
-            if (destinationRect.Position != default)
-                shaderTransform *= Matrix.CreateTranslation(destinationRect.X, destinationRect.Y);
             
             // Create shader
             var (tileX, tileY) = GetTileModes(content.Brush.TileMode);

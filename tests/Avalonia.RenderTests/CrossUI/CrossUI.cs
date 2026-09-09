@@ -168,6 +168,11 @@ public class CrossDrawingBrush : CrossTileBrush
     public required CrossDrawing Drawing { get; set; }
 }
 
+public class CrossImageBrush : CrossTileBrush
+{
+    public required string Path { get; set; }
+}
+
 public class CrossPen
 {
     public required CrossBrush Brush { get; set; }

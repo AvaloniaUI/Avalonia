@@ -272,6 +272,8 @@ namespace Avalonia.Skia.RenderTests.CrossUI
                 return Sync(new SolidColorBrush(br.Color), brush);
             if (brush is CrossDrawingBrush db)
                 return SyncTile(new DrawingBrush(ConvertDrawing(db.Drawing)), db);
+            if (brush is CrossImageBrush ib)
+                return SyncTile(new ImageBrush(new Bitmap(ib.Path)), ib);
             if (brush is CrossRadialGradientBrush radial)
                 return SyncGradient(
                     new RadialGradientBrush()
