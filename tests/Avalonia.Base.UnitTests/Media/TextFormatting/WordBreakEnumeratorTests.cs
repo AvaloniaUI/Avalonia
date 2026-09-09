@@ -68,6 +68,79 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.True(pass);
         }
 
+        // Regional indicators pair up from the start of their run (WB15, WB16), so where a
+        // boundary falls depends on how many of them precede the current one.
+        private const string RegionalD = "\U0001F1E9";
+        private const string RegionalE = "\U0001F1EA";
+        private const string RegionalF = "\U0001F1EB";
+        private const string RegionalR = "\U0001F1F7";
+
+        [Fact]
+        public void TwoFlags_AreTwoSegments()
+        {
+            var segments = CollectSegments(RegionalD + RegionalE + RegionalF + RegionalR);
+
+            Assert.Equal([RegionalD + RegionalE, RegionalF + RegionalR], segments);
+        }
+
+        [Fact]
+        public void OddRegionalIndicatorRun_LeavesTheLastIndicatorOnItsOwn()
+        {
+            var segments = CollectSegments(RegionalD + RegionalE + RegionalF);
+
+            Assert.Equal([RegionalD + RegionalE, RegionalF], segments);
+        }
+
+        [Fact]
+        public void RegionalIndicatorsAfterALetter_PairFromTheStartOfTheirRun()
+        {
+            var segments = CollectSegments("A" + RegionalD + RegionalE + RegionalF + RegionalR);
+
+            Assert.Equal(["A", RegionalD + RegionalE, RegionalF + RegionalR], segments);
+        }
+
+        [Fact]
+        public void RegionalIndicatorRunInterruptedBySpace_StartsPairingAgain()
+        {
+            var segments = CollectSegments(RegionalD + " " + RegionalE + RegionalF);
+
+            Assert.Equal([RegionalD, " ", RegionalE + RegionalF], segments);
+        }
+
+        [Fact]
+        public void CombiningMarkBetweenRegionalIndicators_DoesNotSplitThePair()
+        {
+            var text = RegionalD + "\u0301" + RegionalE;
+
+            var segments = CollectSegments(text);
+
+            Assert.Equal([text], segments);
+        }
+
+        [Fact]
+        public void LongRegionalIndicatorRun_PairsAllTheWayThrough()
+        {
+            var flag = RegionalD + RegionalE;
+
+            var segments = CollectSegments(string.Concat(Enumerable.Repeat(flag, 8)));
+
+            Assert.Equal(8, segments.Count);
+            Assert.All(segments, segment => Assert.Equal(flag, segment));
+        }
+
+        private static List<string> CollectSegments(string text)
+        {
+            var result = new List<string>();
+            var enumerator = new WordBreakEnumerator(text.AsSpan());
+
+            while (enumerator.MoveNext(out var segment))
+            {
+                result.Add(text.Substring(segment.Offset, segment.Length));
+            }
+
+            return result;
+        }
+
         public class WordBreakTestDataGenerator : IEnumerable<object[]>
         {
             private readonly List<object[]> _testData;
