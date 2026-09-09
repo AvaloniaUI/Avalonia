@@ -262,6 +262,12 @@ namespace Avalonia.RenderTests.WpfCompare
                 return SyncTile(new DrawingBrush(ConvertDrawing(db.Drawing)), db);
             if (brush is CrossImageBrush ib)
                 return SyncTile(new ImageBrush(new BitmapImage(new Uri(ib.Path, UriKind.Absolute))), ib);
+            if (brush is CrossLinearGradientBrush linear)
+                return SyncGradient(new LinearGradientBrush()
+                {
+                    StartPoint = linear.StartPoint.ToWpf(),
+                    EndPoint = linear.EndPoint.ToWpf()
+                }, linear);
             if (brush is CrossRadialGradientBrush radial)
                 return SyncGradient(new RadialGradientBrush()
                 {
