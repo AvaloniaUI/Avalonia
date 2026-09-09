@@ -83,7 +83,7 @@
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePressed" ResourceKey="ControlStrokeColorDefaultBrush" />
       <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
 
-      <!--Resources for ButtonSpinner-->      
+      <!--Resources for ButtonSpinner-->
       <StaticResource x:Key="SpinnerPopupIndicatorForeground" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
@@ -705,7 +705,33 @@
       <!-- BaseResources for RefreshVisualizer.xaml -->
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="Black" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
-      
+
+      <!-- Resources for TableView.xaml -->
+      <StaticResource x:Key="TableViewForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <StaticResource x:Key="TableViewBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+      <StaticResource x:Key="TableViewBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <StaticResource x:Key="TableViewBorderThickness" ResourceKey="ListBoxBorderThemeThickness" />
+      <StaticResource x:Key="TableViewHeaderBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+
+
+      <!-- Resources for TableViewColumnHeader.xaml -->
+      <StaticResource x:Key="TableViewColumnHeaderSeparatorBackground" ResourceKey="SystemBaseLowColor" />
+
+      <!-- Resources for TableViewRow.xaml -->
+      <SolidColorBrush x:Key="TableViewRowBackground">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="TableViewRowBackgroundDisabled">Transparent</SolidColorBrush>
+      <StaticResource x:Key="TableViewRowForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+      <StaticResource x:Key="TableViewRowForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+      <StaticResource x:Key="TableViewRowForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+
       <!-- BaseResources for WindowDrawnDecorations.xaml -->
       <SolidColorBrush x:Key="CaptionButtonForeground" Color="Black" />
       <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
@@ -752,9 +778,9 @@
       <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
       <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
       <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />      
+      <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
 
-      <!--Resources for ButtonSpinner-->      
+      <!--Resources for ButtonSpinner-->
       <StaticResource x:Key="SpinnerPopupIndicatorForeground" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
@@ -1418,6 +1444,31 @@
       <!-- BaseResources for RefreshVisualizer.xaml -->
       <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="White" />
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
+
+      <!-- Resources for TableView.xaml -->
+      <StaticResource x:Key="TableViewForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <StaticResource x:Key="TableViewBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+      <StaticResource x:Key="TableViewBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <StaticResource x:Key="TableViewBorderThickness" ResourceKey="ListBoxBorderThemeThickness" />
+      <StaticResource x:Key="TableViewHeaderBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+
+      <!-- Resources for TableViewColumnHeader.xaml -->
+      <StaticResource x:Key="TableViewColumnHeaderSeparatorBackground" ResourceKey="SystemBaseLowColor" />
+
+      <!-- Resources for TableViewRow.xaml -->
+      <SolidColorBrush x:Key="TableViewRowBackground">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="TableViewRowBackgroundDisabled">Transparent</SolidColorBrush>
+      <StaticResource x:Key="TableViewRowForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+      <StaticResource x:Key="TableViewRowForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+      <StaticResource x:Key="TableViewRowForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
 
       <!-- BaseResources for WindowDrawnDecorations.xaml -->
       <SolidColorBrush x:Key="CaptionButtonForeground" Color="White" />

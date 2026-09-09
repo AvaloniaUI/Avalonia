@@ -1,0 +1,67 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+
+  <Thickness x:Key="TableViewRowPadding">6,9,6,12</Thickness>
+
+  <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow">
+    <Setter Property="Background" Value="{DynamicResource TableViewRowBackground}" />
+    <Setter Property="Padding" Value="{DynamicResource TableViewRowPadding}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="Border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}"
+                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+          <TableViewCellsPresenter Name="PART_CellsPresenter" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Disabled -->
+    <Style Selector="^:disabled /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundDisabled}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundDisabled}" />
+    </Style>
+
+    <!-- PointerOver -->
+    <Style Selector="^:pointerover /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundPointerOver}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundPointerOver}" />
+    </Style>
+
+    <!-- Pressed -->
+    <Style Selector="^:pressed /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundPressed}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundPressed}" />
+    </Style>
+
+    <!-- Selected -->
+    <Style Selector="^:selected">
+
+      <Style Selector="^ /template/ Border#Border">
+        <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundSelected}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundSelected}" />
+      </Style>
+
+      <!-- Selected PointerOver  -->
+      <Style Selector="^:pointerover /template/ Border#Border">
+        <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundSelectedPointerOver}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundSelectedPointerOver}" />
+      </Style>
+
+      <!-- Selected Pressed  -->
+      <Style Selector="^:pressed /template/ Border#Border">
+        <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundSelectedPressed}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundSelectedPressed}" />
+      </Style>
+
+    </Style>
+
+  </ControlTheme>
+
+</ResourceDictionary>
