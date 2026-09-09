@@ -332,9 +332,24 @@ internal class VulkanDisplay : IDisposable
             pResults = &result
         };
         
-        _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo)
-            .ThrowOnError("vkQueuePresentKHR");
-        result.ThrowOnError("vkQueuePresentKHR");
+        var presentResult = _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo);
+        
+        // We need to check both presentResult and result because some drivers may report different results,
+        // for example, presentResult can be VK_SUCCESS but result can be VK_ERROR_OUT_OF_DATE_KHR.
+        if ((presentResult is VkResult.VK_ERROR_OUT_OF_DATE_KHR or VkResult.VK_SUBOPTIMAL_KHR) ||
+            (result is VkResult.VK_ERROR_OUT_OF_DATE_KHR or VkResult.VK_SUBOPTIMAL_KHR))
+        {
+            RecreateSwapchain();
+        }
+        else if (presentResult == VkResult.VK_ERROR_SURFACE_LOST_KHR || result == VkResult.VK_ERROR_SURFACE_LOST_KHR)
+        {
+            RecreateSurface();
+        }
+        else
+        {
+            result.ThrowOnError("vkQueuePresentKHR");
+            presentResult.ThrowOnError("vkQueuePresentKHR");
+        }        
     }
     
     public void Dispose()
