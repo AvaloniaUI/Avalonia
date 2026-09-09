@@ -27,7 +27,14 @@ internal static class TableViewLayoutHelper
         for (var i = 0; i < columns.Count; i++)
         {
             if (!columns[i].IsVisible)
+            {
+                if (columns[i].ActualWidth != 0)
+                {
+                    columns[i].ActualWidth = 0;
+                    modified = true;
+                }
                 continue;
+            }
 
             var width = columns[i].Width;
             if (width.IsAbsolute)
@@ -103,23 +110,12 @@ internal static class TableViewLayoutHelper
     }
 
     public static bool NeedsActualWidths(AvaloniaList<TableViewColumn> columns)
-    {
-        foreach (var column in columns)
-        {
-            if (column.IsVisible)
-                return double.IsNaN(column.ActualWidth);
-        }
-
-        return false;
-    }
+        => columns.Count > 0 && double.IsNaN(columns[0].ActualWidth);
 
     public static void ResetActualWidths(AvaloniaList<TableViewColumn> columns)
     {
         foreach (var column in columns)
-        {
-            if (column.IsVisible)
-                column.ActualWidth = double.NaN;
-        }
+            column.ActualWidth = double.NaN;
     }
 
     public static Size MeasureRow(AvaloniaList<TableViewColumn> columns, Controls cells, Size availableSize)

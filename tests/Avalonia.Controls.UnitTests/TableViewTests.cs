@@ -302,7 +302,7 @@ public sealed class TableViewTests : ScopedTestBase
         Assert.Equal(0, cells.Children[1].Bounds.X);
         Assert.Equal(0, headers.Children[1].Bounds.X);
         Assert.Equal(200, target.Columns[1].ActualWidth);
-        Assert.Equal(80, column.ActualWidth);
+        Assert.Equal(0, column.ActualWidth);
         Assert.Equal(new GridLength(80), column.Width);
 
         column.IsVisible = true;
