@@ -1067,7 +1067,7 @@ namespace Avalonia.Skia
                             var offset = Matrix.CreateTranslation(transformOrigin);
                             var transform = (-offset) * conicGradient.Transform.Value * (offset);
 
-                            rotation = rotation.PreConcat(transform.ToSKMatrix());
+                            rotation = rotation.PostConcat(transform.ToSKMatrix());
                         }
 
                         using (var shader =
