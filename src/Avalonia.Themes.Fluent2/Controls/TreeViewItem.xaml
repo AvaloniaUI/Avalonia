@@ -45,7 +45,7 @@
                 VerticalAlignment="Center">
           <Path x:Name="ChevronPath"
                 Data="{StaticResource TreeViewItemCollapsedChevronPathData}"
-                Fill="{DynamicResource TextFillColorSecondaryBrush}"
+                Fill="{TemplateBinding Foreground}"
                 Stretch="Uniform"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center" />
@@ -113,15 +113,13 @@
                                   VerticalAlignment="{TemplateBinding VerticalAlignment}"
                                   Margin="{TemplateBinding Padding}" />
               </Grid>
-              <!-- WinUI selection indicator pill: 3x16, fully rounded ends, accent fill,
-                   pinned to the left edge of the row (before indentation). Scale-animated
-                   like the ListBoxItem one. -->
+
               <Rectangle Name="SelectionIndicator"
                          Width="3"
                          Height="16"
                          RadiusX="1.5"
                          RadiusY="1.5"
-                         Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                         Fill="{DynamicResource TreeViewItemSelectionIndicatorForeground}"
                          HorizontalAlignment="Left"
                          VerticalAlignment="Center"
                          UseLayoutRounding="False"
@@ -150,6 +148,9 @@
     <Style Selector="^ /template/ Border#PART_LayoutRoot:pointerover > ContentPresenter#PART_HeaderPresenter">
       <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundPointerOver}" />
     </Style>
+    <Style Selector="^ /template/ ToggleButton#PART_ExpandCollapseChevron">
+      <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundPointerOver}" />
+    </Style>
 
     <!--  Pressed state  -->
     <Style Selector="^:pressed /template/ Border#PART_LayoutRoot:pointerover">
@@ -157,6 +158,9 @@
       <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushPressed}" />
     </Style>
     <Style Selector="^:pressed /template/ Border#PART_LayoutRoot:pointerover > ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundPressed}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ToggleButton#PART_ExpandCollapseChevron">
       <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundPressed}" />
     </Style>
 
@@ -168,6 +172,9 @@
     <Style Selector="^:disabled /template/ ContentPresenter#PART_HeaderPresenter">
       <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundDisabled}" />
     </Style>
+    <Style Selector="^:disabled /template/ ToggleButton#PART_ExpandCollapseChevron">
+      <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundDisabled}" />
+    </Style>
 
     <!--  Selected state  -->
     <Style Selector="^:selected /template/ Border#PART_LayoutRoot">
@@ -175,6 +182,9 @@
       <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushSelected}" />
     </Style>
     <Style Selector="^:selected /template/ Border#PART_LayoutRoot > ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelected}" />
+    </Style>
+    <Style Selector="^:selected /template/ ToggleButton#PART_ExpandCollapseChevron">
       <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelected}" />
     </Style>
 
@@ -186,6 +196,9 @@
     <Style Selector="^:selected /template/ Border#PART_LayoutRoot:pointerover > ContentPresenter#PART_HeaderPresenter">
       <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedPointerOver}" />
     </Style>
+    <Style Selector="^:selected /template/ ToggleButton#PART_ExpandCollapseChevron">
+      <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedPointerOver}" />
+    </Style>
 
     <!--  Selected Pressed state  -->
     <Style Selector="^:pressed:selected /template/ Border#PART_LayoutRoot:pointerover">
@@ -195,6 +208,9 @@
     <Style Selector="^:pressed:selected /template/ Border#PART_LayoutRoot:pointerover > ContentPresenter#PART_HeaderPresenter">
       <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedPressed}" />
     </Style>
+    <Style Selector="^:pressed:selected /template/ ToggleButton#PART_ExpandCollapseChevron">
+      <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedPressed}" />
+    </Style>
 
     <!--  Disabled Selected state  -->
     <Style Selector="^:disabled:selected /template/ Border#PART_LayoutRoot">
@@ -202,6 +218,9 @@
       <Setter Property="BorderBrush" Value="{DynamicResource TreeViewItemBorderBrushSelectedDisabled}" />
     </Style>
     <Style Selector="^:disabled:selected /template/ Border#PART_LayoutRoot > ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedDisabled}" />
+    </Style>
+    <Style Selector="^:disabled:selected /template/ ToggleButton#PART_ExpandCollapseChevron">
       <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedDisabled}" />
     </Style>
 
