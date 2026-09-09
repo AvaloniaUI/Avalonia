@@ -364,23 +364,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
             Separator
         }
 
-        private readonly struct SentenceBreakUnit
+        private readonly struct SentenceBreakUnit(Codepoint codepoint, int start, int end)
         {
-            public SentenceBreakUnit(Codepoint codepoint, int start, int end)
-            {
-                Codepoint = codepoint;
-                SentenceBreakClass = codepoint.SentenceBreakClass;
-                Start = start;
-                End = end;
-            }
+            public SentenceBreakClass SentenceBreakClass { get; } = codepoint.SentenceBreakClass;
 
-            public Codepoint Codepoint { get; }
+            public int Start { get; } = start;
 
-            public SentenceBreakClass SentenceBreakClass { get; }
-
-            public int Start { get; }
-
-            public int End { get; }
+            public int End { get; } = end;
         }
     }
 }
