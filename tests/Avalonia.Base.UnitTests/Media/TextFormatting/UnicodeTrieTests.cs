@@ -92,7 +92,7 @@ public class UnicodeTrieTests
 
         Assert.Equal(0u, UnicodeDataTrie.Trie.Get(beyondRange));
         Assert.Equal(0u, BiDiTrie.Trie.Get(beyondRange));
-        Assert.Equal(0u, GraphemeBreakTrie.Trie.Get(beyondRange));
+        Assert.Equal(0u, SegmentationTrie.Trie.Get(beyondRange));
         Assert.Equal(0u, EastAsianWidthTrie.Trie.Get(beyondRange));
     }
 
