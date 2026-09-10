@@ -39,6 +39,7 @@ internal class ImmediateRenderDataSceneBrushContent : ISceneBrushContent
     public double Opacity => Brush.Opacity;
     public ITransform? Transform => Brush.Transform;
     public RelativePoint TransformOrigin => Brush.TransformOrigin;
+    public ITransform? RelativeTransform => Brush.RelativeTransform;
 
     public void Dispose()
     {
@@ -101,6 +102,7 @@ internal sealed class EmbeddedSceneBrushContent : ISceneBrushContent
     public double Opacity => _brush.Opacity;
     public ITransform? Transform => _brush.Transform;
     public RelativePoint TransformOrigin => _brush.TransformOrigin;
+    public ITransform? RelativeTransform => _brush.RelativeTransform;
     public bool UseScalableRasterization => _inner.UseScalableRasterization;
     public void Render(IDrawingContextImpl context, Matrix? transform) => _inner.Render(context, transform);
     public void Dispose() => _inner.Dispose();

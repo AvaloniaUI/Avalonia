@@ -197,6 +197,109 @@ public class CompiledBinding : BindingBase
         AvaloniaProperty? targetProperty,
         object? anchor)
     {
+        if (CanUseTypedBindingExpression(target, targetProperty, out var typed))
+        {
+            return CreateTypedExpression(typed, target, targetProperty, anchor);
+        }
+        else
+        {
+            return CreateUntypedExpression(target, targetProperty, anchor);
+        }
+    }
+
+    private bool CanUseTypedBindingExpression(
+        AvaloniaObject target,
+        AvaloniaProperty? targetProperty,
+        [NotNullWhen(true)] out TypedPropertyElement? element)
+    {
+        element = null;
+
+        // We need a path with a single TypedPropertyElement
+        if (Path?.Elements.Count != 1 || Path.Elements[0] is not TypedPropertyElement typed)
+            return false;
+
+        // We need a DataContext binding.
+        if (Source != AvaloniaProperty.UnsetValue)
+            return false;
+
+        // It cannot have a Converter, Delay, FallbackValue. StringFormat, TargetNullValue or
+        // UpdateSourceTrigger != PropertyChanged.
+        if (Converter is not null ||
+            Delay != 0 ||
+            FallbackValue != AvaloniaProperty.UnsetValue ||
+            StringFormat != null ||
+            TargetNullValue != AvaloniaProperty.UnsetValue ||
+            UpdateSourceTrigger is not (UpdateSourceTrigger.Default or UpdateSourceTrigger.PropertyChanged))
+        {
+            return false;
+        }
+
+        // The value must be directly assignable to the target property.
+        if (targetProperty is null ||
+            !typed.Property.PropertyType.IsAssignableTo(targetProperty.PropertyType))
+        {
+            return false;
+        }
+
+        // TypedBindingExpression only supports StyledElement targets (it listens for
+        // StyledElement.DataContextProperty changes). Other AvaloniaObjects that expose a
+        // DataContext (e.g. Application, which is an IDataContextProvider but not a StyledElement)
+        // must use the untyped path.
+        if (target is not StyledElement)
+            return false;
+
+        // DataContext bindings need to read their source value from the parent of the target
+        // instead of the DataContext; TypedBindingExpression does not support this (and it would
+        // probably not be worth doing so as DataContexts are usually reference types).
+        if (targetProperty == StyledElement.DataContextProperty)
+            return false;
+
+        // TypedBindingExpression does not support data validation, so fall back to the untyped
+        // path when the target property enables it.
+        if (targetProperty.GetMetadata(target).EnableDataValidation == true)
+            return false;
+
+        // For modes that write back to the source, the source property must be settable and the
+        // target value must be assignable back to the source property type. The untyped path
+        // handles read-only or wider-typed sources gracefully (failing silently), so fall back to
+        // it rather than throwing during write-back.
+        var (mode, _) = ResolveDefaultsFromMetadata(target, targetProperty);
+        if (mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
+        {
+            if (!typed.Property.CanSet ||
+                !targetProperty.PropertyType.IsAssignableTo(typed.Property.PropertyType))
+            {
+                return false;
+            }
+        }
+
+        element = typed;
+        return true;
+    }
+
+    private BindingExpressionBase CreateTypedExpression(
+        TypedPropertyElement element,
+        AvaloniaObject target,
+        AvaloniaProperty? targetProperty,
+        object? anchor)
+    {
+        // The UpdateSourceTrigger has already been constrained to PropertyChanged by
+        // CanUseTypedBindingExpression, so only the mode needs to be resolved here.
+        var (mode, _) = ResolveDefaultsFromMetadata(target, targetProperty);
+
+        return element.CreateExpression(
+            target,
+            targetProperty,
+            anchor,
+            mode,
+            Priority);
+    }
+
+    private BindingExpression CreateUntypedExpression(
+        AvaloniaObject target,
+        AvaloniaProperty? targetProperty,
+        object? anchor)
+    {
         var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
         var nodes = new List<ExpressionNode>();
         var isRooted = false;

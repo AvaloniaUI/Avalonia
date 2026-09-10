@@ -650,6 +650,7 @@ public class DrawingRecordingTests
         public double Opacity => 1;
         public ITransform? Transform => null;
         public RelativePoint TransformOrigin => default;
+        public ITransform? RelativeTransform => null;
     }
 
     [Fact]

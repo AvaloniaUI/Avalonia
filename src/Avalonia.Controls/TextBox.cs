@@ -1112,10 +1112,9 @@ namespace Avalonia.Controls
 
         private void UpdateCommandStates()
         {
-            var text = GetSelection();
-            var isSelectionNullOrEmpty = string.IsNullOrEmpty(text);
-            CanCopy = !IsPasswordBox && !isSelectionNullOrEmpty;
-            CanCut = !IsPasswordBox && !isSelectionNullOrEmpty && !IsReadOnly;
+            var hasSelection = HasSelection();
+            CanCopy = !IsPasswordBox && hasSelection;
+            CanCut = !IsPasswordBox && hasSelection && !IsReadOnly;
             CanPaste = !IsReadOnly;
         }
 
@@ -2448,6 +2447,24 @@ namespace Avalonia.Controls
             SetCurrentValue(CaretIndexProperty, SelectionStart);
 
             return false;
+        }
+
+        /// <summary>
+        /// Reports the same emptiness conditions as <see cref="GetSelection"/>, without building
+        /// the selected string.
+        /// </summary>
+        private bool HasSelection()
+        {
+            var (start, end) = GetSelectionRange();
+
+            if (start == end)
+            {
+                return false;
+            }
+
+            var textLength = Text?.Length ?? 0;
+
+            return textLength > 0 && end <= textLength;
         }
 
         private string GetSelection()

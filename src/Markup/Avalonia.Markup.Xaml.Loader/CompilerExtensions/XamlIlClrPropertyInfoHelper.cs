@@ -16,6 +16,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         private Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>> _fields
             = new Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>>();
 
+        private Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>> _typedFields
+            = new Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>>();
+
         private IXamlField? _boxedTrue;
         private IXamlField? _boxedFalse;
 
@@ -65,6 +68,70 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return baseKey + $"[{indexerArgumentsKey}]";
         }
 
+        /// <summary>
+        /// Searches a property info cache for a method which was already generated for a property.
+        /// </summary>
+        /// <param name="fields">The cache to search.</param>
+        /// <param name="key">The cache key for the property, as returned by <see cref="GetKey"/>.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="cached">
+        /// When the method returns, contains the cache entries for <paramref name="key"/>. The list is
+        /// created and added to <paramref name="fields"/> if it doesn't yet exist.
+        /// </param>
+        /// <returns>
+        /// The method which returns the property info for <paramref name="property"/>, or null if no
+        /// such method has been generated yet.
+        /// </returns>
+        static IXamlMethod? GetCachedPropertyInfoMethod(
+            Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>> fields,
+            string key,
+            IXamlProperty property,
+            out List<(IXamlProperty prop, IXamlMethod get)> cached)
+        {
+            if (!fields.TryGetValue(key, out cached!))
+                fields[key] = cached = new List<(IXamlProperty prop, IXamlMethod get)>();
+
+            foreach (var entry in cached)
+            {
+                if (
+                    ((entry.prop.Getter == null && property.Getter == null) ||
+                     entry.prop.Getter?.Equals(property.Getter) == true) &&
+                    ((entry.prop.Setter == null && property.Setter == null) ||
+                     entry.prop.Setter?.Equals(property.Setter) == true)
+                )
+                    return entry.get;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Emits a delegate which invokes a property accessor, or a null reference if the property
+        /// has no such accessor.
+        /// </summary>
+        /// <param name="context">The emit context.</param>
+        /// <param name="emitter">The emitter to write to.</param>
+        /// <param name="method">The accessor to wrap, or null if the property has no accessor.</param>
+        /// <param name="del">The delegate type to construct.</param>
+        static void EmitFunc(
+            XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
+            IXamlILEmitter emitter,
+            IXamlMethod? method,
+            IXamlType del)
+        {
+            if (method == null)
+                emitter.Ldnull();
+            else
+            {
+                emitter
+                    .Ldnull()
+                    .Ldftn(method)
+                    .Newobj(del.Constructors.First(c =>
+                        c.Parameters.Count == 2 &&
+                        c.Parameters[0].Equals(context.Configuration.WellKnownTypes.Object)));
+            }
+        }
+
         public IXamlType Emit(
             XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
             IXamlILEmitter codeGen,
@@ -77,19 +144,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             IXamlMethod Get()
             {
                 var key = GetKey(property, indexerArgumentsKey);
-                if (!_fields.TryGetValue(key, out var lst))
-                    _fields[key] = lst = new List<(IXamlProperty prop, IXamlMethod get)>();
 
-                foreach (var cached in lst)
-                {
-                    if (
-                        ((cached.prop.Getter == null && property.Getter == null) ||
-                         cached.prop.Getter?.Equals(property.Getter) == true) &&
-                        ((cached.prop.Setter == null && property.Setter == null) ||
-                         cached.prop.Setter?.Equals(property.Setter) == true)
-                    )
-                        return cached.get;
-                }
+                if (GetCachedPropertyInfoMethod(_fields, key, property, out var lst) is { } cached)
+                    return cached;
 
                 var name = lst.Count == 0 ? key : key + "_" + context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
                 
@@ -175,23 +232,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     .MarkLabel(cacheMiss)
                     .Ldstr(property.Name);
 
-                void EmitFunc(IXamlILEmitter emitter, IXamlMethod? method, IXamlType del)
-                {
-                    if (method == null)
-                        emitter.Ldnull();
-                    else
-                    {
-                        emitter
-                            .Ldnull()
-                            .Ldftn(method)
-                            .Newobj(del.Constructors.First(c =>
-                                c.Parameters.Count == 2 &&
-                                c.Parameters[0].Equals(context.Configuration.WellKnownTypes.Object)));
-                    }
-                }
-
-                EmitFunc(get.Generator, getter, ctor.Parameters[1]);
-                EmitFunc(get.Generator, setter, ctor.Parameters[2]);
+                EmitFunc(context, get.Generator, getter, ctor.Parameters[1]);
+                EmitFunc(context, get.Generator, setter, ctor.Parameters[2]);
                 get.Generator
                     .Ldtype(property.PropertyType)
                     .Newobj(ctor)
@@ -205,6 +247,90 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             codeGen.EmitCall(Get());
             return types.IPropertyInfo;
+        }
+
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
+        public IXamlType EmitTyped(
+            XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
+            IXamlILEmitter codeGen,
+            IXamlProperty property)
+        {
+            var types = context.GetAvaloniaTypes();
+            var sourceType = property.Getter?.DeclaringType ?? property.Setter?.DeclaringType
+                ?? throw new InvalidOperationException($"Couldn't get declaring type for property {property}");
+            var valueType = property.PropertyType;
+
+            var typedPropertyInfoType = types.IPropertyInfoT.MakeGenericType(sourceType, valueType);
+
+            IXamlMethod Get()
+            {
+                var key = GetKey(property, null);
+
+                if (GetCachedPropertyInfoMethod(_typedFields, key, property, out var lst) is { } cached)
+                    return cached;
+
+                // Only construct the generic types on a cache miss: they're not needed when an
+                // existing property info method is reused.
+                var typedClrPropertyInfoType = types.ClrPropertyInfoT.MakeGenericType(sourceType, valueType);
+                var funcType = context.Configuration.WellKnownTypes.GetFuncOfT(2).MakeGenericType(sourceType, valueType);
+                var actionType = context.Configuration.WellKnownTypes.GetActionOfT(2).MakeGenericType(sourceType, valueType);
+
+                var name = lst.Count == 0
+                    ? key + "!Typed"
+                    : key + "!Typed_" + context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
+
+                var field = _builder.DefineField(typedPropertyInfoType, name + "!Field", XamlVisibility.Private, true);
+
+                var getter = property.Getter == null
+                    ? null
+                    : _builder.DefineMethod(valueType, new[] { sourceType }, name + "!Getter", XamlVisibility.Private, true, false);
+                if (getter != null)
+                {
+                    if (!property.Getter!.IsStatic)
+                        getter.Generator.Ldarg_0();
+                    getter.Generator.EmitCall(property.Getter).Ret();
+                }
+
+                var setter = property.Setter == null
+                    ? null
+                    : _builder.DefineMethod(types.XamlIlTypes.Void, new[] { sourceType, valueType }, name + "!Setter", XamlVisibility.Private, true, false);
+                if (setter != null)
+                {
+                    if (!property.Setter!.IsStatic)
+                        setter.Generator.Ldarg_0();
+                    setter.Generator.Ldarg(1);
+                    setter.Generator.EmitCall(property.Setter, true).Ret();
+                }
+
+                var get = _builder.DefineMethod(typedPropertyInfoType, Array.Empty<IXamlType>(),
+                    name + "!Property", XamlVisibility.Public, true, false);
+
+                var ctor = typedClrPropertyInfoType.Constructors.First(c =>
+                    c.Parameters.Count == 3 && !c.IsStatic);
+
+                var cacheMiss = get.Generator.DefineLabel();
+                get.Generator
+                    .Ldsfld(field)
+                    .Brfalse(cacheMiss)
+                    .Ldsfld(field)
+                    .Ret()
+                    .MarkLabel(cacheMiss)
+                    .Ldstr(property.Name);
+
+                EmitFunc(context, get.Generator, getter, funcType);
+                EmitFunc(context, get.Generator, setter, actionType);
+                get.Generator
+                    .Newobj(ctor)
+                    .Stsfld(field)
+                    .Ldsfld(field)
+                    .Ret();
+
+                lst.Add((property, get));
+                return get;
+            }
+
+            codeGen.EmitCall(Get());
+            return typedPropertyInfoType;
         }
     }
 }

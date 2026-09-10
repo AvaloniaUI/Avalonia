@@ -273,6 +273,51 @@ namespace Avalonia.Controls.UnitTests
             Assert.IsType<InvalidOperationException>(Record.Exception(syncContext.ExecutePostedCallbacks));
         }
 
+        [Theory]
+        [InlineData(2, 2, false)]
+        [InlineData(1, 3, true)]
+        [InlineData(3, 1, true)]
+        [InlineData(0, 4, true)]
+        public void CanCopy_Tracks_Whether_Selection_Covers_Any_Character(int start, int end, bool expected)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock { Text = "abcd" };
+
+                target.Measure(Size.Infinity);
+
+                target.SelectionStart = start;
+                target.SelectionEnd = end;
+
+                Assert.Equal(expected, target.CanCopy);
+            }
+        }
+
+        [Fact]
+        public void CanCopy_Tracks_Selection_Over_Inlines()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock();
+
+                target.Inlines!.Add(new Run("foo"));
+                target.Inlines!.Add(new Run("bar"));
+
+                target.Measure(Size.Infinity);
+
+                Assert.False(target.CanCopy);
+
+                target.SelectionStart = 2;
+                target.SelectionEnd = 5;
+
+                Assert.True(target.CanCopy);
+
+                target.ClearSelection();
+
+                Assert.False(target.CanCopy);
+            }
+        }
+
         private static TestServices ClipboardServices
             => TestServices.MockThreadingInterface.With(
                 assetLoader: new StandardAssetLoader(),
@@ -311,6 +356,25 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.CanCopy);
 
             return target;
+        }
+
+        [Fact]
+        public void Should_Shape_Inlines_When_TextLayout_Is_Created_Between_Content_Change_And_Measure()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var target = new SelectableTextBlock { Inlines = new InlineCollection() };
+
+            target.Measure(new Size(1000, 1000));
+            target.Arrange(new Rect(0, 0, 1000, 1000));
+
+            target.Inlines = new InlineCollection { new Run("Hello World") };
+
+            _ = target.TextLayout;
+
+            target.Measure(new Size(1000, 1000));
+
+            Assert.True(target.DesiredSize.Width > 0, $"DesiredSize was {target.DesiredSize}");
         }
 
         private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl);

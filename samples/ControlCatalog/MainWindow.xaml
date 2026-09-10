@@ -1,8 +1,6 @@
 ﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300"
-        Width="1024" Height="800"
-        xmlns:pages="using:ControlCatalog.Pages"
+        Width="1100" Height="800"
         Title="Avalonia Control Gallery"
-        Icon="/Assets/test_icon.ico"
         xmlns:local="using:ControlCatalog"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels;assembly=ControlCatalog"
@@ -20,7 +18,7 @@
     <NativeMenu>
       <NativeMenuItem Header="File">
         <NativeMenu>
-          <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Open" Click="OnOpenClicked" Gesture="Ctrl+O"/>
+          <NativeMenuItem Icon="/Assets/icon.ico" Header="Open" Click="OnOpenClicked" Gesture="Ctrl+O"/>
           <NativeMenuItemSeparator/>
           <NativeMenuItem Icon="/Assets/github_icon.png" Header="Recent">
             <NativeMenu/>

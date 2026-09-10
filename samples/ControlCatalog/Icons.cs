@@ -190,5 +190,8 @@ namespace ControlCatalog
 
         // Slider tune/adjust
         public const string Tune = "M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z";
+
+        // Home
+        public const string Home = "M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z";
     }
 }

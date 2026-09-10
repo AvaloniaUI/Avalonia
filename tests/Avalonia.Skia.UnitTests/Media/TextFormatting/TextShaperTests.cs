@@ -72,6 +72,56 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Not_Split_RightToLeft_Cluster()
+        {
+            // Arabic letters carry their harakat in the same cluster, so the first cluster of this
+            // text spans two characters. Splitting inside it keeps the cluster's glyphs together in
+            // the leading half - the text boundary has to follow them, or the two halves disagree
+            // about which characters their glyphs cover.
+            const string text = "أَبْجَدِيَّة";
+
+            using (Start())
+            {
+                var codepoint = Codepoint.ReadAt(text, 0, out _);
+
+                Assert.True(FontManager.Current.TryMatchCharacter(codepoint, FontStyle.Normal, FontWeight.Normal,
+                    FontStretch.Normal, null, null, out var typeface));
+
+                var options = new TextShaperOptions(typeface.GlyphTypeface, 12, 1, CultureInfo.InvariantCulture);
+                var buffer = TextShaper.Current.ShapeText(text.AsMemory(), options);
+
+                // Precondition: the first cluster covers the first two characters.
+                Assert.False(buffer.IsLeftToRight);
+                Assert.Equal(0, buffer[buffer.Length - 1].GlyphCluster);
+                Assert.Equal(0, buffer[buffer.Length - 2].GlyphCluster);
+                Assert.Equal(2, buffer[buffer.Length - 3].GlyphCluster);
+
+                var splitResult = buffer.Split(1);
+
+                var first = splitResult.First;
+                var second = splitResult.Second;
+
+                Assert.NotNull(first);
+                Assert.NotNull(second);
+
+                // The split snaps forward past the cluster, exactly like the left-to-right path.
+                Assert.Equal(2, first!.Text.Length);
+                Assert.Equal(2, first.Length);
+
+                // No character and no glyph is lost or duplicated.
+                Assert.Equal(text.Length, first.Text.Length + second!.Text.Length);
+                Assert.Equal(buffer.Length, first.Length + second.Length);
+
+                // Every glyph of the trailing half belongs to the characters the trailing half owns.
+                for (var i = 0; i < second.Length; i++)
+                {
+                    Assert.True(second[i].GlyphCluster >= first.Text.Length,
+                        $"Glyph {i} has cluster {second[i].GlyphCluster}, which the leading half owns.");
+                }
+            }
+        }
+
+        [Fact]
         public void Should_Split_RightToLeft()
         {
             var text = "أَبْجَدِيَّة عَرَبِيَّة";

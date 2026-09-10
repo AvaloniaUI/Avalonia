@@ -6,7 +6,7 @@ using BenchmarkDotNet.Attributes;
 namespace Avalonia.Benchmarks.Text;
 
 /// <summary>
-/// End-to-end iteration cost for the three Unicode break enumerators. Their
+/// End-to-end iteration cost for the four Unicode break enumerators. Their
 /// inner loops call into the trie-backed property getters, so this benchmark
 /// captures both the trie lookup cost and the per-segment algorithmic overhead
 /// in a shape that mirrors what text layout pays per string.
@@ -106,6 +106,20 @@ public class UnicodeBreakEnumeratorBenchmark
     public int WordBreakEnumerator_Sequence()
     {
         var enumerator = new WordBreakEnumerator(_text.AsSpan());
+        var count = 0;
+
+        while (enumerator.MoveNext(out _))
+        {
+            count++;
+        }
+
+        return count;
+    }
+
+    [Benchmark]
+    public int SentenceBreakEnumerator_Sequence()
+    {
+        var enumerator = new SentenceBreakEnumerator(_text.AsSpan());
         var count = 0;
 
         while (enumerator.MoveNext(out _))

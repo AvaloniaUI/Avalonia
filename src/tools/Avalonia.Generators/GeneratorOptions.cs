@@ -16,6 +16,7 @@ internal enum BuildProperties
     AvaloniaNameGeneratorFilterByNamespace = 4,
     AvaloniaNameGeneratorViewFileNamingStrategy = 5,
     AvaloniaNameGeneratorAttachDevTools = 6,
+    AvaloniaPropertyGeneratorIsEnabled = 7,
     // TODO add other generators properties here.
 }
 
@@ -51,6 +52,10 @@ internal record GeneratorOptions
             options,
             BuildProperties.AvaloniaNameGeneratorAttachDevTools,
             true);
+        AvaloniaPropertyGeneratorIsEnabled = GetBoolProperty(
+            options,
+            BuildProperties.AvaloniaPropertyGeneratorIsEnabled,
+            true);
     }
 
     public bool AvaloniaNameGeneratorIsEnabled { get; }
@@ -66,6 +71,8 @@ internal record GeneratorOptions
     public IGlobPattern AvaloniaNameGeneratorFilterByNamespace { get; }
 
     public bool AvaloniaNameGeneratorAttachDevTools { get; }
+
+    public bool AvaloniaPropertyGeneratorIsEnabled { get; }
 
     private static string[] GetStringArrayProperty(AnalyzerConfigOptions options, BuildProperties name, string defaultValue)
     {
