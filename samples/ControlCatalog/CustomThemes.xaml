@@ -58,7 +58,7 @@
   <BoxShadows x:Key="NavigationItemShadow">1 1 1 1 #2000, 0 0 1 1 #2fff</BoxShadows>
   <Thickness x:Key="NavigationItemPadding">8,0,4,0</Thickness>
   <Thickness x:Key="NavigationItemSelectionPillMargin">2,0,0,0</Thickness>
-  <x:Double x:Key="SelectionPipeHeight">14</x:Double>
+  <x:Double x:Key="SelectionPipeHeight">12</x:Double>
 
   <ControlTheme x:Key="ScrollPage" TargetType="ContentPage">
     <Setter Property="Background" Value="{DynamicResource PageBackgroundColor}"/>
@@ -138,7 +138,7 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:pointerover">
+    <Style Selector="^:pointerover, ^:selected">
       <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
 
       <Style Selector="^ /template/ Border#PART_LayoutRoot">
@@ -203,7 +203,7 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:pointerover">
+    <Style Selector="^:pointerover, ^:selected">
       <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
 
       <Style Selector="^ /template/ Border#PART_LayoutRoot">
@@ -268,7 +268,7 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:pointerover">
+    <Style Selector="^:pointerover, ^:selected">
       <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
 
       <Style Selector="^ /template/ Border#PART_LayoutRoot">
