@@ -64,7 +64,7 @@ partial class Build : NukeBuild
         Information("IsLocalBuild: " + Parameters.IsLocalBuild);
         Information("IsRunningOnUnix: " + Parameters.IsRunningOnUnix);
         Information("IsRunningOnWindows: " + Parameters.IsRunningOnWindows);
-        Information("IsRunningOnAzure:" + Parameters.IsRunningOnAzure);
+        Information("IsRunningOnGitHubActions: " + Parameters.IsRunningOnGitHubActions);
         Information("IsPullRequest: " + Parameters.IsPullRequest);
         Information("IsMainRepo: " + Parameters.IsMainRepo);
         Information("IsMasterBranch: " + Parameters.IsMasterBranch);
@@ -90,7 +90,7 @@ partial class Build : NukeBuild
 
     DotNetConfigHelper ApplySettingCore(DotNetConfigHelper c)
     {
-        if (Parameters.IsRunningOnAzure)
+        if (Parameters.IsRunningOnGitHubActions)
             c.AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64"));
         c.AddProperty("PackageVersion", Parameters.Version)
             .SetConfiguration(Parameters.Configuration)
@@ -177,8 +177,8 @@ partial class Build : NukeBuild
             File.WriteAllText(versionFile, currentBuildVersion);
 
             var prIdFile = Path.Combine(Parameters.VersionOutputDir, "prId.txt");
-            var prId = Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER");
-            Console.WriteLine("PR Number  is: " + prId);
+            var prId = Parameters.GetPullRequestNumber()?.ToString();
+            Console.WriteLine("PR Number is: " + prId);
             File.WriteAllText(prIdFile, prId);
         });
 
@@ -428,15 +428,15 @@ partial class Build : NukeBuild
         .DependsOn(CreateNugetPackages)
         .DependsOn(ValidateApiDiff);
 
-    Target CiAzureLinux => _ => _
+    Target CiLinux => _ => _
         .DependsOn(RunTests);
 
-    Target CiAzureOSX => _ => _
+    Target CiMacOS => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles)
         .DependsOn(CreateSbom);
 
-    Target CiAzureWindows => _ => _
+    Target CiWindows => _ => _
         .DependsOn(Package)
         .DependsOn(VerifyXamlCompilation)
         .DependsOn(ZipFiles)
