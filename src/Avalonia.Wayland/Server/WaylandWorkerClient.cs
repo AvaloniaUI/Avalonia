@@ -32,6 +32,8 @@ class WaylandWorkerClient
 
     public Compositor Compositor { get; }
 
+    public WaylandPlatformOptions Options => _worker.Options;
+
     /// <summary>Shared platform-wide input-dispatch queue (any-thread safe).</summary>
     public IRawEventGrouperDispatchQueue InputDispatchQueue { get; }
 
