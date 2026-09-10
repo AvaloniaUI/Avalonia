@@ -94,7 +94,7 @@ internal class BrowserTextInputMethod(
     {
         // This is only a browser spellcheck hint for the hidden DOM input used by text input.
         // Browsers don't expose native spellcheck ranges or suggestions for canvas-rendered text.
-        InputHelper.SetSpellCheck(_inputElement, options.CanUseSpellCheck());
+        InputHelper.SetSpellCheck(_inputElement, options.IsSpellCheckAllowed());
     }
 
     public void Reset()

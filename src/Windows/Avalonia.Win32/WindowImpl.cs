@@ -81,7 +81,6 @@ namespace Avalonia.Win32
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
-        private readonly Win32SpellCheckProvider _spellCheckProvider;
         private WindowsInputPane? _inputPane;
         private WndProc _wndProcDelegate;
         private string? _className;
@@ -178,7 +177,6 @@ namespace Avalonia.Win32
             }
 
             _storageProvider = new Win32StorageProvider(this);
-            _spellCheckProvider = new Win32SpellCheckProvider();
             _inputPane = WindowsInputPane.TryCreate(this);
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
@@ -363,7 +361,7 @@ namespace Avalonia.Win32
 
             if (featureType == typeof(ISpellCheckProvider))
             {
-                return _spellCheckProvider;
+                return Win32SpellCheckProvider.GetForCurrentThread();
             }
 
             if (featureType == typeof(IInputPane))
@@ -671,7 +669,6 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
-            _spellCheckProvider.Dispose();
             _inputPane?.Dispose();
             _inputPane = null;
             if (_hwnd != IntPtr.Zero)

@@ -4,6 +4,7 @@ using Avalonia.Controls.Converters;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
+using Avalonia.Input.TextInput;
 
 namespace Avalonia.Controls
 {
@@ -28,6 +29,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ColorView() : base()
         {
+            // Let the inner TextBox inherit this opt-out for hex input.
+            SetCurrentValue(TextInputOptions.IsSpellCheckEnabledProperty, false);
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -10,42 +11,29 @@ using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.FreeDesktop;
 
-internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, IDisposable
+/// <summary>
+/// Spell checking through libenchant-2.
+/// </summary>
+/// <remarks>
+/// Share the broker and dictionaries to avoid repeated loads. Use them only on the UI thread;
+/// native resources live until process exit.
+/// </remarks>
+internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
 {
     private const string EnchantLibrary = "libenchant-2.so.2";
+    private const int StackallocByteLimit = 512;
+
+    public static EnchantSpellCheckProvider Instance { get; } = new();
 
     private readonly Dictionary<string, IntPtr> _dictionaries = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _unsupportedDictionaries = new(StringComparer.OrdinalIgnoreCase);
     private IntPtr _broker;
     private bool _unavailable;
+    private string? _userLanguage;
+    private bool _userLanguageResolved;
 
-    ~EnchantSpellCheckProvider()
+    private EnchantSpellCheckProvider()
     {
-        ReleaseNativeResources();
-    }
-
-    public void Dispose()
-    {
-        ReleaseNativeResources();
-        GC.SuppressFinalize(this);
-    }
-
-    private void ReleaseNativeResources()
-    {
-        foreach (var dictionary in _dictionaries.Values)
-        {
-            EnchantBrokerFreeDict(_broker, dictionary);
-        }
-
-        _dictionaries.Clear();
-
-        if (_broker != IntPtr.Zero)
-        {
-            EnchantBrokerFree(_broker);
-            _broker = IntPtr.Zero;
-        }
-
-        _unavailable = true;
     }
 
     public bool IsLanguageSupported(CultureInfo? culture)
@@ -54,12 +42,13 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
     }
 
     public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        ReadOnlySpan<char> text,
+        ReadOnlyMemory<char> textMemory,
         CultureInfo? culture,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        var text = textMemory.Span;
         var dictionary = GetDictionary(culture);
 
         if (dictionary == IntPtr.Zero || text.IsEmpty || IsWhiteSpace(text))
@@ -67,28 +56,22 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
             return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
         }
 
-        var results = new List<SpellCheckResult>();
-        var wordBreaker = new WordBreakEnumerator(text);
+        List<SpellCheckResult>? results = null;
+        var words = new CheckableWordEnumerator(text);
 
-        while (wordBreaker.MoveNext(out var segment))
+        while (words.MoveNext(out var offset, out var length))
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            var word = text.Slice(segment.Offset, segment.Length);
-
-            if (!IsCheckableWord(word))
-            {
-                continue;
-            }
+            var word = text.Slice(offset, length);
 
             if (!IsWordCorrect(dictionary, word))
             {
-                results.Add(new SpellCheckResult(segment.Offset, segment.Length, word.ToString()));
+                (results ??= new List<SpellCheckResult>()).Add(new SpellCheckResult(offset, length));
             }
         }
 
         return new ValueTask<IReadOnlyList<SpellCheckResult>>(
-            results.Count == 0 ? Array.Empty<SpellCheckResult>() : results);
+            results is null ? Array.Empty<SpellCheckResult>() : results);
     }
 
     public ValueTask<IReadOnlyList<string>> SuggestAsync(
@@ -105,38 +88,53 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
             return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
         }
 
-        using var utf8Word = new Utf8String(word);
-        nuint count = 0;
-        var suggestions = EnchantDictSuggest(dictionary, utf8Word.Pointer, utf8Word.Length, &count);
-
-        if (suggestions == IntPtr.Zero || count == 0)
-        {
-            return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
-        }
+        byte[]? rented = null;
 
         try
         {
-            var length = checked((int)count);
-            var pointers = new IntPtr[length];
-            Marshal.Copy(suggestions, pointers, 0, length);
+            var utf8Word = EncodeUtf8(word, stackalloc byte[StackallocByteLimit], ref rented, out var byteLength);
+            nuint count = 0;
+            IntPtr suggestions;
 
-            var results = new List<string>(length);
-
-            foreach (var pointer in pointers)
+            fixed (byte* wordPtr = utf8Word)
             {
-                var value = PtrToStringUtf8(pointer);
-
-                if (!string.IsNullOrEmpty(value))
-                {
-                    results.Add(value);
-                }
+                suggestions = EnchantDictSuggest(dictionary, wordPtr, byteLength, &count);
             }
 
-            return new ValueTask<IReadOnlyList<string>>(results);
+            if (suggestions == IntPtr.Zero || count == 0)
+            {
+                return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
+            }
+
+            try
+            {
+                var length = checked((int)count);
+                var pointers = (IntPtr*)suggestions;
+                var results = new List<string>(length);
+
+                for (var i = 0; i < length; i++)
+                {
+                    var value = PtrToStringUtf8(pointers[i]);
+
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        results.Add(value);
+                    }
+                }
+
+                return new ValueTask<IReadOnlyList<string>>(results);
+            }
+            finally
+            {
+                EnchantDictFreeStringList(dictionary, suggestions);
+            }
         }
         finally
         {
-            EnchantDictFreeStringList(dictionary, suggestions);
+            if (rented is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
         }
     }
 
@@ -153,38 +151,144 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
         return true;
     }
 
+    // Filter whole tokens before word breaking strips address and identifier separators.
+    internal ref struct CheckableWordEnumerator
+    {
+        private readonly ReadOnlySpan<char> _text;
+        private WordBreakEnumerator _wordBreaker;
+        private int _tokenStart;
+        private int _nextTokenStart;
+
+        public CheckableWordEnumerator(ReadOnlySpan<char> text)
+        {
+            _text = text;
+            _wordBreaker = default;
+            _tokenStart = 0;
+            _nextTokenStart = 0;
+        }
+
+        public bool MoveNext(out int offset, out int length)
+        {
+            while (true)
+            {
+                while (_wordBreaker.MoveNext(out var segment))
+                {
+                    offset = _tokenStart + segment.Offset;
+                    length = segment.Length;
+
+                    if (IsCheckableWord(_text.Slice(offset, length)))
+                    {
+                        return true;
+                    }
+                }
+
+                while (_nextTokenStart < _text.Length && SpellCheckTokenization.IsBoundary(_text[_nextTokenStart]))
+                {
+                    _nextTokenStart++;
+                }
+
+                if (_nextTokenStart == _text.Length)
+                {
+                    offset = length = 0;
+                    return false;
+                }
+
+                _tokenStart = _nextTokenStart;
+
+                while (_nextTokenStart < _text.Length && !SpellCheckTokenization.IsBoundary(_text[_nextTokenStart]))
+                {
+                    _nextTokenStart++;
+                }
+
+                var token = _text.Slice(_tokenStart, _nextTokenStart - _tokenStart);
+
+                if (!SpellCheckTokenization.RequiresWholeToken(token))
+                {
+                    _wordBreaker = new WordBreakEnumerator(token);
+                }
+            }
+        }
+    }
+
     private static bool IsCheckableWord(ReadOnlySpan<char> word)
     {
+        var hasLetter = false;
+
         for (var i = 0; i < word.Length;)
         {
             var codepoint = Codepoint.ReadAt(word, i, out var count);
 
-            if (codepoint.GeneralCategory is
-                GeneralCategory.Letter or
-                GeneralCategory.CasedLetter or
-                GeneralCategory.LowercaseLetter or
-                GeneralCategory.ModifierLetter or
-                GeneralCategory.OtherLetter or
-                GeneralCategory.TitlecaseLetter or
-                GeneralCategory.UppercaseLetter or
-                GeneralCategory.Mark or
-                GeneralCategory.SpacingMark or
-                GeneralCategory.EnclosingMark or
-                GeneralCategory.NonspacingMark)
+            switch (codepoint.GeneralCategory)
             {
-                return true;
+                case GeneralCategory.Letter:
+                case GeneralCategory.CasedLetter:
+                case GeneralCategory.LowercaseLetter:
+                case GeneralCategory.ModifierLetter:
+                case GeneralCategory.OtherLetter:
+                case GeneralCategory.TitlecaseLetter:
+                case GeneralCategory.UppercaseLetter:
+                    hasLetter = true;
+                    break;
+                case GeneralCategory.DecimalNumber:
+                case GeneralCategory.LetterNumber:
+                case GeneralCategory.OtherNumber:
+                    return false;
+            }
+
+            if (count == 1)
+            {
+                var c = word[i];
+
+                if (c is '@' or '/' or ':' or '\\' or '_' || (c == '.' && i > 0 && i < word.Length - 1))
+                {
+                    return false;
+                }
             }
 
             i += count;
         }
 
-        return false;
+        return hasLetter;
     }
 
-    private bool IsWordCorrect(IntPtr dictionary, ReadOnlySpan<char> word)
+    private static bool IsWordCorrect(IntPtr dictionary, ReadOnlySpan<char> word)
     {
-        using var utf8Word = new Utf8String(word);
-        return EnchantDictCheck(dictionary, utf8Word.Pointer, utf8Word.Length) == 0;
+        byte[]? rented = null;
+
+        try
+        {
+            var utf8Word = EncodeUtf8(word, stackalloc byte[StackallocByteLimit], ref rented, out var byteLength);
+
+            fixed (byte* wordPtr = utf8Word)
+            {
+                // 0 = correct, >0 = misspelled, <0 = error. An error must not produce an underline.
+                return EnchantDictCheck(dictionary, wordPtr, byteLength) <= 0;
+            }
+        }
+        finally
+        {
+            if (rented is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
+        }
+    }
+
+    // Use the supplied buffer or a pooled array for NUL-terminated UTF-8. The caller returns the array.
+    private static Span<byte> EncodeUtf8(ReadOnlySpan<char> value, Span<byte> buffer, ref byte[]? rented, out int byteLength)
+    {
+        var required = Encoding.UTF8.GetByteCount(value) + 1;
+
+        if (required > buffer.Length)
+        {
+            rented = ArrayPool<byte>.Shared.Rent(required);
+            buffer = rented;
+        }
+
+        byteLength = Encoding.UTF8.GetBytes(value, buffer);
+        buffer[byteLength] = 0;
+
+        return buffer.Slice(0, byteLength + 1);
     }
 
     private IntPtr GetDictionary(CultureInfo? culture)
@@ -201,6 +305,8 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
             return IntPtr.Zero;
         }
 
+        Span<byte> tagBuffer = stackalloc byte[64];
+
         foreach (var languageTag in GetLanguageTags(culture))
         {
             if (_dictionaries.TryGetValue(languageTag, out var dictionary))
@@ -213,8 +319,24 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
                 continue;
             }
 
-            using var utf8LanguageTag = new Utf8String(languageTag);
-            dictionary = EnchantBrokerRequestDict(_broker, utf8LanguageTag.Pointer);
+            byte[]? rented = null;
+
+            try
+            {
+                var utf8Tag = EncodeUtf8(languageTag, tagBuffer, ref rented, out _);
+
+                fixed (byte* tagPtr = utf8Tag)
+                {
+                    dictionary = EnchantBrokerRequestDict(_broker, tagPtr);
+                }
+            }
+            finally
+            {
+                if (rented is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(rented);
+                }
+            }
 
             if (dictionary != IntPtr.Zero)
             {
@@ -253,17 +375,46 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
         }
     }
 
-    private static IEnumerable<string> GetLanguageTags(CultureInfo? culture)
+    // Use Enchant's locale, then fall back to the process cultures.
+    private IEnumerable<string> GetLanguageTags(CultureInfo? culture)
     {
-        var cultureName = culture?.Name;
-
-        if (string.IsNullOrEmpty(cultureName))
+        if (culture is not null)
         {
-            cultureName = CultureInfo.CurrentCulture.Name;
+            foreach (var tag in GetLanguageTags(culture.Name, culture.TwoLetterISOLanguageName))
+            {
+                yield return tag;
+            }
+
+            yield break;
         }
 
+        var userLanguage = GetUserLanguage();
+
+        if (!string.IsNullOrEmpty(userLanguage))
+        {
+            foreach (var tag in GetLanguageTags(userLanguage, null))
+            {
+                yield return tag;
+            }
+        }
+
+        foreach (var fallback in new[] { CultureInfo.CurrentUICulture, CultureInfo.CurrentCulture })
+        {
+            if (!string.IsNullOrEmpty(fallback.Name))
+            {
+                foreach (var tag in GetLanguageTags(fallback.Name, fallback.TwoLetterISOLanguageName))
+                {
+                    yield return tag;
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<string> GetLanguageTags(string cultureName, string? neutralName)
+    {
         if (string.IsNullOrEmpty(cultureName))
         {
+            // Enchant requires a non-empty language tag.
             yield break;
         }
 
@@ -276,17 +427,10 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
             yield return underscoreName;
         }
 
-        var neutralName = culture?.TwoLetterISOLanguageName;
-
         if (string.IsNullOrEmpty(neutralName))
         {
-            try
-            {
-                neutralName = new CultureInfo(cultureName).TwoLetterISOLanguageName;
-            }
-            catch (CultureNotFoundException)
-            {
-            }
+            var separator = cultureName.IndexOfAny(new[] { '-', '_' });
+            neutralName = separator > 0 ? cultureName.Substring(0, separator) : null;
         }
 
         if (!string.IsNullOrEmpty(neutralName) &&
@@ -294,6 +438,54 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
         {
             yield return neutralName;
         }
+    }
+
+    private string? GetUserLanguage()
+    {
+        if (_userLanguageResolved)
+        {
+            return _userLanguage;
+        }
+
+        _userLanguageResolved = true;
+
+        try
+        {
+            var pointer = EnchantGetUserLanguage();
+
+            if (pointer != IntPtr.Zero)
+            {
+                try
+                {
+                    // Strip encoding and modifiers from LANG.
+                    var value = PtrToStringUtf8(pointer);
+                    var cut = value?.IndexOfAny(new[] { '.', '@' }) ?? -1;
+
+                    if (cut >= 0)
+                    {
+                        value = value!.Substring(0, cut);
+                    }
+
+                    // An unset locale ("C" / "POSIX") is not a language.
+                    if (!string.IsNullOrEmpty(value) && value != "C" && value != "POSIX")
+                    {
+                        _userLanguage = value;
+                    }
+                }
+                finally
+                {
+                    Free(pointer);
+                }
+            }
+        }
+        catch (EntryPointNotFoundException)
+        {
+        }
+        catch (DllNotFoundException)
+        {
+        }
+
+        return _userLanguage;
     }
 
     private static string? PtrToStringUtf8(IntPtr pointer)
@@ -317,14 +509,8 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
     [DllImport(EnchantLibrary, EntryPoint = "enchant_broker_init", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr EnchantBrokerInit();
 
-    [DllImport(EnchantLibrary, EntryPoint = "enchant_broker_free", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void EnchantBrokerFree(IntPtr broker);
-
     [DllImport(EnchantLibrary, EntryPoint = "enchant_broker_request_dict", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr EnchantBrokerRequestDict(IntPtr broker, byte* languageTag);
-
-    [DllImport(EnchantLibrary, EntryPoint = "enchant_broker_free_dict", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void EnchantBrokerFreeDict(IntPtr broker, IntPtr dictionary);
 
     [DllImport(EnchantLibrary, EntryPoint = "enchant_dict_check", CallingConvention = CallingConvention.Cdecl)]
     private static extern int EnchantDictCheck(IntPtr dictionary, byte* word, nint length);
@@ -335,28 +521,10 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider, ID
     [DllImport(EnchantLibrary, EntryPoint = "enchant_dict_free_string_list", CallingConvention = CallingConvention.Cdecl)]
     private static extern void EnchantDictFreeStringList(IntPtr dictionary, IntPtr stringList);
 
-    private sealed class Utf8String : IDisposable
-    {
-        private readonly GCHandle _handle;
+    // Returns a malloc'd copy of the user's language (from the environment); freed with free().
+    [DllImport(EnchantLibrary, EntryPoint = "enchant_get_user_language", CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr EnchantGetUserLanguage();
 
-        public Utf8String(ReadOnlySpan<char> value)
-        {
-            var nullTerminated = new byte[Encoding.UTF8.GetByteCount(value) + 1];
-            Length = Encoding.UTF8.GetBytes(value, nullTerminated);
-            _handle = GCHandle.Alloc(nullTerminated, GCHandleType.Pinned);
-            Pointer = (byte*)_handle.AddrOfPinnedObject();
-        }
-
-        public byte* Pointer { get; }
-
-        public int Length { get; }
-
-        public void Dispose()
-        {
-            if (_handle.IsAllocated)
-            {
-                _handle.Free();
-            }
-        }
-    }
+    [DllImport("libc", EntryPoint = "free", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void Free(IntPtr pointer);
 }

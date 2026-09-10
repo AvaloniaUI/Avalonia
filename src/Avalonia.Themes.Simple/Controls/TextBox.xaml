@@ -10,10 +10,10 @@
               IsVisible="{Binding $parent[TextBox].HasSpellCheckSuggestions}"
               ItemsSource="{Binding $parent[TextBox].SpellCheckSuggestions}">
       <MenuItem.ItemContainerTheme>
-        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-          <Setter Property="Header" Value="{ReflectionBinding}" />
+        <!-- DataContext is the suggestion; the container supplies Header. -->
+        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="x:String">
           <Setter Property="Command" Value="{Binding $parent[TextBox].ApplySpellCheckSuggestion}" />
-          <Setter Property="CommandParameter" Value="{ReflectionBinding}" />
+          <Setter Property="CommandParameter" Value="{Binding}" />
         </ControlTheme>
       </MenuItem.ItemContainerTheme>
     </MenuItem>
@@ -101,6 +101,7 @@
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}" />
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}" />
+    <Setter Property="SpellCheckErrorBrush" Value="{DynamicResource ErrorBrush}" />
     <Setter Property="Padding" Value="4" />
     <Setter Property="ContextFlyout" Value="{StaticResource SimpleTextBoxContextFlyout}" />
     <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
@@ -170,6 +171,7 @@
                                    PasswordChar="{TemplateBinding PasswordChar}"
                                    RevealPassword="{TemplateBinding RevealPassword}"
                                    SelectionBrush="{TemplateBinding SelectionBrush}"
+                                   SpellCheckErrorBrush="{TemplateBinding SpellCheckErrorBrush}"
                                    SelectionEnd="{TemplateBinding SelectionEnd}"
                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
                                    SelectionStart="{TemplateBinding SelectionStart}"

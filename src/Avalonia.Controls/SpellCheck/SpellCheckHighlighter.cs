@@ -1,100 +1,85 @@
 using System.Collections.Generic;
-using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
-using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls;
 
 internal sealed class SpellCheckHighlighter
 {
-    private TextRunProperties? _misspellingTextRunProperties;
-
-    public void Refresh()
-    {
-        _misspellingTextRunProperties = null;
-    }
+    private List<SpellCheckResult>? _visible;
+    private List<SpellCheckResult>? _spare;
 
     public void Clear(TextPresenter? presenter)
     {
-        Refresh();
-        presenter?.SetTextStyleOverrides(null);
+        presenter?.SetSpellCheckRanges(null);
+
+        if (_visible is not null)
+        {
+            _visible.Clear();
+            _spare = _visible;
+            _visible = null;
+        }
     }
 
+    // Hide the word being typed while the caret remains in it.
     public void Apply(
         TextPresenter presenter,
         IReadOnlyList<SpellCheckResult> results,
-        List<SpellCheckRange> visibleRanges)
+        List<SpellCheckRange> visibleRanges,
+        SpellCheckRange? typingWord = null,
+        int caretIndex = -1)
     {
-        List<ValueSpan<TextRunProperties>>? spans = null;
+        // Reuse the spare list without changing the one still held by the presenter.
+        var visible = _spare ?? new List<SpellCheckResult>(_visible?.Capacity ?? 4);
+        visible.Clear();
+        var rangeIndex = 0;
 
         for (var i = 0; i < results.Count; i++)
         {
             var result = results[i];
+            var resultEnd = result.Start + result.Length;
 
-            if (!IntersectsVisibleRange(result, visibleRanges))
+            // Both collections are sorted, so scan the visible ranges only once.
+            while (rangeIndex < visibleRanges.Count && visibleRanges[rangeIndex].End <= result.Start)
+            {
+                rangeIndex++;
+            }
+
+            if (rangeIndex >= visibleRanges.Count)
+            {
+                break;
+            }
+
+            if (resultEnd <= visibleRanges[rangeIndex].Start || IsBeingTyped(result, typingWord, caretIndex))
             {
                 continue;
             }
 
-            _misspellingTextRunProperties ??= CreateMisspellingTextRunProperties(presenter);
-            spans ??= new List<ValueSpan<TextRunProperties>>();
-            spans.Add(new ValueSpan<TextRunProperties>(result.Start, result.Length, _misspellingTextRunProperties));
+            visible.Add(result);
         }
 
-        presenter.SetTextStyleOverrides(spans);
-    }
-
-    private static TextRunProperties CreateMisspellingTextRunProperties(TextPresenter presenter)
-    {
-        var typeface = new Typeface(
-            presenter.FontFamily,
-            presenter.FontStyle,
-            presenter.FontWeight,
-            presenter.FontStretch);
-
-        var decorations = new TextDecorationCollection
+        if (presenter.SetSpellCheckRanges(visible))
         {
-            new TextDecoration
-            {
-                Location = TextDecorationLocation.Underline,
-                Stroke = Brushes.Red,
-                StrokeDashArray = new AvaloniaList<double> { 1, 2 },
-                StrokeLineCap = PenLineCap.Round
-            }
-        };
-
-        return new GenericTextRunProperties(
-            typeface,
-            presenter.FontSize,
-            decorations,
-            presenter.Foreground,
-            fontFeatures: presenter.FontFeatures);
+            var previous = _visible;
+            _visible = visible.Count == 0 ? null : visible;
+            _spare = previous;
+        }
+        else
+        {
+            _spare = visible;
+        }
     }
 
-    private static bool IntersectsVisibleRange(
-        SpellCheckResult result,
-        List<SpellCheckRange> ranges)
+    private static bool IsBeingTyped(SpellCheckResult result, SpellCheckRange? typingWord, int caretIndex)
     {
+        if (typingWord is not { } word)
+        {
+            return false;
+        }
+
         var resultEnd = result.Start + result.Length;
 
-        for (var i = 0; i < ranges.Count; i++)
-        {
-            var range = ranges[i];
-
-            if (resultEnd <= range.Start)
-            {
-                continue;
-            }
-
-            if (result.Start < range.End)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return resultEnd > word.Start && result.Start < word.End &&
+            caretIndex > word.Start && caretIndex <= word.End;
     }
 }

@@ -62,8 +62,11 @@ internal static class TextInputOptionsConverter
             hint |= ZwpTextInputV3.ContentHintEnum.AutoCapitalization;
 
         if (options.ShowSuggestions == true)
-            hint |= ZwpTextInputV3.ContentHintEnum.Completion
-                  | ZwpTextInputV3.ContentHintEnum.Spellcheck;
+        {
+            hint |= ZwpTextInputV3.ContentHintEnum.Completion;
+            if (options.IsSpellCheckAllowed())
+                hint |= ZwpTextInputV3.ContentHintEnum.Spellcheck;
+        }
 
         // Password always overrides: even with ShowSuggestions=true, never reveal text.
         if (options.ContentType == TextInputContentType.Password)

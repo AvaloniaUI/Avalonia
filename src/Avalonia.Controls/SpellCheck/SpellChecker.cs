@@ -4,42 +4,62 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input.TextInput;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls;
 
 internal static class SpellChecker
 {
     private const int MaxSuggestionCount = 8;
+    // Native checks may block the UI thread. Limit chunk size and yield between calls.
+    internal const int MaxProviderCheckLength = 2048;
 
     public static async ValueTask<IReadOnlyList<SpellCheckResult>> CheckRangesAsync(
         string text,
         List<SpellCheckRange> ranges,
         ISpellCheckProvider provider,
-        CultureInfo culture,
+        CultureInfo? culture,
         CancellationToken cancellationToken)
     {
         List<SpellCheckResult>? normalized = null;
+        var boundaries = new SpellCheckTokenization.WordBoundaryFinder(text);
 
         for (var i = 0; i < ranges.Count; i++)
         {
             var range = ranges[i];
-            var length = range.End - range.Start;
+            var chunkStart = range.Start;
 
-            if (length <= 0 || IsWhiteSpace(text.AsSpan(range.Start, length)))
+            while (chunkStart < range.End)
             {
-                continue;
+                var maximum = Math.Min(range.End, chunkStart + MaxProviderCheckLength);
+                // Split natural text at Unicode word boundaries, but keep addresses and identifiers intact.
+                var checkStart = Math.Min(boundaries.End(chunkStart), maximum);
+                var checkEnd = Math.Max(boundaries.Start(maximum), chunkStart);
+                var chunkEnd = maximum == range.End || checkEnd <= chunkStart ? maximum : checkEnd;
+                var length = checkEnd - checkStart;
+
+                if (length > 0 && !IsWhiteSpace(text.AsSpan(checkStart, length)))
+                {
+                    var results = await provider.CheckAsync(
+                        text.AsMemory(checkStart, length), culture, cancellationToken);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (results.Count > 0)
+                    {
+                        AddNormalizedResults(
+                            results, checkStart, length, normalized ??= new List<SpellCheckResult>(results.Count));
+                    }
+                }
+
+                chunkStart = chunkEnd;
+
+                if (chunkStart < range.End || i + 1 < ranges.Count)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await Dispatcher.Yield(DispatcherPriority.Background);
+                }
             }
-
-            var results = await provider.CheckAsync(text.AsSpan(range.Start, length), culture, cancellationToken);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (results.Count == 0)
-            {
-                continue;
-            }
-
-            AddNormalizedResults(results, range, length, normalized ??= new List<SpellCheckResult>(results.Count));
         }
 
         if (normalized is null || normalized.Count == 0)
@@ -86,7 +106,7 @@ internal static class SpellChecker
 
     private static void AddNormalizedResults(
         IReadOnlyList<SpellCheckResult> results,
-        SpellCheckRange range,
+        int rangeStart,
         int textLength,
         List<SpellCheckResult> normalized)
     {
@@ -99,14 +119,7 @@ internal static class SpellChecker
 
             var length = Math.Min(result.Length, textLength - result.Start);
 
-            // Avoid underlining a partial word produced by a horizontally clipped visible range.
-            if ((range.StartIsInsideWord && result.Start == 0) ||
-                (range.EndIsInsideWord && result.Start + length >= textLength))
-            {
-                continue;
-            }
-
-            normalized.Add(result with { Start = range.Start + result.Start, Length = length });
+            normalized.Add(result with { Start = rangeStart + result.Start, Length = length });
         }
     }
 

@@ -26,10 +26,10 @@
               IsVisible="{Binding $parent[TextBox].HasSpellCheckSuggestions}"
               ItemsSource="{Binding $parent[TextBox].SpellCheckSuggestions}">
       <MenuItem.ItemContainerTheme>
-        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-          <Setter Property="Header" Value="{ReflectionBinding}" />
+        <!-- DataContext is the suggestion; the container supplies Header. -->
+        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="x:String">
           <Setter Property="Command" Value="{Binding $parent[TextBox].ApplySpellCheckSuggestion}" />
-          <Setter Property="CommandParameter" Value="{ReflectionBinding}" />
+          <Setter Property="CommandParameter" Value="{Binding}" />
         </ControlTheme>
       </MenuItem.ItemContainerTheme>
     </MenuItem>
@@ -43,10 +43,10 @@
               IsVisible="{Binding $parent[TextBox].HasSpellCheckSuggestions}"
               ItemsSource="{Binding $parent[TextBox].SpellCheckSuggestions}">
       <MenuItem.ItemContainerTheme>
-        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-          <Setter Property="Header" Value="{ReflectionBinding}" />
+        <!-- DataContext is the suggestion; the container supplies Header. -->
+        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="x:String">
           <Setter Property="Command" Value="{Binding $parent[TextBox].ApplySpellCheckSuggestion}" />
-          <Setter Property="CommandParameter" Value="{ReflectionBinding}" />
+          <Setter Property="CommandParameter" Value="{Binding}" />
         </ControlTheme>
       </MenuItem.ItemContainerTheme>
     </MenuItem>
@@ -123,6 +123,7 @@
     <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+    <Setter Property="SpellCheckErrorBrush" Value="{DynamicResource TextControlSpellCheckErrorBrush}" />
     <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -200,6 +201,7 @@
                                      RevealPassword="{TemplateBinding RevealPassword}"
                                      SelectionBrush="{TemplateBinding SelectionBrush}"
                                      SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                     SpellCheckErrorBrush="{TemplateBinding SpellCheckErrorBrush}"
                                      CaretBrush="{TemplateBinding CaretBrush}"
                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>

@@ -8,6 +8,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Input.TextInput;
+using Avalonia.Threading;
 
 namespace Avalonia.Android.Platform.Input
 {
@@ -43,6 +44,7 @@ namespace Avalonia.Android.Platform.Input
         private readonly InputMethodManager _imm;
         private TextInputMethodClient? _client;
         private AvaloniaInputConnection? _inputConnection;
+        private int _optionsUpdateVersion;
 
         public AndroidInputMethod(TView host)
         {
@@ -195,27 +197,19 @@ namespace Avalonia.Android.Platform.Input
                     outAttrs.InputType |= InputTypes.TextFlagMultiLine;
 
                 var isTextInput = (outAttrs.InputType & InputTypes.MaskClass) == InputTypes.ClassText;
-                var canUseSpellCheck = options.CanUseSpellCheck();
-                var isSensitive = options.IsSensitive ||
-                    options.ContentType is TextInputContentType.Password or TextInputContentType.Pin;
+                var canUseSpellCheck = options.IsSpellCheckAllowed();
 
                 if (isTextInput)
                 {
-                    if (options.ShowSuggestions == false)
-                    {
-                        outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
-                    }
-                    else if (isSensitive ||
-                             (options.ShowSuggestions != true && !canUseSpellCheck))
+                    if (!canUseSpellCheck)
                     {
                         outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
                     }
 
-                    if (!isSensitive &&
+                    if (canUseSpellCheck &&
                         (options.ShowSuggestions == true ||
                          (options.ShowSuggestions != false &&
-                          options.IsSpellCheckEnabled == true &&
-                          canUseSpellCheck)))
+                          options.IsSpellCheckEnabled == true)))
                     {
                         outAttrs.InputType |= InputTypes.TextFlagAutoCorrect;
                     }
@@ -257,6 +251,22 @@ namespace Avalonia.Android.Platform.Input
 
                 return _inputConnection;
             });
+
+            // Recreate EditorInfo when options change. Defer so a focus switch can replace the client first.
+            var client = _client;
+            var version = ++_optionsUpdateVersion;
+
+            if (client is not null)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (version == _optionsUpdateVersion && ReferenceEquals(client, _client))
+                    {
+                        _imm.RestartInput(View);
+                        _inputConnection?.UpdateState();
+                    }
+                }, DispatcherPriority.Input);
+            }
         }
     }
 }

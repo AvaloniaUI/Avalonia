@@ -46,7 +46,6 @@ namespace Avalonia.Controls
         static MaskedTextBox()
         {
             PasswordCharProperty.OverrideMetadata<MaskedTextBox>(new('\0', coerce: CoercePasswordChar));
-            TextInputOptions.IsSpellCheckEnabledProperty.OverrideDefaultValue<MaskedTextBox>(false);
         }
 
         private static char CoercePasswordChar(AvaloniaObject sender, char baseValue)
@@ -79,7 +78,11 @@ namespace Avalonia.Controls
             return baseValue;
         }
 
-        public MaskedTextBox() { }
+        public MaskedTextBox()
+        {
+            // Use a current value because an inherited opt-in would override a type default.
+            SetCurrentValue(TextInputOptions.IsSpellCheckEnabledProperty, false);
+        }
 
         /// <summary>
         ///  Constructs the MaskedTextBox with the specified MaskedTextProvider object.
@@ -88,6 +91,7 @@ namespace Avalonia.Controls
             "AVP1012:An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values",
             Justification = "These values are being explicitly provided by a constructor parameter.")]
         public MaskedTextBox(MaskedTextProvider maskedTextProvider)
+            : this()
         {
             if (maskedTextProvider == null)
             {

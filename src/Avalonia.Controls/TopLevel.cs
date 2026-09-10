@@ -546,6 +546,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the spell-checking service for this top-level, when one is available.
         /// </summary>
+        /// <remarks>
+        /// A provider registered in <see cref="AvaloniaLocator"/> overrides the platform provider.
+        /// Use <see cref="TextInputOptions.SpellCheckProviderProperty"/> for a scoped override.
+        /// </remarks>
+        [Avalonia.Metadata.Unstable("Spell checking is in early development and may change in minor releases.")]
         public ISpellCheckProvider? SpellCheckProvider => AvaloniaLocator.Current.GetService<ISpellCheckProvider>()
             ?? PlatformImpl?.TryGetFeature<ISpellCheckProvider>();
 

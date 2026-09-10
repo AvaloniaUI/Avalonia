@@ -85,6 +85,8 @@ namespace Avalonia.Controls.UnitTests
                 Text = text
             };
 
+            TextInputOptions.SetIsSpellCheckEnabled(target, true);
+
             var topLevel = new TestTopLevel(CreateMockTopLevelImpl(platformProvider).Object)
             {
                 Template = CreateTopLevelTemplate(),
@@ -132,10 +134,11 @@ namespace Avalonia.Controls.UnitTests
             public bool IsLanguageSupported(CultureInfo? culture) => true;
 
             public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlySpan<char> text,
+                ReadOnlyMemory<char> textMemory,
                 CultureInfo? culture,
                 CancellationToken cancellationToken = default)
             {
+                var text = textMemory.Span;
                 CheckCount++;
 
                 var index = text.IndexOf("teh", StringComparison.Ordinal);
@@ -162,10 +165,11 @@ namespace Avalonia.Controls.UnitTests
             public bool IsLanguageSupported(CultureInfo? culture) => true;
 
             public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlySpan<char> text,
+                ReadOnlyMemory<char> textMemory,
                 CultureInfo? culture,
                 CancellationToken cancellationToken = default)
             {
+                var text = textMemory.Span;
                 CheckCount++;
                 return new ValueTask<IReadOnlyList<SpellCheckResult>>(
                     new[] { new SpellCheckResult(0, text.Length, text.ToString()) });

@@ -12,12 +12,25 @@ partial class AvaloniaView
         public UITextAutocapitalizationType AutocapitalizationType { get; private set; }
 
         [Export("autocorrectionType")]
-        public UITextAutocorrectionType AutocorrectionType => _view._options?.ShowSuggestions switch
+        public UITextAutocorrectionType AutocorrectionType
         {
-            false => UITextAutocorrectionType.No,
-            true => UITextAutocorrectionType.Yes,
-            _ => UITextAutocorrectionType.Default
-        };
+            get
+            {
+                var options = _view._options ?? TextInputOptions.Default;
+
+                if (!options.IsSpellCheckAllowed())
+                {
+                    return UITextAutocorrectionType.No;
+                }
+
+                return options.ShowSuggestions switch
+                {
+                    false => UITextAutocorrectionType.No,
+                    true => UITextAutocorrectionType.Yes,
+                    _ => UITextAutocorrectionType.Default
+                };
+            }
+        }
 
         [Export("keyboardType")]
         public UIKeyboardType KeyboardType =>
@@ -74,7 +87,7 @@ partial class AvaloniaView
             {
                 var options = _view._options ?? TextInputOptions.Default;
 
-                if (!options.CanUseSpellCheck())
+                if (!options.IsSpellCheckAllowed())
                 {
                     return UITextSpellCheckingType.No;
                 }

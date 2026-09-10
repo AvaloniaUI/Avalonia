@@ -70,7 +70,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
     private readonly IKeyboardDevice? _keyboard;
     private readonly ICursorFactory? _cursorFactory;
-    private readonly ISpellCheckProvider? _spellCheckProvider;
 
     protected readonly IAvaloniaNativeFactory Factory;
 
@@ -91,7 +90,6 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _mouse = Avalonia.Input.MouseDevice.Primary;
         _pen = new PenDevice();
         _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
-        _spellCheckProvider = OperatingSystem.IsMacOS() ? new MacOSSpellCheckProvider() : null;
     }
 
     internal virtual void Init(MacOSTopLevelHandle handle)
@@ -369,7 +367,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
         if (featureType == typeof(ISpellCheckProvider))
         {
-            return _spellCheckProvider;
+            // Avoid native checker startup until spell checking is requested.
+            return OperatingSystem.IsMacOS() ? MacOSSpellCheckProvider.Instance : null;
         }
 
         if (featureType == typeof(IScreenImpl))

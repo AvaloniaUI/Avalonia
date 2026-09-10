@@ -117,21 +117,5 @@ namespace Avalonia.Media.TextFormatting
                 CultureInfo,
                 FontFeatures);
         }
-
-        internal TextRunProperties WithForegroundBrush(IBrush? foregroundBrush)
-        {
-            if (this is GenericTextRunProperties other && Equals(other.ForegroundBrush, foregroundBrush))
-                return this;
-
-            return new GenericTextRunProperties(
-                Typeface,
-                FontRenderingEmSize,
-                TextDecorations,
-                foregroundBrush,
-                BackgroundBrush,
-                BaselineAlignment,
-                CultureInfo,
-                FontFeatures);
-        }
     }
 }

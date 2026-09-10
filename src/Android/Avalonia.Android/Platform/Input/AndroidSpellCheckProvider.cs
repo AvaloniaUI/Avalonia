@@ -8,6 +8,7 @@ using Android.Content;
 using Android.Runtime;
 using Android.Views.TextService;
 using Avalonia.Input.TextInput;
+using Avalonia.Media.TextFormatting.Unicode;
 using Locale = Java.Util.Locale;
 using Object = Java.Lang.Object;
 using TextServiceTextInfo = Android.Views.TextService.TextInfo;
@@ -51,7 +52,8 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             return false;
         }
 
-        if (spellCheckerInfo.SubtypeCount == 0)
+        // A null culture uses the user's spell checker settings.
+        if (culture is null || spellCheckerInfo.SubtypeCount == 0)
         {
             return true;
         }
@@ -76,32 +78,27 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
         return false;
     }
 
-    public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        ReadOnlySpan<char> text,
+    public async ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
+        ReadOnlyMemory<char> textMemory,
         CultureInfo? culture,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (_manager is not { } manager || text.IsEmpty)
+        if (_manager is not { } manager || textMemory.IsEmpty)
         {
-            return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
+            return Array.Empty<SpellCheckResult>();
         }
 
-        return CheckAsyncCore(manager, text.ToString(), culture, cancellationToken);
-    }
+        var text = textMemory.ToString();
 
-    private static async ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsyncCore(
-        TextServicesManager manager,
-        string text,
-        CultureInfo? culture,
-        CancellationToken cancellationToken)
-    {
-        using var listener = new SessionListener();
+        // Do not dispose the listener: late Java callbacks can abort the process if its peer is gone.
+        var listener = new SessionListener();
         var session = CreateSession(manager, culture, listener);
 
         if (session is null)
         {
+            // On API 30 and earlier, a disabled spell checker can return no session.
             return Array.Empty<SpellCheckResult>();
         }
 
@@ -110,14 +107,25 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeout.CancelAfter(QueryTimeout);
 
-            var results = await listener.GetSentenceSuggestionsAsync(session, text, MaxSuggestions, timeout.Token)
-                .ConfigureAwait(false);
+            // Gboard can suppress the active word in sentence queries.
+            if (TryGetSingleWord(text, out var start, out var length))
+            {
+                var words = await listener.GetWordSuggestionsAsync(
+                    session, text.Substring(start, length), MaxSuggestions, timeout.Token);
+
+                return words is { Length: > 0 } && words[0] is { } word && IsMisspelled(word)
+                    ? new[] { new SpellCheckResult(start, length) }
+                    : Array.Empty<SpellCheckResult>();
+            }
+
+            // No ConfigureAwait(false): the session is closed on the thread that created it.
+            var results = await listener.GetSentenceSuggestionsAsync(session, text, MaxSuggestions, timeout.Token);
 
             return GetMisspellings(text, results);
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            return Array.Empty<SpellCheckResult>();
+            throw new TimeoutException("Android spell checking did not respond before the timeout.", ex);
         }
         finally
         {
@@ -139,7 +147,7 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             return Array.Empty<string>();
         }
 
-        using var listener = new SessionListener();
+        var listener = new SessionListener();
         var session = CreateSession(manager, culture, listener);
 
         if (session is null)
@@ -152,10 +160,9 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeout.CancelAfter(QueryTimeout);
 
-            var results = await listener.GetSentenceSuggestionsAsync(session, word, MaxSuggestions, timeout.Token)
-                .ConfigureAwait(false);
+            var results = await listener.GetWordSuggestionsAsync(session, word, MaxSuggestions, timeout.Token);
 
-            return GetSuggestions(results);
+            return results is { Length: > 0 } ? GetSuggestions(results[0]) : Array.Empty<string>();
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -173,21 +180,14 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
         CultureInfo? culture,
         SessionListener listener)
     {
-        var locale = CreateLocale(culture);
-
-        return manager.NewSpellCheckerSession(null, locale, listener, true);
-    }
-
-    private static Locale? CreateLocale(CultureInfo? culture)
-    {
-        var languageTag = culture?.Name;
-
-        if (string.IsNullOrEmpty(languageTag))
+        if (culture is null || string.IsNullOrEmpty(culture.Name))
         {
-            languageTag = CultureInfo.CurrentCulture.Name;
+            return manager.NewSpellCheckerSession(null, null, listener, true);
         }
 
-        return string.IsNullOrEmpty(languageTag) ? null : Locale.ForLanguageTag(languageTag);
+        // An explicit culture overrides the user's current subtype.
+        using var locale = Locale.ForLanguageTag(culture.Name);
+        return manager.NewSpellCheckerSession(null, locale, listener, false);
     }
 
     private static IReadOnlyList<SpellCheckResult> GetMisspellings(
@@ -224,53 +224,48 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
                 }
 
                 length = Math.Min(length, text.Length - start);
-                misspellings.Add(new SpellCheckResult(start, length, text.Substring(start, length)));
+                misspellings.Add(new SpellCheckResult(start, length));
             }
         }
 
         return misspellings.Count == 0 ? Array.Empty<SpellCheckResult>() : misspellings;
     }
 
-    private static IReadOnlyList<string> GetSuggestions(SentenceSuggestionsInfo[]? results)
+    private static bool TryGetSingleWord(string text, out int start, out int length)
     {
-        if (results is null || results.Length == 0)
-        {
+        start = 0;
+        var end = text.Length;
+
+        while (start < end && (char.IsWhiteSpace(text[start]) || char.IsPunctuation(text[start])))
+            start++;
+        while (end > start && (char.IsWhiteSpace(text[end - 1]) || char.IsPunctuation(text[end - 1])))
+            end--;
+
+        length = end - start;
+        if (length == 0 || !char.IsLetter(text, start) ||
+            SpellCheckTokenization.RequiresWholeToken(text.AsSpan()))
+            return false;
+
+        var words = new WordBreakEnumerator(text.AsSpan(start, length));
+        return words.MoveNext(out var word) && word.Length == length;
+    }
+
+    private static IReadOnlyList<string> GetSuggestions(SuggestionsInfo? suggestionInfo)
+    {
+        if (suggestionInfo is null || suggestionInfo.SuggestionsCount <= 0)
             return Array.Empty<string>();
-        }
 
-        foreach (var sentence in results)
+        var suggestions = new List<string>(suggestionInfo.SuggestionsCount);
+
+        for (var i = 0; i < suggestionInfo.SuggestionsCount; i++)
         {
-            if (sentence is null)
-            {
-                continue;
-            }
+            var suggestion = suggestionInfo.GetSuggestionAt(i);
 
-            for (var i = 0; i < sentence.SuggestionsCount; i++)
-            {
-                var suggestionInfo = sentence.GetSuggestionsInfoAt(i);
-
-                if (suggestionInfo is null || suggestionInfo.SuggestionsCount <= 0)
-                {
-                    continue;
-                }
-
-                var suggestions = new List<string>(suggestionInfo.SuggestionsCount);
-
-                for (var j = 0; j < suggestionInfo.SuggestionsCount; j++)
-                {
-                    var suggestion = suggestionInfo.GetSuggestionAt(j);
-
-                    if (!string.IsNullOrEmpty(suggestion))
-                    {
-                        suggestions.Add(suggestion);
-                    }
-                }
-
-                return suggestions.Count == 0 ? Array.Empty<string>() : suggestions;
-            }
+            if (!string.IsNullOrEmpty(suggestion))
+                suggestions.Add(suggestion);
         }
 
-        return Array.Empty<string>();
+        return suggestions.Count == 0 ? Array.Empty<string>() : suggestions;
     }
 
     private static bool IsMisspelled(SuggestionsInfo suggestionsInfo)
@@ -286,14 +281,9 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
         return !isInDictionary && looksWrong;
     }
 
-    private static IEnumerable<string> GetLanguageTagCandidates(CultureInfo? culture)
+    private static IEnumerable<string> GetLanguageTagCandidates(CultureInfo culture)
     {
-        var languageTag = culture?.Name;
-
-        if (string.IsNullOrEmpty(languageTag))
-        {
-            languageTag = CultureInfo.CurrentCulture.Name;
-        }
+        var languageTag = culture.Name;
 
         if (!string.IsNullOrEmpty(languageTag))
         {
@@ -307,21 +297,10 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             }
         }
 
-        var neutralLanguageTag = culture?.TwoLetterISOLanguageName;
+        var neutralLanguageTag = culture.TwoLetterISOLanguageName;
 
-        if (string.IsNullOrEmpty(neutralLanguageTag) && !string.IsNullOrEmpty(languageTag))
-        {
-            try
-            {
-                neutralLanguageTag = new CultureInfo(languageTag).TwoLetterISOLanguageName;
-            }
-            catch (CultureNotFoundException)
-            {
-                // Ignore malformed culture tags and continue without a neutral fallback.
-            }
-        }
-
-        if (!string.IsNullOrEmpty(neutralLanguageTag))
+        if (!string.IsNullOrEmpty(neutralLanguageTag) &&
+            !string.Equals(neutralLanguageTag, languageTag, StringComparison.OrdinalIgnoreCase))
         {
             yield return neutralLanguageTag;
         }
@@ -334,14 +313,37 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             return false;
         }
 
-        return string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase) ||
+        if (string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(expected.Replace('-', '_'), actual, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(expected.Replace('_', '-'), actual, StringComparison.OrdinalIgnoreCase);
+            string.Equals(expected.Replace('_', '-'), actual, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Match Android's fallback to another subtype of the same language.
+        return string.Equals(LanguagePart(expected), LanguagePart(actual), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string LanguagePart(string tag)
+    {
+        var separator = tag.IndexOfAny(new[] { '-', '_' });
+        return separator > 0 ? tag.Substring(0, separator) : tag;
     }
 
     private sealed class SessionListener : Object, SpellCheckerSession.ISpellCheckerSessionListener
     {
         private TaskCompletionSource<SentenceSuggestionsInfo[]?>? _sentenceSuggestions;
+        private TaskCompletionSource<SuggestionsInfo[]?>? _wordSuggestions;
+
+        public SessionListener()
+        {
+        }
+
+        // Allow Java.Interop to recreate the managed peer for late callbacks.
+        public SessionListener(IntPtr handle, JniHandleOwnership transfer)
+            : base(handle, transfer)
+        {
+        }
 
         public Task<SentenceSuggestionsInfo[]?> GetSentenceSuggestionsAsync(
             SpellCheckerSession session,
@@ -375,6 +377,34 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
 
         public void OnGetSuggestions(SuggestionsInfo[]? results)
         {
+            _wordSuggestions?.TrySetResult(results);
+        }
+
+        public Task<SuggestionsInfo[]?> GetWordSuggestionsAsync(
+            SpellCheckerSession session,
+            string word,
+            int suggestionsLimit,
+            CancellationToken cancellationToken)
+        {
+            _wordSuggestions = new TaskCompletionSource<SuggestionsInfo[]?>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var registration = cancellationToken.Register(() =>
+            {
+                session.Cancel();
+                _wordSuggestions.TrySetCanceled(cancellationToken);
+            });
+
+            _wordSuggestions.Task.ContinueWith(
+                _ => registration.Dispose(),
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+
+#pragma warning disable CS0618 // Sentence queries can omit the word being edited.
+            session.GetSuggestions(new TextServiceTextInfo(word), suggestionsLimit);
+#pragma warning restore CS0618
+            return _wordSuggestions.Task;
         }
     }
 }

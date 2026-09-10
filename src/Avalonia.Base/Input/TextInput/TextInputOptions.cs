@@ -315,40 +315,54 @@ public class TextInputOptions
     /// Gets the value of the attached <see cref="IsSpellCheckEnabledProperty"/>.
     /// </summary>
     /// <param name="avaloniaObject">The target.</param>
-    /// <returns>true if spell checking is enabled; false if disabled; null to use the platform default.</returns>
+    /// <returns>true if spell checking is enabled; false if disabled; null to use the framework default.</returns>
     public static bool? GetIsSpellCheckEnabled(StyledElement avaloniaObject)
     {
         return avaloniaObject.GetValue(IsSpellCheckEnabledProperty);
     }
 
     /// <summary>
-    /// Gets or sets whether spell checking is enabled. A null value uses the platform/control default.
+    /// Gets or sets whether framework spell checking is enabled. The default is disabled.
     /// </summary>
+    /// <remarks>
+    /// Null leaves native keyboard defaults unchanged. False disables native spell checking and autocorrection.
+    /// Sensitive and non-textual input is never spell checked.
+    /// </remarks>
     public bool? IsSpellCheckEnabled { get; set; }
 
-    internal bool CanUseSpellCheck(bool hasPasswordChar = false)
+    private const bool DefaultSpellCheckEnabled = false;
+
+    // Native keyboards may spell check even when framework spell checking is not requested.
+    internal bool IsSpellCheckAllowed(bool hasPasswordChar = false)
     {
-        if (IsSpellCheckEnabled == false ||
-            IsSensitive ||
+        return IsSpellCheckAllowed(IsSpellCheckEnabled, IsSensitive, ContentType, hasPasswordChar);
+    }
+
+    internal static bool IsSpellCheckAllowed(
+        bool? isSpellCheckEnabled,
+        bool isSensitive,
+        TextInputContentType contentType,
+        bool hasPasswordChar = false)
+    {
+        if (isSpellCheckEnabled == false ||
+            isSensitive ||
             hasPasswordChar ||
-            ContentType is TextInputContentType.Digits
+            contentType is TextInputContentType.Digits
                 or TextInputContentType.Number
                 or TextInputContentType.Password
-                or TextInputContentType.Pin)
+                or TextInputContentType.Pin
+                or TextInputContentType.Url
+                or TextInputContentType.Email)
         {
             return false;
         }
 
-        if (IsSpellCheckEnabled == true)
-        {
-            return true;
-        }
+        return true;
+    }
 
-        return ContentType is TextInputContentType.Normal
-            or TextInputContentType.Alpha
-            or TextInputContentType.Name
-            or TextInputContentType.Search
-            or TextInputContentType.Social;
+    internal bool IsSpellCheckRequested(bool hasPasswordChar = false)
+    {
+        return IsSpellCheckAllowed(hasPasswordChar) && (IsSpellCheckEnabled ?? DefaultSpellCheckEnabled);
     }
 
     /// <summary>

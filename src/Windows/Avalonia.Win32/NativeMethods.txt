@@ -7,11 +7,3 @@ QueryDisplayConfig
 DisplayConfigGetDeviceInfo
 DISPLAYCONFIG_SOURCE_DEVICE_NAME
 DISPLAYCONFIG_TARGET_DEVICE_NAME
-CLSCTX
-CoTaskMemFree
-IEnumSpellingError
-ISpellChecker
-ISpellCheckerFactory
-ISpellingError
-S_FALSE
-SpellCheckerFactory

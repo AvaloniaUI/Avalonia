@@ -162,6 +162,8 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
             return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
         if (featureType == typeof(ILauncher))
             return new BclLauncher();
+        if (featureType == typeof(ISpellCheckProvider))
+            return EnchantSpellCheckProvider.Instance;
         return null;
     }
 

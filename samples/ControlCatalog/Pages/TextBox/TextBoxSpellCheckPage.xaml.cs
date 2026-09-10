@@ -15,6 +15,8 @@ public partial class TextBoxSpellCheckPage : UserControl
     {
         InitializeComponent();
         TextInputOptions.SetSpellCheckProvider(CustomProviderTextBox, new SampleSpellCheckProvider());
+        // Without LocaleHints, the platform checker chooses the language.
+        TextInputOptions.SetLocaleHints(GermanTextBox, new[] { "de-DE" });
         LongSpellCheckTextBox.Text = CreateLongSpellCheckText();
     }
 
@@ -38,10 +40,11 @@ public partial class TextBoxSpellCheckPage : UserControl
         public bool IsLanguageSupported(CultureInfo? culture) => true;
 
         public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-            ReadOnlySpan<char> text,
+            ReadOnlyMemory<char> textMemory,
             CultureInfo? culture,
             CancellationToken cancellationToken = default)
         {
+            var text = textMemory.Span;
             const string misspelling = "avlnia";
             var index = text.IndexOf(misspelling, StringComparison.OrdinalIgnoreCase);
 

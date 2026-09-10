@@ -149,7 +149,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Spell_Check_Option_Is_Inherited_By_Inner_TextBox()
+        public void Spell_Check_Is_Disabled_For_Inner_TextBox()
         {
             RunTest((control, textbox) =>
             {
@@ -169,7 +169,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Spell_Check_Option_Can_Be_Enabled_From_Parent_Scope()
+        public void Spell_Check_Option_Is_Not_Enabled_By_Parent_Scope()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -186,7 +186,8 @@ namespace Avalonia.Controls.UnitTests
                 window.Presenter!.ApplyTemplate();
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+                // An inherited opt-in must not override the control's default.
+                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textBox));
             }
         }
 
@@ -255,9 +256,6 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_TextBox"
                     }.RegisterInNameScope(scope);
-                textBox.Bind(
-                    TextInputOptions.IsSpellCheckEnabledProperty,
-                    control.GetBindingObservable(TextInputOptions.IsSpellCheckEnabledProperty));
                 return new ButtonSpinner
                     {
                         Name = "PART_Spinner",

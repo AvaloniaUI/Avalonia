@@ -70,7 +70,40 @@ public class TextInputOptionsConverterTests
         Assert.True((h & Hint.Uppercase) != 0);
         Assert.True((h & Hint.AutoCapitalization) != 0);
         Assert.True((h & Hint.Completion) != 0);
-        Assert.True((h & Hint.Spellcheck) != 0);
+        Assert.False((h & Hint.Spellcheck) != 0);
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void Spellcheck_Respects_Explicit_OptOut_Without_Disabling_Completion(bool? enabled, bool expected)
+    {
+        var (h, _) = TextInputOptionsConverter.Convert(new TextInputOptions
+        {
+            IsSpellCheckEnabled = enabled,
+            ShowSuggestions = true,
+        });
+        Assert.Equal(expected, (h & Hint.Spellcheck) != 0);
+        Assert.True((h & Hint.Completion) != 0);
+    }
+
+    [Theory]
+    [InlineData(TextInputContentType.Password)]
+    [InlineData(TextInputContentType.Pin)]
+    [InlineData(TextInputContentType.Number)]
+    [InlineData(TextInputContentType.Digits)]
+    [InlineData(TextInputContentType.Url)]
+    [InlineData(TextInputContentType.Email)]
+    public void Non_Natural_Language_Content_Never_Requests_Spellcheck(TextInputContentType contentType)
+    {
+        var (h, _) = TextInputOptionsConverter.Convert(new TextInputOptions
+        {
+            ContentType = contentType,
+            IsSpellCheckEnabled = true,
+            ShowSuggestions = true,
+        });
+        Assert.False((h & Hint.Spellcheck) != 0);
     }
 
     [Fact]

@@ -31,11 +31,68 @@ namespace Avalonia.Controls.UnitTests
     public class TextBoxTests : ScopedTestBase
     {
         [Fact]
-        public void Spell_Check_Uses_Platform_Default_For_Natural_Text_Inputs()
+        public void Spell_Check_Is_Unset_By_Default_For_Natural_Text_Inputs()
         {
             Assert.Null(TextInputOptions.GetIsSpellCheckEnabled(new TextBox()));
             Assert.Null(TextInputOptions.GetIsSpellCheckEnabled(new AutoCompleteBox()));
             Assert.Null(TextInputOptions.GetIsSpellCheckEnabled(new ComboBox()));
+        }
+
+        [Fact]
+        public void Spell_Check_Is_Opt_In_By_Default()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel(
+                    "Ths sample",
+                    tb => TextInputOptions.SetIsSpellCheckEnabled(tb, null));
+
+                Assert.False(target.HasSpellCheckManager);
+                Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
+                Assert.Equal(0, provider.CheckCount);
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Is_Inherited_From_Parent_Scope()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "Ths sample"
+                };
+
+                var root = new Panel { Children = { target } };
+                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+
+                var topLevel = new TestTopLevel(CreateMockTopLevelImpl().Object)
+                {
+                    Template = CreateTopLevelTemplate(),
+                    Content = root
+                };
+
+                topLevel.ApplyTemplate();
+                topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+                Assert.True(target.HasSpellCheckManager);
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal("Ths", GetDecoratedText(target));
+            }
         }
 
         [Fact]
@@ -44,16 +101,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(TextInputOptions.GetIsSpellCheckEnabled(new MaskedTextBox()));
             Assert.False(TextInputOptions.GetIsSpellCheckEnabled(new NumericUpDown()));
             Assert.False(TextInputOptions.GetIsSpellCheckEnabled(new CalendarDatePicker()));
-        }
-
-        [Fact]
-        public void Spell_Check_Can_Be_Explicitly_Enabled_For_Formatted_Text_Inputs()
-        {
-            var target = new NumericUpDown();
-
-            TextInputOptions.SetIsSpellCheckEnabled(target, true);
-
-            Assert.True(TextInputOptions.GetIsSpellCheckEnabled(target));
         }
 
         [Fact]
@@ -143,6 +190,8 @@ namespace Avalonia.Controls.UnitTests
                     Width = 80,
                     Height = 32
                 };
+
+                TextInputOptions.SetIsSpellCheckEnabled(target, true);
                 var window = new Window
                 {
                     Content = target,
@@ -150,7 +199,8 @@ namespace Avalonia.Controls.UnitTests
                     Height = 80
                 };
                 window.Show();
-                target.CaretIndex = 1;
+                target.SelectionStart = 0;
+                target.SelectionEnd = target.Text!.Length;
                 var presenter = GetVisualDescendant<TextPresenter>(target);
                 var root = Assert.IsAssignableFrom<Visual>(presenter.VisualRoot);
                 var pointInPresenter = new Point(
@@ -167,6 +217,8 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(target.HasSpellCheckSuggestions);
                 Assert.Equal("wrng", provider.LastSuggestedWord);
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(target.Text!.Length, target.SelectionEnd);
 
                 target.ApplySpellCheckSuggestion("wrong");
 
@@ -193,6 +245,35 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal("This sample", target.Text);
                 Assert.False(target.HasSpellCheckSuggestions);
+            }
+        }
+
+        [Theory]
+        [InlineData(VerticalAlignment.Center, "wrng", "Ths\nwrong\nerrr")]
+        [InlineData(VerticalAlignment.Bottom, "errr", "Ths\nwrng\nwrong")]
+        public void Pointer_Suggestions_Use_Rendered_Vertical_Offset(
+            VerticalAlignment alignment, string expectedWord, string expectedText)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths"), new SpellCheckResult(4, 4, "wrng"), new SpellCheckResult(9, 4, "errr") },
+                    new[] { "wrong" });
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+                var target = CreateTextBoxInTopLevel("Ths\nwrng\nerrr");
+                var presenter = GetVisualDescendant<TextPresenter>(target);
+                presenter.Arrange(new Rect(0, 0, 200, 12));
+                presenter.VerticalAlignment = alignment;
+                Assert.True(presenter.GetTextVerticalOffset() < 0);
+
+                var root = Assert.IsAssignableFrom<Visual>(presenter.VisualRoot);
+                var position = presenter.TranslatePoint(new Point(4, 6), root);
+                Assert.NotNull(position);
+                presenter.RaiseEvent(CreateContextRequestedAtRootPoint(presenter, root, position.Value));
+
+                Assert.Equal(expectedWord, provider.LastSuggestedWord);
+                target.ApplySpellCheckSuggestion("wrong");
+                Assert.Equal(expectedText, target.Text);
             }
         }
 
@@ -234,7 +315,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Spell_Check_Manager_Is_Not_Created_When_Language_Is_Unsupported()
+        public void Spell_Check_Manager_Refreshes_An_Unsupported_Language()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -247,9 +328,51 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = CreateTextBoxInTopLevel("Ths sample");
 
-                Assert.False(target.HasSpellCheckManager);
+                // The manager must survive an unsupported answer so a later debounce can refresh it.
+                Assert.True(target.HasSpellCheckManager);
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.Equal(0, provider.CheckCount);
                 Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
+
+                provider.LanguageSupported = true;
+                target.Text = "Ths samples";
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(1, provider.CheckCount);
+                Assert.Equal("Ths", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Changing_Effective_Provider_Language_Invalidates_Cached_Results()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>())
+                {
+                    LanguageIdentity = "en-US"
+                };
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+                FireSpellCheckTimer();
+                Assert.Equal("Ths", GetDecoratedText(target));
+
+                provider.Results = Array.Empty<SpellCheckResult>();
+                provider.LanguageIdentity = "fr-FR";
+                target.Text = "Ths samples";
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                FireSpellCheckTimer();
+
+                Assert.Equal(2, provider.CheckCount);
+                Assert.Empty(GetDecoratedText(target));
+                Assert.Contains("Ths", provider.LastCheckedText!);
             }
         }
 
@@ -371,6 +494,493 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Editing_One_Word_Keeps_Other_Underlines_And_Rechecks_Only_That_Word()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[]
+                    {
+                        new SpellCheckResult(0, 3, "Ths"),
+                        new SpellCheckResult(0, 4, "wrod"),
+                        new SpellCheckResult(0, 5, "wrods")
+                    },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample wrod here");
+
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal("Thswrod", GetDecoratedText(target));
+                Assert.Equal(1, provider.CheckCount);
+
+                // Editing the second word must leave the first underline visible.
+                target.Text = "Ths sample wrods here";
+
+                Assert.Equal("Ths", GetDecoratedText(target));
+
+                // Settle layout and ScrollChanged before firing the debounce timer.
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(2, provider.CheckCount);
+                Assert.Equal("wrods", provider.LastCheckedText);
+                Assert.Equal("Thswrods", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Inserting_Text_Before_A_Misspelling_Shifts_Its_Underline()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 4, "wrod") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("a wrod");
+
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal("wrod", GetDecoratedText(target));
+
+                target.Text = "abc wrod";
+
+                // Shifted, not dropped, and without asking the provider again.
+                Assert.Equal("wrod", GetDecoratedText(target));
+                var presenter = GetVisualDescendant<TextPresenter>(target);
+                Assert.Equal(4, Assert.Single(presenter.SpellCheckRanges!).Start);
+
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(2, provider.CheckCount);
+                Assert.Equal("abc", provider.LastCheckedText);
+            }
+        }
+
+        [Fact]
+        public void Word_At_Caret_Is_Not_Underlined_While_Focused()
+        {
+            using (UnitTestApplication.Start(FocusServices.With(renderInterface: new HeadlessPlatformRenderInterface())))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[]
+                    {
+                        new SpellCheckResult(0, 3, "Ths"),
+                        new SpellCheckResult(0, 4, "wrod"),
+                        new SpellCheckResult(0, 5, "wrodx"),
+                        new SpellCheckResult(0, 4, "qwik")
+                    },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths wrod");
+
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal("Thswrod", GetDecoratedText(target));
+
+                target.Focus();
+                target.CaretIndex = 8;
+
+                // Merely placing the caret in an already-flagged word keeps its underline.
+                Assert.Equal("Thswrod", GetDecoratedText(target));
+
+                // A programmatic replacement (binding, undo, ...) is not "typing" either.
+                target.Text = "Ths wrod qwik";
+                target.CaretIndex = 13;
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                FireSpellCheckTimer();
+                Assert.Equal("Thswrodqwik", GetDecoratedText(target));
+
+                // Hide the edited word's underline while the caret stays in it.
+                target.SelectionStart = target.SelectionEnd = target.CaretIndex = 8;
+                RaiseTextEvent(target, "x");
+                Assert.Equal("Ths wrodx qwik", target.Text);
+
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                FireSpellCheckTimer();
+
+                // The provider reports the complete edited word; it is hidden while typing.
+                Assert.Equal("Thsqwik", GetDecoratedText(target));
+
+                // Leaving the word shows the underline.
+                target.CaretIndex = 0;
+
+                Assert.Equal("Thswrodxqwik", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void First_User_Edit_Is_Suppressed_Until_Caret_Leaves_The_Word()
+        {
+            using (UnitTestApplication.Start(FocusServices.With(renderInterface: new HeadlessPlatformRenderInterface())))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 4, "wrod") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel(string.Empty);
+                target.Focus();
+
+                Assert.False(target.HasSpellCheckManager);
+                RaiseTextEvent(target, "wrod");
+
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                FireSpellCheckTimer();
+
+                Assert.True(target.HasSpellCheckManager);
+                Assert.Empty(GetDecoratedText(target));
+
+                // Moving to the exact start leaves the typing range and clears it permanently.
+                target.CaretIndex = 0;
+                Assert.Equal("wrod", GetDecoratedText(target));
+                target.CaretIndex = 1;
+                Assert.Equal("wrod", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Multiword_User_Edit_Suppresses_Only_The_Word_At_The_Caret()
+        {
+            using (UnitTestApplication.Start(FocusServices.With(renderInterface: new HeadlessPlatformRenderInterface())))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[]
+                    {
+                        new SpellCheckResult(0, 4, "wrod"),
+                        new SpellCheckResult(0, 6, "anothr")
+                    },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel(string.Empty);
+                target.Focus();
+                RaiseTextEvent(target, "wrod anothr");
+
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                FireSpellCheckTimer();
+
+                Assert.Equal("wrod", GetDecoratedText(target));
+
+                target.CaretIndex = 0;
+                Assert.Equal("wrodanothr", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Programmatic_SelectedText_Replacement_Is_Not_Suppressed()
+        {
+            using (UnitTestApplication.Start(FocusServices.With(renderInterface: new HeadlessPlatformRenderInterface())))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 4, "wrod") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("good");
+                FireSpellCheckTimer();
+                target.Focus();
+                target.SelectionStart = 0;
+                target.SelectionEnd = 4;
+
+                target.SelectedText = "wrod";
+
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                FireSpellCheckTimer();
+
+                Assert.Equal("wrod", GetDecoratedText(target));
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        public void Pending_Suggestions_Are_Canceled_When_Their_Context_Changes(int changeKind)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new BlockingSuggestionSpellCheckProvider();
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+                FireSpellCheckTimer();
+                target.CaretIndex = 1;
+                target.RaiseEvent(new ContextRequestedEventArgs());
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.False(provider.SuggestionCancellationToken.IsCancellationRequested);
+
+                switch (changeKind)
+                {
+                    case 0:
+                        target.CaretIndex = target.Text!.Length;
+                        break;
+                    case 1:
+                        target.SelectionStart = 4;
+                        break;
+                    default:
+                        target.IsReadOnly = true;
+                        break;
+                }
+
+                Assert.True(provider.SuggestionCancellationToken.IsCancellationRequested);
+
+                provider.CompleteSuggestions();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.False(target.HasSpellCheckSuggestions);
+                Assert.Empty(target.SpellCheckSuggestions);
+            }
+        }
+
+        [Fact]
+        public void Provider_Receives_Null_Culture_Unless_LocaleHints_Are_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                // No language set: the provider decides.
+                Assert.True(provider.HasCheckedCulture);
+                Assert.Null(provider.LastCheckedCulture);
+
+                // Use the first valid hint and recheck when it changes.
+                TextInputOptions.SetLocaleHints(target, new[] { "not-a-culture-tag-xx", "de-DE" });
+
+                Assert.Empty(GetDecoratedText(target));
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("de-DE", provider.LastCheckedCulture?.Name);
+                Assert.Equal("Ths", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Provider_Exception_Is_Logged_And_Preserves_Unrelated_Results()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal("Ths", GetDecoratedText(target));
+
+                var messages = new List<string>();
+                provider.CheckException = new InvalidOperationException("dictionary missing");
+
+                using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+                {
+                    target.Text = "Ths sampl";
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                    Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                }
+
+                Assert.Contains(messages, m => m.Contains("Spell check provider"));
+                Assert.Equal("Ths", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Transient_Provider_Exception_Retries_Without_Caching_A_Clean_Result()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TransientSpellCheckProvider();
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+
+                FireSpellCheckTimer();
+                Assert.Equal(1, provider.CheckCount);
+                Assert.Empty(GetDecoratedText(target));
+
+                FireSpellCheckTimer();
+                Assert.Equal(2, provider.CheckCount);
+                Assert.Equal("Ths", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Read_Only_TextBox_Draws_Underlines_But_Offers_No_Suggestions()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { "This" });
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample", tb => tb.IsReadOnly = true);
+
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal("Ths", GetDecoratedText(target));
+
+                target.CaretIndex = 1;
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.False(target.HasSpellCheckSuggestions);
+                Assert.Null(provider.LastSuggestedWord);
+
+                target.ApplySpellCheckSuggestion("This");
+
+                Assert.Equal("Ths sample", target.Text);
+            }
+        }
+
+        [Theory]
+        [InlineData(TextInputContentType.Url)]
+        [InlineData(TextInputContentType.Email)]
+        [InlineData(TextInputContentType.Password)]
+        public void Non_Natural_Language_Content_Is_Never_Spell_Checked(TextInputContentType contentType)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample", tb => TextInputOptions.SetContentType(tb, contentType));
+
+                Assert.False(target.HasSpellCheckManager);
+                Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
+            }
+        }
+
+        [Fact]
+        public void Sensitive_And_Password_Inputs_Are_Never_Spell_Checked()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var sensitive = CreateTextBoxInTopLevel("Ths sample", tb => TextInputOptions.SetIsSensitive(tb, true));
+                var password = CreateTextBoxInTopLevel("Ths sample", tb => tb.PasswordChar = '*');
+
+                Assert.False(sensitive.HasSpellCheckManager);
+                Assert.False(password.HasSpellCheckManager);
+                Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
+            }
+        }
+
+        [Fact]
+        public void Text_Input_Client_Reports_PasswordChar_Changes_To_The_Platform()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox { Template = CreateTemplate() };
+                target.ApplyTemplate();
+                var eventArgs = new TextInputMethodClientRequestedEventArgs
+                {
+                    RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+                };
+
+                target.RaiseEvent(eventArgs);
+
+                var optionsClient = Assert.IsAssignableFrom<ITextInputMethodClientOptions>(eventArgs.Client);
+                var changes = 0;
+                optionsClient.TextInputOptionsChanged += (_, _) => changes++;
+
+                Assert.False(optionsClient.IsPasswordInput);
+
+                target.PasswordChar = '*';
+
+                Assert.True(optionsClient.IsPasswordInput);
+                Assert.Equal(1, changes);
+
+                var platformOptions = TextInputMethodManager.CreateTextInputOptions(target, eventArgs.Client);
+                Assert.True(platformOptions.IsSensitive);
+                Assert.False(platformOptions.IsSpellCheckAllowed());
+            }
+        }
+
+        [Fact]
+        public void Detaching_Releases_The_Spell_Check_Manager_And_Its_Timer()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var (target, topLevel) = CreateTextBoxInTopLevelWithRoot("Ths sample");
+                TextInputOptions.SetSpellCheckProvider(target, provider);
+
+                Assert.True(target.HasSpellCheckManager);
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
+
+                topLevel.Content = null;
+
+                // Detachment must prevent manager recreation, even with a local provider.
+                target.Text = "Ths samples";
+
+                Assert.False(target.HasSpellCheckManager);
+                Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
+                Assert.Equal(0, provider.CheckCount);
+            }
+        }
+
+        [Fact]
+        public void MaskedTextBox_Ignores_An_Opted_In_Parent_Scope()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var root = new Panel();
+                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+
+                var masked = new MaskedTextBox { Mask = "000-000" };
+                root.Children.Add(masked);
+
+                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(masked));
+
+                // An explicit value on the control itself still wins.
+                TextInputOptions.SetIsSpellCheckEnabled(masked, true);
+                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(masked));
+            }
+        }
+
+        [Fact]
         public void Spell_Check_Results_Are_Cleared_When_Provider_Changes()
         {
             using (UnitTestApplication.Start(Services))
@@ -472,6 +1082,92 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Replacing_Presenter_Checks_Newly_Visible_Text()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 4, "wrng") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var (target, topLevel) = CreateTextBoxInTopLevelWithRoot(
+                    "wrng one\nwrng two\nwrng three",
+                    textBox =>
+                    {
+                        textBox.Width = 200;
+                        textBox.Height = 20;
+                    });
+
+                FireSpellCheckTimer();
+
+                var oldPresenter = GetVisualDescendant<TextPresenter>(target);
+                Assert.Equal(1, provider.CheckCount);
+                Assert.DoesNotContain("wrng three", provider.LastCheckedText!);
+
+                target.Template = CreateTemplate();
+                target.Height = 100;
+                topLevel.LayoutManager.ExecuteLayoutPass();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.NotSame(oldPresenter, GetVisualDescendant<TextPresenter>(target));
+                FireSpellCheckTimer();
+
+                Assert.Equal(2, provider.CheckCount);
+                Assert.Contains("wrng three", provider.LastCheckedText!);
+                Assert.Equal("wrngwrngwrng", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Replacement_Presenter_Continues_To_Observe_Viewport_Changes()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                IControlTemplate PresenterTemplate() => new FuncControlTemplate<TextBox>((control, scope) =>
+                    new TextPresenter
+                    {
+                        Name = "PART_TextPresenter",
+                        [!TextPresenter.TextProperty] = control[!TextBox.TextProperty],
+                    }.RegisterInNameScope(scope));
+
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 4, "wrng") },
+                    Array.Empty<string>());
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var (target, topLevel) = CreateTextBoxInTopLevelWithRoot(
+                    "wrng one\nwrng two\nwrng three",
+                    textBox =>
+                    {
+                        // Without a ScrollViewer, resizing is reported by the presenter's Bounds.
+                        textBox.Template = PresenterTemplate();
+                        textBox.Width = 200;
+                        textBox.Height = 20;
+                    });
+
+                FireSpellCheckTimer();
+
+                target.Template = PresenterTemplate();
+                topLevel.LayoutManager.ExecuteLayoutPass();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                FireSpellCheckTimer();
+
+                // The replacement initially exposes only cached text.
+                Assert.Equal(1, provider.CheckCount);
+                Assert.Equal("wrng", GetDecoratedText(target));
+
+                target.Height = 100;
+                topLevel.LayoutManager.ExecuteLayoutPass();
+                FireSpellCheckTimer();
+
+                Assert.Equal(2, provider.CheckCount);
+                Assert.Equal("wrngwrngwrng", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
         public void Large_Text_Checks_Visible_Text_Only()
         {
             using (UnitTestApplication.Start(Services))
@@ -527,9 +1223,9 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                Assert.Equal(1, provider.CheckCount);
-                Assert.NotNull(provider.LastCheckedText);
-                Assert.True(provider.LastCheckedText!.Length < text.Length);
+                // Never send incomplete tokens to the provider.
+                Assert.Equal(0, provider.CheckCount);
+                Assert.Null(provider.LastCheckedText);
                 Assert.Empty(GetDecoratedText(target));
             }
         }
@@ -3268,6 +3964,8 @@ namespace Avalonia.Controls.UnitTests
                 Text = text
             };
 
+            TextInputOptions.SetIsSpellCheckEnabled(target, true);
+
             configure?.Invoke(target);
 
             var topLevel = new TestTopLevel(CreateMockTopLevelImpl().Object)
@@ -3305,14 +4003,15 @@ namespace Avalonia.Controls.UnitTests
         {
             var presenter = GetVisualDescendant<TextPresenter>(textBox);
             var decoratedText = new StringBuilder();
+            var text = textBox.Text ?? string.Empty;
 
-            foreach (var textLine in presenter.TextLayout.TextLines)
+            if (presenter.SpellCheckRanges is { } ranges)
             {
-                foreach (var textRun in textLine.TextRuns)
+                foreach (var range in ranges)
                 {
-                    if (textRun.Properties?.TextDecorations?.Count > 0)
+                    if (range.Start >= 0 && range.Start + range.Length <= text.Length)
                     {
-                        decoratedText.Append(textRun.Text.ToString());
+                        decoratedText.Append(text, range.Start, range.Length);
                     }
                 }
             }
@@ -3380,6 +4079,13 @@ namespace Avalonia.Controls.UnitTests
             textBox.RaiseEvent(args);
 
             return args;
+        }
+
+        // Select by interval to avoid firing the caret-blink timer.
+        private static void FireSpellCheckTimer()
+        {
+            Assert.Single(Dispatcher.SnapshotTimersForUnitTests(), t => t.Interval == TimeSpan.FromMilliseconds(250)).ForceFire();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         }
 
         private static void RaiseTextEvent(TextBox textBox, string text)
@@ -3491,20 +4197,18 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class TestSpellCheckProvider : ISpellCheckProvider
+        private class TestSpellCheckProvider : ISpellCheckProvider, ISpellCheckProviderWithLanguageIdentity
         {
-            private readonly IReadOnlyList<SpellCheckResult> _results;
             private readonly IReadOnlyList<string> _suggestions;
-            private readonly bool _isLanguageSupported;
 
             public TestSpellCheckProvider(
                 IReadOnlyList<SpellCheckResult> results,
                 IReadOnlyList<string> suggestions,
                 bool isLanguageSupported = true)
             {
-                _results = results;
+                Results = results;
                 _suggestions = suggestions;
-                _isLanguageSupported = isLanguageSupported;
+                LanguageSupported = isLanguageSupported;
             }
 
             public int CheckCount { get; private set; }
@@ -3513,39 +4217,75 @@ namespace Avalonia.Controls.UnitTests
 
             public string? LastSuggestedWord { get; private set; }
 
-            public bool IsLanguageSupported(CultureInfo? culture) => _isLanguageSupported;
+            public CultureInfo? LastCheckedCulture { get; private set; }
+
+            public bool HasCheckedCulture { get; private set; }
+
+            public Exception? CheckException { get; set; }
+
+            public bool LanguageSupported { get; set; }
+
+            public IReadOnlyList<SpellCheckResult> Results { get; set; }
+
+            public string? LanguageIdentity { get; set; }
+
+            public bool IsLanguageSupported(CultureInfo? culture) => LanguageSupported;
+
+            string? ISpellCheckProviderWithLanguageIdentity.GetLanguageIdentity(CultureInfo? culture) =>
+                LanguageIdentity;
 
             public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlySpan<char> text,
+                ReadOnlyMemory<char> textMemory,
                 CultureInfo? culture,
                 CancellationToken cancellationToken = default)
             {
+                var text = textMemory.Span;
                 CheckCount++;
                 var textValue = text.ToString();
                 LastCheckedText = textValue;
+                LastCheckedCulture = culture;
+                HasCheckedCulture = true;
 
-                if (_results.Count == 0)
+                if (CheckException is { } exception)
+                {
+                    throw exception;
+                }
+
+                if (Results.Count == 0)
                 {
                     return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
                 }
 
                 List<SpellCheckResult>? results = null;
 
-                for (var i = 0; i < _results.Count; i++)
+                for (var i = 0; i < Results.Count; i++)
                 {
-                    var result = _results[i];
+                    var result = Results[i];
 
-                    if (result.Word is { } word)
+                    if (result.Word is { Length: > 0 } word)
                     {
-                        var start = textValue.IndexOf(word, StringComparison.Ordinal);
+                        var searchStart = 0;
 
-                        if (start < 0)
+                        while (searchStart < textValue.Length)
                         {
-                            continue;
-                        }
+                            var start = textValue.IndexOf(word, searchStart, StringComparison.Ordinal);
 
-                        results ??= new List<SpellCheckResult>();
-                        results.Add(result with { Start = start, Length = word.Length });
+                            if (start < 0)
+                            {
+                                break;
+                            }
+
+                            var end = start + word.Length;
+
+                            if (!SpellCheckResultCache.IsWordCharBefore(textValue, start) &&
+                                !SpellCheckResultCache.IsWordCharAt(textValue, end))
+                            {
+                                results ??= new List<SpellCheckResult>();
+                                results.Add(result with { Start = start, Length = word.Length });
+                            }
+
+                            searchStart = end;
+                        }
                     }
                     else if (result.Start >= 0 && result.Start < textValue.Length)
                     {
@@ -3578,7 +4318,7 @@ namespace Avalonia.Controls.UnitTests
             public bool IsLanguageSupported(CultureInfo? culture) => true;
 
             public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlySpan<char> text,
+                ReadOnlyMemory<char> textMemory,
                 CultureInfo? culture,
                 CancellationToken cancellationToken = default)
             {
@@ -3597,6 +4337,70 @@ namespace Avalonia.Controls.UnitTests
             public void Complete()
             {
                 _checkCompletion.SetResult(Array.Empty<SpellCheckResult>());
+            }
+        }
+
+        private sealed class BlockingSuggestionSpellCheckProvider : ISpellCheckProvider
+        {
+            private readonly TaskCompletionSource<IReadOnlyList<string>> _suggestionCompletion = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public CancellationToken SuggestionCancellationToken { get; private set; }
+
+            public bool IsLanguageSupported(CultureInfo? culture) => true;
+
+            public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
+                ReadOnlyMemory<char> text,
+                CultureInfo? culture,
+                CancellationToken cancellationToken = default)
+            {
+                return new ValueTask<IReadOnlyList<SpellCheckResult>>(
+                    new[] { new SpellCheckResult(0, 3, "Ths") });
+            }
+
+            public ValueTask<IReadOnlyList<string>> SuggestAsync(
+                string word,
+                CultureInfo? culture,
+                CancellationToken cancellationToken = default)
+            {
+                SuggestionCancellationToken = cancellationToken;
+                return new ValueTask<IReadOnlyList<string>>(_suggestionCompletion.Task);
+            }
+
+            public void CompleteSuggestions()
+            {
+                _suggestionCompletion.SetResult(new[] { "This" });
+            }
+        }
+
+        private sealed class TransientSpellCheckProvider : ISpellCheckProvider
+        {
+            public int CheckCount { get; private set; }
+
+            public bool IsLanguageSupported(CultureInfo? culture) => true;
+
+            public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
+                ReadOnlyMemory<char> text,
+                CultureInfo? culture,
+                CancellationToken cancellationToken = default)
+            {
+                CheckCount++;
+
+                if (CheckCount == 1)
+                {
+                    throw new InvalidOperationException("temporarily unavailable");
+                }
+
+                return new ValueTask<IReadOnlyList<SpellCheckResult>>(
+                    new[] { new SpellCheckResult(0, 3, "Ths") });
+            }
+
+            public ValueTask<IReadOnlyList<string>> SuggestAsync(
+                string word,
+                CultureInfo? culture,
+                CancellationToken cancellationToken = default)
+            {
+                return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
             }
         }
     }

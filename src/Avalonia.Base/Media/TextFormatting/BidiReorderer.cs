@@ -82,9 +82,10 @@ namespace Avalonia.Media.TextFormatting
 
                     textRuns[index] = current.Run;
 
-                    var indexedRun = indexedTextRuns[index];
+                    // Entries stay in logical order; RunIndex locates their visual run.
+                    var indexedRun = indexedTextRuns[current.RunIndex];
 
-                    indexedRun.RunIndex = current.RunIndex;
+                    indexedRun.RunIndex = index;
 
                     indexedRun.NextRunIndex = current.NextRunIndex;
 

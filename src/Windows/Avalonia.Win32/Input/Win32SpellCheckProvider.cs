@@ -6,70 +6,67 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input.TextInput;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.Globalization;
-using Windows.Win32.System.Com;
+using Avalonia.Win32.Interop;
+using Avalonia.Win32.Win32Com;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.Input;
 
-internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider, IDisposable
+/// <summary>
+/// Spell checking through the Windows 8+ Spell Checking API (<c>ISpellCheckerFactory</c>).
+/// </summary>
+/// <remarks>
+/// COM spell checkers are bound to their creating UI thread. Reuse one provider per UI thread.
+/// </remarks>
+internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider, ISpellCheckProviderWithLanguageIdentity
 {
     private const int StackallocCharLimit = 256;
+    private const int S_FALSE = 1;
+
+    // CORRECTIVE_ACTION from spellcheck.h
+    private const uint CorrectiveActionDelete = 3;
+
+    private static readonly Guid s_spellCheckerFactoryClsid = new("7AB36653-1796-484B-BDFA-E74F1DB7C1DC");
+
+    [ThreadStatic]
+    private static Win32SpellCheckProvider? t_instance;
 
     private readonly Dictionary<string, ISpellChecker> _spellCheckers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, bool> _supportedLanguageTags = new(StringComparer.OrdinalIgnoreCase);
     private ISpellCheckerFactory? _factory;
-    private bool _disposed;
+    private bool _factoryFailed;
 
-    public void Dispose()
+    private Win32SpellCheckProvider()
     {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-
-        foreach (var spellChecker in _spellCheckers.Values)
-        {
-            ReleaseComObject(spellChecker);
-        }
-
-        _spellCheckers.Clear();
-        ReleaseComObject(_factory);
-        _factory = null;
     }
+
+    public static Win32SpellCheckProvider GetForCurrentThread() => t_instance ??= new Win32SpellCheckProvider();
 
     public bool IsLanguageSupported(CultureInfo? culture)
     {
-        if (GetFactory() is not { } factory ||
-            GetSupportedLanguageTag(factory, culture) is null)
-        {
-            return false;
-        }
-
-        return true;
+        return GetFactory() is { } factory && GetSupportedLanguageTag(factory, culture) is not null;
     }
 
     public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        ReadOnlySpan<char> text,
+        ReadOnlyMemory<char> textMemory,
         CultureInfo? culture,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (text.IsEmpty ||
-            GetSpellChecker(culture) is not { } spellChecker)
+        var text = textMemory.Span;
+
+        if (text.IsEmpty || GetSpellChecker(culture) is not { } spellChecker)
         {
             return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
         }
 
-        var results = new List<SpellCheckResult>();
+        List<SpellCheckResult>? results = null;
         char[]? rented = null;
 
         try
         {
-            Span<char> textBuffer = text.Length <= StackallocCharLimit
+            Span<char> textBuffer = text.Length < StackallocCharLimit
                 ? stackalloc char[text.Length + 1]
                 : rented = ArrayPool<char>.Shared.Rent(text.Length + 1);
 
@@ -78,42 +75,41 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider, IDis
 
             fixed (char* textPtr = textBuffer)
             {
-                var errors = spellChecker.Check(textPtr);
+                using var errors = spellChecker.Check(textPtr);
 
-                try
+                while (true)
                 {
-                    while (true)
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    void* errorPtr = null;
+                    var hr = unchecked((int)errors.Next(&errorPtr));
+
+                    if (hr < 0)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var hr = errors.Next(out var error);
-
-                        if (hr == HRESULT.S_FALSE)
-                        {
-                            break;
-                        }
-
-                        hr.ThrowOnFailure();
-
-                        try
-                        {
-                            var start = checked((int)error.StartIndex);
-                            var length = checked((int)error.Length);
-                            var word = start >= 0 && length > 0 && start + length <= text.Length
-                                ? text.Slice(start, length).ToString()
-                                : null;
-
-                            results.Add(new SpellCheckResult(start, length, word));
-                        }
-                        finally
-                        {
-                            ReleaseComObject(error);
-                        }
+                        throw new COMException("IEnumSpellingError::Next failed", hr);
                     }
-                }
-                finally
-                {
-                    ReleaseComObject(errors);
+
+                    if (hr == S_FALSE || errorPtr is null)
+                    {
+                        break;
+                    }
+
+                    using var error = MicroComRuntime.CreateProxyFor<ISpellingError>(errorPtr, true);
+                    var start = checked((int)error.StartIndex);
+                    var length = checked((int)error.Length);
+
+                    if (start < 0 || length <= 0 || start + length > text.Length)
+                    {
+                        continue;
+                    }
+
+                    // Ignore repeated-word deletions: they have no spelling suggestions.
+                    if (error.CorrectiveAction == CorrectiveActionDelete)
+                    {
+                        continue;
+                    }
+
+                    (results ??= new List<SpellCheckResult>()).Add(new SpellCheckResult(start, length));
                 }
             }
         }
@@ -125,7 +121,8 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider, IDis
             }
         }
 
-        return new ValueTask<IReadOnlyList<SpellCheckResult>>(results);
+        return new ValueTask<IReadOnlyList<SpellCheckResult>>(
+            results is null ? Array.Empty<SpellCheckResult>() : results);
     }
 
     public ValueTask<IReadOnlyList<string>> SuggestAsync(
@@ -135,66 +132,75 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider, IDis
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (string.IsNullOrWhiteSpace(word) ||
-            GetSpellChecker(culture) is not { } spellChecker)
+        if (string.IsNullOrWhiteSpace(word) || GetSpellChecker(culture) is not { } spellChecker)
         {
             return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
         }
 
-        var results = new List<string>();
+        List<string>? results = null;
 
         fixed (char* wordPtr = word)
         {
-            var suggestions = spellChecker.Suggest(wordPtr);
+            void* suggestionsPtr = null;
+            var hr = unchecked((int)spellChecker.Suggest(wordPtr, &suggestionsPtr));
 
-            try
+            if (hr < 0)
             {
-                while (true)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    PWSTR suggestion = default;
-                    uint fetched = 0;
-                    var hr = suggestions.Next(1, &suggestion, &fetched);
-
-                    if (hr == HRESULT.S_FALSE || fetched == 0)
-                    {
-                        break;
-                    }
-
-                    hr.ThrowOnFailure();
-
-                    try
-                    {
-                        var value = suggestion.ToString();
-
-                        if (!string.IsNullOrEmpty(value))
-                        {
-                            results.Add(value);
-                        }
-                    }
-                    finally
-                    {
-                        PInvoke.CoTaskMemFree(suggestion.Value);
-                    }
-                }
+                throw new COMException("ISpellChecker::Suggest failed", hr);
             }
-            finally
+
+            using var suggestions = MicroComRuntime.CreateProxyOrNullFor<IEnumString>(suggestionsPtr, true);
+
+            // S_FALSE: the word is spelled correctly (the enumerator just echoes it back).
+            if (hr != S_FALSE && suggestions is not null)
             {
-                ReleaseComObject(suggestions);
+                ReadStrings(suggestions, ref results, cancellationToken);
             }
         }
 
-        return new ValueTask<IReadOnlyList<string>>(results);
+        return new ValueTask<IReadOnlyList<string>>(results is null ? Array.Empty<string>() : results);
+    }
+
+    private static void ReadStrings(IEnumString strings, ref List<string>? results, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            char* value = null;
+            uint fetched = 0;
+            var hr = unchecked((int)strings.Next(1, &value, &fetched));
+
+            if (hr < 0)
+            {
+                throw new COMException("IEnumString::Next failed", hr);
+            }
+
+            if (hr == S_FALSE || fetched == 0 || value is null)
+            {
+                return;
+            }
+
+            string? result;
+
+            try
+            {
+                result = Marshal.PtrToStringUni((IntPtr)value);
+            }
+            finally
+            {
+                Marshal.FreeCoTaskMem((IntPtr)value);
+            }
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                (results ??= new List<string>()).Add(result);
+            }
+        }
     }
 
     private ISpellChecker? GetSpellChecker(CultureInfo? culture)
     {
-        if (_disposed)
-        {
-            return null;
-        }
-
         if (GetFactory() is not { } factory ||
             GetSupportedLanguageTag(factory, culture) is not { } languageTag)
         {
@@ -215,89 +221,110 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider, IDis
         return spellChecker;
     }
 
+    string? ISpellCheckProviderWithLanguageIdentity.GetLanguageIdentity(CultureInfo? culture)
+    {
+        return GetFactory() is { } factory
+            ? GetSupportedLanguageTag(factory, culture)
+            : null;
+    }
+
     private ISpellCheckerFactory? GetFactory()
     {
-        if (_disposed)
-        {
-            return null;
-        }
-
         if (_factory is not null)
         {
             return _factory;
         }
 
-        if (Win32Platform.WindowsVersion < PlatformConstants.Windows8 ||
+        if (_factoryFailed ||
+            Win32Platform.WindowsVersion < PlatformConstants.Windows8 ||
             OleContext.Current is null)
-        {
-            return null;
-        }
-
-        var clsid = typeof(SpellCheckerFactory).GUID;
-        var iid = typeof(ISpellCheckerFactory).GUID;
-        var hr = CoCreateInstance(
-            in clsid,
-            IntPtr.Zero,
-            CLSCTX.CLSCTX_INPROC_SERVER,
-            in iid,
-            out var factoryPtr);
-
-        if (hr.Failed || factoryPtr == IntPtr.Zero)
         {
             return null;
         }
 
         try
         {
-            return _factory = (ISpellCheckerFactory)Marshal.GetObjectForIUnknown(factoryPtr);
+            var iid = MicroComRuntime.GetGuidFor(typeof(ISpellCheckerFactory));
+            return _factory = UnmanagedMethods.CreateInstance<ISpellCheckerFactory>(in s_spellCheckerFactoryClsid, in iid);
         }
-        finally
+        catch (COMException)
         {
-            Marshal.Release(factoryPtr);
+            // No spell checking platform component (N editions, server SKUs, ...).
+            _factoryFailed = true;
+            return null;
         }
     }
 
-    private static string? GetSupportedLanguageTag(ISpellCheckerFactory factory, CultureInfo? culture)
+    private string? GetSupportedLanguageTag(ISpellCheckerFactory factory, CultureInfo? culture)
     {
         foreach (var languageTag in GetLanguageTagCandidates(culture))
         {
-            fixed (char* languageTagPtr = languageTag)
+            if (IsSupported(factory, languageTag))
             {
-                if (factory.IsSupported(languageTagPtr))
-                {
-                    return languageTag;
-                }
+                return languageTag;
             }
         }
 
         return null;
     }
 
-    private static IEnumerable<string> GetLanguageTagCandidates(CultureInfo? culture)
+    private bool IsSupported(ISpellCheckerFactory factory, string languageTag)
     {
-        var languageTag = culture?.Name;
-
-        if (string.IsNullOrEmpty(languageTag))
+        // Cache language support to avoid repeated COM calls.
+        if (_supportedLanguageTags.TryGetValue(languageTag, out var supported))
         {
-            languageTag = CultureInfo.CurrentCulture.Name;
+            return supported;
         }
 
+        fixed (char* languageTagPtr = languageTag)
+        {
+            supported = factory.IsSupported(languageTagPtr) != 0;
+        }
+
+        _supportedLanguageTags[languageTag] = supported;
+        return supported;
+    }
+
+    // Use the keyboard input language, then the UI language, when no culture is specified.
+    private static IEnumerable<string> GetLanguageTagCandidates(CultureInfo? culture)
+    {
+        if (culture is not null)
+        {
+            foreach (var tag in GetLanguageTagCandidates(culture.Name, culture.TwoLetterISOLanguageName))
+            {
+                yield return tag;
+            }
+
+            yield break;
+        }
+
+        var inputLanguage = GetKeyboardLayoutCulture();
+
+        if (inputLanguage is not null)
+        {
+            foreach (var tag in GetLanguageTagCandidates(inputLanguage.Name, inputLanguage.TwoLetterISOLanguageName))
+            {
+                yield return tag;
+            }
+        }
+
+        foreach (var fallback in new[] { CultureInfo.CurrentUICulture, CultureInfo.CurrentCulture })
+        {
+            if (!string.IsNullOrEmpty(fallback.Name))
+            {
+                foreach (var tag in GetLanguageTagCandidates(fallback.Name, fallback.TwoLetterISOLanguageName))
+                {
+                    yield return tag;
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<string> GetLanguageTagCandidates(string languageTag, string? neutralLanguageTag)
+    {
         if (!string.IsNullOrEmpty(languageTag))
         {
             yield return languageTag;
-        }
-
-        var neutralLanguageTag = culture?.TwoLetterISOLanguageName;
-
-        if (string.IsNullOrEmpty(neutralLanguageTag) && !string.IsNullOrEmpty(languageTag))
-        {
-            try
-            {
-                neutralLanguageTag = new CultureInfo(languageTag).TwoLetterISOLanguageName;
-            }
-            catch (CultureNotFoundException)
-            {
-            }
         }
 
         if (!string.IsNullOrEmpty(neutralLanguageTag) &&
@@ -307,19 +334,17 @@ internal sealed unsafe class Win32SpellCheckProvider : ISpellCheckProvider, IDis
         }
     }
 
-    private static void ReleaseComObject(object? comObject)
+    private static CultureInfo? GetKeyboardLayoutCulture()
     {
-        if (comObject is not null && Marshal.IsComObject(comObject))
+        try
         {
-            Marshal.ReleaseComObject(comObject);
+            // The low word of the keyboard layout handle is the input language identifier.
+            var langId = (int)((long)UnmanagedMethods.GetKeyboardLayout(0) & 0xFFFF);
+            return langId == 0 ? null : CultureInfo.GetCultureInfo(langId);
+        }
+        catch (CultureNotFoundException)
+        {
+            return null;
         }
     }
-
-    [DllImport("ole32.dll", ExactSpelling = true)]
-    private static extern HRESULT CoCreateInstance(
-        in Guid rclsid,
-        IntPtr pUnkOuter,
-        CLSCTX dwClsContext,
-        in Guid riid,
-        out IntPtr ppv);
 }

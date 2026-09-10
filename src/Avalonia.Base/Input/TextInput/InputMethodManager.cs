@@ -25,7 +25,7 @@ namespace Avalonia.Input.TextInput
             TextInputOptions.UppercaseProperty.Changed.Subscribe(OnTextInputOptionsChanged);
             TextInputOptions.ShowSuggestionsProperty.Changed.Subscribe(OnTextInputOptionsChanged);
             TextInputOptions.IsSpellCheckEnabledProperty.Changed.Subscribe(OnTextInputOptionsChanged);
-            TextInputOptions.SpellCheckProviderProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.LocaleHintsProperty.Changed.Subscribe(OnTextInputOptionsChanged);
         }
 
         private TextInputMethodClient? Client
@@ -44,6 +44,11 @@ namespace Avalonia.Input.TextInput
                     _client.TextViewVisualChanged -= OnTextViewVisualChanged;
                     _client.ResetRequested -= OnResetRequested;
 
+                    if (_client is ITextInputMethodClientOptions oldOptions)
+                    {
+                        oldOptions.TextInputOptionsChanged -= OnClientTextInputOptionsChanged;
+                    }
+
                     _client = null;
 
                     _im?.Reset();
@@ -56,6 +61,11 @@ namespace Avalonia.Input.TextInput
                     _client.CursorRectangleChanged += OnCursorRectangleChanged;
                     _client.TextViewVisualChanged += OnTextViewVisualChanged;
                     _client.ResetRequested += OnResetRequested;
+
+                    if (_client is ITextInputMethodClientOptions newOptions)
+                    {
+                        newOptions.TextInputOptionsChanged += OnClientTextInputOptionsChanged;
+                    }
                     
                     PopulateImWithInitialValues();
                 }
@@ -71,12 +81,27 @@ namespace Avalonia.Input.TextInput
         {
             if (_focusedElement is StyledElement target)
             {
-                _im?.SetOptions(TextInputOptions.FromStyledElement(target));
+                _im?.SetOptions(CreateTextInputOptions(target, _client));
             }
             else
             {
                 _im?.SetOptions(TextInputOptions.Default);
             }
+        }
+
+        internal static TextInputOptions CreateTextInputOptions(
+            StyledElement target,
+            TextInputMethodClient? client)
+        {
+            var options = TextInputOptions.FromStyledElement(target);
+
+            if (client is ITextInputMethodClientOptions { IsPasswordInput: true })
+            {
+                // Masked input must also disable native suggestions and autocorrection.
+                options.IsSensitive = true;
+            }
+
+            return options;
         }
 
         void PopulateImWithInitialValues()
@@ -110,6 +135,14 @@ namespace Avalonia.Input.TextInput
         private void OnTextInputOptionsChanged<T>(AvaloniaPropertyChangedEventArgs<T> obj)
         {
             if (ReferenceEquals(obj.Sender, _focusedElement))
+            {
+                ApplyTextInputOptions();
+            }
+        }
+
+        private void OnClientTextInputOptionsChanged(object? sender, EventArgs e)
+        {
+            if (ReferenceEquals(sender, _client))
             {
                 ApplyTextInputOptions();
             }

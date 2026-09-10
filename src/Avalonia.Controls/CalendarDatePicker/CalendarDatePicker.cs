@@ -81,7 +81,6 @@ namespace Avalonia.Controls
         static CalendarDatePicker()
         {
             FocusableProperty.OverrideDefaultValue<CalendarDatePicker>(true);
-            TextInputOptions.IsSpellCheckEnabledProperty.OverrideDefaultValue<CalendarDatePicker>(false);
         }
 
         /// <summary>
@@ -89,6 +88,8 @@ namespace Avalonia.Controls
         /// </summary>
         public CalendarDatePicker()
         {
+            // Let the inner TextBox inherit this opt-out for date input.
+            SetCurrentValue(TextInputOptions.IsSpellCheckEnabledProperty, false);
             SetCurrentValue(FirstDayOfWeekProperty, DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek);
             _defaultText = string.Empty;
             SetCurrentValue(DisplayDateProperty, DateTime.Today);

@@ -18,11 +18,19 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
     private static readonly IntPtr s_guessesSelector = ObjectiveC.GetSelector("guessesForWordRange:inString:language:inSpellDocumentWithTag:");
     private static readonly IntPtr s_countSelector = ObjectiveC.GetSelector("count");
     private static readonly IntPtr s_objectAtIndexSelector = ObjectiveC.GetSelector("objectAtIndex:");
+    private static readonly IntPtr s_languageSelector = ObjectiveC.GetSelector("language");
+    private static readonly IntPtr s_nSLocaleClass = ObjectiveC.GetClass("NSLocale");
+    private static readonly IntPtr s_preferredLanguagesSelector = ObjectiveC.GetSelector("preferredLanguages");
 
     private readonly string[] _availableLanguages;
     private readonly IntPtr _spellChecker;
+    private string? _defaultLanguage;
+    private bool _defaultLanguageResolved;
 
-    public MacOSSpellCheckProvider()
+    // Share the native checker and language list across windows.
+    public static MacOSSpellCheckProvider Instance { get; } = new();
+
+    private MacOSSpellCheckProvider()
     {
         if (!OperatingSystem.IsMacOS() || s_nSSpellCheckerClass == IntPtr.Zero)
         {
@@ -36,26 +44,33 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
 
     public bool IsLanguageSupported(CultureInfo? culture)
     {
-        return GetSupportedLanguageTag(culture) is not null;
+        if (_spellChecker == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        return TryGetLanguage(culture, out _);
     }
 
     public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        ReadOnlySpan<char> text,
+        ReadOnlyMemory<char> textMemory,
         CultureInfo? culture,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        var text = textMemory.Span;
+
         if (_spellChecker == IntPtr.Zero ||
             text.IsEmpty ||
-            GetSupportedLanguageTag(culture) is not { } language)
+            !TryGetLanguage(culture, out var language))
         {
             return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
         }
 
         var results = new List<SpellCheckResult>();
         var textHandle = CoreFoundationString.Create(text);
-        var languageHandle = CoreFoundationString.Create(language);
+        var languageHandle = CoreFoundationString.Create(language!);
 
         try
         {
@@ -82,11 +97,8 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
 
                 var start = checked((int)misspelled.Location);
                 var length = checked((int)misspelled.Length);
-                var word = start >= 0 && length > 0 && start + length <= text.Length
-                    ? text.Slice(start, length).ToString()
-                    : null;
 
-                results.Add(new SpellCheckResult(start, length, word));
+                results.Add(new SpellCheckResult(start, length));
                 offset = misspelled.Location + misspelled.Length;
             }
         }
@@ -108,13 +120,13 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
 
         if (_spellChecker == IntPtr.Zero ||
             string.IsNullOrWhiteSpace(word) ||
-            GetSupportedLanguageTag(culture) is not { } language)
+            !TryGetLanguage(culture, out var language))
         {
             return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
         }
 
         var wordHandle = CoreFoundationString.Create(word);
-        var languageHandle = CoreFoundationString.Create(language);
+        var languageHandle = CoreFoundationString.Create(language!);
 
         try
         {
@@ -135,9 +147,72 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
         }
     }
 
-    private string? GetSupportedLanguageTag(CultureInfo? culture)
+    // NSSpellChecker needs an explicit language. For null culture, use its current language,
+    // then user preferences and the process culture.
+    private bool TryGetLanguage(CultureInfo? culture, out string? language)
     {
-        foreach (var candidate in GetLanguageTagCandidates(culture))
+        if (culture is not null)
+        {
+            language = GetSupportedLanguageTag(culture);
+            return language is not null;
+        }
+
+        if (!_defaultLanguageResolved)
+        {
+            _defaultLanguage = ResolveDefaultLanguage();
+            // Cache only successful language resolution so failures can be retried.
+            _defaultLanguageResolved = true;
+        }
+
+        language = _defaultLanguage;
+        return language is not null;
+    }
+
+    private string? ResolveDefaultLanguage()
+    {
+        if (_spellChecker == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        // The spelling language is empty when set to automatic.
+        var current = CoreFoundationString.ToString(ObjectiveC.SendIntPtr(_spellChecker, s_languageSelector));
+
+        if (!string.IsNullOrEmpty(current) && GetSupportedLanguageTag(current, null) is { } fromChecker)
+        {
+            return fromChecker;
+        }
+
+        if (s_nSLocaleClass != IntPtr.Zero)
+        {
+            foreach (var preferred in CopyStringArray(ObjectiveC.SendIntPtr(s_nSLocaleClass, s_preferredLanguagesSelector)))
+            {
+                if (GetSupportedLanguageTag(preferred, null) is { } fromLocale)
+                {
+                    return fromLocale;
+                }
+            }
+        }
+
+        foreach (var fallback in new[] { CultureInfo.CurrentUICulture, CultureInfo.CurrentCulture })
+        {
+            if (!string.IsNullOrEmpty(fallback.Name) && GetSupportedLanguageTag(fallback) is { } fromCulture)
+            {
+                return fromCulture;
+            }
+        }
+
+        return null;
+    }
+
+    private string? GetSupportedLanguageTag(CultureInfo culture)
+    {
+        return GetSupportedLanguageTag(culture.Name, culture.TwoLetterISOLanguageName);
+    }
+
+    private string? GetSupportedLanguageTag(string languageTag, string? neutralLanguageTag)
+    {
+        foreach (var candidate in GetLanguageTagCandidates(languageTag, neutralLanguageTag))
         {
             foreach (var availableLanguage in _availableLanguages)
             {
@@ -151,13 +226,12 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
         return null;
     }
 
-    private static IEnumerable<string> GetLanguageTagCandidates(CultureInfo? culture)
+    private static IEnumerable<string> GetLanguageTagCandidates(string languageTag, string? neutralLanguageTag)
     {
-        var languageTag = culture?.Name;
-
-        if (string.IsNullOrEmpty(languageTag))
+        if (string.IsNullOrEmpty(neutralLanguageTag))
         {
-            languageTag = CultureInfo.CurrentCulture.Name;
+            var separator = languageTag.IndexOfAny(new[] { '-', '_' });
+            neutralLanguageTag = separator > 0 ? languageTag.Substring(0, separator) : null;
         }
 
         if (!string.IsNullOrEmpty(languageTag))
@@ -172,20 +246,8 @@ internal sealed class MacOSSpellCheckProvider : ISpellCheckProvider
             }
         }
 
-        var neutralLanguageTag = culture?.TwoLetterISOLanguageName;
-
-        if (string.IsNullOrEmpty(neutralLanguageTag) && !string.IsNullOrEmpty(languageTag))
-        {
-            try
-            {
-                neutralLanguageTag = new CultureInfo(languageTag).TwoLetterISOLanguageName;
-            }
-            catch (CultureNotFoundException)
-            {
-            }
-        }
-
-        if (!string.IsNullOrEmpty(neutralLanguageTag))
+        if (!string.IsNullOrEmpty(neutralLanguageTag) &&
+            !string.Equals(neutralLanguageTag, languageTag, StringComparison.OrdinalIgnoreCase))
         {
             yield return neutralLanguageTag;
         }

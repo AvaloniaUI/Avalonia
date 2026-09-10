@@ -393,6 +393,8 @@ namespace Avalonia.Controls
         /// </summary>
         public NumericUpDown()
         {
+            // Let the inner TextBox inherit this opt-out; explicit values can still override it.
+            SetCurrentValue(TextInputOptions.IsSpellCheckEnabledProperty, false);
             Initialized += (sender, e) =>
             {
                 if (!_internalValueSet && IsInitialized)
@@ -441,7 +443,6 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue<NumericUpDown>(true);
             IsTabStopProperty.OverrideDefaultValue<NumericUpDown>(false);
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<NumericUpDown>(KeyboardNavigationMode.Local);
-            TextInputOptions.IsSpellCheckEnabledProperty.OverrideDefaultValue<NumericUpDown>(false);
         }
 
         /// <inheritdoc />

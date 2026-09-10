@@ -18,6 +18,7 @@ internal readonly struct SpellCheckRange
 
     public int End { get; }
 
+    // "Word" includes the surrounding address/identifier token needed by the provider.
     public bool StartIsInsideWord { get; }
 
     public bool EndIsInsideWord { get; }

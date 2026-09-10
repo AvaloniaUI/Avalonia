@@ -1,11 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.TextBoxSpellCheckPage">
+             x:Class="ControlCatalog.Pages.TextBoxSpellCheckPage"
+             TextInputOptions.IsSpellCheckEnabled="True">
   <ScrollViewer>
     <StackPanel Orientation="Vertical" Spacing="18" Margin="24,16,24,24">
       <WrapPanel Margin="-8,0">
         <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
-          <TextBlock Text="Default" FontWeight="SemiBold" />
+          <TextBlock Text="Enabled (inherited from the page)" FontWeight="SemiBold" />
           <TextBox Width="320"
                    TextWrapping="Wrap"
                    Text="Ths sample has mispelled wrds." />
@@ -25,6 +26,53 @@
                    TextWrapping="Wrap"
                    TextInputOptions.ContentType="Search"
                    Text="qwick searh reslts" />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Read only (underlines, no suggestions)" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextWrapping="Wrap"
+                   IsReadOnly="True"
+                   Text="Ths sample has mispelled wrds." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="German (TextInputOptions.LocaleHints)" FontWeight="SemiBold" />
+          <TextBox x:Name="GermanTextBox"
+                   Width="320"
+                   TextWrapping="Wrap"
+                   Text="Dieser Satz enthält ein Fehlr und eine falsche Wort." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Right-to-left / mixed direction" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextWrapping="Wrap"
+                   FlowDirection="RightToLeft"
+                   Text="שלום עולם — Ths is mixed-direction text." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Custom underline brush" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextWrapping="Wrap"
+                   SpellCheckErrorBrush="DarkOrange"
+                   Text="Ths sample has mispelled wrds." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Sensitive (never checked)" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextInputOptions.IsSensitive="True"
+                   Text="Ths sample has mispelled wrds." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Password (never checked)" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   PasswordChar="*"
+                   Classes="revealPasswordButton"
+                   Text="mispelled" />
         </StackPanel>
       </WrapPanel>
 
