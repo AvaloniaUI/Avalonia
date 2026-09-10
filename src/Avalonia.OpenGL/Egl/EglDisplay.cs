@@ -45,7 +45,7 @@ namespace Avalonia.OpenGL.Egl
             if(_display == IntPtr.Zero)
                 throw new ArgumentException();
 
-            _config = EglDisplayUtils.InitializeAndGetConfig(_egl, display, options.GlVersions);
+            _config = EglDisplayUtils.InitializeAndGetConfig(_egl, display, options.GlVersions, options.ProbeConfig);
         }
         
         public EglInterface EglInterface => _egl;
