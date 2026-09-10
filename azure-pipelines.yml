@@ -33,6 +33,12 @@ jobs:
       version: 8.0.x
 
   - task: UseDotNet@2
+    displayName: 'Use .NET 10.0 Runtime'
+    inputs:
+        packageType: runtime
+        version: 10.0.x
+
+  - task: UseDotNet@2
     displayName: 'Use .NET SDK'
     inputs:
       packageType: sdk
@@ -71,6 +77,12 @@ jobs:
     inputs:
       packageType: runtime
       version: 8.0.x
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET 10.0 Runtime'
+    inputs:
+        packageType: runtime
+        version: 10.0.x
 
   - task: UseDotNet@2
     displayName: 'Use .NET SDK'
@@ -152,6 +164,12 @@ jobs:
     inputs:
       packageType: runtime
       version: 8.0.x
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET 10.0 Runtime'
+    inputs:
+        packageType: runtime
+        version: 10.0.x
 
   - task: UseDotNet@2
     displayName: 'Use .NET SDK'
