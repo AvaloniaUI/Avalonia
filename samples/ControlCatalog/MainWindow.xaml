@@ -10,7 +10,6 @@
         CanResize="{Binding CanResize}"
         CanMinimize="{Binding CanMinimize}"
         CanMaximize="{Binding CanMaximize}"
-        WindowDecorationsTheme="{StaticResource CustomDrawnDecorations}"
         WindowDrawnDecorations.TitleBarDecorations="{Binding TitleBarDecorations}"
         Win32Properties.WindowCornerPreference="{Binding Win32WindowCornerPreference}"
         x:Class="ControlCatalog.MainWindow" 

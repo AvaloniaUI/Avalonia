@@ -9,7 +9,6 @@
       <!-- Custom controls defined in other assemblies -->
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://ControlCatalog/CustomThemes.xaml"/>
-        <ResourceInclude Source="avares://ControlCatalog/WindowDrawnDecorations.xaml"/>
       </ResourceDictionary.MergedDictionaries>
 
       <!-- Resources used only in the control catalog -->

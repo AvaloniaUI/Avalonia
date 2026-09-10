@@ -9,6 +9,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Chrome;
 using Avalonia.Dialogs;
 using Avalonia.Media;
+using Avalonia.Styling;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
 using MiniMvvm;
@@ -135,6 +136,12 @@ namespace ControlCatalog.ViewModels
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
+        public ControlTheme? DecorationsTheme
+        {
+            get;
+            set => RaiseAndSetIfChanged(ref field, value);
+        }
+
         public TitleBarDecorations TitleBarDecorations
         {
             get;
@@ -182,12 +189,6 @@ namespace ControlCatalog.ViewModels
             get;
             set => RaiseAndSetIfChanged(ref field, value);
         } = true;
-
-        public bool ShowSearchInTitleBar
-        {
-            get;
-            set => RaiseAndSetIfChanged(ref field, value);
-        } = false;
 
         public SplitViewDisplayMode DisplayMode
         {
