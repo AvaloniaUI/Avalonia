@@ -40,6 +40,11 @@ internal class ServerCompositionVisualCache
         _layerCreatedWithContext = null;
     }
 
+    // Host-local ↔ texture-pixel mapping for backdrops hosted by this cache, matching the collector proxy's
+    // offset/scale. Valid once the cache has drawn at least once this frame (which sets the offset/scale).
+    public DirtyRectSpaceMapping GetDirtyRectSpaceMapping() =>
+        new(_drawAtOffset, _scaleX, _scaleY);
+
 
     public void InvalidateProperties()
     {
@@ -63,13 +68,16 @@ internal class ServerCompositionVisualCache
         public void AddRect(LtrbRect rect)
         {
             parent._needToFinalizeFrame = true;
-            
+
             // scale according to our render transform, since those values come in local space of the visual
             parent._dirtyRectTracker.AddRect(new LtrbRect((rect.Left + parent._drawAtOffset.X) * parent._scaleX,
                 (rect.Top + parent._drawAtOffset.Y) * parent._scaleY,
                 (rect.Right + parent._drawAtOffset.X) * parent._scaleX,
                 (rect.Bottom + parent._drawAtOffset.Y) * parent._scaleY));
         }
+
+        public DirtyRectWorkingSet GetWorkingSet() => new(parent._dirtyRectTracker,
+            new DirtyRectSpaceMapping(parent._drawAtOffset, parent._scaleX, parent._scaleY));
     }
     
     private readonly IDirtyRectTracker _dirtyRectTracker = new SingleDirtyRectTracker();
@@ -179,6 +187,10 @@ internal class ServerCompositionVisualCache
         {
             ResetDirtyRects();
             DirtyRectCollector.AddRect(LtrbRect.Infinite);
+            // A full cache re-render clears this host's surface, so every retained backdrop sampling it
+            // must re-ingest its whole input. Done here, as the flag is consumed, so it covers every cause
+            // (explicit invalidation and layer recreation) with the registry host assignments already settled.
+            TargetVisual.Root?.InvalidateRetainedBackdrops(this);
         }
 
         // Compute the final dirty rect set that accounts for antialiasing effects

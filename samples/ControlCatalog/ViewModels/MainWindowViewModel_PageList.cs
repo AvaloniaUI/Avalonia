@@ -28,14 +28,14 @@ partial class MainWindowViewModel
             s.Add<SliderPage>("Slider", Icons.Tune, "Select a value from a continuous range");
             s.Add<ToggleSwitchPage>("ToggleSwitch", Icons.Toggle, "An on/off switch with a sliding knob");
         }),
-        Section("Text", s => 
+        Section("Text", s =>
         {
             s.Add<AutoCompleteBoxPage>("AutoCompleteBox", Icons.TextInput, "Text input with completion suggestions");
             s.Add<LabelsPage>("Label", Icons.Tag, "Captions with access keys for other controls");
             s.Add<TextBoxPage>("TextBox", Icons.TextInput, "Single- and multi-line text editing");
             s.Add<TextBlockPage>("TextBlock", Icons.TextInput, "Styled read-only text display");
         }),
-        Section("Collections & Data", s => 
+        Section("Collections & Data", s =>
         {
             s.Add<Pages.CarouselPage>("Carousel", Icons.Slides, "Cycle through a collection of items");
             s.Add<ListBoxPage>("ListBox", Icons.List, "A selectable, virtualized list of items");
@@ -44,13 +44,13 @@ partial class MainWindowViewModel
             s.Add<TableViewPage>("TableView", Icons.Grid, "Tabular data with resizable, sortable columns");
             s.Add<TreeViewPage>("TreeView", Icons.Tree, "Hierarchical data with expandable nodes");
         }),
-        Section("Date & Time", s => 
+        Section("Date & Time", s =>
         {
             s.Add<CalendarPage>("Calendar", Icons.Calendar, "A month calendar for selecting dates");
             s.Add<CalendarDatePickerPage>("CalendarDatePicker", Icons.Calendar, "A date picker with a drop-down calendar");
             s.Add<DateTimePickerPage>("Date/Time Picker", Icons.Clock, "Spinner-style date and time pickers");
         }),
-        Section("Menus & Flyouts", s => 
+        Section("Menus & Flyouts", s =>
         {
             s.Add<CommandBarPage>("CommandBar", Icons.Terminal, "A toolbar of commands with an overflow menu");
             s.Add<ContextFlyoutPage>("ContextFlyout", Icons.Menu, "Attach flyouts shown on right-click");
@@ -58,7 +58,7 @@ partial class MainWindowViewModel
             s.Add<FlyoutsPage>("Flyouts", Icons.Flyout, "Lightweight popups anchored to controls");
             s.Add<MenuPage>("Menu", Icons.Menu, "Menu bars with nested menu items");
         }),
-        Section("Navigation & Pages", s => 
+        Section("Navigation & Pages", s =>
         {
             s.Add<CarouselDemoPage>("CarouselPage", Icons.Slides, "Swipeable page-based navigation");
             s.Add<ContentDemoPage>("ContentPage", Icons.Document, "A page that hosts a single content view");
@@ -69,7 +69,7 @@ partial class MainWindowViewModel
             s.Add<TabControlPage>("TabControl", Icons.Tab, "Switch between tabbed content views");
             s.Add<TabStripPage>("TabStrip", Icons.Tab, "A standalone strip of selectable tabs");
         }),
-        Section("Layout", s => 
+        Section("Layout", s =>
         {
             s.Add<BorderPage>("Border", Icons.Border, "Decorate elements with borders and corner radii");
             s.Add<CanvasPage>("Canvas", Icons.Canvas, "Position children at explicit coordinates");
@@ -83,9 +83,10 @@ partial class MainWindowViewModel
             s.Add<ViewboxPage>("Viewbox", Icons.Viewbox, "Scale content to fit available space");
             s.Add<WrapPanelPage>("WrapPanel", Icons.Layout, "Wrap children onto multiple lines");
         }),
-        Section("Media & Graphics", s => 
+        Section("Media & Graphics", s =>
         {
             s.Add<AcrylicPage>("Acrylic", Icons.Blur, "Translucent acrylic window materials");
+            s.Add<BackdropEffectPage>("BackdropEffect", Icons.Blur, "Displays backdrop effects under visuals");
             s.Add<BitmapCachePage>("BitmapCache", Icons.Lightning, "Cache visuals as bitmaps for performance");
             s.Add<CompositionPage>("Composition", Icons.Layers, "Composition-layer animations and effects");
             s.Add<CustomDrawing>("Custom Drawing", Icons.Brush, "Render custom geometry in code");
@@ -94,7 +95,7 @@ partial class MainWindowViewModel
             s.Add<OpenGlLeasePage>("OpenGL Lease", Icons.Cube3D, "Low-level access to the OpenGL context");
             s.Add<TransitioningContentControlPage>("TransitioningContentControl", Icons.Transition, "Animate between content changes");
         }),
-        Section("Status & Feedback", s => 
+        Section("Status & Feedback", s =>
         {
             s.Add<AdornerLayerPage>("AdornerLayer", Icons.Sparkle, "Overlay visuals on top of other controls");
             s.Add<DataValidationPage>("Data Validation", Icons.Shield, "Display validation errors from bindings");
@@ -103,7 +104,7 @@ partial class MainWindowViewModel
             s.Add<ProgressBarPage>("ProgressBar", Icons.Progress, "Determinate and indeterminate progress");
             s.Add<ToolTipPage>("ToolTip", Icons.Tooltip, "Hover hints for any control");
         }),
-        Section("Interaction", s => 
+        Section("Interaction", s =>
         {
             s.Add<AcceleratorPage>("Accelerator", Icons.Keyboard, "Keyboard shortcuts that invoke commands");
             s.Add<ClipboardPage>("Clipboard", Icons.Clipboard, "Read from and write to the system clipboard");
@@ -113,7 +114,7 @@ partial class MainWindowViewModel
             s.Add<GesturePage>("Gestures", Icons.Gesture, "Tap, scroll and pinch gesture recognition");
             s.Add<PointersPage>("Pointers", Icons.Cursor, "Raw pointer input and capture");
         }),
-        Section("Window & Platform", s => 
+        Section("Window & Platform", s =>
         {
             s.Add<NativeEmbedPage>("Native Embed", Icons.Puzzle, "Host native platform controls");
             s.Add<PlatformInfoPage>("Platform Information", Icons.Info, "Runtime platform and capability info");
