@@ -59,6 +59,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public WordBreakClass WordBreakClass => UnicodeData.GetWordBreakClass(_value);
 
         /// <summary>
+        /// Gets the <see cref="Unicode.SentenceBreakClass"/> (UAX #29).
+        /// </summary>
+        public SentenceBreakClass SentenceBreakClass => UnicodeData.GetSentenceBreakClass(_value);
+
+        /// <summary>
         /// Gets the <see cref="GraphemeBreakClass"/>.
         /// </summary>
         public GraphemeBreakClass GraphemeBreakClass => UnicodeData.GetGraphemeClusterBreak(_value);

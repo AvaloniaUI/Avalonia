@@ -46,6 +46,8 @@ namespace Avalonia.Media.TextFormatting
 
                                         while (currentBreakPosition < measuredLength && wordBreaker.MoveNext(out var wordSegment))
                                         {
+                                            // TODO13: a WordSegment can carry an empty Text, so Length is the only
+                                            // code-unit width valid for every segment.
                                             var nextBreakPosition = wordSegment.Offset + wordSegment.Length;
 
                                             if (nextBreakPosition == 0)

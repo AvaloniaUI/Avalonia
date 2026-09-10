@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
 using ControlCatalog.Models;
@@ -136,5 +137,7 @@ partial class MainWindowViewModel
             var iconGeometry = StreamGeometry.Parse(iconPath);
             Add(new PageItem(header, () => new TPageType(), iconGeometry, description, section));
         }
+
+        public async virtual Task Navigate(INavigation navigation) { }
     }
 }
