@@ -227,6 +227,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
                 if (!shutdownCancelled)
                 {
+                    e.WillExitMainLoop = _cts is not null;
+
                     _cts?.Cancel();
                     _cts = null;
                     Dispatcher.UIThread.InvokeShutdown();
