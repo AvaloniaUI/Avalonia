@@ -20,7 +20,8 @@ namespace RenderDemo.Pages
     ///
     /// Everything here is wired by hand from the public primitives so the moving
     /// parts are visible. Contrast the neighbouring DrawingRecording page, which
-    /// replays a recording through DrawingContext.DrawRecording every frame.
+    /// replays recordings through DrawingContext.DrawRecording from a control's
+    /// Render method.
     /// </summary>
     public class RecordingCompositionPage : Control
     {
