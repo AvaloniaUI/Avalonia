@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Nuke.Common;
-using Nuke.Common.CI.AzurePipelines;
+using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.IO;
 
 public partial class Build
@@ -44,7 +44,7 @@ public partial class Build
         public bool IsLocalBuild { get; }
         public bool IsRunningOnUnix { get; }
         public bool IsRunningOnWindows { get; }
-        public bool IsRunningOnAzure { get; }
+        public bool IsRunningOnGitHubActions { get; }
         public bool IsPullRequest { get; }
         public bool IsMainRepo { get; }
         public bool IsMasterBranch { get; }
@@ -91,15 +91,15 @@ public partial class Build
             IsRunningOnUnix = Environment.OSVersion.Platform == PlatformID.Unix ||
                               Environment.OSVersion.Platform == PlatformID.MacOSX;
             IsRunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsRunningOnAzure = Host is AzurePipelines;
+            IsRunningOnGitHubActions = Host is GitHubActions;
 
-            if (IsRunningOnAzure)
+            if (IsRunningOnGitHubActions)
             {
-                RepositoryName = AzurePipelines.Instance.RepositoryUri;
-                RepositoryBranch = AzurePipelines.Instance.SourceBranch;
-                IsPullRequest = AzurePipelines.Instance.PullRequestId.HasValue;
-                IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, AzurePipelines.Instance.RepositoryUri);
+                RepositoryName = $"{GitHubActions.Instance.ServerUrl}/{GitHubActions.Instance.Repository}";
+                RepositoryBranch = GitHubActions.Instance.Ref;
+                IsPullRequest = GitHubActions.Instance.IsPullRequest;
             }
+
             IsMainRepo =
                 StringComparer.OrdinalIgnoreCase.Equals(MainRepo,
                     RepositoryName);
@@ -117,14 +117,12 @@ public partial class Build
             ForceApiValidationBaseline = b.ForceApiValidationBaseline;
             UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
             
-            if (IsRunningOnAzure)
+            if (IsRunningOnGitHubActions)
             {
                 if (!IsNuGetRelease)
                 {
                     // Use AssemblyVersion with Build as version
-                    var buildId = Environment.GetEnvironmentVariable("BUILD_BUILDID") ??
-                                  throw new InvalidOperationException("Missing environment variable BUILD_BUILDID");
-                    Version += "-cibuild" + int.Parse(buildId).ToString("0000000") + "-alpha";
+                    Version += "-cibuild" + GetCiBuildNumber().ToString("0000000") + "-alpha";
                 }
 
                 PublishTestResults = true;
@@ -160,6 +158,25 @@ public partial class Build
         {
             var xdoc = XDocument.Load(RootDirectory / "build/SharedVersion.props");
             return xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value;
+        }
+
+        long GetCiBuildNumber()
+        {
+            if (IsRunningOnGitHubActions)
+                return GitHubActions.Instance.RunNumber;
+
+            var buildId = Environment.GetEnvironmentVariable("BUILD_BUILDID") ??
+                          throw new InvalidOperationException("Missing environment variable BUILD_BUILDID");
+            return long.Parse(buildId);
+        }
+
+        public int? GetPullRequestNumber()
+        {
+            if (IsRunningOnGitHubActions)
+                return GitHubActions.Instance.PullRequestNumber;
+
+            var prNumber = Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER");
+            return int.TryParse(prNumber, out var result) ? result : null;
         }
     }
 

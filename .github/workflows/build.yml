@@ -1,0 +1,119 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+      - 'force-ci/**'
+      - 'xpf/**'
+      - 'feature/gh-actions'
+      - '!release/latest'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+
+  linux:
+    name: Linux
+    runs-on: ubuntu-24.04
+
+    steps:
+      - &step-checkout
+        name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - &step-dotnet
+        name: Install .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+          global-json-file: global.json
+
+      - name: Install Workloads
+        run: dotnet workload install android macos wasm-tools
+
+      - name: Run Build
+        run: |
+          dotnet --info
+          printenv
+          ./build.sh --target CiLinux --configuration=Release
+
+  macos:
+    name: macOS
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
+    steps:
+      - *step-checkout
+
+      - *step-dotnet
+
+      - name: Install Workloads
+        run: dotnet workload install android ios tvos maccatalyst macos wasm-tools
+
+      - name: Run Build
+        run: |
+          dotnet --info
+          printenv
+          ./build.sh --target CiMacOS --configuration Release
+
+      - name: Publish Native Library
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-macos
+          path: artifacts/native/Release/
+
+      - name: Publish NuGet Packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-macos
+          path: artifacts/nuget
+
+      - name: Publish SBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-macos
+          path: artifacts/sbom
+
+  windows:
+    name: Windows
+    runs-on: windows-2025
+
+    steps:
+      - *step-checkout
+
+      - *step-dotnet
+
+      - name: Install Workloads
+        run: dotnet workload install android ios tvos maccatalyst macos wasm-tools
+
+      - name: Run Build
+        run: ./build.cmd --target CiWindows --configuration Release
+
+      - name: Publish NuGet Packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-windows
+          path: artifacts/nuget
+
+      - name: Publish SBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-windows
+          path: artifacts/sbom
