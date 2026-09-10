@@ -65,7 +65,7 @@ namespace Avalonia.Animation.Easings
             this.X1 = x1;
             this.Y1 = y1;
             this.X2 = x2;
-            this.Y1 = y2;
+            this.Y2 = y2;
         }
 
         public SplineEasing(KeySpline keySpline)
