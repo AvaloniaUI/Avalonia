@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -73,6 +73,53 @@ public class DrawingRecordingTests : TestBase
         var target = new RecordingRenderer(outer)
         {
             Width = 150, Height = 150
+        };
+
+        await RenderToFile(target);
+        CompareImages();
+    }
+
+    [Fact]
+    public async Task DrawingRecordingBrush_Rotated_In_Unit_Space()
+    {
+        // A recording brush is a tile brush, so IBrush.RelativeTransform applies
+        // in the unit space of the painted bounds before the absolute Transform.
+        // The recorded content matches the DrawingBrush of the same name in
+        // RelativeTransformBrushTests, which pins the two brushes to one result.
+        var unitMatrix =
+            Matrix.CreateTranslation(-0.3, -0.7)
+            * Matrix.CreateRotation(Matrix.ToRadians(30))
+            * Matrix.CreateTranslation(0.3, 0.7);
+
+        var recording = DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawRectangle(Brushes.Crimson, null, new Rect(0, 0, 20, 20));
+            ctx.DrawRectangle(Brushes.MidnightBlue, null, new Rect(0, 0, 10, 10));
+            ctx.DrawRectangle(Brushes.MidnightBlue, null, new Rect(10, 10, 10, 10));
+        });
+
+        var brush = new DrawingRecordingBrush(recording)
+        {
+            Stretch = Stretch.Fill,
+            RelativeTransform = new ImmutableTransform(unitMatrix),
+        };
+
+        var target = new Canvas
+        {
+            Width = 200,
+            Height = 200,
+            Background = Brushes.White,
+            Children =
+            {
+                new Border
+                {
+                    Background = brush,
+                    Width = 120,
+                    Height = 60,
+                    [Canvas.LeftProperty] = 40.0,
+                    [Canvas.TopProperty] = 70.0,
+                }
+            }
         };
 
         await RenderToFile(target);
