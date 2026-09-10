@@ -1,0 +1,267 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System"
+                    xmlns:converters="using:Avalonia.Controls.Converters"
+                    x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <ButtonSpinner Content="Right spinner" />
+        <ButtonSpinner ButtonSpinnerLocation="Left"
+                       Content="Left spinner" />
+        <ButtonSpinner BorderThickness="2"
+                       BorderBrush="Blue"
+                       Content="Right Border" />
+        <ButtonSpinner ButtonSpinnerLocation="Left"
+                       BorderThickness="2"
+                       BorderBrush="Blue"
+                       Content="Left Border" />
+        <ButtonSpinner Content="Right disabled"
+                       AllowSpin="False"/>
+        <ButtonSpinner ButtonSpinnerLocation="Left"
+                       Content="Left disabled"
+                       AllowSpin="False"/>
+        <ButtonSpinner ShowButtonSpinner="False"
+                       Content="Hide spinner" />
+        <ButtonSpinner Content="Error">
+          <DataValidationErrors.Error>
+            <sys:Exception>
+              <x:Arguments>
+                <x:String>Error</x:String>
+              </x:Arguments>
+            </sys:Exception>
+          </DataValidationErrors.Error>
+        </ButtonSpinner>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- Retained for compatibility: the Fluent 2 spin buttons are borderless, so these
+  converters are no longer used by the template below. -->
+  <converters:MarginMultiplierConverter x:Key="ButtonSpinnerLeftThickness" Indent="1" Left="True" />
+  <converters:MarginMultiplierConverter x:Key="ButtonSpinnerRightThickness" Indent="1" Right="True" />
+  <StreamGeometry x:Key="ButtonSpinnerIncreaseButtonIcon">M4.293 15.707a1 1 0 0 0 1.414 0L12 9.414l6.293 6.293a1 1 0 0 0 1.414-1.414l-7-7a1 1 0 0 0-1.414 0l-7 7a1 1 0 0 0 0 1.414Z</StreamGeometry>
+  <StreamGeometry x:Key="ButtonSpinnerDecreaseButtonIcon">M4.293 8.293a1 1 0 0 1 1.414 0L12 14.586l6.293-6.293a1 1 0 1 1 1.414 1.414l-7 7a1 1 0 0 1-1.414 0l-7-7a1 1 0 0 1 0-1.414Z</StreamGeometry>
+  <StreamGeometry x:Key="ButtonSpinnerUpDownButtonIcon">M18.79 8.387a1 1 0 0 1-1.497 1.32L12 4.414 6.707 9.707l-.094.083a1 1 0 0 1-1.32-1.497l6-6 .094-.083a1 1 0 0 1 1.32.083l6 6 .083.094ZM5.21 15.613a1 1 0 0 1 1.497-1.32L12 19.586l5.293-5.293.094-.083a1 1 0 0 1 1.32 1.497l-6 6-.094.083a1 1 0 0 1-1.32-.083l-6-6-.083-.094Z</StreamGeometry>
+  <Thickness x:Key="ButtonSpinnerSpinButtonBorderThickness">0,1,1,1</Thickness>
+  <Thickness x:Key="ButtonSpinnerIconMargin">10,0,0,0</Thickness>
+  <x:Double x:Key="ButtonSpinnerPopupShadowDepth">16</x:Double>
+  <x:Double x:Key="ButtonSpinnerMinWidth">120</x:Double>
+  <Thickness x:Key="ButtonSpinnerPopupIndicatorMargin">0,0,8,0</Thickness>
+  <Thickness x:Key="SpinnerPopupBorderThickness">1</Thickness>
+  <Thickness x:Key="SpinnerPopupSpinButtonBorderThickness">0</Thickness>
+
+  <ControlTheme x:Key="FluentButtonSpinnerPopupRepeatButton" TargetType="RepeatButton" BasedOn="{StaticResource {x:Type RepeatButton}}">
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Height" Value="36" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="BorderThickness" Value="{DynamicResource SpinnerPopupSpinButtonBorderThickness}"/>
+    <Setter Property="FontSize" Value="16"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+  </ControlTheme>
+
+  <ControlTheme x:Key="FluentButtonSpinnerRepeatButton" TargetType="RepeatButton" BasedOn="{StaticResource {x:Type RepeatButton}}">
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="MinWidth" Value="32" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="BorderThickness" Value="{DynamicResource SpinnerPopupSpinButtonBorderThickness}"/>
+    <Setter Property="FontSize" Value="16"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+  </ControlTheme>
+  <ControlTheme x:Key="SpinnerPopupIndicatorButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Padding" Value="4" />
+    <ControlTheme.Resources>
+      <x:Double x:Key="FlyoutThemeMinWidth">0</x:Double>
+      <x:Double x:Key="FlyoutThemeMinHeight">0</x:Double>
+      <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ButtonBorderBrushPointerOver">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ButtonBorderBrushPressed">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ButtonBorderBrushDisabled">Transparent</SolidColorBrush>
+    </ControlTheme.Resources>
+  </ControlTheme>
+
+  <!-- WinUI reference: NumberBox.xaml / TextBox_themeresources.xaml, tag winui3/release/1.7.1.
+  The control is a TextBox-like field: ControlFillColorDefault fill, hairline elevation border
+  (TextControlElevationBorderBrush), ControlCornerRadius, with the spin buttons laid out inline. -->
+  <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
+    <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+    <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
+    <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Focusable" Value="True"/>
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DataValidationErrors>
+          <Grid Height="{TemplateBinding Height}">
+            <Grid.Resources>
+              <ResourceDictionary>
+                <ResourceDictionary.ThemeDictionaries>
+                  <ResourceDictionary x:Key="Default">
+                    <StaticResource x:Key="RepeatButtonBackground" ResourceKey="TextControlButtonBackground" />
+                    <StaticResource x:Key="RepeatButtonBackgroundPointerOver" ResourceKey="TextControlButtonBackgroundPointerOver" />
+                    <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="TextControlButtonBackgroundPressed" />
+                    <StaticResource x:Key="RepeatButtonForeground" ResourceKey="TextControlButtonForeground" />
+                    <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="TextControlButtonForegroundPointerOver" />
+                    <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="TextControlButtonForegroundPressed" />
+                    <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="TextControlButtonBorderBrush" />
+                    <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlButtonBorderBrushPointerOver" />
+                    <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlButtonBorderBrushPressed" />
+                    <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="TextControlButtonBorderBrush" />
+                  </ResourceDictionary>
+                  <ResourceDictionary x:Key="Dark">
+                    <StaticResource x:Key="RepeatButtonBackground" ResourceKey="TextControlButtonBackground" />
+                    <StaticResource x:Key="RepeatButtonBackgroundPointerOver" ResourceKey="TextControlButtonBackgroundPointerOver" />
+                    <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="TextControlButtonBackgroundPressed" />
+                    <StaticResource x:Key="RepeatButtonForeground" ResourceKey="TextControlButtonForeground" />
+                    <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="TextControlButtonForegroundPointerOver" />
+                    <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="TextControlButtonForegroundPressed" />
+                    <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="TextControlButtonBorderBrush" />
+                    <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlButtonBorderBrushPointerOver" />
+                    <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlButtonBorderBrushPressed" />
+                    <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="TextControlButtonBorderBrush" />
+                  </ResourceDictionary>
+                </ResourceDictionary.ThemeDictionaries>
+              </ResourceDictionary>
+            </Grid.Resources>
+            <Border Name="BorderElement"
+                    Background="{TemplateBinding Background}"
+                    BackgroundSizing="InnerBorderEdge"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}">
+              <DockPanel LastChildFill="True">
+                <StackPanel Name="PART_SpinnerPanel"
+                            Spacing="4"
+                            Margin="4"
+                            DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            IsVisible="{TemplateBinding ShowButtonSpinner}">
+                  <RepeatButton Name="PART_IncreaseButton"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Theme="{StaticResource FluentButtonSpinnerRepeatButton}">
+                    <PathIcon Width="{TemplateBinding FontSize}"
+                              Height="{TemplateBinding FontSize}"
+                              Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
+                  </RepeatButton>
+
+                  <RepeatButton Name="PART_DecreaseButton"
+                                Theme="{StaticResource FluentButtonSpinnerRepeatButton}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                    <PathIcon Width="{TemplateBinding FontSize}"
+                              Height="{TemplateBinding FontSize}"
+                              Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
+                  </RepeatButton>
+                  <Button Name="PopupIndicator"
+                          Theme="{StaticResource SpinnerPopupIndicatorButton}"
+                          IsVisible="False">
+                    <Button.Flyout>
+                      <Flyout
+                        Placement="Center">
+                        <Flyout.FlyoutPresenterTheme>
+                          <ControlTheme TargetType="FlyoutPresenter" BasedOn="{StaticResource {x:Type FlyoutPresenter}}">
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="MinWidth" Value="0"/>
+                          </ControlTheme>
+                        </Flyout.FlyoutPresenterTheme>
+                        <Border Name="PopupContentRoot"
+                                Padding="6"
+                                Background="{DynamicResource SpinnerPopupBackground}"
+                                BorderBrush="{DynamicResource SpinnerPopupBorderBrush}"
+                                BorderThickness="{DynamicResource SpinnerPopupBorderThickness}"
+                                CornerRadius="{DynamicResource OverlayCornerRadius}">
+                          <Grid RowDefinitions="*,*">
+                            <RepeatButton Name="PART_PopupIncreaseButton"
+                                          Theme="{StaticResource FluentButtonSpinnerPopupRepeatButton}">
+                              <PathIcon Width="16"
+                                        Height="16"
+                                        Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
+                            </RepeatButton>
+                            <RepeatButton Name="PART_PopupDecreaseButton"
+                                          Grid.Row="1"
+                                          Theme="{StaticResource FluentButtonSpinnerPopupRepeatButton}">
+                              <PathIcon Width="16"
+                                        Height="16"
+                                        Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
+                            </RepeatButton>
+                          </Grid>
+                        </Border>
+                      </Flyout>
+                    </Button.Flyout>
+                    <PathIcon Width="12"
+                              Height="12"
+                              Data="{StaticResource ButtonSpinnerUpDownButtonIcon}" />
+                  </Button>
+                </StackPanel>
+
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  Content="{TemplateBinding Content}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  Padding="{TemplateBinding Padding}" />
+              </DockPanel>
+            </Border>
+          </Grid>
+        </DataValidationErrors>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Disabled State -->
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundDisabled}" />
+
+      <Style Selector="^ /template/ Border#BorderElement">
+        <Setter Property="Background" Value="{DynamicResource TextControlBackgroundDisabled}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
+      </Style>
+    </Style>
+
+    <!-- PointerOver State. Only the fill changes; the hairline border is left alone so an
+    error border stays visible while hovered (WinUI hover reuses the rest border brush). -->
+    <Style Selector="^:pointerover /template/ Border#BorderElement">
+      <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
+    </Style>
+
+    <!-- Focused State: input-active fill plus the accent focus underline, matching TextBox. -->
+    <Style Selector="^:focus-within /template/ Border#BorderElement">
+      <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}" />
+      <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
+    </Style>
+
+    <Style Selector="^:left">
+      <Style Selector="^ /template/ StackPanel#PART_SpinnerPanel">
+        <Setter Property="DockPanel.Dock" Value="Left"/>
+      </Style>
+    </Style>
+
+    <Style Selector="^:error /template/ Border#BorderElement">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+    </Style>
+
+    <Style Selector="^.fluent2-compact /template/ Button#PopupIndicator">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+    <Style Selector="^.fluent2-compact /template/ RepeatButton#PART_IncreaseButton, ^.fluent2-compact /template/ RepeatButton#PART_DecreaseButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>

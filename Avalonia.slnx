@@ -157,6 +157,7 @@
     <Project Path="tests/Avalonia.RenderTests.WpfCompare/Avalonia.RenderTests.WpfCompare.csproj" />
     <Project Path="tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj" />
     <Project Path="tests/Avalonia.Skia.UnitTests/Avalonia.Skia.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Themes.Fluent2.UnitTests/Avalonia.Themes.Fluent2.UnitTests.csproj" />
     <Project Path="tests/Avalonia.UnitTests/Avalonia.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Wayland.UnitTests/Avalonia.Wayland.UnitTests.csproj" />
   </Folder>
@@ -166,6 +167,7 @@
   </Folder>
   <Folder Name="/Themes/">
     <Project Path="src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
+    <Project Path="src/Avalonia.Themes.Fluent2/Avalonia.Themes.Fluent2.csproj" />
     <Project Path="src/Avalonia.Themes.Simple/Avalonia.Themes.Simple.csproj" />
   </Folder>
   <Folder Name="/Tools/">
