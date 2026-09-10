@@ -2,6 +2,9 @@ jobs:
 - job: Mac
   pool:
     name: 'AvaloniaMacPool'
+  variables:
+      # Our macOS runner is very old and is not compatible with .NET 11 CLI compiled with AOT
+      DOTNET_CLI_ENABLEAOT: 'false'
 
   steps:
   - task: UseDotNet@2
