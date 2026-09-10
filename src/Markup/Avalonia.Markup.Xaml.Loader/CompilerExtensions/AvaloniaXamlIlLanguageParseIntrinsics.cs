@@ -260,6 +260,25 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            if (type.Equals(types.Geometry) || type.Equals(types.StreamGeometry))
+            {
+                var recorder = new AvaloniaXamlIlGeometryCommandRecorder();
+
+                try
+                {
+                    using var parser = new PathMarkupParser(recorder);
+                    parser.Parse(text);
+                }
+                catch
+                {
+                    return ReturnOnParseError($"Unable to parse \"{text}\" as a geometry", out result);
+                }
+
+                result = new AvaloniaXamlIlStreamGeometryAstNode(node, types, recorder.Commands);
+
+                return true;
+            }
+
             if (types.IBrush.IsAssignableFrom(type))
             {
                 if (Color.TryParse(text, out Color color))
