@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -34,6 +35,12 @@ namespace Avalonia.Controls.Presenters
 
         public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(SelectionForegroundBrush));
+
+        /// <summary>
+        /// Defines the <see cref="SpellCheckErrorBrush"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush?> SpellCheckErrorBrushProperty =
+            AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(SpellCheckErrorBrush));
 
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrush));
@@ -106,10 +113,18 @@ namespace Avalonia.Controls.Presenters
         private Point _navigationPosition;
         private Point? _previousOffset;
         private TextSelectorLayer? _layer;
+        // Draw underlines without reshaping text; cache the geometry per TextLayout.
+        private IReadOnlyList<SpellCheckResult>? _spellCheckRanges;
+        private TextLayout? _spellCheckGeometryLayout;
+        private double _spellCheckGeometryTop;
+        private StreamGeometry? _spellCheckGeometry;
+        private IBrush? _spellCheckPenBrush;
+        private IPen? _spellCheckPen;
+        private static readonly ImmutableSolidColorBrush s_defaultSpellCheckErrorBrush = new(Color.FromRgb(0xE8, 0x11, 0x23));
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, SelectionForegroundBrushProperty, TextElement.ForegroundProperty, ShowSelectionHighlightProperty);
+            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, SelectionForegroundBrushProperty, SpellCheckErrorBrushProperty, TextElement.ForegroundProperty, ShowSelectionHighlightProperty);
         }
 
         public TextPresenter() { }
@@ -305,6 +320,15 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the brush used to underline misspelled words. When null a default red is used.
+        /// </summary>
+        public IBrush? SpellCheckErrorBrush
+        {
+            get => GetValue(SpellCheckErrorBrushProperty);
+            set => SetValue(SpellCheckErrorBrushProperty, value);
+        }
+
         public IBrush? CaretBrush
         {
             get => GetValue(CaretBrushProperty);
@@ -386,9 +410,16 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            var top = 0d;
-            var left = 0.0;
+            var top = GetTextVerticalOffset();
 
+            TextLayout.Draw(context, new Point(0, top));
+
+            RenderSpellCheckUnderlines(context, top);
+        }
+
+        internal double GetTextVerticalOffset()
+        {
+            var top = 0d;
             var textHeight = TextLayout.Height;
 
             if (Bounds.Height < textHeight)
@@ -405,7 +436,293 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            TextLayout.Draw(context, new Point(left, top));
+            return top;
+        }
+
+        // Ranges use Text offsets, excluding IME preedit text.
+        internal IReadOnlyList<SpellCheckResult>? SpellCheckRanges => _spellCheckRanges;
+
+        // Map layout offsets back to Text, excluding IME preedit text.
+        internal int GetTextPositionFromLayoutPosition(int layoutPosition)
+        {
+            var textLength = Text?.Length ?? 0;
+            var preeditLength = PreeditText?.Length ?? 0;
+
+            if (preeditLength == 0)
+            {
+                return Math.Clamp(layoutPosition, 0, textLength);
+            }
+
+            var caretIndex = Math.Clamp(CaretIndex, 0, textLength);
+
+            if (layoutPosition <= caretIndex)
+            {
+                return Math.Clamp(layoutPosition, 0, textLength);
+            }
+
+            if (layoutPosition < caretIndex + preeditLength)
+            {
+                return caretIndex;
+            }
+
+            return Math.Clamp(layoutPosition - preeditLength, 0, textLength);
+        }
+
+        // Ranges use Text offsets and must be sorted by start; the layout is unchanged.
+        internal bool SetSpellCheckRanges(IReadOnlyList<SpellCheckResult>? ranges)
+        {
+            if (ranges is { Count: 0 })
+            {
+                ranges = null;
+            }
+
+            if (AreSpellCheckRangesEqual(_spellCheckRanges, ranges))
+            {
+                return false;
+            }
+
+            _spellCheckRanges = ranges;
+            DropSpellCheckGeometries();
+            InvalidateVisual();
+            return true;
+        }
+
+        // Release the cached layout along with its geometry.
+        private void DropSpellCheckGeometries()
+        {
+            _spellCheckGeometry = null;
+            _spellCheckGeometryLayout = null;
+        }
+
+        private static bool AreSpellCheckRangesEqual(IReadOnlyList<SpellCheckResult>? left, IReadOnlyList<SpellCheckResult>? right)
+        {
+            if (ReferenceEquals(left, right))
+            {
+                return true;
+            }
+
+            if (left is null || right is null || left.Count != right.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < left.Count; i++)
+            {
+                if (left[i].Start != right[i].Start || left[i].Length != right[i].Length)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void RenderSpellCheckUnderlines(DrawingContext context, double top)
+        {
+            if (_spellCheckRanges is not { Count: > 0 } ranges || (PasswordChar != default && !RevealPassword))
+            {
+                return;
+            }
+
+            var textLayout = TextLayout;
+            var thickness = GetSpellCheckUnderlineThickness();
+
+            if (!ReferenceEquals(_spellCheckGeometryLayout, textLayout) ||
+                !MathUtilities.AreClose(_spellCheckGeometryTop, top))
+            {
+                var underlines = BuildSpellCheckUnderlines(textLayout, ranges, top, thickness);
+                _spellCheckGeometry = underlines.Count > 0 ? CreateWaveGeometry(underlines, thickness) : null;
+                _spellCheckGeometryLayout = textLayout;
+                _spellCheckGeometryTop = top;
+            }
+
+            if (_spellCheckGeometry is null)
+            {
+                return;
+            }
+
+            var brush = SpellCheckErrorBrush ?? s_defaultSpellCheckErrorBrush;
+            if (_spellCheckPen is null ||
+                !ReferenceEquals(_spellCheckPenBrush, brush) ||
+                _spellCheckPen.Thickness != thickness)
+            {
+                _spellCheckPen = brush is IImmutableBrush immutableBrush
+                    ? new ImmutablePen(immutableBrush, thickness, lineJoin: PenLineJoin.Round)
+                    : new Pen(brush, thickness, lineJoin: PenLineJoin.Round);
+                _spellCheckPenBrush = brush;
+            }
+
+            context.DrawGeometry(null, _spellCheckPen, _spellCheckGeometry);
+        }
+
+        private double GetSpellCheckUnderlineThickness()
+        {
+            return Math.Clamp(Math.Round(FontSize / 14), 1, 3);
+        }
+
+        // Expose underline geometry for headless tests.
+        internal IReadOnlyList<Rect> GetSpellCheckUnderlinesForTests()
+        {
+            return _spellCheckRanges is { Count: > 0 } ranges
+                ? BuildSpellCheckUnderlines(TextLayout, ranges, GetTextVerticalOffset(), GetSpellCheckUnderlineThickness())
+                : Array.Empty<Rect>();
+        }
+
+        // Map source ranges around IME preedit text, then build one underline per visual run.
+        private List<Rect> BuildSpellCheckUnderlines(
+            TextLayout textLayout,
+            IReadOnlyList<SpellCheckResult> ranges,
+            double top,
+            double thickness)
+        {
+            var underlines = new List<Rect>();
+            var textLines = textLayout.TextLines;
+            var preeditLength = PreeditText?.Length ?? 0;
+            var caretIndex = CaretIndex;
+            var rangeIndex = 0;
+            var firstLayoutPosition = GetLayoutStart(ranges[0], caretIndex, preeditLength);
+            var lineIndex = SpellCheckRangeFinder.GetLineIndexFromCharacterIndex(
+                textLayout,
+                firstLayoutPosition,
+                out var firstLineTop);
+            var currentY = top + firstLineTop;
+
+            for (; lineIndex < textLines.Count && rangeIndex < ranges.Count; lineIndex++)
+            {
+                var textLine = textLines[lineIndex];
+                var lineTop = currentY;
+                currentY += textLine.Height;
+
+                var lineStart = textLine.FirstTextSourceIndex;
+                var lineEnd = lineStart + textLine.Length;
+
+                while (rangeIndex < ranges.Count && GetLayoutEnd(ranges[rangeIndex], caretIndex, preeditLength) <= lineStart)
+                {
+                    rangeIndex++;
+                }
+
+                // Keep underlines below the baseline and inside the line.
+                var y = lineTop + textLine.Baseline + Math.Max(thickness * 2, (textLine.Height - textLine.Baseline) * 0.5);
+                y = Math.Min(y, lineTop + textLine.Height - thickness * 1.5);
+                y = Math.Floor(y) + (thickness % 2 == 0 ? 0 : 0.5);
+
+                for (var i = rangeIndex; i < ranges.Count; i++)
+                {
+                    var range = ranges[i];
+                    var rangeStart = GetLayoutStart(range, caretIndex, preeditLength);
+
+                    if (rangeStart >= lineEnd)
+                    {
+                        break;
+                    }
+
+                    var originalEnd = range.Start + range.Length;
+
+                    if (preeditLength > 0 && range.Start < caretIndex && originalEnd > caretIndex)
+                    {
+                        // Leave a gap for IME preedit text, which was not spell checked.
+                        AddSpellCheckUnderline(
+                            underlines, textLine, lineStart, lineEnd, y, thickness, range.Start, caretIndex);
+                        AddSpellCheckUnderline(
+                            underlines,
+                            textLine,
+                            lineStart,
+                            lineEnd,
+                            y,
+                            thickness,
+                            caretIndex + preeditLength,
+                            originalEnd + preeditLength);
+                    }
+                    else
+                    {
+                        AddSpellCheckUnderline(
+                            underlines,
+                            textLine,
+                            lineStart,
+                            lineEnd,
+                            y,
+                            thickness,
+                            rangeStart,
+                            GetLayoutEnd(range, caretIndex, preeditLength));
+                    }
+                }
+            }
+
+            return underlines;
+        }
+
+        private static void AddSpellCheckUnderline(
+            List<Rect> underlines,
+            TextLine textLine,
+            int lineStart,
+            int lineEnd,
+            double y,
+            double thickness,
+            int rangeStart,
+            int rangeEnd)
+        {
+            var start = Math.Max(rangeStart, lineStart);
+            var end = Math.Min(rangeEnd, lineEnd);
+
+            if (end <= start)
+            {
+                return;
+            }
+
+            foreach (var bounds in textLine.GetTextBounds(start, end - start))
+            {
+                var rect = bounds.Rectangle;
+
+                if (rect.Width > 0)
+                {
+                    underlines.Add(new Rect(rect.X, y, rect.Width, thickness));
+                }
+            }
+        }
+
+        private static int GetLayoutStart(SpellCheckResult range, int caretIndex, int preeditLength)
+        {
+            return preeditLength > 0 && range.Start >= caretIndex ? range.Start + preeditLength : range.Start;
+        }
+
+        private static int GetLayoutEnd(SpellCheckResult range, int caretIndex, int preeditLength)
+        {
+            var end = range.Start + range.Length;
+            return preeditLength > 0 && end > caretIndex ? end + preeditLength : end;
+        }
+
+        // Combine the waves into one draw call.
+        private static StreamGeometry CreateWaveGeometry(List<Rect> underlines, double thickness)
+        {
+            var geometry = new StreamGeometry();
+            var amplitude = thickness;
+            var halfPeriod = thickness * 2;
+
+            using (var ctx = geometry.Open())
+            {
+                foreach (var underline in underlines)
+                {
+                    var x = underline.X;
+                    var y = underline.Y;
+                    var end = x + underline.Width;
+
+                    ctx.BeginFigure(new Point(x, y + amplitude), false);
+
+                    var up = true;
+
+                    for (var px = x; px < end; px += halfPeriod)
+                    {
+                        var next = Math.Min(px + halfPeriod, end);
+                        var targetY = up ? y - amplitude : y + amplitude;
+                        ctx.QuadraticBezierTo(new Point((px + next) / 2, y + (up ? amplitude : -amplitude) * 0.25), new Point(next, targetY));
+                        up = !up;
+                    }
+
+                    ctx.EndFigure(false);
+                }
+            }
+
+            return geometry;
         }
 
         public sealed override void Render(DrawingContext context)
@@ -635,6 +952,7 @@ namespace Avalonia.Controls.Presenters
             _textRunCache?.Invalidate();
             _textLayout?.Dispose();
             _textLayout = null;
+            DropSpellCheckGeometries();
 
             InvalidateVisual();
             InvalidateMeasure();
@@ -644,6 +962,7 @@ namespace Avalonia.Controls.Presenters
         {
             _textLayout?.Dispose();
             _textLayout = null;
+            DropSpellCheckGeometries();
 
             InvalidateVisual();
             InvalidateMeasure();
@@ -655,6 +974,7 @@ namespace Avalonia.Controls.Presenters
 
             _textLayout?.Dispose();
             _textLayout = null;
+            DropSpellCheckGeometries();
 
             InvalidateArrange();
 
@@ -685,6 +1005,7 @@ namespace Avalonia.Controls.Presenters
 
                 _textLayout?.Dispose();
                 _textLayout = null;
+                DropSpellCheckGeometries();
             }
 
             return finalSize;

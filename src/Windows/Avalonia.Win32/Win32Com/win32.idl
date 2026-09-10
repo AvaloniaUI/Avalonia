@@ -392,3 +392,123 @@ interface IFrameworkInputPane : IUnknown
     int Unadvise(uint dwCookie);
     int Location(RECT* prcInputPaneScreenLocation);
 }
+
+// Windows 8+ spell checking API (spellcheck.h). Method names follow the C++ vtable order;
+// HRESULT-returning methods throw on failure, UINT32-returning ones hand back the raw HRESULT.
+
+[
+    object,
+    uuid(00000101-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IEnumString : IUnknown
+{
+    UINT32 Next(
+        [in] ULONG celt,
+        [out] WCHAR** rgelt,
+        ULONG* pceltFetched);
+
+    UINT32 Skip(
+        [in] ULONG celt);
+
+    HRESULT Reset();
+
+    HRESULT Clone(
+        [out] IEnumString** ppenum);
+}
+
+[
+    object,
+    uuid(B7C82D61-FBE8-4B47-9B27-6C0D2E0DE0A3),
+    pointer_default(unique)
+]
+interface ISpellingError : IUnknown
+{
+    HRESULT GetStartIndex([out] ULONG* value);
+
+    HRESULT GetLength([out] ULONG* value);
+
+    HRESULT GetCorrectiveAction([out] UINT32* value);
+
+    HRESULT GetReplacement([out, string] WCHAR** value);
+}
+
+[
+    object,
+    uuid(803E3BD4-2828-4410-8290-418D1D73C762),
+    pointer_default(unique)
+]
+interface IEnumSpellingError : IUnknown
+{
+    // Returns S_FALSE (and a null error) at the end of the enumeration.
+    UINT32 Next([out] void** value);
+}
+
+[
+    object,
+    uuid(B6FD0B71-E2BC-4653-8D05-F197E412770B),
+    pointer_default(unique)
+]
+interface ISpellChecker : IUnknown
+{
+    HRESULT GetLanguageTag([out, string] WCHAR** value);
+
+    HRESULT Check(
+        [in, string] WCHAR* text,
+        [out] IEnumSpellingError** value);
+
+    // Returns S_FALSE (with an enumerator holding the input word) when the word is spelled correctly.
+    UINT32 Suggest(
+        [in, string] WCHAR* word,
+        [out] void** value);
+
+    HRESULT Add([in, string] WCHAR* word);
+
+    HRESULT Ignore([in, string] WCHAR* word);
+
+    HRESULT AutoCorrect(
+        [in, string] WCHAR* from,
+        [in, string] WCHAR* to);
+
+    HRESULT GetOptionValue(
+        [in, string] WCHAR* optionId,
+        [out] BYTE* value);
+
+    HRESULT GetOptionIds([out] IEnumString** value);
+
+    HRESULT GetId([out, string] WCHAR** value);
+
+    HRESULT GetLocalizedName([out, string] WCHAR** value);
+
+    HRESULT AddSpellCheckerChanged(
+        [in] void* handler,
+        [out] DWORD* eventCookie);
+
+    HRESULT RemoveSpellCheckerChanged([in] DWORD eventCookie);
+
+    HRESULT GetOptionDescription(
+        [in, string] WCHAR* optionId,
+        [out] void** value);
+
+    HRESULT ComprehensiveCheck(
+        [in, string] WCHAR* text,
+        [out] IEnumSpellingError** value);
+}
+
+[
+    object,
+    uuid(8E018A9D-2415-4677-BF08-794EA61F94BB),
+    pointer_default(unique)
+]
+interface ISpellCheckerFactory : IUnknown
+{
+    HRESULT GetSupportedLanguages([out] IEnumString** value);
+
+    HRESULT IsSupported(
+        [in, string] WCHAR* languageTag,
+        [out] BOOL* value);
+
+    HRESULT CreateSpellChecker(
+        [in, string] WCHAR* languageTag,
+        [out] ISpellChecker** value);
+}

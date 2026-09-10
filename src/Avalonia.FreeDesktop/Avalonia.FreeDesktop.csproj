@@ -4,6 +4,7 @@
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <Import Project="../../build/TrimmingEnable.props" />
@@ -25,6 +26,7 @@
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Wayland, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Wayland.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 
   <ItemGroup>

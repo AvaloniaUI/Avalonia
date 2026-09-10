@@ -1109,6 +1109,11 @@ namespace Avalonia.X11
                 return _ime;
             }
 
+            if (featureType == typeof(ISpellCheckProvider))
+            {
+                return EnchantSpellCheckProvider.Instance;
+            }
+
             if (featureType == typeof(INativeControlHostImpl))
             {
                 return _nativeControlHost;
@@ -1195,6 +1200,7 @@ namespace Avalonia.X11
                 _transparencyHelper.Dispose();
                 _transparencyHelper = null;
             }
+
             
             if (_imeControl != null)
             {

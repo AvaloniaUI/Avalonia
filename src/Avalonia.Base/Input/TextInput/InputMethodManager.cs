@@ -16,6 +16,16 @@ namespace Avalonia.Input.TextInput
         {
             _transformTracker.MatrixChanged += UpdateCursorRect;
             InputMethod.IsInputMethodEnabledProperty.Changed.Subscribe(OnIsInputMethodEnabledChanged);
+            TextInputOptions.ContentTypeProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.ReturnKeyTypeProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.MultilineProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.AutoCapitalizationProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.IsSensitiveProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.LowercaseProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.UppercaseProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.ShowSuggestionsProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.IsSpellCheckEnabledProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.LocaleHintsProperty.Changed.Subscribe(OnTextInputOptionsChanged);
         }
 
         private TextInputMethodClient? Client
@@ -34,6 +44,11 @@ namespace Avalonia.Input.TextInput
                     _client.TextViewVisualChanged -= OnTextViewVisualChanged;
                     _client.ResetRequested -= OnResetRequested;
 
+                    if (_client is ITextInputMethodClientOptions oldOptions)
+                    {
+                        oldOptions.TextInputOptionsChanged -= OnClientTextInputOptionsChanged;
+                    }
+
                     _client = null;
 
                     _im?.Reset();
@@ -46,6 +61,11 @@ namespace Avalonia.Input.TextInput
                     _client.CursorRectangleChanged += OnCursorRectangleChanged;
                     _client.TextViewVisualChanged += OnTextViewVisualChanged;
                     _client.ResetRequested += OnResetRequested;
+
+                    if (_client is ITextInputMethodClientOptions newOptions)
+                    {
+                        newOptions.TextInputOptionsChanged += OnClientTextInputOptionsChanged;
+                    }
                     
                     PopulateImWithInitialValues();
                 }
@@ -57,16 +77,36 @@ namespace Avalonia.Input.TextInput
             }
         }
 
-        void PopulateImWithInitialValues()
+        void ApplyTextInputOptions()
         {
             if (_focusedElement is StyledElement target)
             {
-                _im?.SetOptions(TextInputOptions.FromStyledElement(target));
+                _im?.SetOptions(CreateTextInputOptions(target, _client));
             }
             else
             {
                 _im?.SetOptions(TextInputOptions.Default);
             }
+        }
+
+        internal static TextInputOptions CreateTextInputOptions(
+            StyledElement target,
+            TextInputMethodClient? client)
+        {
+            var options = TextInputOptions.FromStyledElement(target);
+
+            if (client is ITextInputMethodClientOptions { IsPasswordInput: true })
+            {
+                // Masked input must also disable native suggestions and autocorrection.
+                options.IsSensitive = true;
+            }
+
+            return options;
+        }
+
+        void PopulateImWithInitialValues()
+        {
+            ApplyTextInputOptions();
 
             _transformTracker.SetVisual(_client?.TextViewVisual);
                     
@@ -89,6 +129,22 @@ namespace Avalonia.Input.TextInput
             if (ReferenceEquals(obj.Sender, _focusedElement))
             {
                 TryFindAndApplyClient();
+            }
+        }
+
+        private void OnTextInputOptionsChanged<T>(AvaloniaPropertyChangedEventArgs<T> obj)
+        {
+            if (ReferenceEquals(obj.Sender, _focusedElement))
+            {
+                ApplyTextInputOptions();
+            }
+        }
+
+        private void OnClientTextInputOptionsChanged(object? sender, EventArgs e)
+        {
+            if (ReferenceEquals(sender, _client))
+            {
+                ApplyTextInputOptions();
             }
         }
 

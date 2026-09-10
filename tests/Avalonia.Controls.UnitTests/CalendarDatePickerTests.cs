@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -192,6 +193,50 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal("2026-04-22", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2026, 4, 22)));
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Is_Disabled_For_Inner_TextBox()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var datePicker = CreateControl();
+                var textBox = GetTextBox(datePicker);
+
+                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Can_Be_Explicitly_Enabled_For_Inner_TextBox()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var datePicker = CreateControl();
+                var textBox = GetTextBox(datePicker);
+
+                TextInputOptions.SetIsSpellCheckEnabled(datePicker, true);
+
+                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Option_Is_Not_Enabled_By_Parent_Scope()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var root = new Panel();
+                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+
+                var datePicker = CreateControl();
+                root.Children.Add(datePicker);
+
+                var textBox = GetTextBox(datePicker);
+
+                // An inherited opt-in must not override the control's default.
+                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textBox));
             }
         }
 

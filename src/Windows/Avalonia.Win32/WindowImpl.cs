@@ -359,6 +359,11 @@ namespace Avalonia.Win32
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
 
+            if (featureType == typeof(ISpellCheckProvider))
+            {
+                return Win32SpellCheckProvider.GetForCurrentThread();
+            }
+
             if (featureType == typeof(IInputPane))
             {
                 return _inputPane;
@@ -1725,4 +1730,3 @@ namespace Avalonia.Win32
         }
     }
 }
-

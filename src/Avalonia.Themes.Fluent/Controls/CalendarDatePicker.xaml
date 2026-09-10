@@ -95,6 +95,7 @@
                        Padding="{TemplateBinding Padding}"
                        PlaceholderText="{TemplateBinding PlaceholderText}"
                        PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                       TextInputOptions.IsSpellCheckEnabled="{TemplateBinding (TextInputOptions.IsSpellCheckEnabled)}"
                        UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Stretch"

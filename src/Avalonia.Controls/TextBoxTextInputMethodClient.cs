@@ -5,7 +5,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
-    internal class TextBoxTextInputMethodClient : TextInputMethodClient
+    internal class TextBoxTextInputMethodClient : TextInputMethodClient, ITextInputMethodClientOptions
     {
         private TextBox? _parent;
         private TextPresenter? _presenter;
@@ -86,6 +86,16 @@ namespace Avalonia.Controls
         public override bool SupportsPreedit => true;
 
         public override bool SupportsSurroundingText => true;
+
+        bool ITextInputMethodClientOptions.IsPasswordInput => _parent is not null && _parent.PasswordChar != default;
+
+        event EventHandler? ITextInputMethodClientOptions.TextInputOptionsChanged
+        {
+            add => _textInputOptionsChanged += value;
+            remove => _textInputOptionsChanged -= value;
+        }
+
+        private event EventHandler? _textInputOptionsChanged;
 
         public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
@@ -180,6 +190,11 @@ namespace Avalonia.Controls
             if (e.Property == TextBox.TextProperty)
             {
                 RaiseSurroundingTextChanged();
+            }
+
+            if (e.Property == TextBox.PasswordCharProperty)
+            {
+                _textInputOptionsChanged?.Invoke(this, EventArgs.Empty);
             }
 
             if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)

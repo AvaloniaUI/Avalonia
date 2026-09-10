@@ -12,10 +12,25 @@ partial class AvaloniaView
         public UITextAutocapitalizationType AutocapitalizationType { get; private set; }
 
         [Export("autocorrectionType")]
-        public UITextAutocorrectionType AutocorrectionType =>
-            _view._options?.ShowSuggestions == false ?
-                UITextAutocorrectionType.No :
-                UITextAutocorrectionType.Yes;
+        public UITextAutocorrectionType AutocorrectionType
+        {
+            get
+            {
+                var options = _view._options ?? TextInputOptions.Default;
+
+                if (!options.IsSpellCheckAllowed())
+                {
+                    return UITextAutocorrectionType.No;
+                }
+
+                return options.ShowSuggestions switch
+                {
+                    false => UITextAutocorrectionType.No,
+                    true => UITextAutocorrectionType.Yes,
+                    _ => UITextAutocorrectionType.Default
+                };
+            }
+        }
 
         [Export("keyboardType")]
         public UIKeyboardType KeyboardType =>
@@ -66,10 +81,22 @@ partial class AvaloniaView
             || (_view._options?.IsSensitive ?? false);
 
         [Export("spellCheckingType")]
-        public UITextSpellCheckingType SpellCheckingType => 
-            _view._options?.ShowSuggestions == false ?
-                UITextSpellCheckingType.No :
-                UITextSpellCheckingType.Yes;
+        public UITextSpellCheckingType SpellCheckingType
+        {
+            get
+            {
+                var options = _view._options ?? TextInputOptions.Default;
+
+                if (!options.IsSpellCheckAllowed())
+                {
+                    return UITextSpellCheckingType.No;
+                }
+
+                return options.IsSpellCheckEnabled == true
+                    ? UITextSpellCheckingType.Yes
+                    : UITextSpellCheckingType.Default;
+            }
+        }
 
         [Export("textContentType")] public NSString TextContentType { get; set; } = new NSString("text/plain");
 

@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TextBoxSpellCheckPage"
+             TextInputOptions.IsSpellCheckEnabled="True">
+  <ScrollViewer>
+    <StackPanel Orientation="Vertical" Spacing="18" Margin="24,16,24,24">
+      <WrapPanel Margin="-8,0">
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Enabled (inherited from the page)" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextWrapping="Wrap"
+                   Text="Ths sample has mispelled wrds." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Disabled" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextWrapping="Wrap"
+                   Text="Ths sample has mispelled wrds."
+                   TextInputOptions.IsSpellCheckEnabled="False" />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Search" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextWrapping="Wrap"
+                   TextInputOptions.ContentType="Search"
+                   Text="qwick searh reslts" />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Read only (underlines, no suggestions)" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextWrapping="Wrap"
+                   IsReadOnly="True"
+                   Text="Ths sample has mispelled wrds." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="German (TextInputOptions.LocaleHints)" FontWeight="SemiBold" />
+          <TextBox x:Name="GermanTextBox"
+                   Width="320"
+                   TextWrapping="Wrap"
+                   Text="Dieser Satz enthält ein Fehlr und eine falsche Wort." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Right-to-left / mixed direction" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextWrapping="Wrap"
+                   FlowDirection="RightToLeft"
+                   Text="שלום עולם — Ths is mixed-direction text." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Custom underline brush" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextWrapping="Wrap"
+                   SpellCheckErrorBrush="DarkOrange"
+                   Text="Ths sample has mispelled wrds." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Sensitive (never checked)" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   TextInputOptions.IsSensitive="True"
+                   Text="Ths sample has mispelled wrds." />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
+          <TextBlock Text="Password (never checked)" FontWeight="SemiBold" />
+          <TextBox Width="320"
+                   PasswordChar="*"
+                   Classes="revealPasswordButton"
+                   Text="mispelled" />
+        </StackPanel>
+      </WrapPanel>
+
+      <StackPanel Orientation="Vertical" Spacing="8" Margin="0,4,0,0">
+        <TextBlock Text="Multiline" FontWeight="SemiBold" />
+        <TextBox AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 Width="480"
+                 Height="140"
+                 HorizontalAlignment="Left"
+                 Text="Thiss paragraph contains severl spelling erors.&#xD;&#xD;Edit this text to verify that underlines update while typing." />
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical" Spacing="8" Margin="0,4,0,0">
+        <TextBlock Text="Custom provider" FontWeight="SemiBold" />
+        <TextBox x:Name="CustomProviderTextBox"
+                 TextWrapping="Wrap"
+                 Width="480"
+                 HorizontalAlignment="Left"
+                 Text="The sample provider treats avlnia as a custom misspelling." />
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical" Spacing="8" Margin="0,4,0,0">
+        <TextBlock Text="Long scroll" FontWeight="SemiBold" />
+        <TextBox x:Name="LongSpellCheckTextBox"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 Width="560"
+                 Height="180"
+                 HorizontalAlignment="Left"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto" />
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

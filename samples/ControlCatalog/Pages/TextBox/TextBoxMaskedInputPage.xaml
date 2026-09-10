@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TextBoxMaskedInputPage">
+  <ScrollViewer>
+    <StackPanel Orientation="Vertical" Spacing="12" Margin="24,16,24,24">
+      <WrapPanel Margin="-8,0">
+        <MaskedTextBox Width="220"
+                       Margin="8"
+                       ResetOnSpace="False"
+                       Mask="(LLL) 999-0000"/>
+      </WrapPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

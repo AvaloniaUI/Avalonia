@@ -102,6 +102,7 @@
                    BorderThickness="{TemplateBinding BorderThickness}"
                    CornerRadius="{TemplateBinding CornerRadius}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                   TextInputOptions.IsSpellCheckEnabled="{TemplateBinding (TextInputOptions.IsSpellCheckEnabled)}"
                    UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
                    PlaceholderText="{TemplateBinding PlaceholderText}"
                    PlaceholderForeground="{TemplateBinding PlaceholderForeground}" />

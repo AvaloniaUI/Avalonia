@@ -365,6 +365,12 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
         }
 
+        if (featureType == typeof(ISpellCheckProvider))
+        {
+            // Avoid native checker startup until spell checking is requested.
+            return OperatingSystem.IsMacOS() ? MacOSSpellCheckProvider.Instance : null;
+        }
+
         if (featureType == typeof(IScreenImpl))
         {
             return AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();

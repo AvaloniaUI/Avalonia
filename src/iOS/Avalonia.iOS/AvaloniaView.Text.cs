@@ -42,7 +42,17 @@ public partial class AvaloniaView
 
     void ITextInputMethodImpl.SetCursorRect(Rect rect) => _cursorRect = rect;
 
-    void ITextInputMethodImpl.SetOptions(TextInputOptions options) => _options = options;
+    void ITextInputMethodImpl.SetOptions(TextInputOptions options)
+    {
+        _options = options;
+
+        // Refresh keyboard traits when the focused control's input options change.
+        if (CurrentAvaloniaResponder is TextInputResponder responder &&
+            ReferenceEquals(responder.NextResponder, this))
+        {
+            responder.ReloadInputViews();
+        }
+    }
 
     void ITextInputMethodImpl.Reset()
     {
