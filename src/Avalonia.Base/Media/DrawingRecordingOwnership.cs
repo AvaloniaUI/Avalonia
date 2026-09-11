@@ -1,4 +1,4 @@
-namespace Avalonia.Media;
+﻿namespace Avalonia.Media;
 
 /// <summary>
 /// Describes whether an enclosing <see cref="Avalonia.Rendering.Composition.DrawingRecording"/>
@@ -8,7 +8,7 @@ namespace Avalonia.Media;
 /// used to build a <see cref="Avalonia.Rendering.Composition.DrawingRecording"/>; replay
 /// contexts ignore ownership.
 /// </summary>
-public enum DrawingRecordingOwnership
+internal enum DrawingRecordingOwnership
 {
     /// <summary>
     /// The enclosing recording does not dispose the child. The external owner must
