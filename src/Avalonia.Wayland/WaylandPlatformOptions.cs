@@ -90,4 +90,10 @@ public class WaylandPlatformOptions
     /// Only used when <see cref="UseGLibMainLoop"/> is enabled.
     /// </summary>
     public Action<Exception>? ExternalGLibMainLoopExceptionLogger { get; set; }
+
+    ///<summary>
+    ///The App or client ID that the Wayland App should use.
+    ///</summary>
+    public string? AppId { get; set; }
+
 }

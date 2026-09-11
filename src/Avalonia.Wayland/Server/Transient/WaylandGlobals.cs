@@ -34,6 +34,7 @@ class WaylandGlobals
     public WpViewporter? Viewporter { get; }
     public ZwpTextInputManagerV3? TextInputManagerV3 { get; }
     public ZxdgExporterV2? XdgExporter { get; }
+    public string? WlAppId { get; }
     /// <summary>
     /// Bound when the compositor advertises <c>zxdg_output_manager_v1</c>.
     /// When present, screens use <c>zxdg_output_v1.logical_*</c> as the
@@ -90,7 +91,7 @@ class WaylandGlobals
         if (descriptor.Interface.Version < maxVersion)
             throw new AvaloniaWaylandException(
                 $"{descriptor.Interface.Name} v{maxVersion} is not supported by current bindings");
-        
+
         if (!_knownGlobals.TryGetValue(descriptor.Interface.Name, out var global))
             return null;
         if (global.version < minVersion)
@@ -124,7 +125,7 @@ class WaylandGlobals
             eventSender.Pong(serial);
         }
     }
-    
+
     public WaylandGlobals(WaylandConnection connection, WaylandWorker worker, WaylandPlatformOptions platformOptions,
         WaylandOutputsSinkProxy? outputsSink)
     {
@@ -144,6 +145,7 @@ class WaylandGlobals
         FractionalScaleManager = Bind<WpFractionalScaleManagerV1>(1, 1, null);
         Viewporter = Bind<WpViewporter>(1, 1, null);
         TextInputManagerV3 = Bind<ZwpTextInputManagerV3>(1, 1, null);
+        WlAppId = platformOptions.AppId;
         XdgExporter = Bind<ZxdgExporterV2>(1, 1, null);
         // Require v3 of zxdg_output_manager_v1 so wl_output.done acts as
         // the unified terminator (xdg_output.done is deprecated since
@@ -158,7 +160,7 @@ class WaylandGlobals
         XdgDecorationManager = platformOptions.ForceDrawnDecorationsInternal
             ? null
             : Bind<ZxdgDecorationManagerV1>(1, 1, null);
-        
+
         // Seats may have been announced before the data-device manager / text-input
         // manager were bound — InputDispatcher backfills now and constructs the
         // text-input-v3 facade if the manager is available.
