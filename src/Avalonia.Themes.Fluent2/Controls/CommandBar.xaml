@@ -40,6 +40,7 @@
   <Thickness x:Key="CommandBarButtonTextLabelMargin">2,0,2,8</Thickness>
   <Thickness x:Key="CommandBarButtonOverflowTextLabelPadding">0,5,0,8</Thickness>
   <Thickness x:Key="CommandBarButtonInnerBorderOverflowMargin">4,0,4,0</Thickness>
+  <Thickness x:Key="CommandBarOverflowPresenterMargin">0,4,0,4</Thickness>
   <Thickness x:Key="CommandBarOverflowPresenterBorderPadding">0</Thickness>
   <Thickness x:Key="CommandBarSeparatorMargin">2,8,2,8</Thickness>
   <Thickness x:Key="CommandBarOverflowSeparatorMargin">0,4,0,4</Thickness>
@@ -57,7 +58,6 @@
   <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
   <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
   <x:Double x:Key="CommandBarMoreButtonColumnMinWidth">6</x:Double>
-  <Thickness x:Key="CommandBarOverflowPresenterMargin">0,4,0,4</Thickness>
   <Thickness x:Key="CommandBarOverflowButtonMargin">14,23,14,0</Thickness>
 
   <!-- WinUI reference: CommandBar_themeresources.xaml, AppBarButton_themeresources.xaml (winui3/release/1.6.4),
@@ -650,6 +650,7 @@
                       MinWidth="{DynamicResource CommandBarOverflowMinWidth}"
                       MaxWidth="{DynamicResource CommandBarOverflowMaxWidth}">
                 <ItemsControl x:Name="PART_OverflowPresenter"
+                              Margin="{DynamicResource CommandBarOverflowPresenterMargin}"
                               ItemContainerTheme="{DynamicResource CommandButtonOverflowStyle}"
                               ItemsSource="{Binding OverflowItems, RelativeSource={RelativeSource TemplatedParent}}">
                   <ItemsControl.Resources>
