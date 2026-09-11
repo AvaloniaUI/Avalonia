@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
     <AvsCurrentTargetFramework>net10.0</AvsCurrentTargetFramework>
-    <AvsNextTargetFramework>net11.0</AvsNextTargetFramework>
     <AvsCurrentWindowsTargetFramework>$(AvsCurrentTargetFramework)-windows</AvsCurrentWindowsTargetFramework>
     <AvsCurrentMacOSTargetFramework>$(AvsCurrentTargetFramework)-macos</AvsCurrentMacOSTargetFramework>
     <AvsCurrentAndroidTargetFramework>$(AvsCurrentTargetFramework)-android36.0</AvsCurrentAndroidTargetFramework>
@@ -9,8 +8,11 @@
     <AvsCurrentIOSTargetFramework>$(AvsCurrentTargetFramework)-ios26.0</AvsCurrentIOSTargetFramework>
     <AvsCurrentTvOSTargetFramework>$(AvsCurrentTargetFramework)-tvos26.0</AvsCurrentTvOSTargetFramework>
     <AvsCurrentBrowserTargetFramework>$(AvsCurrentTargetFramework)-browser</AvsCurrentBrowserTargetFramework>
-    <AvsNextBrowserTargetFramework>$(AvsNextTargetFramework)-browser</AvsNextBrowserTargetFramework>
     <AvsCurrentWinUITargetFramework>$(AvsCurrentTargetFramework)-windows10.0.19041.0</AvsCurrentWinUITargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(AvsSkipBuildingNextTargetFrameworks)' != 'True'">
+    <AvsNextTargetFramework>net11.0</AvsNextTargetFramework>
+    <AvsNextBrowserTargetFramework>$(AvsNextTargetFramework)-browser</AvsNextBrowserTargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(AvsSkipBuildingLegacyTargetFrameworks)' != 'True'">
     <AvsLegacyTargetFrameworks>net8.0</AvsLegacyTargetFrameworks>
