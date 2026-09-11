@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -37,6 +38,15 @@ public abstract class ThemeTestBase(Type typeEntryPoint) : IDisposable
         var tryLoadMethod = loaderType.GetMethod("TryLoad", BindingFlags.Public | BindingFlags.Static, [typeof(IServiceProvider), typeof(string)]);
         Assert.NotNull(tryLoadMethod);
         return tryLoadMethod;
+    }
+
+    protected Styles CreateAttachedTheme(IStyleHost? host = null)
+    {
+        host ??= Application.Current ?? throw new InvalidOperationException("Application.Current should not be null.");
+        var sp = XamlIlRuntimeHelpers.CreateRootServiceProviderV2();
+        var theme = CallCtor(sp);
+        host.Styles.Add(theme);
+        return theme;
     }
 
     protected Styles CallCtor(IServiceProvider? sp = null)
