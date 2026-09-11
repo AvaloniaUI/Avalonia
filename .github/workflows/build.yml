@@ -118,15 +118,36 @@ jobs:
           name: sbom-windows
           path: artifacts/sbom
 
+  # Only release/x.y.z branches (with an optional prerelease suffix) are releasable, not release/x.y ones.
+  # Expressions have no regex support, so a small job classifies the branch instead.
+  branch-info:
+    name: Branch Info
+    runs-on: ubuntu-24.04
+    outputs:
+      is-release: ${{ steps.classify.outputs.is-release }}
+    steps:
+      - name: Classify Branch
+        id: classify
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if [[ "$REF" =~ ^refs/heads/release/[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            is_release=true
+          else
+            is_release=false
+          fi
+          echo "Ref: $REF, is release: $is_release"
+          echo "is-release=$is_release" >> "$GITHUB_OUTPUT"
+
   # Note: pull requests are published by publish-nuget-pr.yml instead, which runs once this workflow completes.
 
   publish-nightly:
     name: Publish Nightly NuGet Packages
-    needs: [linux, windows, macos]
-    # Everything except pull requests and release/**.
+    needs: [linux, windows, macos, branch-info]
+    # Everything except pull requests and release/x.y.z branches (release/x.y ones are nightlies too).
     if: >-
       github.event_name != 'pull_request'
-      && !startsWith(github.ref, 'refs/heads/release/')
+      && needs.branch-info.outputs.is-release != 'true'
       && vars.NIGHTLY_FEED_UPLOAD_URL != ''
     uses: ./.github/workflows/publish-nuget-shared.yml
     with:
@@ -134,16 +155,25 @@ jobs:
     secrets:
       api-key: ${{ secrets.NIGHTLY_FEED_API_KEY }}
 
-  publish-release:
-    name: Publish Release NuGet Packages
-    needs: [linux, windows, macos]
-    # Pushes and manual runs on release/**.
+  # Pushes to release/x.y.z build automatically, but publishing waits for a manual approval of the "release" environment
+  # (configured with required reviewers in the repository settings). Only this run's packages can be published.
+  approve-release:
+    name: Approve Release NuGet Publishing
+    needs: [linux, windows, macos, branch-info]
     if: >-
       github.event_name != 'pull_request'
-      && startsWith(github.ref, 'refs/heads/release/')
-      && vars.RELEASE_MANAGER_BASE_URL != ''
+      && needs.branch-info.outputs.is-release == 'true'
+    runs-on: ubuntu-24.04
+    environment: release
+    steps:
+      - name: Approved
+        run: echo "Release publishing approved for run $GITHUB_RUN_ID"
+
+  publish-release:
+    name: Publish Release NuGet Packages
+    needs: approve-release
     uses: ./.github/workflows/publish-nuget-shared.yml
     with:
-      feed-url: ${{ vars.RELEASE_MANAGER_BASE_URL }}nuget/avalonia/upload/index.json
+      feed-url: ${{ vars.RELEASE_MANAGER_UPLOAD_URL }}
     secrets:
       api-key: ${{ secrets.RELEASE_MANAGER_API_KEY }}
