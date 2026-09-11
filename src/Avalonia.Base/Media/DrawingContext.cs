@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Platform;
@@ -118,7 +118,7 @@ namespace Avalonia.Media
         /// responsibility for disposing <paramref name="recording"/>. Honored only when
         /// this context is building a <see cref="DrawingRecording"/>; replay contexts
         /// ignore ownership.</param>
-        public void DrawRecording(DrawingRecording recording, DrawingRecordingOwnership ownership)
+        internal void DrawRecording(DrawingRecording recording, DrawingRecordingOwnership ownership)
         {
             _ = recording ?? throw new ArgumentNullException(nameof(recording));
             if (recording.IsDisposed)
@@ -140,7 +140,7 @@ namespace Avalonia.Media
         /// responsibility for disposing <paramref name="recording"/>. Honored only when
         /// this context is building a <see cref="DrawingRecording"/>; replay contexts
         /// ignore ownership.</param>
-        public void DrawRecording(DrawingRecording recording, Matrix transform, DrawingRecordingOwnership ownership)
+        internal void DrawRecording(DrawingRecording recording, Matrix transform, DrawingRecordingOwnership ownership)
         {
             _ = recording ?? throw new ArgumentNullException(nameof(recording));
             if (recording.IsDisposed)
