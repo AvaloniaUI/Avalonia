@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
   <PropertyGroup>
-    <TargetFramework>$(AvsCurrentBrowserTargetFramework)</TargetFramework>
+    <TargetFramework>$(AvsNextBrowserTargetFramework)</TargetFramework>
     <WasmEnableThreads>false</WasmEnableThreads>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseMonoRuntime>true</UseMonoRuntime>
     <DebuggerSupport>true</DebuggerSupport>
     <WasmDebugLevel>5</WasmDebugLevel>
   </PropertyGroup>

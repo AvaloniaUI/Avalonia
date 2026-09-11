@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentBrowserTargetFramework);$(AvsNextBrowserTargetFramework)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WebAppDir>$(MSBuildThisFileDirectory)webapp</WebAppDir>
@@ -12,8 +12,6 @@
   </ItemGroup>
 
   <Import Project="../../../build/BuildTargets.targets" />
-  <Import Project="../../../build/SkiaSharp.props" />
-  <Import Project="../../../build/HarfBuzzSharp.props" />
   <Import Project="../../../build/NullableEnable.props" />
   <Import Project="../../../build/TrimmingEnable.props" />
 
@@ -21,6 +19,17 @@
     <ProjectReference Include="../../../packages/Avalonia/Avalonia.csproj" />
     <ProjectReference Include="../../Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
     <ProjectReference Include="../../HarfBuzz/Avalonia.HarfBuzz/Avalonia.HarfBuzz.csproj" />
+  </ItemGroup>
+
+  <!-- .NET 11 requires Skia/HarfBuzz compiled with EMSDK 5.0.6 -->
+  <!-- These Skia/HarfBuzz versions are newer than what we ship with Avalonia.Skia and Avalonia.HarfBuzz -->
+  <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <PackageReference Include="SkiaSharp" VersionOverride="4.151.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" VersionOverride="4.151.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" VersionOverride="4.151.2" />
+    <PackageReference Include="HarfBuzzSharp" VersionOverride="14.2.1.200" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" VersionOverride="14.2.1.200" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.WebAssembly" VersionOverride="14.2.1.200" />
   </ItemGroup>
 
   <ItemGroup>

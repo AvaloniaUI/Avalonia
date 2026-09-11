@@ -39,14 +39,12 @@
     <File Path="build/CoreLibraries.props" />
     <File Path="build/DevAnalyzers.props" />
     <File Path="build/EmbedXaml.props" />
-    <File Path="build/HarfBuzzSharp.props" />
     <File Path="build/MicroCOM.props" />
     <File Path="build/NetAnalyzers.props" />
     <File Path="build/NullableEnable.props" />
     <File Path="build/ReferenceCoreLibraries.props" />
     <File Path="build/SampleApp.props" />
     <File Path="build/SharedVersion.props" />
-    <File Path="build/SkiaSharp.props" />
     <File Path="build/SourceGenerators.props" />
     <File Path="build/SourceLink.props" />
     <File Path="build/TargetFrameworks.props" />

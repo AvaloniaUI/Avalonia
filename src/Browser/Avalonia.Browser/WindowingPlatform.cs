@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading;
 using Avalonia.Browser.Interop;
@@ -32,9 +33,11 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         set => s_globalThis = value;
     }
 
-    static bool DetectThreadSupport()
+    private static bool DetectThreadSupport()
     {
-        // TODO Replace with public API https://github.com/dotnet/runtime/issues/77541.
+#if NET11_0_OR_GREATER
+        return RuntimeFeature.IsMultithreadingSupported;
+#else
         var prop = typeof(System.Threading.Thread).GetProperty("IsThreadStartSupported",
             BindingFlags.Static | BindingFlags.NonPublic);
         if (prop != null && prop.GetValue(null) is bool value)
@@ -51,7 +54,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         {
             return false;
         }
-
+#endif
     }
     
     private static KeyboardDevice? s_keyboard;
