@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.Build.NoTargets/3.7.134">
 
   <!--
     Generates inc/avalonia-native.h from avn.idl and builds the Xcode project producing libAvalonia.Native.OSX.dylib,
@@ -14,12 +14,7 @@
     <!-- There is nothing to compile here: the target framework is only needed so that PackageReference
          can be restored, and SkipCompilerExecution keeps csc from producing an assembly. -->
     <TargetFramework>netstandard2.0</TargetFramework>
-    <SkipCompilerExecution>true</SkipCompilerExecution>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDependencyFile>false</GenerateDependencyFile>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <SkipCopyBuildProduct>true</SkipCopyBuildProduct>
     <IsPackable>false</IsPackable>
 
     <UseMicroComGeneratorMSBuild>true</UseMicroComGeneratorMSBuild>

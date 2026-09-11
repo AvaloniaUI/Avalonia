@@ -32,7 +32,7 @@
   <ItemGroup>
     <!-- Generates avalonia-native.h and, on macOS, libAvalonia.Native.OSX.dylib.
          TargetFramework is undefined so that this builds once, not once per inner build. -->
-    <ProjectReference Include="..\..\native\Avalonia.Native\Avalonia.Native.macOS.csproj"
+    <ProjectReference Include="..\..\native\Avalonia.Native\Avalonia.Native.macOS.proj"
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
                       UndefineProperties="TargetFramework"
