@@ -10,6 +10,7 @@ namespace Avalonia.X11.Selections.Clipboard;
 /// </summary>
 internal sealed class ClipboardDataReader(
     AvaloniaX11Platform platform,
+    IntPtr selection,
     IntPtr[] textFormatAtoms,
     DataFormat[] dataFormats,
     IntPtr owner)
@@ -18,7 +19,7 @@ internal sealed class ClipboardDataReader(
     private IntPtr _owner = owner;
 
     private bool IsOwnerStillValid()
-        => _owner != IntPtr.Zero && XGetSelectionOwner(platform.Display, platform.Info.Atoms.CLIPBOARD) == _owner;
+        => _owner != IntPtr.Zero && XGetSelectionOwner(platform.Display, selection) == _owner;
 
     public override Task<object?> TryGetAsync(DataFormat format)
     {
@@ -32,7 +33,7 @@ internal sealed class ClipboardDataReader(
         => new ClipboardDataTransferItem(this, nonFileFormats);
 
     protected override SelectionReadSession CreateReadSession()
-        => ClipboardReadSessionFactory.CreateSession(platform);
+        => ClipboardReadSessionFactory.CreateSession(platform, selection);
 
     public override void Dispose()
         => _owner = IntPtr.Zero;
