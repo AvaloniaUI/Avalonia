@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Logging;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -45,7 +46,10 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="DrawingRecording"/> to paint with.
+        /// Gets or sets the <see cref="DrawingRecording"/> to paint with. An immutable
+        /// recording paints on any compositor; a compositor-bound one paints only on the
+        /// compositor it is bound to, and painting it elsewhere logs an error and draws
+        /// nothing.
         /// </summary>
         public DrawingRecording? Recording
         {
@@ -134,10 +138,17 @@ namespace Avalonia.Media
             if (recording == null || recording.IsDisposed)
                 return null;
 
-            // A compositor-bound source recording must match this compositor; if it doesn't,
-            // we cannot reuse its server state, and we render no content.
+            // A compositor-bound recording's server state belongs to its own compositor and
+            // cannot be reused here, so there is nothing to paint with. Say so: the brush
+            // would otherwise just be invisible on this compositor.
             if (recording.IsCompositorBound && recording.Compositor != c)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this,
+                    "A DrawingRecordingBrush painted nothing because its recording is bound to a different " +
+                    "compositor than the one painting it. Use an immutable DrawingRecording to paint with one " +
+                    "brush across compositors, or give each compositor its own brush and recording.");
                 return null;
+            }
 
             using var recorder = new RenderDataDrawingContext(c);
             recorder.DrawRecording(recording);
