@@ -7,6 +7,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using Avalonia.Diagnostics;
 using Avalonia.Dialogs;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
@@ -120,7 +122,7 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
                 return;
             }
 
-            var template = controlTheme.ResolveTemplate();
+            var template = controlTheme.ResolveTemplateResult();
             Assert.NotNull(template);
 
             Assert.All(requestedParts, part =>
@@ -146,18 +148,37 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
             .Where(r => r.ThemeVariant == ThemeVariant.Default)
             .Select(r => (ControlTheme)r.Value!);
 
-        // Enumerate all nested styles and retrieve full list of Setters
-        var allSetters = controlThemes
-            .SelectMany(t => t.EnumerateStyles())
-            .SelectMany(t => t.Setters);
-        var allDynamicResourceKeys = allSetters.OfType<Setter>()
-            .Select(s => s.Value)
-            .OfType<DynamicResourceExtension>()
-            .Select(r => r.ResourceKey);
-
-        Assert.All(allDynamicResourceKeys, c =>
+        Assert.All(controlThemes, controlTheme =>
         {
-            Assert.Contains(c, allResourcesPerVariant[ThemeVariant.Default]);
+            Assert.All(controlTheme.EnumerateStyles(), style =>
+            {
+                var allDynamicResourceKeys = style.Setters.OfType<Setter>()
+                    .Select(s => s.Value)
+                    .OfType<DynamicResourceExtension>()
+                    .Select(r => r.ResourceKey);
+
+                Assert.All(allDynamicResourceKeys, c =>
+                {
+                    Assert.Contains(c, allResourcesPerVariant[ThemeVariant.Default]);
+                });
+            });
+
+            Assert.All(controlTheme.EnumerateTemplateChildren(), templatePart =>
+            {
+                var allTemplateDynamicResourceKeys = templatePart.GetValueStoreDiagnostic()
+                    .AppliedFrames
+                    .SelectMany(f => f.Values)
+                    .Select(v => v.Property)
+                    .Distinct()
+                    .Select(prop => BindingOperations.GetBindingExpressionBase(templatePart, prop))
+                    .OfType<DynamicResourceExpression>()
+                    .Select(expr => expr.ResourceKey);
+
+                Assert.All(allTemplateDynamicResourceKeys, c =>
+                {
+                    Assert.Contains(c, allResourcesPerVariant[ThemeVariant.Default]);
+                });
+            });
         });
     }
 
@@ -171,21 +192,47 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
             .Where(r => r.ThemeVariant == ThemeVariant.Default)
             .Select(r => (ControlTheme)r.Value!);
 
-        // Enumerate all nested styles and retrieve full list of Setters
-        var allSetters = controlThemes
-            .SelectMany(t => t.EnumerateStyles())
-            .SelectMany(t => t.Setters);
-        var allHardcodedColors = allSetters.OfType<Setter>()
-            .Where(s => s.Value switch
+        Assert.All(controlThemes, controlTheme =>
+        {
+            Assert.All(controlTheme.EnumerateStyles(), style =>
             {
-                Color c => !IsTransparentOrEmpty(c),
-                ISolidColorBrush b => !IsTransparentOrEmpty(b.Color),
-                IBrush => true,
-                _ => false
-            })
-            .DistinctBy(s => s.Value);
+                var allHardcodedSetterColors = style.Setters.OfType<Setter>()
+                    .Where(s => s.Value switch
+                    {
+                        Color c => !IsTransparentOrEmpty(c),
+                        ISolidColorBrush b => !IsTransparentOrEmpty(b.Color),
+                        IBrush => true,
+                        _ => false
+                    })
+                    .DistinctBy(s => s.Value);
 
-        Assert.Empty(allHardcodedColors);
+                Assert.Empty(allHardcodedSetterColors);
+            });
+
+            Assert.All(controlTheme.EnumerateTemplateChildren(), templatePart =>
+            {
+                var allHardcodedTemplateColors = templatePart.GetValueStoreDiagnostic()
+                    .AppliedFrames
+                    // Skip local values, as these are set from the code-behind, not XAML templates.
+                    .Where(f => f.Type != IValueFrameDiagnostic.FrameType.Local)
+                    .SelectMany(f => f.Values)
+                    .Where(d => BindingOperations.GetBindingExpressionBase(templatePart, d.Property) is null)
+                    .Where(d => d.Value switch
+                    {
+                        Color c => !IsTransparentOrEmpty(c),
+                        ISolidColorBrush b => !IsTransparentOrEmpty(b.Color),
+                        IBrush => true,
+                        _ => false
+                    })
+                    .DistinctBy(s => s.Value);
+
+                if (allHardcodedTemplateColors.Count() > 0)
+                {
+                    
+                }
+                Assert.Empty(allHardcodedTemplateColors);
+            });
+        });
 
         static bool IsTransparentOrEmpty(Color color) => color == Colors.Transparent || color == default;
     }

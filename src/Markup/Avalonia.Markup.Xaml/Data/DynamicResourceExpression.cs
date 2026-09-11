@@ -32,6 +32,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             _themeVariant = themeVariant;
         }
 
+        internal object ResourceKey => _resourceKey;
+
         public override string Description => $"DynamicResource {_resourceKey}";
 
         protected override void StartCore()
