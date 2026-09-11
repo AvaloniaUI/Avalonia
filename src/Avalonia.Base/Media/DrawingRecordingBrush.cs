@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -20,7 +20,7 @@ namespace Avalonia.Media
     /// brush's lifetime on the compositors that reference the brush — the caller remains
     /// the owner and must dispose the recording when no longer needed.
     /// </remarks>
-    public sealed class DrawingRecordingBrush : TileBrush, ISceneBrush
+    public sealed class DrawingRecordingBrush : TileBrush, ISceneBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Recording"/> property.
@@ -69,6 +69,8 @@ namespace Avalonia.Media
             recorder.DrawRecording(recording);
             return recorder.GetImmediateSceneBrushContent(this, null, true);
         }
+
+        IImmutableBrush IMutableBrush.ToImmutable() => SceneBrushSnapshot.Take(this);
 
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
             static c => new ServerCompositionSimpleContentBrush(c.Server);

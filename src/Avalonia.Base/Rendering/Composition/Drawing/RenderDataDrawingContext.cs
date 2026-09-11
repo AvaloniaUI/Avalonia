@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Media;
@@ -151,7 +151,6 @@ internal class RenderDataDrawingContext : DrawingContext
         {
             case IImmutableBrush immutable:
                 return immutable;
-            case ISceneBrush:
             case IMutableBrush:
             {
                 var snapshot = brush.ToImmutable();
