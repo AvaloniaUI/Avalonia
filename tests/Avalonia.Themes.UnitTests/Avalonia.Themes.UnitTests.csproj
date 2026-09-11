@@ -15,5 +15,6 @@
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\NullableEnable.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
 </Project>

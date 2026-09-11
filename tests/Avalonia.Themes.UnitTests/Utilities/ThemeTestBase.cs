@@ -4,12 +4,15 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Themes.UnitTests.Utilities;
 
-public abstract class ThemeTestBase(Type typeEntryPoint)
+public abstract class ThemeTestBase(Type typeEntryPoint) : IDisposable
 {
+    private readonly HeadlessUnitTestApplication.Scope _headlessScope = HeadlessUnitTestApplication.Start();
+
     static ThemeTestBase()
     {
         StandardAssetLoader.RegisterResUriParsers();
@@ -48,4 +51,6 @@ public abstract class ThemeTestBase(Type typeEntryPoint)
         Assert.True(Uri.TryCreate(fullPath, UriKind.Absolute, out _), "Invalid TryLoad URL");
         return FindXamlLoader().Invoke(null, [sp, fullPath]);
     }
+
+    public void Dispose() => _headlessScope.Dispose();
 }
