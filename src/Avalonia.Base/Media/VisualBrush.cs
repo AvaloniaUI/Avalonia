@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering;
@@ -13,7 +13,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Paints an area with an <see cref="Visual"/>.
     /// </summary>
-    public sealed class VisualBrush : TileBrush, ISceneBrush
+    public sealed class VisualBrush : TileBrush, ISceneBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
@@ -60,6 +60,8 @@ namespace Avalonia.Media
             return recorder.GetImmediateSceneBrushContent(this, new(Visual.Bounds.Size), true);
         }
         
+        IImmutableBrush IMutableBrush.ToImmutable() => SceneBrushSnapshot.Take(this);
+
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
             static c => new ServerCompositionSimpleContentBrush(c.Server);
 

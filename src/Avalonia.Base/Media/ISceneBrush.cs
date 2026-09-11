@@ -28,4 +28,17 @@ namespace Avalonia.Media
         {
         }
     }
+
+    internal static class SceneBrushSnapshot
+    {
+        /// <summary>
+        /// Snapshots a scene brush as its current content, or a transparent brush when it
+        /// has none. The content wrapper captures the tile-brush properties, so nothing
+        /// reads the live <see cref="AvaloniaObject"/> after this returns.
+        /// </summary>
+        public static IImmutableBrush Take(ISceneBrush brush) =>
+            brush.CreateContent() is { } content
+                ? new EmbeddedSceneBrushContent(content)
+                : Brushes.Transparent;
+    }
 }
