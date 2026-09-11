@@ -460,6 +460,7 @@
       <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="#128B44" />
       <SolidColorBrush x:Key="NotificationCardWarningBackgroundBrush" Color="#FFC316" />
       <SolidColorBrush x:Key="NotificationCardErrorBackgroundBrush" Color="#F03916" />
+      <BoxShadows x:Key="NotificationCardBoxShadow">0 6 8 0 #4F000000</BoxShadows>
 
       <!-- Resources for RadioButton.xaml -->
       <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>

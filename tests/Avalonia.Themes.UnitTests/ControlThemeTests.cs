@@ -196,44 +196,35 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
         {
             Assert.All(controlTheme.EnumerateStyles(), style =>
             {
-                var allHardcodedSetterColors = style.Setters.OfType<Setter>()
-                    .Where(s => s.Value switch
-                    {
-                        Color c => !IsTransparentOrEmpty(c),
-                        ISolidColorBrush b => !IsTransparentOrEmpty(b.Color),
-                        IBrush => true,
-                        _ => false
-                    })
-                    .DistinctBy(s => s.Value);
-
-                Assert.Empty(allHardcodedSetterColors);
+                AssertValues(style.Setters.OfType<Setter>().ToArray(), setter => setter.Value);
             });
 
             Assert.All(controlTheme.EnumerateTemplateChildren(), templatePart =>
             {
-                var allHardcodedTemplateColors = templatePart.GetValueStoreDiagnostic()
+                var hardcodedValueEntries = templatePart.GetValueStoreDiagnostic()
                     .AppliedFrames
                     // Skip local values, as these are set from the code-behind, not XAML templates.
                     .Where(f => f.Type != IValueFrameDiagnostic.FrameType.Local)
                     .SelectMany(f => f.Values)
                     .Where(d => BindingOperations.GetBindingExpressionBase(templatePart, d.Property) is null)
-                    .Where(d => d.Value switch
-                    {
-                        Color c => !IsTransparentOrEmpty(c),
-                        ISolidColorBrush b => !IsTransparentOrEmpty(b.Color),
-                        IBrush => true,
-                        _ => false
-                    })
-                    .DistinctBy(s => s.Value);
+                    .ToArray();
 
-                if (allHardcodedTemplateColors.Count() > 0)
-                {
-                    
-                }
-                Assert.Empty(allHardcodedTemplateColors);
+                AssertValues(hardcodedValueEntries, expr => expr.Value);
             });
         });
 
+        void AssertValues<T>(IReadOnlyCollection<T> hardcodeValueEntries, Func<T, object?> getValue)
+        {
+            Assert.DoesNotContain(hardcodeValueEntries, d => getValue(d) switch
+            {
+                Color c => !IsTransparentOrEmpty(c),
+                ISolidColorBrush b => !IsTransparentOrEmpty(b.Color),
+                IBrush => true,
+                BoxShadows => true,
+                _ => false
+            });
+        }
+        
         static bool IsTransparentOrEmpty(Color color) => color == Colors.Transparent || color == default;
     }
 }

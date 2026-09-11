@@ -4,6 +4,7 @@
 
   <x:Double x:Key="CaptionButtonWidth">45</x:Double>
   <x:Double x:Key="CaptionButtonHeight">30</x:Double>
+  <BoxShadows x:Key="WindowDrawnDecorationsWindowBorderBoxShadow">0 2 10 2 #80000000</BoxShadows>
 
   <ControlTheme x:Key="FluentDrawnCaptionButton" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource CaptionButtonBackground}" />
@@ -170,7 +171,7 @@
       <Setter Property="Margin" Value="{TemplateBinding ShadowThickness}"/>
     </Style>
     <Style Selector="^:has-shadow /template/ Border#PART_WindowBorder">
-      <Setter Property="BoxShadow" Value="0 2 10 2 #80000000"/>
+      <Setter Property="BoxShadow" Value="{DynamicResource WindowDrawnDecorationsWindowBorderBoxShadow}"/>
     </Style>
     <Style Selector="^:has-shadow /template/ Panel#PART_OverlayWrapper">
       <Setter Property="Margin" Value="{TemplateBinding ShadowThickness}"/>
