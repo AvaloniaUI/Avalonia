@@ -46,7 +46,7 @@ namespace Avalonia.OpenGL.Egl
                 throw new ArgumentException();
 
             _config = EglDisplayUtils.InitializeAndGetConfig(_egl, display, options.GlVersions, options.ProbeConfig,
-                options.AllowPbufferOnlyConfigs);
+                options.AllowPbufferOnlyConfigs, options.PreferFloat16Config);
         }
         
         public EglInterface EglInterface => _egl;

@@ -56,10 +56,12 @@ class VulkanSkiaRenderTarget : ISkiaGpuRenderTarget
                     Size = sessionImageInfo.MemorySize
                 }
             };
+            var colorSpace = _target.GetPresentationColorSpace();
             using var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, imageInfo);
             var surface = SKSurface.Create(_gpu.GrContext, renderTarget,
                 session.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
-                session.IsRgba ? SKColorType.Rgba8888 : SKColorType.Bgra8888, SKColorSpace.CreateSrgb());
+                colorSpace.ToSKColorType(session.IsRgba ? SKColorType.Rgba8888 : SKColorType.Bgra8888),
+                colorSpace.ToSKColorSpace() ?? SKColorSpace.CreateSrgb());
             
             if (surface == null)
                 throw new InvalidOperationException(

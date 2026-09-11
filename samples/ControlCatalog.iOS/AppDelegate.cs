@@ -19,6 +19,12 @@ namespace ControlCatalog
                 .AfterSetup(_ =>
                 {
                     Pages.EmbedSample.Implementation = new EmbedSampleIOS();
+
+                    // Read once per top level when it is created, so it has to be bound before the
+                    // view is set up. There is no command line here, so the sample asks for the
+                    // widest gamut outright to exercise the path. See the "Wide Gamut" page.
+                    AvaloniaLocator.CurrentMutable.Bind<PresentationOptions>().ToConstant(
+                        new PresentationOptions { PreferredColorSpace = PresentationColorSpace.WideGamut });
                 });
         }
     }

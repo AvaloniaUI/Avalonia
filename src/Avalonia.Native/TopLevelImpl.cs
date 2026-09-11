@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
@@ -59,7 +60,7 @@ internal class MacOSTopLevelHandle : IPlatformHandle, IMacOSTopLevelPlatformHand
     }
 }
 
-internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
+internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface, IColorManagedPresentation
 {
     protected IInputRoot? _inputRoot;
     private NativeControlHostImpl? _nativeControlHost;
@@ -81,6 +82,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
     private object _syncRoot = new object();
     private IPlatformRenderSurface[]? _surfaces;
+    private MetalPlatformSurface? _metalSurface;
 
     public TopLevelImpl(IAvaloniaNativeFactory factory)
     {
@@ -99,7 +101,10 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _savedScaling = Native?.Scaling ?? 1;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
-        _surfaces = [new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this];
+        var presentationOptions = AvaloniaLocator.Current.GetService<PresentationOptions>() ?? new PresentationOptions();
+        _metalSurface = new MetalPlatformSurface(Native, presentationOptions.PreferredColorSpace);
+        _metalSurface.CurrentColorSpaceChanged += (_, e) => CurrentColorSpaceChanged?.Invoke(this, e);
+        _surfaces = [new GlPlatformSurface(Native), _metalSurface, this];
         InputMethod = new AvaloniaNativeTextInputMethod(Native);
     }
 
@@ -135,6 +140,13 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
     public double RenderScaling => _savedScaling;
     public IPlatformRenderSurface[] Surfaces => _surfaces ?? [];
+
+    // Only Metal can tag its layer, so this stays unspecified on the OpenGL and software backends.
+    public PresentationColorSpace CurrentColorSpace =>
+        _metalSurface?.CurrentColorSpace ?? PresentationColorSpace.Unspecified;
+
+    public event EventHandler? CurrentColorSpaceChanged;
+
     public Action<RawInputEventArgs>? Input { get; set; }
     public Action<Rect>? Paint { get; set; }
     public Action<Size, WindowResizeReason>? Resized { get; set; }
@@ -358,6 +370,11 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         if (featureType == typeof(IPlatformBehaviorInhibition))
         {
             return _platformBehaviorInhibition;
+        }
+
+        if (featureType == typeof(IColorManagedPresentation))
+        {
+            return this;
         }
 
         if (featureType == typeof(IClipboard))

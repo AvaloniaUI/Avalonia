@@ -18,13 +18,25 @@ namespace Avalonia.Skia
         private SKSurface? _surface;
 
         private static readonly bool[] TrueFalse = new[] { true, false };
-        public FboSkiaSurface(GlSkiaGpu gpu, GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
+
+        // colorType/colorSpace must match the surface this one is blitted into: Blit copies raw
+        // pixels through glBlitFramebuffer, which converts nothing, so an 8 bit intermediate in
+        // front of a half float scRGB target hands the compositor sRGB encoded values to interpret
+        // as linear light and the whole window comes out too bright. Null colorSpace keeps the
+        // surface untagged, the way it was before colour management.
+        public FboSkiaSurface(GlSkiaGpu gpu, GRContext grContext, IGlContext glContext, PixelSize pixelSize,
+            GRSurfaceOrigin surfaceOrigin, SKColorType colorType = SKColorType.Rgba8888,
+            SKColorSpace? colorSpace = null)
         {
             _gpu = gpu;
             _grContext = grContext;
             _glContext = glContext;
             _pixelSize = pixelSize;
-            var InternalFormat = glContext.Version.Type == GlProfileType.OpenGLES ? GL_RGBA : GL_RGBA8;
+            var isFloat16 = colorType == SKColorType.RgbaF16;
+            var InternalFormat = isFloat16
+                ? GL_RGBA16F
+                : glContext.Version.Type == GlProfileType.OpenGLES ? GL_RGBA : GL_RGBA8;
+            var pixelDataType = isFloat16 ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
             var gl = glContext.GlInterface;
             
             // Save old bindings
@@ -42,7 +54,7 @@ namespace Avalonia.Skia
             gl.BindTexture(GL_TEXTURE_2D, _texture);
             gl.TexImage2D(GL_TEXTURE_2D, 0,
                 InternalFormat, pixelSize.Width, pixelSize.Height,
-                0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+                0, GL_RGBA, pixelDataType, IntPtr.Zero);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
@@ -90,9 +102,9 @@ namespace Avalonia.Skia
             }
 
             using var target = new GRBackendRenderTarget(pixelSize.Width, pixelSize.Height, 0, 8,
-                new GRGlFramebufferInfo((uint)_fbo, SKColorType.Rgba8888.ToGlSizedFormat()));
+                new GRGlFramebufferInfo((uint)_fbo, colorType.ToGlSizedFormat()));
             using var properties = new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal);
-            _surface = SKSurface.Create(_grContext, target, surfaceOrigin, SKColorType.Rgba8888, properties);
+            _surface = SKSurface.Create(_grContext, target, surfaceOrigin, colorType, colorSpace, properties);
             CanBlit = gl.IsBlitFramebufferAvailable;
         }
         

@@ -461,6 +461,13 @@ enum AvnPixelFormat
     kAvnBgra8888
 }
 
+enum AvnColorSpace
+{
+    kAvnColorSpaceUnspecified,
+    kAvnColorSpaceSrgb,
+    kAvnColorSpaceDisplayP3
+}
+
 struct AvnFramebuffer
 {
     void* Data;
@@ -746,7 +753,7 @@ interface IAvnTopLevel : IUnknown
      HRESULT SetCursor(IAvnCursor* cursor);
      HRESULT CreateGlRenderTarget(IAvnGlContext* context, IAvnGlSurfaceRenderTarget** ret);
      HRESULT CreateSoftwareRenderTarget(IAvnSoftwareRenderTarget** ret);
-     HRESULT CreateMetalRenderTarget(IAvnMetalDevice* device, IAvnMetalRenderTarget** ret);
+     HRESULT CreateMetalRenderTarget(IAvnMetalDevice* device, AvnColorSpace colorSpace, IAvnMetalRenderTarget** ret);
      
      HRESULT ObtainNSViewHandle([intptr]void** retOut);
      HRESULT ObtainNSViewHandleRetained([intptr]void** retOut);
@@ -1107,6 +1114,7 @@ interface IAvnMetalDevice : IUnknown
 interface IAvnMetalRenderTarget : IUnknown
 {
     HRESULT BeginDrawing(IAvnMetalRenderingSession** ret);
+    AvnColorSpace GetColorSpace();
 }
 
 [uuid(a1f4fcde-9152-48bd-bf8a-b1b651134a69)]

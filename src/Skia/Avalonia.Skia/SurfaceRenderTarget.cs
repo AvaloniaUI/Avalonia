@@ -61,7 +61,8 @@ namespace Avalonia.Skia
 
             if (surface is null)
             {
-                if (CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height, createInfo.Format)
+                if (CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height, createInfo.Format,
+                        createInfo.Session as ISkiaGpuRenderSessionSurfaceFormat)
                     is { } skSurface)
                 {
                     surface = new SkiaSurfaceWrapper(skSurface);
@@ -84,10 +85,12 @@ namespace Avalonia.Skia
         /// <param name="width">Width.</param>
         /// <param name="height">Height.</param>
         /// <param name="format">Format.</param>
+        /// <param name="sessionFormat">Format of the surface this one is composited into, if known.</param>
         /// <returns></returns>
-        private static SKSurface? CreateSurface(GRContext? gpu, int width, int height, PixelFormat? format)
+        private static SKSurface? CreateSurface(GRContext? gpu, int width, int height, PixelFormat? format,
+            ISkiaGpuRenderSessionSurfaceFormat? sessionFormat)
         {
-            var imageInfo = MakeImageInfo(width, height, format);
+            var imageInfo = MakeImageInfo(width, height, format, sessionFormat);
             if (gpu != null)
                 return SKSurface.Create(gpu, false, imageInfo, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
             return SKSurface.Create(imageInfo, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
@@ -177,9 +180,21 @@ namespace Avalonia.Skia
         /// <param name="width">Width.</param>
         /// <param name="height">Height.</param>
         /// <param name="format">Format.</param>
+        /// <param name="sessionFormat">Format of the surface this one is composited into, if known.</param>
         /// <returns></returns>
-        private static SKImageInfo MakeImageInfo(int width, int height, PixelFormat? format)
+        private static SKImageInfo MakeImageInfo(int width, int height, PixelFormat? format,
+            ISkiaGpuRenderSessionSurfaceFormat? sessionFormat = null)
         {
+            // An intermediate that is composited into a color managed surface has to use that
+            // surface's format. A blit converts nothing, and drawing into an untagged 8 bit surface
+            // clamps everything outside of sRGB here, long before the tagged surface is reached.
+            // An explicitly requested format always wins, it is asking for exactly those pixels.
+            if (format is null && sessionFormat is not null)
+            {
+                return new SKImageInfo(Math.Max(width, 1), Math.Max(height, 1), sessionFormat.ColorType,
+                    SKAlphaType.Premul, sessionFormat.ColorSpace);
+            }
+
             var colorType = PixelFormatHelper.ResolveColorType(format);
 
             return new SKImageInfo(Math.Max(width, 1), Math.Max(height, 1), colorType, SKAlphaType.Premul);

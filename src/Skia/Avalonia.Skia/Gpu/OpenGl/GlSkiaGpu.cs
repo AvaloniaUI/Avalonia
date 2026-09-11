@@ -119,8 +119,12 @@ namespace Avalonia.Skia
                 return null;
             try
             {
-                var surface = new FboSkiaSurface(this, _grContext, _glContext, size, 
-                    session?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft);
+                // Matching the session's format matters: this surface is blitted into the session's
+                // one, and a blit converts nothing.
+                var format = session as ISkiaGpuRenderSessionSurfaceFormat;
+                var surface = new FboSkiaSurface(this, _grContext, _glContext, size,
+                    session?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft,
+                    format?.ColorType ?? SKColorType.Rgba8888, format?.ColorSpace);
                 _canCreateSurfaces = true;
                 return surface;
             }

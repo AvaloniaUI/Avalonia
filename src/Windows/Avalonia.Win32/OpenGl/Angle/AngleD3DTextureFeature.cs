@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
@@ -16,7 +17,7 @@ internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
             Display: AngleWin32EglDisplay { PlatformApi: AngleOptions.PlatformApi.DirectX11 }
         } && surface is IDirect3D11TexturePlatformSurface2;
 
-    private class RenderTargetWrapper : EglPlatformSurfaceRenderTargetBase
+    private class RenderTargetWrapper : EglPlatformSurfaceRenderTargetBase, IColorManagedRenderTarget
     {
         private readonly AngleWin32EglDisplay _angle;
         private readonly IDirect3D11TextureRenderTarget2 _target;
@@ -28,6 +29,12 @@ internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
             _angle = angle;
             _target = target;
         }
+
+        // The wrapped target owns the native surface, so it knows which color space was applied.
+        // Without forwarding it here the renderer would only see the wrapper and fall back to
+        // unmanaged presentation.
+        public PresentationColorSpace ColorSpace =>
+            (_target as IColorManagedRenderTarget)?.ColorSpace ?? PresentationColorSpace.Unspecified;
 
         public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
