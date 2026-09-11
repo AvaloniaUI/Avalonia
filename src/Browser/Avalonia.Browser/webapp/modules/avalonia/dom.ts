@@ -70,29 +70,11 @@ export class AvaloniaDOM {
         nativeHost.style.height = "100%";
         nativeHost.style.position = "absolute";
 
-        // IME
-        const inputElement = document.createElement("input");
+        // Required to show software keyboard
+        const inputElement = document.createElement("EditContext" in globalThis ? "canvas" : "input");
         inputElement.id = `inputElement${containerId}`;
         inputElement.classList.add("avalonia-input-element");
-        inputElement.autocapitalize = "none";
-        inputElement.type = "text";
-        inputElement.spellcheck = false;
-        inputElement.style.padding = "0";
-        inputElement.style.margin = "0";
-        inputElement.style.borderWidth = "0";
-        inputElement.style.position = "absolute";
-        inputElement.style.overflow = "hidden";
-        inputElement.style.borderStyle = "hidden";
-        inputElement.style.outline = "none";
-        inputElement.style.background = "transparent";
-        inputElement.style.color = "transparent";
         inputElement.style.display = "none";
-        inputElement.style.height = "20px";
-        inputElement.style.zIndex = "-1";
-        inputElement.onpaste = function () { return false; };
-        inputElement.oncopy = function () { return false; };
-        inputElement.oncut = function () { return false; };
-
         host.prepend(inputElement);
         host.prepend(nativeHost);
 
