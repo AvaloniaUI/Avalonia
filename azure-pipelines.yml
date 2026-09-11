@@ -31,6 +31,26 @@ jobs:
   pool:
     vmImage: 'ubuntu-24.04'
   steps:
+ 
+  - script: df -h .
+    displayName: 'Check disk space'
+  - script: sudo rm -rf \
+      /usr/local/lib/android \
+      /opt/ghc \
+      /usr/share/swift \
+      /usr/local/.ghcup \
+      /usr/lib/jvm
+      /usr/share/miniconda \
+      /usr/local/lib/node_modules \
+      /usr/local/share/powershell \
+      /usr/local/share/chromedriver \
+      /usr/local/share/gecko_driver \
+      /usr/local/share/edge_driver \
+      /opt/hostedtoolcache/CodeQL
+    displayName: 'Free disk space'
+  - script: df -h .
+    displayName: 'Check disk space after cleanup'
+
   - task: UseDotNet@2
     displayName: 'Use .NET 10.0 Runtime'
     inputs:
