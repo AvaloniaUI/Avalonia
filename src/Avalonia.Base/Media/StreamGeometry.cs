@@ -47,7 +47,7 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new StreamGeometry(((IStreamGeometryImpl)PlatformImpl!).Clone());
+            return new StreamGeometry(StreamImpl.Clone()) { Transform = Transform };
         }
 
         /// <summary>
@@ -58,19 +58,24 @@ namespace Avalonia.Media
         /// </returns>
         public StreamGeometryContext Open()
         {
-            return new StreamGeometryContext(((IStreamGeometryImpl)PlatformImpl!).Open());
+            return new StreamGeometryContext(StreamImpl.Open(), OnContextDisposed);
         }
 
         /// <inheritdoc/>
-        private protected override IGeometryImpl? CreateDefiningGeometry()
-        {
-            if (_impl == null)
-            {
-                var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-                _impl = factory.CreateStreamGeometry();
-            }
+        private protected override IGeometryImpl? CreateDefiningGeometry() => StreamImpl;
 
-            return _impl;
+        // The stream itself. PlatformImpl can't be used for this: it is wrapped when Transform is set.
+        private IStreamGeometryImpl StreamImpl =>
+            _impl ??= AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>().CreateStreamGeometry();
+
+        private void OnContextDisposed()
+        {
+            // A transformed geometry caches a transformed copy of the stream, which would otherwise keep
+            // showing the old content.
+            if (Transform is { } transform && transform.Value != Matrix.Identity)
+            {
+                InvalidateGeometry();
+            }
         }
     }
 }
