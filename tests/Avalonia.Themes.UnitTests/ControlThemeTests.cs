@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Chrome;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Dialogs;
 using Avalonia.Markup.Xaml.MarkupExtensions;
@@ -69,6 +70,65 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
             .ToHashSet();
 
         Assert.All(templatedControls, c => Assert.Contains(c, defaultControlThemes));
+    }
+
+    [Fact]
+    public void Should_Define_All_Requested_Template_Parts()
+    {
+        var theme = CreateAttachedTheme();
+        var defaultControlThemes = theme.EnumerateResources()
+            .Where(r => r is { Value: ControlTheme, Key: Type })
+            .Where(r => r.ThemeVariant == ThemeVariant.Default)
+            .Select(r => (ControlTheme)r.Value!);
+
+        var controlTypesToSkip = new Dictionary<Type, HashSet<string>>
+        {
+            // AutoCompleteBox has optional PART_SelectionAdapter, that was never defined in templates for "historical reasons".
+            [typeof(AutoCompleteBox)] = ["PART_SelectionAdapter"],
+            // ScrollBar, SplitView and Slider define templates per specific pseudoclasses, making it harder to test.
+            [typeof(ScrollBar)] = [],
+            [typeof(SplitView)] = [],
+            [typeof(Slider)] = []
+        };
+
+        Assert.All(defaultControlThemes, controlTheme =>
+        {
+            Assert.NotNull(controlTheme.TargetType);
+
+            // TemplatePart can be IsRequired=false, if it's not essential for the control to function.
+            // But for built-in default themes we expect all of them to be present.
+            // Exception is optional template parts from the base class, that were inherited and ignored by the control.
+            var requestedParts = controlTheme.TargetType
+                .GetCustomAttributes<TemplatePartAttribute>(inherit: false)
+                .Concat(controlTheme.TargetType
+                    .GetCustomAttributes<TemplatePartAttribute>(inherit: true).Where(p => p.IsRequired))
+                .Distinct()
+                .ToArray();
+
+            if (controlTypesToSkip.TryGetValue(controlTheme.TargetType, out var skipParts))
+            {
+                if (skipParts.Count == 0)
+                {
+                    return;
+                }
+
+                requestedParts = requestedParts.Where(p => !skipParts.Contains(p.Name)).ToArray();
+            }
+            
+            if (requestedParts.Length == 0)
+            {
+                return;
+            }
+
+            var template = controlTheme.ResolveTemplate();
+            Assert.NotNull(template);
+
+            Assert.All(requestedParts, part =>
+            {
+                var foundPart = template.NameScope.Find(part.Name);
+                Assert.IsType(part.Type, foundPart, exactMatch: false);
+            });
+        });
     }
 
     [Fact]
