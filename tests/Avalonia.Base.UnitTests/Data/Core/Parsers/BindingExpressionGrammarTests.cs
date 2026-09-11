@@ -244,6 +244,26 @@ namespace Avalonia.Base.UnitTests.Data.Core.Parsers
             Assert.IsType<BindingExpressionGrammar.StreamNode>(result[1]);
         }
 
+        [Fact]
+        public void Should_Parse_Cast_To_Nested_Type()
+        {
+            var result = Parse("((ns:Outer+Inner)Foo).Bar");
+
+            var cast = Assert.IsType<BindingExpressionGrammar.TypeCastNode>(result[1]);
+            Assert.Equal("ns", cast.Namespace);
+            Assert.Equal("Outer+Inner", cast.TypeName);
+        }
+
+        [Fact]
+        public void Should_Parse_Cast_To_Non_Nested_Type()
+        {
+            var result = Parse("((ns:Outer)Foo).Bar");
+
+            var cast = Assert.IsType<BindingExpressionGrammar.TypeCastNode>(result[1]);
+            Assert.Equal("ns", cast.Namespace);
+            Assert.Equal("Outer", cast.TypeName);
+        }
+
         private static void AssertIsProperty(
             BindingExpressionGrammar.INode node,
             string name,

@@ -29,6 +29,7 @@ internal static class WaylandConversionExtensions
     public static XdgPopupPositionerParams ToWayland(this PopupPositionerParameters parameters) =>
         new(
             Size: parameters.Size,
+            Deflate: parameters.Deflate,
             AnchorRect: parameters.AnchorRectangle,
             Anchor: parameters.Anchor.ToWayland(),
             Gravity: parameters.Gravity.ToWayland(),
