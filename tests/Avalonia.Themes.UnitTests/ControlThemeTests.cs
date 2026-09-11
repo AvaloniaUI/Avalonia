@@ -8,6 +8,7 @@ using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Primitives;
 using Avalonia.Dialogs;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
 using Avalonia.Themes.Simple;
@@ -71,7 +72,7 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
     }
 
     [Fact]
-    public void Should_Create_Setters_With_Valid_Dynamic_Resources()
+    public void Should_Define_Setters_With_Valid_Dynamic_Resources()
     {
         // Validate that <Setter Value="{DynamicResource}"> points to an actually defined resource.
         // Unfortunately, we can't reliably include DynamicResource from templates
@@ -98,5 +99,34 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
         {
             Assert.Contains(c, allResourcesPerVariant[ThemeVariant.Default]);
         });
+    }
+
+    [Fact]
+    public void Should_Not_Define_Setters_With_Hardcoded_Brushes_Or_Colors()
+    {
+        var theme = CreateAttachedTheme();
+
+        var controlThemes = theme.EnumerateResources()
+            .Where(r => r is { Value: ControlTheme })
+            .Where(r => r.ThemeVariant == ThemeVariant.Default)
+            .Select(r => (ControlTheme)r.Value!);
+
+        // Enumerate all nested styles and retrieve full list of Setters
+        var allSetters = controlThemes
+            .SelectMany(t => t.EnumerateStyles())
+            .SelectMany(t => t.Setters);
+        var allHardcodedColors = allSetters.OfType<Setter>()
+            .Where(s => s.Value switch
+            {
+                Color c => !IsTransparentOrEmpty(c),
+                ISolidColorBrush b => !IsTransparentOrEmpty(b.Color),
+                IBrush => true,
+                _ => false
+            })
+            .DistinctBy(s => s.Value);
+
+        Assert.Empty(allHardcodedColors);
+
+        static bool IsTransparentOrEmpty(Color color) => color == Colors.Transparent || color == default;
     }
 }
