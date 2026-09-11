@@ -14,6 +14,11 @@
   <SolidColorBrush x:Key="NavigationBarBackground" Color="{DynamicResource ThemeControlMidColor}" />
   <SolidColorBrush x:Key="NavigationBarForeground" Color="{DynamicResource ThemeForegroundColor}" />
 
+  <LinearGradientBrush x:Key="NavigationBarShadowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
+    <GradientStop Color="#0C000000" Offset="0" />
+    <GradientStop Color="#00000000" Offset="1" />
+  </LinearGradientBrush>
+
   <ControlTheme x:Key="{x:Type NavigationPage}" TargetType="NavigationPage">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="PageTransition">
@@ -164,14 +169,8 @@
                   VerticalAlignment="Top"
                   IsVisible="False"
                   Height="4"
-                  IsHitTestVisible="False">
-            <Border.Background>
-              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                <GradientStop Color="#0C000000" Offset="0" />
-                <GradientStop Color="#00000000" Offset="1" />
-              </LinearGradientBrush>
-            </Border.Background>
-          </Border>
+                  IsHitTestVisible="False"
+                  Background="{DynamicResource NavigationBarShadowBackground}" />
 
           <ContentPresenter Name="PART_ModalBackPresenter"
                             ZIndex="99"
