@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
@@ -10,7 +9,8 @@ using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.Native
 {
-    internal class AvaloniaNativeApplicationPlatform : NativeCallbackBase, IAvnApplicationEvents, IPlatformLifetimeEventsImpl
+    internal class AvaloniaNativeApplicationPlatform(AvaloniaNativePlatform platform)
+        : NativeCallbackBase, IAvnApplicationEvents, IPlatformLifetimeEventsImpl
     {
         public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
 
@@ -105,12 +105,31 @@ namespace Avalonia.Native
             }
         }
 
-        public int TryShutdown()
+        void IAvnApplicationEvents.OnTerminating()
         {
-            if (ShutdownRequested is null) return 1;
-            var e = new ShutdownRequestedEventArgs();
-            ShutdownRequested(this, e);
-            return (!e.Cancel).AsComBool();
+            // The OS is terminating us directly: AppDomain.ProcessExit won't run, dispose now.
+            platform.Dispose();
+        }
+
+        public AvnShutdownReply TryShutdown(int isOSShutdown)
+        {
+            if (ShutdownRequested is not { } shutdownRequested)
+                return AvnShutdownReply.ShutdownReplyTerminateNow;
+
+            var isOSShutdownBool = isOSShutdown.FromComBool();
+            var e = new ShutdownRequestedEventArgs { IsOSShutdown = isOSShutdownBool };
+            shutdownRequested.Invoke(this, e);
+
+            if (e.Cancel)
+                return AvnShutdownReply.ShutdownReplyCancel;
+
+            // If we know the main loop is going to exit (e.g. via a ClassicDesktopApplicationLifetime),
+            // tell the native side it doesn't have to exit, allowing the managed side to complete its shutdown.
+            if (e.WillExitMainLoop && !isOSShutdownBool)
+                return AvnShutdownReply.ShutdownReplyDeferToManagedLoop;
+
+            return AvnShutdownReply.ShutdownReplyTerminateNow;
+
         }
     }
 }

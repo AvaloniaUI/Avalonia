@@ -268,6 +268,70 @@ interface IDataObject : IUnknown
 }
 
 [
+    object,
+    uuid(3D8B0590-F691-11D2-8EA9-006097DF5BD4),
+    pointer_default(unique)
+]
+// Standard shell interface that keeps asynchronous data transfers alive after Drop returns.
+interface IDataObjectAsyncCapability : IUnknown
+{
+    HRESULT SetAsyncMode([in] BOOL fDoOpAsync);
+
+    HRESULT GetAsyncMode([out] BOOL* pfIsOpAsync);
+
+    HRESULT StartOperation([in, unique] void* pbcReserved);
+
+    HRESULT InOperation([out] BOOL* pfInAsyncOp);
+
+    HRESULT EndOperation(
+        [in] HRESULT hResult,
+        [in, unique] void* pbcReserved,
+        [in] DWORD dwEffects);
+}
+
+[
+    object,
+    uuid(0C733A30-2A1C-11CE-ADE5-00AA0044773D),
+    pointer_default(unique)
+]
+interface ISequentialStream : IUnknown
+{
+    int Read([out] void* pv, [in] ULONG cb, [out] ULONG* pcbRead);
+
+    int Write([in] void* pv, [in] ULONG cb, [out] ULONG* pcbWritten);
+}
+
+[
+    object,
+    uuid(0000000C-0000-0000-C000-000000000046),
+    pointer_default(unique)
+]
+interface IStream : ISequentialStream
+{
+    int Seek([in] INT64 dlibMove, [in] DWORD dwOrigin, [out] UINT64* plibNewPosition);
+
+    HRESULT SetSize([in] UINT64 libNewSize);
+
+    HRESULT CopyTo(
+        [in] IStream* pstm,
+        [in] UINT64 cb,
+        [out] UINT64* pcbRead,
+        [out] UINT64* pcbWritten);
+
+    HRESULT Commit([in] DWORD grfCommitFlags);
+
+    HRESULT Revert();
+
+    HRESULT LockRegion([in] UINT64 libOffset, [in] UINT64 cb, [in] DWORD dwLockType);
+
+    HRESULT UnlockRegion([in] UINT64 libOffset, [in] UINT64 cb, [in] DWORD dwLockType);
+
+    int Stat([out] void* pstatstg, [in] DWORD grfStatFlag);
+
+    HRESULT Clone([out] IStream** ppstm);
+}
+
+[
     local,
     object,
     uuid(00000121-0000-0000-C000-000000000046)

@@ -386,6 +386,22 @@ namespace Avalonia.Controls.Primitives
             base.OnKeyDown(e);
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ItemHeightProperty)
+            {
+                foreach (var child in Children)
+                {
+                    child.Height = ItemHeight;
+                }
+
+                UpdateHelperInfo();
+                _hasInit = false;
+            }
+        }
+
         /// <summary>
         /// Refreshes the content of the visible items
         /// </summary>
