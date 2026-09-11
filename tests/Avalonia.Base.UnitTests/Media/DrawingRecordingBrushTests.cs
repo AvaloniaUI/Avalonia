@@ -1,6 +1,8 @@
+﻿using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -197,5 +199,55 @@ public class DrawingRecordingBrushTests : ScopedTestBase
             It.IsAny<RoundedRect>(), It.IsAny<BoxShadows>()), Times.Once);
 
         content.Dispose();
+    }
+
+    [Fact]
+    public void Changing_Recording_Should_Update_Content_On_The_Compositor()
+    {
+        using var small = DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawRectangle(Brushes.Lime, null, new Rect(0, 0, 10, 10));
+        });
+        using var large = DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 50, 50));
+        });
+
+        var brush = new DrawingRecordingBrush(small);
+        _services.TopLevel.Content = new BrushHost(brush) { Width = 100, Height = 100 };
+        CommitAndRender();
+
+        Assert.Equal(small.Bounds, ServerContentRect(brush));
+
+        brush.Recording = large;
+        CommitAndRender();
+
+        Assert.Equal(large.Bounds, ServerContentRect(brush));
+    }
+
+    private void CommitAndRender()
+    {
+        _services.RunJobs();
+        _services.Compositor.Commit();
+        _services.Compositor.Server.Render(false);
+    }
+
+    /// <summary>Paints its whole area with the brush under test.</summary>
+    private sealed class BrushHost(IBrush brush) : Control
+    {
+        public override void Render(DrawingContext context) =>
+            context.DrawRectangle(brush, null, new Rect(default, Bounds.Size));
+    }
+
+    /// <summary>
+    /// The bounds of the content the compositor currently paints this brush with.
+    /// </summary>
+    private Rect ServerContentRect(DrawingRecordingBrush brush)
+    {
+        var server = (ISceneBrush)((ICompositionRenderResource<IBrush>)brush)
+            .GetForCompositor(_services.Compositor);
+        using var content = server.CreateContent();
+        Assert.NotNull(content);
+        return content!.Rect;
     }
 }
