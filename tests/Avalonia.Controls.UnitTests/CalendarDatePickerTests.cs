@@ -3,6 +3,8 @@ using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data.Converters;
+using Avalonia.Harfbuzz;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -194,6 +196,45 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2026, 4, 22)));
             }
         }
+
+        [Fact]
+        public void Tab_Focus_Should_Move_Focus_To_TextBox()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(datePicker);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                datePicker.Focus(NavigationMethod.Tab);
+
+                Assert.Same(GetTextBox(datePicker), root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        [Fact]
+        public void Programmatic_Focus_Should_Move_Focus_To_TextBox()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var datePicker = new CalendarDatePicker { Template = CreateTemplate() };
+                var root = new TestRoot(datePicker);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                datePicker.Focus();
+
+                Assert.Same(GetTextBox(datePicker), root.FocusManager.GetFocusedElement());
+            }
+        }
+
+        private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
+            fontManagerImpl: new HeadlessFontManagerStub(),
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new HarfBuzzTextShaper(),
+            renderInterface: new HeadlessPlatformRenderInterface(),
+            keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: () => new KeyboardNavigationHandler(),
+            inputManager: new InputManager());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>());
