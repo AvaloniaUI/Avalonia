@@ -47,12 +47,6 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the <see cref="DrawingRecording"/> to paint with.
         /// </summary>
-        /// <remarks>
-        /// Changing this property after the brush has been referenced by a
-        /// compositor does not refresh already-created compositor content
-        /// (matching <see cref="DrawingBrush.Drawing"/> semantics) — create a
-        /// new brush instead of mutating this property.
-        /// </remarks>
         public DrawingRecording? Recording
         {
             get => GetValue(RecordingProperty);
@@ -75,13 +69,14 @@ namespace Avalonia.Media
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
             static c => new ServerCompositionSimpleContentBrush(c.Server);
 
-        private InlineDictionary<Compositor, CompositionRenderData?> _renderDataDictionary;
-
-        private protected override void OnReferencedFromCompositor(Compositor c)
+        private sealed class RenderDataItem(CompositionRenderData data) : IDisposable
         {
-            _renderDataDictionary.Add(c, CreateServerContent(c));
-            base.OnReferencedFromCompositor(c);
+            public CompositionRenderData Data { get; } = data;
+            public bool IsDirty;
+            public void Dispose() => Data.Dispose();
         }
+
+        private InlineDictionary<Compositor, RenderDataItem?> _renderDataDictionary;
 
         protected override void OnUnreferencedFromCompositor(Compositor c)
         {
@@ -93,13 +88,47 @@ namespace Avalonia.Media
         private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
         {
             base.SerializeChanges(c, writer);
-            if (_renderDataDictionary.TryGetValue(c, out var content) && content != null)
-                writer.WriteObject(new CompositionRenderDataSceneBrushContent.Properties(content.Server, null, true));
-            else
-                writer.WriteObject(null);
+
+            CompositionRenderDataSceneBrushContent.Properties? content = null;
+            if (IsOnCompositor(c))
+            {
+                _renderDataDictionary.TryGetValue(c, out var data);
+                if (data is null || data.IsDirty)
+                {
+                    var created = CreateServerContent(c);
+                    // Dispose the old render list _after_ creating a new one to avoid an
+                    // unnecessary detach/attach sequence for referenced resources
+                    data?.Dispose();
+                    _renderDataDictionary[c] = data = created;
+                }
+
+                if (data is not null)
+                    content = new(data.Data.Server, null, true);
+            }
+
+            writer.WriteObject(content);
         }
 
-        CompositionRenderData? CreateServerContent(Compositor c)
+        private void InvalidateContent()
+        {
+            foreach (var item in _renderDataDictionary)
+                item.Value?.IsDirty = true;
+
+            RegisterForSerialization();
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            // A different recording is different content, so the per-compositor render list
+            // has to be rebuilt. Mutations _inside_ a compositor-bound recording reach the
+            // server on their own and need no re-recording.
+            if (change.Property == RecordingProperty)
+                InvalidateContent();
+
+            base.OnPropertyChanged(change);
+        }
+
+        private RenderDataItem? CreateServerContent(Compositor c)
         {
             var recording = Recording;
             if (recording == null || recording.IsDisposed)
@@ -112,7 +141,7 @@ namespace Avalonia.Media
 
             using var recorder = new RenderDataDrawingContext(c);
             recorder.DrawRecording(recording);
-            return recorder.GetRenderResults();
+            return recorder.GetRenderResults() is { } data ? new RenderDataItem(data) : null;
         }
     }
 }
