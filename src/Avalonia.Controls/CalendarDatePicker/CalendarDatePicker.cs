@@ -397,8 +397,6 @@ namespace Avalonia.Controls
         {
             base.OnGotFocus(e);
 
-            // A programmatic Focus() call reports NavigationMethod.Unspecified, so forwarding
-            // can't be gated on Tab.
             if (IsEnabled && _textBox != null && ReferenceEquals(e.Source, this))
             {
                 _textBox.Focus(e.NavigationMethod);
