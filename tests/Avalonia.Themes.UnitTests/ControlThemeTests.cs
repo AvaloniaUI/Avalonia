@@ -150,22 +150,19 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
             .Where(r => r.ThemeVariant == ThemeVariant.Default)
             .Select(r => (ControlTheme)r.Value!);
 
-        Assert.All(controlThemes, controlTheme =>
+        Assert.All(controlThemes.SelectMany(t => t.EnumerateStyles()), style =>
         {
-            Assert.All(controlTheme.EnumerateStyles(), style =>
-            {
-                var allDynamicResourceKeys = style.Setters.OfType<Setter>()
-                    .Select(s => s.Value)
-                    .OfType<DynamicResourceExtension>()
-                    .Select(r => r.ResourceKey);
+            var allDynamicResourceKeys = style.Setters.OfType<Setter>()
+                .Select(s => s.Value)
+                .OfType<DynamicResourceExtension>()
+                .Select(r => r.ResourceKey);
 
-                Assert.All(allDynamicResourceKeys, c =>
-                {
-                    Assert.Contains(c, allResourcesPerVariant[ThemeVariant.Default]);
-                });
+            Assert.All(allDynamicResourceKeys, c =>
+            {
+                Assert.Contains(c, allResourcesPerVariant[ThemeVariant.Default]);
             });
 
-            Assert.All(controlTheme.EnumerateTemplateChildren(), templatePart =>
+            Assert.All(style.EnumerateTemplateChildren(), templatePart =>
             {
                 var allTemplateDynamicResourceKeys = templatePart.GetValueStoreDiagnostic()
                     .AppliedFrames
@@ -194,14 +191,11 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
             .Where(r => r.ThemeVariant == ThemeVariant.Default)
             .Select(r => (ControlTheme)r.Value!);
 
-        Assert.All(controlThemes, controlTheme =>
+        Assert.All(controlThemes.SelectMany(t => t.EnumerateStyles()), style =>
         {
-            Assert.All(controlTheme.EnumerateStyles(), style =>
-            {
-                AssertValues(style.Setters.OfType<Setter>().ToArray(), setter => setter.Value);
-            });
+            AssertValues(style.Setters.OfType<Setter>().ToArray(), setter => setter.Value);
 
-            Assert.All(controlTheme.EnumerateTemplateChildren(), templatePart =>
+            Assert.All(style.EnumerateTemplateChildren(), templatePart =>
             {
                 var hardcodedValueEntries = templatePart.GetValueStoreDiagnostic()
                     .AppliedFrames

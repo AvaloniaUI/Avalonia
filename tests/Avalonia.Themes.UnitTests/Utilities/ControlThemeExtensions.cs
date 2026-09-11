@@ -30,16 +30,14 @@ internal static class ControlThemeExtensions
         return null;
     }
 
-    public static IEnumerable<AvaloniaObject> EnumerateTemplateChildren(this ControlTheme theme)
+    public static IEnumerable<AvaloniaObject> EnumerateTemplateChildren(this StyleBase styleBase)
     {
-        if (theme.TargetType is null)
-        {
-            throw new ArgumentException("ControlTheme must have TargetType set", nameof(theme));
-        }
+        var targetType = ResolveTargetType(styleBase) ??
+                         throw new ArgumentException("Style must have TargetType set", nameof(styleBase));
 
-        return theme.ResolveTemplate() switch
+        return styleBase.ResolveTemplate() switch
         {
-            IControlTemplate controlTemplate => EnumerateControlTemplateChildren(theme.TargetType, controlTemplate),
+            IControlTemplate controlTemplate => EnumerateControlTemplateChildren(targetType, controlTemplate),
             IWindowDrawnDecorationsTemplate decorationsTemplate => EnumerateDecorationsChildren(decorationsTemplate),
             _ => []
         };
@@ -87,16 +85,14 @@ internal static class ControlThemeExtensions
             .Where(v => v.TemplatedParent == decorations);
     }
 
-    public static object? ResolveTemplate(this ControlTheme theme)
+    public static object? ResolveTemplate(this StyleBase styleBase)
     {
-        if (theme.TargetType is null)
-        {
-            throw new ArgumentException("ControlTheme must have TargetType set", nameof(theme));
-        }
+        var targetType = ResolveTargetType(styleBase) ??
+                         throw new ArgumentException("Style must have TargetType set", nameof(styleBase));
 
         object? template = null;
 
-        if (theme.Setters.OfType<Setter>()
+        if (styleBase.Setters.OfType<Setter>()
                 .FirstOrDefault(s => s.Property == TemplatedControl.TemplateProperty
                                      || s.Property == WindowDrawnDecorations.TemplateProperty)?
                 .Value is { } setterValue)
@@ -108,12 +104,40 @@ internal static class ControlThemeExtensions
         }
 
         // ContentControl derived controls inherit its template.
-        if (template is null && typeof(ContentControl).IsAssignableFrom(theme.TargetType))
+        if (template is null && typeof(ContentControl).IsAssignableFrom(targetType))
         {
             template = TemplatedControl.TemplateProperty.GetDefaultValue(typeof(ContentControl))
                        ?? throw new InvalidOperationException("ContentControl must always have default template");
         }
 
         return template;
+    }
+
+    private static Type? ResolveTargetType(StyleBase styleBase)
+    {
+        if (styleBase is ControlTheme controlTheme)
+        {
+            return controlTheme.TargetType;
+        }
+
+        if (styleBase is Style style)
+        {
+            if (style.Selector?.TargetType is { } selectorTargetType)
+            {
+                return selectorTargetType;
+            }
+
+            if (style.Parent is StyleBase styleParent)
+            {
+                return ResolveTargetType(styleParent);
+            }
+        }
+
+        if (styleBase is ContainerQuery { Parent: StyleBase containerQueryParent })
+        {
+            return ResolveTargetType(containerQueryParent);
+        }
+
+        return null;
     }
 }
