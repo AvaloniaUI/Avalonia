@@ -5,6 +5,8 @@
   <x:Double x:Key="CaptionButtonWidth">45</x:Double>
   <x:Double x:Key="CaptionButtonHeight">30</x:Double>
   <BoxShadows x:Key="WindowDrawnDecorationsWindowBorderBoxShadow">0 2 10 2 #80000000</BoxShadows>
+  <SolidColorBrush x:Key="CaptionButtonCloseBackground" Color="#ffe81123" />
+  <SolidColorBrush x:Key="CaptionButtonCloseBorderBrush" Color="#fff1707a" />
 
   <ControlTheme x:Key="SimpleDrawnCaptionButton" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource CaptionButtonBackground}" />
@@ -111,8 +113,8 @@
                   </Viewbox>
                 </Button>
                 <Button x:Name="PART_CloseButton"
-                        Background="#ffe81123"
-                        BorderBrush="#fff1707a"
+                        Background="{DynamicResource CaptionButtonCloseBackground}"
+                        BorderBrush="{DynamicResource CaptionButtonCloseBorderBrush}"
                         Theme="{StaticResource SimpleDrawnCaptionButton}"
                         WindowDecorationProperties.ElementRole="CloseButton"
                         AutomationProperties.Name="Close">
@@ -135,7 +137,7 @@
               <TextBlock x:Name="PART_PopoverTitleText"
                          Text="{TemplateBinding Title}"
                          VerticalAlignment="Center"
-                         Foreground="White"
+                         Foreground="{DynamicResource HighlightForegroundBrush}"
                          Margin="12,0,0,0"
                          FontSize="12" />
               <StackPanel HorizontalAlignment="Right"
@@ -152,8 +154,8 @@
                   </Viewbox>
                 </Button>
                 <Button x:Name="PART_PopoverCloseButton"
-                        Background="#ffe81123"
-                        BorderBrush="#fff1707a"
+                        Background="{DynamicResource CaptionButtonCloseBackground}"
+                        BorderBrush="{DynamicResource CaptionButtonCloseBorderBrush}"
                         Theme="{StaticResource SimpleDrawnCaptionButton}"
                         WindowDecorationProperties.ElementRole="CloseButton"
                         AutomationProperties.Name="Close">

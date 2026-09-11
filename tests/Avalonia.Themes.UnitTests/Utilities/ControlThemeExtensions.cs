@@ -37,15 +37,21 @@ internal static class ControlThemeExtensions
             throw new ArgumentException("ControlTheme must have TargetType set", nameof(theme));
         }
 
-        if (theme.ResolveTemplate() is not IControlTemplate controlTemplate)
+        return theme.ResolveTemplate() switch
         {
-            return [];
-        }
+            IControlTemplate controlTemplate => EnumerateControlTemplateChildren(theme.TargetType, controlTemplate),
+            IWindowDrawnDecorationsTemplate decorationsTemplate => EnumerateDecorationsChildren(decorationsTemplate),
+            _ => []
+        };
+    }
 
+    private static IEnumerable<AvaloniaObject> EnumerateControlTemplateChildren(
+        Type targetType, IControlTemplate controlTemplate)
+    {
         TemplatedControl templatedParent;
         try
         {
-            templatedParent = (TemplatedControl)Activator.CreateInstance(theme.TargetType)!;
+            templatedParent = (TemplatedControl)Activator.CreateInstance(targetType)!;
             templatedParent.Template = controlTemplate;
             templatedParent.ApplyTemplate();
         }
@@ -60,8 +66,25 @@ internal static class ControlThemeExtensions
 
         // Use visual tree instead of logical tree for the most complete result.
         // Because logical tree might not necessary 1to1 map to XAML.
-        // And we filter by the same TemplateParent anyway. 
+        // And we filter by the same TemplateParent anyway.
         return templateRoot.GetVisualDescendants().Where(v => v.TemplatedParent == templatedParent).Prepend(templateRoot);
+    }
+
+    private static IEnumerable<AvaloniaObject> EnumerateDecorationsChildren(IWindowDrawnDecorationsTemplate template)
+    {
+        var decorations = new WindowDrawnDecorations { Template = template };
+        decorations.ApplyTemplate();
+
+        if (decorations.Content is not { } content)
+        {
+            return [];
+        }
+
+        // Window decorations have unique template configuration, that we need to resolve for each part:
+        return new[] { content.Underlay, content.Overlay, content.FullscreenPopover }
+            .OfType<Control>()
+            .SelectMany(root => root.GetVisualDescendants().Prepend(root))
+            .Where(v => v.TemplatedParent == decorations);
     }
 
     public static object? ResolveTemplate(this ControlTheme theme)

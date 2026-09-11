@@ -5,6 +5,8 @@
   <x:Double x:Key="CaptionButtonWidth">45</x:Double>
   <x:Double x:Key="CaptionButtonHeight">30</x:Double>
   <BoxShadows x:Key="WindowDrawnDecorationsWindowBorderBoxShadow">0 2 10 2 #80000000</BoxShadows>
+  <SolidColorBrush x:Key="CaptionButtonCloseBackground" Color="#ffe81123" />
+  <SolidColorBrush x:Key="CaptionButtonCloseBorderBrush" Color="#fff1707a" />
 
   <ControlTheme x:Key="FluentDrawnCaptionButton" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource CaptionButtonBackground}" />
@@ -110,8 +112,8 @@
                   </Viewbox>
                 </Button>
                 <Button x:Name="PART_CloseButton"
-                        Background="#ffe81123"
-                        BorderBrush="#fff1707a"
+                        Background="{DynamicResource CaptionButtonCloseBackground}"
+                        BorderBrush="{DynamicResource CaptionButtonCloseBorderBrush}"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
                         WindowDecorationProperties.ElementRole="CloseButton">
                   <Viewbox Width="11" Margin="2">
@@ -148,8 +150,8 @@
                   </Viewbox>
                 </Button>
                 <Button x:Name="PART_PopoverCloseButton"
-                        Background="#ffe81123"
-                        BorderBrush="#fff1707a"
+                        Background="{DynamicResource CaptionButtonCloseBackground}"
+                        BorderBrush="{DynamicResource CaptionButtonCloseBorderBrush}"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
                         WindowDecorationProperties.ElementRole="CloseButton">
                   <Viewbox Width="11" Margin="2">
