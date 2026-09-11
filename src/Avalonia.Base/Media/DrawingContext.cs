@@ -78,12 +78,8 @@ namespace Avalonia.Media
         /// <param name="recording">The drawing recording to replay.</param>
         public void DrawRecording(DrawingRecording recording)
         {
-            _ = recording ?? throw new ArgumentNullException(nameof(recording));
-            if (recording.IsDisposed)
-                throw new ObjectDisposedException(
-                    nameof(DrawingRecording),
-                    "Cannot draw a disposed DrawingRecording.");
-            DrawRecordingCore(recording);
+            ValidateRecording(recording);
+            DrawRecordingCore(recording, Matrix.Identity);
         }
 
         /// <summary>
@@ -96,17 +92,7 @@ namespace Avalonia.Media
         /// <param name="transform">The transform to apply around the draw call.</param>
         public void DrawRecording(DrawingRecording recording, Matrix transform)
         {
-            _ = recording ?? throw new ArgumentNullException(nameof(recording));
-            if (recording.IsDisposed)
-                throw new ObjectDisposedException(
-                    nameof(DrawingRecording),
-                    "Cannot draw a disposed DrawingRecording.");
-            if (transform.IsIdentity)
-            {
-                DrawRecordingCore(recording);
-                return;
-            }
-
+            ValidateRecording(recording);
             DrawRecordingCore(recording, transform);
         }
 
@@ -120,14 +106,10 @@ namespace Avalonia.Media
         /// ignore ownership.</param>
         internal void DrawRecording(DrawingRecording recording, DrawingRecordingOwnership ownership)
         {
-            _ = recording ?? throw new ArgumentNullException(nameof(recording));
-            if (recording.IsDisposed)
-                throw new ObjectDisposedException(
-                    nameof(DrawingRecording),
-                    "Cannot draw a disposed DrawingRecording.");
+            ValidateRecording(recording);
             if (ownership == DrawingRecordingOwnership.Owned)
                 RegisterOwnedRecording(recording);
-            DrawRecordingCore(recording);
+            DrawRecordingCore(recording, Matrix.Identity);
         }
 
         /// <summary>
@@ -142,19 +124,9 @@ namespace Avalonia.Media
         /// ignore ownership.</param>
         internal void DrawRecording(DrawingRecording recording, Matrix transform, DrawingRecordingOwnership ownership)
         {
-            _ = recording ?? throw new ArgumentNullException(nameof(recording));
-            if (recording.IsDisposed)
-                throw new ObjectDisposedException(
-                    nameof(DrawingRecording),
-                    "Cannot draw a disposed DrawingRecording.");
+            ValidateRecording(recording);
             if (ownership == DrawingRecordingOwnership.Owned)
                 RegisterOwnedRecording(recording);
-            if (transform.IsIdentity)
-            {
-                DrawRecordingCore(recording);
-                return;
-            }
-
             DrawRecordingCore(recording, transform);
         }
 
@@ -165,21 +137,21 @@ namespace Avalonia.Media
         /// </summary>
         internal virtual void RegisterOwnedRecording(DrawingRecording recording) { }
 
-        /// <summary>
-        /// When overridden in a derived class, draws a previously recorded drawing.
-        /// </summary>
-        internal abstract void DrawRecordingCore(DrawingRecording recording);
+        private static void ValidateRecording(DrawingRecording recording)
+        {
+            _ = recording ?? throw new ArgumentNullException(nameof(recording));
+            if (recording.IsDisposed)
+                throw new ObjectDisposedException(
+                    nameof(DrawingRecording),
+                    "Cannot draw a disposed DrawingRecording.");
+        }
 
         /// <summary>
-        /// Draws a previously recorded drawing under a non-identity transform.
-        /// The default implementation composes push-transform + draw + pop;
-        /// recording contexts override this to fuse both into a single node.
+        /// When overridden in a derived class, draws a previously recorded drawing under
+        /// <paramref name="transform"/>. Replay contexts compose the transform around the
+        /// draw; recording contexts fuse both into a single node.
         /// </summary>
-        internal virtual void DrawRecordingCore(DrawingRecording recording, Matrix transform)
-        {
-            using (PushTransform(transform))
-                DrawRecordingCore(recording);
-        }
+        internal abstract void DrawRecordingCore(DrawingRecording recording, Matrix transform);
 
         /// <summary>
         /// Draws a line.
