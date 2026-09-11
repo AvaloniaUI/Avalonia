@@ -7,7 +7,9 @@ using Xunit;
 
 namespace Avalonia.Themes.UnitTests;
 
+[Trait("Category", "FluentTheme")]
 public class FluentResourceDictionaryTests() : ResourceDictionaryTests(typeof(FluentTheme));
+[Trait("Category", "SimpleTheme")]
 public class SimpleResourceDictionaryTests() : ResourceDictionaryTests(typeof(SimpleTheme));
 
 public abstract class ResourceDictionaryTests(Type typeEntryPoint) : ThemeTestBase(typeEntryPoint)

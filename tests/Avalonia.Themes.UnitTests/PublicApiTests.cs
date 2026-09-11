@@ -7,7 +7,9 @@ using Xunit;
 
 namespace Avalonia.Themes.UnitTests;
 
+[Trait("Category", "FluentTheme")]
 public class FluentPublicApiTests() : PublicApiTests(typeof(FluentTheme));
+[Trait("Category", "SimpleTheme")]
 public class SimplePublicApiTests() : PublicApiTests(typeof(SimpleTheme));
 
 public abstract class PublicApiTests(Type typeEntryPoint) : ThemeTestBase(typeEntryPoint)
