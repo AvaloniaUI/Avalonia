@@ -6,7 +6,10 @@
   <FontFamily x:Key="ContentControlThemeFontFamily">fonts:Inter#Inter, $Default</FontFamily>
   <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
 
-  <sys:TimeSpan x:Key="ControlFastAnimationDuration">00:00:00.167</sys:TimeSpan>
+  <sys:TimeSpan x:Key="ControlFastAnimationDuration">00:00:00.167</sys:TimeSpan>  
+  <sys:TimeSpan x:Key="ControlNormalAnimationDuration">00:00:00.250</sys:TimeSpan>
+  <sys:TimeSpan x:Key="ControlFastAnimationAfterDuration">00:00:00.168</sys:TimeSpan>
+  <sys:TimeSpan x:Key="ControlFasterAnimationDuration">00:00:00.083</sys:TimeSpan>
   <SplineEasing x:Key="ControlFastOutSlowInKeySpline" X1="0" Y1="0" X2="0" Y2="1" />
 
   <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />

@@ -300,8 +300,4 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <!-- Canonical WinUI animation constants (variant independent). -->
-  <x:String x:Key="ControlNormalAnimationDuration">00:00:00.250</x:String>
-  <x:String x:Key="ControlFastAnimationAfterDuration">00:00:00.168</x:String>
-  <x:String x:Key="ControlFasterAnimationDuration">00:00:00.083</x:String>
 </ResourceDictionary>

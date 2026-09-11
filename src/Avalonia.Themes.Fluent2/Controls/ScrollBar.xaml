@@ -94,7 +94,7 @@
     </Setter>
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity" Duration="0:0:0.083" Delay="0:0:0.1" />
+        <DoubleTransition Property="Opacity" Duration="{DynamicResource ControlFasterAnimationDuration}" Delay="0:0:0.1" />
       </Transitions>
     </Setter>
 
@@ -151,7 +151,7 @@
                            Grid.RowSpan="3">
                   <Rectangle.Transitions>
                     <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.083" Delay="0:0:0.1" />
+                      <DoubleTransition Property="Opacity" Duration="{DynamicResource ControlFasterAnimationDuration}" Delay="0:0:0.1" />
                     </Transitions>
                   </Rectangle.Transitions>
                 </Rectangle>
@@ -239,7 +239,7 @@
                            Grid.ColumnSpan="3">
                   <Rectangle.Transitions>
                     <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.083" Delay="0:0:0.1" />
+                      <DoubleTransition Property="Opacity" Duration="{DynamicResource ControlFasterAnimationDuration}" Delay="0:0:0.1" />
                     </Transitions>
                   </Rectangle.Transitions>
                 </Rectangle>

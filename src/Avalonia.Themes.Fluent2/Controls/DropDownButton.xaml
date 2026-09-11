@@ -45,7 +45,7 @@
                   Padding="{TemplateBinding Padding}">
             <Border.Transitions>
               <Transitions>
-                <BrushTransition Property="Background" Duration="0:0:0.083" />
+                <BrushTransition Property="Background" Duration="{DynamicResource ControlFasterAnimationDuration}" />
               </Transitions>
             </Border.Transitions>
             <Grid x:Name="InnerGrid">
