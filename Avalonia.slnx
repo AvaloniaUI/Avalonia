@@ -29,11 +29,16 @@
     <Project Path="src/Markup/Avalonia.Markup.Xaml/Avalonia.Markup.Xaml.csproj" />
     <Project Path="src/Markup/Avalonia.Markup/Avalonia.Markup.csproj" />
   </Folder>
+  <Folder Name="/Native/">
+    <Project Path="native/Avalonia.Native/Avalonia.Native.macOS.proj" Type="C#" />
+    <Project Path="src/Avalonia.Native/Avalonia.Native.csproj" />
+  </Folder>
   <Folder Name="/Packages/">
     <Project Path="packages/Avalonia/Avalonia.csproj" />
     <Project Path="src/Avalonia.Desktop/Avalonia.Desktop.csproj" />
   </Folder>
   <Folder Name="/Props/">
+    <File Path="build/AvaloniaNative.props" />
     <File Path="build/AvaloniaPublicKey.props" />
     <File Path="build/Base.props" />
     <File Path="build/CoreLibraries.props" />
@@ -203,7 +208,6 @@
   <Project Path="src/Avalonia.Fonts.Inter/Avalonia.Fonts.Inter.csproj" />
   <Project Path="src/Avalonia.Metal/Avalonia.Metal.csproj" />
   <Project Path="src/Avalonia.MicroCom/Avalonia.MicroCom.csproj" />
-  <Project Path="src/Avalonia.Native/Avalonia.Native.csproj" />
   <Project Path="src/Avalonia.OpenGL/Avalonia.OpenGL.csproj" />
   <Project Path="src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
   <Project Path="src/Avalonia.Vulkan/Avalonia.Vulkan.csproj" />

@@ -35,7 +35,6 @@
         "CreateNugetPackages",
         "CreateSbom",
         "DownloadApiBaselinePackages",
-        "GenerateCppHeaders",
         "GenerateUnicodeData",
         "InitDnx",
         "OutputApiDiff",

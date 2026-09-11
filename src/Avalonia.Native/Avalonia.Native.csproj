@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\build\AvaloniaNative.props" />
+
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseMicroComGeneratorRoslyn>true</UseMicroComGeneratorRoslyn>
 
     <!-- Include libAvaloniaNative.dylib, only if we are on macOS host or dylib was manually copied -->
-    <AvaloniaNativeDylibPath>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../../Build/Products/Release/libAvalonia.Native.OSX.dylib))</AvaloniaNativeDylibPath>
     <IncludeAvaloniaDylib Condition="'$(IncludeAvaloniaDylib)' == '' AND Exists($(AvaloniaNativeDylibPath))">true</IncludeAvaloniaDylib>
     <IncludeAvaloniaDylib Condition="'$(IncludeAvaloniaDylib)' == ''">$([MSBuild]::IsOSPlatform(OSX))</IncludeAvaloniaDylib>
 
@@ -14,6 +15,10 @@
     <IsPackable>$(IncludeAvaloniaDylib)</IsPackable>
     <IsPackable Condition="'$(ForcePackAvaloniaNative)' == 'True'">True</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <MicroComIdl Include="avn.idl" />
+  </ItemGroup>
 
   <ItemGroup Condition="'$(IncludeAvaloniaDylib)' == 'true'">
     <Content Include="$(AvaloniaNativeDylibPath)">
@@ -25,9 +30,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Generates avalonia-native.h and, on macOS, libAvalonia.Native.OSX.dylib.
+         TargetFramework is undefined so that this builds once, not once per inner build. -->
+    <ProjectReference Include="..\..\native\Avalonia.Native\Avalonia.Native.macOS.proj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      UndefineProperties="TargetFramework"
+                      PrivateAssets="all"
+                      Private="false" />
+
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-    <MicroComIdl Include="avn.idl" />
   </ItemGroup>
 
   <Import Project="..\..\build\MicroCOM.props" />
