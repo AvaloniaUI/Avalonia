@@ -513,13 +513,14 @@ namespace Avalonia.Controls
 
                 var caretIndex = hit.TextPosition;
 
-                // see if mouse clicked inside current selection
-                // if it did not, we change the selection to where the user clicked
+                // A right-click only moves the selection when it lands on unselected text. There is
+                // no caret to place on empty space, and moving there would discard the selection
+                // before the context menu can copy it.
                 var firstSelection = Math.Min(SelectionStart, SelectionEnd);
                 var lastSelection = Math.Max(SelectionStart, SelectionEnd);
-                var didClickInSelection = SelectionStart != SelectionEnd &&
-                                          caretIndex >= firstSelection && caretIndex <= lastSelection;
-                if (!didClickInSelection)
+                var keepSelection = SelectionStart != SelectionEnd &&
+                                    ((caretIndex >= firstSelection && caretIndex <= lastSelection) || !IsOverText(point));
+                if (!keepSelection)
                 {
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
@@ -527,6 +528,24 @@ namespace Avalonia.Controls
             }
 
             e.Pointer.Capture(null);
+        }
+
+        private bool IsOverText(Point point)
+        {
+            var top = 0d;
+
+            foreach (var line in TextLayout.TextLines)
+            {
+                if (point.Y < top + line.Height)
+                {
+                    return point.Y >= top && line.Width > 0 &&
+                           point.X >= line.Start && point.X <= line.Start + line.Width;
+                }
+
+                top += line.Height;
+            }
+
+            return false;
         }
 
         private void OnInlinesInvalidated(object? sender, EventArgs e) => OnTextOrInlinesChanged();

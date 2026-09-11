@@ -7,6 +7,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Harfbuzz;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -356,6 +357,132 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.CanCopy);
 
             return target;
+        }
+
+        [Fact]
+        public void Right_Click_Below_Trailing_Newline_Should_Keep_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Width = 200,
+                    Text = "first line\nsecond line\n"
+                };
+
+                var root = new TestRoot(target)
+                {
+                    ClientSize = new Size(300, 200)
+                };
+
+                root.Measure(root.ClientSize);
+                root.Arrange(new Rect(root.ClientSize));
+                root.ExecuteInitialLayoutPass();
+
+                var mouse = new MouseTestHelper();
+                var firstCharacterBounds = target.TextLayout.HitTestTextPosition(0);
+                var start = target.TranslatePoint(new Point(
+                    firstCharacterBounds.X + 1,
+                    firstCharacterBounds.Y + firstCharacterBounds.Height / 2), root);
+                var belowText = target.TranslatePoint(new Point(
+                    target.TextLayout.Width / 2,
+                    target.TextLayout.Height + 10), root);
+
+                mouse.Down(target, MouseButton.Left, start);
+                mouse.Move(target, belowText.GetValueOrDefault());
+                mouse.Up(target, MouseButton.Left, belowText);
+
+                Assert.True(target.CanCopy);
+
+                mouse.Down(target, MouseButton.Right, belowText);
+                mouse.Up(target, MouseButton.Right, belowText);
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(target.Text!.Length, target.SelectionEnd);
+                Assert.True(target.CanCopy);
+            }
+        }
+
+        [Fact]
+        public void Right_Click_On_Empty_Space_Should_Keep_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Width = 200,
+                    Text = "first line\nsecond line\n\n"
+                };
+
+                var root = new TestRoot(target)
+                {
+                    ClientSize = new Size(300, 200)
+                };
+
+                root.Measure(root.ClientSize);
+                root.Arrange(new Rect(root.ClientSize));
+                root.ExecuteInitialLayoutPass();
+
+                var layout = target.TextLayout;
+                var blankLineY = layout.TextLines[0].Height + layout.TextLines[1].Height + layout.TextLines[2].Height / 2;
+                var firstCharacterBounds = layout.HitTestTextPosition(0);
+                var start = target.TranslatePoint(new Point(
+                    firstCharacterBounds.X + 1,
+                    firstCharacterBounds.Y + firstCharacterBounds.Height / 2), root);
+                var onBlankLine = target.TranslatePoint(new Point(layout.Width / 2, blankLineY), root);
+                var belowText = target.TranslatePoint(new Point(layout.Width / 2, layout.Height + 10), root);
+                var mouse = new MouseTestHelper();
+
+                // Ending the drag on the blank line leaves the selection one short of where a
+                // right-click below the text lands.
+                mouse.Down(target, MouseButton.Left, start);
+                mouse.Move(target, onBlankLine.GetValueOrDefault());
+                mouse.Up(target, MouseButton.Left, onBlankLine);
+
+                var selectionEnd = target.SelectionEnd;
+
+                mouse.Down(target, MouseButton.Right, belowText);
+                mouse.Up(target, MouseButton.Right, belowText);
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(selectionEnd, target.SelectionEnd);
+                Assert.True(target.CanCopy);
+            }
+        }
+
+        [Fact]
+        public void Right_Click_On_Unselected_Text_Should_Move_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Width = 200,
+                    Text = "first line\nsecond line"
+                };
+
+                var root = new TestRoot(target)
+                {
+                    ClientSize = new Size(300, 200)
+                };
+
+                root.Measure(root.ClientSize);
+                root.Arrange(new Rect(root.ClientSize));
+                root.ExecuteInitialLayoutPass();
+
+                target.SelectionStart = 0;
+                target.SelectionEnd = 5;
+
+                var characterBounds = target.TextLayout.HitTestTextPosition(14);
+                var onUnselectedText = target.TranslatePoint(characterBounds.Center, root);
+                var mouse = new MouseTestHelper();
+
+                mouse.Down(target, MouseButton.Right, onUnselectedText);
+                mouse.Up(target, MouseButton.Right, onUnselectedText);
+
+                Assert.Equal(target.SelectionStart, target.SelectionEnd);
+                Assert.False(target.CanCopy);
+            }
         }
 
         [Fact]
