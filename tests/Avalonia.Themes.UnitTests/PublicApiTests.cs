@@ -15,6 +15,10 @@ public abstract class PublicApiTests(Type typeEntryPoint) : ThemeTestBase(typeEn
     [Fact]
     public void Should_Not_Include_Any_Reachable_Xaml_Files()
     {
+        // This test looks up any control themes or other XAML files,
+        // that were not marked as "internal" class modifier.
+        // In our built-in themes it's expected that XAML files are internal, except theme entry point itself.
+
         var xamlMethods = FindXamlPopulateMethods().Concat(FindXamlBuildMethods()).ToArray();
         Assert.NotEmpty(xamlMethods);
         Assert.DoesNotContain(xamlMethods, m => m.IsPublic);
