@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Logging;
 using Avalonia.Media.Imaging;
@@ -42,7 +42,19 @@ internal sealed class PlatformDrawingContext : DrawingContext
     internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect) =>
         _impl.DrawBitmap(source.Item, opacity, sourceRect, destRect);
 
-    internal override void DrawRecordingCore(DrawingRecording recording)
+    internal override void DrawRecordingCore(DrawingRecording recording, Matrix transform)
+    {
+        if (transform.IsIdentity)
+        {
+            Replay(recording);
+            return;
+        }
+
+        using (PushTransform(transform))
+            Replay(recording);
+    }
+
+    private void Replay(DrawingRecording recording)
     {
         if (recording.IsCompositorBound)
             recording.RenderData!.Render(_impl);

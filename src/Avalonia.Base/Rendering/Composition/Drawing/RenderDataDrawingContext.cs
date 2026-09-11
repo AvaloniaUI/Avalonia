@@ -332,9 +332,6 @@ internal class RenderDataDrawingContext : DrawingContext
         return list;
     }
 
-    internal override void DrawRecordingCore(DrawingRecording recording) =>
-        DrawRecordingCore(recording, Matrix.Identity);
-
     internal override void DrawRecordingCore(DrawingRecording recording, Matrix transform)
     {
         if (recording.IsCompositorBound)
