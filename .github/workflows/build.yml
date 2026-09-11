@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - main
+      - 'main'
       - 'release/**'
       - 'force-ci/**'
       - 'xpf/**'
@@ -117,3 +117,33 @@ jobs:
         with:
           name: sbom-windows
           path: artifacts/sbom
+
+  # Note: pull requests are published by publish-nuget-pr.yml instead, which runs once this workflow completes.
+
+  publish-nightly:
+    name: Publish Nightly NuGet Packages
+    needs: [linux, windows, macos]
+    # Everything except pull requests and release/**.
+    if: >-
+      github.event_name != 'pull_request'
+      && !startsWith(github.ref, 'refs/heads/release/')
+      && vars.NIGHTLY_FEED_UPLOAD_URL != ''
+    uses: ./.github/workflows/publish-nuget-shared.yml
+    with:
+      feed-url: ${{ vars.NIGHTLY_FEED_UPLOAD_URL }}
+    secrets:
+      api-key: ${{ secrets.NIGHTLY_FEED_API_KEY }}
+
+  publish-release:
+    name: Publish Release NuGet Packages
+    needs: [linux, windows, macos]
+    # Pushes and manual runs on release/**.
+    if: >-
+      github.event_name != 'pull_request'
+      && startsWith(github.ref, 'refs/heads/release/')
+      && vars.RELEASE_MANAGER_BASE_URL != ''
+    uses: ./.github/workflows/publish-nuget-shared.yml
+    with:
+      feed-url: ${{ vars.RELEASE_MANAGER_BASE_URL }}nuget/avalonia/upload/index.json
+    secrets:
+      api-key: ${{ secrets.RELEASE_MANAGER_API_KEY }}
