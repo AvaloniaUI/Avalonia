@@ -32,12 +32,6 @@ jobs:
     vmImage: 'ubuntu-24.04'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 Runtime'
-    inputs:
-      packageType: runtime
-      version: 8.0.x
-
-  - task: UseDotNet@2
     displayName: 'Use .NET 10.0 Runtime'
     inputs:
         packageType: runtime
@@ -77,12 +71,6 @@ jobs:
   pool:
     vmImage: 'macos-15'
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 Runtime'
-    inputs:
-      packageType: runtime
-      version: 8.0.x
-
   - task: UseDotNet@2
     displayName: 'Use .NET 10.0 Runtime'
     inputs:
@@ -164,12 +152,6 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 Runtime'
-    inputs:
-      packageType: runtime
-      version: 8.0.x
-
   - task: UseDotNet@2
     displayName: 'Use .NET 10.0 SDK'
     inputs:

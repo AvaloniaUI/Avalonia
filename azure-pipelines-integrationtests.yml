@@ -8,12 +8,6 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 Runtime'
-    inputs:
-      packageType: runtime
-      version: 8.0.x
-
-  - task: UseDotNet@2
     displayName: 'Use .NET 10.0 Runtime'
     inputs:
         packageType: runtime
@@ -69,12 +63,6 @@ jobs:
     vmImage: 'windows-2025'
 
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 Runtime'
-    inputs:
-      packageType: runtime
-      version: 8.0.x
-
   - task: UseDotNet@2
     displayName: 'Use .NET 10.0 Runtime'
     inputs:
