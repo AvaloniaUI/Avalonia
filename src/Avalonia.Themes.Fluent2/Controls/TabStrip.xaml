@@ -10,8 +10,10 @@
       </TabStrip>
     </Border>
   </Design.PreviewWith>
+  <Thickness x:Key="TabStripBarPadding">0,4</Thickness>
 
   <ControlTheme x:Key="{x:Type TabStrip}" TargetType="TabStrip">
+    <Setter Property="Padding" Value="{DynamicResource TabStripBarPadding}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}"
