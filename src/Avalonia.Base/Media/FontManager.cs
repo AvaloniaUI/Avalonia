@@ -34,10 +34,37 @@ namespace Avalonia.Media
 
             var options = AvaloniaLocator.Current.GetService<FontManagerOptions>();
             _fontFallbacks = options?.FontFallbacks;
-            _fontFamilyMappings = options?.FontFamilyMappings;
+            _fontFamilyMappings = CreateFontFamilyMappings(options?.FontFamilyMappings);
 
             var defaultFontFamilyName = GetDefaultFontFamilyName(options);
             DefaultFontFamily = new FontFamily(defaultFontFamilyName);
+        }
+
+        /// <summary>
+        /// Copies the configured mappings into a case-insensitive dictionary. Family names are matched
+        /// case-insensitively everywhere else, so a mapping must apply whatever casing the requested
+        /// name arrives in - and the dictionary handed to <see cref="FontManagerOptions"/> carries
+        /// whichever comparer its author happened to give it.
+        /// </summary>
+        private static IReadOnlyDictionary<string, FontFamily>? CreateFontFamilyMappings(
+            IReadOnlyDictionary<string, FontFamily>? fontFamilyMappings)
+        {
+            if (fontFamilyMappings is null || fontFamilyMappings.Count == 0)
+            {
+                return null;
+            }
+
+            var mappings = new Dictionary<string, FontFamily>(fontFamilyMappings.Count, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var mapping in fontFamilyMappings)
+            {
+                // Names that collide only by casing were distinct entries before the copy. Take the
+                // last rather than throwing: a mapping table is configuration, and failing here would
+                // bring the application down at startup.
+                mappings[mapping.Key] = mapping.Value;
+            }
+
+            return mappings;
         }
 
         /// <summary>

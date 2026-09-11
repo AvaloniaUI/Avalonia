@@ -141,31 +141,25 @@ internal static class UnicodeDataGenerator
         var scriptMappings = CreateNameToIndexMappings(scriptEntries);
         var scriptTagMappings = CreateTagToIndexMappings(scriptEntries);
 
+        // Generate enum files for LineBreak and WordBreak — still needed by PropertyValueAliasHelper.
+        // The trie data for these properties now lives in SegmentationTrie.
         var lineBreakClassEntries = UnicodeEnumsGenerator.CreateLineBreakClassEnum(outputDir);
-        var lineBreakClassMappings = CreateNameAndTagToIndexMappings(lineBreakClassEntries);
-
         var wordBreakClassEntries = UnicodeEnumsGenerator.CreateWordBreakClassEnum(outputDir);
-        var wordBreakClassMappings = CreateNameAndTagToIndexMappings(wordBreakClassEntries);
 
         unicodeData = GetUnicodeData(
             generalCategoryMappings,
-            scriptMappings,
-            lineBreakClassMappings,
-            wordBreakClassMappings);
+            scriptMappings);
 
         var scriptExtensionsSets = AssignScriptExtensions(unicodeData, scriptTagMappings);
 
-        // Unassigned code points are not listed in every UCD file, so the trie
-        // default must match the explicit fallback classes rather than enum zero.
-        var initialValue = lineBreakClassMappings["XX"] << UnicodeData.LINEBREAK_SHIFT;
-        var unicodeDataTrieBuilder = new UnicodeTrieBuilder((uint)initialValue);
+        // UnicodeDataTrie now carries only GeneralCategory + Script + ScriptExtensions.
+        // Default 0 is correct: Category.Other (index 0) and Script.Unknown (index 0).
+        var unicodeDataTrieBuilder = new UnicodeTrieBuilder(0);
 
         foreach (var properties in unicodeData.Values)
         {
-            //[script extensions]|[word break]|[line break]|[script]|[category]
+            //[script extensions]|[script]|[category]
             var value = ((uint)properties.ScriptExtensionsIndex << UnicodeData.SCRIPTEXTENSIONS_SHIFT) |
-                        ((uint)properties.WordBreakClass << UnicodeData.WORDBREAK_SHIFT) |
-                        ((uint)properties.LineBreakClass << UnicodeData.LINEBREAK_SHIFT) |
                         ((uint)properties.Script << UnicodeData.SCRIPT_SHIFT) | (uint)properties.GeneralCategory;
 
             unicodeDataTrieBuilder.Set(properties.Codepoint, value);
@@ -404,9 +398,7 @@ internal static class UnicodeDataGenerator
 
     private static Dictionary<int, UnicodeDataItem> GetUnicodeData(
         IReadOnlyDictionary<string, int> generalCategoryMappings,
-        IReadOnlyDictionary<string, int> scriptMappings,
-        IReadOnlyDictionary<string, int> lineBreakClassMappings,
-        IReadOnlyDictionary<string, int> wordBreakClassMappings)
+        IReadOnlyDictionary<string, int> scriptMappings)
     {
         var unicodeData = new Dictionary<int, UnicodeDataItem>();
 
@@ -420,31 +412,6 @@ internal static class UnicodeDataGenerator
         {
             var script = scriptMappings[name];
             AddScriptRange(unicodeData, range, script);
-        }
-
-        foreach (var (range, name) in ReadLineBreakClassData())
-        {
-            var lineBreakClass = lineBreakClassMappings[name];
-            AddLineBreakClassRange(unicodeData, range, lineBreakClass);
-        }
-
-        foreach (var (range, name) in ReadWordBreakClassData())
-        {
-            var wordBreakClass = wordBreakClassMappings[name];
-            AddWordBreakClassRange(unicodeData, range, wordBreakClass);
-        }
-
-        foreach (var properties in unicodeData.Values)
-        {
-            if (properties.LineBreakClass < 0)
-            {
-                properties.LineBreakClass = lineBreakClassMappings["XX"];
-            }
-
-            if (properties.WordBreakClass < 0)
-            {
-                properties.WordBreakClass = wordBreakClassMappings["Other"];
-            }
         }
 
         return unicodeData;
@@ -545,36 +512,6 @@ internal static class UnicodeDataGenerator
             var codepoint = codepoints[range.Start];
             codepoint.Bracket = range.End;
             codepoint.BracketType = bracketType;
-        }
-    }
-
-    private static void AddLineBreakClassRange(Dictionary<int, UnicodeDataItem> codepoints, CodepointRange range, int lineBreakClass)
-    {
-        for (var i = range.Start; i <= range.End; i++)
-        {
-            if (!codepoints.ContainsKey(i))
-            {
-                codepoints.Add(i, new UnicodeDataItem { Codepoint = i, LineBreakClass = lineBreakClass });
-            }
-            else
-            {
-                codepoints[i].LineBreakClass = lineBreakClass;
-            }
-        }
-    }
-
-    private static void AddWordBreakClassRange(Dictionary<int, UnicodeDataItem> codepoints, CodepointRange range, int wordBreakClass)
-    {
-        for (var i = range.Start; i <= range.End; i++)
-        {
-            if (!codepoints.ContainsKey(i))
-            {
-                codepoints.Add(i, new UnicodeDataItem { Codepoint = i, WordBreakClass = wordBreakClass });
-            }
-            else
-            {
-                codepoints[i].WordBreakClass = wordBreakClass;
-            }
         }
     }
 
@@ -765,9 +702,6 @@ internal static class UnicodeDataGenerator
         public int Codepoint { get; set; }
         public int Script { get; set; }
         public int GeneralCategory { get; set; }
-        public int BiDiClass { get; set; }
-        public int LineBreakClass { get; set; } = -1;
-        public int WordBreakClass { get; set; } = -1;
         public int ScriptExtensionsIndex { get; set; }
     }
 
