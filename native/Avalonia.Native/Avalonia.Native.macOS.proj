@@ -11,8 +11,7 @@
   <Import Project="../../build/AvaloniaNative.props" />
 
   <PropertyGroup>
-    <!-- There is nothing to compile here: the target framework is only needed so that PackageReference
-         can be restored, and SkipCompilerExecution keeps csc from producing an assembly. -->
+    <!-- There is nothing to compile here: the target framework is only needed so that PackageReference can be restored. -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableDefaultItems>false</EnableDefaultItems>
     <IsPackable>false</IsPackable>
