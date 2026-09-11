@@ -17,7 +17,7 @@ using NWayland.Protocols.XdgShell;
 
 namespace Avalonia.Wayland;
 
-internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
+internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptionsToplevelImplFeature
 {
     private WaylandSurfaceCreateResult<WXdgTopLevelProxy>? _handle;
     private WXdgTopLevelProxy? _surfaceProxy;
@@ -36,6 +36,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
     // This is a limitation of V1 of the protocol that's supported in the wild
     private bool _csdSticky;
     private string? _title;
+    private string? _appId;
     private FallbackStorageProvider? _storageProvider;
 
     public WindowImpl(WaylandWorkerClient client) : base(client)
@@ -105,6 +106,8 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
             return _textInputMethod ??= new WaylandTextInputMethod(this);
         if (featureType == typeof(IStorageProvider))
             return _storageProvider ??= new FallbackStorageProvider(BuildStorageFactories());
+        if (featureType == typeof(IWaylandOptionsToplevelImplFeature))
+            return this;
         return base.TryGetFeature(featureType);
     }
 
@@ -230,6 +233,12 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         _title = title;
         _surfaceProxy?.SetTitle(title);
+    }
+
+    public void SetAppId(string? appId)
+    {
+        _appId = appId;
+        _surfaceProxy?.SetAppId(appId ?? Client.Options.AppId);
     }
 
     public void SetParent(IWindowImpl? parent)
