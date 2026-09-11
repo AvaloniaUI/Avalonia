@@ -43,6 +43,8 @@ public static class ResourceExtensions
     }
 
     public static IEnumerable<ResourceEntry> EnumerateResources(
+        this Styles style) => ((IStyle)style).EnumerateResources();
+    public static IEnumerable<ResourceEntry> EnumerateResources(
         this IStyle style)
     {
         if (style is Styles styles)
@@ -76,6 +78,10 @@ public static class ResourceExtensions
     public static IEnumerable<ResourceEntry> EnumerateResources(
         this IResourceProvider resourceProvider, IEnumerable<object> keys)
         => resourceProvider.EnumerateResources(keys, anchor: resourceProvider, themeVariant: null);
+
+    public static IEnumerable<ResourceEntry> EnumerateResources(
+        this IResourceProvider resourceProvider)
+        => resourceProvider.EnumerateResources(anchor: resourceProvider, themeVariant: null);
 
     private static IEnumerable<ResourceEntry> EnumerateResources(
         this IResourceDictionary resourceDictionary, object? anchor, ThemeVariant? themeVariant = null)

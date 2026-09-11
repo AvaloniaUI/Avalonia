@@ -1099,6 +1099,7 @@
       <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
       <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="SystemControlHighlightAccentBrush" />
       <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
+      <x:Double x:Key="TextControlPlaceholderOpacity">0.5</x:Double>
       <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="SystemControlPageTextBaseMediumBrush" />
       <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver"
                       ResourceKey="SystemControlPageTextBaseMediumBrush" />
@@ -1310,6 +1311,7 @@
       <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="#1F9E45" Opacity="0.75" />
       <SolidColorBrush x:Key="NotificationCardWarningBackgroundBrush" Color="#FDB328" Opacity="0.75" />
       <SolidColorBrush x:Key="NotificationCardErrorBackgroundBrush" Color="#BD202C" Opacity="0.75" />
+      <BoxShadows x:Key="NotificationCardBoxShadow">0 6 8 0 #4F000000</BoxShadows>
 
       <!-- Resources for RadioButton.xaml -->
       <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
