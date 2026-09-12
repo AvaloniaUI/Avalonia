@@ -203,6 +203,30 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
+        public void WindowOrder_Owned_Window_Stays_InFront_Of_Topmost_Owner()
+        {
+            Session.FindElementByAccessibilityId("ShowTopmostWindow").Click();
+
+            try
+            {
+                Thread.Sleep(1000);
+
+                var ownerWindowIndex = GetWindowOrder("OwnerWindow");
+                var ownedWindowIndex = GetWindowOrder("OwnedWindow");
+
+                // orderedIndex counts from the front, so the owned window needs the lower index.
+                Assert.True(ownedWindowIndex < ownerWindowIndex,
+                    $"Expected the owned window in front of its topmost owner, but the owner was at " +
+                    $"{ownerWindowIndex} and the owned window at {ownedWindowIndex}.");
+            }
+            finally
+            {
+                CloseWindow("OwnedWindow");
+                CloseWindow("OwnerWindow");
+            }
+        }
+
+        [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Owned_Is_Correct_After_Closing_Window()
         {
             using (OpenWindow(new PixelSize(300, 500), ShowWindowMode.Owned, WindowStartupLocation.CenterOwner))
@@ -439,6 +463,12 @@ namespace Avalonia.IntegrationTests.Appium
             var window = GetWindow(identifier);
             var order = window.FindElementByXPath("//*[@identifier='CurrentOrder']");
             return int.Parse(order.Text);
+        }
+
+        private void CloseWindow(string identifier)
+        {
+            GetWindow(identifier).FindElementByAccessibilityId("_XCUI:CloseWindow").Click();
+            Thread.Sleep(1000);
         }
 
         public enum ShowWindowMode
