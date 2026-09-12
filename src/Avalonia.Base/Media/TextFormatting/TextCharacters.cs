@@ -216,14 +216,25 @@ namespace Avalonia.Media.TextFormatting
 
                         if (fontManager.TryMatchCharacter(fallbackCodepoint, defaultTypeface.Style, defaultTypeface.Weight,
                                 defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
-                                shapingConstraint, out fallbackTypeface)
-                            && !fontManager.TryGetGlyphTypeface(fallbackTypeface, out fallbackGlyphTypeface))
+                                shapingConstraint, out fallbackTypeface))
                         {
-                            // The platform matched a fallback family but its glyph typeface could not
-                            // be loaded; the cluster degrades to .notdef. Surface it for diagnosis.
-                            Logger.TryGet(LogEventLevel.Warning, LogArea.Fonts)?.Log(null,
-                                "Matched fallback typeface {FamilyName} for codepoint U+{Codepoint} but could not load its glyph typeface.",
-                                fallbackTypeface.FontFamily.Name, ((uint)fallbackCodepoint).ToString("X4"));
+                            // Variations follow the text, not the font: the matched fallback
+                            // family renders at the same axis values the primary typeface
+                            // requested (each font clamps to its own axes; CSS behavior).
+                            if (defaultTypeface.FontVariations is { } fallbackVariations)
+                            {
+                                fallbackTypeface = new Typeface(fallbackTypeface.FontFamily, fallbackTypeface.Style,
+                                    fallbackTypeface.Weight, fallbackTypeface.Stretch, fallbackVariations);
+                            }
+
+                            if (!fontManager.TryGetGlyphTypeface(fallbackTypeface, out fallbackGlyphTypeface))
+                            {
+                                // The platform matched a fallback family but its glyph typeface could not
+                                // be loaded; the cluster degrades to .notdef. Surface it for diagnosis.
+                                Logger.TryGet(LogEventLevel.Warning, LogArea.Fonts)?.Log(null,
+                                    "Matched fallback typeface {FamilyName} for codepoint U+{Codepoint} but could not load its glyph typeface.",
+                                    fallbackTypeface.FontFamily.Name, ((uint)fallbackCodepoint).ToString("X4"));
+                            }
                         }
                     }
 
