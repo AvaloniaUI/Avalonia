@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 using Avalonia.OpenGL.Egl;
+using Avalonia.Platform;
 using Avalonia.Reactive;
+using Avalonia.Rendering.Composition;
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition;
@@ -17,6 +20,7 @@ internal class WinUiCompositedWindow : IDisposable
     private readonly IVisual _blur;
     private readonly IVisual _visual;
     private PixelSize _size;
+    private BlurEffect? _appliedBlurEffect;
     private readonly ICompositionSurfaceBrush _surfaceBrush;
     private readonly ICompositionTarget _target;
 
@@ -80,18 +84,30 @@ internal class WinUiCompositedWindow : IDisposable
 
     public void SetSurface(ICompositionSurface surface) => _surfaceBrush.SetSurface(surface);
 
-    public void SetBlur(BlurEffect blurEffect)
+    // Called from the render thread with the transaction (SyncRoot) held, so effect changes
+    // are applied within the same composition batch as the frame they belong to.
+    public void ApplyEffects(CompositionTransparencyLevel transparencyLevel, PlatformThemeVariant themeVariant)
     {
-        lock (_shared.SyncRoot)
+        Debug.Assert(Monitor.IsEntered(_shared.SyncRoot));
+
+        var blurEffect = transparencyLevel switch
         {
-            _blur.SetIsVisible(blurEffect == BlurEffect.Acrylic
-                               || (blurEffect == BlurEffect.MicaLight && _micaLight == null) ||
-                               (blurEffect == BlurEffect.MicaDark && _micaDark == null) ?
-                1 :
-                0);
-            _micaLight?.SetIsVisible(blurEffect == BlurEffect.MicaLight ? 1 : 0);
-            _micaDark?.SetIsVisible(blurEffect == BlurEffect.MicaDark ? 1 : 0);
-        }
+            CompositionTransparencyLevel.AcrylicBlur => BlurEffect.Acrylic,
+            CompositionTransparencyLevel.Mica when themeVariant == PlatformThemeVariant.Dark => BlurEffect.MicaDark,
+            CompositionTransparencyLevel.Mica => BlurEffect.MicaLight,
+            _ => BlurEffect.None
+        };
+        if (_appliedBlurEffect == blurEffect)
+            return;
+
+        _blur.SetIsVisible(blurEffect == BlurEffect.Acrylic
+                           || (blurEffect == BlurEffect.MicaLight && _micaLight == null) ||
+                           (blurEffect == BlurEffect.MicaDark && _micaDark == null) ?
+            1 :
+            0);
+        _micaLight?.SetIsVisible(blurEffect == BlurEffect.MicaLight ? 1 : 0);
+        _micaDark?.SetIsVisible(blurEffect == BlurEffect.MicaDark ? 1 : 0);
+        _appliedBlurEffect = blurEffect;
     }
 
     public IDisposable BeginTransaction()
@@ -102,14 +118,13 @@ internal class WinUiCompositedWindow : IDisposable
 
     public void ResizeIfNeeded(PixelSize size)
     {
-        lock (_shared.SyncRoot)
+        Debug.Assert(Monitor.IsEntered(_shared.SyncRoot));
+
+        if (_size != size)
         {
-            if (_size != size)
-            {
-                _visual.SetSize(new Vector2(size.Width, size.Height));
-                _compositionRoundedRectangleGeometry?.SetSize(new Vector2(size.Width, size.Height));
-                _size = size;
-            }
+            _visual.SetSize(new Vector2(size.Width, size.Height));
+            _compositionRoundedRectangleGeometry?.SetSize(new Vector2(size.Width, size.Height));
+            _size = size;
         }
     }
 }

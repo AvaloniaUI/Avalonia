@@ -16,7 +16,6 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
     private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
     private readonly DirectCompositionShared _shared;
     private DirectCompositedWindow? _window;
-    private BlurEffect _blurEffect;
 
     public DirectCompositedWindowSurface(DirectCompositionShared shared, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
     {
@@ -32,7 +31,6 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
     public IDirect3D11TextureRenderTarget2 CreateRenderTarget(IPlatformGraphicsContext context, IntPtr d3dDevice)
     {
         _window ??= new DirectCompositedWindow(_info, _shared);
-        SetBlur(_blurEffect);
 
         return new DirectCompositedWindowRenderTarget(context, d3dDevice, _shared, _window);
     }
@@ -43,14 +41,8 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
         _window = null;
     }
 
-    // TODO: we can implement BlurEffect.GaussianBlur in with IDCompositionDevice3.CreateGaussianBlurEffect. 
+    // TODO: we can implement BlurEffect.GaussianBlur in with IDCompositionDevice3.CreateGaussianBlurEffect.
     public bool IsBlurSupported(BlurEffect effect) => effect == BlurEffect.None;
-
-    public void SetBlur(BlurEffect enable)
-    {
-        _blurEffect = enable;
-        // _window?.SetBlur(enable);
-    }
 }
 
 internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarget, IDirect3D11TextureRenderTarget2
