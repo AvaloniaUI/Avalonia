@@ -76,6 +76,8 @@ partial class WindowImpl
             Parent._handle = null;
             Parent._surfaceProxy = null;
             proxy?.Disconnect();
+            // The worker's answer, if one was still due, would land on a disposed sink.
+            Parent.CompleteFullscreenRequest(false);
         }
 
         public void OnConfigure(XdgConfigureBatch batch)
@@ -95,6 +97,14 @@ partial class WindowImpl
 
             // Post the ack serial back to the wayland thread for next commit
             _surfaceProxy?.SetPendingAckSerial(batch.Serial);
+        }
+
+        public void OnFullscreenRequestCompleted(int requestId, bool fullscreen)
+        {
+            // Marshalled to UI thread by WXdgTopLevelEventSinkProxy.
+            if (IsDisposed)
+                return;
+            Parent.CompleteFullscreenRequest(fullscreen, requestId);
         }
 
         public void OnDecorationModeChanged(DecorationMode mode)
