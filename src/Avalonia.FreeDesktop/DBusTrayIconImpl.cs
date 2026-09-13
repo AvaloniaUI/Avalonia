@@ -105,21 +105,29 @@ namespace Avalonia.FreeDesktop
             if (_isDisposed || _connection is null)
                 return;
 
-            if (!_serviceConnected && newOwner is not null)
+            if (newOwner is null)
             {
-                _serviceConnected = true;
-                _statusNotifierWatcher = new StatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
+                if (_serviceConnected)
+                {
+                    DestroyTrayIcon();
+                    _serviceConnected = false;
+                    _statusNotifierWatcher = null;
+                }
 
+                return;
+            }
+
+            // The well-known name can change owners without an observable
+            // owner-less interval. Recreate the proxy and register the item
+            // again so a restarted watcher does not lose the tray icon.
+            if (_serviceConnected)
                 DestroyTrayIcon();
 
-                if (_isVisible)
-                    CreateTrayIcon();
-            }
-            else if (_serviceConnected & newOwner is null)
-            {
-                DestroyTrayIcon();
-                _serviceConnected = false;
-            }
+            _serviceConnected = true;
+            _statusNotifierWatcher = new StatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
+
+            if (_isVisible)
+                CreateTrayIcon();
         }
 
         private async void CreateTrayIcon()
