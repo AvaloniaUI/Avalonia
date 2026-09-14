@@ -17,11 +17,17 @@ on:
       api-key:
         description: API key of the NuGet feed.
         required: true
+    outputs:
+      version:
+        description: Version of the published packages.
+        value: ${{ jobs.publish.outputs.version }}
 
 jobs:
   publish:
     name: Publish NuGet Packages
     runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Install .NET
@@ -45,6 +51,19 @@ jobs:
           path: nuget-macos
           run-id: ${{ inputs.run-id || github.run_id }}
           github-token: ${{ (inputs.run-id && github.token) || '' }}
+
+      - name: Get Package Version
+        id: version
+        run: |
+          package=$(basename nuget-windows/Avalonia.[0-9]*.nupkg)
+          version=${package#Avalonia.}
+          version=${version%.nupkg}
+          if [[ ! "$version" =~ ^[0-9A-Za-z.+-]+$ ]]; then
+            echo "::error::Could not determine the package version from '$package'."
+            exit 1
+          fi
+          echo "Package version: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Push to Feed
         run: |
