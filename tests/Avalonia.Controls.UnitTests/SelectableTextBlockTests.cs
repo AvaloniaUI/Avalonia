@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Harfbuzz;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -142,6 +144,25 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(FontStyle.Italic, props.Typeface.Style);
 
                 Assert.Same(target.SelectionForegroundBrush, props.ForegroundBrush);
+            }
+        }
+
+        [Fact]
+        public async Task Pointer_Selection_Is_Published_To_Primary_Selection()
+        {
+            using (UnitTestApplication.Start(TextBoxTests.CreatePrimarySelectionServices()))
+            {
+                var target = new SelectableTextBlock { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Left, new Point(1, 300));
+                mouse.Move(target, new Point(700, 300));
+                mouse.Up(target, MouseButton.Left, new Point(700, 300));
+
+                Assert.Equal("0123", target.SelectedText);
+                Assert.Equal("0123", await window.TryGetClipboard(ClipboardType.PrimarySelection)!.TryGetTextAsync());
             }
         }
 
