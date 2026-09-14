@@ -58,7 +58,7 @@ namespace Avalonia.Media
         /// </returns>
         public StreamGeometryContext Open()
         {
-            return new StreamGeometryContext(StreamImpl.Open(), OnContextDisposed);
+            return new StreamGeometryContext(StreamImpl.Open());
         }
 
         /// <inheritdoc/>
@@ -67,15 +67,5 @@ namespace Avalonia.Media
         // The stream itself. PlatformImpl can't be used for this: it is wrapped when Transform is set.
         private IStreamGeometryImpl StreamImpl =>
             _impl ??= AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>().CreateStreamGeometry();
-
-        private void OnContextDisposed()
-        {
-            // A transformed geometry caches a transformed copy of the stream, which would otherwise keep
-            // showing the old content.
-            if (Transform is { } transform && transform.Value != Matrix.Identity)
-            {
-                InvalidateGeometry();
-            }
-        }
     }
 }
