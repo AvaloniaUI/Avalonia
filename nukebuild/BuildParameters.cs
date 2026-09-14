@@ -170,15 +170,6 @@ public partial class Build
 
             throw new InvalidOperationException("Not running on a CI system");
         }
-
-        public int? GetPullRequestNumber()
-        {
-            if (IsRunningOnGitHubActions)
-                return GitHubActions.Instance.PullRequestNumber;
-
-            var prNumber = Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER");
-            return int.TryParse(prNumber, out var result) ? result : null;
-        }
     }
 
 }
