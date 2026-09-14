@@ -540,7 +540,12 @@ namespace Avalonia.Controls
         }
 
         private (int Start, int End) GetSelectionRange()
-            => (Math.Min(SelectionStart, SelectionEnd), Math.Max(SelectionStart, SelectionEnd));
+        {
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
+
+            return (Math.Min(selectionStart, selectionEnd), Math.Max(selectionStart, selectionEnd));
+        }
 
         private void OnInlinesInvalidated(object? sender, EventArgs e) => OnTextOrInlinesChanged();
 
