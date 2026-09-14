@@ -162,12 +162,13 @@ public partial class Build
 
         long GetCiBuildNumber()
         {
-            if (IsRunningOnGitHubActions)
-                return GitHubActions.Instance.RunNumber;
+            // The GitHub Actions number starts at 1 and isn't configurable. Avoid duplicates with old Azure Pipelines.
+            const long offset = 100000;
 
-            var buildId = Environment.GetEnvironmentVariable("BUILD_BUILDID") ??
-                          throw new InvalidOperationException("Missing environment variable BUILD_BUILDID");
-            return long.Parse(buildId);
+            if (IsRunningOnGitHubActions)
+                return offset + GitHubActions.Instance.RunNumber;
+
+            throw new InvalidOperationException("Not running on a CI system");
         }
 
         public int? GetPullRequestNumber()

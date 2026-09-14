@@ -25,9 +25,9 @@
       "type": "string",
       "enum": [
         "BuildToNuGetCache",
-        "CiAzureLinux",
-        "CiAzureOSX",
-        "CiAzureWindows",
+        "CiLinux",
+        "CiMacOS",
+        "CiWindows",
         "Clean",
         "Compile",
         "CompileNative",
