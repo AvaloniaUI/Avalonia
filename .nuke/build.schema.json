@@ -33,12 +33,11 @@
         "CompileNative",
         "CreateIntermediateNugetPackages",
         "CreateNugetPackages",
-        "CreateSbom",
         "DownloadApiBaselinePackages",
+        "EmbedSbom",
         "GenerateUnicodeData",
         "InitDnx",
         "OutputApiDiff",
-        "OutputVersion",
         "Package",
         "RunCoreLibsTests",
         "RunHtmlPreviewerTests",
@@ -47,8 +46,7 @@
         "RunTests",
         "RunToolsTests",
         "ValidateApiDiff",
-        "VerifyXamlCompilation",
-        "ZipFiles"
+        "VerifyXamlCompilation"
       ]
     },
     "Verbosity": {
