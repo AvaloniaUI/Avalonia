@@ -2105,7 +2105,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            using var _ = _imClient.BeginChange();
+            using var change = _imClient.BeginChange();
 
             if (e.Pointer.Type != PointerType.Mouse && !_isInTouchSelectionMode)
             {
@@ -2156,7 +2156,7 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                     SetCurrentValue(SelectionEndProperty, caretIndex);
 
-                    PasteFrom(primarySelection);
+                    _ = PasteCoreAsync(primarySelection);
                     e.Handled = true;
                 }
             }
@@ -2166,7 +2166,7 @@ namespace Avalonia.Controls
                 if (!IsPasswordBox && start != end && (start, end) != _selectionAtPointerPress)
                 {
                     // The pointer gesture changed the selection, publish it to the primary selection.
-                    PrimarySelectionHelper.PublishText(this, GetSelection);
+                    _ = PrimarySelectionHelper.PublishTextAsync(this, GetSelection);
                 }
             }
 
@@ -2174,9 +2174,6 @@ namespace Avalonia.Controls
             _isInTouchCaretMode = false;
             _hasTouchSelection = false;
         }
-
-        private async void PasteFrom(IClipboard clipboard)
-            => await PasteCoreAsync(clipboard);
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {

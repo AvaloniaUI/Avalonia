@@ -533,7 +533,7 @@ namespace Avalonia.Controls
                 selection != _selectionAtPointerPress)
             {
                 // The pointer gesture changed the selection, publish it to the primary selection.
-                PrimarySelectionHelper.PublishText(this, GetSelection);
+                _ = PrimarySelectionHelper.PublishTextAsync(this, GetSelection);
             }
 
             e.Pointer.Capture(null);

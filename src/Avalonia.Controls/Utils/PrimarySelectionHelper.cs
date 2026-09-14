@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
 
@@ -10,7 +11,7 @@ internal static class PrimarySelectionHelper
     /// Publishes text to the primary selection clipboard, if available. Failures are logged.
     /// The text is only realized on platforms supporting the primary selection.
     /// </summary>
-    public static async void PublishText(Control source, Func<string?> textFactory)
+    public static async Task PublishTextAsync(Control source, Func<string?> textFactory)
     {
         if (TopLevel.GetTopLevel(source)?.TryGetClipboard(ClipboardType.PrimarySelection) is not { } primarySelection)
             return;
