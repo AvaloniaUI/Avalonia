@@ -41,7 +41,7 @@ public class BeginMoveDragTests : IDisposable
         try
         {
             thrownException = Record.Exception(() => _window.BeginMoveDrag(e));
-            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background, TestContext.Current.CancellationToken);
         }
         finally
         {
