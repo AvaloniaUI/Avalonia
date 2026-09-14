@@ -79,6 +79,7 @@ namespace Avalonia.Win32
         private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
         private Action? _pendingDrag;
+        private Action? _cancelPendingDrag;
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
@@ -785,7 +786,7 @@ namespace Avalonia.Win32
             {
                 if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
                 {
-                    _pendingDrag = StartMoveDrag;
+                    SetPendingDrag(StartMoveDrag);
                 }
                 else
                 {
@@ -815,7 +816,7 @@ namespace Avalonia.Win32
 
                 if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
                 {
-                    _pendingDrag = () => StartResizeDrag(edge);
+                    SetPendingDrag(() => StartResizeDrag(edge));
                 }
                 else
                 {
@@ -829,6 +830,21 @@ namespace Avalonia.Win32
         {
             DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
+        }
+
+        internal void SetPendingDrag(Action drag, Action? cancel = null)
+        {
+            CancelPendingDrag();
+            _pendingDrag = drag;
+            _cancelPendingDrag = cancel;
+        }
+
+        private void CancelPendingDrag()
+        {
+            var cancel = _cancelPendingDrag;
+            _pendingDrag = null;
+            _cancelPendingDrag = null;
+            cancel?.Invoke();
         }
 
         public void SetTitle(string? title)

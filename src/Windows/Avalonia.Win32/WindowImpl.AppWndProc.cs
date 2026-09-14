@@ -173,6 +173,7 @@ namespace Avalonia.Win32
 
                         _framebuffer.Dispose();
                         _inputPane?.Dispose();
+                        CancelPendingDrag();
 
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
@@ -290,6 +291,7 @@ namespace Avalonia.Win32
                             if (message == WindowsMessage.WM_LBUTTONDOWN && _pendingDrag is { } pendingDrag)
                             {
                                 _pendingDrag = null;
+                                _cancelPendingDrag = null;
                                 Dispatcher.UIThread.Post(pendingDrag, DispatcherPriority.Send);
                             }
 
@@ -580,9 +582,9 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
-                        if (message is WindowsMessage.WM_POINTERUP or WindowsMessage.WM_NCPOINTERUP)
+                        if (message != WindowsMessage.WM_POINTERUPDATE)
                         {
-                            _pendingDrag = null;
+                            CancelPendingDrag();
                         }
                         GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
                         var eventType = GetEventType(message, info);
@@ -609,7 +611,7 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
-                        _pendingDrag = null;
+                        CancelPendingDrag();
                         GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
                         var eventType = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.CancelCapture;
                         e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);

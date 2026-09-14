@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
@@ -18,6 +20,32 @@ namespace Avalonia.Win32
 
             triggerEvent.Pointer.Capture(null);
             
+            if (triggerEvent.Pointer.Type != PointerType.Mouse
+                && UnmanagedMethods.GetKeyState(UnmanagedMethods.VirtualKeyStates.VK_LBUTTON) >= 0
+                && TopLevel.GetTopLevel(triggerEvent.Source as Visual)?.PlatformImpl is WindowImpl window)
+            {
+                var result = new TaskCompletionSource<DragDropEffects>(TaskCreationOptions.RunContinuationsAsynchronously);
+                window.SetPendingDrag(
+                    () =>
+                    {
+                        try
+                        {
+                            result.TrySetResult(StartDragDrop(dataTransfer, allowedEffects));
+                        }
+                        catch (Exception ex)
+                        {
+                            result.TrySetException(ex);
+                        }
+                    },
+                    () => result.TrySetResult(DragDropEffects.None));
+                return result.Task;
+            }
+
+            return Task.FromResult(StartDragDrop(dataTransfer, allowedEffects));
+        }
+
+        private static DragDropEffects StartDragDrop(IDataTransfer dataTransfer, DragDropEffects allowedEffects)
+        {
             using var dataObject = new DataTransferToOleDataObjectWrapper(dataTransfer);
             using var src = new OleDragSource();
             var allowed = OleDropTarget.ConvertDropEffect(allowedEffects);
@@ -30,7 +58,7 @@ namespace Avalonia.Win32
             // Force releasing of internal wrapper to avoid memory leak, if drop target keeps com reference.
             dataObject.ReleaseDataTransfer();
 
-            return Task.FromResult(OleDropTarget.ConvertDropEffect((Win32Com.DropEffect)finalEffect));
+            return OleDropTarget.ConvertDropEffect((Win32Com.DropEffect)finalEffect);
         }
     }
 }
