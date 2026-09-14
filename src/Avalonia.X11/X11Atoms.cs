@@ -23,7 +23,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using static Avalonia.X11.Selections.DataFormatHelper;
 using static Avalonia.X11.XLib;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable IdentifierTypo
@@ -186,8 +186,6 @@ namespace Avalonia.X11
         public IntPtr CLIPBOARD_MANAGER;
         public IntPtr SAVE_TARGETS;
         public IntPtr MULTIPLE;
-        public IntPtr OEMTEXT;
-        public IntPtr UNICODETEXT;
         public IntPtr TARGETS;
         public IntPtr UTF8_STRING;
         public IntPtr UTF16_STRING;
@@ -196,14 +194,43 @@ namespace Avalonia.X11
         public IntPtr _KDE_NET_WM_BLUR_BEHIND_REGION;
         public IntPtr INCR;
         public IntPtr _NET_WM_STATE_FOCUSED;
+        public IntPtr AVALONIA_SAVE_TARGETS_PROPERTY_ATOM;
+
+        public IntPtr XdndActionCopy;
+        public IntPtr XdndActionLink;
+        public IntPtr XdndActionMove;
+        public IntPtr XdndAware;
+        public IntPtr XdndDrop;
+        public IntPtr XdndEnter;
+        public IntPtr XdndFinished;
+        public IntPtr XdndLeave;
+        public IntPtr XdndPosition;
+        public IntPtr XdndProxy;
+        public IntPtr XdndSelection;
+        public IntPtr XdndStatus;
+        public IntPtr XdndTypeList;
 
         private readonly Dictionary<string, IntPtr> _namesToAtoms  = new Dictionary<string, IntPtr>();
         private readonly Dictionary<IntPtr, string> _atomsToNames = new Dictionary<IntPtr, string>();
+
         public X11Atoms(IntPtr display)
         {
             _display = display;
             PopulateAtoms(display);
         }
+
+        /// <summary>
+        /// The atoms corresponding to text formats, by order of preference.
+        /// </summary>
+        public IntPtr[] TextFormats
+            => field ??=
+            [
+                UTF16_STRING,
+                UTF8_STRING,
+                GetAtom(MimeTypeTextPlain),
+                GetAtom(MimeTypeTextPlainUtf8),
+                STRING
+            ];
 
         private void InitAtom(ref IntPtr field, string name, IntPtr value)
         {
@@ -232,6 +259,9 @@ namespace Avalonia.X11
 
         public string? GetAtomName(IntPtr atom)
         {
+            if (atom == 0)
+                return null;
+
             if (_atomsToNames.TryGetValue(atom, out var rv))
                 return rv;
             var name = XLib.GetAtomName(_display, atom);

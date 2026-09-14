@@ -1,10 +1,39 @@
 using Avalonia.Controls;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
     public class MeasureTests
     {
+        [Fact]
+        public void Style_Hiding_Control_Should_Be_Applied_Before_Measuring()
+        {
+            var child = new Border
+            {
+                Width = 100,
+                Height = 100,
+                Classes = { "hidden" }
+            };
+            var target = new Decorator
+            {
+                Child = child
+            };
+            var root = new TestRoot(target);
+
+            root.Styles.Add(new Style(x => x.OfType<Border>().Class("hidden"))
+            {
+                Setters = { new Setter(Visual.IsVisibleProperty, false) }
+            });
+
+            target.Measure(Size.Infinity);
+
+            Assert.False(child.IsVisible);
+            Assert.Equal(new Size(0,0), child.DesiredSize);
+            Assert.Equal(new Size(0,0), target.DesiredSize);
+        }
+
         [Fact]
         public void Margin_Should_Be_Included_In_DesiredSize()
         {

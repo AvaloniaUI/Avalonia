@@ -84,7 +84,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         public void Update(PopupPositionerParameters parameters)
         {
             var rect = Calculate(
-                parameters.Size * _popup.Scaling,
+                parameters.Size.Deflate(parameters.Deflate) * _popup.Scaling,
                 new Rect(
                     parameters.AnchorRectangle.TopLeft * _popup.Scaling,
                     parameters.AnchorRectangle.Size * _popup.Scaling),
@@ -92,14 +92,16 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 parameters.Gravity,
                 parameters.ConstraintAdjustment,
                 parameters.Offset * _popup.Scaling);
-           
+
+            rect = rect.Inflate(parameters.Deflate * _popup.Scaling);
+
             _popup.MoveAndResize(
                 rect.Position,
                 rect.Size / _popup.Scaling);
         }
 
         
-        private Rect Calculate(Size translatedSize, 
+        private Rect Calculate(Size translatedSize,
             Rect anchorRect, PopupAnchor anchor, PopupGravity gravity,
             PopupPositionerConstraintAdjustment constraintAdjustment, Point offset)
         {
@@ -109,10 +111,12 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             Rect GetBounds()
             {
                 var screens = _popup.Screens;
+                var anchorPoint = GetAnchorPoint(anchorRect, anchor);
+                var parentGeometryPoint = GetAnchorPoint(parentGeometry, anchor);
                 
-                var targetScreen =  screens.FirstOrDefault(s => s.Bounds.ContainsExclusive(anchorRect.TopLeft))
+                var targetScreen =  screens.FirstOrDefault(s => s.Bounds.ContainsExclusive(anchorPoint))
                                    ?? screens.FirstOrDefault(s => s.Bounds.Intersects(anchorRect))
-                                   ?? screens.FirstOrDefault(s => s.Bounds.ContainsExclusive(parentGeometry.TopLeft))
+                                   ?? screens.FirstOrDefault(s => s.Bounds.ContainsExclusive(parentGeometryPoint))
                                    ?? screens.FirstOrDefault(s => s.Bounds.Intersects(parentGeometry))
                                    ?? screens.FirstOrDefault();
 

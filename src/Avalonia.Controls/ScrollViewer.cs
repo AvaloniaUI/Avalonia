@@ -169,6 +169,18 @@ namespace Avalonia.Controls
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
         private bool _isExpanded;
         private IDisposable? _scrollBarExpandSubscription;
+        private ScrollBar? _horizontalScrollBar;
+        private ScrollBar? _verticalScrollBar;
+
+        /// <summary>
+        /// Gets the horizontal scroll bar from the applied template, if any.
+        /// </summary>
+        internal ScrollBar? HorizontalScrollBar => _horizontalScrollBar;
+
+        /// <summary>
+        /// Gets the vertical scroll bar from the applied template, if any.
+        /// </summary>
+        internal ScrollBar? VerticalScrollBar => _verticalScrollBar;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScrollViewer"/> class.
@@ -696,6 +708,14 @@ namespace Avalonia.Controls
 
         private static double Clamp(double value, double min, double max)
         {
+            // A NaN offset must never survive. Offset is two-way coerced between the ScrollViewer and its
+            // ScrollContentPresenter; because NaN != NaN, a NaN offset never compares equal, so the
+            // coerce/raise cycle never converges and recurses until it overflows the stack (see #21444).
+            if (double.IsNaN(value))
+            {
+                return min;
+            }
+
             return (value < min) ? min : (value > max) ? max : value;
         }
 
@@ -786,6 +806,36 @@ namespace Avalonia.Controls
                 PageDown();
                 e.Handled = true;
             }
+            else if (e.Source == this)
+            {
+                bool rtl = FlowDirection == Media.FlowDirection.RightToLeft;
+                if (e.Key == Key.Left)
+                {
+                    if (rtl)
+                        LineRight();
+                    else
+                        LineLeft();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Right)
+                {
+                    if (rtl)
+                        LineLeft();
+                    else
+                        LineRight();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Up)
+                {
+                    LineUp();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Down)
+                {
+                    LineDown();
+                    e.Handled = true;
+                }
+            }
         }
 
         /// <summary>
@@ -825,6 +875,9 @@ namespace Avalonia.Controls
 
             var horizontalScrollBar = e.NameScope.Find<ScrollBar>("PART_HorizontalScrollBar");
             var verticalScrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar");
+
+            _horizontalScrollBar = horizontalScrollBar;
+            _verticalScrollBar = verticalScrollBar;
 
             var horizontalExpanded = GetExpandedObservable(horizontalScrollBar);
             var verticalExpanded = GetExpandedObservable(verticalScrollBar);

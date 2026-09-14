@@ -30,7 +30,9 @@ partial class X11Window
         }
 
         public override void Show(bool activate, bool isDialog)
-        {            
+        {
+            base.Show(activate, isDialog);
+
             Window._wasMappedAtLeastOnce = true;
 
             if (!activate)
@@ -42,13 +44,36 @@ partial class X11Window
 
             XMapWindow(X11.Display, Handle);
             XFlush(X11.Display);
-            base.Show(activate, isDialog);
         }
 
         public override void Hide()
         {
             XUnmapWindow(X11.Display, Handle);
+
+            if (!Window._overrideRedirect)
+                SendSyntheticUnmapNotify();
+
             base.Hide();
+        }
+
+        // ICCCM 4.1.4: withdrawing also requires a synthetic UnmapNotify, since XUnmapWindow
+        // generates no event when the window manager has already unmapped the window.
+        private void SendSyntheticUnmapNotify()
+        {
+            var ev = new XEvent
+            {
+                UnmapEvent =
+                {
+                    type = XEventName.UnmapNotify,
+                    send_event = 1,
+                    display = X11.Display,
+                    xevent = X11.RootWindow,
+                    window = Handle,
+                    from_configure = 0
+                }
+            };
+            XSendEvent(X11.Display, X11.RootWindow, false,
+                (IntPtr)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask), ref ev);
         }
 
         public override Point PointToClient(PixelPoint point) => new Point(

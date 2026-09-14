@@ -1,4 +1,7 @@
+using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.UnitTests;
 using Xunit;
@@ -773,6 +776,42 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Get_First_Focusable_Element_Skips_Unfocusable_Elements()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var skip1 = new Button { Focusable = false, Content = "s1" };
+                var skip2 = new TextBlock() { Text = "s2" };
+                var skip3 = new StackPanel();
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var target5 = new Button { Focusable = true, Content = "5" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        skip1,
+                        skip2,
+                        skip3,
+                        target4,
+                        target5
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var firstFocusable = FocusManager.FindFirstFocusableElement(container);
+
+                Assert.Equal(target4, firstFocusable);
+
+                firstFocusable = (root.FocusManager as FocusManager)?.FindFirstFocusableElement();
+
+                Assert.Equal(target4, firstFocusable);
+            }
+        }
+
+        [Fact]
         public void Can_Get_Last_Focusable_Element()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
@@ -807,6 +846,42 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Get_Last_Focusable_Element_Skips_Unfocusable_Elements()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip3 = new Button { Focusable = false, Content = "s3" };
+                var skip4 = new TextBlock() { Text = "s4" };
+                var skip5 = new StackPanel();
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        skip3,
+                        skip4,
+                        skip5
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var lastFocusable = FocusManager.FindLastFocusableElement(container);
+
+                Assert.Equal(target2, lastFocusable);
+
+                lastFocusable = (root.FocusManager as FocusManager)?.FindLastFocusableElement();
+
+                Assert.Equal(target2, lastFocusable);
+            }
+        }
+
+        [Fact]
         public void Can_Get_Next_Element()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
@@ -837,6 +912,157 @@ namespace Avalonia.Base.UnitTests.Input
                 var next = focusManager.FindNextElement(NavigationDirection.Next);
 
                 Assert.Equal(next, target2);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Next_Element_Out_Of_Container_With_TabNavigation_Once()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var inside = new Button { Focusable = true, Content = "inside" };
+                var after = new Button { Focusable = true, Content = "after" };
+
+                // The focused element has to sit at least one level below the Once container:
+                // GetFocusParent(focused) must resolve to something *deeper* than that container,
+                // otherwise the reset below happens to land on the correct node and the walk
+                // terminates by accident.
+                var once = new StackPanel
+                {
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
+                    Children =
+                    {
+                        new StackPanel { Children = { inside } }
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children = { once, after }
+                    }
+                };
+
+                var focusManager = FocusManager.GetFocusManager(inside);
+                Assert.NotNull(focusManager);
+                inside.Focus();
+
+                // Before the fix this call never returned: on every Once hit the parent walk was
+                // reset to the focused element's parent, so it oscillated between the same two
+                // nodes forever and burned 100% CPU on the UI thread.
+                var next = focusManager.FindNextElement(NavigationDirection.Next);
+
+                Assert.Equal(after, next);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Previous_Element_Out_Of_Container_With_TabNavigation_Once()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var before = new Button { Name = "before", Focusable = true, Content = "before" };
+                var inside = new Button { Name = "inside", Focusable = true, Content = "inside" };
+
+                // Same shape as the Next case. The Once container itself must stay unfocusable,
+                // otherwise GetPreviousTabStop returns it before reaching the faulty branch.
+                var once = new StackPanel
+                {
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
+                    Children =
+                    {
+                        new StackPanel { Children = { inside } }
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children = { before, once }
+                    }
+                };
+
+                var focusManager = FocusManager.GetFocusManager(inside);
+                Assert.NotNull(focusManager);
+                inside.Focus();
+
+                // Before the fixes this call never returned. The walk must leave the Once
+                // container and land on the element preceding it.
+                var previous = focusManager.FindNextElement(NavigationDirection.Previous);
+
+                Assert.Equal(before, previous);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Previous_Element()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3,
+                        target4
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+                target3.Focus();
+
+                // Must return the closest preceding sibling: not target1 (which merely comes
+                // first) and not target4 (which comes after the focused element).
+                var previous = focusManager.FindNextElement(NavigationDirection.Previous);
+
+                Assert.Equal(target2, previous);
+            }
+        }
+
+        [Fact]
+        public void Previous_Wraps_To_Last_Element_In_Cycle_Container()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var cycle = new StackPanel
+                {
+                    [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = cycle
+                };
+
+                var focusManager = FocusManager.GetFocusManager(target1);
+                Assert.NotNull(focusManager);
+                target1.Focus();
+
+                // Wrapping backwards inside a Cycle scope must land on the last focusable
+                // element, mirroring the forward wrap (last -> first). It used to take the
+                // FIRST element - the focused element itself - making Previous a no-op.
+                var previous = focusManager.FindNextElement(NavigationDirection.Previous);
+
+                Assert.Equal(target3, previous);
             }
         }
 
@@ -1051,6 +1277,190 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Focus_Should_Skip_Elements_With_Focusable_Equal_False()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var skip1 = new Button { Focusable = false, Content = "s1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip2 = new Button { Focusable = false, Content = "s2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        skip1,
+                        target2,
+                        skip2,
+                        target3,
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target1.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target2.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target3.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Skip_Elements_With_IsTabStop_Equal_False()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var skip1 = new Button { IsTabStop = false, Focusable = true, Content = "s1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip2 = new Button { IsTabStop = false, Focusable = true, Content = "s2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        skip1,
+                        target2,
+                        skip2,
+                        target3,
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target1.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target2.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target3.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Skip_TextBlock_Elements()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var skip1 = new TextBlock { Focusable = false, Text = "s1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip2 = new TextBlock { Focusable = false, Text = "s2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        skip1,
+                        target2,
+                        skip2,
+                        target3,
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target1.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target2.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target3.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Skip_Empty_Containers()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var skip1 = new StackPanel();
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var skip2 = new StackPanel();
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        skip1,
+                        target2,
+                        skip2,
+                        target3,
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+
+                var hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target1.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target2.IsFocused);
+                Assert.True(hasMoved);
+
+                hasMoved = focusManager.TryMoveFocus(NavigationDirection.Next);
+
+                Assert.True(target3.IsFocused);
+                Assert.True(hasMoved);
+            }
+        }
+
+        [Fact]
         public void Focus_Should_Move_According_To_XY_Direction()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
@@ -1221,6 +1631,114 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
             Assert.Same(first, window1.FocusManager.GetFocusedElement());
         }
+
+        [Fact]
+        public void Focus_Should_Stay_In_Active_Window()
+        {
+            using var app = UnitTestApplication.Start(
+                TestServices.StyledWindow.With(keyboardDevice: () => new KeyboardDevice()));
+            var first = new Button { Name = "FirstButton" };
+            var second = new Button { Name = "SecondButton" };
+
+            var window1 = new Window
+            {
+                Content = first
+            };
+
+            var window2 = new Window
+            {
+                Content = second
+            };
+
+            window1.Show();
+
+            // Focus the first button in the first window
+            first.Focus();
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(first, window1.FocusManager.GetFocusedElement());
+
+            window2.Show();
+
+            // Focus the second button in the second window
+            second.Focus();
+            Assert.Same(second, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(second, window2.FocusManager.GetFocusedElement());
+
+            // Activate the first window again
+            window1.PlatformImpl?.Activated?.Invoke();
+
+            // Focus should have moved back to the first button in the first window
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(first, window1.FocusManager.GetFocusedElement());
+
+            // Close the second window
+            window2.Close();
+
+            // Focus should still be in the first window
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(first, window1.FocusManager.GetFocusedElement());
+        }
+
+        [Fact]
+        public void Focus_Should_Not_Be_Restored_To_Detached_Control()
+        {
+            using var app = UnitTestApplication.Start(
+                TestServices.StyledWindow.With(keyboardDevice: () => new KeyboardDevice()));
+            var button = new Button { Name = "Button" };
+            MenuItem topLevelMenu;
+            MenuItem childMenu;
+            var menu = new Menu
+            {
+                Items =
+                    {
+                        (topLevelMenu = new MenuItem
+                        {
+                            Header = "Foo",
+                            Items =
+                            {
+                                (childMenu = new MenuItem { Header = "Bar" })
+                            }
+                        }),
+                    }
+            };
+            var panel = new StackPanel();
+            panel.Children.Add(button);
+            panel.Children.Add(menu);
+
+            var window = new Window
+            {
+                Content = panel,
+                Name = "Window1"
+            };
+
+            window.Show();
+
+            // Focus the button
+            button.Focus();
+            Assert.Same(button, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(button, window.FocusManager.GetFocusedElement());
+
+
+            // Open the menu and focus the child menu
+            menu.Open();
+            topLevelMenu.IsSubMenuOpen = true;
+            childMenu.Focus();
+
+            // Remove the previously focused button.
+            panel.Children.Remove(button);
+
+
+            // Close the menus.
+            menu.Close();
+            topLevelMenu.Close();
+
+            window.PlatformImpl?.Activated?.Invoke();
+
+            // When window is activated, focus should be empty
+            Assert.Same(null, KeyboardDevice.Instance?.FocusedElement);
+            Assert.Same(null, window.FocusManager.GetFocusedElement());
+        }
+
 
         private class TestFocusScope : Panel, IFocusScope
         {

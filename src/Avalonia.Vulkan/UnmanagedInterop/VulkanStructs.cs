@@ -700,6 +700,33 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkOffset3D dstOffsets2;
     }
 
+    struct VkBuffer
+    {
+        public ulong Handle;
+    }
+
+    unsafe struct VkBufferCreateInfo
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public uint32_t flags;
+        public VkDeviceSize size;
+        public VkBufferUsageFlags usage;
+        public VkSharingMode sharingMode;
+        public uint32_t queueFamilyIndexCount;
+        public uint32_t* pQueueFamilyIndices;
+    }
+
+    struct VkBufferImageCopy
+    {
+        public VkDeviceSize bufferOffset;
+        public uint32_t bufferRowLength;
+        public uint32_t bufferImageHeight;
+        public VkImageSubresourceLayers imageSubresource;
+        public VkOffset3D imageOffset;
+        public VkExtent3D imageExtent;
+    }
+
     unsafe struct VkPresentInfoKHR
     {
         public VkStructureType sType;

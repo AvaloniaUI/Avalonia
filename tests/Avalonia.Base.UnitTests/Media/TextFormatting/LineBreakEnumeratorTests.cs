@@ -20,6 +20,14 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void ShouldHandleEmptyString()
+        {
+            var lineBreaker = new LineBreakEnumerator(string.Empty);
+
+            Assert.False(lineBreaker.MoveNext(out _));
+        }
+
+        [Fact]
         public void BasicLatinTest()
         {
             var lineBreaker = new LineBreakEnumerator("Hello World\r\nThis is a test.");

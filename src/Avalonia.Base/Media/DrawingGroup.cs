@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -34,6 +35,9 @@ namespace Avalonia.Media
                 (o, v) => o.Children = v);
 
         private DrawingCollection _children = new DrawingCollection();
+
+        public DrawingGroup()
+            => _children.CollectionChanged += ChildrenCollectionChanged;
 
         public double Opacity
         {
@@ -81,11 +85,45 @@ namespace Avalonia.Media
             get => _children;
             set
             {
+                if (ReferenceEquals(_children, value))
+                    return;
+
+                _children.CollectionChanged -= ChildrenCollectionChanged;
+                foreach (var child in _children)
+                    child.Invalidated -= ChildInvalidated;
+
                 SetAndRaise(ChildrenProperty, ref _children, value);
+
+                _children.CollectionChanged += ChildrenCollectionChanged;
+                foreach (var child in _children)
+                    child.Invalidated += ChildInvalidated;
             }
         }
 
         public DrawingContext Open() => new DrawingGroupDrawingContext(this);
+
+        private void ChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+                throw new NotSupportedException();
+
+            if (e.OldItems is not null)
+            {
+                foreach (Drawing child in e.OldItems)
+                    child.Invalidated -= ChildInvalidated;
+            }
+
+            if (e.NewItems is not null)
+            {
+                foreach (Drawing child in e.NewItems)
+                    child.Invalidated += ChildInvalidated;
+            }
+
+            RaiseInvalidated();
+        }
+
+        private void ChildInvalidated(object? sender, EventArgs e)
+            => RaiseInvalidated();
 
         internal override void DrawCore(DrawingContext context)
         {

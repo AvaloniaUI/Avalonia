@@ -110,6 +110,50 @@ public class DrawingGroupTests
         }
     }
 
+    [Fact]
+    public void Invalidated_Is_Raised_When_Child_Is_Added_Or_Removed()
+    {
+        var group = new DrawingGroup();
+        var child = new GeometryDrawing();
+        var count = 0;
+        group.Invalidated += (_, _) => count++;
+
+        group.Children.Add(child);
+        Assert.Equal(1, count);
+
+        group.Children.Remove(child);
+        Assert.Equal(2, count);
+    }
+
+    [Fact]
+    public void Invalidated_Is_Raised_When_Child_Changes()
+    {
+        var child = new GeometryDrawing();
+        var group = new DrawingGroup();
+        group.Children.Add(child);
+
+        var count = 0;
+        group.Invalidated += (_, _) => count++;
+
+        child.Brush = Brushes.Red;
+        Assert.True(count > 0);
+    }
+
+    [Fact]
+    public void Removed_Child_Is_No_Longer_Tracked()
+    {
+        var child = new GeometryDrawing();
+        var group = new DrawingGroup();
+        group.Children.Add(child);
+        group.Children.Remove(child);
+
+        var count = 0;
+        group.Invalidated += (_, _) => count++;
+
+        child.Brush = Brushes.Red;
+        Assert.Equal(0, count);
+    }
+
     private class MockDrawingContext : DrawingContext
     {
         public IEffect? Effect { get; private set; }

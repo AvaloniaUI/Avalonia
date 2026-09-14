@@ -38,6 +38,12 @@ public class VulkanInstanceCreationOptions
     /// </summary>
     public bool UseDebug { get; set; }
 
+    /// <summary>
+    /// Requires and enables VK_KHR_surface on the created instance. Disable for offscreen-only
+    /// rendering with drivers that don't expose the extension.
+    /// </summary>
+    public bool RequireSurfaceExtension { get; set; } = true;
+
     /*
 
 
@@ -58,8 +64,14 @@ public class VulkanDeviceCreationOptions
     /// Selects the first suitable discrete gpu available
     /// </summary>
     public bool PreferDiscreteGpu { get; set; }
-    
+
     public bool RequireComputeBit { get; set; }
+
+    /// <summary>
+    /// Requires and enables VK_KHR_swapchain on the created device. Disable for offscreen-only
+    /// rendering with drivers that don't expose the extension.
+    /// </summary>
+    public bool RequireSwapchainExtension { get; set; } = true;
 }
 
 public class VulkanPlatformSpecificOptions

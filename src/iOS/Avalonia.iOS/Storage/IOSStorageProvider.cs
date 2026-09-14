@@ -43,6 +43,12 @@ internal class IOSStorageProvider : IStorageProvider
         }
     }
 
+    public async Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options)
+    {
+        var files = await OpenFilePickerAsync(options).ConfigureAwait(false);
+        return new OpenFilePickerResult { Files = files };
+    }
+
     private async Task<IReadOnlyList<IStorageFile>> OpenImagePickerAsync(FilePickerOpenOptions options)
     {
 #pragma warning disable CA1422 // Validate platform compatibility - we can't use PHImagePicker here.

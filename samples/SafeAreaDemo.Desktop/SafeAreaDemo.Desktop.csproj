@@ -15,5 +15,6 @@
     <ProjectReference Include="..\SafeAreaDemo\SafeAreaDemo.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\SampleApp.props" />
+  <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
 </Project>

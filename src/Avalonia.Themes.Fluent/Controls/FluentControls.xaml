@@ -52,6 +52,10 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabControl.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TableView.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TableViewCell.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TableViewColumnHeader.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TableViewRow.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStrip.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStripItem.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml" />

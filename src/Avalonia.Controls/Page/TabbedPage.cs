@@ -193,6 +193,8 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
+            var requestedIndex = SelectedIndex;
+
             if (_tabControl != null)
             {
                 _tabControl.SelectionChanged -= TabControl_SelectionChanged;
@@ -206,13 +208,14 @@ namespace Avalonia.Controls
 
             if (_tabControl != null)
             {
-                _tabControl.SelectionChanged += TabControl_SelectionChanged;
                 _tabControl.ContainerPrepared += OnContainerPrepared;
                 _tabControl.ContainerClearing += OnContainerClearing;
                 _tabControl.ItemsSource = (IEnumerable?)ItemsSource ?? Pages;
 
-                if (SelectedIndex >= 0)
-                    _tabControl.SelectedIndex = SelectedIndex;
+                if (requestedIndex >= 0)
+                    _tabControl.SelectedIndex = requestedIndex;
+
+                _tabControl.SelectionChanged += TabControl_SelectionChanged;
 
                 if (PageTransition != null)
                     _tabControl.PageTransition = PageTransition;

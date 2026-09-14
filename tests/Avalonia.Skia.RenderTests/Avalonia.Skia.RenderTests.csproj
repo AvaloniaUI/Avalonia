@@ -35,6 +35,7 @@
     <PackageReference Include="Moq" />
     <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="System.Reactive" />
+    <PackageReference Include="unofficial.mesa.softwarerenderer" />
   </ItemGroup>
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\SkiaSharp.props" />

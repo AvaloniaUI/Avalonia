@@ -5,8 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ExecutionContext = System.Threading.ExecutionContext;
-
 namespace Avalonia.Threading;
 
 [DebuggerDisplay("{DebugDisplay}")]
@@ -42,7 +40,7 @@ public class DispatcherOperation
     private EventHandler? _aborted;
     private EventHandler? _completed;
     private DispatcherPriority _priority;
-    private readonly ExecutionContext? _executionContext;
+    private readonly CulturePreservingExecutionContext? _executionContext;
 
     internal DispatcherOperation(Dispatcher dispatcher, DispatcherPriority priority, Action callback, bool throwOnUiThread,
         bool captureExecutionContext = true) :
@@ -57,7 +55,7 @@ public class DispatcherOperation
         ThrowOnUiThread = throwOnUiThread;
         Priority = priority;
         Dispatcher = dispatcher;
-        _executionContext = captureExecutionContext ? ExecutionContext.Capture() : null;
+        _executionContext = captureExecutionContext ? CulturePreservingExecutionContext.Capture() : null;
     }
 
     internal string DebugDisplay
@@ -275,8 +273,8 @@ public class DispatcherOperation
             {
                 if (_executionContext is { } executionContext)
                 {
-                    ExecutionContext.Restore(executionContext);
-                    InvokeCore();
+                    CulturePreservingExecutionContext.Run(
+                        executionContext, static s => ((DispatcherOperation)s!).InvokeCore(), this);
                 }
                 else
                 {

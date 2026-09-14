@@ -1689,6 +1689,13 @@ namespace Avalonia.Vulkan.UnmanagedInterop
     }
 
     [Flags]
+    enum VkBufferUsageFlags
+    {
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001,
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT = 0x00000002,
+    }
+
+    [Flags]
     enum VkImageUsageFlags
     {
         VK_IMAGE_USAGE_TRANSFER_SRC_BIT = 0x00000001,

@@ -60,6 +60,7 @@ public partial class Build
         public AbsolutePath ArtifactsDir { get; }
         public AbsolutePath NugetIntermediateRoot { get; }
         public AbsolutePath NugetRoot { get; }
+        public AbsolutePath SbomRoot { get; }
         public AbsolutePath ZipRoot { get; }
         public AbsolutePath TestResultsRoot { get; }
         public string DirSuffix { get; }
@@ -139,6 +140,7 @@ public partial class Build
             ArtifactsDir = RootDirectory / "artifacts";
             NugetRoot = ArtifactsDir / "nuget";
             NugetIntermediateRoot = RootDirectory / "build-intermediate" / "nuget";
+            SbomRoot = ArtifactsDir / "sbom";
             ZipRoot = ArtifactsDir / "zip";
             TestResultsRoot = ArtifactsDir / "test-results";
             BuildDirs = RootDirectory.GlobDirectories("**/bin")

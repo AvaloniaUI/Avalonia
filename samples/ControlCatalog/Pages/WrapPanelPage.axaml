@@ -1,0 +1,120 @@
+<ContentPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.WrapPanelPage"
+             x:DataType="viewModels:WrapPanelPageViewModel"
+             Header="WrapPanel">
+
+  <ContentPage.Styles>
+    <Style Selector="Border.item">
+      <Setter Property="Background" Value="#4C8BF5" />
+      <Setter Property="BorderBrush" Value="#1A4FB8" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="3" />
+    </Style>
+    <Style Selector="Border.item > TextBlock">
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </ContentPage.Styles>
+
+  <DockPanel>
+
+    <TextBlock Text="A panel which lays out its children in lines, wrapping to a new line when the current one is full."
+               Classes="h2"
+               DockPanel.Dock="Top" />
+
+    <Grid ColumnDefinitions="*,Auto">
+      <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
+              BorderThickness="1"
+              Margin="0,10,10,10"
+              Grid.Column="0">
+        <ItemsControl ItemsSource="{Binding Items}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel ItemsAlignment="{Binding ItemsAlignment}"
+                         Orientation="{Binding Orientation}"
+                         ItemWidth="{Binding EffectiveItemWidth}"
+                         ItemHeight="{Binding EffectiveItemHeight}"
+                         ItemSpacing="{Binding ItemSpacing}"
+                         LineSpacing="{Binding LineSpacing}" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border Classes="item" Padding="{Binding Padding}">
+                <TextBlock Text="{Binding Number}" />
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Border>
+
+      <StackPanel Width="220"
+                  Margin="0,10,0,0"
+                  Spacing="4"
+                  VerticalAlignment="Top"
+                  Grid.Column="1">
+
+        <TextBlock Text="ItemsAlignment" />
+        <ComboBox Name="ItemsAlignmentSelector"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding ItemsAlignments}"
+                  SelectedItem="{Binding ItemsAlignment}" />
+
+        <TextBlock Text="Orientation" Margin="0,8,0,0" />
+        <ComboBox Name="OrientationSelector"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Orientations}"
+                  SelectedItem="{Binding Orientation}" />
+
+        <TextBlock Text="{Binding ItemSpacing, StringFormat='{}ItemSpacing: {0:F0}'}"
+                   Margin="0,8,0,0" />
+        <Slider Name="ItemSpacingSlider"
+                Minimum="0"
+                Maximum="40"
+                TickFrequency="5"
+                IsSnapToTickEnabled="True"
+                Value="{Binding ItemSpacing}" />
+
+        <TextBlock Text="{Binding LineSpacing, StringFormat='{}LineSpacing: {0:F0}'}" />
+        <Slider Name="LineSpacingSlider"
+                Minimum="0"
+                Maximum="40"
+                TickFrequency="5"
+                IsSnapToTickEnabled="True"
+                Value="{Binding LineSpacing}" />
+
+        <CheckBox Name="ItemWidthCheckBox" Margin="0,8,0,0"
+                  IsChecked="{Binding IsItemWidthEnabled}"
+                  Content="{Binding ItemWidthValue, StringFormat='{}ItemWidth: {0:F0}'}" />
+        <Slider Name="ItemWidthSlider"
+                Minimum="20"
+                Maximum="250"
+                TickFrequency="10"
+                IsSnapToTickEnabled="True"
+                Value="{Binding ItemWidthValue}"
+                IsEnabled="{Binding IsItemWidthEnabled}" />
+
+        <CheckBox Name="ItemHeightCheckBox"
+                  IsChecked="{Binding IsItemHeightEnabled}"
+                  Content="{Binding ItemHeightValue, StringFormat='{}ItemHeight: {0:F0}'}" />
+        <Slider Name="ItemHeightSlider"
+                Minimum="20"
+                Maximum="250"
+                TickFrequency="10"
+                IsSnapToTickEnabled="True"
+                Value="{Binding ItemHeightValue}"
+                IsEnabled="{Binding IsItemHeightEnabled}" />
+
+      </StackPanel>
+
+    </Grid>
+
+  </DockPanel>
+</ContentPage>

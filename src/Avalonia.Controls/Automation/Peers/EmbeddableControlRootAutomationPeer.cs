@@ -33,7 +33,7 @@ namespace Avalonia.Controls.Automation.Peers
 
         public AutomationPeer? GetPeerFromPoint(Point p)
         {
-            var hit = Owner.GetVisualAt(p)?.FindAncestorOfType<Control>();
+            var hit = Owner.GetVisualAt(p)?.FindAncestorOfType<Control>(includeSelf: true);
 
             if (hit is null)
                 return null;

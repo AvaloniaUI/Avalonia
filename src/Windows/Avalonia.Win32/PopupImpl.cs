@@ -1,7 +1,10 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
@@ -10,6 +13,7 @@ namespace Avalonia.Win32
     {
         private readonly IWindowBaseImpl? _parent;
         private bool _dropShadowHint = true;
+        private bool _isHitTestVisible = true;
         private Size? _maxAutoSize;
 
 
@@ -53,8 +57,7 @@ namespace Avalonia.Win32
                 UnmanagedMethods.WindowStyles.WS_CLIPCHILDREN;
 
             UnmanagedMethods.WindowStyles exStyle =
-                UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW |
-                UnmanagedMethods.WindowStyles.WS_EX_TOPMOST;
+                UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;
 
             var result = UnmanagedMethods.CreateWindowEx(
                 (int)exStyle,
@@ -85,6 +88,8 @@ namespace Avalonia.Win32
                     goto default;
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEACTIVATE:
                     return (IntPtr)UnmanagedMethods.MouseActivate.MA_NOACTIVATE;
+                case UnmanagedMethods.WindowsMessage.WM_NCHITTEST when !_isHitTestVisible:
+                    return (IntPtr)UnmanagedMethods.HitTestValues.HTTRANSPARENT;
                 default:
                     return base.WndProc(hWnd, msg, wParam, lParam);
             }
@@ -148,6 +153,11 @@ namespace Avalonia.Win32
             _dropShadowHint = enabled;
 
             EnableBoxShadow(Handle.Handle, enabled);
+        }
+
+        public void SetHitTestVisible(bool isHitTestVisible)
+        {
+            _isHitTestVisible = isHitTestVisible;
         }
 
         public void TakeFocus()

@@ -81,7 +81,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             target.Styles.Add(new SimpleTheme());
             target.Styles.Add(FontStyle);
             await RenderToFile(target);
-            CompareImages(skipImmediate: true);
+            CompareImages(skipImmediate: true, gpuAllowedError: 0.03);
         }
 
         [Fact]

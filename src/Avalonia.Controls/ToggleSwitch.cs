@@ -169,7 +169,7 @@ namespace Avalonia.Controls
         {
             var result = base.RegisterContentPresenter(presenter);
 
-            if (presenter.Name == "Part_OnContentPresenter")
+            if (presenter.Name == "PART_OnContentPresenter")
             {
                 OnContentPresenter = presenter;
                 result = true;

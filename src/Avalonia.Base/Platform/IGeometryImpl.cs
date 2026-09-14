@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Rendering.Composition.Drawing;
 
 namespace Avalonia.Platform
 {
@@ -8,8 +9,10 @@ namespace Avalonia.Platform
     /// Defines the platform-specific interface for a <see cref="Geometry"/>.
     /// </summary>
     [Unstable]
-    public interface IGeometryImpl
+    public interface IGeometryImpl : IRenderDataGeometry
     {
+        IGeometryImpl IRenderDataGeometry.GeometryImpl => this;
+
         /// <summary>
         /// Gets the geometry's bounding rectangle.
         /// </summary>
@@ -42,6 +45,13 @@ namespace Avalonia.Platform
         /// <param name="point">The point.</param>
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
         bool FillContains(Point point);
+
+        /// <summary>
+        /// Returns a value that describes the intersection between the current geometry and the specified geometry
+        /// </summary>
+        /// <param name="geometry">The geometry to test for containment.</param>
+        /// <returns>The <see cref="IntersectionResult"/> describing the intersection between the geometries</returns>
+        IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry);
 
         /// <summary>
         /// Intersects the geometry with another geometry.

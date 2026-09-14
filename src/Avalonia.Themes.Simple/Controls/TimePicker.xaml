@@ -192,6 +192,10 @@
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
     </Style>
+    
+    <Style Selector="^ /template/ Button#PART_FlyoutButton TextBlock">
+      <Setter Property="VerticalAlignment" Value="{TemplateBinding VerticalContentAlignment}"/>
+    </Style>
 
     <Style Selector="^:hasnotime /template/ Button#PART_FlyoutButton TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
@@ -219,6 +223,11 @@
           <Grid Name="ContentPanel"
                 RowDefinitions="*,Auto">
             <Grid Name="PART_PickerContainer">
+              <Grid.Styles>
+                <Style Selector="DateTimePickerPanel > ListBoxItem">
+                  <Setter Property="Theme" Value="{StaticResource SimpleDateTimePickerItem}" />
+                </Style>
+              </Grid.Styles>
               <!--  Ignore col defs here, set in code  -->
               <Panel Name="PART_HourHost"
                      Grid.Column="0">

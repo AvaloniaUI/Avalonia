@@ -51,11 +51,23 @@ namespace Avalonia.Native
 
             base.Init(handle);
 
+            int defaultWidth = 0, defaultHeight = 0;
+
             var monitor = this.TryGetFeature<IScreenImpl>()!.AllScreens
                 .OrderBy(x => x.Scaling)
-                .First(m => m.Bounds.Contains(Position));
+                .FirstOrDefault(m => m.Bounds.Contains(Position));
 
-            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
+            if (monitor != null)
+            {
+                // Emulate Windows 7+ default window size behavior.
+                defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
+                defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
+            }
+
+            defaultWidth = Math.Max(defaultWidth, 300);
+            defaultHeight = Math.Max(defaultHeight, 200);
+
+            Resize(new Size(defaultWidth, defaultHeight), WindowResizeReason.Layout);
         }
 
         public void Activate()
@@ -68,8 +80,10 @@ namespace Avalonia.Native
             Native?.Resize(clientSize.Width, clientSize.Height, (AvnPlatformResizeReason)reason);
         }
         
-        public override void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public override void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
+            var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+            themeVariant ??= settings?.GetColorValues().ThemeVariant ?? PlatformThemeVariant.Light;
             Native?.SetFrameThemeVariant((AvnPlatformThemeVariant)themeVariant);
         }
 

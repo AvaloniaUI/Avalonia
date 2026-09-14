@@ -3,7 +3,7 @@
                     x:ClassModifier="internal">
 
   <ControlTheme x:Key="{x:Type Label}" TargetType="Label">
-    <Setter Property="Padding" Value="3"/>
+    <Setter Property="Padding" Value="{DynamicResource LabelPadding}"/>
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"

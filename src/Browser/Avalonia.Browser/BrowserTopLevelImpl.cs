@@ -144,9 +144,8 @@ namespace Avalonia.Browser
         public Action? LostFocus { get; set; }
         public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
 
-        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            // not in the standard, but we potentially can use "apple-mobile-web-app-status-bar-style" for iOS and "theme-color" for android.
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }

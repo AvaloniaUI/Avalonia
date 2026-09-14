@@ -109,20 +109,14 @@ namespace Avalonia.Input
                     {
                         target.RaiseEvent(e);
                     }
-                    pointer?.Capture(null, CaptureSource.Implicit);
+                    pointer?.CaptureLost(CaptureSource.Implicit);
                 }
             }
 
             if (args.Type == RawPointerEventType.TouchCancel)
             {
                 _pointers.Remove(args.RawPointerId);
-                using (pointer)
-                {
-                    pointer?.Capture(null, CaptureSource.Platform);
-                    pointer?.CaptureGestureRecognizer(null);
-                    if (pointer != null)
-                        pointer.IsGestureRecognitionSkipped = false;
-                }
+                pointer?.Dispose();
             }
 
             if (args.Type == RawPointerEventType.TouchUpdate)
@@ -165,7 +159,7 @@ namespace Avalonia.Input
         internal void PlatformCaptureLost()
         {
             foreach (var pointer in _pointers.Values)
-                pointer.Capture(null);
+                pointer.PlatformCaptureLost();
         }
     }
 }

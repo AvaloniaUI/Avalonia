@@ -20,10 +20,12 @@ namespace Avalonia.Skia
     internal class PlatformRenderInterface : IPlatformRenderInterface
     {
         private readonly long? _maxResourceBytes;
+        private readonly bool? _useStencilBuffers;
 
-        public PlatformRenderInterface(long? maxResourceBytes = null)
+        public PlatformRenderInterface(long? maxResourceBytes = null, bool? useStencilBuffers = null)
         {
             _maxResourceBytes = maxResourceBytes;
+            _useStencilBuffers = useStencilBuffers;
             DefaultPixelFormat = SKImageInfo.PlatformColorType.ToPixelFormat();
         }
 
@@ -35,11 +37,11 @@ namespace Avalonia.Skia
             if (graphicsContext is ISkiaGpu skiaGpu)
                 return new SkiaContext(skiaGpu);
             if (graphicsContext is IGlContext gl)
-                return new SkiaContext(new GlSkiaGpu(gl, _maxResourceBytes));
+                return new SkiaContext(new GlSkiaGpu(gl, _maxResourceBytes, _useStencilBuffers));
             if (graphicsContext is IMetalDevice metal)
-                return new SkiaContext(new SkiaMetalGpu(metal, _maxResourceBytes));
+                return new SkiaContext(new SkiaMetalGpu(metal, _maxResourceBytes, _useStencilBuffers));
             if (graphicsContext is IVulkanPlatformGraphicsContext vulkanContext)
-                return new SkiaContext(new VulkanSkiaGpu(vulkanContext, _maxResourceBytes));
+                return new SkiaContext(new VulkanSkiaGpu(vulkanContext, _maxResourceBytes, _useStencilBuffers));
             throw new ArgumentException("Graphics context of type is not supported");
         }
 

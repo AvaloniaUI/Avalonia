@@ -138,7 +138,13 @@ namespace Avalonia.Data.Core.Parsers
             else if (ParseDot(ref r))
             {
                 nodes.Add(new EmptyExpressionNode());
-                return State.End;
+                return State.AfterMember;
+            }
+            else if (ParseStreamOperator(ref r))
+            {
+                nodes.Add(new EmptyExpressionNode());
+                nodes.Add(new StreamNode());
+                return State.AfterMember;
             }
             else
             {
@@ -371,12 +377,12 @@ namespace Avalonia.Data.Core.Parsers
         {
             ReadOnlySpan<char> ns, typeName;
             ns = ReadOnlySpan<char>.Empty;
-            var typeNameOrNamespace = r.ParseIdentifier();
+            var typeNameOrNamespace = r.ParseTypeIdentifier();
 
             if (!r.End && r.TakeIf(':'))
             {
                 ns = typeNameOrNamespace;
-                typeName = r.ParseIdentifier();
+                typeName = r.ParseTypeIdentifier();
             }
             else
             {

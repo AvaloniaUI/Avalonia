@@ -99,7 +99,7 @@ internal class SwapChainTopLevelImpl : ITopLevelImpl
 
     public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels) { }
 
-    public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+    public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant) { }
 
     /// <summary>
     /// Optional IME implementation provided by the host.

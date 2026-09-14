@@ -332,7 +332,7 @@ internal static class OleDataObjectHelper
         return files;
     }
 
-    private static byte[] ReadBytesFromHGlobal(IntPtr hGlobal)
+    internal static byte[] ReadBytesFromHGlobal(IntPtr hGlobal)
     {
         var source = GlobalLock(hGlobal);
         try
@@ -445,7 +445,7 @@ internal static class OleDataObjectHelper
             if (bitmap != null)
             {
                 using var stream = new MemoryStream();
-                bitmap.Save(stream);
+                bitmap.Save(stream, PngBitmapEncoderOptions.Default);
 
                 return WriteBytesToHGlobal(ref hGlobal, stream.ToArray().AsSpan());
             }

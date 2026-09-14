@@ -62,7 +62,7 @@ namespace Avalonia.Rendering.Composition.Server
             _overlays = new CompositionTargetOverlays(this);
             var platformRender = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
-            if (platformRender?.SupportsRegions == true && compositor.Options.UseRegionDirtyRectClipping != false)
+            if (platformRender?.SupportsRegions == true && compositor.Options.UseRegionDirtyRectClipping == true)
             {
                 var maxRects = compositor.Options.MaxDirtyRects ?? 8;
                 DirtyRects = maxRects <= 0
@@ -205,7 +205,7 @@ namespace Avalonia.Rendering.Composition.Server
             try
             {
                 renderTargetContext =
-                    _renderTarget.CreateDrawingContext(new(PixelSize, Scaling, Size), out properties);
+                    _renderTarget.CreateDrawingContext(new(PixelSize, Scaling, Size, TransparencyLevel), out properties);
             }
             catch (RenderTargetNotReadyException)
             {

@@ -18,6 +18,63 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             _outputHelper = outputHelper;
         }
 
+        [Fact]
+        public void ShouldReportCodepointReadouts()
+        {
+            var wordBreaker = new WordBreakEnumerator("hello world");
+            var segments = new List<(int Offset, int Length, int CodepointOffset, int CodepointLength, string Text)>();
+
+            while (wordBreaker.MoveNext(out var segment))
+            {
+                segments.Add((segment.Offset, segment.Length, segment.CodepointOffset, segment.CodepointLength, segment.Text.ToString()));
+            }
+
+            Assert.Equal(
+                new[]
+                {
+                    (0, 5, 0, 5, "hello"),
+                    (5, 1, 5, 1, " "),
+                    (6, 5, 6, 5, "world")
+                },
+                segments);
+        }
+
+        [Fact]
+        public void ShouldKeepReadoutsConsistentWithText()
+        {
+            // Mixes a combining mark (WB4-absorbed), a surrogate pair and a CRLF so the
+            // code-unit and code-point readouts diverge and every member is exercised.
+            const string text = "áb \U0001D51Ex cr\r\nlf";
+            var wordBreaker = new WordBreakEnumerator(text);
+            var offset = 0;
+            var codepointOffset = 0;
+
+            while (wordBreaker.MoveNext(out var segment))
+            {
+                Assert.Equal(offset, segment.Offset);
+                Assert.Equal(codepointOffset, segment.CodepointOffset);
+                Assert.Equal(segment.Text.Length, segment.Length);
+                Assert.True(text.AsSpan(segment.Offset, segment.Length).SequenceEqual(segment.Text));
+
+                var codepointCount = 0;
+                var span = segment.Text;
+
+                while (!span.IsEmpty)
+                {
+                    Codepoint.ReadAt(span, 0, out var consumed);
+                    span = span.Slice(consumed);
+                    codepointCount++;
+                }
+
+                Assert.Equal(codepointCount, segment.CodepointLength);
+
+                offset += segment.Length;
+                codepointOffset += segment.CodepointLength;
+            }
+
+            Assert.Equal(text.Length, offset);
+        }
+
         [Theory(Skip = "Only run when we update Unicode data.")]
         [ClassData(typeof(WordBreakTestDataGenerator))]
         public void ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints, string rules)
@@ -66,6 +123,79 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             }
 
             Assert.True(pass);
+        }
+
+        // Regional indicators pair up from the start of their run (WB15, WB16), so where a
+        // boundary falls depends on how many of them precede the current one.
+        private const string RegionalD = "\U0001F1E9";
+        private const string RegionalE = "\U0001F1EA";
+        private const string RegionalF = "\U0001F1EB";
+        private const string RegionalR = "\U0001F1F7";
+
+        [Fact]
+        public void TwoFlags_AreTwoSegments()
+        {
+            var segments = CollectSegments(RegionalD + RegionalE + RegionalF + RegionalR);
+
+            Assert.Equal([RegionalD + RegionalE, RegionalF + RegionalR], segments);
+        }
+
+        [Fact]
+        public void OddRegionalIndicatorRun_LeavesTheLastIndicatorOnItsOwn()
+        {
+            var segments = CollectSegments(RegionalD + RegionalE + RegionalF);
+
+            Assert.Equal([RegionalD + RegionalE, RegionalF], segments);
+        }
+
+        [Fact]
+        public void RegionalIndicatorsAfterALetter_PairFromTheStartOfTheirRun()
+        {
+            var segments = CollectSegments("A" + RegionalD + RegionalE + RegionalF + RegionalR);
+
+            Assert.Equal(["A", RegionalD + RegionalE, RegionalF + RegionalR], segments);
+        }
+
+        [Fact]
+        public void RegionalIndicatorRunInterruptedBySpace_StartsPairingAgain()
+        {
+            var segments = CollectSegments(RegionalD + " " + RegionalE + RegionalF);
+
+            Assert.Equal([RegionalD, " ", RegionalE + RegionalF], segments);
+        }
+
+        [Fact]
+        public void CombiningMarkBetweenRegionalIndicators_DoesNotSplitThePair()
+        {
+            var text = RegionalD + "\u0301" + RegionalE;
+
+            var segments = CollectSegments(text);
+
+            Assert.Equal([text], segments);
+        }
+
+        [Fact]
+        public void LongRegionalIndicatorRun_PairsAllTheWayThrough()
+        {
+            var flag = RegionalD + RegionalE;
+
+            var segments = CollectSegments(string.Concat(Enumerable.Repeat(flag, 8)));
+
+            Assert.Equal(8, segments.Count);
+            Assert.All(segments, segment => Assert.Equal(flag, segment));
+        }
+
+        private static List<string> CollectSegments(string text)
+        {
+            var result = new List<string>();
+            var enumerator = new WordBreakEnumerator(text.AsSpan());
+
+            while (enumerator.MoveNext(out var segment))
+            {
+                result.Add(text.Substring(segment.Offset, segment.Length));
+            }
+
+            return result;
         }
 
         public class WordBreakTestDataGenerator : IEnumerable<object[]>

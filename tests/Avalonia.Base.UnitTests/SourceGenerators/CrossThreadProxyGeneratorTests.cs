@@ -26,6 +26,19 @@ public class CrossThreadProxyGeneratorTests
         void AsyncFireAndForget(string s);
     }
 
+    [GenerateCrossThreadProxy(typeof(TestPriority), "Avalonia.Base.UnitTests.SourceGenerators.CrossThreadProxyGeneratorTests.TestPriority.Normal")]
+    public interface IProxiedDependency
+    {
+        void Execute(int value);
+    }
+
+    [GenerateCrossThreadProxy(typeof(TestPriority), "Avalonia.Base.UnitTests.SourceGenerators.CrossThreadProxyGeneratorTests.TestPriority.Normal")]
+    public interface IAcceptsProxiedParam
+    {
+        void ProcessDependency(IProxiedDependency dep);
+        void ProcessOptionalDependency(IProxiedDependency? dep);
+    }
+
     private sealed class Target : IDerivedProxied
     {
         public List<int> BaseCalls { get; } = new();
@@ -37,6 +50,25 @@ public class CrossThreadProxyGeneratorTests
         public void Increment() => Counter++;
         public int GetValue() => GetValueImpl?.Invoke() ?? Counter;
         public void AsyncFireAndForget(string s) => AsyncCalls.Add(s);
+    }
+
+    private sealed class ProxiedDependencyTarget : IProxiedDependency
+    {
+        public int LastValue;
+        public void Execute(int value) => LastValue = value;
+    }
+
+    private sealed class AcceptsProxiedParamTarget : IAcceptsProxiedParam
+    {
+        public IProxiedDependency? ReceivedDep;
+        public IProxiedDependency? ReceivedOptionalDep;
+        public bool OptionalWasCalled;
+        public void ProcessDependency(IProxiedDependency dep) => ReceivedDep = dep;
+        public void ProcessOptionalDependency(IProxiedDependency? dep)
+        {
+            ReceivedOptionalDep = dep;
+            OptionalWasCalled = true;
+        }
     }
 
     private sealed class QueueMarshaller
@@ -156,5 +188,58 @@ public class CrossThreadProxyGeneratorTests
 
         Assert.Equal(0, t.Counter);
         Assert.Equal(3, m.Queue.Count);
+    }
+
+    [Fact]
+    public void Proxy_does_not_implement_proxied_interface()
+    {
+        Assert.False(typeof(IBaseProxied).IsAssignableFrom(typeof(BaseProxiedProxy)));
+        Assert.False(typeof(IDerivedProxied).IsAssignableFrom(typeof(DerivedProxiedProxy)));
+    }
+
+    [Fact]
+    public void Proxied_parameter_is_unwrapped_when_dispatching()
+    {
+        var depTarget = new ProxiedDependencyTarget();
+        var m = new QueueMarshaller();
+        var depProxy = new ProxiedDependencyProxy(depTarget, m.Post);
+
+        var acceptsTarget = new AcceptsProxiedParamTarget();
+        var acceptsProxy = new AcceptsProxiedParamProxy(acceptsTarget, m.Post);
+
+        acceptsProxy.ProcessDependency(depProxy);
+        m.DrainAll();
+
+        Assert.Same(depTarget, acceptsTarget.ReceivedDep);
+    }
+
+    [Fact]
+    public void Nullable_proxied_parameter_null_is_passed_through()
+    {
+        var acceptsTarget = new AcceptsProxiedParamTarget();
+        var m = new QueueMarshaller();
+        var acceptsProxy = new AcceptsProxiedParamProxy(acceptsTarget, m.Post);
+
+        acceptsProxy.ProcessOptionalDependency(null);
+        m.DrainAll();
+
+        Assert.True(acceptsTarget.OptionalWasCalled);
+        Assert.Null(acceptsTarget.ReceivedOptionalDep);
+    }
+
+    [Fact]
+    public void Nullable_proxied_parameter_proxy_is_unwrapped()
+    {
+        var depTarget = new ProxiedDependencyTarget();
+        var m = new QueueMarshaller();
+        var depProxy = new ProxiedDependencyProxy(depTarget, m.Post);
+
+        var acceptsTarget = new AcceptsProxiedParamTarget();
+        var acceptsProxy = new AcceptsProxiedParamProxy(acceptsTarget, m.Post);
+
+        acceptsProxy.ProcessOptionalDependency(depProxy);
+        m.DrainAll();
+
+        Assert.Same(depTarget, acceptsTarget.ReceivedOptionalDep);
     }
 }

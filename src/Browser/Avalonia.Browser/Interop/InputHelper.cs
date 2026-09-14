@@ -8,11 +8,12 @@ internal static partial class InputHelper
 {
     public static Task RedirectInputAsync(int topLevelId, Action<BrowserTopLevelImpl> handler)
     {
-        if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl) handler(topLevelImpl);
+        if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
+            handler(topLevelImpl);
         return Task.CompletedTask;
     }
 
-    public static Task<T> RedirectInputRetunAsync<T>(int topLevelId, Func<BrowserTopLevelImpl,T> handler, T @default)
+    public static Task<T> RedirectInputRetunAsync<T>(int topLevelId, Func<BrowserTopLevelImpl, T> handler, T @default)
     {
         if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
             return Task.FromResult(handler(topLevelImpl));
@@ -132,7 +133,7 @@ internal static partial class InputHelper
     public static partial Task<JSObject> ReadClipboardAsync(JSObject window);
 
     [JSImport("InputHelper.writeClipboard", AvaloniaModule.MainModuleName)]
-    public static partial Task WriteClipboardAsync(JSObject globalThis, JSObject? source);
+    public static partial Task<string> WriteClipboardAsync(JSObject globalThis, JSObject? source);
 
     [JSImport("InputHelper.getReadableDataItemFormats", AvaloniaModule.MainModuleName)]
     public static partial string[] GetReadableDataItemFormats(JSObject item);

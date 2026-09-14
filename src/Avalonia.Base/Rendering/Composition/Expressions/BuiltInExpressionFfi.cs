@@ -13,8 +13,8 @@ namespace Avalonia.Rendering.Composition.Expressions
     {
         private readonly DelegateExpressionFfi _registry;
 
-        static float Lerp(float a, float b, float p) => p * (b - a) + a;
-        static double Lerp(double a, double b, double p) => p * (b - a) + a;
+        static float Lerp(float a, float b, float p) => float.Lerp(a, b, p);
+        static double Lerp(double a, double b, double p) => double.Lerp(a, b, p);
 
         static Matrix3x2 Inverse(Matrix3x2 m)
         {
@@ -270,6 +270,13 @@ namespace Avalonia.Rendering.Composition.Expressions
 
                 {"Transform", (Vector2 a, Matrix3x2 b) => Vector2.Transform(a, b)},
                 {"Transform", (Vector3 a, Matrix4x4 b) => Vector3.Transform(a, b)},
+
+                {"RelativeUnit.Absolute", () => RelativeUnit.Absolute},
+                {"RelativeUnit.Relative", () => RelativeUnit.Relative},
+                {"RelativePoint", (float x, float y, RelativeUnit unit) => new RelativePoint(x, y, unit)},
+                {"RelativePoint", (double x, double y, RelativeUnit unit) => new RelativePoint(x, y, unit)},
+                {"RelativeScalar", (float value, RelativeUnit unit) => new RelativeScalar(value, unit)},
+                {"RelativeScalar", (double value, RelativeUnit unit) => new RelativeScalar(value, unit)},
 
                 {"Vector2", (float a, float b) => new Vector(a, b)},
                 {"Vector2", (double a, double b) => new Vector(a, b)},

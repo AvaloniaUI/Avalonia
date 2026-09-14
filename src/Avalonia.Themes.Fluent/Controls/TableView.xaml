@@ -1,0 +1,116 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <TableView Height="200" Width="400">
+        <TableView.Columns>
+          <TableViewColumn Header="Name" Width="*" />
+          <TableViewColumn Header="Value" Width="120" />
+        </TableView.Columns>
+      </TableView>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- ScrollViewer in TableView -->
+  <ControlTheme x:Key="TableViewScrollViewerTheme" TargetType="ScrollViewer">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="*,Auto"
+              RowDefinitions="*,Auto">
+            <DockPanel Name="ContentPanel">
+              <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                      Padding="{DynamicResource TableViewRowPadding}"
+                      DockPanel.Dock="Top">
+                <TableViewColumnHeadersPresenter />
+              </Border>
+              <ScrollContentPresenter Name="PART_ContentPresenter"
+                                      Background="{TemplateBinding Background}"
+                                      HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
+                                      VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
+                                      HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
+                                      VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
+                                      Padding="{TemplateBinding Padding}"
+                                      ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
+                <ScrollContentPresenter.GestureRecognizers>
+                  <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
+                                           CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
+                                           IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_ContentPresenter}" />
+                </ScrollContentPresenter.GestureRecognizers>
+              </ScrollContentPresenter>
+            </DockPanel>
+          <ScrollBar Name="PART_HorizontalScrollBar"
+                     Orientation="Horizontal"
+                     Grid.Column="0"
+                     Grid.Row="1" />
+          <ScrollBar Name="PART_VerticalScrollBar"
+                     Orientation="Vertical"
+                     Grid.Column="1"
+                     Grid.Row="0" />
+          <Panel x:Name="PART_ScrollBarsSeparator"
+                 Grid.Row="1"
+                 Grid.Column="1"
+                 Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}"
+                 Opacity="0">
+            <Panel.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+              </Transitions>
+            </Panel.Transitions>
+          </Panel>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <Style Selector="^[AllowAutoHide=True] /template/ DockPanel#ContentPanel">
+      <Setter Property="Grid.ColumnSpan" Value="2" />
+      <Setter Property="Grid.RowSpan" Value="2" />
+    </Style>
+
+  </ControlTheme>
+
+  <!-- TableView theme -->
+  <ControlTheme x:Key="{x:Type TableView}" TargetType="TableView">
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ListBoxBorderThemeThickness}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
+    <Setter Property="ScrollViewer.IsScrollInertiaEnabled" Value="True" />
+    <Setter Property="TextBlock.TextTrimming" Value="{x:Static TextTrimming.CharacterEllipsis}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border ClipToBounds="{TemplateBinding ClipToBounds}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer Name="PART_ScrollViewer"
+                        Theme="{StaticResource TableViewScrollViewerTheme}"
+                        VerticalSnapPointsType="{TemplateBinding (ScrollViewer.VerticalSnapPointsType)}"
+                        HorizontalSnapPointsType="{TemplateBinding (ScrollViewer.HorizontalSnapPointsType)}"
+                        HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                        IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                        IsScrollInertiaEnabled="{TemplateBinding (ScrollViewer.IsScrollInertiaEnabled)}"
+                        IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}"
+                        AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                        BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
+            <ItemsPresenter Name="PART_ItemsPresenter"
+                            ItemsPanel="{TemplateBinding ItemsPanel}"
+                            Margin="{TemplateBinding Padding}" />
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+</ResourceDictionary>

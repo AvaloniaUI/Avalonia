@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Interactivity;
+using Avalonia.Logging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -190,7 +190,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
-                SetCurrentValue(TextProperty, MaskProvider.ToDisplayString());
+                SetTextFromInternalSynchronization(MaskProvider.ToDisplayString());
             }
             base.OnGotFocus(e);
         }
@@ -224,6 +224,10 @@ namespace Avalonia.Controls
                 {
                     // Silently ignore.
                 }
+                catch (UnauthorizedAccessException uex)
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
+                }
 
                 if (text == null)
                     return;
@@ -237,7 +241,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                SetCurrentValue(TextProperty, MaskProvider.ToDisplayString());
+                SetTextFromEdit(MaskProvider.ToDisplayString());
                 e.Handled = true;
                 return;
             }
@@ -287,7 +291,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave && MaskProvider != null)
             {
-                SetCurrentValue(TextProperty, MaskProvider.ToString(!HidePromptOnLeave, true));
+                SetTextFromInternalSynchronization(MaskProvider.ToString(!HidePromptOnLeave, true));
             }
             base.OnLostFocus(e);
         }
@@ -302,7 +306,7 @@ namespace Avalonia.Controls
                 {
                     MaskProvider.Set(Text);
                 }
-                RefreshText(MaskProvider, 0);
+                RefreshText(MaskProvider, 0, isEdit: false);
             }
             if (change.Property == MaskProperty)
             {
@@ -422,11 +426,18 @@ namespace Avalonia.Controls
             return startPosition;
         }
 
-        private void RefreshText(MaskedTextProvider? provider, int position)
+        private void RefreshText(MaskedTextProvider? provider, int position, bool isEdit = true)
         {
             if (provider != null)
             {
-                SetCurrentValue(TextProperty, provider.ToDisplayString());
+                if (isEdit)
+                {
+                    SetTextFromEdit(provider.ToDisplayString());
+                }
+                else
+                {
+                    SetTextFromInternalSynchronization(provider.ToDisplayString());
+                }
                 SetCurrentValue(CaretIndexProperty, position);
             }
         }

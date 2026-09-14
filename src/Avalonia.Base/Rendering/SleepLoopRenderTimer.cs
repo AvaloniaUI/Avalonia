@@ -13,11 +13,21 @@ namespace Avalonia.Rendering
         private bool _threadStarted;
         private readonly AutoResetEvent _wakeEvent = new(false);
         private readonly Stopwatch _st = Stopwatch.StartNew();
-        private readonly TimeSpan _timeBetweenTicks;
+        private volatile int _desiredFps;
 
         public SleepLoopRenderTimer(int fps)
         {
-            _timeBetweenTicks = TimeSpan.FromSeconds(1d / fps);
+            DesiredFps = fps;
+        }
+
+        public int DesiredFps
+        {
+            get => _desiredFps;
+            set
+            {
+                ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
+                _desiredFps = value;
+            }
         }
 
         public Action<TimeSpan>? Tick
@@ -58,7 +68,8 @@ namespace Avalonia.Rendering
                     _wakeEvent.WaitOne();
 
                 var now = _st.Elapsed;
-                var timeTillNextTick = lastTick + _timeBetweenTicks - now;
+                var tickInterval = TimeSpan.FromSeconds(1d / _desiredFps);
+                var timeTillNextTick = lastTick + tickInterval - now;
                 if (timeTillNextTick.TotalMilliseconds > 1)
                     _wakeEvent.WaitOne(timeTillNextTick);
                 lastTick = now = _st.Elapsed;

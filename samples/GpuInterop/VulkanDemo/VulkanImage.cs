@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Vulkan;
 using Silk.NET.Core.Native;
@@ -355,7 +356,7 @@ public unsafe class VulkanImage : IDisposable
                     using var b = new Avalonia.Media.Imaging.Bitmap(PixelFormat.Bgra8888,
                         AlphaFormat.Premul, pSurface, new PixelSize(w, h),
                         new Vector(96, 96), (int)sstride);
-                    b.Save(path);
+                    b.Save(path, PngBitmapEncoderOptions.Default);
 
                     NativeMethods.IOSurfaceUnlock(surf, 0, IntPtr.Zero);
                     return;

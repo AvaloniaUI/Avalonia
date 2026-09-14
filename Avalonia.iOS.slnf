@@ -1,0 +1,31 @@
+﻿{
+  "solution": {
+    "path": "Avalonia.slnx",
+    "projects": [
+      "packages\\Avalonia\\Avalonia.csproj",
+      "samples\\ControlCatalog.iOS\\ControlCatalog.iOS.csproj",
+      "samples\\ControlCatalog\\ControlCatalog.csproj",
+      "samples\\MiniMvvm\\MiniMvvm.csproj",
+      "samples\\SafeAreaDemo.iOS\\SafeAreaDemo.iOS.csproj",
+      "samples\\SafeAreaDemo\\SafeAreaDemo.csproj",
+      "src\\Avalonia.Base\\Avalonia.Base.csproj",
+      "src\\Avalonia.Build.Tasks\\Avalonia.Build.Tasks.csproj",
+      "src\\Avalonia.Controls.ColorPicker\\Avalonia.Controls.ColorPicker.csproj",
+      "src\\Avalonia.Controls\\Avalonia.Controls.csproj",
+      "src\\Avalonia.Dialogs\\Avalonia.Dialogs.csproj",
+      "src\\Avalonia.Fonts.Inter\\Avalonia.Fonts.Inter.csproj",
+      "src\\Avalonia.Remote.Protocol\\Avalonia.Remote.Protocol.csproj",
+      "src\\Avalonia.Themes.Fluent\\Avalonia.Themes.Fluent.csproj",
+      "src\\Avalonia.Themes.Simple\\Avalonia.Themes.Simple.csproj",
+      "src\\HarfBuzz\\Avalonia.HarfBuzz\\Avalonia.HarfBuzz.csproj",
+      "src\\iOS\\Avalonia.iOS\\Avalonia.iOS.csproj",
+      "src\\Markup\\Avalonia.Markup.Xaml\\Avalonia.Markup.Xaml.csproj",
+      "src\\Markup\\Avalonia.Markup\\Avalonia.Markup.csproj",
+      "src\\Skia\\Avalonia.Skia\\Avalonia.Skia.csproj",
+      "src\\tools\\Avalonia.Analyzers.CodeFixes.CSharp\\Avalonia.Analyzers.CodeFixes.CSharp.csproj",
+      "src\\tools\\Avalonia.Analyzers.CSharp\\Avalonia.Analyzers.CSharp.csproj",
+      "src\\tools\\Avalonia.Analyzers.VisualBasic\\Avalonia.Analyzers.VisualBasic.csproj",
+      "src\\tools\\Avalonia.Generators\\Avalonia.Generators.csproj"
+    ]
+  }
+}

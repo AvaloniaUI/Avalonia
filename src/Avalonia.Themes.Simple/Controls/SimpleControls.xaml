@@ -79,6 +79,10 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DrawerPage.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NavigationPage.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabbedPage.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TableView.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TableViewCell.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TableViewColumnHeader.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TableViewRow.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Styles.Resources>

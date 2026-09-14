@@ -77,7 +77,7 @@ namespace Avalonia.Rendering.Composition.Animations
     
     class ColorInterpolator : IInterpolator<Avalonia.Media.Color>
     {
-        static byte Lerp(float a, float b, float p) => (byte) Math.Max(0, Math.Min(255, (p * (b - a) + a)));
+        static byte Lerp(float a, float b, float p) => (byte)Math.Clamp(float.Lerp(a, b, p), 0, 255);
 
         public static Avalonia.Media.Color
             LerpRGB(Avalonia.Media.Color to, Avalonia.Media.Color from, float progress) =>
@@ -97,5 +97,32 @@ namespace Avalonia.Rendering.Composition.Animations
         public bool Interpolate(bool @from, bool to, float progress) => progress >= 1 ? to : @from;
         
         public static BooleanInterpolator Instance { get; } = new BooleanInterpolator();
+    }
+
+    class RelativePointInterpolator : IInterpolator<Avalonia.RelativePoint>
+    {
+        public Avalonia.RelativePoint Interpolate(Avalonia.RelativePoint @from, Avalonia.RelativePoint to, float progress)
+        {
+            if (@from.Unit != to.Unit)
+                return progress >= 0.5f ? to : @from;
+
+            var x = DoubleInterpolator.Instance.Interpolate(@from.Point.X, to.Point.X, progress);
+            var y = DoubleInterpolator.Instance.Interpolate(@from.Point.Y, to.Point.Y, progress);
+            return new Avalonia.RelativePoint(x, y, @from.Unit);
+        }
+
+        public static RelativePointInterpolator Instance { get; } = new();
+    }
+
+    class RelativeScalarInterpolator : IInterpolator<Avalonia.RelativeScalar>
+    {
+        public Avalonia.RelativeScalar Interpolate(Avalonia.RelativeScalar @from, Avalonia.RelativeScalar to, float progress)
+        {
+            if (@from.Unit != to.Unit)
+                return progress >= 0.5f ? to : @from;
+            return new RelativeScalar(@from.Scalar + (to.Scalar - @from.Scalar) * progress, from.Unit);
+        }
+
+        public static RelativeScalarInterpolator Instance { get; } = new();
     }
 }

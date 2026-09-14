@@ -8,15 +8,20 @@ namespace Avalonia.Native;
 internal class NativePlatformSettings : DefaultPlatformSettings
 {
     private readonly IAvnPlatformSettings _platformSettings;
-    private PlatformColorValues? _lastColorValues;
+    private PlatformColorValues? _colorValues;
+    private string? _lastLanguage;
 
     public NativePlatformSettings(IAvnPlatformSettings platformSettings)
     {
         _platformSettings = platformSettings;
         platformSettings.RegisterColorsChange(new ColorsChangeCallback(this));
+        platformSettings.RegisterLanguageChange(new LanguageChangeCallback(this));
     }
 
     public override PlatformColorValues GetColorValues()
+        => _colorValues ??= GetUncachedColorValues();
+
+    private PlatformColorValues GetUncachedColorValues()
     {
         var (theme, contrast) = _platformSettings.PlatformTheme switch
         {
@@ -30,7 +35,7 @@ internal class NativePlatformSettings : DefaultPlatformSettings
 
         if (color > 0)
         {
-            _lastColorValues = new PlatformColorValues
+            return new PlatformColorValues
             {
                 ThemeVariant = theme,
                 ContrastPreference = contrast,
@@ -39,25 +44,44 @@ internal class NativePlatformSettings : DefaultPlatformSettings
         }
         else
         {
-            _lastColorValues = new PlatformColorValues
+            return new PlatformColorValues
             {
                 ThemeVariant = theme,
                 ContrastPreference = contrast
             };
         }
-
-        return _lastColorValues;
     }
 
     public void OnColorValuesChanged()
     {
-        var oldColorValues = _lastColorValues;
-        var colorValues = GetColorValues();
+        var oldColorValues = _colorValues;
+        var colorValues = GetUncachedColorValues();
 
         if (oldColorValues != colorValues)
         {
+            _colorValues = colorValues;
             OnColorValuesChanged(colorValues);
         }
+    }
+
+    public override string PreferredApplicationLanguage =>
+        _lastLanguage ??= QueryPreferredApplicationLanguage();
+
+    private void OnPreferredLanguageChanged()
+    {
+        var oldLanguage = _lastLanguage;
+        _lastLanguage = null;
+
+        if (oldLanguage != PreferredApplicationLanguage)
+        {
+            OnPreferredApplicationLanguageChanged();
+        }
+    }
+
+    private string QueryPreferredApplicationLanguage()
+    {
+        using var language = _platformSettings.PreferredLanguage;
+        return language?.String is { Length: > 0 } value ? value : base.PreferredApplicationLanguage;
     }
 
     private class ColorsChangeCallback : NativeCallbackBase, IAvnActionCallback
@@ -72,6 +96,21 @@ internal class NativePlatformSettings : DefaultPlatformSettings
         public void Run()
         {
             _settings.OnColorValuesChanged();
+        }
+    }
+
+    private class LanguageChangeCallback : NativeCallbackBase, IAvnActionCallback
+    {
+        private readonly NativePlatformSettings _settings;
+
+        public LanguageChangeCallback(NativePlatformSettings settings)
+        {
+            _settings = settings;
+        }
+
+        public void Run()
+        {
+            _settings.OnPreferredLanguageChanged();
         }
     }
 }

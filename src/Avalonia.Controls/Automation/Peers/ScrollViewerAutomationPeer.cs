@@ -14,6 +14,12 @@ namespace Avalonia.Automation.Peers
 
         public new ScrollViewer Owner => (ScrollViewer)base.Owner;
 
+        internal AutomationPeer? GetHorizontalScrollBarPeer()
+            => Owner.HorizontalScrollBar is { } scrollBar ? GetOrCreate(scrollBar) : null;
+
+        internal AutomationPeer? GetVerticalScrollBarPeer()
+            => Owner.VerticalScrollBar is { } scrollBar ? GetOrCreate(scrollBar) : null;
+
         public bool HorizontallyScrollable
         {
             get => MathUtilities.GreaterThan(Owner.Extent.Width, Owner.Viewport.Width);

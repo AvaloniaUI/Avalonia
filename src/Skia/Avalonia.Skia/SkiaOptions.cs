@@ -24,5 +24,19 @@ namespace Avalonia
         /// Enabling this might have performance implications.
         /// </remarks>
         public bool UseOpacitySaveLayer { get; set; } = false;
+        
+        /// <summary>
+        /// Gets whether stencil buffers can be used for various draw operations, improving clipping performance.
+        /// Enabling them lets Skia pick multisample-based path rendering, which quantizes edge coverage and
+        /// visibly degrades anti-aliasing of vector geometry, so they are disabled unless explicitly requested.
+        /// </summary>
+        public bool? UseStencilBuffers { get; set; }
+
+        /// <summary>
+        /// Maps <see cref="UseStencilBuffers"/> onto Skia's inverted <c>GRContextOptions.AvoidStencilBuffers</c>.
+        /// Only an explicit <c>true</c> opts in: stencil buffers trade geometry anti-aliasing quality for
+        /// clipping speed (see issue #21760), so they must never be enabled implicitly.
+        /// </summary>
+        internal static bool ShouldAvoidStencilBuffers(bool? useStencilBuffers) => useStencilBuffers != true;
     }
 }

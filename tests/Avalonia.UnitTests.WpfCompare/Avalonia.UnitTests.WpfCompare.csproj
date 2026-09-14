@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(AvsCurrentWindowsTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <UseWpf>true</UseWpf>
+    <!-- WPFCOMPARE switches the shared test file to compile against System.Windows.Threading. -->
+    <DefineConstants>$(DefineConstants);WPFCOMPARE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Avalonia.Base.UnitTests\DispatcherExecutionContextTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Xunit.StaFact" />
+  </ItemGroup>
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
+</Project>

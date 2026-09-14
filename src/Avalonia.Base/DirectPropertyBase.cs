@@ -177,10 +177,11 @@ namespace Avalonia
             return null;
         }
 
-        internal override void RouteSetDirectValueUnchecked(AvaloniaObject o, object? value)
+        internal override void RouteSetDirectValueUnchecked(AvaloniaObject o, IValueEntry entry)
         {
-            var bindingValue = BindingValue<TValue>.FromUntypedStrict(value);
-            o.SetDirectValueUnchecked<TValue>(this, bindingValue);
+            var value = GetValue(entry, o);
+            var bindingValue = new BindingValue<TValue>(value);
+            o.SetDirectValueUnchecked(this, bindingValue);
         }
 
         internal override void RouteSetCurrentValue(AvaloniaObject o, object? value)
@@ -201,5 +202,8 @@ namespace Avalonia
         {
             return o.Bind(this, source);
         }
+
+        private TValue GetValue(IValueEntry entry, AvaloniaObject o)
+            => IValueEntry.TryGetValue<TValue>(entry, out var value) ? value : GetMetadata(o).UnsetValue;
     }
 }

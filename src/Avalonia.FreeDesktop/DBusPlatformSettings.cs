@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Threading;
 using Tmds.DBus.Protocol;
 using Avalonia.FreeDesktop.DBus;
 
@@ -12,12 +10,14 @@ namespace Avalonia.FreeDesktop
     {
         private readonly Settings? _settings;
 
-        private PlatformColorValues? _lastColorValues;
+        private PlatformColorValues _colorValues;
         private PlatformThemeVariant? _themeVariant;
         private Color? _accentColor;
 
         public DBusPlatformSettings()
         {
+            _colorValues = base.GetColorValues();
+
             if (DBusHelper.DefaultConnection is not { } conn)
                 return;
 
@@ -26,28 +26,29 @@ namespace Avalonia.FreeDesktop
             _ = TryGetInitialValuesAsync();
         }
 
-        public override PlatformColorValues GetColorValues() => _lastColorValues ?? base.GetColorValues();
+        public override PlatformColorValues GetColorValues() => _colorValues;
 
         private async Task TryGetInitialValuesAsync()
         {
-            _themeVariant = await TryGetThemeVariantAsync();
-            _accentColor = await TryGetAccentColorAsync();
-            _lastColorValues = BuildPlatformColorValues();
-            if (_lastColorValues is not null)
-                Dispatcher.UIThread.Post(() => OnColorValuesChanged(_lastColorValues));
+            if (_settings is { } settings)
+            {
+                _themeVariant = await TryGetThemeVariantAsync(settings);
+                _accentColor = await TryGetAccentColorAsync(settings);
+                UpdateColorValues();
+            }
         }
 
-        private async Task<PlatformThemeVariant?> TryGetThemeVariantAsync()
+        private static async Task<PlatformThemeVariant?> TryGetThemeVariantAsync(Settings settings)
         {
             try
             {
-                var version = await _settings!.GetVersionAsync();
+                var version = await settings.GetVersionAsync();
                 VariantValue value;
                 if (version >= 2)
-                    value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
+                    value = await settings.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
                     // Unpack nested Variant
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetVariantValue();
+                    value = (await settings.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetVariantValue();
                 return ToColorScheme(value.GetUInt32());
             }
             catch (DBusExceptionBase)
@@ -56,21 +57,33 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private async Task<Color?> TryGetAccentColorAsync()
+        private static async Task<Color?> TryGetAccentColorAsync(Settings settings)
         {
             try
             {
-                var version = await _settings!.GetVersionAsync();
+                var version = await settings.GetVersionAsync();
                 VariantValue value;
                 if (version >= 2)
-                    value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "accent-color");
+                    value = await settings.ReadOneAsync("org.freedesktop.appearance", "accent-color");
                 else
-                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color");
+                    value = await settings.ReadAsync("org.freedesktop.appearance", "accent-color");
                 return ToAccentColor(value);
             }
             catch (DBusExceptionBase)
             {
                 return null;
+            }
+        }
+
+        private void UpdateColorValues()
+        {
+            var oldColorValues = _colorValues;
+            var colorValues = BuildPlatformColorValues(_themeVariant, _accentColor);
+
+            if (oldColorValues != colorValues)
+            {
+                _colorValues = colorValues;
+                OnColorValuesChanged(colorValues);
             }
         }
 
@@ -80,26 +93,30 @@ namespace Avalonia.FreeDesktop
             {
                 case ("org.freedesktop.appearance", "color-scheme", var colorScheme):
                     _themeVariant = ToColorScheme(colorScheme.GetUInt32());
-                    _lastColorValues = BuildPlatformColorValues();
-                    OnColorValuesChanged(_lastColorValues!);
+                    UpdateColorValues();
                     break;
                 case ("org.freedesktop.appearance", "accent-color", var accentColor):
                     _accentColor = ToAccentColor(accentColor);
-                    _lastColorValues = BuildPlatformColorValues();
-                    OnColorValuesChanged(_lastColorValues!);
+                    UpdateColorValues();
                     break;
             }
         }
 
-        private PlatformColorValues? BuildPlatformColorValues()
+        private static PlatformColorValues BuildPlatformColorValues(
+            PlatformThemeVariant? nullableThemeVariant,
+            Color? nullableAccentColor)
         {
-            if (_themeVariant is { } themeVariant && _accentColor is { } accentColor)
-                return new PlatformColorValues { ThemeVariant = themeVariant, AccentColor1 = accentColor };
-            if (_themeVariant is { } themeVariant1)
-                return new PlatformColorValues { ThemeVariant = themeVariant1 };
-            if (_accentColor is { } accentColor1)
-                return new PlatformColorValues { AccentColor1 = accentColor1 };
-            return null;
+            return (nullableThemeVariant, nullableAccentColor) switch
+            {
+                ({ } themeVariant, { } accentColor)
+                    => new PlatformColorValues { ThemeVariant = themeVariant, AccentColor1 = accentColor },
+                ({ } themeVariant, null)
+                    => new PlatformColorValues { ThemeVariant = themeVariant },
+                (null, { } accentColor)
+                    => new PlatformColorValues { AccentColor1 = accentColor },
+                (null, null)
+                    => new PlatformColorValues { ThemeVariant = PlatformThemeVariant.Light }
+            };
         }
 
         private static PlatformThemeVariant ToColorScheme(uint value)

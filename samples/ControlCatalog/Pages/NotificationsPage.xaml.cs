@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using Avalonia.Interactivity;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
@@ -25,9 +26,14 @@ namespace ControlCatalog.Pages
             _viewModel.NotificationManager = new WindowNotificationManager(TopLevel.GetTopLevel(this)!);
         }
 
-        public void NotificationOnClick()
+        private void ShowNotification(object? sender, RoutedEventArgs e)
         {
-            ControlNotifications.Show("Notification clicked");
+            ControlNotifications.Show(new Notification
+            {
+                OnClick = () => ControlNotifications.Show("Notification clicked"),
+                Title = "Title",
+                Message = "Message"
+            });
         }
     }
 }

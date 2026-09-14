@@ -348,6 +348,10 @@
 
 - (void)windowWillExitFullScreen:(NSNotification *_Nonnull)notification
 {
+    // Prepare the destination appearance before AppKit starts the exit animation.
+    if (_isExtended)
+        [self setTitlebarAppearsTransparent:true];
+
     auto parent = _parent.tryGetWithCast<IWindowStateChanged>();
 
     if(parent != nullptr)
@@ -628,14 +632,18 @@
     return GetNSStringAndRelease(automationPeer->GetAutomationId());
 }
 
-- (IAvnAutomationPeer* _Nonnull) automationPeer
+- (IAvnAutomationPeer* _Nullable) automationPeer
 {
     auto parent = _parent.tryGet();
     if (parent && _automationPeer == nullptr)
     {
-        _automationPeer = parent->BaseEvents->GetAutomationPeer();
-        _automationNode = new AvnAutomationNode(self);
-        _automationPeer->SetNode(_automationNode);
+        auto peer = parent->BaseEvents->GetAutomationPeer();
+        if (peer != nullptr)
+        {
+            _automationPeer = peer;
+            _automationNode = new AvnAutomationNode(self);
+            _automationPeer->SetNode(_automationNode);
+        }
     }
 
     return _automationPeer;

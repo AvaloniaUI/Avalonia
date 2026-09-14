@@ -1,70 +1,39 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Avalonia.Platform;
-using Avalonia.Rendering.Composition.Drawing.Nodes;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
-using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
 class ServerCompositionRenderData : SimpleServerRenderResource
 {
-    private PooledInlineList<IRenderDataItem> _items;
+    private RenderDataStream? _stream;
     private PooledInlineList<IServerRenderResource> _referencedResources;
     private LtrbRect? _bounds;
     private bool _boundsValid;
-    private static readonly ThreadSafeObjectPool<Collector> s_resourceHashSetPool = new();
 
     public ServerCompositionRenderData(ServerCompositor compositor) : base(compositor)
     {
     }
 
-    class Collector : IRenderDataServerResourcesCollector
-    {
-        public readonly HashSet<IServerRenderResource> Resources = new();
-        public void AddRenderDataServerResource(object? obj)
-        {
-            if (obj is IServerRenderResource res)
-                Resources.Add(res);
-        }
-    }
-    
     protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
         Reset();
-        
-        var count = reader.Read<int>();
-        _items.EnsureCapacity(count);
-        for (var c = 0; c < count; c++)
-            _items.Add(reader.ReadObject<IRenderDataItem>());
-        
-        var collector = s_resourceHashSetPool.Get();
-        CollectResources(_items, collector);
 
-        foreach (var r in collector.Resources)
+        _stream = new RenderDataStream();
+        _stream.DeserializeFrom(reader);
+
+        for (var i = 0; i < _stream.ResourceCount; i++)
         {
-            _referencedResources.Add(r);
-            r.AddObserver(this);
+            if (_stream.GetResource(i) is IServerRenderResource resource)
+            {
+                _referencedResources.Add(resource);
+                resource.AddObserver(this);
+            }
         }
 
-        collector.Resources.Clear();
-        s_resourceHashSetPool.ReturnAndSetNull(ref collector);
-        
         base.DeserializeChangesCore(reader, committedAt);
-    }
-
-    private static void CollectResources(PooledInlineList<IRenderDataItem> items, IRenderDataServerResourcesCollector collector)
-    {
-        foreach (var item in items)
-        {
-            if (item is IRenderDataItemWithServerResources resourceItem)
-                resourceItem.Collect(collector);
-            else if (item is RenderDataPushNode pushNode)
-                CollectResources(pushNode.Children, collector);
-        }
     }
 
     public LtrbRect? Bounds
@@ -82,11 +51,8 @@ class ServerCompositionRenderData : SimpleServerRenderResource
 
     private LtrbRect? CalculateRenderBounds()
     {
-        LtrbRect? totalBounds = null;
-        foreach (var item in _items) 
-            totalBounds = LtrbRect.FullUnion(totalBounds, item.Bounds);
-        
-        return ApplyRenderBoundsRounding(totalBounds);
+        var bounds = _stream?.CalculateBounds();
+        return bounds.HasValue ? ApplyRenderBoundsRounding(new LtrbRect(bounds.Value)) : null;
     }
 
     public static Rect? ApplyRenderBoundsRounding(Rect? rect)
@@ -95,7 +61,7 @@ class ServerCompositionRenderData : SimpleServerRenderResource
             return null;
         return ApplyRenderBoundsRounding(new LtrbRect(rect.Value))?.ToRect();
     }
-    
+
     public static LtrbRect? ApplyRenderBoundsRounding(LtrbRect? rect)
     {
         if (rect != null)
@@ -115,34 +81,26 @@ class ServerCompositionRenderData : SimpleServerRenderResource
         _boundsValid = false;
         base.DependencyQueuedInvalidate(sender);
     }
-    
-    public void Render(IDrawingContextImpl context)
-    {
-        var ctx = new RenderDataNodeRenderContext(context);
-        try
-        {
-            foreach (var item in _items) 
-                item.Invoke(ref ctx);
-        }
-        finally
-        {
-            ctx.Dispose();
-        }
-    }
 
-    void Reset()
+    public void Render(IDrawingContextImpl context) => _stream?.Replay(context);
+
+    private void Reset()
     {
         _bounds = null;
         _boundsValid = false;
+
         foreach (var r in _referencedResources)
             r.RemoveObserver(this);
         _referencedResources.Dispose();
-        foreach(var i in _items)
-            if (i is IDisposable disp)
-                disp.Dispose();
-        _items.Dispose();
+
+        if (_stream != null)
+        {
+            _stream.DisposeResources();
+            _stream.Dispose();
+            _stream = null;
+        }
     }
-    
+
     public override void Dispose()
     {
         Reset();

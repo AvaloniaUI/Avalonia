@@ -1,32 +1,19 @@
-using System;
-using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering.Composition.Drawing.Nodes;
-using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
 internal class ImmediateRenderDataSceneBrushContent : ISceneBrushContent
 {
-    private List<IRenderDataItem>? _items;
-    private readonly ThreadSafeObjectPool<List<IRenderDataItem>> _pool;
+    private RenderDataStream? _stream;
 
-    public ImmediateRenderDataSceneBrushContent(ITileBrush brush, List<IRenderDataItem> items, Rect? rect,
-        bool useScalableRasterization, ThreadSafeObjectPool<List<IRenderDataItem>> pool)
+    public ImmediateRenderDataSceneBrushContent(ITileBrush brush, RenderDataStream stream, Rect? rect,
+        bool useScalableRasterization)
     {
         Brush = brush;
-        _items = items;
-        _pool = pool;
+        _stream = stream;
         UseScalableRasterization = useScalableRasterization;
-        if (rect == null)
-        {
-            foreach (var i in _items)
-                rect = Rect.Union(rect, i.Bounds);
-            rect = ServerCompositionRenderData.ApplyRenderBoundsRounding(rect);
-        }
-
-        Rect = rect ?? default;
+        Rect = rect ?? ServerCompositionRenderData.ApplyRenderBoundsRounding(stream.CalculateBounds()) ?? default;
     }
 
     public ITileBrush Brush { get; }
@@ -35,34 +22,19 @@ internal class ImmediateRenderDataSceneBrushContent : ISceneBrushContent
     public double Opacity => Brush.Opacity;
     public ITransform? Transform => Brush.Transform;
     public RelativePoint TransformOrigin => Brush.TransformOrigin;
+    public ITransform? RelativeTransform => Brush.RelativeTransform;
 
     public void Dispose()
     {
-        if(_items == null)
+        if (_stream == null)
             return;
-        foreach (var i in _items)
-            (i as IDisposable)?.Dispose();
-        _items.Clear();
-        _pool.ReturnAndSetNull(ref _items);
+        _stream.DisposeResources();
+        _stream.Dispose();
+        _stream = null;
     }
 
-    void Render(IDrawingContextImpl context)
-    {
-        if (_items == null)
-            return;
-        
-        var ctx = new RenderDataNodeRenderContext(context);
-        try
-        {
-            foreach (var i in _items)
-                i.Invoke(ref ctx);
-        }
-        finally
-        {
-            ctx.Dispose();
-        }
-    }
-    
+    private void Render(IDrawingContextImpl context) => _stream?.Replay(context);
+
     public void Render(IDrawingContextImpl context, Matrix? transform)
     {
         if (transform.HasValue)
@@ -77,5 +49,4 @@ internal class ImmediateRenderDataSceneBrushContent : ISceneBrushContent
     }
 
     public bool UseScalableRasterization { get; }
-
 }

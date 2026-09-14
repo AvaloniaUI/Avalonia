@@ -19,11 +19,11 @@ namespace Avalonia.Android
 {
     public partial class AvaloniaView : FrameLayout
     {
-        private EmbeddableControlRoot _root;
+        private EmbeddableControlRoot? _root;
         private readonly ViewImpl _view;
         private readonly ExploreByTouchHelper _accessHelper;
 
-        private IDisposable? _timerSubscription;
+        private bool _isRendering;
         private bool _surfaceCreated;
 
         public AvaloniaView(Context context) : base(context)
@@ -36,7 +36,7 @@ namespace Avalonia.Android
             _root.Prepare();
 
             SetBackgroundColor(global::Android.Graphics.Color.Transparent);
-            OnConfigurationChanged();
+            OnConfigurationChanged(null);
 
             _view.InternalView!.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
             _view.InternalView.SurfaceWindowDestroyed += InternalView_SurfaceWindowDestroyed;
@@ -69,8 +69,8 @@ namespace Avalonia.Android
 
         public object? Content
         {
-            get { return _root.Content; }
-            set { _root.Content = value; }
+            get => _root?.Content;
+            set => _root?.Content = value;
         }
 
         internal new void Dispose()
@@ -78,7 +78,14 @@ namespace Avalonia.Android
             OnVisibilityChanged(false);
             _surfaceCreated = false;
             _root?.Dispose();
-            _root = null!;
+            _root = null;
+        }
+
+        protected override void OnAttachedToWindow()
+        {
+            SendConfigurationChanged(Context?.Resources?.Configuration);
+
+            base.OnAttachedToWindow();
         }
 
         [SupportedOSPlatform("android24.0")]
@@ -98,13 +105,10 @@ namespace Avalonia.Android
         {
             if (_root == null || !_surfaceCreated)
                 return;
-            if (isVisible && _timerSubscription == null)
-            {
-                if (AndroidPlatform.Timer is { } timer)
-                {
-                    _timerSubscription = timer.SubscribeView(this);
-                }
 
+            if (isVisible && !_isRendering)
+            {
+                _isRendering = true;
                 _root.StartRendering();
 
                 if (_view.TryGetFeature<IInsetsManager>(out var insetsManager) == true)
@@ -112,27 +116,24 @@ namespace Avalonia.Android
                     (insetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
                 }
             }
-            else if (!isVisible && _timerSubscription != null)
+            else if (!isVisible && _isRendering)
             {
+                _isRendering = false;
                 _root.StopRendering();
-                _timerSubscription?.Dispose();
-                _timerSubscription = null;
             }
         }
-        
+
         protected override void OnConfigurationChanged(Configuration? newConfig)
         {
             base.OnConfigurationChanged(newConfig);
-            OnConfigurationChanged();
+            SendConfigurationChanged(newConfig ?? Context?.Resources?.Configuration);
         }
 
-        private void OnConfigurationChanged()
+        private void SendConfigurationChanged(Configuration? newConfig)
         {
-            if (Context is { } context)
+            _view.InsetsManager?.SetDefaultSystemLightMode(!(newConfig?.UiMode.HasFlag(UiMode.NightYes) ?? false));
+            if (Context is not null && newConfig is not null)
             {
-                var settings =
-                    AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
-                settings?.OnViewConfigurationChanged(context);
                 ((AndroidScreens)_view.TryGetFeature<IScreenImpl>()!).OnChanged();
             }
         }
@@ -146,7 +147,7 @@ namespace Avalonia.Android
 
             private void ViewImpl_FocusChange(object? sender, FocusChangeEventArgs e)
             {
-                if(!e.HasFocus)
+                if (!e.HasFocus)
                     LostFocus?.Invoke();
             }
         }
