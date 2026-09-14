@@ -1494,4 +1494,25 @@ public class CompositorHitTestingTests : CompositorTestsBase
             }
         }
     }
+
+    [Fact]
+    public void HitTest_Geometry_Should_Handle_Line_Target()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            var line = new Line
+            {
+                Stroke = Brushes.Red,
+                Fill = Brushes.Red,
+                StrokeThickness = 4,
+                StartPoint = new Point(5, 5),
+                EndPoint = new Point(190, 5)
+            };
+
+            s.TopLevel.Content = line;
+
+            s.AssertHitTest(new RectangleGeometry(new Rect(0, 0, 50, 50)), null,
+                new GeometryHitTestResult(line, IntersectionResult.Intersects));
+        }
+    }
 }
