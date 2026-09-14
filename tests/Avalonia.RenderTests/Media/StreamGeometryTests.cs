@@ -48,5 +48,17 @@ namespace Avalonia.Skia.RenderTests
                     }
             await RenderToFile(grid);
         }
+
+        [Fact]
+        public void Clone_Should_Keep_Transform()
+        {
+            var geometry = StreamGeometry.Parse("M10,190 l190,-190");
+            geometry.Transform = new TranslateTransform(50, 50);
+
+            var clone = geometry.Clone();
+
+            Assert.Equal(geometry.Transform.Value, clone.Transform!.Value);
+            Assert.Equal(geometry.Bounds, clone.Bounds);
+        }
     }
 }
