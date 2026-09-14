@@ -61,6 +61,7 @@ jobs:
 - job: macOS
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
+    DEVELOPER_DIR: '/Applications/Xcode_26.0.app/Contents/Developer'
   pool:
     vmImage: 'macos-15'
   steps:
@@ -80,27 +81,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios maccatalyst macos wasm-tools
-  
-  - task: CmdLine@2
-    displayName: 'Generate avalonia-native'
-    inputs:
-      script: |
-        export COREHOST_TRACE=0
-        export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-        export DOTNET_CLI_TELEMETRY_OPTOUT=1
-        ./build.sh --target GenerateCppHeaders --configuration Release 
-
-  - task: Xcode@5
-    inputs:
-      actions: 'build'
-      scheme: ''
-      sdk: 'macosx26.0'
-      configuration: 'Release'
-      xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
-      xcodeVersion: 'specifyPath' # Options: 8, 9, default, specifyPath
-      xcodeDeveloperDir: '/Applications/Xcode_26.0.app/Contents/Developer'
-      args: '-derivedDataPath ./'
+       dotnet workload install android ios maccatalyst macos wasm-tools 
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -122,7 +103,7 @@ jobs:
   
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/Build/Products/Release/'
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/native/Release/'
       artifactName: 'Avalonia.Native.OSX'
     condition: succeeded()
     
