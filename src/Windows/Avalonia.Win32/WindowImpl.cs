@@ -78,8 +78,6 @@ namespace Avalonia.Win32
         private readonly FramebufferManager _framebuffer;
         private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
-        // Windows turns touch and pen input into a left button press asynchronously, and its move and size
-        // loops won't start until that press has arrived. A drag started before then waits here.
         private Action? _pendingDrag;
 
         private readonly Win32NativeControlHost _nativeControlHost;
