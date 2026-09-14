@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -33,18 +33,32 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
             formats.Add(format);
 
         bool hasSupportedImageFormat = false;
+        bool hasFile = false;
+        bool hasFileGroupDescriptor = false;
+        bool hasFileContents = false;
 
         foreach (var format in formats)
         {
-            if (ClipboardFormatRegistry.ImageFormats.Contains(format)) {
+            if (ClipboardFormatRegistry.ImageFormats.Contains(format))
                 hasSupportedImageFormat = true;
-                break;
-            }
+
+            if (DataFormat.File.Equals(format))
+                hasFile = true;
+            else if (OleVirtualFileData.FileGroupDescriptorFormat.Equals(format))
+                hasFileGroupDescriptor = true;
+            else if (OleVirtualFileData.FileContentsFormat.Equals(format))
+                hasFileContents = true;
         }
 
         if (hasSupportedImageFormat)
         {
             formats.Add(DataFormat.Bitmap);
+        }
+
+        // Shell virtual files have descriptors and indexed contents, but no CF_HDROP path.
+        if (hasFileGroupDescriptor && hasFileContents && !hasFile)
+        {
+            formats.Add(DataFormat.File);
         }
 
         return formats.ToArray();
@@ -87,6 +101,13 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
                     foreach (var storageItem in storageItems)
                         items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
                 }
+                else if (OleVirtualFileData.TryCreateFiles(_oleDataObject) is { Count: > 0 } virtualFiles)
+                {
+                    hasFiles = true;
+
+                    foreach (var virtualFile in virtualFiles)
+                        items.Add(PlatformDataTransferItem.Create(DataFormat.File, virtualFile));
+                }
             }
             else
                 (nonFileFormats ??= new()).Add(format);
@@ -94,7 +115,7 @@ internal sealed class OleDataObjectToDataTransferWrapper(Win32Com.IDataObject ol
 
         // Single item containing all formats except for DataFormat.File.
         if (nonFileFormats is not null)
-            items.Add(new OleDataObjectToDataTransferItemWrapper(_oleDataObject, Formats));
+            items.Add(new OleDataObjectToDataTransferItemWrapper(_oleDataObject, nonFileFormats.ToArray()));
 
         return items.ToArray();
     }

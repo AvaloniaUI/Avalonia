@@ -52,7 +52,6 @@ namespace Avalonia.Controls.Primitives
         private readonly System.Globalization.Calendar _calendar = new GregorianCalendar();
 
         internal Calendar? Owner { get; set; }
-        internal CalendarDayButton? CurrentButton { get; set; }
 
         public static readonly StyledProperty<IBrush?> HeaderBackgroundProperty = Calendar.HeaderBackgroundProperty.AddOwner<CalendarItem>();
 

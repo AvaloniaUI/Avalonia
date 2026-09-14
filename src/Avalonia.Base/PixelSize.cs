@@ -193,16 +193,6 @@ namespace Avalonia
             (int)Math.Ceiling(size.Width * scale),
             (int)Math.Ceiling(size.Height * scale));
         
-        /// <summary>
-        /// A reversible variant of <see cref="FromSize(Size, double)"/> that uses Round instead of Ceiling to make it reversible from ToSize
-        /// </summary>
-        /// <param name="size">The size.</param>
-        /// <param name="scale">The scaling factor.</param>
-        /// <returns>The device-independent size.</returns>
-        internal static PixelSize FromSizeRounded(Size size, double scale) => new PixelSize(
-            (int)Math.Round(size.Width * scale),
-            (int)Math.Round(size.Height * scale));
-
         private const double FromSizeCeilingEpsilon = 1e-6;
 
         /// <summary>

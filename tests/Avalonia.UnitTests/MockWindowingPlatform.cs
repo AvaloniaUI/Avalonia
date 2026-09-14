@@ -44,6 +44,7 @@ namespace Avalonia.UnitTests
 
             windowImpl.Setup(x => x.Dispose()).Callback(() =>
             {
+                windowImpl.Object.LostFocus?.Invoke();
                 windowImpl.Object.Closed?.Invoke();
             });
 

@@ -45,9 +45,20 @@ public:
     {
         @autoreleasepool
         {
-            if (@available(macOS 10.14, *))
+            if (@available(macOS 11.0, *))
             {
-                auto color = [NSColor controlAccentColor];
+                __block NSColor* color;
+                [[NSApp effectiveAppearance] performAsCurrentDrawingAppearance:^{
+                    color = [[NSColor controlAccentColor] colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+                }];
+                return to_argb(color);
+            }
+            else if (@available(macOS 10.14, *))
+            {
+                auto previousAppearance = NSAppearance.currentAppearance;
+                NSAppearance.currentAppearance = [NSApp effectiveAppearance];
+                auto color = [[NSColor controlAccentColor] colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+                NSAppearance.currentAppearance = previousAppearance;
                 return to_argb(color);
             }
             else

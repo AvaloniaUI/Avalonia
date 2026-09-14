@@ -33,10 +33,12 @@ dotnet run
 Visual Studio, Visual Studio Code and Rider and supported.  
 You need a version that support at least .NET 10 (e.g. Visual Studio 2026 or Rider 2025.3).
 
-If you want to open Avalonia in your preferred IDE, you have two options:
+If you want to open Avalonia in your preferred IDE, you have several options:
 
 - `Avalonia.slnx`: This contains the whole of Avalonia in including desktop, mobile and web. You must have a number of dotnet workloads installed in order to build everything in this solution
 - `Avalonia.Desktop.slnf`: This solution filter opens only the parts of Avalonia required to run on desktop. This requires no extra workloads to be installed.
+- `Avalonia.iOS.slnf`: This solution filter opens only the parts of Avalonia required to run on iOS. This requires the `ios` workload to be installed (`dotnet workload install ios`).
+- `Avalonia.Android.slnf`: This solution filter opens only the parts of Avalonia required to run on Android. This requires the `android` workload to be installed (`dotnet workload install android`).
 
 Build and run the `ControlCatalog.Desktop` project to see the sample application.
 
