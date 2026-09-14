@@ -511,7 +511,8 @@ namespace Avalonia.Controls
 
                 var hit = TextLayout.HitTestPoint(point);
 
-                var caretIndex = hit.TextPosition;
+                // A point below the text hits one past its end, so clamp it as TextBox does for its caret.
+                var caretIndex = TextBox.CoerceCaretIndex(this, hit.TextPosition);
 
                 // see if mouse clicked inside current selection
                 // if it did not, we change the selection to where the user clicked
