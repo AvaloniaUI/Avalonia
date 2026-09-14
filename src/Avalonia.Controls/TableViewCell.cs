@@ -35,6 +35,7 @@ public class TableViewCell : ContentControl
 
     private void ClearProperties()
     {
+        ClearValue(IsVisibleProperty);
         ClearValue(ThemeProperty);
         ClearValue(HorizontalContentAlignmentProperty);
         ClearValue(ContentTemplateProperty);
@@ -48,6 +49,7 @@ public class TableViewCell : ContentControl
         // Second, we have additional logic depending on whether a cell template is specified.
         // Instead, values are updated manually via Refresh().
 
+        SetValue(IsVisibleProperty, column.IsVisible);
         SetValue(ThemeProperty, column.CellTheme);
         SetValue(HorizontalContentAlignmentProperty, column.HorizontalContentAlignment);
 

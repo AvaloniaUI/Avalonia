@@ -17,6 +17,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="spreadMethod">The spread method.</param>
         /// <param name="startPoint">The start point for the gradient.</param>
         /// <param name="endPoint">The end point for the gradient.</param>
+        // TODO13: remove, folding relativeTransform into the overload below as an optional parameter.
         public ImmutableLinearGradientBrush(
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity = 1,
@@ -25,7 +26,32 @@ namespace Avalonia.Media.Immutable
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? startPoint = null,
             RelativePoint? endPoint = null)
-            : base(gradientStops, opacity, transform, transformOrigin, spreadMethod)
+            : this(gradientStops, opacity, transform, transformOrigin, spreadMethod, startPoint, endPoint, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImmutableLinearGradientBrush"/> class.
+        /// </summary>
+        /// <param name="gradientStops">The gradient stops.</param>
+        /// <param name="opacity">The opacity of the brush.</param>
+        /// <param name="transform">The transform of the brush.</param>
+        /// <param name="transformOrigin">The transform origin of the brush</param>
+        /// <param name="spreadMethod">The spread method.</param>
+        /// <param name="startPoint">The start point for the gradient.</param>
+        /// <param name="endPoint">The end point for the gradient.</param>
+        /// <param name="relativeTransform">The transform of the brush in the relative coordinate
+        /// space of the area being painted, applied before <paramref name="transform"/>.</param>
+        public ImmutableLinearGradientBrush(
+            IReadOnlyList<ImmutableGradientStop> gradientStops,
+            double opacity,
+            ImmutableTransform? transform,
+            RelativePoint? transformOrigin,
+            GradientSpreadMethod spreadMethod,
+            RelativePoint? startPoint,
+            RelativePoint? endPoint,
+            ImmutableTransform? relativeTransform)
+            : base(gradientStops, opacity, transform, transformOrigin, spreadMethod, relativeTransform)
         {
             StartPoint = startPoint ?? RelativePoint.TopLeft;
             EndPoint = endPoint ?? RelativePoint.BottomRight;

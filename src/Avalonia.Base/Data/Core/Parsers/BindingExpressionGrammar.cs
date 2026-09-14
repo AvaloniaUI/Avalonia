@@ -377,12 +377,12 @@ namespace Avalonia.Data.Core.Parsers
         {
             ReadOnlySpan<char> ns, typeName;
             ns = ReadOnlySpan<char>.Empty;
-            var typeNameOrNamespace = r.ParseIdentifier();
+            var typeNameOrNamespace = r.ParseTypeIdentifier();
 
             if (!r.End && r.TakeIf(':'))
             {
                 ns = typeNameOrNamespace;
-                typeName = r.ParseIdentifier();
+                typeName = r.ParseTypeIdentifier();
             }
             else
             {

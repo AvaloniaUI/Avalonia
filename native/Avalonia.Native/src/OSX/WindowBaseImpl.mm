@@ -56,11 +56,11 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, bool usePanel) : To
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
     lastMenu = nullptr;
-    
+
     CreateNSWindow(usePanel);
-    
+
     StandardContainer = [[AutoFitContentView new] initWithContent:View];
-    
+
     [Window setContentView:StandardContainer];
     [Window setBackingType:NSBackingStoreBuffered];
     [Window setContentMinSize:lastMinSize];
@@ -89,7 +89,7 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
 
     @autoreleasepool {
         [Window setContentSize:lastSize];
-        
+
         if(hasPosition)
         {
             SetPosition(lastPositionSet);
@@ -110,7 +110,7 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         [Window setCollectionBehavior:collectionBehavior & ~NSWindowCollectionBehaviorFullScreenPrimary];
 
         UpdateAppearance();
-        
+
         [Window invalidateShadow];
 
         if (ShouldTakeFocusOnShow() && activate) {
@@ -124,13 +124,13 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
 
         _shown = true;
         [Window setCollectionBehavior:collectionBehavior];
-        
+
         // Ensure that we call needsDisplay = YES so that AvnView.updateLayer is called after the
         // window is shown: if the client is pumping messages during the window creation/show
         // process, it's possible that updateLayer gets called after the window is created but
         // before it's is shown.
         [View.layer setNeedsDisplay];
-        
+
         return S_OK;
     }
 }
@@ -161,7 +161,7 @@ HRESULT WindowBaseImpl::Hide() {
 
     @autoreleasepool {
         if (Window != nullptr) {
-            
+
             // If window is hidden without ending attached sheet first, it will stuck in "order out" state,
             // and block any new sheets from being attached.
             // Additionaly, we don't know if user would define any custom panels, so we only end/close file dialog sheets.
@@ -501,18 +501,18 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
     START_COM_CALL;
 
     @autoreleasepool {
-        
+
         auto oldParent = Parent.tryGet();
-        
+
         if(oldParent != nullptr)
         {
             oldParent->_children.remove(this);
         }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
-        
+
         Parent = cparent;
-       
+
         if(cparent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
             // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
@@ -521,9 +521,9 @@ HRESULT WindowBaseImpl::SetParent(IAvnWindowBase *parent) {
                 cparent->SetWindowState(Normal);
 
             [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-                
+
             cparent->_children.push_back(this);
-                
+
             UpdateAppearance();
         }
 

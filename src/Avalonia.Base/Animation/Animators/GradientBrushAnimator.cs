@@ -38,7 +38,8 @@ namespace Avalonia.Animation.Animators
                         s_relativePointAnimator.Interpolate(progress, oldRadial.Center, newRadial.Center),
                         s_relativePointAnimator.Interpolate(progress, oldRadial.GradientOrigin, newRadial.GradientOrigin),
                         s_relativeScalarAnimator.Interpolate(progress, oldRadial.RadiusX, newRadial.RadiusX),
-                        s_relativeScalarAnimator.Interpolate(progress, oldRadial.RadiusY, newRadial.RadiusY)
+                        s_relativeScalarAnimator.Interpolate(progress, oldRadial.RadiusY, newRadial.RadiusY),
+                        InterpolateTransform(progress, oldValue.RelativeTransform, newValue.RelativeTransform)
                         );
 
                 case IConicGradientBrush oldConic when newValue is IConicGradientBrush newConic:
@@ -49,7 +50,8 @@ namespace Avalonia.Animation.Animators
                         s_relativePointAnimator.Interpolate(progress, oldValue.TransformOrigin, newValue.TransformOrigin),
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldConic.Center, newConic.Center),
-                        s_doubleAnimator.Interpolate(progress, oldConic.Angle, newConic.Angle));
+                        s_doubleAnimator.Interpolate(progress, oldConic.Angle, newConic.Angle),
+                        InterpolateTransform(progress, oldValue.RelativeTransform, newValue.RelativeTransform));
 
                 case ILinearGradientBrush oldLinear when newValue is ILinearGradientBrush newLinear:
                     return new ImmutableLinearGradientBrush(
@@ -59,7 +61,8 @@ namespace Avalonia.Animation.Animators
                         s_relativePointAnimator.Interpolate(progress, oldValue.TransformOrigin, newValue.TransformOrigin),
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldLinear.StartPoint, newLinear.StartPoint),
-                        s_relativePointAnimator.Interpolate(progress, oldLinear.EndPoint, newLinear.EndPoint));
+                        s_relativePointAnimator.Interpolate(progress, oldLinear.EndPoint, newLinear.EndPoint),
+                        InterpolateTransform(progress, oldValue.RelativeTransform, newValue.RelativeTransform));
 
                 default:
                     return progress >= 0.5 ? newValue : oldValue;

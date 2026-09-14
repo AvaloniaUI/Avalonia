@@ -22,6 +22,8 @@ namespace Avalonia.Media.Immutable
         /// How the source rectangle will be stretched to fill the destination rect.
         /// </param>
         /// <param name="tileMode">The tile mode.</param>
+        /// <param name="relativeTransform">The transform of the brush in the relative coordinate
+        /// space of the area being painted, applied before <paramref name="transform"/>.</param>
         public ImmutableImageBrush(
             Bitmap? source,
             AlignmentX alignmentX = AlignmentX.Center,
@@ -32,7 +34,8 @@ namespace Avalonia.Media.Immutable
             RelativePoint transformOrigin = default,
             RelativeRect? sourceRect = null,
             Stretch stretch = Stretch.Uniform,
-            TileMode tileMode = TileMode.None)
+            TileMode tileMode = TileMode.None,
+            ImmutableTransform? relativeTransform = null)
             : base(
                   alignmentX,
                   alignmentY,
@@ -42,7 +45,8 @@ namespace Avalonia.Media.Immutable
                   transformOrigin,
                   sourceRect ?? RelativeRect.Fill,
                   stretch,
-                  tileMode)
+                  tileMode,
+                  relativeTransform)
         {
             Source = source;
         }
