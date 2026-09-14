@@ -34,7 +34,7 @@ jobs:
       appium > appium.out &
       pkill IntegrationTestApp
       sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer        
-      ./build.sh CompileNative
+      dotnet run --project ./nukebuild/_build.csproj -- CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh
