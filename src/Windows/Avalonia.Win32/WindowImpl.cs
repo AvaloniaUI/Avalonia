@@ -78,7 +78,9 @@ namespace Avalonia.Win32
         private readonly FramebufferManager _framebuffer;
         private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
-        private bool _isMoveDragPending;
+        // Windows turns touch and pen input into a left button press asynchronously, and its move and size
+        // loops won't start until that press has arrived. A drag started before then waits here.
+        private Action? _pendingDrag;
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
@@ -783,11 +785,9 @@ namespace Avalonia.Win32
 
             Dispatcher.UIThread.Post(() =>
             {
-                // Windows turns touch and pen input into a left button press asynchronously, and the
-                // move loop won't start until that press has arrived.
                 if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
                 {
-                    _isMoveDragPending = true;
+                    _pendingDrag = StartMoveDrag;
                 }
                 else
                 {
@@ -814,10 +814,23 @@ namespace Avalonia.Win32
                 _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
                 e.Pointer.Capture(null);
-                DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
-                    new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
+
+                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
+                {
+                    _pendingDrag = () => StartResizeDrag(edge);
+                }
+                else
+                {
+                    StartResizeDrag(edge);
+                }
 #endif
             }
+        }
+
+        private void StartResizeDrag(WindowEdge edge)
+        {
+            DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
+                new IntPtr((int)s_edgeLookup[edge]), IntPtr.Zero);
         }
 
         public void SetTitle(string? title)
