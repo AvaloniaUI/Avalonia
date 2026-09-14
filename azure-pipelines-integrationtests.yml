@@ -24,6 +24,7 @@ jobs:
     displayName: 'Get Resolution'
   
   - script: |
+      export DOTNET_CLI_ENABLEAOT=false
       arch="x64"
       if [[ $(uname -m) == 'arm64' ]]; then
       arch="arm64"
@@ -34,7 +35,7 @@ jobs:
       appium > appium.out &
       pkill IntegrationTestApp
       sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer        
-      dotnet run --project ./nukebuild/_build.csproj -- CompileNative
+      DOTNET_CLI_ENABLEAOT=false dotnet run --project ./nukebuild/_build.csproj -- CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh
