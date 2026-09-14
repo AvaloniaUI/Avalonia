@@ -450,6 +450,59 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void ResolvesAvaloniaDictionaryIndexerBindingCorrectly()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding AvaloniaDictionaryProperty[Test]}' Name='textBlock' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext();
+
+                dataContext.AvaloniaDictionaryProperty["Test"] = "Initial Value";
+
+                window.DataContext = dataContext;
+
+                Assert.Equal("Initial Value", textBlock.Text);
+
+                dataContext.AvaloniaDictionaryProperty["Test"] = "New Value";
+
+                Assert.Equal("New Value", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void IndexerAccessorPublishesOnceWhenObservableCollectionItemMoves()
+        {
+            var data = new ObservableCollection<string> { "foo", "bar" };
+            var property = new ClrPropertyInfo(
+                CommonPropertyNames.IndexerName,
+                o => ((ObservableCollection<string>)o)[1],
+                null,
+                typeof(string));
+            var accessor = PropertyInfoAccessorFactory.CreateIndexerPropertyAccessor(
+                new WeakReference<object?>(data),
+                property,
+                1);
+            var result = new List<object?>();
+
+            accessor.Subscribe(x => result.Add(x));
+            data.Move(0, 1);
+
+            Assert.Equal(new[] { "bar", "foo" }, result);
+
+            accessor.Unsubscribe();
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
         public void ResolvesNonIntegerIndexerBindingFromParentInterfaceCorrectly()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -2878,6 +2931,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public List<string> ListProperty { get; set; } = new List<string>();
 
         public NonIntegerIndexer NonIntegerIndexerProperty { get; set; } = new NonIntegerIndexer();
+
+        public AvaloniaDictionary<string, string> AvaloniaDictionaryProperty { get; } = new();
 
         public INonIntegerIndexerDerived NonIntegerIndexerInterfaceProperty => NonIntegerIndexerProperty;
 
