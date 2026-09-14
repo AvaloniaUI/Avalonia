@@ -315,15 +315,6 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.LeakTests");
         });
 
-    Target ZipFiles => _ => _
-        // CreateSbom embeds the SBOM into each .nupkg in NugetRoot, so it must run before we zip
-        // that directory - otherwise the zipped NuGet artifacts would omit the embedded SBOM.
-        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package, CreateSbom)
-        .Executes(() =>
-        {
-            var data = Parameters;
-            Zip(data.ZipNuGetArtifacts, data.NugetRoot);
-        });
 
     Target CreateIntermediateNugetPackages => _ => _
         .DependsOn(Compile)
@@ -350,7 +341,7 @@ partial class Build : NukeBuild
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.snupkg");
         });
 
-    Target CreateSbom => _ => _
+    Target EmbedSbom => _ => _
         .DependsOn(CreateNugetPackages)
         .Executes(() =>
         {
@@ -433,14 +424,12 @@ partial class Build : NukeBuild
 
     Target CiMacOS => _ => _
         .DependsOn(Package)
-        .DependsOn(ZipFiles)
-        .DependsOn(CreateSbom);
+        .DependsOn(EmbedSbom);
 
     Target CiWindows => _ => _
         .DependsOn(Package)
         .DependsOn(VerifyXamlCompilation)
-        .DependsOn(ZipFiles)
-        .DependsOn(CreateSbom);
+        .DependsOn(EmbedSbom);
 
     Target BuildToNuGetCache => _ => _
         .DependsOn(CreateNugetPackages)
