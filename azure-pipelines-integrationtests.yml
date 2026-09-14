@@ -2,29 +2,26 @@ jobs:
 - job: Mac
   pool:
     name: 'AvaloniaMacPool'
-  variables:
-      # Our macOS runner is very old and is not compatible with .NET 11 CLI compiled with AOT
-      DOTNET_CLI_ENABLEAOT: 'false'
 
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET 10.0 Runtime'
-    inputs:
-        packageType: runtime
-        version: 10.0.x
+  # Repository targets .NET 11, which doesn't support old macOS runner we have
+  # For macOS integrational tests we don't need .NET 11 yet, so we rely on UseDotNet@2 alone
+  # TODO: it will be no longer needed once we migrate to GitHub CI with public runners
+  - script: rm global.json
+    displayName: 'Remove global.json'
+  - script: dotnet new globaljson --sdk-version 10.0.401 --roll-forward latestFeature
+    displayName: 'Create global.json'
 
   - task: UseDotNet@2
-    displayName: 'Use .NET SDK'
+    displayName: 'Use .NET 10.0 SDK'
     inputs:
-      packageType: sdk
-      useGlobalJson: true
-      includePreviewVersions: true
+        packageType: sdk
+        version: 10.0.x
 
   - script: system_profiler SPDisplaysDataType |grep Resolution
     displayName: 'Get Resolution'
   
   - script: |
-      export DOTNET_CLI_ENABLEAOT=false
       arch="x64"
       if [[ $(uname -m) == 'arm64' ]]; then
       arch="arm64"
@@ -35,7 +32,7 @@ jobs:
       appium > appium.out &
       pkill IntegrationTestApp
       sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer        
-      DOTNET_CLI_ENABLEAOT=false dotnet run --project ./nukebuild/_build.csproj -- CompileNative
+      dotnet run --project ./nukebuild/_build.csproj -- CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh
