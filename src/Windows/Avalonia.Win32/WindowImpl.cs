@@ -78,6 +78,7 @@ namespace Avalonia.Win32
         private readonly FramebufferManager _framebuffer;
         private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
+        private bool _isMoveDragPending;
 
         private readonly Win32NativeControlHost _nativeControlHost;
         private readonly IStorageProvider _storageProvider;
@@ -782,13 +783,27 @@ namespace Avalonia.Win32
 
             Dispatcher.UIThread.Post(() =>
             {
-                // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
-                // and WM_LBUTTONUP return value just signify whether the WndProc handled the
-                // message or not, so they are not interesting
-
-                SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
-                SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
+                // Windows turns touch and pen input into a left button press asynchronously, and the
+                // move loop won't start until that press has arrived.
+                if (e.Pointer.Type != PointerType.Mouse && GetKeyState(VirtualKeyStates.VK_LBUTTON) >= 0)
+                {
+                    _isMoveDragPending = true;
+                }
+                else
+                {
+                    StartMoveDrag();
+                }
             }, DispatcherPriority.Send);
+        }
+
+        private void StartMoveDrag()
+        {
+            // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+            // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+            // message or not, so they are not interesting
+
+            SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+            SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
