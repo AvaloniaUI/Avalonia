@@ -865,8 +865,8 @@ public class CompositorHitTestingTests : CompositorTestsBase
 
             s.TopLevel.Content = border;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(75, 100, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.Intersects));
-            s.AssertHitTest(new RectangleGeometry(new Rect(125, 100, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.Intersects));
+            s.AssertHitTest(new RectangleGeometry(new Rect(75, 100, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.FullyContains));
+            s.AssertHitTest(new RectangleGeometry(new Rect(125, 45, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.Intersects));
             s.AssertHitTest(new RectangleGeometry(new Rect(175, 100, 10, 10)), null);
         }
     }
