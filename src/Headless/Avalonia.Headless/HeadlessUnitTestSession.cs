@@ -235,16 +235,16 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
     public void Dispose()
     {
         _cancellationTokenSource.Cancel();
-        _queue.CompleteAdding();
         _dispatchTask.Wait();
+        _queue.CompleteAdding();
         _cancellationTokenSource.Dispose();
     }
 
     public async ValueTask DisposeAsync()
     {
         await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
-        _queue.CompleteAdding();
         await _dispatchTask.ConfigureAwait(false);
+        _queue.CompleteAdding();
         _cancellationTokenSource.Dispose();
     }
 
@@ -282,7 +282,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
         var queue = new BlockingCollection<(Action, ExecutionContext?)>();
 
         Task? task = null;
-        task = Task.Run(() =>
+        task = new Task(() =>
         {
             try
             {
@@ -327,8 +327,9 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
                 {
                 }
             }
-        });
+        }, TaskCreationOptions.DenyChildAttach);
 
+        task.Start(TaskScheduler.Default);
         return tcs.Task.GetAwaiter().GetResult();
     }
 
