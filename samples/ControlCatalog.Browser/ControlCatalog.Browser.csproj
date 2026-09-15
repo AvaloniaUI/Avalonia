@@ -17,6 +17,14 @@
     <ProjectReference Include="../../src/Browser/Avalonia.Browser/Avalonia.Browser.csproj" />
     <ProjectReference Include="../ControlCatalog/ControlCatalog.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- 
+      A workaround for VS and Rider being dumber than a rock when it comes to build dependency analysis
+      Also see https://youtrack.jetbrains.com/issue/RIDER-107175/Rider-doesnt-update-generate-transitive-Content-dependencies
+    -->
+    <AdditionalUpToDateCheckInput Include="../../src/Browser/Avalonia.Browser/**/*"
+                                  Exclude="../../src/Browser/Avalonia.Browser/obj/*;../../src/Browser/Avalonia.Browser/bin/*" Visible="false"/>
+  </ItemGroup>
 
   <Import Project="../../src/Browser/Avalonia.Browser/build/Avalonia.Browser.props" />
   <Import Project="../../src/Browser/Avalonia.Browser/build/Avalonia.Browser.targets" />
