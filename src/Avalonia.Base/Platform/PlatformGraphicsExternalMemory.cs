@@ -8,18 +8,16 @@ public record struct PlatformGraphicsExternalImageProperties
     public ulong MemorySize { get; set; }
     public ulong MemoryOffset { get; set; }
     public bool TopLeftOrigin { get; set; }
-    public uint DrmFormat { get; set; }
-    public ulong DrmModifier { get; set; }
-    public int PlaneCount { get; set; }
-    public int[]? PlaneFds { get; set; }
-    public uint[]? PlaneStrides { get; set; }
-    public uint[]? PlaneOffsets { get; set; }
-    public const ulong DrmModifierInvalid = 0x00ffffffffffffffUL;
 
     /// <summary>
     /// Vulkan-specific properties of the imported image, ignored by other backends.
     /// </summary>
     public PlatformGraphicsExternalImageVulkanProperties? VulkanProperties { get; set; }
+
+    /// <summary>
+    /// dma-buf-specific properties of the imported image.
+    /// </summary>
+    public PlatformGraphicsExternalImageDmaBufProperties? DmaBufProperties { get; set; }
 }
 
 public record struct PlatformGraphicsExternalImageVulkanProperties
@@ -28,6 +26,48 @@ public record struct PlatformGraphicsExternalImageVulkanProperties
     /// The VkImageLayout the underlying memory is currently in.
     /// </summary>
     public int Layout { get; set; }
+}
+
+/// <summary>
+/// Describes the DRM layout of a dma-buf image.
+/// </summary>
+public record struct PlatformGraphicsExternalImageDmaBufProperties
+{
+    /// <summary>
+    /// The DRM_FORMAT_MOD_INVALID modifier.
+    /// </summary>
+    public const ulong DrmModifierInvalid = 0x00ffffffffffffffUL;
+
+    /// <summary>
+    /// The DRM_FORMAT_* fourcc of the buffer.
+    /// </summary>
+    public uint DrmFormat { get; set; }
+
+    /// <summary>
+    /// The DRM_FORMAT_MOD_* layout modifier of the buffer, or <see cref="DrmModifierInvalid"/> for the implicit layout.
+    /// </summary>
+    public ulong DrmModifier { get; set; }
+
+    /// <summary>
+    /// The number of memory planes. When zero, a single plane described by the handle itself and
+    /// <see cref="PlatformGraphicsExternalImageProperties.MemoryOffset"/> is assumed.
+    /// </summary>
+    public int PlaneCount { get; set; }
+
+    /// <summary>
+    /// Per-plane dma-buf file descriptors. When null, the handle's file descriptor is used for every plane.
+    /// </summary>
+    public int[]? PlaneFds { get; set; }
+
+    /// <summary>
+    /// Per-plane row pitches in bytes.
+    /// </summary>
+    public uint[]? PlaneStrides { get; set; }
+
+    /// <summary>
+    /// Per-plane byte offsets into the corresponding file descriptor.
+    /// </summary>
+    public uint[]? PlaneOffsets { get; set; }
 }
 
 public enum PlatformGraphicsExternalImageFormat
@@ -40,7 +80,7 @@ public enum PlatformGraphicsExternalImageFormat
 /// A DRM fourcc format + modifier pair the GPU backend can import as a
 /// <see cref="KnownPlatformGraphicsExternalImageHandleTypes.DmaBufFileDescriptor"/> image.
 /// <see cref="Format"/> is a DRM_FORMAT_* fourcc; <see cref="Modifier"/> is a
-/// DRM_FORMAT_MOD_* layout (<see cref="PlatformGraphicsExternalImageProperties.DrmModifierInvalid"/>
+/// DRM_FORMAT_MOD_* layout (<see cref="PlatformGraphicsExternalImageDmaBufProperties.DrmModifierInvalid"/>
 /// meaning the implicit, driver-chosen layout).
 /// </summary>
 public readonly record struct PlatformGraphicsDrmFormat(uint Format, ulong Modifier);

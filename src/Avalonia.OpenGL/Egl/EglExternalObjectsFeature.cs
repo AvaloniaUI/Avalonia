@@ -110,7 +110,7 @@ internal class EglExternalObjectsFeature : IGlContextExternalObjectsFeature
                 {
                     // No explicit modifiers reported: the format imports with the implicit layout.
                     result.Add(new PlatformGraphicsDrmFormat((uint)format,
-                        PlatformGraphicsExternalImageProperties.DrmModifierInvalid));
+                        PlatformGraphicsExternalImageDmaBufProperties.DrmModifierInvalid));
                     continue;
                 }
 
@@ -155,20 +155,25 @@ internal class EglExternalObjectsFeature : IGlContextExternalObjectsFeature
         if (handle.HandleDescriptor != KnownPlatformGraphicsExternalImageHandleTypes.DmaBufFileDescriptor)
             throw new ArgumentException(handle.HandleDescriptor + " is not supported", nameof(handle));
 
-        var planeCount = properties.PlaneCount > 0 ? properties.PlaneCount : 1;
+        if (properties.DmaBufProperties is not { } dmaBuf)
+            throw new ArgumentException(
+                $"{nameof(PlatformGraphicsExternalImageProperties.DmaBufProperties)} must be set for dma-buf imports",
+                nameof(properties));
+
+        var planeCount = dmaBuf.PlaneCount > 0 ? dmaBuf.PlaneCount : 1;
 
         var attribs = new List<int>
         {
             EGL_WIDTH, properties.Width,
             EGL_HEIGHT, properties.Height,
-            EGL_LINUX_DRM_FOURCC_EXT, (int)properties.DrmFormat
+            EGL_LINUX_DRM_FOURCC_EXT, (int)dmaBuf.DrmFormat
         };
 
         for (var p = 0; p < planeCount; p++)
         {
-            var fd = properties.PlaneFds is { } fds ? fds[p] : handle.Handle.ToInt32();
-            var offset = properties.PlaneOffsets is { } offsets ? (int)offsets[p] : (int)properties.MemoryOffset;
-            var pitch = properties.PlaneStrides is { } strides ? (int)strides[p] : 0;
+            var fd = dmaBuf.PlaneFds is { } fds ? fds[p] : handle.Handle.ToInt32();
+            var offset = dmaBuf.PlaneOffsets is { } offsets ? (int)offsets[p] : (int)properties.MemoryOffset;
+            var pitch = dmaBuf.PlaneStrides is { } strides ? (int)strides[p] : 0;
 
             attribs.Add(PlaneFdAttrib(p));
             attribs.Add(fd);
@@ -177,12 +182,12 @@ internal class EglExternalObjectsFeature : IGlContextExternalObjectsFeature
             attribs.Add(PlanePitchAttrib(p));
             attribs.Add(pitch);
 
-            if (_hasModifiers && properties.DrmModifier != PlatformGraphicsExternalImageProperties.DrmModifierInvalid)
+            if (_hasModifiers && dmaBuf.DrmModifier != PlatformGraphicsExternalImageDmaBufProperties.DrmModifierInvalid)
             {
                 attribs.Add(PlaneModifierLoAttrib(p));
-                attribs.Add((int)(properties.DrmModifier & 0xFFFFFFFF));
+                attribs.Add((int)(dmaBuf.DrmModifier & 0xFFFFFFFF));
                 attribs.Add(PlaneModifierHiAttrib(p));
-                attribs.Add((int)(properties.DrmModifier >> 32));
+                attribs.Add((int)(dmaBuf.DrmModifier >> 32));
             }
         }
 

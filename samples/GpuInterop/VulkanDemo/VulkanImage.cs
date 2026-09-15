@@ -455,12 +455,15 @@ public unsafe class VulkanImage : IDisposable
                     ? PlatformGraphicsExternalImageFormat.B8G8R8A8UNorm
                     : PlatformGraphicsExternalImageFormat.R8G8B8A8UNorm,
                 MemorySize = MemorySize,
-                DrmFormat = DrmFormat,
-                DrmModifier = DrmModifier,
-                PlaneCount = planeCount,
-                PlaneFds = fds,
-                PlaneOffsets = planeOffsets,
-                PlaneStrides = planeStrides
+                DmaBufProperties = new PlatformGraphicsExternalImageDmaBufProperties
+                {
+                    DrmFormat = DrmFormat,
+                    DrmModifier = DrmModifier,
+                    PlaneCount = planeCount,
+                    PlaneFds = fds,
+                    PlaneOffsets = planeOffsets,
+                    PlaneStrides = planeStrides
+                }
             };
 
             return (new PlatformHandle(new IntPtr(fd),
