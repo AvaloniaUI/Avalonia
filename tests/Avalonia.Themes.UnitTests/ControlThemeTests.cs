@@ -34,7 +34,8 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
         // without selectors that apply globally.
 
         var theme = CreateAttachedTheme();
-        var allStyles = theme.EnumerateStyles();
+        var allStyles = theme.EnumerateStyles().ToArray();
+
         Assert.DoesNotContain(allStyles, s => s.Parent is null);
     }
 
@@ -63,7 +64,8 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
                         && (!typeof(Window).IsAssignableFrom(t) || t == typeof(Window))
                         && !ignoredControls.Contains(t))
             // WindowDrawnDecorations is the only StyleElement that is not Control but has ControlTheme
-            .Prepend(typeof(WindowDrawnDecorations));
+            .Prepend(typeof(WindowDrawnDecorations))
+            .ToArray();
 
         var theme = CreateAttachedTheme();
         var defaultControlThemes = theme.EnumerateResources()
@@ -73,6 +75,7 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
             .Select(r => (Type)r.Key)
             .ToHashSet();
 
+        Assert.NotEmpty(templatedControls);
         Assert.All(templatedControls, c => Assert.Contains(c, defaultControlThemes));
     }
 
@@ -83,7 +86,8 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
         var defaultControlThemes = theme.EnumerateResources()
             .Where(r => r is { Value: ControlTheme, Key: Type })
             .Where(r => r.ThemeVariant == ThemeVariant.Default)
-            .Select(r => (ControlTheme)r.Value!);
+            .Select(r => (ControlTheme)r.Value!)
+            .ToArray();
 
         var controlTypesToSkip = new Dictionary<Type, HashSet<string>>
         {
@@ -95,6 +99,7 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
             [typeof(Slider)] = []
         };
 
+        Assert.NotEmpty(defaultControlThemes);
         Assert.All(defaultControlThemes, controlTheme =>
         {
             Assert.NotNull(controlTheme.TargetType);
@@ -148,21 +153,27 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
         var controlThemes = theme.EnumerateResources()
             .Where(r => r is { Value: ControlTheme })
             .Where(r => r.ThemeVariant == ThemeVariant.Default)
-            .Select(r => (ControlTheme)r.Value!);
+            .Select(r => (ControlTheme)r.Value!)
+            .ToArray();
 
+        Assert.NotEmpty(controlThemes);
         Assert.All(controlThemes.SelectMany(t => t.EnumerateStyles()), style =>
         {
             var allDynamicResourceKeys = style.Setters.OfType<Setter>()
                 .Select(s => s.Value)
                 .OfType<DynamicResourceExtension>()
-                .Select(r => r.ResourceKey);
+                .Select(r => r.ResourceKey)
+                .ToArray();
 
+            // Can be empty
             Assert.All(allDynamicResourceKeys, c =>
             {
                 Assert.Contains(c, allResourcesPerVariant[ThemeVariant.Default]);
             });
 
-            Assert.All(style.EnumerateTemplateChildren(), templatePart =>
+            var templateChildren = style.EnumerateTemplateChildren().ToArray();
+            // Can be empty
+            Assert.All(templateChildren, templatePart =>
             {
                 var allTemplateDynamicResourceKeys = templatePart.GetValueStoreDiagnostic()
                     .AppliedFrames
@@ -171,8 +182,10 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
                     .Distinct()
                     .Select(prop => BindingOperations.GetBindingExpressionBase(templatePart, prop))
                     .OfType<DynamicResourceExpression>()
-                    .Select(expr => expr.ResourceKey);
+                    .Select(expr => expr.ResourceKey)
+                    .ToArray();
 
+                // Can be empty
                 Assert.All(allTemplateDynamicResourceKeys, c =>
                 {
                     Assert.Contains(c, allResourcesPerVariant[ThemeVariant.Default]);
@@ -189,8 +202,10 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
         var controlThemes = theme.EnumerateResources()
             .Where(r => r is { Value: ControlTheme })
             .Where(r => r.ThemeVariant == ThemeVariant.Default)
-            .Select(r => (ControlTheme)r.Value!);
+            .Select(r => (ControlTheme)r.Value!)
+            .ToArray();
 
+        Assert.NotEmpty(controlThemes);
         Assert.All(controlThemes.SelectMany(t => t.EnumerateStyles()), style =>
         {
             AssertValues(style.Setters.OfType<Setter>().ToArray(), setter => setter.Value);
@@ -211,6 +226,7 @@ public abstract class ControlThemeTests(Type typeEntryPoint) : ThemeTestBase(typ
 
         void AssertValues<T>(IReadOnlyCollection<T> hardcodeValueEntries, Func<T, object?> getValue)
         {
+            // Can be empty
             Assert.DoesNotContain(hardcodeValueEntries, d => getValue(d) switch
             {
                 Color c => !IsTransparentOrEmpty(c),

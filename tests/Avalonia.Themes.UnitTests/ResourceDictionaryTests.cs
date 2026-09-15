@@ -26,6 +26,7 @@ public abstract class ResourceDictionaryTests(Type typeEntryPoint) : ThemeTestBa
                 dict => dict.Key,
                 dict => dict.Value.EnumerateResources());
 
+        Assert.NotEmpty(flatThemeDictionaryResources.Keys);
         Assert.All(flatThemeDictionaryResources.Keys, variant =>
         {
             var variantResourceKeys = flatThemeDictionaryResources[variant].Select(r => r.Key);
