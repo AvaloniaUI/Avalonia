@@ -231,10 +231,11 @@ internal class RawEventGrouper : IDisposable
         var points = (PooledList<RawPointerPoint>)last.IntermediatePoints.Value!;
         points.Add(new RawPointerPoint { Position = last.Position, Pressure = last.Point.Pressure, ContactRect = last.Point.ContactRect, Twist = last.Point.Twist, XTilt = last.Point.XTilt, YTilt = last.Point.YTilt });
 
-        // Points the platform already attached to the merged-in event (e.g. browser coalesced events)
+        // Points the platform already attached to the merged-in event
         // come after the previous primary point and before the new primary point.
         if (current.IntermediatePoints?.Value is { Count: > 0 } currentPoints)
         {
+            // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = 0; i < currentPoints.Count; i++)
                 points.Add(currentPoints[i]);
             if (currentPoints is PooledList<RawPointerPoint> pooled)
