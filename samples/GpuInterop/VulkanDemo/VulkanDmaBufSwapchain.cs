@@ -39,7 +39,7 @@ class VulkanDmaBufSwapchainImage : ISwapchainImage
     private readonly VulkanContext _vk;
     private readonly ICompositionGpuInterop _interop;
     private readonly CompositionDrawingSurface _target;
-    private readonly VulkanImage _image;
+    private readonly VulkanDmaBufImage _image;
     private ICompositionImportedGpuImage? _importedImage;
     private Task? _lastPresent;
 
@@ -52,9 +52,8 @@ class VulkanDmaBufSwapchainImage : ISwapchainImage
         _interop = interop;
         _target = target;
         Size = size;
-        // The EGL importer reads back as R8G8B8A8 (ABGR8888 in DRM terms); VulkanImage maps the format.
-        _image = new VulkanImage(vk, (uint)Format.R8G8B8A8Unorm, size, true, interop.SupportedImageHandleTypes,
-            dmaBuf: true);
+        // The EGL importer reads back as R8G8B8A8 (ABGR8888 in DRM terms); VulkanDmaBufImage maps the format.
+        _image = new VulkanDmaBufImage(vk, (uint)Format.R8G8B8A8Unorm, size);
     }
 
     public PixelSize Size { get; }
