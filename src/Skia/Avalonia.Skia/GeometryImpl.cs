@@ -173,18 +173,10 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
         {
-            var other = geometry as GeometryImpl;
-
-            if (other == null)
+            if (geometry is  not GeometryImpl other)
                 return IntersectionResult.Empty;
 
-            IntersectionResult result = HitTestPath(FillPath, other.FillPath);
-            var otherStroke = other._pathCache.ExpandedPath;
-
-            if (result == IntersectionResult.Empty)
-            {
-                result = HitTestPath(FillPath, otherStroke);
-            }
+            return HitTestPath(FillPath, other.FillPath);
 
             static IntersectionResult HitTestPath(SKPath? path1, SKPath? path2)
             {
@@ -194,7 +186,7 @@ namespace Avalonia.Skia
                 var region = new SKRegion(path1);
                 var otherRegion = new SKRegion(path2);
 
-                if (region.Intersects(otherRegion) || region.Op(otherRegion, SKRegionOperation.Intersect))
+                if (region.Intersects(otherRegion))
                 {
                     if (region.Contains(otherRegion))
                         return IntersectionResult.FullyInside;
@@ -206,8 +198,6 @@ namespace Avalonia.Skia
 
                 return IntersectionResult.Empty;
             }
-
-            return result;
         }
 
         private struct PathCache : IDisposable

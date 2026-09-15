@@ -1503,7 +1503,6 @@ public class CompositorHitTestingTests : CompositorTestsBase
             var line = new Line
             {
                 Stroke = Brushes.Red,
-                Fill = Brushes.Red,
                 StrokeThickness = 4,
                 StartPoint = new Point(5, 5),
                 EndPoint = new Point(190, 5)

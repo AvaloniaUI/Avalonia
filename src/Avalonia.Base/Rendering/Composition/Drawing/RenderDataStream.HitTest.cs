@@ -116,25 +116,10 @@ internal partial class RenderDataStream
 
             else if (_currentGeometry is { } currentGeometry &&
                 currentGeometry.PlatformImpl is { } currentGeometryImpl &&
-                currentGeometry.GetRenderBounds(s_defaultStokePen) != default)
+                HitTestGeometry(serverBrush, clientPen, currentGeometryImpl, geometry) is { } intersectionResult &&
+                intersectionResult > IntersectionResult.Empty)
             {
-                if (serverBrush == null && clientPen != null)
-                {
-                    var strokeGeometry = geometry.GetWidenedGeometry(clientPen);
-
-                    if (strokeGeometry.GetRenderBounds(serverPen) != default)
-                    {
-                        Hit(currentGeometryImpl.GetFillIntersectionResult(strokeGeometry));
-                    }
-                }
-                else if (serverBrush != null && geometry.GetRenderBounds(serverPen) != default)
-                {
-                    var strokeGeometry = geometry.GetWidenedGeometry(clientPen ?? s_defaultStokePen);
-                    var combined = new CombinedGeometry(new ImmutableGeometry(strokeGeometry),
-                        new ImmutableGeometry(geometry)).PlatformImpl;
-                    if (combined is not null)
-                        Hit(currentGeometryImpl.GetFillIntersectionResult(combined));
-                }
+                Hit(intersectionResult);
             }
         }
 
@@ -209,7 +194,7 @@ internal partial class RenderDataStream
             {
                 if ((CurrentPoint is { } point && !geometry.FillContains(point)) ||
                     (_currentGeometry is { } currentGeometry && currentGeometry.PlatformImpl is { } currentGeometryImpl &&
-                currentGeometryImpl.GetFillIntersectionResult(geometry) > IntersectionResult.Empty))
+                currentGeometryImpl.GetFillIntersectionResult(geometry) == IntersectionResult.Empty))
                     Live = false;
             }
             return scope;
@@ -239,7 +224,6 @@ internal partial class RenderDataStream
                         _savedGeometries?.Push(CurrentGeometry);
                         CurrentGeometry = CurrentGeometry.Clone();
                         CurrentGeometry.Transform = new MatrixTransform((CurrentGeometry.Transform?.Value ?? Matrix.Identity) * inverted);
-                        _currentGeometry?.Transform = CurrentGeometry.Transform;
                     }
                 }
                 else
@@ -318,7 +302,7 @@ internal partial class RenderDataStream
         if (clientPen == null)
             return IntersectionResult.NotCalculated;
 
-        return HitTestGeometry(null, clientPen, geometry, new LineGeometry(p1, p2));
+        return HitTestGeometry(null, clientPen, geometry.PlatformImpl, new LineGeometry(p1, p2).PlatformImpl);
     }
 
     private static bool HitTestRectangle(IBrush? serverBrush, IPen? clientPen, RoundedRect rect, Point p)
@@ -359,30 +343,29 @@ internal partial class RenderDataStream
 
         if (rect.IsRounded)
         {
-            return HitTestGeometry(serverBrush, clientPen, geometry, new RectangleGeometry(rect.Rect, rect.RadiiTopLeft.X, rect.RadiiTopLeft.Y));
+            return HitTestGeometry(serverBrush, clientPen, geometry.PlatformImpl, new RectangleGeometry(rect.Rect, rect.RadiiTopLeft.X, rect.RadiiTopLeft.Y).PlatformImpl);
         }
         else
         {
-            return HitTestGeometry(serverBrush, clientPen, geometry, new RectangleGeometry(rect.Rect));
+            return HitTestGeometry(serverBrush, clientPen, geometry.PlatformImpl, new RectangleGeometry(rect.Rect).PlatformImpl);
         }
     }
 
-    private static IntersectionResult? HitTestGeometry(IBrush? serverBrush, IPen? clientPen, Geometry currentGeometry, Geometry targetGeometry)
+    private static IntersectionResult? HitTestGeometry(IBrush? serverBrush, IPen? clientPen, IGeometryImpl? currentGeometry, IGeometryImpl? targetGeometry)
     {
+        if (targetGeometry == null || currentGeometry == null)
+            return IntersectionResult.Empty;
+
         if (serverBrush == null && clientPen != null)
         {
-            var strokeGeometry = targetGeometry.GetWidenedGeometry(clientPen);
-
-            if (strokeGeometry.GetRenderBounds(clientPen) != default)
-            {
-                return currentGeometry.GetFillIntersectionResult(strokeGeometry);
-            }
+            return currentGeometry.GetFillIntersectionResult(targetGeometry.GetWidenedGeometry(clientPen));
         }
-        else if (serverBrush != null && targetGeometry.GetRenderBounds(clientPen ?? s_defaultStokePen) != default)
+        else if (serverBrush != null)
         {
             var strokeGeometry = targetGeometry.GetWidenedGeometry(clientPen ?? s_defaultStokePen);
-            var combined = new CombinedGeometry(strokeGeometry, targetGeometry);
-            return currentGeometry.GetFillIntersectionResult(combined);
+            var combined = new CombinedGeometry(new ImmutableGeometry(strokeGeometry), new ImmutableGeometry(targetGeometry));
+            if (combined.PlatformImpl is { } impl)
+                return currentGeometry.GetFillIntersectionResult(impl);
         }
 
         return IntersectionResult.Empty;
@@ -424,18 +407,7 @@ internal partial class RenderDataStream
 
     private static IntersectionResult? HitTestEllipse(IBrush? serverBrush, IPen? clientPen, Rect rect, Geometry geometry)
     {
-        var strokeThickness = clientPen?.Thickness ?? 0;
-
-        var rx = rect.Width / 2 + strokeThickness / 2;
-        var ry = rect.Height / 2 + strokeThickness / 2;
-
-        var ellipse = new EllipseGeometry(rect)
-        {
-            RadiusX = rx,
-            RadiusY = ry
-        };
-
-        return HitTestGeometry(serverBrush, clientPen, geometry, ellipse);
+        return HitTestGeometry(serverBrush, clientPen, geometry.PlatformImpl, new EllipseGeometry(rect).PlatformImpl);
     }
 
     private static bool EllipseContains(double dx, double dy, double radiusX, double radiusY)

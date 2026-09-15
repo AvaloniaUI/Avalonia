@@ -309,52 +309,9 @@ namespace Avalonia.Headless
             }
         }
 
-        private class HeadlessLineGeometryContextStub : HeadlessGeometryStub, IHeadlessGeometryWithEdges
+        private abstract class HeadlessGeometryWithEdgesStub(Rect bounds) : HeadlessGeometryStub(bounds), IHeadlessGeometryWithEdges
         {
-            private List<Point> _points = new List<Point>();
-            public HeadlessLineGeometryContextStub(Point p1, Point p2) : base(new Rect(new Point(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y)),
-                new Point(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y))))
-            {
-                _points.Add(p1);
-                _points.Add(p2);
-            }
-            public List<Point> Points => _points;
-
-            public override IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
-            {
-                if (geometry is IHeadlessGeometryWithEdges stub)
-                {
-                    var axes = (this as IHeadlessGeometryWithEdges).GetAxes();
-                    axes.AddRange(stub.GetAxes());
-
-                    foreach (var axis in axes)
-                    {
-                        var (min, max) = (this as IHeadlessGeometryWithEdges).ProjectionOnAxis(axis);
-                        var projection2 = stub.ProjectionOnAxis(axis);
-
-                        if (max < projection2.min || projection2.max < min)
-                            return IntersectionResult.Empty;
-                    }
-
-                    return IntersectionResult.Intersects;
-                }
-
-                return base.GetFillIntersectionResult(geometry);
-            }
-        }
-
-        private class HeadlessRectangleGeometryContextStub : HeadlessGeometryStub, IHeadlessGeometryWithEdges
-        {
-            private List<Point> _points = new List<Point>();
-            public HeadlessRectangleGeometryContextStub(Rect bounds) : base(bounds)
-            {
-                _points.Add(bounds.TopLeft);
-                _points.Add(bounds.TopRight);
-                _points.Add(bounds.BottomLeft);
-                _points.Add(bounds.BottomRight);
-            }
-
-            public List<Point> Points => _points;
+            public abstract List<Point> Points { get; }
 
             public override IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
             {
@@ -386,6 +343,34 @@ namespace Avalonia.Headless
 
                 return base.GetFillIntersectionResult(geometry);
             }
+        }
+
+        private class HeadlessLineGeometryContextStub : HeadlessGeometryWithEdgesStub
+        {
+            private List<Point> _points = new List<Point>();
+
+            public HeadlessLineGeometryContextStub(Point p1, Point p2) : base(new Rect(new Point(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y)),
+                new Point(Math.Max(p1.X, p2.X), Math.Max(p1.Y, p2.Y))))
+            {
+                _points.Add(p1);
+                _points.Add(p2);
+            }
+
+            public override List<Point> Points => _points;
+        }
+
+        private class HeadlessRectangleGeometryContextStub : HeadlessGeometryWithEdgesStub
+        {
+            private List<Point> _points = new List<Point>();
+            public HeadlessRectangleGeometryContextStub(Rect bounds) : base(bounds)
+            {
+                _points.Add(bounds.TopLeft);
+                _points.Add(bounds.TopRight);
+                _points.Add(bounds.BottomLeft);
+                _points.Add(bounds.BottomRight);
+            }
+
+            public override List<Point> Points => _points;
         }
 
         internal interface IHeadlessGeometryWithEdges

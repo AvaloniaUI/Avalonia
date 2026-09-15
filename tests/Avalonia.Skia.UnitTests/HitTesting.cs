@@ -88,7 +88,6 @@ namespace Avalonia.Skia.UnitTests
                             StartPoint = new Point(0, 0),
                             EndPoint = new Point(100,0),
                             Stroke = Brushes.Red,
-                            Fill = Brushes.Red,
                             StrokeThickness = 5,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center
