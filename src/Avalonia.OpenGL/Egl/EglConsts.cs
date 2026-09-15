@@ -255,5 +255,10 @@ namespace Avalonia.OpenGL.Egl
         public const int  EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE = 0x33A6;
         
         public const int EGL_TEXTURE_INTERNAL_FORMAT_ANGLE = 0x345D;
+
+        // EGL_EXT_pixel_format_float. A half float (scRGB) surface needs a config whose colour
+        // channels are floating point; the fixed point configs report no alpha for one.
+        public const int EGL_COLOR_COMPONENT_TYPE_EXT = 0x3339;
+        public const int EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT = 0x333B;
     }
 }
