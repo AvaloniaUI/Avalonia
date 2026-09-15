@@ -877,6 +877,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void TextBlock_FontVariations_Is_Parsed_From_String()
+        {
+            // FontVariationSettings has a static Parse(string), which the XAML compiler
+            // picks up for attribute-string conversion — no TypeConverter involved.
+            var xaml = @"<TextBlock xmlns='https://github.com/avaloniaui' FontVariations='wght=700, wdth=85' />";
+
+            var textBlock = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(xaml);
+
+            Assert.Equal(FontVariationSettings.Parse("wght=700, wdth=85"), textBlock.FontVariations);
+        }
+
+        [Fact]
         public void AddChild_Child_Is_Set()
         {
             var xaml = @"<ObjectWithAddChild  xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml'>Foo</ObjectWithAddChild>";
