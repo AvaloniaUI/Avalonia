@@ -41,8 +41,8 @@ namespace Avalonia.OpenGL.Egl
                 _features = features.ToDictionary(x => x.Key, x => x.Value(this));
 
                 if (!_features.ContainsKey(typeof(IGlContextExternalObjectsFeature))
-                        && EglExternalObjectsFeature.TryCreate(this) is { } dmaBufFeature)
-                    _features[typeof(IGlContextExternalObjectsFeature)] = dmaBufFeature;
+                        && EglExternalObjectsFeature.TryCreate(this) is { } externalObjects)
+                    _features[typeof(IGlContextExternalObjectsFeature)] = externalObjects;
             }
         }
 
