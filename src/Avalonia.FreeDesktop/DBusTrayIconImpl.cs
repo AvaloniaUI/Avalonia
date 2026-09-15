@@ -23,8 +23,13 @@ namespace Avalonia.FreeDesktop
         private (int, int, byte[]) _icon;
 
         private string? _sysTrayServiceName;
+        // This task shows if the name request is in progress, complete, or failed.
+        private Task? _sysTrayServiceNameRequest;
+        // The bus keeps the name until the release is complete. A request before that fails.
+        private Task? _sysTrayServiceNameRelease;
         private string? _tooltipText;
         private bool _isDisposed;
+        private bool _itemExported;
         private bool _serviceConnected;
         private bool _isVisible = true;
 
@@ -53,7 +58,6 @@ namespace Avalonia.FreeDesktop
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusMenuPath, _connection);
 
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
-            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
             _statusNotifierItemDbusObj.ActivationDelegate += () => OnClicked?.Invoke();
 
             WatchAsync();
@@ -93,10 +97,16 @@ namespace Avalonia.FreeDesktop
                     OnOwnerChanged(owner);
                 }
             }
-            catch (Exception e) when (!_isDisposed)
+            catch (OperationCanceledException)
             {
-                Logger.TryGet(LogEventLevel.Error, "DBUS")
-                    ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.\n{Exception}", e);
+                // Dispose cancels this task.
+            }
+            catch (Exception e)
+            {
+                // An exception that leaves this method ends the process.
+                if (!_isDisposed)
+                    Logger.TryGet(LogEventLevel.Error, "DBUS")
+                        ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.\n{Exception}", e);
             }
         }
 
@@ -110,8 +120,6 @@ namespace Avalonia.FreeDesktop
                 _serviceConnected = true;
                 _statusNotifierWatcher = new StatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
 
-                DestroyTrayIcon();
-
                 if (_isVisible)
                     CreateTrayIcon();
             }
@@ -124,40 +132,122 @@ namespace Avalonia.FreeDesktop
 
         private async void CreateTrayIcon()
         {
-            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierWatcher is null)
+            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _statusNotifierWatcher is null)
                 return;
 
+            Task? request = null;
+
+            try
+            {
+                // Keep the name for the life of the icon. A new id shows a new item to the host.
+                if (_sysTrayServiceName is null)
+                {
 #if NET5_0_OR_GREATER
-            var pid = Environment.ProcessId;
+                    var pid = Environment.ProcessId;
 #else
-            var pid = Process.GetCurrentProcess().Id;
+                    var pid = Process.GetCurrentProcess().Id;
 #endif
-            var tid = s_trayIconInstanceId++;
+                    var tid = s_trayIconInstanceId++;
+                    _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
+                }
 
-            _connection.RemoveMethodHandler(_statusNotifierItemDbusObj!.Path);
-            _connection.AddMethodHandler(_statusNotifierItemDbusObj);
+                while (_sysTrayServiceNameRelease is { } release)
+                {
+                    await release;
+                    if (ReferenceEquals(_sysTrayServiceNameRelease, release))
+                        _sysTrayServiceNameRelease = null;
+                    if (!ShouldShowTrayIcon)
+                        return;
+                }
 
-            _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
-            await _connection.RequestNameAsync(_sysTrayServiceName);
-            await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+                request = _sysTrayServiceNameRequest ??= _connection.RequestNameAsync(_sysTrayServiceName);
+                await request;
 
-            _statusNotifierItemDbusObj!.SetTitleAndTooltip(_tooltipText);
-            _statusNotifierItemDbusObj.SetIcon(_icon);
+                // A hide while the bus answers queues the release after this line.
+                if (!ShouldShowTrayIcon || !ReferenceEquals(_sysTrayServiceNameRequest, request))
+                    return;
+
+                // A host that scans the bus adds a second item if the object is exported before the
+                // connection owns the name. Two calls can reach this line, and a second export throws.
+                if (!_itemExported)
+                {
+                    _connection.AddMethodHandler(_statusNotifierItemDbusObj);
+                    _itemExported = true;
+                }
+
+                await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+
+                if (!ShouldShowTrayIcon)
+                    return;
+
+                _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
+                _statusNotifierItemDbusObj.SetIcon(_icon);
+            }
+            catch (Exception e)
+            {
+                // Clear only this request, and only if it did not complete. The next call then asks for
+                // the name again.
+                if (request is { IsCompletedSuccessfully: false } && ReferenceEquals(_sysTrayServiceNameRequest, request))
+                    _sysTrayServiceNameRequest = null;
+
+                if (!_isDisposed)
+                    Logger.TryGet(LogEventLevel.Error, "DBUS")
+                        ?.Log(this, "Unable to register the system tray icon.\n{Exception}", e);
+            }
         }
+
+        // CreateTrayIcon reads these conditions again after each await.
+        private bool ShouldShowTrayIcon => !_isDisposed && _isVisible && _serviceConnected;
 
         private void DestroyTrayIcon()
         {
-            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _sysTrayServiceName is null)
+            if (_connection is null || _statusNotifierItemDbusObj is null || !_itemExported)
                 return;
 
-            _connection!.ReleaseNameAsync(_sysTrayServiceName);
             _connection.RemoveMethodHandler(_statusNotifierItemDbusObj.Path);
+            _itemExported = false;
+        }
+
+        // A host removes the item when the name goes away. Keep the name when only the watcher stops.
+        private void ReleaseTrayServiceName()
+        {
+            if (_connection is null || _sysTrayServiceName is null || _sysTrayServiceNameRequest is not { } request)
+                return;
+
+            _sysTrayServiceNameRequest = null;
+            _sysTrayServiceNameRelease = ReleaseTrayServiceNameAsync(request, _connection, _sysTrayServiceName);
+        }
+
+        private async Task ReleaseTrayServiceNameAsync(Task request, DBusConnection connection, string name)
+        {
+            try
+            {
+                // Wait for the request. A release before the connection owns the name has no effect.
+                try
+                {
+                    await request;
+                }
+                catch
+                {
+                    // CreateTrayIcon logs this failure. There is no name to release.
+                    return;
+                }
+
+                await connection.ReleaseNameAsync(name);
+            }
+            catch (Exception e)
+            {
+                if (!_isDisposed)
+                    Logger.TryGet(LogEventLevel.Error, "DBUS")
+                        ?.Log(this, "Unable to release the system tray icon name.\n{Exception}", e);
+            }
         }
 
         public void Dispose()
         {
             IsActive = false;
             DestroyTrayIcon();
+            ReleaseTrayServiceName();
             (MenuExporter as IDisposable)?.Dispose();
             _watchCts?.Cancel();
             _isDisposed = true;
@@ -201,24 +291,22 @@ namespace Avalonia.FreeDesktop
 
         public void SetIsVisible(bool visible)
         {
-            if (_isDisposed || !_serviceConnected)
-            {
-                _isVisible = visible;
+            if (_isDisposed || visible == _isVisible)
                 return;
-            }
 
-            switch (visible)
-            {
-                case true when !_isVisible:
-                    DestroyTrayIcon();
-                    CreateTrayIcon();
-                    break;
-                case false when _isVisible:
-                    DestroyTrayIcon();
-                    break;
-            }
-
+            // CreateTrayIcon reads _isVisible. Set it first.
             _isVisible = visible;
+
+            if (visible)
+            {
+                CreateTrayIcon();
+            }
+            else
+            {
+                DestroyTrayIcon();
+                // Release the name also when the watcher is away. A hidden icon must not own a name.
+                ReleaseTrayServiceName();
+            }
         }
 
         public void SetToolTipText(string? text)
