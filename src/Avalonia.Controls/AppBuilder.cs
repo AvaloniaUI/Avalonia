@@ -293,7 +293,7 @@ namespace Avalonia
         /// <summary>
         /// Adds support for validation using <c>System.ComponentModel.DataAnnotations</c>.
         /// </summary>
-        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.DataValidationPluginSuppressUnreferencedCodeMessage)]
         public AppBuilder WithDataAnnotationsValidation()
         {
             if (!BindingPlugins.DataValidators.Any(x => x is DataAnnotationsValidationPlugin))
@@ -354,11 +354,20 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Allows <see cref="Setup"/> to be called again after it has already been called once.
+        /// </summary>
+        internal static void ResetSetupForUnitTests()
+            => s_setupWasAlreadyCalled = false;
+
+        /// <summary>
         /// Setup method that doesn't check for input initalizers being set.
         /// Nor 
         /// </summary>
         internal void SetupUnsafe()
         {
+            var setupLifetime = _lifetime as ISetupApplicationLifetime;
+            setupLifetime?.BeforeAppInit();
+
             _optionsInitializers?.Invoke();
             RuntimePlatformServicesInitializer?.Invoke();
             TextShapingSubsystemInitializer?.Invoke();
@@ -373,6 +382,8 @@ namespace Avalonia
             AfterApplicationSetupCallback?.Invoke(Self);
             AfterSetupCallback?.Invoke(Self);
             Instance.OnFrameworkInitializationCompleted();
+
+            setupLifetime?.AfterAppInit();
         }
     }
 }

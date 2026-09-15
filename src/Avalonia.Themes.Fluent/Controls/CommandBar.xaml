@@ -31,9 +31,9 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Padding" Value="8,4" />
-    <Setter Property="Width" Value="68" />
-    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="Padding" Value="{DynamicResource CommandBarButtonPadding}" />
+    <Setter Property="Width" Value="{DynamicResource CommandBarButtonWidth}" />
+    <Setter Property="MinHeight" Value="{DynamicResource CommandBarButtonMinHeight}" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
@@ -75,7 +75,7 @@
 
     <!-- Compact: hide label, reduce width -->
     <Style Selector="^[IsCompact=True]">
-      <Setter Property="Width" Value="40" />
+      <Setter Property="Width" Value="{DynamicResource CommandBarButtonCompactWidth}" />
     </Style>
     <Style Selector="^[IsCompact=True] /template/ TextBlock#PART_Label">
       <Setter Property="IsVisible" Value="False" />
@@ -84,7 +84,7 @@
     <!-- LabelPosition=Right: horizontal layout, auto-width -->
     <Style Selector="^[LabelPosition=Right]">
       <Setter Property="Width" Value="NaN" />
-      <Setter Property="MinWidth" Value="40" />
+      <Setter Property="MinWidth" Value="{DynamicResource CommandBarButtonLabelRightMinWidth}" />
     </Style>
     <Style Selector="^[LabelPosition=Right] /template/ StackPanel#PART_LayoutRoot">
       <Setter Property="Orientation" Value="Horizontal" />
@@ -101,7 +101,7 @@
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Left" />
       <Setter Property="Width" Value="NaN" />
-      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="MinHeight" Value="{DynamicResource CommandBarButtonIsInOverflowMinHeight}" />
     </Style>
     <Style Selector="^[IsInOverflow=True] /template/ StackPanel#PART_LayoutRoot">
       <Setter Property="HorizontalAlignment" Value="Left" />
@@ -127,9 +127,9 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Padding" Value="8,4" />
-    <Setter Property="Width" Value="68" />
-    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="Padding" Value="{DynamicResource CommandBarToggleButtonPadding}" />
+    <Setter Property="Width" Value="{DynamicResource CommandBarButtonWidth}" />
+    <Setter Property="MinHeight" Value="{DynamicResource CommandBarButtonMinHeight}" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
@@ -176,7 +176,7 @@
 
     <!-- Compact: hide label, reduce width -->
     <Style Selector="^[IsCompact=True]">
-      <Setter Property="Width" Value="40" />
+      <Setter Property="Width" Value="{DynamicResource CommandBarButtonCompactWidth}" />
     </Style>
     <Style Selector="^[IsCompact=True] /template/ TextBlock#PART_Label">
       <Setter Property="IsVisible" Value="False" />
@@ -185,7 +185,7 @@
     <!-- LabelPosition=Right: horizontal layout, auto-width -->
     <Style Selector="^[LabelPosition=Right]">
       <Setter Property="Width" Value="NaN" />
-      <Setter Property="MinWidth" Value="40" />
+      <Setter Property="MinWidth" Value="{DynamicResource CommandBarButtonLabelRightMinWidth}" />
     </Style>
     <Style Selector="^[LabelPosition=Right] /template/ StackPanel#PART_LayoutRoot">
       <Setter Property="Orientation" Value="Horizontal" />
@@ -202,7 +202,7 @@
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Left" />
       <Setter Property="Width" Value="NaN" />
-      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="MinHeight" Value="{DynamicResource CommandBarButtonIsInOverflowMinHeight}" />
     </Style>
     <Style Selector="^[IsInOverflow=True] /template/ StackPanel#PART_LayoutRoot">
       <Setter Property="HorizontalAlignment" Value="Left" />
@@ -225,9 +225,9 @@
 
   <!-- CommandBarSeparator ControlTheme -->
   <ControlTheme x:Key="{x:Type CommandBarSeparator}" TargetType="CommandBarSeparator">
-    <Setter Property="Width" Value="1" />
-    <Setter Property="MinHeight" Value="24" />
-    <Setter Property="Margin" Value="8,4" />
+    <Setter Property="Width" Value="{DynamicResource CommandBarSeparatorWidth}" />
+    <Setter Property="MinHeight" Value="{DynamicResource CommandBarSeparatorMinHeight}" />
+    <Setter Property="Margin" Value="{DynamicResource CommandBarSeparatorMargin}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
@@ -241,9 +241,9 @@
     <Style Selector="^[IsInOverflow=True]">
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="Width" Value="NaN" />
-      <Setter Property="Height" Value="1" />
+      <Setter Property="Height" Value="{DynamicResource CommandBarSeparatorOverflowHeight}" />
       <Setter Property="MinHeight" Value="0" />
-      <Setter Property="Margin" Value="4,4" />
+      <Setter Property="Margin" Value="{DynamicResource CommandBarSeparatorOverflowMargin}" />
     </Style>
   </ControlTheme>
 
@@ -251,8 +251,8 @@
   <ControlTheme x:Key="{x:Type CommandBar}" TargetType="CommandBar">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
-    <Setter Property="MinHeight" Value="48" />
-    <Setter Property="Padding" Value="4,0" />
+    <Setter Property="MinHeight" Value="{DynamicResource CommandBarMinHeight}" />
+    <Setter Property="Padding" Value="{DynamicResource CommandBarPadding}" />
     <Setter Property="ItemWidthBottom" Value="70" />
     <Setter Property="ItemWidthRight" Value="102" />
     <Setter Property="ItemWidthCollapsed" Value="42" />
@@ -271,7 +271,7 @@
                       DockPanel.Dock="Right"
                       Background="Transparent"
                       BorderThickness="0"
-                      Padding="12,0"
+                      Padding="{DynamicResource CommandBarOverflowButtonPadding}"
                       MinWidth="40"
                       VerticalAlignment="Stretch"
                       FontSize="16"

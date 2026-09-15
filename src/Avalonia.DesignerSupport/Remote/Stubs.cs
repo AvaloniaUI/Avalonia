@@ -215,6 +215,8 @@ namespace Avalonia.DesignerSupport.Remote
             return null;
         }
         public void TakeFocus() { }
+
+        public void SetHitTestVisible(bool isHitTestVisible) { }
     }
 
     class ClipboardStub : IClipboard

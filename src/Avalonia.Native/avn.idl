@@ -791,7 +791,7 @@ interface IAvnWindowBase : IAvnTopLevel
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]
 interface IAvnPopup : IAvnWindowBase
 {
-    
+     HRESULT SetHitTestVisible(bool value);
 }
 
 [uuid(cab661de-49d6-4ead-b59c-eac9b2b6c28d), cpp-virtual-inherits]
@@ -1237,17 +1237,25 @@ interface IAvnNativeControlHostTopLevelAttachment : IUnknown
      void ReleaseChild();
 }
 
+enum AvnShutdownReply
+{
+    ShutdownReplyCancel,
+    ShutdownReplyTerminateNow,
+    ShutdownReplyDeferToManagedLoop
+}
+
 [uuid(6575b5af-f27a-4609-866c-f1f014c20f79)]
 interface IAvnApplicationEvents : IUnknown
 {
      void FilesOpened (IAvnStringArray* args);
      void UrlsOpened (IAvnStringArray* urls);
-     bool TryShutdown();
+     AvnShutdownReply TryShutdown(bool isOSShutdown);
      void OnReopen ();
      void OnHide ();
      void OnUnhide ();
      void OnActivate();
      void OnDeactivate();
+     void OnTerminating();
 }
 
 [uuid(b4284791-055b-4313-8c2e-50f0a8c72ce9)]
@@ -1367,6 +1375,8 @@ interface IAvnPlatformSettings : IUnknown
     AvnPlatformThemeVariant GetPlatformTheme();
     uint GetAccentColor();
     void RegisterColorsChange(IAvnActionCallback* callback);
+    HRESULT GetPreferredLanguage(IAvnString** ret);
+    void RegisterLanguageChange(IAvnActionCallback* callback);
 }
 
 [uuid(12edf00d-5803-4d3f-9947-b4840e5e9372)]

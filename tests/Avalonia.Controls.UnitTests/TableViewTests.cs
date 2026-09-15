@@ -71,6 +71,47 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
+    public void Column_LogicalParent_Is_Set_When_Added_And_Unset_When_Removed()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        var column = new TableViewColumn();
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        Assert.Same(target, column.GetLogicalParent());
+
+        target.Columns.Remove(column);
+
+        Assert.Null(column.GetLogicalParent());
+    }
+
+    [Fact]
+    public void Column_Receives_Styles_From_TableView()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        var style = new Style(x => x.OfType<TableViewColumn>().Class("right-align"))
+        {
+            Setters = { new Setter(TableViewColumn.HorizontalContentAlignmentProperty, HorizontalAlignment.Right) }
+        };
+        target.Styles.Add(style);
+
+        var column = new TableViewColumn
+        {
+            Classes = { "right-align" }
+        };
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        Assert.Equal(HorizontalAlignment.Right, column.HorizontalContentAlignment);
+    }
+
+    [Fact]
     public void Column_Cannot_Belong_To_Two_TableViews()
     {
         using var app = Start();
@@ -115,6 +156,31 @@ public sealed class TableViewTests : ScopedTestBase
         // The newly added cell must also be part of the row's logical tree.
         var logicalChildren = row.GetLogicalChildren().ToArray();
         Assert.Equal(cellsPresenter.Children, logicalChildren);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void Adding_Hidden_Column_Updates_Cells_And_Headers(int columnIndex)
+    {
+        using var app = Start();
+        var target = CreateTarget(new[] { "Foo" });
+        target.Styles.Add(new Style(x => x.OfType<TableViewColumn>().Class("hidden"))
+        {
+            Setters = { new Setter(TableViewColumn.IsVisibleProperty, false) },
+        });
+        target.Columns.Add(new TableViewColumn());
+        Prepare(target);
+        var column = new TableViewColumn { Classes = { "hidden" } };
+
+        target.Columns.Insert(columnIndex, column);
+        Layout(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        Assert.False(GetCellsPresenter(row).Children[columnIndex].IsVisible);
+        Assert.False(GetColumnHeadersPresenter(target).Children[columnIndex].IsVisible);
+        Assert.True(GetCellsPresenter(row).Children[1 - columnIndex].IsVisible);
+        Assert.True(GetColumnHeadersPresenter(target).Children[1 - columnIndex].IsVisible);
     }
 
     [Fact]
@@ -214,6 +280,79 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
+    public void Hiding_Column_Closes_Gap_Without_Recreating_Controls()
+    {
+        using var app = Start();
+        var column = new TableViewColumn { Width = new GridLength(80) };
+        var target = CreateTarget(new[] { "Foo" });
+        target.Columns.Add(column);
+        target.Columns.Add(new TableViewColumn());
+        Prepare(target, width: 200);
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var cells = GetCellsPresenter(row);
+        var headers = GetColumnHeadersPresenter(target);
+        var originalCells = cells.Children.ToArray();
+        var originalHeaders = headers.Children.ToArray();
+
+        column.IsVisible = false;
+        Layout(target);
+
+        Assert.False(cells.Children[0].IsVisible);
+        Assert.False(headers.Children[0].IsVisible);
+        Assert.Equal(0, cells.Children[1].Bounds.X);
+        Assert.Equal(0, headers.Children[1].Bounds.X);
+        Assert.Equal(200, target.Columns[1].ActualWidth);
+        Assert.Equal(0, column.ActualWidth);
+        Assert.Equal(new GridLength(80), column.Width);
+
+        column.IsVisible = true;
+        Layout(target);
+
+        Assert.True(cells.Children[0].IsVisible);
+        Assert.True(headers.Children[0].IsVisible);
+        Assert.Equal(80, cells.Children[1].Bounds.X);
+        Assert.Equal(80, headers.Children[1].Bounds.X);
+        Assert.Equal(originalCells, cells.Children);
+        Assert.Equal(originalHeaders, headers.Children);
+    }
+
+    [Fact]
+    public void Hidden_Columns_Do_Not_Contribute_To_Row_Size()
+    {
+        using var app = Start();
+        var target = CreateTarget(new[] { "Foo" });
+        var column = new TableViewColumn { IsVisible = false };
+        target.Columns.Add(column);
+        target.Columns.Add(new TableViewColumn());
+        Prepare(target);
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var cells = GetCellsPresenter(row);
+        cells.Children[0].Height = 80;
+        cells.Children[1].Height = 20;
+        Layout(target);
+
+        Assert.False(cells.Children[0].IsVisible);
+        Assert.False(GetColumnHeadersPresenter(target).Children[0].IsVisible);
+        Assert.Equal(20, cells.DesiredSize.Height);
+
+        column.IsVisible = true;
+        Layout(target);
+
+        Assert.Equal(80, cells.DesiredSize.Height);
+
+        column.IsVisible = false;
+        target.Columns[1].IsVisible = false;
+        Layout(target);
+
+        Assert.Equal(default, cells.DesiredSize);
+
+        column.IsVisible = true;
+        Layout(target);
+
+        Assert.Equal(80, cells.DesiredSize.Height);
+    }
+
+    [Fact]
     public void Replacing_Columns_Collection_Updates_Realized_Rows_And_Headers()
     {
         using var app = Start();
@@ -291,6 +430,37 @@ public sealed class TableViewTests : ScopedTestBase
 
         Assert.Equal("Alice", firstCell.Content);
         Assert.Equal("Bob", secondCell.Content);
+    }
+
+    [Fact]
+    public void Hidden_Column_Preserves_Width_And_Visibility_Bindings()
+    {
+        using var app = Start();
+        var model = new Border { IsVisible = false, Tag = new GridLength(80) };
+        var target = CreateTarget(new[] { "Foo" });
+        target.DataContext = model;
+        var column = new TableViewColumn();
+        column.Bind(TableViewColumn.WidthProperty, new ReflectionBinding(nameof(Border.Tag)));
+        column.Bind(TableViewColumn.IsVisibleProperty, new ReflectionBinding(nameof(Border.IsVisible)));
+        target.Columns.Add(column);
+        target.Columns.Add(new TableViewColumn());
+        Prepare(target, width: 200);
+        Assert.False(column.IsVisible);
+        Assert.Equal(200, target.Columns[1].ActualWidth);
+
+        model.Tag = new GridLength(120);
+        model.IsVisible = true;
+        Layout(target);
+
+        Assert.True(column.IsVisible);
+        Assert.Equal(120, column.ActualWidth);
+        Assert.Equal(80, target.Columns[1].ActualWidth);
+
+        model.IsVisible = false;
+        Layout(target);
+
+        Assert.False(column.IsVisible);
+        Assert.Equal(200, target.Columns[1].ActualWidth);
     }
 
     [Fact]
@@ -454,13 +624,15 @@ public sealed class TableViewTests : ScopedTestBase
         Assert.Same(item, cell.Content);
     }
 
-    [Fact]
-    public void Re_Templating_Row_Detaches_Old_Cells_And_Rebuilds_New_Cells()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Re_Templating_Row_Detaches_Old_Cells_And_Rebuilds_New_Cells(bool isVisible)
     {
         using var app = Start();
 
         var target = CreateTarget(new[] { "Foo" });
-        target.Columns.Add(new TableViewColumn());
+        target.Columns.Add(new TableViewColumn { IsVisible = isVisible });
         target.Columns.Add(new TableViewColumn());
 
         Prepare(target);
@@ -475,6 +647,8 @@ public sealed class TableViewTests : ScopedTestBase
 
         var newCells = GetCellsPresenter(row).Children.ToArray();
         Assert.Equal(2, newCells.Length);
+        Assert.Equal(isVisible, newCells[0].IsVisible);
+        Assert.True(newCells[1].IsVisible);
 
         Assert.All(oldCells, cell => Assert.Null(cell.Parent));
         Assert.Equal(newCells, row.GetLogicalChildren());

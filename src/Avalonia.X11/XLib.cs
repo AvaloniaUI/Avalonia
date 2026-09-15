@@ -21,8 +21,32 @@ namespace Avalonia.X11
         private const string libX11Ext = "libXext.so.6";
         private const string libXInput = "libXi.so.6";
         private const string libXCursor = "libXcursor.so.1";
+        private const string libXFixes = "libXfixes.so.3";
 
         public const IntPtr AnyPropertyType = 0;
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmQueryExtension(IntPtr display);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmQueryVersion(IntPtr display, out int major, out int minor, out bool pixmaps);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmGetEventBase(IntPtr display);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmPutImage(IntPtr display, IntPtr drawable, IntPtr gc, XImage* image, int src_x, int src_y,
+            int dst_x, int dst_y, uint src_width, uint src_height, bool send_event);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmAttach(IntPtr display, XShmSegmentInfo* shminfo);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern int XShmDetach(IntPtr display, XShmSegmentInfo* shminfo);
+
+        [DllImport(libX11Ext, SetLastError = true)]
+        public static extern XImage* XShmCreateImage(IntPtr display, IntPtr visual, uint depth, int format, IntPtr data,
+            XShmSegmentInfo* shminfo, uint width, uint height);
 
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
@@ -453,10 +477,18 @@ namespace Avalonia.X11
         
         [DllImport(libX11)]
         public static extern int XDestroyImage(ref XImage image);
+        
+        [DllImport(libX11)]
+        public static extern int XDestroyImage(XImage* image);
 
         [DllImport(libX11)]
         public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, ref XImage image,
             int srcx, int srcy, int destx, int desty, uint width, uint height);
+
+        [DllImport(libX11)]
+        public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, XImage* image,
+            int srcx, int srcy, int destx, int desty, uint width, uint height);
+
         [DllImport(libX11)]
         public static extern int XSync(IntPtr display, bool discard);
         
@@ -609,6 +641,23 @@ namespace Avalonia.X11
         
         [DllImport(libX11Ext)]
         public static extern int XSyncSetCounter(IntPtr dpy, IntPtr counter, XSyncValue value);
+
+        [DllImport(libXFixes)]
+        public static extern int XFixesQueryExtension(IntPtr dpy, out int event_base_return, out int error_base_return);
+
+        [DllImport(libXFixes)]
+        public static extern int XFixesQueryVersion(IntPtr dpy, out int major_version_return,
+            out int minor_version_return);
+
+        [DllImport(libXFixes)]
+        public static extern IntPtr XFixesCreateRegion(IntPtr dpy, XRectangle* rectangles, int nrectangles);
+
+        [DllImport(libXFixes)]
+        public static extern void XFixesSetWindowShapeRegion(IntPtr dpy, IntPtr win, ShapeKind shape_kind,
+            int x_off, int y_off, IntPtr region);
+
+        [DllImport(libXFixes)]
+        public static extern void XFixesDestroyRegion(IntPtr dpy, IntPtr region);
 
         [DllImport(libX11Randr)]
         public static extern int XRRQueryVersion(IntPtr dpy,

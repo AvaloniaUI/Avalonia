@@ -26,6 +26,7 @@ using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using Avalonia.X11.Selections.DragDrop;
 using static Avalonia.X11.XLib;
+using Avalonia.X11.XShm;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -66,6 +67,7 @@ namespace Avalonia.X11
         private bool _disabled;
         private TransparencyHelper? _transparencyHelper;
         private WindowActivationTrackingHelper? _activationTracker;
+        private X11Window? _transientParent;
         private RawEventGrouper? _rawEventGrouper;
         private bool _useRenderWindow = false;
         private bool _useCompositorDrivenRenderWindowResize = false;
@@ -228,6 +230,15 @@ namespace Avalonia.X11
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
+
+            // XShm needs a 32-bit visual (other depths would require a slow XShmPutImage conversion) and the
+            // MIT-SHM extension, probed once by X11Info on the deferred display.
+            if (_platform.Options.UseXShmFramebuffer is true && depth == 32 && _x11.HasXShm)
+            {
+                surfaces.Insert(0,
+                    new X11ShmFramebufferSurface(_x11.DeferredDisplay, _renderHandle, visual, depth,
+                        platform.DeferredDisplayDispatcher));
+            }
             
             if (egl != null)
                 surfaces.Insert(0,
@@ -594,7 +605,19 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
-                MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+            {
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
+                {
+                    MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+                }
+            }
+            else if (ev.type == XEventName.EnterNotify)
+            {
+                if (IsHandledLeaveEnterDetail(ev.CrossingEvent.detail))
+                {
+                    MouseEvent(RawPointerEventType.Move, ref ev, ev.CrossingEvent.state);
+                }
+            }
             else if (ev.type == XEventName.PropertyNotify)
             {
                 OnPropertyChange(ev.PropertyEvent.atom, ev.PropertyEvent.state == 0);
@@ -736,6 +759,13 @@ namespace Avalonia.X11
                 HandleKeyEvent(ref ev);
             }
         }
+
+        private static bool IsHandledLeaveEnterDetail(NotifyDetail detail)
+            => detail is
+                NotifyDetail.NotifyNonlinear or
+                NotifyDetail.NotifyNonlinearVirtual or
+                NotifyDetail.NotifyVirtual or
+                NotifyDetail.NotifyAncestor;
 
         private void HandleActivation(bool active)
         {
@@ -1089,6 +1119,11 @@ namespace Avalonia.X11
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
             }
 
+            if (featureType == typeof(IPlatformClipboardManagerImpl))
+            {
+                return AvaloniaLocator.Current.GetRequiredService<IPlatformClipboardManagerImpl>();
+            }
+
             if (featureType == typeof(ILauncher))
             {
                 return new BclLauncher();
@@ -1123,6 +1158,22 @@ namespace Avalonia.X11
                     ?? atSpiControl.GetAutomationPeer();
                 if (atSpiPeer is not null)
                     atSpiServer.RemoveWindow(atSpiPeer);
+            }
+
+            // If we're closing the active window, speculatively hand activation back to its owner so an
+            // awaited ShowDialog() sees the owner as active immediately, instead of waiting for the
+            // asynchronous activation notification (auto-corrected later if the guess is wrong).
+            // Mirroring win32's BeforeCloseCleanup, the owner has to be re-enabled before it's activated:
+            // while it's still modally disabled the activation would be swallowed by
+            // ActivateTransientChildIfNeeded. The managed layer sets the final enabled state afterwards.
+            // Only speculate when there's a root _NET_ACTIVE_WINDOW notification to auto-correct against.
+            if (_handle != IntPtr.Zero
+                && _transientParent is { } parent && parent._handle != IntPtr.Zero
+                && _activationTracker?.IsActive == true
+                && _platform.ActiveWindowTracker.TracksRootActiveWindow)
+            {
+                parent.SetEnabled(true);
+                parent.SetActiveSpeculatively();
             }
 
             // Before doing anything else notify the TopLevel that ITopLevelImpl is no longer valid
@@ -1201,12 +1252,20 @@ namespace Avalonia.X11
             return false;
         }
 
+        private void SetActiveSpeculatively() => _activationTracker?.SetActiveSpeculatively();
+
         public void SetParent(IWindowImpl? parent)
         {
             if (parent == null || parent.Handle == null || parent.Handle.Handle == IntPtr.Zero)
+            {
+                _transientParent = null;
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms.WM_TRANSIENT_FOR);
+            }
             else
+            {
+                _transientParent = parent as X11Window;
                 XSetTransientForHint(_x11.Display, _handle, parent.Handle.Handle);
+            }
         }
 
         public void Show(bool activate, bool isDialog)
@@ -1654,15 +1713,39 @@ namespace Avalonia.X11
         {
         }
 
+        public void SetHitTestVisible(bool isHitTestVisible)
+        {
+            if (!_x11.HasXFixes)
+                return;
+
+            // An empty input region makes the server route pointer input to whatever is behind
+            // the window. None (0) restores the default input shape, i.e. the whole window.
+            var region = IntPtr.Zero;
+            if (!isHitTestVisible)
+            {
+                var rect = default(XRectangle);
+                region = XFixesCreateRegion(_x11.Display, &rect, 0);
+            }
+
+            XFixesSetWindowShapeRegion(_x11.Display, _handle, ShapeKind.ShapeInput, 0, 0, region);
+
+            // The render window is a child of _handle when a GPU backend is in use. Shaping the
+            // parent alone doesn't take the child out of the input hierarchy, so it would keep
+            // capturing the pointer.
+            if (_renderHandle != _handle)
+                XFixesSetWindowShapeRegion(_x11.Display, _renderHandle, ShapeKind.ShapeInput, 0, 0, region);
+
+            if (region != IntPtr.Zero)
+                XFixesDestroyRegion(_x11.Display, region);
+
+            XFlush(_x11.Display);
+        }
+
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
 
-        public async void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
+        public void SetFrameThemeVariant(PlatformThemeVariant? themeVariant)
         {
-            if (themeVariant == null && AvaloniaLocator.Current.GetService<IPlatformSettings>() is DBusPlatformSettings platformSettings)
-            {
-                platformSettings.OnRequestDefaultThemeVariant();
-            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);

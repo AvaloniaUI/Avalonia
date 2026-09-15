@@ -33,6 +33,7 @@ internal partial class PopupImpl : WindowBaseImpl, IPopupImpl
     private WaylandSurfaceCreateResult<WXdgPopupProxy>? _handle;
     private WXdgPopupProxy? _surfaceProxy;
     private XdgPopupPositionerParams? _lastPositioner;
+    private bool _isHitTestVisible = true;
 
     public PopupImpl(WaylandWorkerClient client, WindowBaseImpl parent) : base(client)
     {
@@ -106,6 +107,12 @@ internal partial class PopupImpl : WindowBaseImpl, IPopupImpl
 
     public void TakeFocus()
     {
+    }
+
+    public void SetHitTestVisible(bool isHitTestVisible)
+    {
+        _isHitTestVisible = isHitTestVisible;
+        _surfaceProxy?.SetHitTestVisible(isHitTestVisible);
     }
 
     /// <summary>

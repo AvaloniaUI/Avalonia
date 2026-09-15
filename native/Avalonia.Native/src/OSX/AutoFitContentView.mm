@@ -43,9 +43,16 @@
 
     _blurBehind = [NSVisualEffectView new];
     [_blurBehind setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
-    [_blurBehind setMaterial:NSVisualEffectMaterialLight];
     [_blurBehind setWantsLayer:true];
     _blurBehind.hidden = true;
+    if (@available(macOS 10.14, *))
+    {
+        [_blurBehind setMaterial:NSVisualEffectMaterialHUDWindow];
+    }
+    else
+    {
+        [_blurBehind setMaterial:NSVisualEffectMaterialSidebar];
+    }
 
     [_blurBehind setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [_content setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];

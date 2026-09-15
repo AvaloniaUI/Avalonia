@@ -44,6 +44,7 @@ namespace Avalonia.UnitTests
 
             windowImpl.Setup(x => x.Dispose()).Callback(() =>
             {
+                windowImpl.Object.LostFocus?.Invoke();
                 windowImpl.Object.Closed?.Invoke();
             });
 
@@ -101,6 +102,7 @@ namespace Avalonia.UnitTests
             popupImpl.Setup(x => x.Compositor).Returns(compositor);
             popupImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
+            popupImpl.Setup(x => x.DesktopScaling).Returns(1);
             popupImpl.Setup(x => x.RenderScaling).Returns(1);
             popupImpl.Setup(x => x.PopupPositioner).Returns(positioner);
             popupImpl.Setup(x => x.Position).Returns(()=>position);

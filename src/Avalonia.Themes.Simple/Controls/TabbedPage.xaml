@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Width="400" Height="400">
       <TabbedPage>
@@ -15,9 +16,9 @@
 
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselected" Color="Transparent" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelected" Color="Transparent" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPointerOver" Color="{DynamicResource ThemeControlMidBrush}" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPointerOver" Color="{DynamicResource ThemeControlMidColor}" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPointerOver" Color="Transparent" />
-  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPressed" Color="{DynamicResource ThemeControlHighlightMidBrush}" />
+  <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundUnselectedPressed" Color="{DynamicResource ThemeControlHighlightMidColor}" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundSelectedPressed" Color="Transparent" />
   <SolidColorBrush x:Key="TabbedPageTabItemHeaderBackgroundDisabled" Color="Transparent" />
 

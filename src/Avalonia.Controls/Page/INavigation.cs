@@ -6,6 +6,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
+
     /// <summary>
     /// Provides navigation operations for stack-based and modal page navigation.
     /// Exposed via <see cref="Page.Navigation"/> when a page is hosted in a NavigationPage.
@@ -43,6 +44,11 @@ namespace Avalonia.Controls
         /// Pushes <paramref name="page"/> using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task PushAsync(Page page, IPageTransition? transition);
+
+        /// <summary>
+        /// Pushes <paramref name="page"/> using <paramref name="transition"/> with optional <paramref name="parameter"/>.
+        /// </summary>
+        Task PushAsync(Page page, IPageTransition? transition, object? parameter) => Task.CompletedTask;
 
         /// <summary>
         /// Pops the top page using the host's default transition.
@@ -85,6 +91,11 @@ namespace Avalonia.Controls
         Task ReplaceAsync(Page page, IPageTransition? transition);
 
         /// <summary>
+        /// Replaces the current top page with <paramref name="page"/> using <paramref name="transition"/> with optional <paramref name="parameter"/>.
+        /// </summary>
+        Task ReplaceAsync(Page page, IPageTransition? transition, object? parameter) => Task.CompletedTask;
+
+        /// <summary>
         /// Pushes <paramref name="page"/> as a modal using the host's modal transition.
         /// </summary>
         Task PushModalAsync(Page page);
@@ -93,6 +104,11 @@ namespace Avalonia.Controls
         /// Pushes <paramref name="page"/> as a modal using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
         Task PushModalAsync(Page page, IPageTransition? transition);
+
+        /// <summary>
+        /// Pushes <paramref name="page"/> as a modal using <paramref name="transition"/> with optional <paramref name="parameter"/>.
+        /// </summary>
+        Task PushModalAsync(Page page, IPageTransition? transition, object? parameter) => Task.CompletedTask;
 
         /// <summary>
         /// Pops the top modal page using the host's modal transition.

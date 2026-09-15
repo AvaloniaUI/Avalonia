@@ -9,6 +9,34 @@
 NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivationPolicyRegular;
 static NSMenu* s_dockMenu = nil;
 
+static bool IsOSShutdown()
+{
+    auto evt = [[NSAppleEventManager sharedAppleEventManager] currentAppleEvent];
+    if ([evt eventClass] != kCoreEventClass || [evt eventID] != kAEQuitApplication)
+        return false;
+
+    auto reason = [evt paramDescriptorForKeyword:kAEQuitReason];
+    if (reason == nil)
+        reason = [evt attributeDescriptorForKeyword:kAEQuitReason];
+
+    auto reasonCode = [reason enumCodeValue];
+    if (reasonCode == 0)
+        reasonCode = [reason typeCodeValue];
+
+    switch (reasonCode)
+    {
+        case kAELogOut:
+        case kAEReallyLogOut:
+        case kAEShowRestartDialog:
+        case kAERestart:
+        case kAEShowShutdownDialog:
+        case kAEShutDown:
+            return true;
+        default:
+            return false;
+    }
+}
+
 @implementation AvnAppDelegate
 ComPtr<IAvnApplicationEvents> _events;
 
@@ -85,7 +113,33 @@ ComPtr<IAvnApplicationEvents> _events;
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    return _events->TryShutdown() ? NSTerminateNow : NSTerminateCancel;
+    switch (_events->TryShutdown(IsOSShutdown()))
+    {
+        case ShutdownReplyCancel:
+            return NSTerminateCancel;
+            
+        // The managed dispatcher loop is exiting: let it handle the termination instead.
+        case ShutdownReplyDeferToManagedLoop:
+            return NSTerminateCancel;
+
+        case ShutdownReplyTerminateNow:
+            return NSTerminateNow;
+
+        // Shouldn't happen
+        default:
+            return NSTerminateNow;
+    }
+}
+
+- (void)applicationWillTerminate:(NSNotification *)notification
+{
+    if (!_events)
+        return;
+    
+    // The process is about to exit() so this is the last point where managed code can still safely be called.
+    // Keep the application events object alive for the duration of the call, it's about to be released by the managed side.
+    ComPtr<IAvnApplicationEvents> events(_events);
+    events->OnTerminating();
 }
 
 - (NSMenu *)applicationDockMenu:(NSApplication *)sender

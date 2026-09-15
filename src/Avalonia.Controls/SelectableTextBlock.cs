@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -20,10 +20,10 @@ namespace Avalonia.Controls
     public class SelectableTextBlock : TextBlock, IInlineHost
     {
         public static readonly StyledProperty<int> SelectionStartProperty =
-            TextBox.SelectionStartProperty.AddOwner<SelectableTextBlock>();
+            TextBox.SelectionStartProperty.AddOwner<SelectableTextBlock>(new(coerce: TextBox.CoerceCaretIndex));
 
         public static readonly StyledProperty<int> SelectionEndProperty =
-            TextBox.SelectionEndProperty.AddOwner<SelectableTextBlock>();
+            TextBox.SelectionEndProperty.AddOwner<SelectableTextBlock>(new(coerce: TextBox.CoerceCaretIndex));
 
         public static readonly DirectProperty<SelectableTextBlock, string> SelectedTextProperty =
             AvaloniaProperty.RegisterDirect<SelectableTextBlock, string>(
@@ -45,10 +45,11 @@ namespace Avalonia.Controls
 
         private bool _canCopy;
         private int _wordSelectionStart = -1;
+        private (int Start, int End) _selectionAtPointerPress;
 
         static SelectableTextBlock()
         {
-            FocusableProperty.OverrideDefaultValue(typeof(SelectableTextBlock), true);
+            FocusableProperty.OverrideDefaultValue<SelectableTextBlock>(true);
             AffectsRender<SelectableTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty);
         }
 
@@ -136,8 +137,18 @@ namespace Avalonia.Controls
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
 
-                if (clipboard != null)
+                if (clipboard is null)
+                    return;
+
+                try
+                {
                     await clipboard.SetTextAsync(text);
+                }
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                }
             }
         }
 
@@ -258,9 +269,11 @@ namespace Avalonia.Controls
 
             ITextSource textSource;
 
-            if (_textRuns != null)
+            if (HasComplexContent)
             {
-                textSource = new InlinesTextSource(_textRuns, textStyleOverrides);
+                EnsureTextRuns();
+
+                textSource = new InlinesTextSource(_textRuns!, textStyleOverrides);
             }
             else
             {
@@ -331,15 +344,31 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == SelectionStartProperty || 
-                change.Property == SelectionEndProperty)
+            if (change.Property == InlinesProperty)
+            {
+                if (change.OldValue is InlineCollection oldInlines)
+                {
+                    oldInlines.Invalidated -= OnInlinesInvalidated;
+                }
+
+                if (change.NewValue is InlineCollection newInlines)
+                {
+                    newInlines.Invalidated += OnInlinesInvalidated;
+                }
+
+                OnTextOrInlinesChanged();
+            }
+            else if (change.Property == TextProperty)
+            {
+                OnTextOrInlinesChanged();
+            }
+            else if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
             {
                 RaisePropertyChanged(SelectedTextProperty, "", "");
                 UpdateCommandStates();
                 InvalidateTextLayout();
             }
-
-            if(change.Property == SelectionForegroundBrushProperty)
+            else if (change.Property == SelectionForegroundBrushProperty)
             {
                 InvalidateTextLayout();
             }
@@ -348,6 +377,8 @@ namespace Avalonia.Controls
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
+
+            _selectionAtPointerPress = GetSelectionRange();
 
             var text = HasComplexContent ? Inlines?.Text : Text;
             var clickInfo = e.GetCurrentPoint(this);
@@ -436,10 +467,6 @@ namespace Avalonia.Controls
 
                 var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
 
-                point = new Point(
-                    MathUtilities.Clamp(point.X, 0, Math.Max(TextLayout.WidthIncludingTrailingWhitespace, 0)),
-                    MathUtilities.Clamp(point.Y, 0, Math.Max(TextLayout.Height, 0)));
-
                 var hit = TextLayout.HitTestPoint(point);
                 var textPosition = hit.TextPosition;
 
@@ -487,7 +514,8 @@ namespace Avalonia.Controls
 
                 var hit = TextLayout.HitTestPoint(point);
 
-                var caretIndex = hit.TextPosition;
+                // A point below the text hits one past its end, so clamp it as TextBox does for its caret.
+                var caretIndex = TextBox.CoerceCaretIndex(this, hit.TextPosition);
 
                 // see if mouse clicked inside current selection
                 // if it did not, we change the selection to where the user clicked
@@ -502,14 +530,60 @@ namespace Avalonia.Controls
                 }
             }
 
+            var selection = GetSelectionRange();
+            if (e.InitialPressMouseButton == MouseButton.Left &&
+                selection.Start != selection.End &&
+                selection != _selectionAtPointerPress)
+            {
+                // The pointer gesture changed the selection, publish it to the primary selection.
+                _ = PrimarySelectionHelper.PublishTextAsync(this, GetSelection);
+            }
+
             e.Pointer.Capture(null);
+        }
+
+        private (int Start, int End) GetSelectionRange()
+        {
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
+
+            return (Math.Min(selectionStart, selectionEnd), Math.Max(selectionStart, selectionEnd));
+        }
+
+        private void OnInlinesInvalidated(object? sender, EventArgs e) => OnTextOrInlinesChanged();
+
+        private void OnTextOrInlinesChanged()
+        {
+            CoerceValue(SelectionStartProperty);
+            CoerceValue(SelectionEndProperty);
+            RaisePropertyChanged(SelectedTextProperty, "", "");
+            UpdateCommandStates();
         }
 
         private void UpdateCommandStates()
         {
-            var text = GetSelection();
+            CanCopy = HasSelection();
+        }
 
-            CanCopy = !string.IsNullOrEmpty(text);
+        /// <summary>
+        /// Reports the same emptiness conditions as <see cref="GetSelection"/>, without building
+        /// the selected string.
+        /// </summary>
+        private bool HasSelection()
+        {
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
+            var start = Math.Min(selectionStart, selectionEnd);
+            var end = Math.Max(selectionStart, selectionEnd);
+
+            if (start == end)
+            {
+                return false;
+            }
+
+            var textLength = (HasComplexContent ? Inlines?.Text : Text)?.Length ?? 0;
+
+            return textLength > 0 && end <= textLength;
         }
 
         private string GetSelection()
