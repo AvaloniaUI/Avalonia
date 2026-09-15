@@ -53,7 +53,7 @@ public interface ICompositionGlTextureLease : IDisposable
     /// Describes the OpenGL texture to draw into. Only valid until the lease ends;
     /// <see cref="CompositionGlTextureInfo.TextureId"/> is not guaranteed to be stable between leases.
     /// </summary>
-    CompositionGlTextureInfo Texture { get; }
+    CompositionGlTextureInfo TextureInfo { get; }
 
     /// <summary>
     /// Ends the lease and asynchronously presents the texture to the associated

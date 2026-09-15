@@ -187,7 +187,7 @@ public partial class OpenGlInteropPage : ContentPage
             var gl = _context.GlContext.GlInterface;
             using (var lease = _texture.BeginDraw())
             {
-                var info = lease.Texture;
+                var info = lease.TextureInfo;
                 gl.BindFramebuffer(GL_FRAMEBUFFER, _fbo);
                 UpdateDepthBuffer(gl, size);
                 gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, info.Target, info.TextureId, 0);

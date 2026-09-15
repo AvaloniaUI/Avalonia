@@ -121,7 +121,7 @@ public class OpenGlCompositionInteropTests : TestBase
             var fbo = gl.GenFramebuffer();
             using (var lease = texture.BeginDraw())
             {
-                var info = lease.Texture;
+                var info = lease.TextureInfo;
                 gl.BindFramebuffer(GL_FRAMEBUFFER, fbo);
                 gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, info.Target, info.TextureId, 0);
                 gl.ClearColor(r, g, b, a);
@@ -234,13 +234,13 @@ public class OpenGlCompositionInteropTests : TestBase
         // Draw session is exclusive
         var lease = texture.BeginDraw();
         Assert.False(texture.IsReadyForDraw);
-        Assert.NotEqual(0, lease.Texture.TextureId);
+        Assert.NotEqual(0, lease.TextureInfo.TextureId);
         Assert.Throws<InvalidOperationException>(() => texture.BeginDraw());
 
         // Dispose without present discards the frame and makes the texture immediately reusable
         lease.Dispose();
         Assert.True(texture.IsReadyForDraw);
-        Assert.Throws<ObjectDisposedException>(() => lease.Texture);
+        Assert.Throws<ObjectDisposedException>(() => lease.TextureInfo);
 
         // While a present is pending the texture is busy. Commits are only processed when the event
         // loop is pumped, so the present can't have been completed at this point.
@@ -256,7 +256,7 @@ public class OpenGlCompositionInteropTests : TestBase
         var lease2 = texture.BeginDraw();
         var present2 = lease2.PresentAsync();
         Assert.IsType<ObjectDisposedException>(Record.Exception(() => { _ = lease2.PresentAsync(); }));
-        Assert.Throws<ObjectDisposedException>(() => lease2.Texture);
+        Assert.Throws<ObjectDisposedException>(() => lease2.TextureInfo);
         lease2.Dispose(); // no-op after present
         scaffolding.WaitFor(present2);
 

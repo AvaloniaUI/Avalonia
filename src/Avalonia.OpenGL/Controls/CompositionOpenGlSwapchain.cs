@@ -54,7 +54,7 @@ internal sealed class CompositionOpenGlSwapchain : IAsyncDisposable
         return foundMultiple ? firstFound : null;
     }
 
-    public Lease BeginDraw(PixelSize size, out CompositionGlTextureInfo texture)
+    public Lease BeginDraw(PixelSize size, out CompositionGlTextureInfo textureInfo)
     {
         var entry = CleanupAndFindNextEntry(size);
         if (entry == null)
@@ -64,7 +64,7 @@ internal sealed class CompositionOpenGlSwapchain : IAsyncDisposable
         }
 
         var lease = entry.Texture.BeginDraw();
-        texture = lease.Texture;
+        textureInfo = lease.TextureInfo;
         return new Lease(entry, lease);
     }
 

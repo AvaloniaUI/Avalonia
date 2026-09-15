@@ -139,7 +139,7 @@ internal abstract class CompositionGlTexture : ICompositionGlTexture
 
         public TextureLease(CompositionGlTexture texture) => _texture = texture;
 
-        public CompositionGlTextureInfo Texture
+        public CompositionGlTextureInfo TextureInfo
         {
             get
             {
