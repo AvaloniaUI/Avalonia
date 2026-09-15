@@ -6,6 +6,7 @@ name: Publish PR NuGet Packages
 # This runs in the context of the main repository with access to secrets, while the packages were built
 # from untrusted pull request code. That is accepted for the "all" feed only.
 # NEVER check out or execute anything from the pull request here: only download the artifacts and push them.
+# (The publish action itself is checked out from main.)
 
 on:
   workflow_run:
@@ -16,10 +17,6 @@ permissions:
   contents: read
   actions: read
 
-concurrency:
-  group: publish-pr-nuget-${{ github.event.workflow_run.event }}-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
-  cancel-in-progress: true
-
 jobs:
   publish:
     name: Publish PR NuGet Packages
@@ -27,12 +24,25 @@ jobs:
       github.event.workflow_run.event == 'pull_request'
       && github.event.workflow_run.conclusion == 'success'
       && vars.ALL_FEED_UPLOAD_URL != ''
-    uses: ./.github/workflows/publish-nuget-shared.yml
-    with:
-      feed-url: ${{ vars.ALL_FEED_UPLOAD_URL }}
-      run-id: ${{ github.event.workflow_run.id }}
-    secrets:
-      api-key: ${{ secrets.ALL_FEED_API_KEY }}
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.publish.outputs.version }}
+
+    steps:
+      - name: Checkout Actions
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          sparse-checkout: .github/actions
+          persist-credentials: false
+
+      - name: Publish NuGet Packages
+        id: publish
+        uses: ./.github/actions/publish-nuget
+        with:
+          feed-url: ${{ vars.ALL_FEED_UPLOAD_URL }}
+          api-key: ${{ secrets.ALL_FEED_API_KEY }}
+          run-id: ${{ github.event.workflow_run.id }}
 
   comment:
     name: Comment on Pull Request

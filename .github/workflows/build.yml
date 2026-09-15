@@ -72,19 +72,19 @@ jobs:
           printenv
           ./build.sh --target CiMacOS --configuration Release
 
-      - name: Publish Native Library
+      - name: Upload Native Library
         uses: actions/upload-artifact@v7
         with:
           name: native-macos
           path: artifacts/native/Release/
 
-      - name: Publish NuGet Packages
+      - name: Upload NuGet Packages
         uses: actions/upload-artifact@v7
         with:
           name: nuget-macos
           path: artifacts/nuget
 
-      - name: Publish SBOM
+      - name: Upload SBOM
         uses: actions/upload-artifact@v7
         with:
           name: sbom-macos
@@ -105,13 +105,13 @@ jobs:
       - name: Run Build
         run: ./build.cmd --target CiWindows --configuration Release
 
-      - name: Publish NuGet Packages
+      - name: Upload NuGet Packages
         uses: actions/upload-artifact@v7
         with:
           name: nuget-windows
           path: artifacts/nuget
 
-      - name: Publish SBOM
+      - name: Upload SBOM
         uses: actions/upload-artifact@v7
         with:
           name: sbom-windows
@@ -148,31 +148,37 @@ jobs:
       github.event_name != 'pull_request'
       && needs.branch-info.outputs.is-release != 'true'
       && vars.NIGHTLY_FEED_UPLOAD_URL != ''
-    uses: ./.github/workflows/publish-nuget-shared.yml
-    with:
-      feed-url: ${{ vars.NIGHTLY_FEED_UPLOAD_URL }}
-    secrets:
-      api-key: ${{ secrets.NIGHTLY_FEED_API_KEY }}
+    runs-on: ubuntu-24.04
 
-  # Pushes to release/x.y.z build automatically, but publishing waits for a manual approval of the "release" environment
-  # (configured with required reviewers in the repository settings). Only this run's packages can be published.
-  approve-release:
-    name: Approve Release NuGet Publishing
+    steps:
+      - &step-checkout-actions
+        name: Checkout Actions
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/actions
+          persist-credentials: false
+
+      - name: Publish NuGet Packages
+        uses: ./.github/actions/publish-nuget
+        with:
+          feed-url: ${{ vars.NIGHTLY_FEED_UPLOAD_URL }}
+          api-key: ${{ secrets.NIGHTLY_FEED_API_KEY }}
+
+  # Pushes to release/x.y.z build automatically, but publishing waits for a manual approval of the "release" environment.
+  publish-release:
+    name: Publish Release NuGet Packages
     needs: [linux, windows, macos, branch-info]
     if: >-
       github.event_name != 'pull_request'
       && needs.branch-info.outputs.is-release == 'true'
     runs-on: ubuntu-24.04
     environment: release
-    steps:
-      - name: Approved
-        run: echo "Release publishing approved for run $GITHUB_RUN_ID"
 
-  publish-release:
-    name: Publish Release NuGet Packages
-    needs: approve-release
-    uses: ./.github/workflows/publish-nuget-shared.yml
-    with:
-      feed-url: ${{ vars.RELEASE_MANAGER_UPLOAD_URL }}
-    secrets:
-      api-key: ${{ secrets.RELEASE_MANAGER_API_KEY }}
+    steps:
+      - *step-checkout-actions
+
+      - name: Publish NuGet Packages
+        uses: ./.github/actions/publish-nuget
+        with:
+          feed-url: ${{ vars.RELEASE_MANAGER_UPLOAD_URL }}
+          api-key: ${{ secrets.RELEASE_MANAGER_API_KEY }}
