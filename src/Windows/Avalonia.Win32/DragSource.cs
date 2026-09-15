@@ -26,6 +26,7 @@ namespace Avalonia.Win32
                 && UnmanagedMethods.GetKeyState(UnmanagedMethods.VirtualKeyStates.VK_LBUTTON) >= 0
                 && TopLevel.GetTopLevel(triggerEvent.Source as Visual)?.PlatformImpl is WindowImpl window)
             {
+                triggerEvent.PreventGestureRecognition();
                 var result = new TaskCompletionSource<DragDropEffects>(TaskCreationOptions.RunContinuationsAsynchronously);
                 window.SetPendingDrag(
                     () =>
