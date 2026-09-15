@@ -252,10 +252,6 @@ namespace ControlCatalog.ViewModels
 
         public void NavigateToItem(PageItem item)
         {
-            // Clear any active search so the target is present in the filtered list.
-            if (!string.IsNullOrEmpty(Query))
-                Query = "";
-
             NavigateTo(item);
         }
 

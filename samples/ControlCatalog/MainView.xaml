@@ -10,7 +10,6 @@
             d:DesignHeight="720"
             CornerRadius="20"
             x:DataType="viewModels:MainWindowViewModel"
-            DrawerBackground="Transparent"
             DrawerLayoutBehavior="Split"
             IsOpen="{Binding IsDrawerOpened , Mode=TwoWay}"
             DisplayMode="{Binding DisplayMode, Mode=TwoWay}"
@@ -241,9 +240,5 @@
     </DataTemplate>
   </DrawerPage.DrawerFooterTemplate>
 
-  <NavigationPage Name="NavPage">
-    <NavigationPage.Resources>
-      <SolidColorBrush x:Key="NavigationBarBackground">Transparent</SolidColorBrush>
-    </NavigationPage.Resources>
-  </NavigationPage>
+  <NavigationPage Name="NavPage"/>
 </DrawerPage>

@@ -61,7 +61,6 @@
   <x:Double x:Key="SelectionPipeHeight">12</x:Double>
 
   <ControlTheme x:Key="ScrollPage" TargetType="ContentPage">
-    <Setter Property="Background" Value="{DynamicResource PageBackgroundColor}"/>
     <Setter Property="CornerRadius" Value="20,0,0,0"/>
     <Setter Property="Template">
       <ControlTemplate>
