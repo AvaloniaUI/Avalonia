@@ -1,4 +1,5 @@
 import { InputHelper } from "./avalonia/input";
+import { InputQueue } from "./avalonia/inputQueue";
 import { AvaloniaDOM } from "./avalonia/dom";
 import { Caniuse } from "./avalonia/caniuse";
 import { StreamHelper } from "./avalonia/stream";
@@ -23,6 +24,7 @@ async function registerServiceWorker(path: string, scope: string | undefined) {
 export {
     Caniuse,
     InputHelper,
+    InputQueue,
     AvaloniaDOM,
     StreamHelper,
     NativeControlHost,

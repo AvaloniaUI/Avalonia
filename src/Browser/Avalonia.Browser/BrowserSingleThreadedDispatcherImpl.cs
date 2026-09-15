@@ -9,9 +9,11 @@ namespace Avalonia.Browser;
 
 // Dispatcher backend for single-threaded WASM. The browser event loop is the only loop:
 // wake-ups are posted as macrotasks and everything runs on the main thread, so no locking is needed.
-// Pending input is deliberately not queried: the browser dispatches input between our tasks on its own,
-// and gating low-priority jobs on isInputPending starves them for as long as the pointer keeps moving.
-internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
+// Pending input is the browser input ring (see BrowserInputQueue), not navigator.scheduling.isInputPending:
+// the latter stays true for as long as the pointer keeps moving and starves low-priority jobs, while
+// the ring only reports input that was queued since the last input wake.
+internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWithPendingInput,
+    IDispatcherImplWithExplicitBackgroundProcessing
 {
     private static BrowserSingleThreadedDispatcherImpl? s_instance;
 
@@ -20,6 +22,7 @@ internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWith
     private bool _signaled;
     private bool _backgroundRequested;
     private bool _timerSet;
+    private bool _inInputWake;
 
     public BrowserSingleThreadedDispatcherImpl()
     {
@@ -34,12 +37,48 @@ internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWith
     public event Action? Timer;
     public event Action? ReadyForBackgroundProcessing;
 
+    public bool CanQueryPendingInput => true;
+
+    /// <summary>
+    /// Input that JS has queued but C# has not decoded yet.
+    /// </summary>
+    public bool HasPendingInput => BrowserInputQueue.HasPendingInput;
+
     public void Signal()
     {
         if (_signaled)
             return;
         _signaled = true;
+
+        // RunSignaled is guaranteed to be called at the end of the input wake.
+        if (_inInputWake)
+            return;
+
         JsSignal();
+    }
+
+    /// <summary>
+    /// Runs <paramref name="drainInput"/> followed by a single Signaled call, in the same browser task.
+    /// </summary>
+    public void RunInputWake(Action drainInput)
+    {
+        _inInputWake = true;
+        try
+        {
+            drainInput();
+        }
+        finally
+        {
+            _inInputWake = false;
+        }
+
+        RunSignaled();
+    }
+
+    private void RunSignaled()
+    {
+        _signaled = false;
+        Signaled?.Invoke();
     }
 
     public void RequestBackgroundProcessing()
@@ -80,10 +119,7 @@ internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWith
     [JSExport]
     public static void OnSignaled()
     {
-        if (s_instance is not { } impl)
-            return;
-        impl._signaled = false;
-        impl.Signaled?.Invoke();
+        s_instance?.RunSignaled();
     }
 
     [JSExport]

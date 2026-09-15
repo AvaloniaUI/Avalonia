@@ -18,10 +18,8 @@ internal class BrowserInputHandler
     private readonly PenDevice _penDevice;
     private readonly MouseDevice _wheelMouseDevice;
     private readonly List<BrowserMouseDevice> _mouseDevices;
+    private readonly RawEventGrouper _rawEventGrouper;
     private IInputRoot? _inputRoot;
-
-    private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
-    private readonly RawEventGrouper? _rawEventGrouper;
 
     public BrowserInputHandler(BrowserTopLevelImpl topLevelImpl, JSObject container, JSObject inputElement, int topLevelId)
     {
@@ -33,9 +31,7 @@ internal class BrowserInputHandler
         _wheelMouseDevice = new MouseDevice();
         _mouseDevices = new();
 
-        _rawEventGrouper = BrowserWindowingPlatform.EventGrouperDispatchQueue is not null
-            ? new RawEventGrouper(DispatchInput, BrowserWindowingPlatform.EventGrouperDispatchQueue)
-            : null;
+        _rawEventGrouper = new RawEventGrouper(DispatchInput, BrowserWindowingPlatform.EventGrouperDispatchQueue);
 
         TextInputMethod = new BrowserTextInputMethod(this, container, inputElement);
         InputPane = new BrowserInputPane();
@@ -53,131 +49,66 @@ internal class BrowserInputHandler
         _inputRoot = inputRoot;
     }
 
-    private static RawPointerPoint CreateRawPointer(double offsetX, double offsetY,
-        double pressure, double tiltX, double tiltY, double twist) => new()
+    internal void OnQueuedPointerEvent(
+        RawPointerEventType eventType, BrowserPointerType pointerType, long pointerId, ulong timestamp,
+        RawPointerPoint point, RawInputModifiers modifiers, PooledList<RawPointerPoint>? intermediatePoints)
     {
-        Position = new Point(offsetX, offsetY),
-        Pressure = (float)pressure,
-        XTilt = (float)tiltX,
-        YTilt = (float)tiltY,
-        Twist = (float)twist
-    };
-
-    public bool OnPointerMove(string pointerType, long pointerId, double offsetX, double offsetY,
-        double pressure, double tiltX, double tiltY, double twist, int modifier, JSObject argsObj)
-    {
-        var point = CreateRawPointer(offsetX, offsetY, pressure, tiltX, tiltY, twist);
-        var type = pointerType switch
+        if (_inputRoot is null)
         {
-            "touch" => RawPointerEventType.TouchUpdate,
-            _ => RawPointerEventType.Move
-        };
+            intermediatePoints?.Dispose();
+            return;
+        }
 
-        Lazy<IReadOnlyList<RawPointerPoint>?>? coalescedEvents = null;
-        // Rely on native GetCoalescedEvents only when managed event grouping is not available.
-        if (_rawEventGrouper is null)
-        {
-            coalescedEvents = new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
+        var device = GetPointerDevice(pointerType, pointerId);
+        var lazyPoints = intermediatePoints is null
+            ? null
+            : new Lazy<IReadOnlyList<RawPointerPoint>?>(intermediatePoints);
+
+        var args = device is TouchDevice
+            ? new RawTouchEventArgs(device, timestamp, _inputRoot, eventType, point, modifiers, pointerId)
             {
-                if (argsObj.IsDisposed)
-                    return [];
-
-                // To minimize JS interop usage, we resolve all points properties in a single call.
-                const int itemsPerPoint = 6;
-                var pointsProps = InputHelper.GetCoalescedEvents(argsObj);
-                s_intermediatePointsPooledList.Clear();
-
-                var pointsCount = pointsProps.Length / itemsPerPoint;
-                s_intermediatePointsPooledList.Capacity = pointsCount - 1;
-
-                // Skip the last one, as it is already processed point.
-                for (var i = 0; i < pointsCount - 1; i += itemsPerPoint)
-                {
-                    s_intermediatePointsPooledList.Add(CreateRawPointer(
-                        pointsProps[i], pointsProps[i + 1],
-                        pointsProps[i + 2], pointsProps[i + 3],
-                        pointsProps[i + 4], pointsProps[i + 5]));
-                }
-
-                return s_intermediatePointsPooledList;
-            });
-        }
-
-        try
-        {
-            return RawPointerEvent(type, pointerType!, point, (RawInputModifiers)modifier, pointerId,
-                coalescedEvents);
-        }
-        finally
-        {
-            // Release the JS handle after processing the event.
-            // ImmediatePoints is only expected to be accessed synchronously during event processing.
-            argsObj.Dispose();
-        }
-    }
-
-    public bool OnPointerDown(string pointerType, long pointerId, int buttons, double offsetX, double offsetY,
-        double pressure, double tiltX, double tiltY, double twist, int modifier)
-    {
-        var type = pointerType switch
-        {
-            "touch" => RawPointerEventType.TouchBegin,
-            _ => buttons switch
-            {
-                0 => RawPointerEventType.LeftButtonDown,
-                1 => RawPointerEventType.MiddleButtonDown,
-                2 => RawPointerEventType.RightButtonDown,
-                3 => RawPointerEventType.XButton1Down,
-                4 => RawPointerEventType.XButton2Down,
-                5 => RawPointerEventType.XButton1Down, // should be pen eraser button,
-                _ => RawPointerEventType.Move
+                IntermediatePoints = lazyPoints
             }
-        };
-
-        var point = CreateRawPointer(offsetX, offsetY, pressure, tiltX, tiltY, twist);
-        return RawPointerEvent(type, pointerType, point, (RawInputModifiers)modifier, pointerId);
-    }
-
-    public bool OnPointerUp(string pointerType, long pointerId, int buttons, double offsetX, double offsetY,
-        double pressure, double tiltX, double tiltY, double twist, int modifier)
-    {
-        var type = pointerType switch
-        {
-            "touch" => RawPointerEventType.TouchEnd,
-            _ => buttons switch
+            : new RawPointerEventArgs(device, timestamp, _inputRoot, eventType, point, modifiers)
             {
-                0 => RawPointerEventType.LeftButtonUp,
-                1 => RawPointerEventType.MiddleButtonUp,
-                2 => RawPointerEventType.RightButtonUp,
-                3 => RawPointerEventType.XButton1Up,
-                4 => RawPointerEventType.XButton2Up,
-                5 => RawPointerEventType.XButton1Up, // should be pen eraser button,
-                _ => RawPointerEventType.Move
-            }
-        };
+                RawPointerId = pointerId, IntermediatePoints = lazyPoints
+            };
 
-        var point = CreateRawPointer(offsetX, offsetY, pressure, tiltX, tiltY, twist);
-        return RawPointerEvent(type, pointerType, point, (RawInputModifiers)modifier, pointerId);
+        _rawEventGrouper.HandleEvent(args);
     }
 
-    public bool OnPointerCancel(string pointerType, long pointerId, double offsetX, double offsetY,
-        double pressure, double tiltX, double tiltY, double twist, int modifier)
+    internal void OnQueuedWheelEvent(ulong timestamp, Point position, double deltaX, double deltaY, RawInputModifiers modifiers)
     {
-        if (pointerType == "touch")
-        {
-            var point = CreateRawPointer(offsetX, offsetY, pressure, tiltX, tiltY, twist);
-            RawPointerEvent(RawPointerEventType.TouchCancel, pointerType, point,
-                (RawInputModifiers)modifier, pointerId);
-        }
+        if (_inputRoot is null)
+            return;
 
-        return false;
+        var args = new RawMouseWheelEventArgs(_wheelMouseDevice, timestamp, _inputRoot, position,
+            new Vector(-(deltaX / 50), -(deltaY / 50)), modifiers);
+
+        _rawEventGrouper.HandleEvent(args);
     }
 
-    public bool OnWheel(double offsetX, double offsetY, double deltaX, double deltaY, int modifier)
+    internal void OnQueuedKeyEvent(RawKeyEventType type, ulong timestamp, string domCode, string domKey, RawInputModifiers modifiers)
     {
-        return RawMouseWheelEvent(new Point(offsetX, offsetY),
-            new Vector(-(deltaX / 50), -(deltaY / 50)),
-            (RawInputModifiers)modifier);
+        if (_inputRoot is null)
+            return;
+
+        var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
+        var key = KeyInterop.KeyFromDomKey(domKey, physicalKey);
+        var keySymbol = KeyInterop.KeySymbolFromDomKey(domKey);
+
+        var args = new RawKeyEventArgs(
+            BrowserWindowingPlatform.Keyboard,
+            timestamp,
+            _inputRoot,
+            type,
+            key,
+            modifiers,
+            physicalKey,
+            keySymbol
+        );
+
+        _rawEventGrouper.HandleEvent(args);
     }
 
     public bool OnDragEvent(string type, double offsetX, double offsetY, int modifiers, JSObject dataTransfer, JSObject items)
@@ -239,42 +170,12 @@ internal class BrowserInputHandler
                && dropEffect != DragDropEffects.None;
     }
 
-    public bool OnKeyDown(string code, string key, int modifier)
+    internal bool RawTextEvent(string text)
     {
-        var handled = RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
-
-        if (!handled && key.Length == 1)
+        if (_inputRoot is { })
         {
-            handled = RawTextEvent(key);
-        }
-
-        return handled;
-    }
-
-    public bool OnKeyUp(string code, string key, int modifier)
-    {
-        return RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
-    }
-
-    private bool RawPointerEvent(
-        RawPointerEventType eventType, string pointerType,
-        RawPointerPoint p, RawInputModifiers modifiers, long touchPointId,
-        Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints = null)
-    {
-        if (_inputRoot is not null)
-        {
-            var device = GetPointerDevice(pointerType, touchPointId);
-            var args = device is TouchDevice ?
-                new RawTouchEventArgs(device, Timestamp, _inputRoot, eventType, p, modifiers, touchPointId)
-                {
-                    IntermediatePoints = intermediatePoints
-                } :
-                new RawPointerEventArgs(device, Timestamp, _inputRoot, eventType, p, modifiers)
-                {
-                    RawPointerId = touchPointId, IntermediatePoints = intermediatePoints
-                };
-
-            ScheduleInput(args);
+            var args = new RawTextInputEventArgs(BrowserWindowingPlatform.Keyboard, Timestamp, _inputRoot, text);
+            ScheduleDirectInput(args);
 
             return args.Handled;
         }
@@ -282,11 +183,20 @@ internal class BrowserInputHandler
         return false;
     }
 
-    private IPointerDevice GetPointerDevice(string pointerType, long pointerId)
+    private DragDropEffects RawDragEvent(RawDragEventType eventType, Point position, RawInputModifiers modifiers,
+        BrowserDragDataTransfer dataTransfer, DragDropEffects dropEffect)
     {
-        if (pointerType == "touch")
+        var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
+        var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataTransfer, dropEffect, modifiers);
+        ScheduleDirectInput(eventArgs);
+        return eventArgs.Effects;
+    }
+
+    private IPointerDevice GetPointerDevice(BrowserPointerType pointerType, long pointerId)
+    {
+        if (pointerType == BrowserPointerType.Touch)
             return _touchDevice;
-        else if (pointerType == "pen")
+        if (pointerType == BrowserPointerType.Pen)
             return _penDevice;
 
         // TODO: refactor pointer devices, so we can reuse single instance here.
@@ -301,78 +211,18 @@ internal class BrowserInputHandler
         return newMouseDevice;
     }
 
-    private bool RawMouseWheelEvent(Point p, Vector v, RawInputModifiers modifiers)
+    /// <summary>
+    /// Direct-path events bypass the ring. On the single-threaded runtime they are dispatched inline,
+    /// because the caller needs a synchronous result (drop effect, handled state) and the JS side has
+    /// already flushed the ring so ordering is preserved. With the managed dispatcher they are
+    /// queued like everything else, and the result is not observable.
+    /// </summary>
+    private void ScheduleDirectInput(RawInputEventArgs args)
     {
-        if (_inputRoot is { })
-        {
-            var args = new RawMouseWheelEventArgs(_wheelMouseDevice, Timestamp, _inputRoot, p, v, modifiers);
-
-            ScheduleInput(args);
-
-            return args.Handled;
-        }
-
-        return false;
-    }
-
-    private bool RawKeyboardEvent(RawKeyEventType type, string domCode, string domKey, RawInputModifiers modifiers)
-    {
-        if (_inputRoot is null)
-            return false;
-
-        var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
-        var key = KeyInterop.KeyFromDomKey(domKey, physicalKey);
-        var keySymbol = KeyInterop.KeySymbolFromDomKey(domKey);
-
-        var args = new RawKeyEventArgs(
-            BrowserWindowingPlatform.Keyboard,
-            Timestamp,
-            _inputRoot,
-            type,
-            key,
-            modifiers,
-            physicalKey,
-            keySymbol
-        );
-
-        ScheduleInput(args);
-
-        return args.Handled;
-    }
-
-    internal bool RawTextEvent(string text)
-    {
-        if (_inputRoot is { })
-        {
-            var args = new RawTextInputEventArgs(BrowserWindowingPlatform.Keyboard, Timestamp, _inputRoot, text);
-            ScheduleInput(args);
-
-            return args.Handled;
-        }
-
-        return false;
-    }
-
-    private DragDropEffects RawDragEvent(RawDragEventType eventType, Point position, RawInputModifiers modifiers,
-        BrowserDragDataTransfer dataTransfer, DragDropEffects dropEffect)
-    {
-        var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
-        var eventArgs = new RawDragEvent(device, eventType, _inputRoot!, position, dataTransfer, dropEffect, modifiers);
-        ScheduleInput(eventArgs);
-        return eventArgs.Effects;
-    }
-
-    private void ScheduleInput(RawInputEventArgs args)
-    {
-        // _rawEventGrouper is available only when we use managed dispatcher.
-        if (_rawEventGrouper is not null)
-        {
+        if (BrowserWindowingPlatform.IsThreadingEnabled)
             _rawEventGrouper.HandleEvent(args);
-        }
         else
-        {
             DispatchInput(args);
-        }
     }
 
     private void DispatchInput(RawInputEventArgs args)
@@ -381,5 +231,14 @@ internal class BrowserInputHandler
             return;
 
         _topLevelImpl.Input?.Invoke(args);
+
+        // An unhandled key press with a printable symbol is delivered as text input as well.
+        // The handled state of the text event is what the browser gets back for preventDefault().
+        if (args is RawKeyEventArgs { Type: RawKeyEventType.KeyDown, Handled: false, KeySymbol: { Length: 1 } symbol })
+        {
+            var textArgs = new RawTextInputEventArgs(BrowserWindowingPlatform.Keyboard, args.Timestamp, _inputRoot, symbol);
+            _topLevelImpl.Input?.Invoke(textArgs);
+            args.Handled = textArgs.Handled;
+        }
     }
 }

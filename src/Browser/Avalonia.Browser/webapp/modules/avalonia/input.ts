@@ -2,25 +2,7 @@ import { CaretHelper } from "./caretHelper";
 import { JsExports } from "./jsExports";
 import { IMemoryView } from "../../types/dotnet";
 import { StorageItem } from "../storage/storageItem";
-
-enum RawInputModifiers {
-    None = 0,
-    Alt = 1,
-    Control = 2,
-    Shift = 4,
-    Meta = 8,
-
-    LeftMouseButton = 16,
-    RightMouseButton = 32,
-    MiddleMouseButton = 64,
-    XButton1MouseButton = 128,
-    XButton2MouseButton = 256,
-    KeyboardMask = Alt | Control | Shift | Meta,
-
-    PenInverted = 512,
-    PenEraser = 1024,
-    PenBarrelButton = 2048
-}
+import { InputQueue, InputRecordType } from "./inputQueue";
 
 /*
 * This is a hack to handle older Firefox (before v127 from June 2024) clipboard events in a more convenient way for framework users.
@@ -345,23 +327,21 @@ export class InputHelper {
     }
 
     public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
+        // Key events go through the input ring and are flushed synchronously, so Avalonia's handled
+        // state is known before the browser applies the default action.
         const keyDownHandler = (args: KeyboardEvent) => {
-            JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args))
-                .then((handled: boolean) => {
-                    if (!handled || this.clipboardState !== ClipboardState.Pending) {
-                        args.preventDefault();
-                    }
-                });
+            const handled = InputQueue.postKey(InputRecordType.KeyDown, topLevelId, args);
+            if (!handled || this.clipboardState !== ClipboardState.Pending) {
+                args.preventDefault();
+            }
         };
         element.addEventListener("keydown", keyDownHandler);
 
         const keyUpHandler = (args: KeyboardEvent) => {
-            JsExports.InputHelper.OnKeyUp(topLevelId, args.code, args.key, this.getModifiers(args))
-                .then((handled: boolean) => {
-                    if (!handled) {
-                        args.preventDefault();
-                    }
-                });
+            const handled = InputQueue.postKey(InputRecordType.KeyUp, topLevelId, args);
+            if (!handled) {
+                args.preventDefault();
+            }
 
             if (this.rejectClipboard) {
                 this.rejectClipboard();
@@ -379,12 +359,16 @@ export class InputHelper {
     public static subscribeTextEvents(
         element: HTMLInputElement,
         topLevelId: number) {
+        // Text events bypass the input ring; flushing first keeps them ordered after queued input.
         const compositionStartHandler = (args: CompositionEvent) => {
+            InputQueue.flush();
             JsExports.InputHelper.OnCompositionStart(topLevelId);
         };
         element.addEventListener("compositionstart", compositionStartHandler);
 
         const beforeInputHandler = (args: InputEvent) => {
+            InputQueue.flush();
+
             const ranges = args.getTargetRanges();
             let start = -1;
             let end = -1;
@@ -403,11 +387,13 @@ export class InputHelper {
         element.addEventListener("beforeinput", beforeInputHandler);
 
         const compositionUpdateHandler = (args: CompositionEvent) => {
+            InputQueue.flush();
             JsExports.InputHelper.OnCompositionUpdate(topLevelId, args.data);
         };
         element.addEventListener("compositionupdate", compositionUpdateHandler);
 
         const compositionEndHandler = (args: CompositionEvent) => {
+            InputQueue.flush();
             JsExports.InputHelper.OnCompositionEnd(topLevelId, args.data);
             args.preventDefault();
         };
@@ -424,36 +410,29 @@ export class InputHelper {
         element: HTMLInputElement,
         topLevelId: number
     ) {
+        // Pointer and wheel events are encoded into the input ring and consumed by C# in one batch
+        // per burst; the browser default action is suppressed unconditionally.
         const pointerMoveHandler = (args: PointerEvent) => {
-            JsExports.InputHelper.OnPointerMove(
-                topLevelId, args.pointerType, args.pointerId, args.offsetX, args.offsetY,
-                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args), args);
+            InputQueue.postPointer(InputRecordType.PointerMove, topLevelId, args);
             args.preventDefault();
         };
 
         const pointerDownHandler = (args: PointerEvent) => {
-            JsExports.InputHelper.OnPointerDown(
-                topLevelId, args.pointerType, args.pointerId, args.button, args.offsetX, args.offsetY,
-                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
+            InputQueue.postPointer(InputRecordType.PointerDown, topLevelId, args);
             args.preventDefault();
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
-            JsExports.InputHelper.OnPointerUp(
-                topLevelId, args.pointerType, args.pointerId, args.button, args.offsetX, args.offsetY,
-                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
+            InputQueue.postPointer(InputRecordType.PointerUp, topLevelId, args);
             args.preventDefault();
         };
 
         const pointerCancelHandler = (args: PointerEvent) => {
-            JsExports.InputHelper.OnPointerCancel(
-                topLevelId, args.pointerType, args.pointerId, args.offsetX, args.offsetY,
-                args.pressure, args.tiltX, args.tiltY, args.twist, this.getModifiers(args));
+            InputQueue.postPointer(InputRecordType.PointerCancel, topLevelId, args);
         };
 
         const wheelHandler = (args: WheelEvent) => {
-            JsExports.InputHelper.OnWheel(
-                topLevelId, args.offsetX, args.offsetY, args.deltaX, args.deltaY, this.getModifiers(args));
+            InputQueue.postWheel(topLevelId, args);
             args.preventDefault();
         };
 
@@ -464,7 +443,7 @@ export class InputHelper {
         element.addEventListener("pointercancel", pointerCancelHandler);
 
         return () => {
-            element.removeEventListener("pointerover", pointerMoveHandler);
+            element.removeEventListener("pointermove", pointerMoveHandler);
             element.removeEventListener("pointerdown", pointerDownHandler);
             element.removeEventListener("pointerup", pointerUpHandler);
             element.removeEventListener("pointercancel", pointerCancelHandler);
@@ -485,7 +464,9 @@ export class InputHelper {
             const items: ReadableDataItem[] =
                 this.getDataTransferItems(dataTransfer).map((item) => ({ type: "dataTransferItem", value: item }));
 
-            JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, this.getModifiers(args), dataTransfer, items);
+            // Drag events bypass the input ring; flushing first keeps them ordered after queued input.
+            InputQueue.flush();
+            JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, InputQueue.getModifiers(args), dataTransfer, items);
         };
         const overAndDropHandler = (args: DragEvent) => {
             args.preventDefault();
@@ -502,11 +483,6 @@ export class InputHelper {
             element.removeEventListener("dragleave", handler);
             element.removeEventListener("drop", overAndDropHandler);
         };
-    }
-
-    public static getCoalescedEvents(pointerEvent: PointerEvent): number[] {
-        return pointerEvent.getCoalescedEvents()
-            .flatMap(e => [e.offsetX, e.offsetY, e.pressure, e.tiltX, e.tiltY, e.twist]);
     }
 
     public static subscribeKeyboardGeometryChange(
@@ -577,27 +553,6 @@ export class InputHelper {
         inputElement.setSelectionRange(start, end);
         inputElement.style.width = "20px";
         inputElement.style.width = `${inputElement.scrollWidth}px`;
-    }
-
-    private static getModifiers(args: KeyboardEvent | PointerEvent | WheelEvent | DragEvent): number {
-        let modifiers = RawInputModifiers.None;
-
-        if (args.ctrlKey) { modifiers |= RawInputModifiers.Control; }
-        if (args.altKey) { modifiers |= RawInputModifiers.Alt; }
-        if (args.shiftKey) { modifiers |= RawInputModifiers.Shift; }
-        if (args.metaKey) { modifiers |= RawInputModifiers.Meta; }
-
-        const buttons = (args as PointerEvent).buttons;
-        if (buttons) {
-            if (buttons & 1) { modifiers |= RawInputModifiers.LeftMouseButton; }
-            if (buttons & 2) { modifiers |= (args.type === "pen" ? RawInputModifiers.PenBarrelButton : RawInputModifiers.RightMouseButton); }
-            if (buttons & 4) { modifiers |= RawInputModifiers.MiddleMouseButton; }
-            if (buttons & 8) { modifiers |= RawInputModifiers.XButton1MouseButton; }
-            if (buttons & 16) { modifiers |= RawInputModifiers.XButton2MouseButton; }
-            if (buttons & 32) { modifiers |= RawInputModifiers.PenEraser; }
-        }
-
-        return modifiers;
     }
 
     public static setPointerCapture(containerElement: HTMLInputElement, pointerId: number): void {
