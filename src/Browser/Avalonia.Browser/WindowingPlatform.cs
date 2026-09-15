@@ -17,7 +17,25 @@ namespace Avalonia.Browser;
 
 internal class BrowserWindowingPlatform : IWindowingPlatform
 {
-    internal static ManualRawEventGrouperDispatchQueue? EventGrouperDispatchQueue;
+    /// <summary>
+    /// Process-wide queue shared by every top level's <see cref="RawEventGrouper"/>.
+    /// Pumped by <see cref="ManagedDispatcherImpl"/> when the managed dispatcher is used,
+    /// otherwise an <see cref="AutomaticRawEventGrouperDispatchQueue"/> posting to the dispatcher at Input priority.
+    /// </summary>
+    internal static IRawEventGrouperDispatchQueue EventGrouperDispatchQueue =>
+        s_eventGrouperDispatchQueue ?? throw new InvalidOperationException("BrowserWindowingPlatform not registered.");
+
+    /// <summary>
+    /// The grouper queue when running without the managed dispatcher; null otherwise.
+    /// </summary>
+    internal static AutomaticRawEventGrouperDispatchQueue? AutomaticEventGrouperDispatchQueue { get; private set; }
+
+    /// <summary>
+    /// The dispatcher implementation when running without the managed dispatcher; null otherwise.
+    /// </summary>
+    internal static BrowserDispatcherImpl? DispatcherImpl { get; private set; }
+
+    private static IRawEventGrouperDispatchQueue? s_eventGrouperDispatchQueue;
 
     internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
 
@@ -103,15 +121,21 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         
         if (IsManagedDispatcherEnabled)
         {
-            EventGrouperDispatchQueue = new();
+            var queue = new ManualRawEventGrouperDispatchQueue();
+            s_eventGrouperDispatchQueue = queue;
             Dispatcher.InitializeUIThreadDispatcher(
                 new ManagedDispatcherImpl(
-                    new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
+                    new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(queue)));
         }
         else
         {
-            Dispatcher.InitializeUIThreadDispatcher(new BrowserDispatcherImpl());
+            DispatcherImpl = new BrowserDispatcherImpl();
+            Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl);
+            AutomaticEventGrouperDispatchQueue = new AutomaticRawEventGrouperDispatchQueue(Dispatcher.UIThread);
+            s_eventGrouperDispatchQueue = AutomaticEventGrouperDispatchQueue;
         }
+
+        BrowserInputQueue.Initialize();
 
         // GC thread is the same as the main one when MT is disabled
         if (IsThreadingEnabled)
