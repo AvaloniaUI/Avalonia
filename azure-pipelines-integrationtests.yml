@@ -4,17 +4,19 @@ jobs:
     name: 'AvaloniaMacPool'
 
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 Runtime'
-    inputs:
-      packageType: runtime
-      version: 8.0.x
+  # Repository targets .NET 11, which doesn't support old macOS runner we have
+  # For macOS integrational tests we don't need .NET 11 yet, so we rely on UseDotNet@2 alone
+  # TODO: it will be no longer needed once we migrate to GitHub CI with public runners
+  - script: rm global.json
+    displayName: 'Remove global.json'
+  - script: dotnet new globaljson --sdk-version 10.0.401 --roll-forward latestFeature
+    displayName: 'Create global.json'
 
   - task: UseDotNet@2
     displayName: 'Use .NET 10.0 SDK'
     inputs:
-      packageType: sdk
-      useGlobalJson: true
+        packageType: sdk
+        version: 10.0.x
 
   - script: system_profiler SPDisplaysDataType |grep Resolution
     displayName: 'Get Resolution'
@@ -30,7 +32,7 @@ jobs:
       appium > appium.out &
       pkill IntegrationTestApp
       sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer        
-      ./build.sh CompileNative
+      dotnet run --project ./nukebuild/_build.csproj -- CompileNative
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh
@@ -60,16 +62,17 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 8.0 Runtime'
+    displayName: 'Use .NET 10.0 Runtime'
     inputs:
-      packageType: runtime
-      version: 8.0.x
+        packageType: runtime
+        version: 10.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET 10.0 SDK'
+    displayName: 'Use .NET SDK'
     inputs:
       packageType: sdk
       useGlobalJson: true
+      includePreviewVersions: true
 
   - task: Windows Application Driver@0
     inputs:
