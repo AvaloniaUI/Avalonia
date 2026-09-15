@@ -133,7 +133,7 @@
             <Panel Height="30"
                    VerticalAlignment="Top"
                    Background="{DynamicResource ThemeAccentBrush}"
-                   WindowDecorationProperties.ElementRole="TitleBar">
+                   WindowDecorationProperties.ElementRole="DecorationsElement">
               <TextBlock x:Name="PART_PopoverTitleText"
                          Text="{TemplateBinding Title}"
                          VerticalAlignment="Center"

@@ -130,7 +130,7 @@
             <Panel Height="{TemplateBinding DefaultTitleBarHeight}"
                    VerticalAlignment="Top"
                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                   WindowDecorationProperties.ElementRole="TitleBar">
+                   WindowDecorationProperties.ElementRole="DecorationsElement">
               <TextBlock x:Name="PART_PopoverTitleText"
                          Text="{TemplateBinding Title}"
                          VerticalAlignment="Center"
