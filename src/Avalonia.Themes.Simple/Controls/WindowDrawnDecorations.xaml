@@ -130,7 +130,7 @@
             <Panel Height="30"
                    VerticalAlignment="Top"
                    Background="{DynamicResource ThemeAccentBrush}"
-                   WindowDecorationProperties.ElementRole="TitleBar">
+                   WindowDecorationProperties.ElementRole="DecorationsElement">
               <TextBlock Text="{TemplateBinding Title}"
                          VerticalAlignment="Center"
                          Foreground="White"
