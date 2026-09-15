@@ -103,6 +103,7 @@ internal partial class Program
                     .ToArray();
             }
 
+            Console.WriteLine("DemoBrowserPlatformOptions.PreferManagedThreadDispatcher: " + options.PreferManagedThreadDispatcher);
             Console.WriteLine("DemoBrowserPlatformOptions.PreferFileDialogPolyfill: " + options.PreferFileDialogPolyfill);
             Console.WriteLine("DemoBrowserPlatformOptions.RenderingMode: " + string.Join(";", options.RenderingMode));
             return options;
