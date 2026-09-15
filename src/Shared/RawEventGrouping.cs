@@ -70,7 +70,42 @@ internal class AutomaticRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQ
                 _dispatcher.Post(_dispatchFromQueue, DispatcherPriority.Input);
         }
     }
-    
+
+    public bool HasJobs
+    {
+        get
+        {
+            lock (_inputQueue)
+                return _inputQueue.Count > 0;
+        }
+    }
+
+    /// <summary>
+    /// Dispatches every queued event inline, bypassing the dispatcher.
+    /// Returns the handled state of the last event dispatched, or false when the queue was empty.
+    /// Used by backends that need a synchronous handled result for an event they have just enqueued.
+    /// </summary>
+    public bool DrainAll()
+    {
+        RawInputEventArgs? last = null;
+        while (true)
+        {
+            RawInputEventArgs args;
+            Action<RawInputEventArgs> handler;
+            lock (_inputQueue)
+            {
+                if (_inputQueue.Count == 0)
+                    break;
+                (args, handler) = _inputQueue.Dequeue();
+            }
+
+            handler(args);
+            last = args;
+        }
+
+        return last?.Handled ?? false;
+    }
+
     private void DispatchFromQueue()
     {
         RawInputEventArgs args;
@@ -78,16 +113,22 @@ internal class AutomaticRawEventGrouperDispatchQueue : IRawEventGrouperDispatchQ
         while (true)
         {
             lock (_inputQueue)
+            {
                 if (_inputQueue.Count == 0)
                     return;
 
-            (args, handler) = _inputQueue.Dequeue();
-            
+                (args, handler) = _inputQueue.Dequeue();
+            }
+
             handler(args);
 
             if (_dispatcher.HasJobsWithPriority(DispatcherPriority.Input + 1))
             {
-                _dispatcher.Post(_dispatchFromQueue, DispatcherPriority.Input);
+                lock (_inputQueue)
+                {
+                    if (_inputQueue.Count > 0)
+                        _dispatcher.Post(_dispatchFromQueue, DispatcherPriority.Input);
+                }
                 return;
             }
         }
@@ -187,7 +228,20 @@ internal class RawEventGrouper : IDisposable
     {
         
         last.IntermediatePoints ??= new Lazy<IReadOnlyList<RawPointerPoint>?>(s_getPooledListDelegate);
-        ((PooledList<RawPointerPoint>)last.IntermediatePoints.Value!).Add(new RawPointerPoint { Position = last.Position, Pressure = last.Point.Pressure, ContactRect = last.Point.ContactRect, Twist = last.Point.Twist, XTilt = last.Point.XTilt, YTilt = last.Point.YTilt });
+        var points = (PooledList<RawPointerPoint>)last.IntermediatePoints.Value!;
+        points.Add(new RawPointerPoint { Position = last.Position, Pressure = last.Point.Pressure, ContactRect = last.Point.ContactRect, Twist = last.Point.Twist, XTilt = last.Point.XTilt, YTilt = last.Point.YTilt });
+
+        // Points the platform already attached to the merged-in event (e.g. browser coalesced events)
+        // come after the previous primary point and before the new primary point.
+        if (current.IntermediatePoints?.Value is { Count: > 0 } currentPoints)
+        {
+            for (var i = 0; i < currentPoints.Count; i++)
+                points.Add(currentPoints[i]);
+            if (currentPoints is PooledList<RawPointerPoint> pooled)
+                pooled.Dispose();
+            current.IntermediatePoints = null;
+        }
+
         last.Position = current.Position;
         last.Timestamp = current.Timestamp;
         last.InputModifiers = current.InputModifiers;
