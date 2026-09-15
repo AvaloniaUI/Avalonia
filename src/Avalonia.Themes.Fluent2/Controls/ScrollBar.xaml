@@ -18,23 +18,23 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- WinUI reference: ScrollBar_themeresources.xaml (DefaultScrollBarStyle), tag winui3/release/1.6.5.
-       WinUI draws the thumb as a rail-wide rectangle whose 6px transparent stroke leaves a 6px
-       visible fill when expanded and a 2px fill when collapsed (rest). Here the Thumb IS the
-       visible fill: 6px thick, fully rounded (radius = thickness / 2, WinUI ScrollBarCornerRadius),
-       scaled to one third (2px) when collapsed with its outer edge fixed, matching WinUI's rest
-       state. The expanded rail shows an acrylic-fallback track plate (ScrollBarTrackFill) with a
-       radius of ScrollBarCornerRadius x 2, plus fade-in caret line buttons. Expansion/contraction
-       runs 167ms (ScrollBarExpandDuration) on a decelerating spline (KeySpline 0,0,0,1) after a
-       ~100ms delay; opacity fades take 83ms (ScrollBarOpacityChangeDuration). WinUI's pressed
-       arrow shrink (ScrollBarButtonArrowScalePressed) is intentionally not reproduced - no press
-       scale in this theme. -->
+  <Thickness x:Key="ScrollBarHorizontalDecreaseMargin">4,0,0,0</Thickness>
+  <Thickness x:Key="ScrollBarHorizontalIncreaseMargin">0,0,4,0</Thickness>
+  <Thickness x:Key="ScrollBarVerticalDecreaseMargin">0,4,0,0</Thickness>
+  <Thickness x:Key="ScrollBarVerticalIncreaseMargin">0,0,0,4</Thickness>
+  <x:Double x:Key="ScrollBarButtonArrowScalePressed">0.875</x:Double>
   <x:Double x:Key="ScrollBarThumbThickness">6</x:Double>
   <x:Double x:Key="ScrollBarThumbMinLength">30</x:Double>
   <CornerRadius x:Key="ScrollBarThumbCornerRadius">3</CornerRadius>
   <x:Double x:Key="ScrollBarTrackCornerRadius">6</x:Double>
+  <x:Double x:Key="ScrollBarSize">12</x:Double>
+  <x:Double x:Key="ScrollBarButtonArrowIconFontSize">10</x:Double>
   <TransformOperations x:Key="ScrollBarVerticalThumbCollapsedTransform">scaleX(0.3333)</TransformOperations>
   <TransformOperations x:Key="ScrollBarHorizontalThumbCollapsedTransform">scaleY(0.3333)</TransformOperations>
+  <StreamGeometry x:Key="CaretDown">M6.102 8c-1.074 0-1.648 1.265-.94 2.073l5.521 6.31a1.75 1.75 0 0 0 2.634 0l5.522-6.31c.707-.808.133-2.073-.94-2.073H6.101Z</StreamGeometry>
+  <StreamGeometry x:Key="CaretUp">M6.102 16.981c-1.074 0-1.648-1.265-.94-2.073l5.521-6.31a1.75 1.75 0 0 1 2.634 0l5.522 6.31c.707.809.133 2.073-.94 2.073H6.101Z</StreamGeometry>
+  <StreamGeometry x:Key="CaretLeft">M15 17.898c0 1.074-1.265 1.648-2.073.941l-6.31-5.522a1.75 1.75 0 0 1 0-2.634l6.31-5.522c.808-.707 2.073-.133 2.073.941v11.796Z</StreamGeometry>
+  <StreamGeometry x:Key="CaretRight">M9 17.898c0 1.074 1.265 1.648 2.073.941l6.31-5.522a1.75 1.75 0 0 0 0-2.634l-6.31-5.522C10.265 4.454 9 5.028 9 6.102v11.796Z</StreamGeometry>
 
   <ControlTheme x:Key="FluentScrollBarThumb" TargetType="Thumb">
     <Setter Property="Background" Value="{DynamicResource ScrollBarPanningThumbBackground}"/>
@@ -89,6 +89,7 @@
         <ContentPresenter x:Name="PART_ContentPresenter"
                           Background="{DynamicResource ScrollBarButtonBackground}"
                           BorderBrush="{DynamicResource ScrollBarButtonBorderBrush}"
+                          Padding="{TemplateBinding Padding}"
                           Content="{TemplateBinding Content}"/>
       </ControlTemplate>
     </Setter>
@@ -99,29 +100,20 @@
     </Setter>
 
     <Style Selector="^:pointerover">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ScrollBarButtonArrowForegroundPointerOver}"/>
-
       <Style Selector="^ /template/ ContentPresenter" >
-        <Setter Property="Background" Value="{DynamicResource ScrollBarButtonBackgroundPointerOver}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ScrollBarButtonBorderBrushPointerOver}" />
+        <Setter Property="Foreground" Value="{DynamicResource ScrollBarButtonArrowForegroundPointerOver}" />
       </Style>
     </Style>
 
     <Style Selector="^:pressed">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ScrollBarButtonArrowForegroundPressed}"/>
-
       <Style Selector="^ /template/ ContentPresenter" >
-        <Setter Property="Background" Value="{DynamicResource ScrollBarButtonBackgroundPressed}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ScrollBarButtonBorderBrushPressed}" />
+        <Setter Property="Foreground" Value="{DynamicResource ScrollBarButtonArrowForegroundPressed}" />
       </Style>
     </Style>
 
     <Style Selector="^:disabled">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ScrollBarButtonArrowForegroundDisabled}"/>
-
       <Style Selector="^ /template/ ContentPresenter" >
-        <Setter Property="Background" Value="{DynamicResource ScrollBarButtonBackgroundDisabled}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ScrollBarButtonBorderBrushDisabled}" />
+        <Setter Property="Foreground" Value="{DynamicResource ScrollBarButtonArrowForegroundDisabled}" />
       </Style>
     </Style>
   </ControlTheme>
@@ -161,11 +153,24 @@
                               Theme="{StaticResource FluentScrollBarLineButton}"
                               Grid.Row="0"
                               Focusable="False"
+                              Padding="{DynamicResource ScrollBarVerticalDecreaseMargin}"
                               MinWidth="{DynamicResource ScrollBarSize}"
-                              Height="{DynamicResource ScrollBarSize}"
                               AutomationProperties.Name="Line up">
-                  <!-- Segoe Fluent CaretUpSolid8-style solid caret (WinUI FontIcon glyph U+EDDB) -->
-                  <PathIcon Data="M 10 4 L 20 14 L 0 14 Z"
+                  <RepeatButton.Styles>
+                    <Style Selector="PathIcon.Arrow">
+                      <Setter Property="Transitions">
+                        <Transitions>
+                          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.30"/>
+                        </Transitions>
+                      </Setter>
+                    </Style>
+
+                    <Style Selector=":pressed PathIcon.Arrow">
+                      <Setter Property="RenderTransform" Value="scale(0.875)"/>
+                    </Style>
+                  </RepeatButton.Styles>
+                  <PathIcon Data="{StaticResource CaretUp}"
+                            Classes="Arrow"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
                 </RepeatButton>
@@ -203,14 +208,28 @@
 
                 <RepeatButton Name="PART_LineDownButton"
                               HorizontalAlignment="Center"
+                              Padding="{DynamicResource ScrollBarVerticalIncreaseMargin}"
                               Theme="{StaticResource FluentScrollBarLineButton}"
                               Grid.Row="2"
                               Focusable="False"
                               MinWidth="{DynamicResource ScrollBarSize}"
-                              Height="{DynamicResource ScrollBarSize}"
                               AutomationProperties.Name="Line down">
-                  <!-- Segoe Fluent CaretDownSolid8-style solid caret (WinUI FontIcon glyph U+EDDC) -->
-                  <PathIcon Data="M 0 6 L 20 6 L 10 16 Z"
+
+                  <RepeatButton.Styles>
+                    <Style Selector="PathIcon.Arrow">
+                      <Setter Property="Transitions">
+                        <Transitions>
+                          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.30"/>
+                        </Transitions>
+                      </Setter>
+                    </Style>
+
+                    <Style Selector=":pressed PathIcon.Arrow">
+                      <Setter Property="RenderTransform" Value="scale(0.875)"/>
+                    </Style>
+                  </RepeatButton.Styles>
+                  <PathIcon Data="{StaticResource CaretDown}"
+                            Classes="Arrow"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
                 </RepeatButton>
@@ -247,13 +266,27 @@
                 <RepeatButton Name="PART_LineUpButton"
                               Theme="{StaticResource FluentScrollBarLineButton}"
                               VerticalAlignment="Center"
+                              Padding="{DynamicResource ScrollBarHorizontalIncreaseMargin}"
                               Grid.Column="0"
                               Focusable="False"
                               MinHeight="{DynamicResource ScrollBarSize}"
-                              Width="{DynamicResource ScrollBarSize}"
                               AutomationProperties.Name="Column left">
-                  <!-- Segoe Fluent CaretLeftSolid8-style solid caret (WinUI FontIcon glyph U+EDD9) -->
-                  <PathIcon Data="M 14 0 L 14 20 L 4 10 Z"
+
+                  <RepeatButton.Styles>
+                    <Style Selector="PathIcon.Arrow">
+                      <Setter Property="Transitions">
+                        <Transitions>
+                          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.30"/>
+                        </Transitions>
+                      </Setter>
+                    </Style>
+
+                    <Style Selector=":pressed PathIcon.Arrow">
+                      <Setter Property="RenderTransform" Value="scale(0.875)"/>
+                    </Style>
+                  </RepeatButton.Styles>
+                  <PathIcon Data="{StaticResource CaretRight}"
+                            Classes="Arrow"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
                 </RepeatButton>
@@ -290,14 +323,27 @@
 
                 <RepeatButton Name="PART_LineDownButton"
                               Theme="{StaticResource FluentScrollBarLineButton}"
+                              Padding="{DynamicResource ScrollBarHorizontalDeccreaseMargin}"
                               VerticalAlignment="Center"
                               Grid.Column="2"
                               Focusable="False"
                               MinHeight="{DynamicResource ScrollBarSize}"
-                              Width="{DynamicResource ScrollBarSize}"
                               AutomationProperties.Name="Column right">
-                  <!-- Segoe Fluent CaretRightSolid8-style solid caret (WinUI FontIcon glyph U+EDDA) -->
-                  <PathIcon Data="M 6 0 L 16 10 L 6 20 Z"
+                  <RepeatButton.Styles>
+                    <Style Selector="PathIcon.Arrow">
+                      <Setter Property="Transitions">
+                        <Transitions>
+                          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.30"/>
+                        </Transitions>
+                      </Setter>
+                    </Style>
+
+                    <Style Selector=":pressed PathIcon.Arrow">
+                      <Setter Property="RenderTransform" Value="scale(0.875)"/>
+                    </Style>
+                  </RepeatButton.Styles>
+                  <PathIcon Data="{StaticResource CaretLeft}"
+                            Classes="Arrow"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
                 </RepeatButton>

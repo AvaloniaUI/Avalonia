@@ -246,9 +246,6 @@
       <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
       <StaticResource x:Key="ListViewItemSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
 
-      <!-- Resources for ProgressBar.xaml -->
-      <x:Double x:Key="ProgressBarThemeMinHeight">3</x:Double>
-      <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
 
       <!-- Resources for MenuFlyout.xaml (Menu, ContextMenu, etc) -->
       <x:Double x:Key="MenuFlyoutSeparatorThemeHeight">1</x:Double>
@@ -674,8 +671,6 @@
       <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
       <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="TreeViewItemSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
-      <x:Double x:Key="ScrollBarSize">12</x:Double>
-      <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
 
       <!-- Resources for TreeViewItem.xaml -->
       <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -1042,10 +1037,6 @@
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
       <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
       <StaticResource x:Key="ListViewItemSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
-
-      <!-- Resources for ProgressBar.xaml -->
-      <x:Double x:Key="ProgressBarThemeMinHeight">3</x:Double>
-      <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
 
       <!-- Resources for MenuFlyout.xaml (Menu, ContextMenu, etc) -->
       <x:Double x:Key="MenuFlyoutSeparatorThemeHeight">1</x:Double>
@@ -1472,8 +1463,6 @@
       <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="ControlStrongFillColorDefault" />
       <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
       <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <x:Double x:Key="ScrollBarSize">12</x:Double>
-      <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
 
       <!-- Resources for TreeViewItem.xaml -->
       <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />

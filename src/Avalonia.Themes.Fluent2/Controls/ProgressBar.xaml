@@ -22,25 +22,33 @@
       </StackPanel>
     </Border>
   </Design.PreviewWith>
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlStrongStrokeColorDefault" />
+      <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlStrongStrokeColorDefault" />
+      <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+  <x:Double x:Key="ProgressBarMinHeight">3</x:Double>
+  <x:Double x:Key="ProgressBarTrackHeight">1</x:Double>
+  <CornerRadius x:Key="ProgressBarCornerRadius">1.5</CornerRadius>
+  <CornerRadius x:Key="ProgressBarTrackCornerRadius">0.5</CornerRadius>
+      <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
 
   <converters:StringFormatConverter x:Key="StringFormatConverter"/>
 
-  <!-- WinUI reference: ProgressBar.xaml / ProgressBar_themeresources.xaml, tag winui3/release/1.4.2.
-       Determinate: a 3px (ProgressBarMinHeight) accent bar with 1.5 corner radius riding over a 1px
-       (ProgressBarTrackHeight) centered track line (ControlStrongStrokeColorDefaultBrush, radius 0.5).
-       The bar visual is confined to a MinHeight-tall (MinWidth-wide when vertical) strip centered in
-       the control, matching WinUI's Grid Height="{TemplateBinding MinHeight}".
-       Indeterminate: two rounded accent segments (40%/60% of the track length) sliding across on a 2s
-       loop with 0.4,0,0.6,1 easing, exactly per the WinUI Indeterminate storyboard; the track line is
-       hidden while indeterminate. Vertical orientation and ShowProgressText behaviors are kept. -->
   <ControlTheme x:Key="{x:Type ProgressBar}" TargetType="ProgressBar">
-    <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
-    <Setter Property="Background" Value="{DynamicResource ControlStrongStrokeColorDefaultBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ProgressBarForeground}" />
+    <Setter Property="Background" Value="{DynamicResource ProgressBarBackground}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarBorderThemeThickness}" />
-    <!-- WinUI ProgressBarCornerRadius -->
-    <Setter Property="CornerRadius" Value="1.5" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
-    <Setter Property="MinHeight" Value="{DynamicResource ProgressBarThemeMinHeight}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProgressBarBorderBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ProgressBarCornerRadius}" />
+    <Setter Property="MinHeight" Value="{DynamicResource ProgressBarMinHeight}" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate TargetType="ProgressBar">
@@ -122,14 +130,13 @@
       <Setter Property="Width" Value="{Binding $parent[ProgressBar].MinWidth}" />
       <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
-    <!-- WinUI ProgressBarTrackHeight: a 1px line centered within the 3px bar strip. -->
     <Style Selector="^:horizontal /template/ Border#ProgressBarTrack">
-      <Setter Property="Height" Value="1" />
+      <Setter Property="Height" Value="{DynamicResource ProgressBarTrackHeight}" />
       <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
     <Style Selector="^:vertical /template/ Border#ProgressBarTrack">
-      <Setter Property="Width" Value="1" />
+      <Setter Property="Width" Value="{DynamicResource ProgressBarTrackHeight}" />
       <Setter Property="HorizontalAlignment" Value="Center" />
       <Setter Property="VerticalAlignment" Value="Stretch" />
     </Style>
@@ -143,10 +150,10 @@
     </Style>
     <Style Selector="^:horizontal">
       <Setter Property="MinWidth" Value="200" />
-      <Setter Property="MinHeight" Value="3" />
+      <Setter Property="MinHeight" Value="{DynamicResource ProgressBarMinHeight}" />
     </Style>
     <Style Selector="^:vertical">
-      <Setter Property="MinWidth" Value="3" />
+      <Setter Property="MinWidth" Value="{DynamicResource ProgressBarMinHeight}" />
       <Setter Property="MinHeight" Value="200" />
     </Style>
     <Style Selector="^:vertical /template/ LayoutTransformControl#PART_LayoutTransformControl">
