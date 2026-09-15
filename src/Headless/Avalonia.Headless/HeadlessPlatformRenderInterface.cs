@@ -254,10 +254,10 @@ namespace Avalonia.Headless
                     var otherBounds = geometry.GetRenderBounds(null);
 
                     if (bounds.Contains(otherBounds))
-                        return IntersectionResult.FullyContains;
+                        return IntersectionResult.FullyInside;
 
                     if (otherBounds.Contains(bounds))
-                        return IntersectionResult.FullyInside;
+                        return IntersectionResult.FullyContains;
 
                     return IntersectionResult.Intersects;
                 }
@@ -371,6 +371,15 @@ namespace Avalonia.Headless
                         if (max < projection2.min || projection2.max < min)
                             return IntersectionResult.Empty;
                     }
+
+                    var bounds = GetRenderBounds(null);
+                    var otherBounds = geometry.GetRenderBounds(null);
+
+                    if (bounds.Contains(otherBounds))
+                        return IntersectionResult.FullyInside;
+
+                    if (otherBounds.Contains(bounds))
+                        return IntersectionResult.FullyContains;
 
                     return IntersectionResult.Intersects;
                 }

@@ -52,7 +52,7 @@ namespace Avalonia.Skia
                 return PathContainsCore(_pathCache.ExpandedPath, point);
             }
         }
-        
+
         /// <summary>
         /// Check Skia path if it contains a point.
         /// </summary>
@@ -95,7 +95,7 @@ namespace Avalonia.Skia
                 var closed = SKPathHelper.CreateClosedPath(path);
                 return new StreamGeometryImpl(closed, closed);
             }
-            
+
             return new StreamGeometryImpl(new SKPath(), null);
         }
 
@@ -174,22 +174,40 @@ namespace Avalonia.Skia
         public IntersectionResult GetFillIntersectionResult(IGeometryImpl geometry)
         {
             var other = geometry as GeometryImpl;
-            if (other == null || FillPath == null || other.FillPath == null)
+
+            if (other == null)
                 return IntersectionResult.Empty;
 
-            var region = new SKRegion(FillPath);
-            var otherRegion = new SKRegion(other.FillPath);
+            IntersectionResult result = HitTestPath(FillPath, other.FillPath);
+            var otherStroke = other._pathCache.ExpandedPath;
 
-            if(region.Contains(otherRegion))
-                return IntersectionResult.FullyInside;
+            if (result == IntersectionResult.Empty)
+            {
+                result = HitTestPath(FillPath, otherStroke);
+            }
 
-            if (otherRegion.Contains(region))
-                return IntersectionResult.FullyContains;
+            static IntersectionResult HitTestPath(SKPath? path1, SKPath? path2)
+            {
+                if (path1 == null || path2 == null)
+                    return IntersectionResult.Empty;
 
-            if (region.Intersects(otherRegion))
-                return IntersectionResult.Intersects;
+                var region = new SKRegion(path1);
+                var otherRegion = new SKRegion(path2);
 
-            return IntersectionResult.Empty;
+                if (region.Intersects(otherRegion) || region.Op(otherRegion, SKRegionOperation.Intersect))
+                {
+                    if (region.Contains(otherRegion))
+                        return IntersectionResult.FullyInside;
+
+                    if (otherRegion.Contains(region))
+                        return IntersectionResult.FullyContains;
+                    return IntersectionResult.Intersects;
+                }
+
+                return IntersectionResult.Empty;
+            }
+
+            return result;
         }
 
         private struct PathCache : IDisposable
@@ -198,7 +216,7 @@ namespace Avalonia.Skia
             private SKPath? _path, _cachedFor;
             private Rect? _renderBounds;
             private static readonly SKPath s_emptyPath = new();
-            
+
             public Rect RenderBounds => _renderBounds ??= (_path ?? _cachedFor ?? s_emptyPath).TightBounds.ToAvaloniaRect();
             public SKPath ExpandedPath => _path ?? s_emptyPath;
 
