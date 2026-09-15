@@ -634,6 +634,7 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     private Size? _minSize;
     private Size? _maxSize;
     private string? _title;
+    private string? _appId;
 
     private ZxdgToplevelDecorationV1? _decoration;
     // Disable SSD support completely and don't allow re-enabling it because we can't
@@ -664,6 +665,10 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         // Re-apply cached title on reconnect.
         if (_title != null)
             _xdgTopLevel.SetTitle(_title);
+
+        // Re-apply cached app id on reconnect.
+        if (_appId != null)
+            _xdgTopLevel.SetAppId(_appId);
 
         // Re-apply cached min/max if they were ever set on a previous
         // (now-dead) connection. The OnConnected commit below will
@@ -709,6 +714,12 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     {
         _title = title;
         _xdgTopLevel?.SetTitle(title ?? string.Empty);
+    }
+
+    public void SetAppId(string? appId)
+    {
+        _appId = appId;
+        _xdgTopLevel?.SetAppId(appId ?? string.Empty);
     }
 
     public void SetMinMaxSize(Size? minSize, Size? maxSize)
