@@ -11,6 +11,8 @@ namespace Avalonia.Win32
 {
     internal sealed class DragSource : IPlatformDragSource
     {
+        private static bool s_isDragging;
+
         public Task<DragDropEffects> DoDragDropAsync(
             PointerPressedEventArgs triggerEvent,
             IDataTransfer dataTransfer,
@@ -46,6 +48,13 @@ namespace Avalonia.Win32
 
         private static DragDropEffects StartDragDrop(IDataTransfer dataTransfer, DragDropEffects allowedEffects)
         {
+            // Touch messages are still dispatched during a drag, so another press can start a second one, which OLE rejects.
+            if (s_isDragging)
+            {
+                dataTransfer.Dispose();
+                return DragDropEffects.None;
+            }
+
             using var dataObject = new DataTransferToOleDataObjectWrapper(dataTransfer);
             using var src = new OleDragSource();
             var allowed = OleDropTarget.ConvertDropEffect(allowedEffects);
@@ -53,7 +62,16 @@ namespace Avalonia.Win32
             var objPtr = dataObject.GetNativeIntPtr<Win32Com.IDataObject>();
             var srcPtr = src.GetNativeIntPtr<Win32Com.IDropSource>();
 
-            UnmanagedMethods.DoDragDrop(objPtr, srcPtr, (int)allowed, out var finalEffect);
+            int finalEffect;
+            s_isDragging = true;
+            try
+            {
+                UnmanagedMethods.DoDragDrop(objPtr, srcPtr, (int)allowed, out finalEffect);
+            }
+            finally
+            {
+                s_isDragging = false;
+            }
             
             // Force releasing of internal wrapper to avoid memory leak, if drop target keeps com reference.
             dataObject.ReleaseDataTransfer();
