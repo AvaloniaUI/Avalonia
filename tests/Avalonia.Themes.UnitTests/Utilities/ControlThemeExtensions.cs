@@ -92,25 +92,40 @@ internal static class ControlThemeExtensions
 
         object? template = null;
 
-        if (styleBase.Setters.OfType<Setter>()
-                .FirstOrDefault(s => s.Property == TemplatedControl.TemplateProperty
-                                     || s.Property == WindowDrawnDecorations.TemplateProperty)?
-                .Value is { } setterValue)
-        {
-            if (setterValue is IControlTemplate or IWindowDrawnDecorationsTemplate)
-            {
-                template = setterValue;
-            }
-        }
-
-        // ContentControl derived controls inherit its template.
-        if (template is null && typeof(ContentControl).IsAssignableFrom(targetType))
-        {
-            template = TemplatedControl.TemplateProperty.GetDefaultValue(typeof(ContentControl))
-                       ?? throw new InvalidOperationException("ContentControl must always have default template");
-        }
+        ResolveTemplateInStyle(styleBase);
 
         return template;
+
+        void ResolveTemplateInStyle(StyleBase styleBase)
+        {
+            if (styleBase.Setters.OfType<Setter>()
+                            .FirstOrDefault(s => s.Property == TemplatedControl.TemplateProperty
+                                                 || s.Property == WindowDrawnDecorations.TemplateProperty)?
+                            .Value is { } setterValue)
+            {
+                if (setterValue is IControlTemplate or IWindowDrawnDecorationsTemplate)
+                {
+                    template = setterValue;
+                }
+            }
+
+            // ContentControl derived controls inherit its template.
+            if (template is null && typeof(ContentControl).IsAssignableFrom(targetType))
+            {
+                template = TemplatedControl.TemplateProperty.GetDefaultValue(typeof(ContentControl))
+                           ?? throw new InvalidOperationException("ContentControl must always have default template");
+            }
+
+            if (template == null && styleBase is ControlTheme controlTheme)
+            {
+                // If we don't find any template in the current StyleBase
+                // we look for one in its BaseOn style
+                var baseStyle = controlTheme.BasedOn;
+
+                if (baseStyle != null)
+                    ResolveTemplateInStyle(baseStyle);
+            }
+        }
     }
 
     private static Type? ResolveTargetType(StyleBase styleBase)
