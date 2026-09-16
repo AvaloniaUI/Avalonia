@@ -339,8 +339,6 @@ internal partial class RenderDataStream
 
     private static IntersectionResult? HitTestRectangle(IBrush? serverBrush, IPen? clientPen, RoundedRect rect, Geometry geometry)
     {
-        var strokeThicknessAdjustment = (clientPen?.Thickness / 2) ?? 0;
-
         if (rect.IsRounded)
         {
             return HitTestGeometry(serverBrush, clientPen, geometry.PlatformImpl, new RectangleGeometry(rect.Rect, rect.RadiiTopLeft.X, rect.RadiiTopLeft.Y).PlatformImpl);
