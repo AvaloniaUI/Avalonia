@@ -104,7 +104,27 @@ internal abstract class CompositionGlTexture : ICompositionGlTexture
         // attempts to use the texture before destroying it
         if (_imported != null)
         {
-            // No need to wait for import / last present since calls are serialized on the compositor side anyway
+            try
+            {
+                await _imported.ImportCompleted;
+            }
+            catch
+            {
+                // Ignore
+            }
+
+            if (_lastPresent != null)
+            {
+                try
+                {
+                    await _lastPresent;
+                }
+                catch
+                {
+                    // Ignore
+                }
+            }
+
             try
             {
                 await _imported.DisposeAsync();
