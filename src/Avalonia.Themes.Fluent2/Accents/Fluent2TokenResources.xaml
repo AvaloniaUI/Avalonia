@@ -1,12 +1,12 @@
 <!--
-  Fluent 2 (WinUI 3) token brushes, elevation gradient borders and acrylic fallbacks.
-  Ported from Uno.UI Common_themeresources_any.xaml, TextBox_themeresources.xaml and
-  AcrylicBrush_themeresources.xaml (MUX Reference, tag winui3/release/1.5.2).
-  Variant roles are swapped relative to the UWP/Uno source (UWP "Light" -> Avalonia "Default",
-  UWP "Default" -> Avalonia "Dark").
-  Acrylic keys are shipped as their solid FallbackColor equivalents (WinUI's own fallback mode);
-  translucent acrylic is a possible later enhancement.
-  Accent-family brushes use DynamicResource so palette/OS accent changes propagate live.
+Fluent 2 (WinUI 3) token brushes, elevation gradient borders and acrylic fallbacks.
+Ported from Uno.UI Common_themeresources_any.xaml, TextBox_themeresources.xaml and
+AcrylicBrush_themeresources.xaml (MUX Reference, tag winui3/release/1.5.2).
+Variant roles are swapped relative to the UWP/Uno source (UWP "Light" -> Avalonia "Default",
+UWP "Default" -> Avalonia "Dark").
+Acrylic keys are shipped as their solid FallbackColor equivalents (WinUI's own fallback mode);
+translucent acrylic is a possible later enhancement.
+Accent-family brushes use DynamicResource so palette/OS accent changes propagate live.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -98,6 +98,7 @@
       <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="{StaticResource SystemFillColorNeutralBackground}" />
       <SolidColorBrush x:Key="SystemFillColorSolidAttentionBackgroundBrush" Color="{StaticResource SystemFillColorSolidAttentionBackground}" />
       <SolidColorBrush x:Key="SystemFillColorSolidNeutralBackgroundBrush" Color="{StaticResource SystemFillColorSolidNeutralBackground}" />
+      <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
 
       <!-- Elevation borders. Light: strong edge flipped to the bottom via scaleY(-1). -->
       <LinearGradientBrush x:Key="ControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,3" TransformOrigin="50%,50%">
@@ -125,7 +126,7 @@
         </LinearGradientBrush.GradientStops>
       </LinearGradientBrush>
       <!-- Text input borders: hairline with a stronger bottom edge; focused variant paints the
-           2px bottom edge in accent (two stops at the same offset create the hard edge). -->
+      2px bottom edge in accent (two stops at the same offset create the hard edge). -->
       <LinearGradientBrush x:Key="TextControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,2" TransformOrigin="50%,50%">
         <LinearGradientBrush.Transform>
           <ScaleTransform ScaleY="-1" />
@@ -244,6 +245,7 @@
       <SolidColorBrush x:Key="SystemFillColorNeutralBackgroundBrush" Color="{StaticResource SystemFillColorNeutralBackground}" />
       <SolidColorBrush x:Key="SystemFillColorSolidAttentionBackgroundBrush" Color="{StaticResource SystemFillColorSolidAttentionBackground}" />
       <SolidColorBrush x:Key="SystemFillColorSolidNeutralBackgroundBrush" Color="{StaticResource SystemFillColorSolidNeutralBackground}" />
+      <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
 
       <!-- Elevation borders. Dark: the standard control border keeps the stronger edge at the top. -->
       <LinearGradientBrush x:Key="ControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,3">

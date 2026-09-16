@@ -18,10 +18,10 @@
     </Border>
   </Design.PreviewWith>
 
-  <Thickness x:Key="ScrollBarHorizontalDecreaseMargin">4,0,0,0</Thickness>
-  <Thickness x:Key="ScrollBarHorizontalIncreaseMargin">0,0,4,0</Thickness>
-  <Thickness x:Key="ScrollBarVerticalDecreaseMargin">0,4,0,0</Thickness>
-  <Thickness x:Key="ScrollBarVerticalIncreaseMargin">0,0,0,4</Thickness>
+  <Thickness x:Key="ScrollBarHorizontalDecreaseMargin">4,0,2,0</Thickness>
+  <Thickness x:Key="ScrollBarHorizontalIncreaseMargin">2,0,4,0</Thickness>
+  <Thickness x:Key="ScrollBarVerticalDecreaseMargin">0,4,0,2</Thickness>
+  <Thickness x:Key="ScrollBarVerticalIncreaseMargin">0,2,0,4</Thickness>
   <x:Double x:Key="ScrollBarButtonArrowScalePressed">0.875</x:Double>
   <x:Double x:Key="ScrollBarThumbThickness">6</x:Double>
   <x:Double x:Key="ScrollBarThumbMinLength">30</x:Double>

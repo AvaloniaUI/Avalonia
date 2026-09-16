@@ -9,7 +9,7 @@
   </Design.PreviewWith>
 
   <ControlTheme x:Key="{x:Type ContentPage}" TargetType="ContentPage">
-    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ApplicationPageBackgroundThemeBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     <Setter Property="Template">
       <ControlTemplate>

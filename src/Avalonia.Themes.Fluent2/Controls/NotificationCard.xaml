@@ -12,125 +12,151 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- WinUI reference: InfoBar.xaml + InfoBar_themeresources.xaml, winui3/release/1.4.2 (via Uno.UI.FluentTheme.v2).
-       InfoBar idiom: 48px min-height card, ControlCornerRadius, 1px CardStrokeColorDefault border
-       (BackgroundSizing InnerBorderEdge), severity tint background (SystemFillColor*BackgroundBrush) drawn
-       over a SolidBackgroundFillColorBase underlay (the attention tint is translucent by design), a 16px
-       severity badge icon (SystemFillColor*Brush) and a 32px subtle-fill close button with a 10px dismiss
-       glyph. Metrics per InfoBar_themeresources: ContentRootPadding 16,0,0,0; IconMargin 0,16,14,16;
-       PanelMargin 0,0,16,0. The v1 severity pseudo-class mechanism (:information/:success/:warning/:error)
-       is kept and retargeted from the old 4px header bar to the card background + badge icon.
-       The v1 NotificationCard* brush aliases live in Accents/FluentControlResources.xaml (shared file) and
-       still carry v1 values; this template consumes the Fluent 2 tokens directly (see conversion notes). -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="NotificationCardErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardErrorSeverityIconBackground" ResourceKey="SystemFillColorCriticalBrush" />
+      <StaticResource x:Key="NotificationCardWarningSeverityIconBackground" ResourceKey="SystemFillColorCautionBrush" />
+      <StaticResource x:Key="NotificationCardSuccessSeverityIconBackground" ResourceKey="SystemFillColorSuccessBrush" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityIconBackground" ResourceKey="SystemFillColorAttentionBrush" />
+      <StaticResource x:Key="NotificationCardErrorSeverityIconForeground" ResourceKey="TextFillColorInverseBrush" />
+      <StaticResource x:Key="NotificationCardWarningSeverityIconForeground" ResourceKey="TextFillColorInverseBrush" />
+      <StaticResource x:Key="NotificationCardSuccessSeverityIconForeground" ResourceKey="TextFillColorInverseBrush" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityIconForeground" ResourceKey="TextFillColorInverseBrush" />
+      <StaticResource x:Key="NotificationCardTitleForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="NotificationCardMessageForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="NotificationCardHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
+      <StaticResource x:Key="NotificationCardBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="NotificationCardErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardErrorSeverityIconBackground" ResourceKey="SystemFillColorCriticalBrush" />
+      <StaticResource x:Key="NotificationCardWarningSeverityIconBackground" ResourceKey="SystemFillColorCautionBrush" />
+      <StaticResource x:Key="NotificationCardSuccessSeverityIconBackground" ResourceKey="SystemFillColorSuccessBrush" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityIconBackground" ResourceKey="SystemFillColorAttentionBrush" />
+      <StaticResource x:Key="NotificationCardErrorSeverityIconForeground" ResourceKey="TextFillColorInverseBrush" />
+      <StaticResource x:Key="NotificationCardWarningSeverityIconForeground" ResourceKey="TextFillColorInverseBrush" />
+      <StaticResource x:Key="NotificationCardSuccessSeverityIconForeground" ResourceKey="TextFillColorInverseBrush" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityIconForeground" ResourceKey="TextFillColorInverseBrush" />
+      <StaticResource x:Key="NotificationCardTitleForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="NotificationCardMessageForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="NotificationCardHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
+      <StaticResource x:Key="NotificationCardBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
 
-  <!-- Severity badge icons: 16x16 filled circle with the glyph cut out (even-odd fill),
-       approximating the Segoe Fluent InfoBar badge glyphs (F13F/F13E/F13C/F13D over F136). -->
-  <StreamGeometry x:Key="NotificationCardInformationIconGeometry">M8,0 A8,8 0 1 0 8,16 A8,8 0 1 0 8,0 Z M8,3.25 A1.25,1.25 0 1 0 8,5.75 A1.25,1.25 0 1 0 8,3.25 Z M7,7 L9,7 L9,12.75 L7,12.75 Z</StreamGeometry>
-  <StreamGeometry x:Key="NotificationCardSuccessIconGeometry">M8,0 A8,8 0 1 0 8,16 A8,8 0 1 0 8,0 Z M4.5,8.45 L7.05,11 L11.5,6.55 L10.44,5.49 L7.05,8.88 L5.56,7.39 Z</StreamGeometry>
-  <StreamGeometry x:Key="NotificationCardWarningIconGeometry">M8,0 A8,8 0 1 0 8,16 A8,8 0 1 0 8,0 Z M7,3.75 L9,3.75 L9,9.5 L7,9.5 Z M8,10.75 A1.25,1.25 0 1 0 8,13.25 A1.25,1.25 0 1 0 8,10.75 Z</StreamGeometry>
-  <StreamGeometry x:Key="NotificationCardErrorIconGeometry">M8,0 A8,8 0 1 0 8,16 A8,8 0 1 0 8,0 Z M4.22,5.28 L6.94,8 L4.22,10.72 L5.28,11.78 L8,9.06 L10.72,11.78 L11.78,10.72 L9.06,8 L11.78,5.28 L10.72,4.22 L8,6.94 L5.28,4.22 Z</StreamGeometry>
-  <StreamGeometry x:Key="NotificationCardDismissIconGeometry">M0.75,0.75 L9.25,9.25 M9.25,0.75 L0.75,9.25</StreamGeometry>
+  <Thickness x:Key="NotificationCardBorderThickness">1</Thickness>
+  <x:Double x:Key="NotificationCardWidth">350</x:Double>
+  <x:Double x:Key="NotificationCardMinHeight">48</x:Double>
+  <x:Double x:Key="NotificationCardCloseButtonSize">38</x:Double>
+  <x:Double x:Key="NotificationCardCloseButtonIconSize">14</x:Double>
+  <Thickness x:Key="NotificationCardContentRootPadding">16,0,0,0</Thickness>
+  <Thickness x:Key="NotificationCardIconMargin">0,16,14,16</Thickness>
+  <x:Double x:Key="NotificationCardIconFontSize">16</x:Double>
+  <Thickness x:Key="NotificationCardPanelMargin">0,0,16,0</Thickness>
 
-  <!-- InfoBar close button: subtle-fill 32px square, ControlCornerRadius, 83ms fill cross-fade. -->
-  <ControlTheme x:Key="Fluent2NotificationCardCloseButtonTheme" TargetType="Button">
-    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
-    <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <Setter Property="Padding" Value="0" />
-    <Setter Property="HorizontalContentAlignment" Value="Center" />
-    <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="Template">
-      <ControlTemplate>
-        <ContentPresenter x:Name="PART_ContentPresenter"
-                          Background="{TemplateBinding Background}"
-                          BackgroundSizing="{TemplateBinding BackgroundSizing}"
-                          BorderBrush="{TemplateBinding BorderBrush}"
-                          BorderThickness="{TemplateBinding BorderThickness}"
-                          CornerRadius="{TemplateBinding CornerRadius}"
-                          Content="{TemplateBinding Content}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          Padding="{TemplateBinding Padding}"
-                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
-          <ContentPresenter.Transitions>
-            <Transitions>
-              <BrushTransition Property="Background" Duration="{DynamicResource ControlFasterAnimationDuration}" />
-            </Transitions>
-          </ContentPresenter.Transitions>
-        </ContentPresenter>
-      </ControlTemplate>
-    </Setter>
+  <StreamGeometry x:Key="NotificationCardInformationIconGeometry">M12 1.999c5.524 0 10.002 4.478 10.002 10.002 0 5.523-4.478 10.001-10.002 10.001-5.524 0-10.002-4.478-10.002-10.001C1.998 6.477 6.476 1.999 12 1.999Zm-.004 8.25a1 1 0 0 0-.992.885l-.007.116.003 5.502.007.117a1 1 0 0 0 1.987-.002L13 16.75l-.003-5.501-.007-.117a1 1 0 0 0-.994-.882ZM12 6.5a1.251 1.251 0 1 0 0 2.503A1.251 1.251 0 0 0 12 6.5Z</StreamGeometry>
+  <StreamGeometry x:Key="NotificationCardSuccessIconGeometry">M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.22 6.97-4.47 4.47-1.97-1.97a.75.75 0 0 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.06 0l5-5a.75.75 0 1 0-1.06-1.06Z</StreamGeometry>
+  <StreamGeometry x:Key="NotificationCardWarningIconGeometry">M12 2c5.523 0 10 4.478 10 10s-4.477 10-10 10S2 17.522 2 12 6.477 2 12 2Zm.002 13.004a.999.999 0 1 0 0 1.997.999.999 0 0 0 0-1.997ZM12 7a1 1 0 0 0-.993.884L11 8l.002 5.001.007.117a1 1 0 0 0 1.986 0l.007-.117L13 8l-.007-.117A1 1 0 0 0 12 7Z</StreamGeometry>
+  <StreamGeometry x:Key="NotificationCardErrorIconGeometry">M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.53 6.47-.084-.073a.75.75 0 0 0-.882-.007l-.094.08L12 10.939l-2.47-2.47-.084-.072a.75.75 0 0 0-.882-.007l-.094.08-.073.084a.75.75 0 0 0-.007.882l.08.094L10.939 12l-2.47 2.47-.072.084a.75.75 0 0 0-.007.882l.08.094.084.073a.75.75 0 0 0 .882.007l.094-.08L12 13.061l2.47 2.47.084.072a.75.75 0 0 0 .882.007l.094-.08.073-.084a.75.75 0 0 0 .007-.882l-.08-.094L13.061 12l2.47-2.47.072-.084a.75.75 0 0 0 .007-.882l-.08-.094-.084-.073.084.073Z</StreamGeometry>
+  <StreamGeometry x:Key="NotificationCardDismissIconGeometry">m4.21 4.387.083-.094a1 1 0 0 1 1.32-.083l.094.083L12 10.585l6.293-6.292a1 1 0 1 1 1.414 1.414L13.415 12l6.292 6.293a1 1 0 0 1 .083 1.32l-.083.094a1 1 0 0 1-1.32.083l-.094-.083L12 13.415l-6.293 6.292a1 1 0 0 1-1.414-1.414L10.585 12 4.293 5.707a1 1 0 0 1-.083-1.32l.083-.094-.083.094Z</StreamGeometry>
 
-    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-    </Style>
-    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-    </Style>
+  <ControlTheme x:Key="Fluent2NotificationCardCloseButtonTheme" TargetType="Button"  BasedOn="{StaticResource FluentButtonTheme}">
+    <Setter Property="Width" Value="{StaticResource NotificationCardCloseButtonSize}" />
+    <Setter Property="Height" Value="{StaticResource NotificationCardCloseButtonSize}" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="Margin" Value="5" />
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type NotificationCard}" TargetType="NotificationCard">
     <Setter Property="UseLayoutRounding" Value="True"/>
-    <Setter Property="Width" Value="350"/>
-    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-    <Setter Property="RenderTransformOrigin" Value="50%,75%"/>
-    <!-- InfoBarBorderThickness=1, InfoBarBorderBrush=CardStrokeColorDefaultBrush -->
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
-    <!-- Like WinUI, Background is transparent by default and overrides the severity tint when set. -->
+    <Setter Property="Width" Value="{DynamicResource NotificationCardWidth}"/>
     <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource NotificationCardBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource NotificationCardBorderThickness}" />
+    <Setter Property="RenderTransformOrigin" Value="50%,75%"/>
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <LayoutTransformControl Name="PART_LayoutTransformControl" UseRenderTransform="True">
-          <!-- Solid underlay: the attention severity tint is translucent and is designed to sit on the
-               solid app background (mica fallback). A soft ambient shadow is kept from v1 because these
-               cards float above app content, unlike an inline WinUI InfoBar. -->
-          <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
-                  CornerRadius="{TemplateBinding CornerRadius}"
-                  BoxShadow="0 4 8 0 #26000000">
+          <Border BoxShadow="0 4 8 0 #26000000">
             <Border x:Name="CardBorder"
-                    Background="{DynamicResource SystemFillColorAttentionBackgroundBrush}"
+                    Background="{DynamicResource NotificationCardInformationalSeverityBackgroundBrush}"
                     BackgroundSizing="InnerBorderEdge"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     ClipToBounds="True">
-              <DockPanel>
-                <!-- v1 severity header bar, retired by the InfoBar look but kept for compatibility. -->
-                <Panel x:Name="PART_HeaderBar" Height="4" IsVisible="False" Background="{DynamicResource NotificationCardProgressBackgroundBrush}" DockPanel.Dock="Top" />
-                <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
-                  <Grid ColumnDefinitions="Auto,*,Auto" MinHeight="48" Margin="16,0,0,0">
-                    <Path x:Name="SeverityIcon"
-                          Grid.Column="0"
-                          Width="16" Height="16"
-                          Margin="0,16,14,16"
-                          VerticalAlignment="Top"
-                          Stretch="Uniform"
-                          Data="{StaticResource NotificationCardInformationIconGeometry}"
-                          Fill="{DynamicResource SystemFillColorAttentionBrush}" />
-                    <ContentPresenter Name="PART_ContentPresenter"
-                                      Grid.Column="1"
-                                      Margin="0,0,16,0"
-                                      Content="{TemplateBinding Content}" />
-                    <Button x:Name="CloseButton"
-                            Grid.Column="2"
-                            Theme="{StaticResource Fluent2NotificationCardCloseButtonTheme}"
-                            NotificationCard.CloseOnClick="True"
-                            Width="32" Height="32"
-                            Margin="8"
-                            VerticalAlignment="Top">
-                      <Path Width="10" Height="10"
-                            Stretch="Uniform"
-                            Data="{StaticResource NotificationCardDismissIconGeometry}"
-                            Stroke="{DynamicResource TextFillColorPrimaryBrush}"
-                            StrokeThickness="1" />
-                    </Button>
-                  </Grid>
-                </Border>
-              </DockPanel>
+              <Border MinHeight="{DynamicResource NotificationCardMinHeight}"
+                      Background="{TemplateBinding Background}"
+                      CornerRadius="{TemplateBinding CornerRadius}"
+                      Padding="{StaticResource NotificationCardContentRootPadding}">
+                <Grid ColumnDefinitions="Auto,*,Auto"
+                      MinHeight="48">
+                  <Path x:Name="SeverityIcon"
+                        Grid.Column="0"
+                        Width="{DynamicResource NotificationCardIconFontSize}"
+                        Height="{DynamicResource NotificationCardIconFontSize}"
+                        Margin="{StaticResource NotificationCardIconMargin}"
+                        VerticalAlignment="Top"
+                        Stretch="Uniform"
+                        Data="{StaticResource NotificationCardInformationIconGeometry}"
+                        Fill="{DynamicResource NotificationCardInformationalSeverityIconBackground}" />
+                  <ContentPresenter Name="PART_ContentPresenter"
+                                    Grid.Column="1"
+                                    Margin="{StaticResource NotificationCardPanelMargin}"
+                                    Content="{TemplateBinding Content}" />
+                  <Button x:Name="CloseButton"
+                          Grid.Column="2"
+                          Theme="{StaticResource Fluent2NotificationCardCloseButtonTheme}"
+                          NotificationCard.CloseOnClick="True"
+                          VerticalAlignment="Top">
+                    <Button.Resources>
+                      <ResourceDictionary>
+                        <ResourceDictionary.ThemeDictionaries>
+                          <ResourceDictionary x:Key="Default">
+                            <StaticResource x:Key="ButtonBackground" ResourceKey="CommandBarButtonBackground" />
+                            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="CommandBarButtonBackgroundPointerOver" />
+                            <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="CommandBarButtonBackgroundPressed" />
+                            <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="CommandBarButtonBackgroundDisabled" />
+                            <StaticResource x:Key="ButtonForeground" ResourceKey="CommandBarButtonForeground" />
+                            <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="CommandBarButtonForegroundPointerOver" />
+                            <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="CommandBarButtonForegroundPressed" />
+                            <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="CommandBarButtonForegroundDisabled" />
+                            <StaticResource x:Key="ButtonBorderBrush" ResourceKey="CommandBarButtonBorderBrush" />
+                            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="CommandBarButtonBorderBrushPointerOver" />
+                            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="CommandBarButtonBorderBrushPressed" />
+                            <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="CommandBarButtonBorderBrushDisabled" />
+                          </ResourceDictionary>
+                          <ResourceDictionary x:Key="Dark">
+                            <StaticResource x:Key="ButtonBackground" ResourceKey="CommandBarButtonBackground" />
+                            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="CommandBarButtonBackgroundPointerOver" />
+                            <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="CommandBarButtonBackgroundPressed" />
+                            <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="CommandBarButtonBackgroundDisabled" />
+                            <StaticResource x:Key="ButtonForeground" ResourceKey="CommandBarButtonForeground" />
+                            <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="CommandBarButtonForegroundPointerOver" />
+                            <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="CommandBarButtonForegroundPressed" />
+                            <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="CommandBarButtonForegroundDisabled" />
+                            <StaticResource x:Key="ButtonBorderBrush" ResourceKey="CommandBarButtonBorderBrush" />
+                            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="CommandBarButtonBorderBrushPointerOver" />
+                            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="CommandBarButtonBorderBrushPressed" />
+                            <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="CommandBarButtonBorderBrushDisabled" />
+                          </ResourceDictionary>
+                        </ResourceDictionary.ThemeDictionaries>
+                      </ResourceDictionary>
+                    </Button.Resources>
+                    <PathIcon Width="{StaticResource NotificationCardCloseButtonIconSize}"
+                              Height="{StaticResource NotificationCardCloseButtonIconSize}"
+                              Data="{StaticResource NotificationCardDismissIconGeometry}" />
+                  </Button>
+                </Grid>
+              </Border>
             </Border>
           </Border>
         </LayoutTransformControl>
@@ -187,38 +213,38 @@
       </Style.Animations>
     </Style>
 
-    <!-- Severity states, per InfoBar_themeresources:
-         background = SystemFillColor*BackgroundBrush, badge icon = SystemFillColor*Brush. -->
+    <!-- Severity states, per NotificationCard_themeresources:
+    background = SystemFillColor*BackgroundBrush, badge icon = SystemFillColor*Brush. -->
     <Style Selector="^:information /template/ Border#CardBorder">
-      <Setter Property="Background" Value="{DynamicResource SystemFillColorAttentionBackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource NotificationCardInformationalSeverityBackgroundBrush}"/>
     </Style>
     <Style Selector="^:information /template/ Path#SeverityIcon">
       <Setter Property="Data" Value="{StaticResource NotificationCardInformationIconGeometry}"/>
-      <Setter Property="Fill" Value="{DynamicResource SystemFillColorAttentionBrush}"/>
+      <Setter Property="Fill" Value="{DynamicResource NotificationCardInformationalSeverityIconBackground}"/>
     </Style>
 
     <Style Selector="^:success /template/ Border#CardBorder">
-      <Setter Property="Background" Value="{DynamicResource SystemFillColorSuccessBackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource NotificationCardSuccessSeverityBackgroundBrush}"/>
     </Style>
     <Style Selector="^:success /template/ Path#SeverityIcon">
       <Setter Property="Data" Value="{StaticResource NotificationCardSuccessIconGeometry}"/>
-      <Setter Property="Fill" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+      <Setter Property="Fill" Value="{DynamicResource NotificationCardSuccessSeverityIconBackground}"/>
     </Style>
 
     <Style Selector="^:warning /template/ Border#CardBorder">
-      <Setter Property="Background" Value="{DynamicResource SystemFillColorCautionBackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource NotificationCardWarningSeverityBackgroundBrush}"/>
     </Style>
     <Style Selector="^:warning /template/ Path#SeverityIcon">
       <Setter Property="Data" Value="{StaticResource NotificationCardWarningIconGeometry}"/>
-      <Setter Property="Fill" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+      <Setter Property="Fill" Value="{DynamicResource NotificationCardWarningSeverityIconBackground}"/>
     </Style>
 
     <Style Selector="^:error /template/ Border#CardBorder">
-      <Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource NotificationCardErrorSeverityBackgroundBrush}"/>
     </Style>
     <Style Selector="^:error /template/ Path#SeverityIcon">
       <Setter Property="Data" Value="{StaticResource NotificationCardErrorIconGeometry}"/>
-      <Setter Property="Fill" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+      <Setter Property="Fill" Value="{DynamicResource NotificationCardErrorSeverityIconBackground}"/>
     </Style>
   </ControlTheme>
 </ResourceDictionary>
