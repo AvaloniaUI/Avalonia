@@ -115,15 +115,19 @@ namespace Avalonia.FreeDesktop
             if (_isDisposed || _connection is null)
                 return;
 
-            if (!_serviceConnected && newOwner is not null)
+            if (newOwner is not null)
             {
-                _serviceConnected = true;
-                _statusNotifierWatcher = new StatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
+                if (!_serviceConnected)
+                {
+                    _serviceConnected = true;
+                    _statusNotifierWatcher = new StatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
+                }
 
+                // A new watcher can take the name with no gap. It does not know the item, so register again.
                 if (_isVisible)
                     CreateTrayIcon();
             }
-            else if (_serviceConnected & newOwner is null)
+            else if (_serviceConnected)
             {
                 DestroyTrayIcon();
                 _serviceConnected = false;
