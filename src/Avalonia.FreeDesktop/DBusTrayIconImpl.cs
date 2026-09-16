@@ -151,18 +151,6 @@ namespace Avalonia.FreeDesktop
 
             try
             {
-                // Keep the name after a hide. A new id shows a new item to the host.
-                if (_sysTrayServiceName is null)
-                {
-#if NET5_0_OR_GREATER
-                    var pid = Environment.ProcessId;
-#else
-                    var pid = Process.GetCurrentProcess().Id;
-#endif
-                    var tid = s_trayIconInstanceId++;
-                    _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
-                }
-
                 while (_sysTrayServiceNameRelease is { } release)
                 {
                     await release;
@@ -172,7 +160,24 @@ namespace Avalonia.FreeDesktop
                         return;
                 }
 
-                request = _sysTrayServiceNameRequest ??= _connection.RequestNameAsync(_sysTrayServiceName);
+                if (_sysTrayServiceNameRequest is null)
+                {
+                    // Keep the name after a hide. A new id shows a new item to the host.
+                    if (_sysTrayServiceName is null)
+                    {
+#if NET5_0_OR_GREATER
+                        var pid = Environment.ProcessId;
+#else
+                        var pid = Process.GetCurrentProcess().Id;
+#endif
+                        var tid = s_trayIconInstanceId++;
+                        _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
+                    }
+
+                    _sysTrayServiceNameRequest = RequestTrayServiceNameAsync(_connection, _sysTrayServiceName);
+                }
+
+                request = _sysTrayServiceNameRequest;
                 await request;
 
                 // A hide while the bus answers queues the release after this line.
@@ -197,17 +202,30 @@ namespace Avalonia.FreeDesktop
             }
             catch (Exception e)
             {
-                // Clear only this request, and only if it did not complete. Tmds.DBus keeps a refused
-                // name registered on the connection, so the next call asks for a new name.
+                // Clear only this request, and only if it did not complete. The next call then asks for
+                // the name again.
                 if (request is { IsCompletedSuccessfully: false } && ReferenceEquals(_sysTrayServiceNameRequest, request))
-                {
                     _sysTrayServiceNameRequest = null;
-                    _sysTrayServiceName = null;
-                }
 
                 if (!_isDisposed)
                     Logger.TryGet(LogEventLevel.Error, "DBUS")
                         ?.Log(this, "Unable to register the system tray icon.\n{Exception}", e);
+            }
+        }
+
+        private async Task RequestTrayServiceNameAsync(DBusConnection connection, string name)
+        {
+            try
+            {
+                await connection.RequestNameAsync(name);
+            }
+            catch
+            {
+                // Tmds.DBus keeps a refused name registered on the connection. Use a new name next time,
+                // also when a hide cleared this request.
+                if (_sysTrayServiceName == name)
+                    _sysTrayServiceName = null;
+                throw;
             }
         }
 
