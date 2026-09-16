@@ -9,6 +9,7 @@ on:
       - 'xpf/**'
       - '!release/latest'
   pull_request:
+  merge_group:
   workflow_dispatch:
 
 permissions:
@@ -143,9 +144,10 @@ jobs:
   publish-nightly:
     name: Publish Nightly NuGet Packages
     needs: [linux, windows, macos, branch-info]
-    # Everything except pull requests and release/x.y.z branches (release/x.y ones are nightlies too).
+    # Everything except pull requests, merge queue runs and release/x.y.z branches (release/x.y ones are nightlies too).
     if: >-
       github.event_name != 'pull_request'
+      && github.event_name != 'merge_group'
       && needs.branch-info.outputs.is-release != 'true'
       && vars.NIGHTLY_FEED_UPLOAD_URL != ''
     runs-on: ubuntu-24.04
@@ -170,6 +172,7 @@ jobs:
     needs: [linux, windows, macos, branch-info]
     if: >-
       github.event_name != 'pull_request'
+      && github.event_name != 'merge_group'
       && needs.branch-info.outputs.is-release == 'true'
     runs-on: ubuntu-24.04
     environment: release
