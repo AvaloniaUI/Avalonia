@@ -139,7 +139,7 @@ namespace Avalonia.FreeDesktop
 
             try
             {
-                // Keep the name for the life of the icon. A new id shows a new item to the host.
+                // Keep the name after a hide. A new id shows a new item to the host.
                 if (_sysTrayServiceName is null)
                 {
 #if NET5_0_OR_GREATER
@@ -185,10 +185,13 @@ namespace Avalonia.FreeDesktop
             }
             catch (Exception e)
             {
-                // Clear only this request, and only if it did not complete. The next call then asks for
-                // the name again.
+                // Clear only this request, and only if it did not complete. Tmds.DBus keeps a refused
+                // name registered on the connection, so the next call asks for a new name.
                 if (request is { IsCompletedSuccessfully: false } && ReferenceEquals(_sysTrayServiceNameRequest, request))
+                {
                     _sysTrayServiceNameRequest = null;
+                    _sysTrayServiceName = null;
+                }
 
                 if (!_isDisposed)
                     Logger.TryGet(LogEventLevel.Error, "DBUS")
