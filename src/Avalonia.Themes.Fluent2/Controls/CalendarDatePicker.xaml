@@ -7,7 +7,7 @@
       <CalendarDatePicker Width="200" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
     </Border>
   </Design.PreviewWith>
-  
+
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="CalendarDatePickerForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -48,7 +48,7 @@
       <StaticResource x:Key="CalendarDatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
-  
+
   <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
   <x:Double x:Key="CalendarDatePickerCurrentDayFontSize">12</x:Double>
   <x:Double x:Key="CalendarDatePickerMinHeight">32</x:Double>
@@ -171,10 +171,6 @@
                      WindowManagerAddShadowHint="False"
                      PlacementTarget="{TemplateBinding}"
                      IsLightDismissEnabled="True">
-                <!-- WinUI 3 flyout chrome: OverlayCornerRadius surface with the flyout stroke and
-                     the acrylic fallback fill; the calendar inside draws no chrome of its own.
-                     There are no CalendarDatePicker flyout aliases in this theme, so the Fluent 2
-                     tokens are referenced directly. -->
                 <Border Name="PopupBorder"
                         Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
                         BackgroundSizing="InnerBorderEdge"
@@ -189,7 +185,9 @@
                             SelectedDate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedDate, Mode=TwoWay}"
                             DisplayDate="{TemplateBinding DisplayDate}"
                             DisplayDateStart="{TemplateBinding DisplayDateStart}"
-                            DisplayDateEnd="{TemplateBinding DisplayDateEnd}" />
+                            DisplayDateEnd="{TemplateBinding DisplayDateEnd}"
+                            IsWeekNumberVisible="{TemplateBinding IsWeekNumberVisible}"
+                            WeekNumberRule="{TemplateBinding WeekNumberRule}" />
                 </Border>
               </Popup>
             </Grid>

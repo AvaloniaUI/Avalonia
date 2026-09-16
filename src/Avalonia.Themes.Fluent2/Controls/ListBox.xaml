@@ -25,9 +25,6 @@
 
   <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
 
-  <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox" BasedOn="{StaticResource FluentListViewTheme}">
-  </ControlTheme>
-
   <ControlTheme x:Key="FluentListViewTheme" TargetType="ListBox">
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     <Setter Property="Background" Value="Transparent" />
@@ -63,6 +60,8 @@
       </ControlTemplate>
     </Setter>
   </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox" BasedOn="{StaticResource FluentListViewTheme}"/>
 
   <ControlTheme x:Key="FluentListBoxTheme" TargetType="ListBox">
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
