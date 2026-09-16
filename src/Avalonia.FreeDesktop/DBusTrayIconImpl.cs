@@ -127,16 +127,24 @@ namespace Avalonia.FreeDesktop
                 if (_isVisible)
                     CreateTrayIcon();
             }
-            else if (_serviceConnected)
+            else
             {
-                DestroyTrayIcon();
-                _serviceConnected = false;
+                if (_serviceConnected)
+                {
+                    DestroyTrayIcon();
+                    _serviceConnected = false;
+                }
+
+                // Get the name before a watcher comes. A new watcher scans the bus, and it adds a second
+                // item if it finds the object before the connection owns the name.
+                if (_isVisible)
+                    CreateTrayIcon();
             }
         }
 
         private async void CreateTrayIcon()
         {
-            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _statusNotifierWatcher is null)
+            if (_connection is null || _isDisposed || _statusNotifierItemDbusObj is null)
                 return;
 
             Task? request = null;
@@ -160,7 +168,7 @@ namespace Avalonia.FreeDesktop
                     await release;
                     if (ReferenceEquals(_sysTrayServiceNameRelease, release))
                         _sysTrayServiceNameRelease = null;
-                    if (!ShouldShowTrayIcon)
+                    if (!ShouldOwnName)
                         return;
                 }
 
@@ -168,7 +176,7 @@ namespace Avalonia.FreeDesktop
                 await request;
 
                 // A hide while the bus answers queues the release after this line.
-                if (!ShouldShowTrayIcon || !ReferenceEquals(_sysTrayServiceNameRequest, request))
+                if (!ShouldShowTrayIcon || _statusNotifierWatcher is null || !ReferenceEquals(_sysTrayServiceNameRequest, request))
                     return;
 
                 // A host that scans the bus adds a second item if the object is exported before the
@@ -204,7 +212,8 @@ namespace Avalonia.FreeDesktop
         }
 
         // CreateTrayIcon reads these conditions again after each await.
-        private bool ShouldShowTrayIcon => !_isDisposed && _isVisible && _serviceConnected;
+        private bool ShouldOwnName => !_isDisposed && _isVisible;
+        private bool ShouldShowTrayIcon => ShouldOwnName && _serviceConnected;
 
         private void DestroyTrayIcon()
         {
