@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+
   <Design.PreviewWith>
     <Border Padding="20">
       <FlyoutPresenter>
@@ -9,10 +10,17 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- WinUI reference: FlyoutPresenter_themeresources.xaml (DefaultFlyoutPresenterStyle).
-       This is the theme's popup chrome recipe: acrylic-fallback fill, flyout surface stroke,
-       OverlayCornerRadius. WinUI 3 pads content with the local FlyoutContentPadding key
-       (16,15,16,17) rather than the legacy shared FlyoutContentThemePadding (12,11,12,12). -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
   <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
   <Thickness x:Key="FlyoutContentPadding">16,15,16,17</Thickness>
   <ControlTheme x:Key="{x:Type FlyoutPresenter}" TargetType="FlyoutPresenter">

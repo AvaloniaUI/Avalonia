@@ -8,6 +8,16 @@
     </Border>
   </Design.PreviewWith>
 
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="TableViewColumnHeaderSeparatorBackground" ResourceKey="SystemBaseLowColor" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="TableViewColumnHeaderSeparatorBackground" ResourceKey="SystemBaseLowColor" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+
   <x:Double x:Key="TableViewColumnResizerWidth">12</x:Double>
   <Thickness x:Key="TableViewColumnResizerMargin">0,-9,-6,-12</Thickness>
 
@@ -44,7 +54,7 @@
                  HorizontalAlignment="Right"
                  Cursor="SizeWestEast"
                  Margin="{DynamicResource TableViewColumnResizerMargin}"
-                 IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, 
+                 IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent},
                  Path=Column?.CanUserEffectivelyResize, FallbackValue=False}">
           </Thumb>
         </Panel>

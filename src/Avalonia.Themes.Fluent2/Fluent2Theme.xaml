@@ -24,7 +24,6 @@
              performance and possible optimizations (MergeResourceInclude must come last) -->
         <MergeResourceInclude Source="/Accents/BaseResources.xaml" />
         <MergeResourceInclude Source="/Accents/Fluent2TokenResources.xaml" />
-        <MergeResourceInclude Source="/Accents/FluentControlResources.xaml" />
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->

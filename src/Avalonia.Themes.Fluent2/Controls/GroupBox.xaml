@@ -8,14 +8,32 @@
     </GroupBox>
   </Design.PreviewWith>
 
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="GroupBoxBackground" Color="Transparent" />
+      <StaticResource x:Key="GroupBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+      <StaticResource x:Key="GroupBoxHeaderForeground" ResourceKey="SystemBaseHighColor" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="GroupBoxBackground" Color="Transparent" />
+      <StaticResource x:Key="GroupBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+      <StaticResource x:Key="GroupBoxHeaderForeground" ResourceKey="SystemBaseHighColor" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <Thickness x:Key="GroupBoxPadding">12</Thickness>
+  <x:Double x:Key="GroupBoxHeaderFontSize">16</x:Double>
+  <Thickness x:Key="GroupBoxHeaderMargin">0,4,0,12</Thickness>
+  <Thickness x:Key="GroupBoxBorderThickness">1</Thickness>
+
   <!-- Kept for compatibility: the WPF-style gap-border template used this converter.
-       The Fluent 2 card template below no longer masks the border. -->
+  The Fluent 2 card template below no longer masks the border. -->
   <converters:BorderGapMaskConverter x:Key="BorderGapMaskConverter" />
 
   <!-- No WinUI counterpart (GroupBox is WPF-style). Harmonized with the WinUI card idiom:
-       a 1px CardStrokeColorDefault stroke with 4px corner radius over
-       CardBackgroundFillColorDefault, and the header rendered above the card as
-       BodyStrong text (14px SemiBold, TextFillColorPrimary). -->
+  a 1px CardStrokeColorDefault stroke with 4px corner radius over
+  CardBackgroundFillColorDefault, and the header rendered above the card as
+  BodyStrong text (14px SemiBold, TextFillColorPrimary). -->
   <ControlTheme x:Key="{x:Type GroupBox}"
                 TargetType="GroupBox">
     <Setter Property="BorderThickness" Value="{DynamicResource GroupBoxBorderThickness}" />

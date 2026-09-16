@@ -13,6 +13,23 @@
     </Border>
   </Design.PreviewWith>
 
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="TableViewForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <StaticResource x:Key="TableViewBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+      <StaticResource x:Key="TableViewBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <StaticResource x:Key="TableViewBorderThickness" ResourceKey="ListBoxBorderThemeThickness" />
+      <StaticResource x:Key="TableViewHeaderBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="TableViewForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <StaticResource x:Key="TableViewBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+      <StaticResource x:Key="TableViewBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <StaticResource x:Key="TableViewBorderThickness" ResourceKey="ListBoxBorderThemeThickness" />
+      <StaticResource x:Key="TableViewHeaderBackground" ResourceKey="SystemControlBackgroundChromeMediumBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
   <!-- ScrollViewer in TableView -->
   <ControlTheme x:Key="TableViewScrollViewerTheme" TargetType="ScrollViewer">
     <Setter Property="Background" Value="Transparent" />

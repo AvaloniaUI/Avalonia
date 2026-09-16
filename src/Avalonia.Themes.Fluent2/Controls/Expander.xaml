@@ -45,12 +45,66 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- WinUI reference: Expander.xaml + Expander_themeresources.xaml, winui 1.8.2 (via Uno.UI.FluentTheme.v2).
-       Card idiom: 48px header row, CardBackgroundFillColorDefault header on a 1px CardStrokeColorDefault
-       border, CardBackgroundFillColorSecondary content, 32x32 subtle-fill chevron well with a 12px glyph.
-       The Expander* brush aliases below are defined in Accents/FluentControlResources.xaml (shared file) and
-       still carry v1 values; see the conversion notes for the required re-points. Avalonia alias names differ
-       from WinUI (e.g. ExpanderHeaderBorderBrushPointerOver vs WinUI ExpanderHeaderBorderPointerOverBrush). -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBackgroundPointerOver" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBackgroundPressed" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBackgroundDisabled" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderHeaderForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrush" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrushPointerOver" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrushPressed" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrushDisabled" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="ExpanderChevronBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="ExpanderChevronBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderChevronForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderChevronForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+
+      <StaticResource x:Key="ExpanderContentBackground" ResourceKey="CardBackgroundFillColorSecondary" />
+      <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="CardStrokeColorDefault" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBackgroundPointerOver" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBackgroundPressed" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBackgroundDisabled" ResourceKey="CardBackgroundFillColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderHeaderForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrush" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrushPointerOver" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrushPressed" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrushDisabled" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="ExpanderChevronBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="ExpanderChevronBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderChevronForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderChevronForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ExpanderChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+
+      <StaticResource x:Key="ExpanderContentBackground" ResourceKey="CardBackgroundFillColorSecondary" />
+      <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="CardStrokeColorDefault" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
 
   <!-- Shared header/content -->
   <x:Double x:Key="ExpanderMinHeight">48</x:Double>
@@ -196,7 +250,6 @@
 
   </ControlTheme>
 
-  <!-- 12px chevron glyphs (WinUI ExpanderChevronGlyphSize = 12, FontSize 12 E70D/E70E fallback). -->
   <ControlTheme x:Key="FluentExpanderToggleButtonUpTheme" TargetType="ToggleButton" BasedOn="{StaticResource FluentExpanderToggleButtonTheme}">
     <Style Selector="^ /template/ Path#ExpandCollapseChevron">
       <Setter Property="Data" Value="M 0 6 L 6 0 L 12 6" />
@@ -233,7 +286,7 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <!-- WinUI slides the content open with a height animation, which Avalonia's Expander can't
-         express in XAML; a cross-fade is the pragmatic desktop default (as in FluentAvalonia). -->
+    express in XAML; a cross-fade is the pragmatic desktop default (as in FluentAvalonia). -->
     <Setter Property="ContentTransition">
       <CrossFade Duration="0:0:0.25" />
     </Setter>

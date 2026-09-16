@@ -12,6 +12,19 @@
     </Border>
   </Design.PreviewWith>
 
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="ListBoxBorder" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ListBoxBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="ListBoxBorder" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ListBoxBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
+
   <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox" BasedOn="{StaticResource FluentListViewTheme}">
   </ControlTheme>
 

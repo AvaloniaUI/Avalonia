@@ -17,6 +17,15 @@
     </Border>
   </Design.PreviewWith>
 
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="TabControlBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="TabControlBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
   <Thickness x:Key="TabControlTopPlacementItemMargin">0 0 0 2</Thickness>
 
   <ControlTheme x:Key="{x:Type TabControl}" TargetType="TabControl">

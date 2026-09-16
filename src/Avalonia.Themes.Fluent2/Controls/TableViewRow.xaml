@@ -2,6 +2,38 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
 
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="TableViewRowBackground">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="TableViewRowBackgroundDisabled">Transparent</SolidColorBrush>
+      <StaticResource x:Key="TableViewRowForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+      <StaticResource x:Key="TableViewRowForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+      <StaticResource x:Key="TableViewRowForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="TableViewRowBackground">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="TableViewRowBackgroundDisabled">Transparent</SolidColorBrush>
+      <StaticResource x:Key="TableViewRowForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
+      <StaticResource x:Key="TableViewRowForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
+      <StaticResource x:Key="TableViewRowForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+      <StaticResource x:Key="TableViewRowBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
+      <StaticResource x:Key="TableViewRowForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
   <Thickness x:Key="TableViewRowPadding">6,9,6,12</Thickness>
 
   <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow">

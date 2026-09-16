@@ -26,6 +26,127 @@
     </Border>
   </Design.PreviewWith>
 
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="CommandBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushChecked" ResourceKey="AccentControlElevationBorderBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushCheckedPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushCheckedPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushCheckedDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlay" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlayPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlayPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlayCheckedPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlayCheckedPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundCheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundCheckedPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandSeparatorForeground" ResourceKey="DividerStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolidBrush" />
+      <StaticResource x:Key="CommandBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarHighContrastBorder" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarEllipsisIconForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarOverflowPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+      <StaticResource x:Key="CommandBarLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="CommandBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundChecked" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundCheckedPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundCheckedPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonForegroundCheckedDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushChecked" ResourceKey="AccentControlElevationBorderBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushCheckedPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushCheckedPressed" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBorderBrushCheckedDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlay" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlayPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlayPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlayCheckedPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundHighLightOverlayCheckedPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundCheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundCheckedPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundCheckedDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandSeparatorForeground" ResourceKey="DividerStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolidBrush" />
+      <StaticResource x:Key="CommandBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CommandBarHighContrastBorder" ResourceKey="ControlFillColorTransparentBrush" />
+      <StaticResource x:Key="CommandBarEllipsisIconForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarOverflowPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+      <StaticResource x:Key="CommandBarLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
   <x:Double x:Key="CommandBarExpandButtonThemeWidth">48</x:Double>
   <Thickness x:Key="CommandBarEllipsisButtonInnerBorderMargin">2,6,6,6</Thickness>
   <Thickness x:Key="CommandBarInnerBorderMargin">2,6,2,6</Thickness>
@@ -606,8 +727,8 @@
                       MinHeight="{DynamicResource CommandBarThemeCompactHeight}"
                       VerticalAlignment="Stretch"
                       IsVisible="{TemplateBinding IsOverflowButtonVisible}">
-                <PathIcon Width="20" 
-                          Height="20"  
+                <PathIcon Width="20"
+                          Height="20"
                           VerticalAlignment="Center"
                           Data="M6,10A2,2 0 0,0 4,12A2,2 0 0,0 6,14A2,2 0 0,0 8,12A2,2 0 0,0 6,10M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10M18,10A2,2 0 0,0 16,12A2,2 0 0,0 18,14A2,2 0 0,0 20,12A2,2 0 0,0 18,10Z" />
               </Button>

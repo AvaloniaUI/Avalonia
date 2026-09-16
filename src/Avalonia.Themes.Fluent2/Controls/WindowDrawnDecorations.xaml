@@ -1,23 +1,29 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="Black" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
+      <StaticResource x:Key="TitleBarBackgroundBrush" ResourceKey="SystemControlBackgroundAltHighBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="CaptionButtonForeground" Color="White" />
+      <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
+      <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
+      <StaticResource x:Key="TitleBarBackgroundBrush" ResourceKey="SystemControlBackgroundAltHighBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
 
-  <!-- No WinUI XAML reference: window chrome is native on Windows. Metrics and colors
-       follow Windows 11 conventions: 46x32 caption buttons, subtle fills for
-       hover/pressed, and the #C42B1C close-button hover. -->
 
   <x:Double x:Key="CaptionButtonWidth">46</x:Double>
   <x:Double x:Key="CaptionButtonHeight">32</x:Double>
 
-  <!-- Windows 11 close caption-button colors; intentionally identical in light and
-       dark variants, as on Windows. Pressed is the same red at 90% opacity. -->
   <SolidColorBrush x:Key="FluentDrawnCaptionButtonCloseBackground" Color="#C42B1C" />
   <SolidColorBrush x:Key="FluentDrawnCaptionButtonCloseBackgroundPressed" Color="#C42B1C" Opacity="0.9" />
   <SolidColorBrush x:Key="FluentDrawnCaptionButtonCloseForeground" Color="#FFFFFF" />
 
-  <!-- Convention: Background carries the hover fill and BorderBrush carries the
-       pressed fill; the rest state is transparent. Glyphs bind to the button's
-       Foreground so state changes flow through a single property. -->
   <ControlTheme x:Key="FluentDrawnCaptionButton" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
@@ -64,7 +70,7 @@
                       BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
                       IsHitTestVisible="False" />
               <!-- Titlebar: background, title text, and drag area live in underlay.
-                   Matches the window canvas, as on Windows 11. -->
+              Matches the window canvas, as on Windows 11. -->
               <Panel x:Name="PART_TitleBar" VerticalAlignment="Top"
                      Height="{TemplateBinding TitleBarHeight}"
                      Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"

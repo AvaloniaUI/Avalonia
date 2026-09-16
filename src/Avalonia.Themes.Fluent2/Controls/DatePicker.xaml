@@ -6,9 +6,9 @@
 -->
 
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="using:System"
-        x:ClassModifier="internal">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Padding="20" Height="500">
       <StackPanel Spacing="20" VerticalAlignment="Center">
@@ -28,8 +28,67 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- WinUI reference: DatePicker_themeresources.xaml (DefaultDatePickerStyle /
-       DefaultDatePickerFlyoutPresenterStyle), tag winui3/release/1.5.2. -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+      <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
+      <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+      <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
+
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+      <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
+      <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+      <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
+
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
   <x:Double x:Key="DatePickerFlyoutPresenterHighlightHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterItemHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
@@ -44,8 +103,8 @@
   <Thickness x:Key="DatePickerFlyoutPresenterDismissMargin">2,4,4,4</Thickness>
 
   <!-- WinUI: DatePickerFlyoutButtonStyle — the closed picker reads as a TextBox-like field
-       (ControlFillColorDefault fill, elevation hairline border, ControlCornerRadius).
-       WinUI has no press scale; press feedback is the fill/foreground swap. -->
+  (ControlFillColorDefault fill, elevation hairline border, ControlCornerRadius).
+  WinUI has no press scale; press feedback is the fill/foreground swap. -->
   <ControlTheme x:Key="FluentDatePickerFlyoutButton" TargetType="Button">
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="Template">
@@ -123,15 +182,15 @@
                 <TextBlock Name="PART_YearTextBlock" Text="{DynamicResource StringDatePickerYearText}" HorizontalAlignment="Center"
                            Padding="{DynamicResource DatePickerHostPadding}" />
                 <Rectangle x:Name="PART_FirstSpacer"
-                      Fill="{DynamicResource DatePickerSpacerFill}"
-                      HorizontalAlignment="Center"
-                      Width="1"
-                      Grid.Column="1" />
+                           Fill="{DynamicResource DatePickerSpacerFill}"
+                           HorizontalAlignment="Center"
+                           Width="1"
+                           Grid.Column="1" />
                 <Rectangle x:Name="PART_SecondSpacer"
-                      Fill="{DynamicResource DatePickerSpacerFill}"
-                      HorizontalAlignment="Center"
-                      Width="1"
-                      Grid.Column="3" />
+                           Fill="{DynamicResource DatePickerSpacerFill}"
+                           HorizontalAlignment="Center"
+                           Width="1"
+                           Grid.Column="3" />
               </Grid>
             </Button>
 
@@ -151,8 +210,8 @@
     </Style>
 
     <!-- Changes foreground for watermark text when SelectedDate is null.
-         WinUI: DatePickerButtonForegroundDefault (TextFillColorSecondary); the
-         TextControlPlaceholderForeground alias resolves to the same token. -->
+    WinUI: DatePickerButtonForegroundDefault (TextFillColorSecondary); the
+    TextControlPlaceholderForeground alias resolves to the same token. -->
     <Style Selector="^:hasnodate /template/ Button#PART_FlyoutButton TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
     </Style>
@@ -163,8 +222,8 @@
   </ControlTheme>
 
   <!--WinUI: DatePickerFlyoutPresenter (DefaultDatePickerFlyoutPresenterStyle) — acrylic fill,
-      1px SurfaceStrokeColorFlyout border, OverlayCornerRadius, 1px divider spacers and a
-      full-width accent highlight pill behind the selected row. -->
+  1px SurfaceStrokeColorFlyout border, OverlayCornerRadius, 1px divider spacers and a
+  full-width accent highlight pill behind the selected row. -->
   <ControlTheme x:Key="{x:Type DatePickerPresenter}" TargetType="DatePickerPresenter">
     <Setter Property="Width" Value="296" />
     <Setter Property="MinWidth" Value="296" />
@@ -223,9 +282,9 @@
                 <RepeatButton Name="PART_YearDownButton" Theme="{StaticResource FluentDateTimePickerDownButton}"/>
               </Panel>
               <!-- WinUI 3 highlight: AccentAAFillColorDefault rounded pill (CornerRadius 4,
-                   Margin 4,2,4,2) behind the selected row. Neither that token nor an accurate
-                   DatePickerFlyoutPresenterHighlightFill alias exists in this theme yet, so the
-                   Fluent 2 token AccentFillColorDefaultBrush is referenced directly. -->
+              Margin 4,2,4,2) behind the selected row. Neither that token nor an accurate
+              DatePickerFlyoutPresenterHighlightFill alias exists in this theme yet, so the
+              Fluent 2 token AccentFillColorDefaultBrush is referenced directly. -->
               <Border Name="HighlightRect" IsHitTestVisible="False" ZIndex="-1"
                       Background="{DynamicResource AccentFillColorDefaultBrush}"
                       CornerRadius="{DynamicResource ControlCornerRadius}"

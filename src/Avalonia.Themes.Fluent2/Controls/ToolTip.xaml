@@ -17,13 +17,25 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- WinUI reference: ToolTip_themeresources.xaml (DefaultToolTipStyle), tag winui3/release/1.5.2.
-       Tooltips keep ControlCornerRadius (4), NOT OverlayCornerRadius. WinUI 3 pads with the local
-       ToolTipBorderPadding key (9,6,9,8) rather than the legacy shared ToolTipBorderThemePadding.
-       Background maps to WinUI ToolTipBackgroundBrush -> AcrylicInAppFillColorDefaultBrush; the
-       token brush is referenced directly because no ToolTipBackgroundBrush alias exists yet. -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
   <sys:Double x:Key="ToolTipContentMaxWidth">320</sys:Double>
   <Thickness x:Key="ToolTipBorderPadding">9,6,9,8</Thickness>
+
+  <x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
+  <Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
 
   <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />

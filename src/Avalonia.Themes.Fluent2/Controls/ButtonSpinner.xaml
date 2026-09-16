@@ -35,9 +35,21 @@
       </StackPanel>
     </Border>
   </Design.PreviewWith>
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="SpinnerPopupIndicatorForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="SpinnerPopupIndicatorForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
+      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
 
-  <!-- Retained for compatibility: the Fluent 2 spin buttons are borderless, so these
-  converters are no longer used by the template below. -->
   <converters:MarginMultiplierConverter x:Key="ButtonSpinnerLeftThickness" Indent="1" Left="True" />
   <converters:MarginMultiplierConverter x:Key="ButtonSpinnerRightThickness" Indent="1" Right="True" />
   <StreamGeometry x:Key="ButtonSpinnerIncreaseButtonIcon">M4.293 15.707a1 1 0 0 0 1.414 0L12 9.414l6.293 6.293a1 1 0 0 0 1.414-1.414l-7-7a1 1 0 0 0-1.414 0l-7 7a1 1 0 0 0 0 1.414Z</StreamGeometry>

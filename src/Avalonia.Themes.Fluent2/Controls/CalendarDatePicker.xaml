@@ -7,12 +7,49 @@
       <CalendarDatePicker Width="200" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
     </Border>
   </Design.PreviewWith>
-
-  <!-- WinUI reference: CalendarDatePicker_themeresources.xaml (DefaultCalendarDatePicker),
-       tag winui3/release/1.5.2. The closed field matches a WinUI 3 TextBox: ControlFillColorDefault
-       fill behind an elevation hairline stroke with 4px corners; the calendar glyph is
-       TextFillColorSecondary; the flyout is an 8px-radius surface with the flyout stroke and the
-       acrylic fallback fill. -->
+  
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="CalendarDatePickerForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarDatePickerCalendarGlyphForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="CalendarDatePickerBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="CalendarDatePickerBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarDatePickerBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarDatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="CalendarDatePickerForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarDatePickerCalendarGlyphForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
+      <StaticResource x:Key="CalendarDatePickerBackgroundFocused" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="CalendarDatePickerBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="CalendarDatePickerBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarDatePickerBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="CalendarDatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+  
+  <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
   <x:Double x:Key="CalendarDatePickerCurrentDayFontSize">12</x:Double>
   <x:Double x:Key="CalendarDatePickerMinHeight">32</x:Double>
 
