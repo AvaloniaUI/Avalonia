@@ -396,14 +396,19 @@ namespace Avalonia.Controls
         protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
-            if(IsEnabled && _textBox != null && e.NavigationMethod == NavigationMethod.Tab)
+
+            if (IsEnabled && _textBox != null && ReferenceEquals(e.Source, this))
             {
-                _textBox.Focus();
-                var text = _textBox.Text;
-                if(!string.IsNullOrEmpty(text))
+                _textBox.Focus(e.NavigationMethod);
+
+                if (e.NavigationMethod == NavigationMethod.Tab)
                 {
-                    _textBox.SelectionStart = 0;
-                    _textBox.SelectionEnd = text.Length;
+                    var text = _textBox.Text;
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        _textBox.SelectionStart = 0;
+                        _textBox.SelectionEnd = text.Length;
+                    }
                 }
             }
         }
