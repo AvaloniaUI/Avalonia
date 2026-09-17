@@ -81,11 +81,6 @@ namespace Avalonia.Media
             set { SetValue(FillRuleProperty, value); }
         }
 
-        private protected sealed override StreamGeometryContext CreateContext()
-        {
-            return new StreamGeometryContext(new PathGeometryContext(this));
-        }
-
         private protected sealed override IGeometryImpl? CreateDefiningGeometry()
         {
             var figures = Figures;
@@ -94,19 +89,19 @@ namespace Avalonia.Media
                 return null;
 
             var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-            var geometry = factory.CreateStreamGeometry();
+            using var builder = factory.CreateStreamGeometryBuilder();
 
-            using (var ctx = new StreamGeometryContext(geometry.Open()))
+            builder.SetFillRule(FillRule);
+            foreach (var f in figures)
             {
-                ctx.SetFillRule(FillRule);
-                foreach (var f in figures)
-                {
-                    f.ApplyTo(ctx);
-                }
+                f.ApplyTo(builder);
             }
 
-            return geometry;
+            return builder.ToGeometry();
         }
+
+        private protected override IGeometryContext OpenCore()
+            => new PathGeometryContext(this);
 
         private void OnFiguresChanged(PathFigures? figures)
         {
