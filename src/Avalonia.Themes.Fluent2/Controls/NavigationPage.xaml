@@ -27,9 +27,11 @@
     </Border>
   </Design.PreviewWith>
 
-  <sys:Double x:Key="NavigationPageHeaderSize">14</sys:Double>
-  <Thickness x:Key="NavigationPageHeaderMargin">56,44,0,0</Thickness>
+  <sys:Double x:Key="NavigationPageHeaderFontSize">28</sys:Double>
+  <Thickness x:Key="NavigationPageTopBarMargin">12,12,0,0</Thickness>
+  <Thickness x:Key="NavigationPageHeaderMargin">12,0,0,0</Thickness>
   <FontWeight x:Key="NavigationPageHeaderFontWeight">SemiBold</FontWeight>
+  <Thickness x:Key="NavigationPageContentPresenterMargin">0</Thickness>
 
   <StreamGeometry x:Key="NavigationPageMenuIcon">M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z</StreamGeometry>
 
@@ -83,6 +85,7 @@
             <!-- Back and front presenters enable slide transitions without Control recycling. -->
             <Grid Name="PART_ContentHost"
                   Background="{TemplateBinding Background}"
+                  Margin="{DynamicResource NavigationPageContentPresenterMargin}"
                   ClipToBounds="True">
               <ContentPresenter Name="PART_PageBackPresenter"
                                 HorizontalAlignment="Stretch"
@@ -102,7 +105,7 @@
                   BorderBrush="{DynamicResource NavigationBarBorderBrush}"
                   BorderThickness="0,0,0,1"
                   Height="{TemplateBinding EffectiveBarHeight}">
-            <Grid Margin="12,0,0,0" ColumnDefinitions="Auto, *, Auto">
+            <Grid Margin="{DynamicResource NavigationPageTopBarMargin}" ColumnDefinitions="Auto, *, Auto">
               <Grid.Styles>
                 <Style Selector="Button#PART_BackButton /template/ ContentPresenter#PART_ContentPresenter">
                   <Setter Property="Background" Value="Transparent" />
@@ -166,7 +169,7 @@
 
               <ContentPresenter Name="PART_Header"
                                 Grid.Column="1"
-                                FontSize="{DynamicResource NavigationPageHeaderSize}"
+                                FontSize="{DynamicResource NavigationPageHeaderFontSize}"
                                 FontWeight="{DynamicResource NavigationPageHeaderFontWeight}"
                                 Foreground="{DynamicResource NavigationBarForeground}"
                                 Content="{Binding CurrentPage?.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
@@ -174,7 +177,7 @@
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
-                                Margin="0,0,12,0" />
+                                Margin="{DynamicResource NavigationPageHeaderMargin}" />
 
               <ContentPresenter Name="PART_TopCommandBar"
                                 Grid.Column="2"
