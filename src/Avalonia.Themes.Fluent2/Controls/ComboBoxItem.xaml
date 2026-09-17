@@ -31,7 +31,7 @@
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="Height" Value="{StaticResource ComboBoxItemPillHeight}" />
     <Setter Property="Width" Value="{StaticResource ComboBoxItemPillWidth}" />
-    <Setter Property="Fill" Value="{StaticResource ComboBoxItemPillFillBrush}" />
+    <Setter Property="Fill" Value="{DynamicResource ComboBoxItemPillFillBrush}" />
     <Setter Property="RadiusX" Value="{StaticResource ComboBoxItemPillCornerRadius}" />
     <Setter Property="RadiusY" Value="{StaticResource ComboBoxItemPillCornerRadius}" />
     <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />

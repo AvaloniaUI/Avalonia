@@ -25,6 +25,6 @@
   <x:String x:Key="StringManagedFileChooserOverwritePromptFileAlreadyExistsText">{0} already exists. Do you want to replace it?</x:String>
   <x:String x:Key="StringManagedFileChooserOverwritePromptConfirmText">Yes</x:String>
   <x:String x:Key="StringManagedFileChooserOverwritePromptCancelText">No</x:String>
-  <x:String x:Key="StringCalendarWeekNumberHeader"> </x:String><!-- Just one whitespace to preserve the resource -->
+  <x:String x:Key="StringCalendarWeekNumberHeader">&#160;</x:String><!-- Just one whitespace to preserve the resource -->
 </ResourceDictionary>
 

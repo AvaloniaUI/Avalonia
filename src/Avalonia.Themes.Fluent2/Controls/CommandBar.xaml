@@ -573,7 +573,7 @@
     <!-- Compact: hide label -->
     <Style Selector="^[IsCompact=True]">
       <Style Selector="^ /template/ Border#PART_Border">
-        <Setter Property="Margin" Value="{DynamicResource CommandBarToggleButtonInnerBorderCompactMargin}" />
+        <Setter Property="Margin" Value="{DynamicResource CommandBarButtonInnerBorderCompactMargin}" />
       </Style>
       <Style Selector="^ /template/ TextBlock#PART_Label">
         <Setter Property="IsVisible" Value="False" />
@@ -606,7 +606,7 @@
       </Style>
 
       <Style Selector="^ /template/ Border#PART_Border">
-        <Setter Property="Margin" Value="{DynamicResource CommandBarToggleButtonInnerBorderOverflowMargin}" />
+        <Setter Property="Margin" Value="{DynamicResource CommandBarButtonInnerBorderOverflowMargin}" />
       </Style>
 
       <Style Selector="^ /template/ Viewbox#ContentViewbox">

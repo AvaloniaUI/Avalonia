@@ -209,9 +209,6 @@
       <Setter Property="Fill" Value="{DynamicResource DatePickerSpacerFillDisabled}"/>
     </Style>
 
-    <!-- Changes foreground for watermark text when SelectedDate is null.
-    WinUI: DatePickerButtonForegroundDefault (TextFillColorSecondary); the
-    TextControlPlaceholderForeground alias resolves to the same token. -->
     <Style Selector="^:hasnodate /template/ Button#PART_FlyoutButton TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
     </Style>
@@ -221,9 +218,6 @@
     </Style>
   </ControlTheme>
 
-  <!--WinUI: DatePickerFlyoutPresenter (DefaultDatePickerFlyoutPresenterStyle) — acrylic fill,
-  1px SurfaceStrokeColorFlyout border, OverlayCornerRadius, 1px divider spacers and a
-  full-width accent highlight pill behind the selected row. -->
   <ControlTheme x:Key="{x:Type DatePickerPresenter}" TargetType="DatePickerPresenter">
     <Setter Property="Width" Value="296" />
     <Setter Property="MinWidth" Value="296" />
@@ -281,26 +275,21 @@
                 <RepeatButton Name="PART_YearUpButton" Theme="{StaticResource FluentDateTimePickerUpButton}"/>
                 <RepeatButton Name="PART_YearDownButton" Theme="{StaticResource FluentDateTimePickerDownButton}"/>
               </Panel>
-              <!-- WinUI 3 highlight: AccentAAFillColorDefault rounded pill (CornerRadius 4,
-              Margin 4,2,4,2) behind the selected row. Neither that token nor an accurate
-              DatePickerFlyoutPresenterHighlightFill alias exists in this theme yet, so the
-              Fluent 2 token AccentFillColorDefaultBrush is referenced directly. -->
+
               <Border Name="HighlightRect" IsHitTestVisible="False" ZIndex="-1"
                       Background="{DynamicResource AccentFillColorDefaultBrush}"
                       CornerRadius="{DynamicResource ControlCornerRadius}"
                       Margin="4,2,4,2"
-                      Grid.Column="0" Grid.ColumnSpan="5" VerticalAlignment="Center"
+                      Grid.Column="0" VerticalAlignment="Center"
                       Height="{DynamicResource DatePickerFlyoutPresenterHighlightHeight}" />
               <Rectangle Name="PART_FirstSpacer"
                          Fill="{DynamicResource DatePickerFlyoutPresenterSpacerFill}"
                          HorizontalAlignment="Center"
-                         Width="{DynamicResource DatePickerSpacerThemeWidth}"
-                         Grid.Column="1" />
+                         Width="{DynamicResource DatePickerSpacerThemeWidth}"/>
               <Rectangle Name="PART_SecondSpacer"
                          Fill="{DynamicResource DatePickerFlyoutPresenterSpacerFill}"
                          HorizontalAlignment="Center"
-                         Width="{DynamicResource DatePickerSpacerThemeWidth}"
-                         Grid.Column="3" />
+                         Width="{DynamicResource DatePickerSpacerThemeWidth}" />
             </Grid>
 
             <Grid Name="AcceptDismissGrid"

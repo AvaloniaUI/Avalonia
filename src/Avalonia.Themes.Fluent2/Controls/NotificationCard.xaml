@@ -30,6 +30,7 @@
       <StaticResource x:Key="NotificationCardMessageForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="NotificationCardHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
       <StaticResource x:Key="NotificationCardBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <BoxShadows x:Key="NotificationCardBoxShadows">0 4 8 0 #26000000</BoxShadows>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="NotificationCardErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
@@ -48,6 +49,7 @@
       <StaticResource x:Key="NotificationCardMessageForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="NotificationCardHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
       <StaticResource x:Key="NotificationCardBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <BoxShadows x:Key="NotificationCardBoxShadows">0 4 8 0 #26000000</BoxShadows>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -85,7 +87,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <LayoutTransformControl Name="PART_LayoutTransformControl" UseRenderTransform="True">
-          <Border BoxShadow="0 4 8 0 #26000000">
+          <Border BoxShadow="{DynamicResource NotificationCardBoxShadows}">
             <Border x:Name="CardBorder"
                     Background="{DynamicResource NotificationCardInformationalSeverityBackgroundBrush}"
                     BackgroundSizing="InnerBorderEdge"

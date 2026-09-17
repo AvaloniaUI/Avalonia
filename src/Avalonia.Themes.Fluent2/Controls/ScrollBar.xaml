@@ -384,7 +384,7 @@
 
                 <RepeatButton Name="PART_LineDownButton"
                               Theme="{StaticResource FluentScrollBarLineButton}"
-                              Padding="{DynamicResource ScrollBarHorizontalDeccreaseMargin}"
+                              Padding="{DynamicResource ScrollBarHorizontalDecreaseMargin}"
                               VerticalAlignment="Center"
                               Grid.Column="2"
                               Focusable="False"

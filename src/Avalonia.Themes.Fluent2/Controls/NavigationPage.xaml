@@ -6,11 +6,19 @@
       <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <LinearGradientBrush x:Key="NavigationBarShadowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Color="#0C000000" Offset="0" />
+        <GradientStop Color="#00000000" Offset="1" />
+      </LinearGradientBrush>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <LinearGradientBrush x:Key="NavigationBarShadowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Color="#0C000000" Offset="0" />
+        <GradientStop Color="#00000000" Offset="1" />
+      </LinearGradientBrush>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
   <Design.PreviewWith>
@@ -204,14 +212,8 @@
                   VerticalAlignment="Top"
                   IsVisible="False"
                   Height="4"
-                  IsHitTestVisible="False">
-            <Border.Background>
-              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                <GradientStop Color="#0C000000" Offset="0" />
-                <GradientStop Color="#00000000" Offset="1" />
-              </LinearGradientBrush>
-            </Border.Background>
-          </Border>
+                  Background="{DynamicResource NavigationBarShadowBackground}"
+                  IsHitTestVisible="False"/>
 
           <!-- Modal overlay: ZIndex=99 holds the static layer during transitions; ZIndex=100 is the animating modal. -->
           <ContentPresenter Name="PART_ModalBackPresenter"
