@@ -192,7 +192,10 @@ namespace Avalonia.FreeDesktop
                     _itemExported = true;
                 }
 
-                await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+                if (_sysTrayServiceName is not { } name)
+                    return;
+
+                await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(name);
 
                 if (!ShouldShowTrayIcon)
                     return;
