@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
@@ -46,7 +47,7 @@ namespace Avalonia.Media
             Points = new Points(points);
         }
 
-        internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(IGeometryContext ctx)
         {
             var points = Points;
             if (points.Count > 0)
