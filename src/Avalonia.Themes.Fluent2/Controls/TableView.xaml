@@ -93,7 +93,8 @@
   </ControlTheme>
 
   <!-- TableView theme -->
-  <ControlTheme x:Key="{x:Type TableView}" TargetType="TableView">
+  <ControlTheme x:Key="{x:Type TableView}" TargetType="TableView" BasedOn="{StaticResource DefaultTableViewTheme}"/>
+  <ControlTheme x:Key="DefaultTableViewTheme" TargetType="TableView">
     <Setter Property="Foreground" Value="{DynamicResource TableViewForeground}" />
     <Setter Property="Background" Value="{DynamicResource TableViewBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TableViewBorderBrush}" />

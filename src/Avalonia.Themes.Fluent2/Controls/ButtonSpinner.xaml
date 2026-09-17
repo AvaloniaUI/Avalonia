@@ -63,7 +63,7 @@
   <Thickness x:Key="SpinnerPopupBorderThickness">1</Thickness>
   <Thickness x:Key="SpinnerPopupSpinButtonBorderThickness">0</Thickness>
 
-  <ControlTheme x:Key="FluentButtonSpinnerPopupRepeatButton" TargetType="RepeatButton" BasedOn="{StaticResource {x:Type RepeatButton}}">
+  <ControlTheme x:Key="FluentButtonSpinnerPopupRepeatButton" TargetType="RepeatButton" BasedOn="{StaticResource DefaultRepeatButtonTheme}">
     <Setter Property="IsTabStop" Value="False" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Width" Value="36" />
@@ -74,7 +74,7 @@
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </ControlTheme>
 
-  <ControlTheme x:Key="FluentButtonSpinnerRepeatButton" TargetType="RepeatButton" BasedOn="{StaticResource {x:Type RepeatButton}}">
+  <ControlTheme x:Key="FluentButtonSpinnerRepeatButton" TargetType="RepeatButton" BasedOn="{StaticResource DefaultRepeatButtonTheme}">
     <Setter Property="IsTabStop" Value="False" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="MinWidth" Value="32" />
@@ -84,7 +84,7 @@
     <Setter Property="FontSize" Value="16"/>
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </ControlTheme>
-  <ControlTheme x:Key="SpinnerPopupIndicatorButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+  <ControlTheme x:Key="SpinnerPopupIndicatorButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonTheme}">
     <Setter Property="IsTabStop" Value="False" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Background" Value="Transparent" />
@@ -102,10 +102,10 @@
     </ControlTheme.Resources>
   </ControlTheme>
 
-  <!-- WinUI reference: NumberBox.xaml / TextBox_themeresources.xaml, tag winui3/release/1.7.1.
-  The control is a TextBox-like field: ControlFillColorDefault fill, hairline elevation border
-  (TextControlElevationBorderBrush), ControlCornerRadius, with the spin buttons laid out inline. -->
-  <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
+
+  <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner" BasedOn="{StaticResource DefaultButtonSpinnerTheme}"/>
+
+  <ControlTheme x:Key="DefaultButtonSpinnerTheme" TargetType="ButtonSpinner">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
@@ -245,13 +245,10 @@
       </Style>
     </Style>
 
-    <!-- PointerOver State. Only the fill changes; the hairline border is left alone so an
-    error border stays visible while hovered (WinUI hover reuses the rest border brush). -->
     <Style Selector="^:pointerover /template/ Border#BorderElement">
       <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
     </Style>
 
-    <!-- Focused State: input-active fill plus the accent focus underline, matching TextBox. -->
     <Style Selector="^:focus-within /template/ Border#BorderElement">
       <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}" />
       <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}" />

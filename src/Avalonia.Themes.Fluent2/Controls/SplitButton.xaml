@@ -99,12 +99,6 @@
   <converters:MarginMultiplierConverter x:Key="SecondaryButtonBorderMultiplier" Right="True" Top="True" Bottom="True" Indent="1" />
   <converters:MarginMultiplierConverter x:Key="SeparatorBorderMultiplier" Top="True" Bottom="True" Indent="1" />
 
-  <!-- WinUI reference: SplitButton.xaml / SplitButton_themeresources.xaml (SplitButtonStyle),
-  tag winui3/release/1.5.2. The control reads as a single rounded button: the two inner
-  buttons are borderless fill zones (rounded on their outer corners only) with a 1px
-  divider between them, and one continuous ControlElevationBorderBrush outline is drawn
-  by an overlay border spanning all three columns, mirroring WinUI's "Border" grid.
-  Zone fills cross-fade over 83ms like the Fluent 2 Button. -->
   <ControlTheme x:Key="FluentSplitButtonComponent" TargetType="Button">
     <Setter Property="Template">
       <ControlTemplate>
@@ -189,7 +183,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type SplitButton}" TargetType="SplitButton">
+  <ControlTheme x:Key="{x:Type SplitButton}" TargetType="SplitButton" BasedOn="{StaticResource DefaultSplitButtonTheme}"/>
+
+  <ControlTheme x:Key="DefaultSplitButtonTheme" TargetType="SplitButton">
     <Setter Property="Background" Value="{DynamicResource SplitButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrush}" />

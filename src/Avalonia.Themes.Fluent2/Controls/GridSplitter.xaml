@@ -14,7 +14,9 @@
     <!-- No WinUI counterpart (closest is the Windows Community Toolkit GridSplitter/SizerBase).
          Harmonized with the Fluent 2 interaction fills: transparent at rest,
          SubtleFillColorSecondary while hovered or dragged, accent drag preview. -->
-    <ControlTheme x:Key="{x:Type GridSplitter}" TargetType="GridSplitter">
+    <ControlTheme x:Key="{x:Type GridSplitter}" TargetType="GridSplitter" BasedOn="{StaticResource DefaultGridSplitterTheme}"/>
+
+    <ControlTheme x:Key="DefaultGridSplitterTheme" TargetType="GridSplitter">
       <Setter Property="Focusable" Value="True" />
       <Setter Property="MinWidth" Value="6" />
       <Setter Property="MinHeight" Value="6" />

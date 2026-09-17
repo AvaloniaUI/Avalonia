@@ -54,7 +54,9 @@
   buttons) around a chromeless TextBox part. Padding follows TextControlThemePadding, and
   the inner TextBox supplies the input-active fill and accent focus underline over the text
   area while the ButtonSpinner mirrors them across the whole field via :focus-within. -->
-  <ControlTheme x:Key="{x:Type NumericUpDown}" TargetType="NumericUpDown">
+  <ControlTheme x:Key="{x:Type NumericUpDown}" TargetType="NumericUpDown" BasedOn="{StaticResource DefaultNumericUpDownTheme}"/>
+
+  <ControlTheme x:Key="DefaultNumericUpDownTheme" TargetType="NumericUpDown">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
     <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />

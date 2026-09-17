@@ -168,7 +168,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type Slider}" TargetType="Slider">
+  <ControlTheme x:Key="{x:Type Slider}" TargetType="Slider" BasedOn="{StaticResource DefaultSliderTheme}"/>
+
+  <ControlTheme x:Key="DefaultSliderTheme" TargetType="Slider">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
     <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
     <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />

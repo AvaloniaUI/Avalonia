@@ -12,7 +12,9 @@
 
   <!-- No WinUI counterpart (Label is WPF-style). Harmonized with the Fluent 2 text tokens:
        TextFillColorPrimary at rest, TextFillColorDisabled when disabled. -->
-  <ControlTheme x:Key="{x:Type Label}" TargetType="Label">
+  <ControlTheme x:Key="{x:Type Label}" TargetType="Label" BasedOn="{StaticResource DefaultLabelTheme}"/>
+
+  <ControlTheme x:Key="DefaultLabelTheme" TargetType="Label">
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     <Setter Property="Padding" Value="3"/>
     <Setter Property="Template">

@@ -31,15 +31,9 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <!-- WinUI reference: AutoSuggestBox_themeresources.xaml, tag winui3/release/1.5.2.
-  The text-field part mirrors TextBox: fill ControlFillColorDefault, elevation hairline
-  border and the accent focus underline all come from the shared TextControl* aliases
-  through the inner PART_TextBox (which uses the Fluent2 TextBox control theme), with
-  ControlCornerRadius (4). The suggestions popup follows the WinUI flyout recipe:
-  OverlayCornerRadius (8), AcrylicInAppFillColorDefaultBrush background (solid in-app
-  acrylic fallback) with a 1px SurfaceStrokeColorFlyoutBrush border and 0,4 content
-  margin, via the AutoCompleteBoxSuggestionsList*/AutoCompleteList* keys. -->
-  <ControlTheme x:Key="{x:Type AutoCompleteBox}" TargetType="AutoCompleteBox">
+  <ControlTheme x:Key="{x:Type AutoCompleteBox}" TargetType="AutoCompleteBox" BasedOn="{StaticResource DefaultAutoCompleteBoxTheme}"/>
+
+  <ControlTheme x:Key="DefaultAutoCompleteBoxTheme" TargetType="AutoCompleteBox">
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />

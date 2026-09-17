@@ -181,7 +181,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type PipsPager}" TargetType="PipsPager">
+  <ControlTheme x:Key="{x:Type PipsPager}" TargetType="PipsPager" BasedOn="{StaticResource DefaultPipsPagerTheme}"/>
+
+  <ControlTheme x:Key="DefaultPipsPagerTheme" TargetType="PipsPager">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Top" />

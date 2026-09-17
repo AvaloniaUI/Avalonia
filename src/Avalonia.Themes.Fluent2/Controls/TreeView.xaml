@@ -14,7 +14,9 @@
     </Border>
   </Design.PreviewWith>
 
-  <ControlTheme x:Key="{x:Type TreeView}" TargetType="TreeView">
+  <ControlTheme x:Key="{x:Type TreeView}" TargetType="TreeView" BasedOn="{StaticResource DefaultTreeViewTheme}"/>
+
+  <ControlTheme x:Key="DefaultTreeViewTheme" TargetType="TreeView">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />

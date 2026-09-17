@@ -1,7 +1,9 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
-  <ControlTheme x:Key="{x:Type ItemsControl}" TargetType="ItemsControl">
+  <ControlTheme x:Key="{x:Type ItemsControl}" TargetType="ItemsControl" BasedOn="{StaticResource DefaultItemsControlTheme}"/>
+
+  <ControlTheme x:Key="DefaultItemsControlTheme" TargetType="ItemsControl">
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}"

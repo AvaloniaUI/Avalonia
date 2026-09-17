@@ -4,7 +4,9 @@
   <!-- No WinUI XAML reference: window chrome is native on Windows. The window canvas
        uses the Fluent 2 solid background base fill (#F3F3F3 light / #202020 dark),
        matching the WinUI 3 window background. -->
-  <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
+  <ControlTheme x:Key="{x:Type Window}" TargetType="Window" BasedOn="{StaticResource DefaultWindowTheme}"/>
+
+  <ControlTheme x:Key="DefaultWindowTheme" TargetType="Window">
     <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}"/>
     <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource SystemControlBackgroundAltHighBrush}" />
     <Setter Property="TopLevel.SystemBarColor" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>

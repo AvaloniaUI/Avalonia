@@ -31,7 +31,9 @@
   <sys:TimeSpan x:Key="SplitViewPaneAnimationCloseDuration">00:00:00.1</sys:TimeSpan>
   <Easing x:Key="SplitViewPaneAnimationEasing">0.1,0.9,0.2,1.0</Easing>
 
-  <ControlTheme x:Key="{x:Type SplitView}" TargetType="SplitView">
+  <ControlTheme x:Key="{x:Type SplitView}" TargetType="SplitView" BasedOn="{StaticResource DefaultSplitViewTheme}"/>
+
+  <ControlTheme x:Key="DefaultSplitViewTheme" TargetType="SplitView">
     <Setter Property="OpenPaneLength" Value="{DynamicResource SplitViewOpenPaneThemeLength}" />
     <Setter Property="CompactPaneLength" Value="{DynamicResource SplitViewCompactPaneThemeLength}" />
     <Setter Property="PaneBackground" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />

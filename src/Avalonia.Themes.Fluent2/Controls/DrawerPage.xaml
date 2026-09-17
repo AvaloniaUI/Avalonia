@@ -109,7 +109,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type DrawerPage}" TargetType="DrawerPage">
+  <ControlTheme x:Key="{x:Type DrawerPage}" TargetType="DrawerPage" BasedOn="{StaticResource DefaultDrawerPageTheme}"/>
+
+  <ControlTheme x:Key="DefaultDrawerPageTheme" TargetType="DrawerPage">
     <!-- Content chrome = WinUI ContentGrid: layer fill, card stroke, rounded pane-side corner.
          Flows onto PART_ContentPresenter through the standard template bindings. -->
     <Setter Property="Background" Value="{DynamicResource NavigationViewContentBackground}" />

@@ -114,7 +114,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type TreeViewItem}" TargetType="TreeViewItem">
+  <ControlTheme x:Key="{x:Type TreeViewItem}" TargetType="TreeViewItem" BasedOn="{StaticResource DefaultTreeViewItemTheme}"/>
+
+  <ControlTheme x:Key="DefaultTreeViewItemTheme" TargetType="TreeViewItem">
     <Setter Property="Padding" Value="0" />
     <Setter Property="Background" Value="{DynamicResource TreeViewItemBackground}" />
     <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />

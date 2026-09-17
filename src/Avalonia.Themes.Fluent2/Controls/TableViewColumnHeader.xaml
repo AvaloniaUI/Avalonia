@@ -29,7 +29,9 @@
     </Border>
   </ControlTemplate>
 
-  <ControlTheme x:Key="{x:Type TableViewColumnHeader}" TargetType="TableViewColumnHeader">
+  <ControlTheme x:Key="{x:Type TableViewColumnHeader}" TargetType="TableViewColumnHeader" BasedOn="{StaticResource DefaultTableViewColumnHeaderTheme}"/>
+
+  <ControlTheme x:Key="DefaultTableViewColumnHeaderTheme" TargetType="TableViewColumnHeader">
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="Padding" Value="{DynamicResource TableViewCellPadding}" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />

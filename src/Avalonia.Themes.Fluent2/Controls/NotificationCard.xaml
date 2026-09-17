@@ -69,14 +69,16 @@
   <StreamGeometry x:Key="NotificationCardErrorIconGeometry">M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.53 6.47-.084-.073a.75.75 0 0 0-.882-.007l-.094.08L12 10.939l-2.47-2.47-.084-.072a.75.75 0 0 0-.882-.007l-.094.08-.073.084a.75.75 0 0 0-.007.882l.08.094L10.939 12l-2.47 2.47-.072.084a.75.75 0 0 0-.007.882l.08.094.084.073a.75.75 0 0 0 .882.007l.094-.08L12 13.061l2.47 2.47.084.072a.75.75 0 0 0 .882.007l.094-.08.073-.084a.75.75 0 0 0 .007-.882l-.08-.094L13.061 12l2.47-2.47.072-.084a.75.75 0 0 0 .007-.882l-.08-.094-.084-.073.084.073Z</StreamGeometry>
   <StreamGeometry x:Key="NotificationCardDismissIconGeometry">m4.21 4.387.083-.094a1 1 0 0 1 1.32-.083l.094.083L12 10.585l6.293-6.292a1 1 0 1 1 1.414 1.414L13.415 12l6.292 6.293a1 1 0 0 1 .083 1.32l-.083.094a1 1 0 0 1-1.32.083l-.094-.083L12 13.415l-6.293 6.292a1 1 0 0 1-1.414-1.414L10.585 12 4.293 5.707a1 1 0 0 1-.083-1.32l.083-.094-.083.094Z</StreamGeometry>
 
-  <ControlTheme x:Key="Fluent2NotificationCardCloseButtonTheme" TargetType="Button"  BasedOn="{StaticResource FluentButtonTheme}">
+  <ControlTheme x:Key="Fluent2NotificationCardCloseButtonTheme" TargetType="Button"  BasedOn="{StaticResource DefaultButtonTheme}">
     <Setter Property="Width" Value="{StaticResource NotificationCardCloseButtonSize}" />
     <Setter Property="Height" Value="{StaticResource NotificationCardCloseButtonSize}" />
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="Margin" Value="5" />
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type NotificationCard}" TargetType="NotificationCard">
+  <ControlTheme x:Key="{x:Type NotificationCard}" TargetType="NotificationCard" BasedOn="{StaticResource DefaultNotificationCardTheme}"/>
+
+  <ControlTheme x:Key="DefaultNotificationCardTheme" TargetType="NotificationCard">
     <Setter Property="UseLayoutRounding" Value="True"/>
     <Setter Property="Width" Value="{DynamicResource NotificationCardWidth}"/>
     <Setter Property="Background" Value="Transparent" />

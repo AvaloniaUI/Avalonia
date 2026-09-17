@@ -28,7 +28,9 @@
 
   <Thickness x:Key="TabControlTopPlacementItemMargin">0 0 0 2</Thickness>
 
-  <ControlTheme x:Key="{x:Type TabControl}" TargetType="TabControl">
+  <ControlTheme x:Key="{x:Type TabControl}" TargetType="TabControl" BasedOn="{StaticResource DefaultTabControlTheme}"/>
+
+  <ControlTheme x:Key="DefaultTabControlTheme" TargetType="TabControl">
     <Setter Property="Margin" Value="0" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />

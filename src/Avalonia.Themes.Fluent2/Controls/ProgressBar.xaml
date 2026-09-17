@@ -42,7 +42,9 @@
 
   <converters:StringFormatConverter x:Key="StringFormatConverter"/>
 
-  <ControlTheme x:Key="{x:Type ProgressBar}" TargetType="ProgressBar">
+  <ControlTheme x:Key="{x:Type ProgressBar}" TargetType="ProgressBar" BasedOn="{StaticResource DefaultProgressBarTheme}"/>
+
+  <ControlTheme x:Key="DefaultProgressBarTheme" TargetType="ProgressBar">
     <Setter Property="Foreground" Value="{DynamicResource ProgressBarForeground}" />
     <Setter Property="Background" Value="{DynamicResource ProgressBarBackground}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarBorderThemeThickness}" />

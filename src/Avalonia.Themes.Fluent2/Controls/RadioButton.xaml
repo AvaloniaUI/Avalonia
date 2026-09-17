@@ -112,7 +112,9 @@
   The check glyph is a white dot on an accent-filled outer circle; it grows to 14px on hover and
   shrinks to 10px on press (167ms, fast-out-slow-in spline), and appears as a pressed preview dot
   while an unchecked radio is held (WinUI's PressedCheckGlyph, expressed here on CheckGlyph itself). -->
-  <ControlTheme x:Key="{x:Type RadioButton}" TargetType="RadioButton">
+  <ControlTheme x:Key="{x:Type RadioButton}" TargetType="RadioButton" BasedOn="{StaticResource DefaultRadioButtonTheme}"/>
+
+  <ControlTheme x:Key="DefaultRadioButtonTheme" TargetType="RadioButton">
     <Setter Property="Background" Value="{DynamicResource RadioButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource RadioButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrush}" />

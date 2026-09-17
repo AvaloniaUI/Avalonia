@@ -168,14 +168,9 @@
   <CornerRadius x:Key="ComboBoxDropDownButtonBackgroundCornerRadius">4</CornerRadius>
   <StreamGeometry x:Key="ComboBoxDropDownPathData">M4.293 8.293a1 1 0 0 1 1.414 0L12 14.586l6.293-6.293a1 1 0 1 1 1.414 1.414l-7 7a1 1 0 0 1-1.414 0l-7-7a1 1 0 0 1 0-1.414Z</StreamGeometry>
 
-  <!-- WinUI reference: ComboBox_themeresources.xaml (DefaultComboBoxStyle), 820 lines.
-  Closed control is Button-like: ControlFillColorDefault fill with a ControlElevationBorder
-  (both via the re-pointed ComboBox* aliases), radius 4 (ControlCornerRadius), background
-  sized to the inner border edge, 12px chevron in TextFillColorSecondary. The dropdown is an
-  acrylic flyout: OverlayCornerRadius 8, 1px SurfaceStrokeColorFlyout border and 0,4 content
-  margin (ComboBoxDropdownContentMargin). Press feedback is a fill change with an 83ms
-  cross-fade; WinUI has no press scale. -->
-  <ControlTheme x:Key="{x:Type ComboBox}" TargetType="ComboBox">
+  <ControlTheme x:Key="{x:Type ComboBox}" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxTheme}"/>
+
+  <ControlTheme x:Key="DefaultComboBoxTheme" TargetType="ComboBox">
     <Setter Property="Padding" Value="{DynamicResource ComboBoxPadding}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />

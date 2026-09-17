@@ -42,7 +42,9 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <ControlTheme x:Key="{x:Type RepeatButton}" TargetType="RepeatButton">
+  <ControlTheme x:Key="{x:Type RepeatButton}" TargetType="RepeatButton" BasedOn="{StaticResource DefaultRepeatButtonTheme}"/>
+
+  <ControlTheme x:Key="DefaultRepeatButtonTheme" TargetType="RepeatButton">
     <Setter Property="Background" Value="{DynamicResource RepeatButtonBackground}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="Foreground" Value="{DynamicResource RepeatButtonForeground}" />

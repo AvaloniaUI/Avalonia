@@ -28,7 +28,9 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer">
+  <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer" BasedOn="{StaticResource DefaultScrollViewerTheme}"/>
+
+  <ControlTheme x:Key="DefaultScrollViewerTheme" TargetType="ScrollViewer">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Template">
       <ControlTemplate>

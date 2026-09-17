@@ -10,7 +10,9 @@
     </Border>
   </Design.PreviewWith>
 
-  <ControlTheme x:Key="{x:Type dialogs:ManagedFileChooser}" TargetType="dialogs:ManagedFileChooser">
+  <ControlTheme x:Key="{x:Type dialogs:ManagedFileChooser}" TargetType="dialogs:ManagedFileChooser" BasedOn="{StaticResource DefaultManagedFileChooserTheme}"/>
+
+  <ControlTheme x:Key="DefaultManagedFileChooserTheme" TargetType="dialogs:ManagedFileChooser">
     <ControlTheme.Resources>
       <ResourceDictionary>
         <GradientStops x:Key="IconRes.FolderBackGradientStops">
@@ -346,7 +348,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type dialogs:ManagedFileChooserOverwritePrompt}" TargetType="dialogs:ManagedFileChooserOverwritePrompt">
+  <ControlTheme x:Key="{x:Type dialogs:ManagedFileChooserOverwritePrompt}" TargetType="dialogs:ManagedFileChooserOverwritePrompt" BasedOn="{StaticResource DefaultManagedFileChooserOverwritePromptTheme}"/>
+
+  <ControlTheme x:Key="DefaultManagedFileChooserOverwritePromptTheme" TargetType="dialogs:ManagedFileChooserOverwritePrompt">
     <Setter Property="MinWidth" Value="270" />
     <Setter Property="MaxWidth" Value="400" />
     <Setter Property="Template">

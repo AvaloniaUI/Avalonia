@@ -37,7 +37,9 @@
     <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type ComboBoxItem}" TargetType="ComboBoxItem">
+  <ControlTheme x:Key="{x:Type ComboBoxItem}" TargetType="ComboBoxItem" BasedOn="{StaticResource DefaultComboBoxItemTheme}"/>
+
+  <ControlTheme x:Key="DefaultComboBoxItemTheme" TargetType="ComboBoxItem">
     <Setter Property="Foreground" Value="{DynamicResource ComboBoxItemForeground}" />
     <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackground}" />
     <Setter Property="Padding" Value="{DynamicResource ComboBoxItemThemePadding}" />

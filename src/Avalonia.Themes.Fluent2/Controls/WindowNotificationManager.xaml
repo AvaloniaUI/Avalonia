@@ -8,7 +8,9 @@
        (InfoBarTitleFontWeight/FontSize), message 14 (message uses TextFillColorSecondary here — WinUI
        InfoBar uses Primary for both; see conversion notes). Vertical InfoBarPanel margins: title 0,14,0,0,
        message +4, 16 bottom padding. Horizontal padding comes from the NotificationCard template. -->
-  <ControlTheme x:Key="{x:Type WindowNotificationManager}" TargetType="WindowNotificationManager">
+  <ControlTheme x:Key="{x:Type WindowNotificationManager}" TargetType="WindowNotificationManager" BasedOn="{StaticResource DefaultWindowNotificationManagerTheme}"/>
+
+  <ControlTheme x:Key="DefaultWindowNotificationManagerTheme" TargetType="WindowNotificationManager">
     <Setter Property="Margin" Value="0 0" />
     <Setter Property="Template">
       <ControlTemplate>

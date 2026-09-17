@@ -163,7 +163,8 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type TextBox}" TargetType="TextBox">
+  <ControlTheme x:Key="{x:Type TextBox}" TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxTheme}"/>
+  <ControlTheme x:Key="DefaultTextBoxTheme" TargetType="TextBox">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
     <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />

@@ -20,7 +20,9 @@
        not exist in FluentControlResources.xaml yet). Padding lives on the template root, as
        on WinUI's RootGrid, so the chevron sits inside it with an 8px gap to the content.
        Press feedback is a fill change with an 83ms cross-fade; WinUI has no press scale. -->
-  <ControlTheme x:Key="{x:Type DropDownButton}" TargetType="DropDownButton">
+  <ControlTheme x:Key="{x:Type DropDownButton}" TargetType="DropDownButton" BasedOn="{StaticResource DefaultDropDownButtonTheme}"/>
+
+  <ControlTheme x:Key="DefaultDropDownButtonTheme" TargetType="DropDownButton">
     <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />

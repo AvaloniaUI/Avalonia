@@ -102,7 +102,9 @@
     </Setter>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type CalendarDatePicker}" TargetType="CalendarDatePicker">
+  <ControlTheme x:Key="{x:Type CalendarDatePicker}" TargetType="CalendarDatePicker" BasedOn="{StaticResource DefaultCalendarDatePickerTheme}"/>
+
+  <ControlTheme x:Key="DefaultCalendarDatePickerTheme" TargetType="CalendarDatePicker">
     <Setter Property="Background" Value="{DynamicResource CalendarDatePickerBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CalendarDatePickerForeground}" />
     <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />

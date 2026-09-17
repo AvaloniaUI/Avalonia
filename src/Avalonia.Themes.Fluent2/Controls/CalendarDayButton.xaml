@@ -24,7 +24,9 @@
   <CornerRadius x:Key="CalendarViewDayItemCornerRadius">20</CornerRadius>
   <x:Double x:Key="CalendarViewDayItemFontSize">14</x:Double>
 
-  <ControlTheme x:Key="{x:Type CalendarDayButton}" TargetType="CalendarDayButton">
+  <ControlTheme x:Key="{x:Type CalendarDayButton}" TargetType="CalendarDayButton" BasedOn="{StaticResource DefaultCalendarDayButtonTheme}"/>
+
+  <ControlTheme x:Key="DefaultCalendarDayButtonTheme" TargetType="CalendarDayButton">
     <Setter Property="ClickMode" Value="Release" />
     <Setter Property="MinWidth" Value="40" />
     <Setter Property="MinHeight" Value="40" />

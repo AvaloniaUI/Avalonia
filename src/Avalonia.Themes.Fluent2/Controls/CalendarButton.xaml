@@ -15,16 +15,12 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- WinUI reference: CalendarView_themeresources.xaml (Fluent v2 resources), tag winui3/release/1.5.2.
-       Month/year items follow the same treatment as day items (transparent rest, subtle-fill
-       hover/press, accent fill for the highlighted item) but, unlike the circular day items, they
-       stretch to fill their grid cells in Avalonia, so a 4px rounded rect is used instead of a
-       circle. The corner radius and font size are not exposed as WinUI theme resources and are
-       approximated here from the WinUI visuals. -->
   <CornerRadius x:Key="CalendarViewMonthYearItemCornerRadius">4</CornerRadius>
   <x:Double x:Key="CalendarViewMonthYearItemFontSize">14</x:Double>
 
-  <ControlTheme x:Key="{x:Type CalendarButton}" TargetType="CalendarButton">
+  <ControlTheme x:Key="{x:Type CalendarButton}" TargetType="CalendarButton" BasedOn="{StaticResource DefaultCalendarButton}"/>
+
+  <ControlTheme x:Key="DefaultCalendarButton" TargetType="CalendarButton">
     <Setter Property="ClickMode" Value="Release" />
     <Setter Property="MinWidth" Value="56" />
     <Setter Property="MinHeight" Value="48" />

@@ -66,10 +66,10 @@
   <x:Double x:Key="CalendarDayButtonFontSize">12</x:Double>
   <FontWeight x:Key="CalendarViewTodayFontWeight">SemiBold</FontWeight>
 
-  <!-- WinUI reference: CalendarView_themeresources.xaml (Fluent v2 resources), tag winui3/release/1.5.2.
-  The outer chrome is a solid surface (CalendarViewBackground) with a 1px stroke
-  (CalendarViewBorderBrush) and the Windows 11 overlay radius of 8. -->
-  <ControlTheme x:Key="{x:Type Calendar}" TargetType="Calendar">
+
+  <ControlTheme x:Key="{x:Type Calendar}" TargetType="Calendar" BasedOn="{StaticResource DefaultCalendarTheme}"/>
+
+  <ControlTheme x:Key="DefaultCalendarTheme" TargetType="Calendar">
     <Setter Property="Foreground" Value="{DynamicResource CalendarViewForeground}" />
     <Setter Property="Background" Value="{DynamicResource CalendarViewBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewBorderBrush}" />

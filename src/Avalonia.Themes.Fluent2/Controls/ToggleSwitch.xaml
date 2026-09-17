@@ -92,12 +92,9 @@
   <x:Double x:Key="ToggleSwitchThemeMinWidth">154</x:Double>
   <Easing x:Key="ToggleSwitchKnobEasing">0,0,0,1</Easing>
 
-  <!-- WinUI reference: ToggleSwitch_themeresources.xaml (DefaultToggleSwitchStyle), tag winui3/release/1.5.2.
-  Track is 40x20 with a 10px corner radius; off = 1px strong stroke over a subtle alt fill,
-  on = accent fill with zero stroke. The 12px knob grows to 14px on hover and stretches to a
-  17x14 pill anchored to the near track edge while pressed; knob size and slide changes use a
-  167ms fast-out-slow-in spline. -->
-  <ControlTheme x:Key="{x:Type ToggleSwitch}" TargetType="ToggleSwitch">
+  <ControlTheme x:Key="{x:Type ToggleSwitch}" TargetType="ToggleSwitch" BasedOn="{StaticResource DefaultToggleSwitchTheme}"/>
+
+  <ControlTheme x:Key="DefaultToggleSwitchTheme" TargetType="ToggleSwitch">
     <Setter Property="Foreground" Value="{DynamicResource ToggleSwitchContentForeground}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />

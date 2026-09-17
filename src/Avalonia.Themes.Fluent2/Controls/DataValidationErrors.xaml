@@ -30,6 +30,9 @@
        flyout uses flyout chrome (OverlayCornerRadius, AcrylicInAppFillColorDefaultBrush
        fallback fill, 1px SurfaceStrokeColorFlyoutBrush stroke). -->
   <ControlTheme x:Key="{x:Type DataValidationErrors}"
+                TargetType="DataValidationErrors" BasedOn="{StaticResource DefaultDataValidationErrorsTheme}"/>
+
+  <ControlTheme x:Key="DefaultDataValidationErrorsTheme"
                 TargetType="DataValidationErrors">
     <Setter Property="Template">
       <ControlTemplate TargetType="DataValidationErrors">

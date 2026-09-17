@@ -37,7 +37,9 @@
   <Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
   <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
 
-  <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
+  <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip" BasedOn="{StaticResource DefaultToolTipTheme}"/>
+
+  <ControlTheme x:Key="DefaultToolTipTheme" TargetType="ToolTip">
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
     <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />

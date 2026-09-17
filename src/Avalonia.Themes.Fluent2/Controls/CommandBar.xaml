@@ -669,7 +669,9 @@
 
   <!-- CommandBarSeparator ControlTheme (WinUI DefaultAppBarSeparatorStyle:
   1px DividerStrokeColorDefault, AppBarSeparatorMargin 2,8, corner radius 0.5) -->
-  <ControlTheme x:Key="{x:Type CommandBarSeparator}" TargetType="CommandBarSeparator">
+  <ControlTheme x:Key="{x:Type CommandBarSeparator}" TargetType="CommandBarSeparator" BasedOn="{StaticResource DefaultCommandBarSeparatorTheme}"/>
+
+  <ControlTheme x:Key="DefaultCommandBarSeparatorTheme" TargetType="CommandBarSeparator">
     <Setter Property="Foreground" Value="{DynamicResource CommandSeparatorForeground}" />
     <Setter Property="Padding" Value="{DynamicResource CommandBarSeparatorMargin}" />
     <Setter Property="IsTabStop" Value="False" />
@@ -695,7 +697,9 @@
   </ControlTheme>
 
   <!-- CommandBar ControlTheme (WinUI XamlDefaultCommandBar) -->
-  <ControlTheme x:Key="{x:Type CommandBar}" TargetType="CommandBar">
+  <ControlTheme x:Key="{x:Type CommandBar}" TargetType="CommandBar" BasedOn="{StaticResource DefaultCommandBarTheme}"/>
+
+  <ControlTheme x:Key="DefaultCommandBarTheme" TargetType="CommandBar">
     <Setter Property="Background" Value="{DynamicResource CommandBarBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CommandBarForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}" />

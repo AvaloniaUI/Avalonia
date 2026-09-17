@@ -179,7 +179,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type ScrollBar}" TargetType="ScrollBar">
+  <ControlTheme x:Key="{x:Type ScrollBar}" TargetType="ScrollBar" BasedOn="{StaticResource DefaultScrollBarTheme}"/>
+
+  <ControlTheme x:Key="DefaultScrollBarTheme" TargetType="ScrollBar">
     <Setter Property="MinWidth" Value="{DynamicResource ScrollBarSize}" />
     <Setter Property="MinHeight" Value="{DynamicResource ScrollBarSize}" />
     <Setter Property="Background" Value="{DynamicResource ScrollBarBackground}" />

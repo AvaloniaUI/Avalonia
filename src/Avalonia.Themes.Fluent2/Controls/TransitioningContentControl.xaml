@@ -1,7 +1,9 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
-  <ControlTheme x:Key="{x:Type TransitioningContentControl}" TargetType="TransitioningContentControl">
+  <ControlTheme x:Key="{x:Type TransitioningContentControl}" TargetType="TransitioningContentControl" BasedOn="{StaticResource DefaultTransitioningContentControlTheme}"/>
+
+  <ControlTheme x:Key="DefaultTransitioningContentControlTheme" TargetType="TransitioningContentControl">
     <Setter Property="Template">
       <ControlTemplate>
         <Panel>

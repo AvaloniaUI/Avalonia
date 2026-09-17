@@ -12,7 +12,9 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <ControlTheme x:Key="{x:Type RefreshVisualizer}"
+  <ControlTheme x:Key="{x:Type RefreshVisualizer}" TargetType="RefreshVisualizer" BasedOn="{StaticResource DefaultRefreshVisualizerTheme}"/>
+
+  <ControlTheme x:Key="DefaultRefreshVisualizerTheme"
                 TargetType="RefreshVisualizer">
     <Setter Property="IsTabStop" Value="False"/>
     <Setter Property="IsHitTestVisible" Value="False"/>

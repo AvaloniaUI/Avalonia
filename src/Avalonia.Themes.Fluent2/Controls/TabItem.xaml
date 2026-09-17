@@ -56,7 +56,8 @@
   <CornerRadius x:Key="TabItemHeaderSelectedPipeCornerRadius">1.5</CornerRadius>
   <x:Double x:Key="TabItemSelectionIndicatorHeight">3</x:Double>
 
-  <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem">
+  <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem" BasedOn="{StaticResource DefaultTabItemTheme}"/>
+  <ControlTheme x:Key="DefaultTabItemTheme" TargetType="TabItem">
     <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
     <Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
     <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselected}" />

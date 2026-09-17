@@ -70,8 +70,8 @@
       </CombinedGeometry.Geometry2>
     </CombinedGeometry>
   </GeometryGroup>
-  <ControlTheme x:Key="{x:Type TextSelectionHandle}"
-                TargetType="TextSelectionHandle">
+  <ControlTheme x:Key="{x:Type TextSelectionHandle}" TargetType="TextSelectionHandle" BasedOn="{StaticResource DefaultTextSelectionHandle}"/>
+  <ControlTheme x:Key="DefaultTextSelectionHandle" TargetType="TextSelectionHandle">
     <Setter Property="Background"
             Value="{DynamicResource AccentFillColorDefaultBrush}" />
     <Setter Property="HorizontalAlignment"

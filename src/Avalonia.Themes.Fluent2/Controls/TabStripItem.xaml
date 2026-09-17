@@ -72,7 +72,8 @@
     <Setter Property="Width" Value="{DynamicResource TabStripItemPillWidth}"/>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type TabStripItem}" TargetType="TabStripItem">
+  <ControlTheme x:Key="{x:Type TabStripItem}" TargetType="TabStripItem" BasedOn="{StaticResource DefaultTabStripItemTheme}"/>
+  <ControlTheme x:Key="DefaultTabStripItemTheme" TargetType="TabStripItem">
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Foreground" Value="{DynamicResource TabStripItemForeground}"/>

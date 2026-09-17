@@ -125,7 +125,8 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type TimePicker}" TargetType="TimePicker">
+  <ControlTheme x:Key="{x:Type TimePicker}" TargetType="TimePicker" BasedOn="{StaticResource DefaultTimePickerTheme}"/>
+  <ControlTheme x:Key="DefaultTimePickerTheme" TargetType="TimePicker">
     <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrush}"/>
@@ -241,7 +242,8 @@
   </ControlTheme>
 
 
-  <ControlTheme x:Key="{x:Type TimePickerPresenter}" TargetType="TimePickerPresenter">
+  <ControlTheme x:Key="{x:Type TimePickerPresenter}" TargetType="TimePickerPresenter" BasedOn="{StaticResource DefaultTimePickerPresenterTheme}"/>
+  <ControlTheme x:Key="DefaultTimePickerPresenterTheme" TargetType="TimePickerPresenter">
     <Setter Property="Width" Value="242" />
     <Setter Property="MinWidth" Value="242" />
     <Setter Property="MaxHeight" Value="398" />

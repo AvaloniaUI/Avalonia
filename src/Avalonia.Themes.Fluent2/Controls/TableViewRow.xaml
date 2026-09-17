@@ -36,7 +36,9 @@
   </ResourceDictionary.ThemeDictionaries>
   <Thickness x:Key="TableViewRowPadding">6,9,6,12</Thickness>
 
-  <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow">
+  <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow" BasedOn="{StaticResource DefaultTableViewRowTheme}"/>
+
+  <ControlTheme x:Key="DefaultTableViewRowTheme" TargetType="TableViewRow">
     <Setter Property="Background" Value="{DynamicResource TableViewRowBackground}" />
     <Setter Property="Padding" Value="{DynamicResource TableViewRowPadding}" />
     <Setter Property="Template">

@@ -63,7 +63,9 @@
        rest transparent, hover SubtleFillColorSecondary, pressed SubtleFillColorTertiary,
        disabled text TextFillColorDisabled. Icon/check column is 16px, sub-item chevron is a 12px
        TextFillColorSecondary glyph, accelerator text is caption-sized TextFillColorSecondary. -->
-  <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem">
+  <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemTheme}"/>
+
+  <ControlTheme x:Key="DefaultMenuItemTheme" TargetType="MenuItem">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />

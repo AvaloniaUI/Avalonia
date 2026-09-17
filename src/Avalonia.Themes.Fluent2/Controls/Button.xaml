@@ -68,8 +68,9 @@
 
   <Thickness x:Key="ButtonBorderThemeThickness">1</Thickness>
 
-  <ControlTheme x:Key="{x:Type Button}" TargetType="Button" BasedOn="{StaticResource FluentButtonTheme}"/>
-  <ControlTheme x:Key="FluentButtonTheme" TargetType="Button">
+  <ControlTheme x:Key="{x:Type Button}" TargetType="Button" BasedOn="{StaticResource DefaultButtonTheme}"/>
+
+  <ControlTheme x:Key="DefaultButtonTheme" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />

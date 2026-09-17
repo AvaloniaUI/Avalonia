@@ -67,7 +67,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type CalendarItem}" TargetType="CalendarItem">
+  <ControlTheme x:Key="{x:Type CalendarItem}" TargetType="CalendarItem" BasedOn="{StaticResource DefaultCalendarItemTheme}"/>
+
+  <ControlTheme x:Key="DefaultCalendarItemTheme" TargetType="CalendarItem">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="DayTitleTemplate">
       <Template x:DataType="x:String">

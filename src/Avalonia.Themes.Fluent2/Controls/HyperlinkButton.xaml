@@ -58,7 +58,9 @@
   foreground is the accent text colour and hover/press show a subtle background fill
   cross-faded over 83ms. WinUI has no press scale. The :visited state is
   Avalonia-specific and has no WinUI equivalent. -->
-  <ControlTheme x:Key="{x:Type HyperlinkButton}" TargetType="HyperlinkButton">
+  <ControlTheme x:Key="{x:Type HyperlinkButton}" TargetType="HyperlinkButton" BasedOn="{StaticResource DefaultHyperlinkButtonTheme}"/>
+
+  <ControlTheme x:Key="DefaultHyperlinkButtonTheme" TargetType="HyperlinkButton">
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Background" Value="{DynamicResource HyperlinkButtonBackground}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />

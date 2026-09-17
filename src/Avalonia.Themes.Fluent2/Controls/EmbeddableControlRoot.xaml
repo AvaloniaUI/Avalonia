@@ -1,7 +1,9 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
-  <ControlTheme x:Key="{x:Type EmbeddableControlRoot}" TargetType="EmbeddableControlRoot">
+  <ControlTheme x:Key="{x:Type EmbeddableControlRoot}" TargetType="EmbeddableControlRoot" BasedOn="{StaticResource DefaultEmbeddableControlRootTheme}"/>
+
+  <ControlTheme x:Key="DefaultEmbeddableControlRootTheme" TargetType="EmbeddableControlRoot">
     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
     <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}"/>
     <Setter Property="TopLevel.SystemBarColor" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>

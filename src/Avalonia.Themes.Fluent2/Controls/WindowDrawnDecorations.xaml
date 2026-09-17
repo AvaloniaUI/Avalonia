@@ -47,7 +47,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type WindowDrawnDecorations}" TargetType="WindowDrawnDecorations">
+  <ControlTheme x:Key="{x:Type WindowDrawnDecorations}" TargetType="WindowDrawnDecorations" BasedOn="{StaticResource DefaultWindowDrawnDecorationsTheme}"/>
+
+  <ControlTheme x:Key="DefaultWindowDrawnDecorationsTheme" TargetType="WindowDrawnDecorations">
     <Setter Property="DefaultTitleBarHeight" Value="30"/>
     <Setter Property="DefaultFrameThickness" Value="1"/>
     <Setter Property="DefaultShadowThickness" Value="8"/>

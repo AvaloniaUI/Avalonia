@@ -147,7 +147,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type DatePicker}" TargetType="DatePicker">
+  <ControlTheme x:Key="{x:Type DatePicker}" TargetType="DatePicker" BasedOn="{StaticResource DefaultDatePickerTheme}"/>
+
+  <ControlTheme x:Key="DefaultDatePickerTheme" TargetType="DatePicker">
     <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrush}"/>
@@ -218,7 +220,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type DatePickerPresenter}" TargetType="DatePickerPresenter">
+  <ControlTheme x:Key="{x:Type DatePickerPresenter}" TargetType="DatePickerPresenter" BasedOn="{StaticResource DefaultDatePickerPresenterTheme}"/>
+
+  <ControlTheme x:Key="DefaultDatePickerPresenterTheme" TargetType="DatePickerPresenter">
     <Setter Property="Width" Value="296" />
     <Setter Property="MinWidth" Value="296" />
     <Setter Property="MaxHeight" Value="398" />

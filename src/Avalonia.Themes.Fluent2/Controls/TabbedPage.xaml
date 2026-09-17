@@ -434,7 +434,8 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type TabbedPage}" TargetType="TabbedPage">
+  <ControlTheme x:Key="{x:Type TabbedPage}" TargetType="TabbedPage" BasedOn="{StaticResource DefaultTabbedPageTheme}"/>
+  <ControlTheme x:Key="DefaultTabbedPageTheme" TargetType="TabbedPage">
     <Setter Property="Background" Value="{DynamicResource TabbedPageBackground}" />
     <Setter Property="Template">
       <ControlTemplate>

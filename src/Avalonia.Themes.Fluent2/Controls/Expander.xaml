@@ -274,7 +274,9 @@
     </Style>
   </ControlTheme>
 
-  <ControlTheme x:Key="{x:Type Expander}" TargetType="Expander">
+  <ControlTheme x:Key="{x:Type Expander}" TargetType="Expander" BasedOn="{StaticResource DefaultExpanderTheme}"/>
+
+  <ControlTheme x:Key="DefaultExpanderTheme" TargetType="Expander">
     <Setter Property="IsTabStop" Value="False"/>
     <Setter Property="MinWidth" Value="{DynamicResource FlyoutThemeMinWidth}" />
     <Setter Property="MinHeight" Value="{DynamicResource ExpanderMinHeight}" />

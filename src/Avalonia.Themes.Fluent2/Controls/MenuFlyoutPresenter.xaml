@@ -58,7 +58,9 @@
   <Thickness x:Key="MenuFlyoutItemThemePadding">11,8,11,9</Thickness>
   <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,5</Thickness>
 
-  <ControlTheme x:Key="{x:Type MenuFlyoutPresenter}" TargetType="MenuFlyoutPresenter">
+  <ControlTheme x:Key="{x:Type MenuFlyoutPresenter}" TargetType="MenuFlyoutPresenter" BasedOn="{StaticResource DefaultMenuFlyoutPresenterTheme}"/>
+
+  <ControlTheme x:Key="DefaultMenuFlyoutPresenterTheme" TargetType="MenuFlyoutPresenter">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutPresenterBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}" />

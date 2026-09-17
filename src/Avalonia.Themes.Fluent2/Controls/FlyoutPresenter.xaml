@@ -23,7 +23,9 @@
 
   <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
   <Thickness x:Key="FlyoutContentPadding">16,15,16,17</Thickness>
-  <ControlTheme x:Key="{x:Type FlyoutPresenter}" TargetType="FlyoutPresenter">
+  <ControlTheme x:Key="{x:Type FlyoutPresenter}" TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterTheme}"/>
+
+  <ControlTheme x:Key="DefaultFlyoutPresenterTheme" TargetType="FlyoutPresenter">
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Background" Value="{DynamicResource FlyoutPresenterBackground}" />

@@ -13,7 +13,9 @@
     </Border>
   </Design.PreviewWith>
 
-  <ControlTheme x:Key="{x:Type CarouselPage}" TargetType="CarouselPage">
+  <ControlTheme x:Key="{x:Type CarouselPage}" TargetType="CarouselPage" BasedOn="{StaticResource DefaultCarouselPageTheme}"/>
+
+  <ControlTheme x:Key="DefaultCarouselPageTheme" TargetType="CarouselPage">
     <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
     <Setter Property="Template">
       <ControlTemplate>
