@@ -82,9 +82,3 @@ English-only for now.
 - OS-provided accent colors still use HSL-computed shades, which can deviate
   slightly from Windows' palette algorithm.
 
-## Compatibility tests
-
-`tests/Avalonia.Themes.Fluent2.UnitTests` enforces the drop-in contract against
-the live v1 theme: key parity in both variants with compatible runtime types,
-implicit `ControlTheme` coverage, palette semantics, compact-density key
-parity, and an instantiation/render smoke test over every themed control.
