@@ -128,6 +128,10 @@ internal unsafe partial class VulkanDevice
     {
         instance.GetPhysicalDeviceProperties(physicalDevice, out var properties);
 
+        var deviceName = Marshal.PtrToStringAnsi((IntPtr)properties.deviceName);
+        if (deviceName?.StartsWith("Parallels Display Adapter", StringComparison.OrdinalIgnoreCase) == true)
+            return null;
+
         var supportedExtensions = GetDeviceExtensions(instance, physicalDevice);
         if (options.RequireSwapchainExtension && !supportedExtensions.Contains(VK_KHR_swapchain))
             return null;
