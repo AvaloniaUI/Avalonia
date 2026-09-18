@@ -283,6 +283,13 @@ namespace Avalonia.Media
                 throw new NotImplementedException();
             }
 
+            internal override void DrawRecordingCore(Rendering.Composition.DrawingRecording recording, Matrix transform)
+            {
+                throw new NotSupportedException(
+                    "A DrawingRecording cannot be drawn into a DrawingGroup: the group holds a tree of " +
+                    "Drawing objects and a recording has no Drawing representation.");
+            }
+
             protected override void DrawLineCore(IPen pen, Point p1, Point p2)
             {
                 // Instantiate the geometry

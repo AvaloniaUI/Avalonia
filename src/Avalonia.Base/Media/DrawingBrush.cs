@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
@@ -10,7 +10,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Paints an area with an <see cref="Drawing"/>.
     /// </summary>
-    public sealed class DrawingBrush : TileBrush, ISceneBrush
+    public sealed class DrawingBrush : TileBrush, ISceneBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Drawing"/> property.
@@ -52,6 +52,8 @@ namespace Avalonia.Media
             Drawing?.Draw(recorder);
             return recorder.GetImmediateSceneBrushContent(this, null, true);
         }
+
+        IImmutableBrush IMutableBrush.ToImmutable() => SceneBrushSnapshot.Take(this);
 
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
             static c => new ServerCompositionSimpleContentBrush(c.Server);

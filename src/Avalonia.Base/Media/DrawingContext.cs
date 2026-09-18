@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -67,6 +68,90 @@ namespace Avalonia.Media
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         internal abstract void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect);
+
+        /// <summary>
+        /// Draws a previously recorded drawing. The enclosing recording (when
+        /// <paramref name="recording"/> is drawn into another <see cref="DrawingRecording"/>)
+        /// retains a reference to the child for its own lifetime, so the child may be
+        /// disposed independently by its owner.
+        /// </summary>
+        /// <param name="recording">The drawing recording to replay.</param>
+        public void DrawRecording(DrawingRecording recording)
+        {
+            ValidateRecording(recording);
+            DrawRecordingCore(recording, Matrix.Identity);
+        }
+
+        /// <summary>
+        /// Draws a previously recorded drawing under an additional transform.
+        /// Semantically equivalent to pushing the transform, drawing the
+        /// recording, then popping the transform; recording contexts fuse the
+        /// transform and the drawn recording into a single recorded node.
+        /// </summary>
+        /// <param name="recording">The drawing recording to replay.</param>
+        /// <param name="transform">The transform to apply around the draw call.</param>
+        public void DrawRecording(DrawingRecording recording, Matrix transform)
+        {
+            ValidateRecording(recording);
+            DrawRecordingCore(recording, transform);
+        }
+
+        /// <summary>
+        /// Draws a previously recorded drawing with an explicit ownership contract.
+        /// </summary>
+        /// <param name="recording">The drawing recording to replay.</param>
+        /// <param name="ownership">Whether the enclosing recording (if any) takes
+        /// responsibility for disposing <paramref name="recording"/>. Honored only when
+        /// this context is building a <see cref="DrawingRecording"/>; replay contexts
+        /// ignore ownership.</param>
+        internal void DrawRecording(DrawingRecording recording, DrawingRecordingOwnership ownership)
+        {
+            ValidateRecording(recording);
+            if (ownership == DrawingRecordingOwnership.Owned)
+                RegisterOwnedRecording(recording);
+            DrawRecordingCore(recording, Matrix.Identity);
+        }
+
+        /// <summary>
+        /// Draws a previously recorded drawing under a transform with an explicit
+        /// ownership contract.
+        /// </summary>
+        /// <param name="recording">The drawing recording to replay.</param>
+        /// <param name="transform">The transform to apply around the draw call.</param>
+        /// <param name="ownership">Whether the enclosing recording (if any) takes
+        /// responsibility for disposing <paramref name="recording"/>. Honored only when
+        /// this context is building a <see cref="DrawingRecording"/>; replay contexts
+        /// ignore ownership.</param>
+        internal void DrawRecording(DrawingRecording recording, Matrix transform, DrawingRecordingOwnership ownership)
+        {
+            ValidateRecording(recording);
+            if (ownership == DrawingRecordingOwnership.Owned)
+                RegisterOwnedRecording(recording);
+            DrawRecordingCore(recording, transform);
+        }
+
+        /// <summary>
+        /// Overridden by contexts that build a <see cref="DrawingRecording"/> to track
+        /// <see cref="DrawingRecordingOwnership.Owned"/> children so that the resulting
+        /// recording disposes them. Replay contexts leave this as a no-op.
+        /// </summary>
+        internal virtual void RegisterOwnedRecording(DrawingRecording recording) { }
+
+        private static void ValidateRecording(DrawingRecording recording)
+        {
+            _ = recording ?? throw new ArgumentNullException(nameof(recording));
+            if (recording.IsDisposed)
+                throw new ObjectDisposedException(
+                    nameof(DrawingRecording),
+                    "Cannot draw a disposed DrawingRecording.");
+        }
+
+        /// <summary>
+        /// When overridden in a derived class, draws a previously recorded drawing under
+        /// <paramref name="transform"/>. Replay contexts compose the transform around the
+        /// draw; recording contexts fuse both into a single node.
+        /// </summary>
+        internal abstract void DrawRecordingCore(DrawingRecording recording, Matrix transform);
 
         /// <summary>
         /// Draws a line.
@@ -391,7 +476,7 @@ namespace Avalonia.Media
         protected abstract void PushOpacityCore(double opacity);
 
         /// <summary>
-        /// Pushes an opacity mask.
+        /// Pushes an alpha opacity mask.
         /// </summary>
         /// <param name="mask">The opacity mask.</param>
         /// <param name="bounds">
@@ -488,7 +573,7 @@ namespace Avalonia.Media
         /// Pops an effect.
         /// </summary>
         protected abstract void PopEffectCore();
-        
+
         private static bool PenIsVisible(IPen? pen)
         {
             return pen?.Brush != null && pen.Thickness > 0;

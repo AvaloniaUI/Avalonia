@@ -20,7 +20,14 @@
         <Property Name="Opacity" Type="float" Animated="true" DefaultValue="1"/>
         
         <Property Name="Clip" Type="Avalonia.Platform.IGeometryImpl?" Internal="true" />
-        <Property Name="ClipToBounds" Type="bool" Animated="true" DefaultValue="true"/>
+        <!-- False matches Visual.ClipToBounds and UWP composition semantics. The
+             renderer sets this explicitly on element visuals every sync; a true
+             default combined with the (0,0) Size default gave every
+             directly-created visual an empty own-clip rect, nulling its subtree
+             bounds so the render pass culled it together with its children
+             (visuals attached via ElementComposition.SetElementChildVisual never
+             rendered unless Size was set). -->
+        <Property Name="ClipToBounds" Type="bool" Animated="true" DefaultValue="false"/>
         <Property Name="Offset" Type="Vector3D" Animated="true"/>
         <Property Name="Translation" Type="Vector3D" Animated="true"/>
         <Property Name="Size" Type="Vector" Animated="true"/>
