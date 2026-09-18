@@ -123,8 +123,13 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets whether safe-area padding is automatically applied to the content presenter.
+        /// Gets or sets whether safe-area padding is applied automatically to the page.
         /// </summary>
+        /// <remarks>
+        /// When enabled (the default), <see cref="Page.SafeAreaPadding"/> is absorbed by the command
+        /// bars on the edges they occupy and by the content on the remaining edges. Disable this when
+        /// the application manages safe-area insets itself.
+        /// </remarks>
         public bool AutomaticallyApplySafeAreaPadding
         {
             get => GetValue(AutomaticallyApplySafeAreaPaddingProperty);
@@ -178,19 +183,37 @@ namespace Avalonia.Controls
                      || change.Property == BottomCommandBarProperty)
             {
                 UpdateCommandBars();
+                UpdateContentSafeAreaPadding();
             }
         }
 
         protected override void UpdateContentSafeAreaPadding()
         {
-            if (_contentPresenter != null)
+            var safeArea = AutomaticallyApplySafeAreaPadding ? SafeAreaPadding : default;
+
+            UpdateCommandBarPadding(_topCommandBarPresenter, TopCommandBar,
+                new Thickness(safeArea.Left, safeArea.Top, safeArea.Right, 0));
+            UpdateCommandBarPadding(_bottomCommandBarPresenter, BottomCommandBar,
+                new Thickness(safeArea.Left, 0, safeArea.Right, safeArea.Bottom));
+
+            if (_contentPresenter is not null)
             {
+                var contentSafeArea = new Thickness(
+                    safeArea.Left,
+                    TopCommandBar is null ? safeArea.Top : 0,
+                    safeArea.Right,
+                    BottomCommandBar is null ? safeArea.Bottom : 0);
+
                 _contentPresenter.Padding = AutomaticallyApplySafeAreaPadding
-                    ? Padding.ApplySafeAreaPadding(SafeAreaPadding)
+                    ? Padding.ApplySafeAreaPadding(contentSafeArea)
                     : Padding;
                 _contentPresenter.InvalidateMeasure();
-
             }
+        }
+
+        private static void UpdateCommandBarPadding(ContentPresenter? presenter, object? commandBar, Thickness padding)
+        {
+            presenter?.Padding = commandBar is null ? default : padding;
         }
 
         private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
