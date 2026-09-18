@@ -167,6 +167,10 @@ namespace Avalonia.X11
                     // Emulate Window 7+'s default window size behavior.
                     defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
                     defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
+
+                    // The default size is in pixels, so initialize the scaling to match the monitor.
+                    // Otherwise UpdateScaling() would treat the pixel size as DIPs and scale it again.
+                    RenderScaling = monitor.Scaling;
                 }
             }
 
