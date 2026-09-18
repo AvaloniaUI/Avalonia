@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:data="using:Avalonia.Data"
+             xmlns:models="using:ControlCatalog.Models"
+             xmlns:controls="using:ControlCatalog.Controls"
+             x:Class="ControlCatalog.Pages.TextBoxValidationPage">
+  <ScrollViewer Padding="24,20,24,28">
+    <StackPanel Spacing="16">
+
+      <controls:SampleSection Header="Errors from the model"
+                              Description="A model that implements INotifyDataErrorInfo reports an error per property, and DataValidationErrors shows it under the box it came from. Clear a field to see the message appear."
+                              StageMinHeight="170">
+        <StackPanel Spacing="12" HorizontalAlignment="Left">
+          <TextBox Width="300"
+                   PlaceholderText="First name"
+                   Text="{Binding FirstName, x:DataType=models:Person}" />
+          <TextBox Width="300"
+                   PlaceholderText="Last name"
+                   Text="{Binding LastName, x:DataType=models:Person}" />
+          <TextBlock Classes="sample-caption"
+                     TextWrapping="Wrap"
+                     MaxWidth="300"
+                     Text="The message is whatever the model put in GetErrors, so it arrives already in the model's own wording." />
+        </StackPanel>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox Text="{Binding FirstName}" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Errors set directly"
+                              Description="DataValidationErrors.Error attaches an error to a control without any binding behind it, which is what a control shows while a converter or a setter is throwing."
+                              StageMinHeight="120">
+        <TextBox Width="300" HorizontalAlignment="Left" Text="Validation error">
+          <DataValidationErrors.Error>
+            <data:DataValidationException>
+                    <x:Arguments>
+                      <x:String>Enter a valid email address.</x:String>
+                    </x:Arguments>
+                  </data:DataValidationException>
+          </DataValidationErrors.Error>
+        </TextBox>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox Text="Validation error">
+  <DataValidationErrors.Error>
+    <data:DataValidationException>
+                    <x:Arguments>
+                      <x:String>Enter a valid email address.</x:String>
+                    </x:Arguments>
+                  </data:DataValidationException>
+  </DataValidationErrors.Error>
+</TextBox>]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -2,14 +2,21 @@ using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
-using Avalonia.Styling;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
     public partial class MainView : DrawerPage
     {
+        private const double WideBreakpoint = 1008;
+        private const double NarrowBreakpoint = 640;
+
+        private SplitViewDisplayMode? _lastAppliedMode;
+        private bool _updatingLayout;
+        private IInsetsManager? _insets;
+
         public MainView()
         {
             InitializeComponent();
@@ -17,9 +24,6 @@ namespace ControlCatalog
             Loaded += MainView_Loaded;
             Unloaded += MainView_Unloaded;
         }
-
-        private const double WideBreakpoint = 1008;
-        private const double NarrowBreakpoint = 640;
 
         protected override Type StyleKeyOverride => typeof(MainView);
 
@@ -30,11 +34,6 @@ namespace ControlCatalog
 
             SizeChanged += OnDrawerSizeChanged;
             UpdateAdaptiveLayout();
-
-            if (Application.Current is { } app)
-            {
-                app.RequestedThemeVariant = ThemeVariant.Default;
-            }
         }
 
         private void MainView_Unloaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -42,9 +41,6 @@ namespace ControlCatalog
             SizeChanged -= OnDrawerSizeChanged;
             _lastAppliedMode = null;
         }
-
-        private SplitViewDisplayMode? _lastAppliedMode;
-        private bool _updatingLayout;
 
         private void OnDrawerSizeChanged(object? sender, SizeChangedEventArgs e)
         {
@@ -117,33 +113,65 @@ namespace ControlCatalog
             var insets = topLevel.InsetsManager;
             if (insets != null)
             {
-                // In real life application these events should be unsubscribed to avoid memory leaks.
+                _insets = insets;
                 ViewModel.SafeAreaPadding = insets.SafeAreaPadding;
-                insets.SafeAreaChanged += (sender, args) =>
-                {
-                    ViewModel.SafeAreaPadding = insets.SafeAreaPadding;
-                };
+                insets.SafeAreaChanged += OnSafeAreaChanged;
 
                 ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdgePreference;
                 ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
 
-                ViewModel.PropertyChanged += async (sender, args) =>
-                {
-                    if (args.PropertyName == nameof(ViewModel.DisplayEdgeToEdge))
-                    {
-                        insets.DisplayEdgeToEdgePreference = ViewModel.DisplayEdgeToEdge;
-                    }
-                    else if (args.PropertyName == nameof(ViewModel.IsSystemBarVisible))
-                    {
-                        insets.IsSystemBarVisible = ViewModel.IsSystemBarVisible;
-                    }
-
-                    // Give the OS some time to apply new values and refresh the view model.
-                    await Task.Delay(100);
-                    ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdgePreference;
-                    ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
-                };
+                ViewModel.PropertyChanged += OnViewModelPropertyChanged;
             }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            if (_insets != null)
+            {
+                _insets.SafeAreaChanged -= OnSafeAreaChanged;
+                _insets = null;
+            }
+
+            if (DataContext != null)
+            {
+                ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            }
+        }
+
+        private void OnSafeAreaChanged(object? sender, SafeAreaChangedArgs e)
+        {
+            if (_insets != null)
+            {
+                ViewModel.SafeAreaPadding = _insets.SafeAreaPadding;
+            }
+        }
+
+        private async void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if (_insets is not { } insets)
+            {
+                return;
+            }
+
+            if (args.PropertyName == nameof(ViewModel.DisplayEdgeToEdge))
+            {
+                insets.DisplayEdgeToEdgePreference = ViewModel.DisplayEdgeToEdge;
+            }
+            else if (args.PropertyName == nameof(ViewModel.IsSystemBarVisible))
+            {
+                insets.IsSystemBarVisible = ViewModel.IsSystemBarVisible;
+            }
+            else
+            {
+                return;
+            }
+
+            // Give the OS some time to apply new values and refresh the view model.
+            await Task.Delay(100);
+            ViewModel.DisplayEdgeToEdge = insets.DisplayEdgeToEdgePreference;
+            ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
         }
 
         private async void AvaloniaIcon_OnTapped(object? sender, TappedEventArgs e)

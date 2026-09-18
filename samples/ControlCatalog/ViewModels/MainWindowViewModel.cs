@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -10,6 +11,7 @@ using Avalonia.Controls.Chrome;
 using Avalonia.Dialogs;
 using Avalonia.Media;
 using Avalonia.Styling;
+using ControlCatalog.Controls;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
 using MiniMvvm;
@@ -38,8 +40,9 @@ namespace ControlCatalog.ViewModels
             {
                 (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
             });
-            SettingsItem = new PageItem("Settings", () => new SettingsPage(SettingsViewModel), StreamGeometry.Parse(Icons.Settings), "Overview of everything in the catalog", null);
+            SettingsItem = new PageItem("Settings", () => new SettingsPage(SettingsViewModel), StreamGeometry.Parse(Icons.Settings), "Theme, transparency and window options", null);
             NavigateToPageCommand = MiniCommand.Create<PageItem>(NavigateToItem);
+            NavigateToSampleCommand = MiniCommand.Create<SampleInfo>(NavigateToSample);
             SettingsCommand = MiniCommand.Create(async () =>
             {
                 if (CurrentPageItem == SettingsItem)
@@ -75,6 +78,12 @@ namespace ControlCatalog.ViewModels
             field ??= _pageSections.Where(s => !string.IsNullOrEmpty(s.Title)).ToArray();
 
         public INavigation? Navigator { get; internal set; }
+
+        /// <summary>
+        /// The page currently shown by the navigator, so a deep link can ask a gallery to open a sample
+        /// without the shell duplicating the gallery's push logic.
+        /// </summary>
+        private Page? _currentPage;
 
         public bool ExtendClientAreaEnabled
         {
@@ -124,11 +133,6 @@ namespace ControlCatalog.ViewModels
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
-        public bool ExpandAllSections
-        {
-            get;
-            set => RaiseAndSetIfChanged(ref field, value);
-        }
 
         public string? OpenedSection
         {
@@ -187,7 +191,25 @@ namespace ControlCatalog.ViewModels
         public bool IsDrawerOpened
         {
             get;
-            set => RaiseAndSetIfChanged(ref field, value);
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref field, value))
+                {
+                    return;
+                }
+
+                // With the drawer shut the page list is hidden, so the section itself carries the marker;
+                // a gallery's sample list collapses with it, and reopens for the current page only.
+                foreach (var section in _pageSections)
+                {
+                    section.IsExpanded = value && section.IsCurrent;
+
+                    foreach (var page in section.Items ?? Array.Empty<PageItem>())
+                    {
+                        page.IsExpanded = value && page.IsCurrent;
+                    }
+                }
+            }
         } = true;
 
         public SplitViewDisplayMode DisplayMode
@@ -227,6 +249,8 @@ namespace ControlCatalog.ViewModels
 
         public MiniCommand NavigateToPageCommand { get; }
 
+        public MiniCommand NavigateToSampleCommand { get; }
+
         public MiniCommand SettingsCommand { get; }
 
         public MiniCommand HomeCommand { get; }
@@ -252,12 +276,87 @@ namespace ControlCatalog.ViewModels
 
         public void NavigateToItem(PageItem item)
         {
-            NavigateTo(item);
+            _ = NavigateToAsync(item);
+        }
+
+        /// <summary>
+        /// Opens a gallery sample from the drawer: shows the gallery page, then pushes the sample on top of it.
+        /// </summary>
+        public void NavigateToSample(SampleInfo sample)
+        {
+            // Registries are shared between the gallery and its drawer entry, so the owner is found by reference.
+            var item = _pageSections
+                .SelectMany(section => section.Items ?? Array.Empty<PageItem>())
+                .FirstOrDefault(page => page.Samples?.Contains(sample) == true);
+
+            if (item is not null)
+            {
+                _ = NavigateToSampleAsync(item, sample);
+            }
+        }
+
+        private async Task NavigateToSampleAsync(PageItem item, SampleInfo sample)
+        {
+            await NavigateToAsync(item);
+
+            if (_currentPage is SampleGalleryPage gallery)
+            {
+                await gallery.OpenAsync(sample);
+            }
+
+            if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
+            {
+                IsDrawerOpened = false;
+            }
+        }
+
+        private async Task NavigateToAsync(PageItem? item)
+        {
+            if (item is null || Navigator is null)
+                return;
+
+            // A gallery may have pushed a sample on top of its page. Drop it first: replacing the top page
+            // would leave the previous page below the new one, and the shell would show a back button that
+            // leads to a page the drawer no longer selects.
+            if (Navigator.StackDepth > 1)
+                await Navigator.PopToRootAsync(null);
+
+            if (item != CurrentPageItem)
+            {
+                var page = item.CreatePage();
+                _currentPage = page;
+                CurrentPageItem = item;
+                OpenedSection = item.Section;
+
+                foreach (var section in _pageSections)
+                {
+                    section.IsCurrent = section.Title == item.Section;
+
+                    if (section.IsCurrent && IsDrawerOpened)
+                    {
+                        section.IsExpanded = true;
+                    }
+
+                    foreach (var navPage in section.Items ?? Array.Empty<PageItem>())
+                    {
+                        navPage.IsCurrent = navPage == item;
+                    }
+                }
+
+                if (item.HasSamples && IsDrawerOpened)
+                {
+                    item.IsExpanded = true;
+                }
+
+                await Navigator.ReplaceAsync(page);
+
+                if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
+                    IsDrawerOpened = false;
+            }
         }
 
         public void Filter(string? query = "")
         {
-            ExpandAllSections = false;
 
             // Left panel items are sorted alphabetically
             var allPages = _pageSections
@@ -274,7 +373,6 @@ namespace ControlCatalog.ViewModels
 
             if (!string.IsNullOrWhiteSpace(querySearchKey))
             {
-                ExpandAllSections = true;
                 foreach (var item in allPages)
                 {
                     if (item.MatchesSearch(querySearchKey))
@@ -283,23 +381,17 @@ namespace ControlCatalog.ViewModels
                     }
                 }
             }
-        }
 
-        private async void NavigateTo(PageItem? item)
-        {
-            if (item is null || Navigator is null)
-                return;
-
-            var page = item.CreatePage();
-
-            if (item != CurrentPageItem)
+            foreach (var section in _pageSections)
             {
-                CurrentPageItem = item;
-                OpenedSection = item.Section;
-                await Navigator.ReplaceAsync(page);
+                section.IsExpanded = isDefaultVisible ? section.IsCurrent : section.IsSectionVisible;
+            }
 
-                if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
-                    IsDrawerOpened = false;
+            // Search matches whole pages, so the sample lists collapse while it runs and only the current
+            // gallery reopens when it clears.
+            foreach (var page in allPages)
+            {
+                page.IsExpanded = isDefaultVisible && page.IsCurrent;
             }
         }
     }
