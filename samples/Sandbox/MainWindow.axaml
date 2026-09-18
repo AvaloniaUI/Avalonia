@@ -1,4 +1,25 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+        x:Class="Sandbox.MainWindow"
+        Title="AtSpi Hit Test Repro"
+        Width="380" Height="300">
+  <!--
+    Repro for the AT-SPI Component bug: org.a11y.atspi.Component.GetAccessibleAtPoint
+    returns the object it is called on whenever the point is inside it, never the
+    child at that point. Hit-testing therefore stops at the window, and nothing below
+    it can be found by position.
+
+    Drive it with atspi-hittest-repro.py in this directory.
+  -->
+  <StackPanel Margin="16" Spacing="12">
+    <TextBlock TextWrapping="Wrap"
+               Text="Run atspi-hittest-repro.py to hit-test these controls over AT-SPI." />
+    <Button Content="Button" />
+    <TextBox Text="TextBox" />
+    <ListBox Height="96">
+      <ListBoxItem>Item 0</ListBoxItem>
+      <ListBoxItem>Item 1</ListBoxItem>
+      <ListBoxItem>Item 2</ListBoxItem>
+    </ListBox>
+  </StackPanel>
 </Window>
