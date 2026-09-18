@@ -166,6 +166,10 @@ namespace Avalonia.X11
                     // Emulate Window 7+'s default window size behavior.
                     defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
                     defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
+
+                    // The default size is in pixels, so initialize the scaling to match the monitor.
+                    // Otherwise UpdateScaling() would treat the pixel size as DIPs and scale it again.
+                    RenderScaling = monitor.Scaling;
                 }
             }
 
@@ -202,7 +206,13 @@ namespace Avalonia.X11
             Handle = new PlatformHandle(_handle, "XID");
 
             _mode.OnHandleCreated(_handle);
-            
+
+            // The window mode may have set a scaling override (e.g. XEmbed forces a scaling of 1), which takes
+            // precedence over the monitor scaling. Keep them in sync, otherwise UpdateScaling() would see a
+            // mismatch and trigger a spurious DPI resize.
+            if (_scalingOverride is { } scalingOverride)
+                RenderScaling = scalingOverride;
+
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = new X11WindowInfo(OnEvent, this);
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
