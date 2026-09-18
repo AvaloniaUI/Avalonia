@@ -107,6 +107,7 @@
   <x:Double x:Key="RadioButtonCheckGlyphPointerOverSize">14</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphPressedOverSize">10</x:Double>
   <StaticResource x:Key="RadioButtonCheckGlyphEasing" ResourceKey="ControlFastOutSlowInKeySpline"/>
+  <Thickness x:Key="RadioButtonContentMargin">8,7,8,0</Thickness>
 
   <!-- WinUI reference: RadioButton_themeresources.xaml (DefaultRadioButtonStyle), tag winui3/release/1.5.2.
   The check glyph is a white dot on an accent-filled outer circle; it grows to 14px on hover and
@@ -119,9 +120,7 @@
     <Setter Property="Foreground" Value="{DynamicResource RadioButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <!-- WinUI pads 8,6,0,0 and relies on MinWidth for trailing space; with MinWidth dropped,
-    8px right padding keeps a sane hit target (same amendment FluentAvalonia made). -->
-    <Setter Property="Padding" Value="8,6,8,0" />
+    <Setter Property="Padding" Value="{StaticResource RadioButtonContentMargin}" />
     <Setter Property="MinWidth" Value="{DynamicResource RadioButtonMinWidth}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
