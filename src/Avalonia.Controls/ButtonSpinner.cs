@@ -54,12 +54,12 @@ namespace Avalonia.Controls
             {
                 if (_decreaseButton != null)
                 {
-                    _decreaseButton.Click -= OnButtonClick;
+                    _decreaseButton.Click -= OnDecreaseButtonClick;
                 }
                 _decreaseButton = value;
                 if (_decreaseButton != null)
                 {
-                    _decreaseButton.Click += OnButtonClick;
+                    _decreaseButton.Click += OnDecreaseButtonClick;
                 }
             }
         }
@@ -75,12 +75,48 @@ namespace Avalonia.Controls
             {
                 if (_increaseButton != null)
                 {
-                    _increaseButton.Click -= OnButtonClick;
+                    _increaseButton.Click -= OnIncreaseButtonClick;
                 }
                 _increaseButton = value;
                 if (_increaseButton != null)
                 {
-                    _increaseButton.Click += OnButtonClick;
+                    _increaseButton.Click += OnIncreaseButtonClick;
+                }
+            }
+        }
+
+        private Button? _popupDecreaseButton;
+        private Button? PopupDecreaseButton
+        {
+            get => _popupDecreaseButton;
+            set
+            {
+                if (_popupDecreaseButton != null)
+                {
+                    _popupDecreaseButton.Click -= OnDecreaseButtonClick;
+                }
+                _popupDecreaseButton = value;
+                if (_popupDecreaseButton != null)
+                {
+                    _popupDecreaseButton.Click += OnDecreaseButtonClick;
+                }
+            }
+        }
+
+        private Button? _popupIncreaseButton;
+        private Button? PopupIncreaseButton
+        {
+            get => _popupIncreaseButton;
+            set
+            {
+                if (_popupIncreaseButton != null)
+                {
+                    _popupIncreaseButton.Click -= OnIncreaseButtonClick;
+                }
+                _popupIncreaseButton = value;
+                if (_popupIncreaseButton != null)
+                {
+                    _popupIncreaseButton.Click += OnIncreaseButtonClick;
                 }
             }
         }
@@ -125,6 +161,8 @@ namespace Avalonia.Controls
         {
             IncreaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
             DecreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
+            PopupIncreaseButton = e.NameScope.Find<Button>("PART_PopupIncreaseButton");
+            PopupDecreaseButton = e.NameScope.Find<Button>("PART_PopupDecreaseButton");
             SetButtonUsage();
         }
 
@@ -265,6 +303,16 @@ namespace Avalonia.Controls
             {
                 DecreaseButton.IsEnabled = AllowSpin && ((ValidSpinDirection & ValidSpinDirections.Decrease) == ValidSpinDirections.Decrease);
             }
+
+            if (PopupIncreaseButton != null)
+            {
+                PopupIncreaseButton.IsEnabled = AllowSpin && ((ValidSpinDirection & ValidSpinDirections.Increase) == ValidSpinDirections.Increase);
+            }
+
+            if (PopupDecreaseButton != null)
+            {
+                PopupDecreaseButton.IsEnabled = AllowSpin && ((ValidSpinDirection & ValidSpinDirections.Decrease) == ValidSpinDirections.Decrease);
+            }
         }
 
         /// <summary>
@@ -272,12 +320,19 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnButtonClick(object? sender, RoutedEventArgs e)
+        private void OnIncreaseButtonClick(object? sender, RoutedEventArgs e)
         {
             if (AllowSpin)
             {
-                var direction = sender == IncreaseButton ? SpinDirection.Increase : SpinDirection.Decrease;
-                OnSpin(new SpinEventArgs(SpinEvent, direction));
+                OnSpin(new SpinEventArgs(SpinEvent, SpinDirection.Increase));
+            }
+        }
+
+        private void OnDecreaseButtonClick(object? sender, RoutedEventArgs e)
+        {
+            if (AllowSpin)
+            {
+                OnSpin(new SpinEventArgs(SpinEvent, SpinDirection.Decrease));
             }
         }
 

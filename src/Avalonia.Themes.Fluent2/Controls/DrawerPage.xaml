@@ -1,0 +1,342 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <DrawerPage Header="Sample Drawer Page"
+                DrawerLength="200"
+                IsOpen="True">
+      <ContentPage Header="Drawer Content">
+        <TextBlock Text="Drawer menu" />
+      </ContentPage>
+    </DrawerPage>
+  </Design.PreviewWith>
+
+  <StreamGeometry x:Key="DrawerPaneButtonIcon">M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z</StreamGeometry>
+
+  <x:Double x:Key="NavigationControlNavBarHeight">48</x:Double>
+  <SolidColorBrush x:Key="NavigationControlNavBarBackground" Color="Transparent" />
+
+  <x:Double x:Key="PaneToggleButtonWidth">40</x:Double>
+  <x:Double x:Key="PaneToggleButtonHeight">36</x:Double>
+  <Thickness x:Key="NavigationViewItemButtonMargin">4,2</Thickness>
+  <Thickness x:Key="NavigationViewButtonHolderGridMargin">0,4</Thickness>
+  <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
+  <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
+  <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0,1,0,0</Thickness>
+  <CornerRadius x:Key="NavigationViewMinimalContentGridCornerRadius">0</CornerRadius>
+  <Thickness x:Key="TopNavigationViewContentGridBorderThickness">0,1,0,0</Thickness>
+  <CornerRadius x:Key="TopNavigationViewContentGridCornerRadius">0</CornerRadius>
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="NavigationViewContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="NavigationViewContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <ControlTheme x:Key="Fluent2DrawerPaneToggleButton" TargetType="ToggleButton">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="MinWidth" Value="{DynamicResource PaneToggleButtonWidth}" />
+    <Setter Property="MinHeight" Value="{DynamicResource PaneToggleButtonHeight}" />
+    <Setter Property="Margin" Value="4,6" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Padding="{TemplateBinding Padding}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type DrawerPage}" TargetType="DrawerPage" BasedOn="{StaticResource DefaultDrawerPageTheme}"/>
+
+  <ControlTheme x:Key="DefaultDrawerPageTheme" TargetType="DrawerPage">
+    <Setter Property="Background" Value="{DynamicResource NavigationViewContentBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource NavigationViewContentGridBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource NavigationViewContentGridBorderThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource NavigationViewContentGridCornerRadius}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="DrawerBackground" Value="{DynamicResource NavigationViewExpandedPaneBackground}" />
+    <Setter Property="BackdropBrush" Value="Transparent" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <SplitView Name="PART_SplitView"
+                   DisplayMode="{TemplateBinding DisplayMode}"
+                   OpenPaneLength="{TemplateBinding DrawerLength}"
+                   CompactPaneLength="{TemplateBinding CompactDrawerLength}"
+                   PaneBackground="{TemplateBinding DrawerBackground}"
+                   IsPaneOpen="{Binding IsOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+          <SplitView.Pane>
+            <DockPanel>
+              <ToggleButton Name="PART_CompactPaneToggle"
+                            Theme="{StaticResource Fluent2DrawerPaneToggleButton}"
+                            DockPanel.Dock="Top"
+                            IsChecked="{Binding #PART_SplitView.IsPaneOpen, Mode=TwoWay}"
+                            AutomationProperties.Name="Toggle navigation drawer"
+                            ToolTip.Tip="Toggle navigation drawer">
+                <Panel>
+                  <PathIcon
+                    IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
+                    Data="{DynamicResource DrawerPaneButtonIcon}"
+                    Width="16"
+                    Height="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+                  <ContentPresenter
+                    Name="PART_CompactPaneIconPresenter"
+                    Content="{TemplateBinding DrawerIcon}"
+                    ContentTemplate="{TemplateBinding DrawerIconTemplate}"
+                    IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+                </Panel>
+              </ToggleButton>
+              <ContentPresenter Name="PART_DrawerHeader"
+                                DockPanel.Dock="Top"
+                                Content="{TemplateBinding DrawerHeader}"
+                                ContentTemplate="{TemplateBinding DrawerHeaderTemplate}"
+                                Background="{TemplateBinding DrawerHeaderBackground}"
+                                IsVisible="{TemplateBinding DrawerHeader, Converter={x:Static ObjectConverters.IsNotNull}}" />
+              <ContentPresenter Name="PART_DrawerFooter"
+                                DockPanel.Dock="Bottom"
+                                Content="{TemplateBinding DrawerFooter}"
+                                ContentTemplate="{TemplateBinding DrawerFooterTemplate}"
+                                Background="{TemplateBinding DrawerFooterBackground}"
+                                IsVisible="{TemplateBinding DrawerFooter, Converter={x:Static ObjectConverters.IsNotNull}}" />
+              <ContentPresenter Name="PART_DrawerPresenter"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                Content="{TemplateBinding Drawer}"
+                                ContentTemplate="{TemplateBinding DrawerTemplate}" />
+            </DockPanel>
+          </SplitView.Pane>
+          <Grid HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <DockPanel Name="PART_ContentDock">
+              <Border
+                Name="PART_TopBar"
+                Height="{DynamicResource NavigationControlNavBarHeight}"
+                Background="{DynamicResource NavigationControlNavBarBackground}"
+                DockPanel.Dock="Top">
+                <DockPanel HorizontalAlignment="Stretch">
+                  <ToggleButton x:Name="PART_PaneButton"
+                                Theme="{StaticResource Fluent2DrawerPaneToggleButton}"
+                                IsChecked="{Binding #PART_SplitView.IsPaneOpen, Mode=TwoWay}"
+                                DockPanel.Dock="Left"
+                                AutomationProperties.Name="Toggle navigation drawer"
+                                ToolTip.Tip="Toggle navigation drawer">
+                    <Panel>
+                      <PathIcon
+                        IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
+                        Data="{DynamicResource DrawerPaneButtonIcon}"
+                        Width="16"
+                        Height="16"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+                      <ContentPresenter
+                        Name="PART_PaneIconPresenter"
+                        Content="{TemplateBinding DrawerIcon}"
+                        ContentTemplate="{TemplateBinding DrawerIconTemplate}"
+                        IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+                    </Panel>
+                  </ToggleButton>
+                  <ContentPresenter x:Name="PART_TitlePresenter"
+                                    Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    VerticalAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Margin="8,0,0,0"
+                                    IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                </DockPanel>
+              </Border>
+              <Border
+                Name="PART_BottomBar"
+                Height="{DynamicResource NavigationControlNavBarHeight}"
+                Background="{DynamicResource NavigationControlNavBarBackground}"
+                DockPanel.Dock="Bottom"
+                IsVisible="False">
+                <DockPanel HorizontalAlignment="Stretch">
+                  <ToggleButton x:Name="PART_BottomPaneButton"
+                                Theme="{StaticResource Fluent2DrawerPaneToggleButton}"
+                                IsChecked="{Binding #PART_SplitView.IsPaneOpen, Mode=TwoWay}"
+                                DockPanel.Dock="Left"
+                                AutomationProperties.Name="Toggle navigation drawer"
+                                ToolTip.Tip="Toggle navigation drawer">
+                    <Panel>
+                      <PathIcon
+                        IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
+                        Data="{DynamicResource DrawerPaneButtonIcon}"
+                        Width="16"
+                        Height="16"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+                      <ContentPresenter
+                        Name="PART_BottomPaneIconPresenter"
+                        Content="{TemplateBinding DrawerIcon}"
+                        ContentTemplate="{TemplateBinding DrawerIconTemplate}"
+                        IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+                    </Panel>
+                  </ToggleButton>
+                  <ContentPresenter x:Name="PART_BottomTitlePresenter"
+                                    Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    VerticalAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Margin="8,0,0,0"
+                                    IsVisible="{TemplateBinding Header, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                </DockPanel>
+              </Border>
+              <ContentPresenter Name="PART_ContentPresenter"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                CornerRadius="{TemplateBinding CornerRadius}" />
+            </DockPanel>
+            <Border Name="PART_Backdrop"
+                    Background="{TemplateBinding BackdropBrush}"
+                    IsVisible="False"
+                    IsHitTestVisible="False" />
+          </Grid>
+        </SplitView>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^[DisplayMode=Overlay] /template/ SplitView#PART_SplitView:open">
+      <Setter Property="PaneBackground" Value="{DynamicResource NavigationViewDefaultPaneBackground}" />
+    </Style>
+    <Style Selector="^[DisplayMode=CompactOverlay] /template/ SplitView#PART_SplitView:open">
+      <Setter Property="PaneBackground" Value="{DynamicResource NavigationViewDefaultPaneBackground}" />
+    </Style>
+
+    <Style Selector="^[DisplayMode=Inline] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^[DisplayMode=CompactInline] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^[DisplayMode=CompactOverlay] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^[DisplayMode=Overlay]">
+      <Setter Property="BorderThickness" Value="{DynamicResource NavigationViewMinimalContentGridBorderThickness}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource NavigationViewMinimalContentGridCornerRadius}" />
+    </Style>
+
+    <Style Selector="^:placement-right">
+      <Setter Property="BorderThickness" Value="0,1,1,0" />
+      <Setter Property="CornerRadius" Value="0,8,0,0" />
+    </Style>
+    <Style Selector="^:placement-top">
+      <Setter Property="BorderThickness" Value="{DynamicResource TopNavigationViewContentGridBorderThickness}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource TopNavigationViewContentGridCornerRadius}" />
+    </Style>
+    <Style Selector="^:placement-bottom">
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="CornerRadius" Value="0" />
+    </Style>
+
+    <Style Selector="^:placement-right /template/ ToggleButton#PART_PaneButton">
+      <Setter Property="DockPanel.Dock" Value="Right" />
+    </Style>
+
+    <Style Selector="^:placement-bottom /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:placement-bottom /template/ Border#PART_BottomBar">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:placement-bottom[DisplayMode=Inline] /template/ Border#PART_BottomBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:placement-bottom[DisplayMode=CompactOverlay] /template/ Border#PART_BottomBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:placement-bottom[DisplayMode=CompactInline] /template/ Border#PART_BottomBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^:placement-bottom /template/ ToggleButton#PART_CompactPaneToggle">
+      <Setter Property="DockPanel.Dock" Value="Left" />
+    </Style>
+    <Style Selector="^:placement-top /template/ ToggleButton#PART_CompactPaneToggle">
+      <Setter Property="DockPanel.Dock" Value="Left" />
+    </Style>
+
+    <Style Selector="^[DrawerBehavior=Locked] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^[DrawerBehavior=Locked] /template/ ToggleButton#PART_CompactPaneToggle">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^[DrawerBehavior=Disabled] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^[DrawerBehavior=Disabled] /template/ ToggleButton#PART_CompactPaneToggle">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^:detail-is-navpage /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^[IsInNavigationPage=True] /template/ Border#PART_TopBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^:detail-is-navpage /template/ ToggleButton#PART_CompactPaneToggle">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+  </ControlTheme>
+</ResourceDictionary>

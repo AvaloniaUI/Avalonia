@@ -15,6 +15,11 @@
                      ShowButtonSpinner="{Binding #showSpinCheck.IsChecked}">
         <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Everest"/>
       </ButtonSpinner>
+      <ButtonSpinner Spin="OnSpin" Height="30" Classes="fluent2-compact"
+                     AllowSpin="{Binding #allowSpinCheck.IsChecked}"
+                     ShowButtonSpinner="{Binding #showSpinCheck.IsChecked}">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Everest"/>
+      </ButtonSpinner>
       <ButtonSpinner Spin="OnSpin" Height="30" ButtonSpinnerLocation="Left"
                      AllowSpin="{Binding #allowSpinCheck.IsChecked}"
                      ShowButtonSpinner="{Binding #showSpinCheck.IsChecked}">

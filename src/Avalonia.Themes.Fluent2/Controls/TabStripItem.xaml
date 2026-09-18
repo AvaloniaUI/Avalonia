@@ -1,0 +1,200 @@
+﻿<ResourceDictionary
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  x:ClassModifier="internal">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <TabStripItem>Leaf</TabStripItem>
+        <TabStripItem IsSelected="True">Arch</TabStripItem>
+        <TabStripItem Background="Yellow">Background</TabStripItem>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefaultBrush"/>
+      <StaticResource x:Key="TabStripItemDisabledPillFill" ResourceKey="AccentFillColorDisabledBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrush" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrushPressed" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemForeground" ResourceKey="TextFillColorPrimaryBrush"/>
+      <StaticResource x:Key="TabStripItemForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
+      <StaticResource x:Key="TabStripItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush"/>
+      <StaticResource x:Key="TabStripItemForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
+      <StaticResource x:Key="TabStripItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
+      <StaticResource x:Key="TabStripItemBackground" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBackgroundSelected" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBackgroundPressed" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush"/>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefaultBrush"/>
+      <StaticResource x:Key="TabStripItemDisabledPillFill" ResourceKey="AccentFillColorDisabledBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrush" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrushPressed" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemForeground" ResourceKey="TextFillColorPrimaryBrush"/>
+      <StaticResource x:Key="TabStripItemForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
+      <StaticResource x:Key="TabStripItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush"/>
+      <StaticResource x:Key="TabStripItemForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
+      <StaticResource x:Key="TabStripItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
+      <StaticResource x:Key="TabStripItemBackground" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBackgroundSelected" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBackgroundPressed" ResourceKey="SystemControlTransparentBrush"/>
+      <StaticResource x:Key="TabStripItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush"/>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <Thickness x:Key="TabStripItemBorderThickness">1</Thickness>
+  <Thickness x:Key="TabStripSelectedInnerThickness">1</Thickness>
+  <Thickness x:Key="TabStripItemIconVisualMargin">-2,0</Thickness>
+  <Thickness x:Key="TabStripItemTextVisualMargin">0</Thickness>
+  <Thickness x:Key="TabStripItemPadding">12,10,12,7</Thickness>
+  <Thickness x:Key="TabStripItemSelectionVisualMargin">0</Thickness>
+  <Thickness x:Key="TabStripItemFocusVisualMargin">-2</Thickness>
+  <x:Double x:Key="TabStripItemPillHeight">3</x:Double>
+  <x:Double x:Key="TabStripItemPillWidth">4</x:Double>
+  <x:Double x:Key="TabStripItemPillScaledWidth">16</x:Double>
+  <x:Double x:Key="TabStripItemIconScale">0.8</x:Double>
+  <x:Double x:Key="TabStripItemSpacing">8</x:Double>
+
+  <ControlTheme x:Key="TabStripItemPill" TargetType="Rectangle" BasedOn="{StaticResource ComboBoxItemPill}">
+    <Setter Property="Fill" Value="{DynamicResource TabStripItemPillFill}"/>
+    <Setter Property="Height" Value="{DynamicResource TabStripItemPillHeight}"/>
+    <Setter Property="Width" Value="{DynamicResource TabStripItemPillWidth}"/>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type TabStripItem}" TargetType="TabStripItem" BasedOn="{StaticResource DefaultTabStripItemTheme}"/>
+  <ControlTheme x:Key="DefaultTabStripItemTheme" TargetType="TabStripItem">
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Foreground" Value="{DynamicResource TabStripItemForeground}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TabStripItemBorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource TabStripItemBorderThickness}"/>
+    <Setter Property="Padding" Value="{StaticResource TabStripItemPadding}"/>
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="BackgroundSizing" Value="OuterBorderEdge"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+          Name="PART_LayoutRoot"
+          Background="{TemplateBinding Background}"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
+            <ContentPresenter
+              Grid.ColumnSpan="2"
+              Margin="{TemplateBinding Padding}"
+              Name="PART_ContentPresenter"
+              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+              Content="{TemplateBinding Content}"
+              ContentTemplate="{TemplateBinding ContentTemplate}" />
+            <Rectangle x:Name="PART_SelectedPipe"
+                       Grid.ColumnSpan="2"
+                       Grid.Row="1"
+                       Theme="{StaticResource TabStripItemPill}"
+                       RadiusX="0.5"
+                       RadiusY="1"
+                       Margin="{DynamicResource TabStripItemSelectionVisualMargin}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Bottom"
+                       IsHitTestVisible="False"
+                       Opacity="0">
+              <Rectangle.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Width"
+                                                 Duration="{DynamicResource ComboBoxItemScaleAnimationDuration}"
+                                                 Easing="0,0,0,1"/>
+                </Transitions>
+              </Rectangle.Transitions>
+            </Rectangle>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <!-- Pointer-over -->
+    <Style Selector="^:pointerover">
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource TabStripItemBackgroundPointerOver}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TabStripItemForegroundPointerOver}" />
+      </Style>
+    </Style>
+
+    <!-- Pressed -->
+    <Style Selector="^:pressed">
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource TabStripItemBackgroundPressed}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TabStripItemForegroundPressed}" />
+      </Style>
+    </Style>
+
+    <!-- Disabled -->
+    <Style Selector="^:disabled">
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource  TabStripItemBackgroundDisabled}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TabStripItemForegroundDisabled}" />
+      </Style>
+
+      <Style Selector="^ /template/ Rectangle#PART_SelectedPipe">
+        <Setter Property="Fill" Value="{DynamicResource  TabStripItemDisabledPillFill}" />
+      </Style>
+    </Style>
+
+    <!-- Selected state -->
+    <Style Selector="^:selected">
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource TabStripItemBackgroundSelected}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TabStripItemForegroundSelected}" />
+      </Style>
+
+      <Style Selector="^ /template/ Rectangle#PART_SelectedPipe">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="Width" Value="{DynamicResource TabStripItemPillScaledWidth}" />
+      </Style>
+
+      <!-- Pointer-over -->
+      <Style Selector="^:pointerover">
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="Background" Value="{DynamicResource TabStripItemBackgroundSelected}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TabStripItemForegroundPointerOver}" />
+        </Style>
+      </Style>
+
+      <!-- Pressed -->
+      <Style Selector="^:pressed">
+
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="Background" Value="{DynamicResource TabStripItemBackgroundSelected}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TabStripItemForegroundPointerOver}" />
+        </Style>
+      </Style>
+
+      <!-- Disabled -->
+      <Style Selector="^:disabled">
+
+        <Style Selector="^ /template/ Border#PART_LayoutRoot">
+          <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
+          <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundDisabled}" />
+        </Style>
+      </Style>
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
