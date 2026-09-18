@@ -187,7 +187,7 @@
                       <Flyout
                         Placement="Center">
                         <Flyout.FlyoutPresenterTheme>
-                          <ControlTheme TargetType="FlyoutPresenter" BasedOn="{StaticResource {x:Type FlyoutPresenter}}">
+                          <ControlTheme TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterTheme}">
                             <Setter Property="Padding" Value="0"/>
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="MinWidth" Value="0"/>

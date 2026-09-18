@@ -20,28 +20,13 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- WinUI: LoopingSelectorUpDownButtonHeight, DateTimePickerFlyout_themeresources.xaml,
-       tag winui3/release/1.5.2. -->
   <x:Double x:Key="LoopingSelectorUpDownButtonHeight">34</x:Double>
 
-  <!-- Theme for the items displayed in the selectors.
-       WinUI reference: DateTimePickerFlyout_themeresources.xaml (LoopingSelectorItem style),
-       tag winui3/release/1.5.2. The Fluent 2 ListBoxItem base theme already provides the
-       WinUI 3 rounded backplate (CornerRadius 4, 4,2 inset) and the subtle-fill hover/press
-       states, matching LoopingSelectorItemMargin (4,2,4,2) and
-       LoopingSelectorItemBackgroundPointerOver/Pressed. -->
-  <ControlTheme x:Key="FluentDateTimePickerItem" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+  <ControlTheme x:Key="FluentDateTimePickerItem" TargetType="ListBoxItem" BasedOn="{StaticResource FluentListBoxItemTheme}">
     <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterItemPadding}"/>
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
 
-    <!-- Selected row: the accent highlight rect is drawn by the presenter (HighlightRect,
-         behind the items), so the item itself stays transparent and only swaps to on-accent
-         text. WinUI recolors the selected row with a MonochromaticOverlayPresenter using
-         DatePickerFlyoutPresenterHighlightForegroundColor (TextOnAccentAAFillColorPrimary);
-         neither the primitive nor that alias exists here, so the Fluent 2 token
-         TextOnAccentFillColorPrimaryBrush is referenced directly as an approximation.
-         The base theme's subtle-fill selected backplate and selection pill are suppressed. -->
     <Style Selector="^:selected">
       <Setter Property="IsHitTestVisible" Value="False"/>
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
@@ -59,12 +44,6 @@
     </Style>
   </ControlTheme>
 
-  <!-- This is used for both the accept/dismiss & repeatbuttons in the presenter.
-       WinUI reference: DateTimePickerFlyout_themeresources.xaml
-       (DateTimePickerFlyoutButtonStyle), tag winui3/release/1.5.2: transparent rest state,
-       subtle-fill hover/press, CornerRadius 4 (ControlCornerRadius), no border
-       (DateTimeFlyoutButtonBorderThickness is 0) and an 83ms background cross-fade.
-       WinUI has no press scale. -->
   <ControlTheme x:Key="FluentDateTimePickerButton" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackground}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
@@ -73,11 +52,6 @@
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <!-- The outer border paints the control-level background full-bleed and square: the
-             looping-selector up/down buttons set it to the flyout's acrylic fill so they
-             occlude the items scrolling beneath them (WinUI keeps the same split between
-             LoopingSelectorUpDownButtonBackground and the hover state). The inner presenter
-             carries the rounded subtle-fill interaction states. -->
         <Border Background="{TemplateBinding Background}">
           <ContentPresenter x:Name="PART_ContentPresenter"
                   Background="{DynamicResource SubtleFillColorTransparentBrush}"
@@ -120,15 +94,6 @@
     </Style>
   </ControlTheme>
 
-  <!-- WinUI reference: DateTimePickerFlyout_themeresources.xaml
-       (DateTimePickerFlyoutLoopingSelectorNavigationButtonStyle + the LoopingSelector
-       UpButton/DownButton), tag winui3/release/1.5.2: 34px strips pinned to the top/bottom
-       of each column that fade in while the column is hovered (visibility is toggled by the
-       DatePickerPresenter/TimePickerPresenter themes; WinUI snaps Visibility, the 167ms
-       opacity fade is an Avalonia refinement of that storyboard). Chevron rests at
-       TextFillColorSecondary and steps to primary on hover. The LoopingSelectorUpDownButton*
-       brushes are not aliased in this theme, so the Fluent 2 tokens
-       (AcrylicBackgroundFillColorDefaultBrush / TextFillColor*Brush) are referenced directly. -->
   <ControlTheme x:Key="FluentDateTimePickerUpButton" TargetType="RepeatButton" BasedOn="{StaticResource FluentDateTimePickerButton}">
     <Setter Property="VerticalAlignment" Value="Top"/>
     <Setter Property="Height" Value="{DynamicResource LoopingSelectorUpDownButtonHeight}" />

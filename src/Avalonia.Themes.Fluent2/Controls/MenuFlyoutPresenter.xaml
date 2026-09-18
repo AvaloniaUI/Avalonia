@@ -92,7 +92,7 @@
       </ControlTemplate>
     </Setter>
   </ControlTheme>
-  <ControlTheme x:Key="HorizontalMenuFlyoutPresenter" TargetType="MenuFlyoutPresenter"  BasedOn="{StaticResource {x:Type MenuFlyoutPresenter}}">
+  <ControlTheme x:Key="HorizontalMenuFlyoutPresenter" TargetType="MenuFlyoutPresenter"  BasedOn="{StaticResource DefaultMenuFlyoutPresenterTheme}">
     <Setter Property="MinWidth" Value="{DynamicResource HorizontalMenuFlyoutThemeMinWidth}" />
     <Setter Property="ItemsPanel">
       <ItemsPanelTemplate>

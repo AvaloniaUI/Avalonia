@@ -48,6 +48,7 @@
   <x:Double x:Key="ListBoxItemSelectionIndicatorHeight">16</x:Double>
   <x:Double x:Key="ListBoxItemSelectionIndicatorRadius">2</x:Double>
   <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem" BasedOn="{StaticResource FluentListBoxItemTheme}"/>
+
   <ControlTheme x:Key="FluentListBoxItemTheme" TargetType="ListBoxItem">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
