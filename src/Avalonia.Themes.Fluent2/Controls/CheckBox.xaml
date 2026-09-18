@@ -169,11 +169,12 @@
   <x:Double x:Key="CheckBoxSize">20</x:Double>
   <x:Double x:Key="CheckBoxGlyphSize">12</x:Double>
   <Thickness x:Key="CheckBoxBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="CheckBoxContentMargin">8,7,8,0</Thickness>
 
   <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxTheme}"/>
 
   <ControlTheme x:Key="DefaultCheckBoxTheme" TargetType="CheckBox">
-    <Setter Property="Padding" Value="8,5,8,0" />
+    <Setter Property="Padding" Value="{StaticResource CheckBoxContentMargin}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
