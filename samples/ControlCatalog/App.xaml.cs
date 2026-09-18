@@ -18,6 +18,8 @@ namespace ControlCatalog
         private FluentTheme? _fluentTheme;
         private SimpleTheme? _simpleTheme;
         private IStyle? _colorPickerFluent, _colorPickerSimple;
+        private int _dockMenuItemCount;
+        private CatalogTheme _prevTheme;
 
         public App()
         {
@@ -87,8 +89,6 @@ namespace ControlCatalog
             }
         }
 
-        private int _dockMenuItemCount;
-
         public void OnDockAddItemClicked(object? sender, EventArgs e)
         {
             var dockMenu = NativeDock.GetMenu(this);
@@ -104,7 +104,6 @@ namespace ControlCatalog
             }
         }
 
-        private CatalogTheme _prevTheme;
         public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme;
         public static void SetCatalogThemes(CatalogTheme theme)
         {
@@ -115,7 +114,6 @@ namespace ControlCatalog
 
             if (app._themeStylesContainer.Count == 0)
             {
-                app._themeStylesContainer.Add(new Style());
                 app._themeStylesContainer.Add(new Style());
                 app._themeStylesContainer.Add(new Style());
             }

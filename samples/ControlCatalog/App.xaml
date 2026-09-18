@@ -64,6 +64,46 @@
     <Style Selector="RefreshContainer">
       <Setter Property="IsMouseEnabled" Value="true" />
     </Style>
+    <!-- Text roles used by the shared sample format (SamplePage, SampleSection, SampleGalleryPage). -->
+    <Style Selector="TextBlock.sample-description">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Foreground" Value="{DynamicResource CatalogSubtleForeground}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="MaxWidth" Value="760" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+    <Style Selector="TextBlock.sample-group">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource CatalogSubtleForeground}" />
+    </Style>
+    <Style Selector="TextBlock.sample-card-title">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.sample-card-description">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource CatalogSubtleForeground}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+      <Setter Property="MaxLines" Value="3" />
+    </Style>
+    <Style Selector="TextBlock.sample-section-description">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="{DynamicResource CatalogSubtleForeground}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.sample-options-title">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource CatalogSubtleForeground}" />
+    </Style>
+    <Style Selector="TextBlock.sample-caption">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource CatalogSubtleForeground}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
   </Application.Styles>
   <NativeDock.Menu>
     <NativeMenu>
