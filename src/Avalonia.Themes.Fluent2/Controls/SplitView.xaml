@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="using:System"
-        x:ClassModifier="internal">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System"
+                    x:ClassModifier="internal">
   <Design.PreviewWith>
     <Border Width="400" Height="400">
       <SplitView DisplayMode="Inline"
@@ -30,15 +30,15 @@
   <sys:TimeSpan x:Key="SplitViewPaneAnimationOpenDuration">00:00:00.2</sys:TimeSpan>
   <sys:TimeSpan x:Key="SplitViewPaneAnimationCloseDuration">00:00:00.1</sys:TimeSpan>
   <Easing x:Key="SplitViewPaneAnimationEasing">0.1,0.9,0.2,1.0</Easing>
+  <CornerRadius x:Key="SplitViewPaneRootCornerRadius">0</CornerRadius>
 
   <ControlTheme x:Key="{x:Type SplitView}" TargetType="SplitView" BasedOn="{StaticResource DefaultSplitViewTheme}"/>
 
   <ControlTheme x:Key="DefaultSplitViewTheme" TargetType="SplitView">
     <Setter Property="OpenPaneLength" Value="{DynamicResource SplitViewOpenPaneThemeLength}" />
     <Setter Property="CompactPaneLength" Value="{DynamicResource SplitViewCompactPaneThemeLength}" />
-    <Setter Property="PaneBackground" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
-    <!-- Filtered per placement onto Border#PaneBorder in the overlay display modes only. -->
-    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
+    <Setter Property="PaneBackground" Value="{DynamicResource SystemControlPageBackgroundChromeLowBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource SplitViewPaneRootCornerRadius}" />
 
     <Style Selector="^:left">
       <Setter Property="Template">
@@ -478,8 +478,8 @@
     </Style>
 
     <!-- Overlay-mode pane chrome: OverlayCornerRadius (via SplitView.CornerRadius) filtered onto the
-         pane's open (free) edge plus a 1px SurfaceStrokeColorFlyout stroke on that edge. Inline modes
-         and the closed compact strip stay square and strokeless. -->
+    pane's open (free) edge plus a 1px SurfaceStrokeColorFlyout stroke on that edge. Inline modes
+    and the closed compact strip stay square and strokeless. -->
     <Style Selector="^:left:overlay /template/ Border#PaneBorder">
       <Setter Property="CornerRadius" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
       <Setter Property="BorderThickness" Value="0,0,1,0" />

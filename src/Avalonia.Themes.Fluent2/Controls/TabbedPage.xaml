@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="TabbedPageTabStripBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
       <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
       <StaticResource x:Key="TabbedPageTabItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -43,7 +43,7 @@
       <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="TabbedPageTabStripBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
       <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
       <StaticResource x:Key="TabbedPageTabItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
