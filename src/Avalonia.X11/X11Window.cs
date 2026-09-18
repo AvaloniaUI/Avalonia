@@ -207,7 +207,13 @@ namespace Avalonia.X11
             Handle = new PlatformHandle(_handle, "XID");
 
             _mode.OnHandleCreated(_handle);
-            
+
+            // The window mode may have set a scaling override (e.g. XEmbed forces a scaling of 1), which takes
+            // precedence over the monitor scaling. Keep them in sync, otherwise UpdateScaling() would see a
+            // mismatch and trigger a spurious DPI resize.
+            if (_scalingOverride is { } scalingOverride)
+                RenderScaling = scalingOverride;
+
             _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = new X11WindowInfo(OnEvent, this);
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
