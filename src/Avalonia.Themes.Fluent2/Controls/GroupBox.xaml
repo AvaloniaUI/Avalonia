@@ -30,10 +30,6 @@
   The Fluent 2 card template below no longer masks the border. -->
   <converters:BorderGapMaskConverter x:Key="BorderGapMaskConverter" />
 
-  <!-- No WinUI counterpart (GroupBox is WPF-style). Harmonized with the WinUI card idiom:
-  a 1px CardStrokeColorDefault stroke with 4px corner radius over
-  CardBackgroundFillColorDefault, and the header rendered above the card as
-  BodyStrong text (14px SemiBold, TextFillColorPrimary). -->
   <ControlTheme x:Key="{x:Type GroupBox}"
                 BasedOn="{StaticResource DefaultGroupBoxTheme}"
                 TargetType="GroupBox">

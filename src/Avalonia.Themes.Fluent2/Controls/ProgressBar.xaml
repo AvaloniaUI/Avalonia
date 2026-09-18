@@ -61,7 +61,6 @@
             ClipToBounds="True"
             CornerRadius="{TemplateBinding CornerRadius}">
           <Panel>
-            <!-- WinUI confines the bar visuals to a MinHeight-tall strip centered in the control. -->
             <Panel x:Name="ProgressBarTrackArea">
               <Border
                   x:Name="ProgressBarTrack"
@@ -171,7 +170,6 @@
     <Style Selector="^:indeterminate /template/ Panel#IndeterminateRoot">
       <Setter Property="Opacity" Value="1" />
     </Style>
-    <!-- WinUI hides the track line while indeterminate (ProgressBarTrack.Opacity = 0). -->
     <Style Selector="^:indeterminate /template/ Border#ProgressBarTrack">
       <Setter Property="Opacity" Value="0" />
     </Style>

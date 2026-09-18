@@ -195,8 +195,7 @@
         <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPressed}" />
       </Style>
 
-      <!-- WinUI's CheckedDisabled state does not apply ToggleButtonCheckedStateBackgroundSizing,
-      so it falls back to the style default InnerBorderEdge. -->
+
       <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedDisabled}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushCheckedDisabled}" />

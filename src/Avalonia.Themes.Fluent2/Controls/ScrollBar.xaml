@@ -435,7 +435,6 @@
       </Style>
     </Style>
 
-    <!-- WinUI Disabled visual state dims the whole rail to 50%. -->
     <Style Selector="^:disabled /template/ Grid#Root">
       <Setter Property="Opacity" Value="0.5" />
     </Style>

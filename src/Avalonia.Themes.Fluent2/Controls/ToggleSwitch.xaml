@@ -276,8 +276,6 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ToggleSwitchStrokeOnPressed}" />
     </Style>
 
-    <!-- While held, the knob stretches into a 17x14 pill anchored to the near edge of the
-    track (WinUI Pressed state setters). Each knob is only visible in its own state. -->
     <Style Selector="^:pressed /template/ Ellipse#SwitchKnobOff">
       <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOffPressed}" />
       <Setter Property="Width" Value="{DynamicResource ToggleSwitchKnobPressedLength}" />

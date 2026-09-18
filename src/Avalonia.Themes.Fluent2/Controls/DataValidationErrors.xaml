@@ -25,10 +25,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- No WinUI counterpart: harmonized with the Fluent 2 token layer.
-       Error text and the error icon use SystemFillColorCriticalBrush; the tooltip-style
-       flyout uses flyout chrome (OverlayCornerRadius, AcrylicInAppFillColorDefaultBrush
-       fallback fill, 1px SurfaceStrokeColorFlyoutBrush stroke). -->
   <ControlTheme x:Key="{x:Type DataValidationErrors}"
                 TargetType="DataValidationErrors" BasedOn="{StaticResource DefaultDataValidationErrorsTheme}"/>
 

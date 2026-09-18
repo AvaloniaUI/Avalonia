@@ -12,14 +12,6 @@
 
   <x:Double x:Key="DropDownButtonMinHeight">32</x:Double>
 
-  <!-- WinUI reference: DropDownButton.xaml (DefaultDropDownButtonStyle) +
-       DropDownButton_themeresources.xaml, tag winui3/release/1.4.2. The control chrome is
-       the shared Button brush set; the 12px chevron uses the secondary text colour
-       (WinUI DropDownButtonForegroundSecondary = TextFillColorSecondaryBrush, hover/press =
-       TextFillColorTertiaryBrush; referenced directly here because the per-control aliases do
-       not exist in FluentControlResources.xaml yet). Padding lives on the template root, as
-       on WinUI's RootGrid, so the chevron sits inside it with an 8px gap to the content.
-       Press feedback is a fill change with an 83ms cross-fade; WinUI has no press scale. -->
   <ControlTheme x:Key="{x:Type DropDownButton}" TargetType="DropDownButton" BasedOn="{StaticResource DefaultDropDownButtonTheme}"/>
 
   <ControlTheme x:Key="DefaultDropDownButtonTheme" TargetType="DropDownButton">

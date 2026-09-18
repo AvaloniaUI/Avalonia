@@ -283,7 +283,7 @@
       <Setter Property="Foreground" Value="{DynamicResource TreeViewItemForegroundSelectedDisabled}" />
     </Style>
 
-    <!--  Selection indicator pill (WinUI SelectionIndicator)  -->
+    <!--  Selection indicator pill -->
     <Style Selector="^:selected /template/ Rectangle#SelectionIndicator">
       <Setter Property="IsVisible" Value="True" />
       <Setter Property="RenderTransform" Value="scaleY(1)" />

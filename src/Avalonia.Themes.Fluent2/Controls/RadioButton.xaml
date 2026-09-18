@@ -100,8 +100,6 @@
 
   <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
   <x:Double x:Key="RadioButtonMinHeight">32</x:Double>
-  <!-- WinUI forces MinWidth=120, which breaks desktop form layouts (and v1 never had it).
-  Deliberately 0 here; override this resource to restore the WinUI metric. -->
   <x:Double x:Key="RadioButtonMinWidth">0</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphSize">12</x:Double>
   <x:Double x:Key="RadioButtonCheckGlyphPointerOverSize">14</x:Double>
@@ -109,10 +107,6 @@
   <StaticResource x:Key="RadioButtonCheckGlyphEasing" ResourceKey="ControlFastOutSlowInKeySpline"/>
   <Thickness x:Key="RadioButtonContentMargin">8,7,8,0</Thickness>
 
-  <!-- WinUI reference: RadioButton_themeresources.xaml (DefaultRadioButtonStyle), tag winui3/release/1.5.2.
-  The check glyph is a white dot on an accent-filled outer circle; it grows to 14px on hover and
-  shrinks to 10px on press (167ms, fast-out-slow-in spline), and appears as a pressed preview dot
-  while an unchecked radio is held (WinUI's PressedCheckGlyph, expressed here on CheckGlyph itself). -->
   <ControlTheme x:Key="{x:Type RadioButton}" TargetType="RadioButton" BasedOn="{StaticResource DefaultRadioButtonTheme}"/>
 
   <ControlTheme x:Key="DefaultRadioButtonTheme" TargetType="RadioButton">
@@ -241,8 +235,7 @@
       <Setter Property="Fill" Value="{DynamicResource RadioButtonOuterEllipseCheckedFillPressed}" />
     </Style>
 
-    <!-- While held, the glyph shrinks to 10px when checked and appears as a 10px preview
-    dot when unchecked (WinUI's PressedCheckGlyph behaviour). -->
+
     <Style Selector="^:pressed /template/ Ellipse#CheckGlyph">
       <Setter Property="Stroke" Value="{DynamicResource RadioButtonCheckGlyphStrokePressed}" />
       <Setter Property="Fill" Value="{DynamicResource RadioButtonCheckGlyphFillPressed}" />

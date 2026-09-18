@@ -1,13 +1,3 @@
-<!--
-Fluent 2 (WinUI 3) token brushes, elevation gradient borders and acrylic fallbacks.
-Ported from Uno.UI Common_themeresources_any.xaml, TextBox_themeresources.xaml and
-AcrylicBrush_themeresources.xaml (MUX Reference, tag winui3/release/1.5.2).
-Variant roles are swapped relative to the UWP/Uno source (UWP "Light" -> Avalonia "Default",
-UWP "Default" -> Avalonia "Dark").
-Acrylic keys are shipped as their solid FallbackColor equivalents (WinUI's own fallback mode);
-translucent acrylic is a possible later enhancement.
-Accent-family brushes use DynamicResource so palette/OS accent changes propagate live.
--->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.ThemeDictionaries>

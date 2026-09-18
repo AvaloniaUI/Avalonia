@@ -53,23 +53,15 @@
   <x:Double x:Key="MenuFlyoutSubItemPopupHorizontalOffset">-4</x:Double>
   <Thickness x:Key="MenuIconPresenterMargin">0,0,12,0</Thickness>
   <Thickness x:Key="MenuInputGestureTextMargin">24,0,0,0</Thickness>
-  <!-- WinUI MenuFlyoutItemMargin: rounded items float 4px from the flyout edge, 2px apart. -->
   <Thickness x:Key="MenuFlyoutItemMargin">4,2,4,2</Thickness>
   <StreamGeometry x:Key="MenuItemChevronPathData">M 1,0 10,10 l -9,10 -1,-1 L 8,10 -0,1 Z</StreamGeometry>
 
-  <!-- WinUI reference: MenuFlyout_themeresources.xaml (DefaultMenuFlyoutItemStyle /
-       DefaultMenuFlyoutSubItemStyle / DefaultToggleMenuFlyoutItemStyle).
-       Items are rounded (ControlCornerRadius, 4) pills with a 4,2 outer margin inside the flyout;
-       rest transparent, hover SubtleFillColorSecondary, pressed SubtleFillColorTertiary,
-       disabled text TextFillColorDisabled. Icon/check column is 16px, sub-item chevron is a 12px
-       TextFillColorSecondary glyph, accelerator text is caption-sized TextFillColorSecondary. -->
   <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemTheme}"/>
 
   <ControlTheme x:Key="DefaultMenuItemTheme" TargetType="MenuItem">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
     <Setter Property="Padding" Value="{DynamicResource MenuFlyoutItemThemePaddingNarrow}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -113,7 +105,6 @@
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 Grid.Column="2"/>
-              <!-- WinUI KeyboardAcceleratorTextBlock uses CaptionTextBlockStyle (12px). -->
               <TextBlock x:Name="PART_InputGestureText"
                          Grid.Column="3"
                          Margin="{DynamicResource MenuInputGestureTextMargin}"
@@ -122,7 +113,6 @@
                          VerticalAlignment="Center"
                          FontSize="12"
                          Foreground="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"/>
-              <!-- WinUI SubItemChevron is a 12px FontIcon glyph. -->
               <Path Name="PART_ChevronPath"
                     Stretch="Uniform"
                     Width="6"
@@ -183,7 +173,6 @@
       </Style>
     </Style>
 
-    <!--  Listen for PART_LayoutRoot:pointerover, so it will not be triggered when subitem is pressed  -->
     <Style Selector="^:pressed /template/ Border#PART_LayoutRoot:pointerover">
       <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPressed}" />
       <Style Selector="^ ContentPresenter#PART_HeaderPresenter">

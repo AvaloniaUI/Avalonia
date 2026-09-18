@@ -1,10 +1,3 @@
-<!--
-  Fluent 2 (WinUI 3) token colors.
-  Ported from Uno.UI Common_themeresources_any.xaml
-  (MUX Reference controls\dev\CommonStyles\Common_themeresources_any.xaml, tag winui3/release/1.5.2).
-  NOTE: variant roles are swapped relative to the UWP/Uno source:
-  UWP "Light" dictionary -> Avalonia "Default"; UWP "Default" (dark) dictionary -> Avalonia "Dark".
--->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.ThemeDictionaries>

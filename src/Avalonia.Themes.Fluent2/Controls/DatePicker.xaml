@@ -102,9 +102,6 @@
   <Thickness x:Key="DatePickerFlyoutPresenterAcceptMargin">4,4,2,4</Thickness>
   <Thickness x:Key="DatePickerFlyoutPresenterDismissMargin">2,4,4,4</Thickness>
 
-  <!-- WinUI: DatePickerFlyoutButtonStyle — the closed picker reads as a TextBox-like field
-  (ControlFillColorDefault fill, elevation hairline border, ControlCornerRadius).
-  WinUI has no press scale; press feedback is the fill/foreground swap. -->
   <ControlTheme x:Key="FluentDatePickerFlyoutButton" TargetType="Button">
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="Template">

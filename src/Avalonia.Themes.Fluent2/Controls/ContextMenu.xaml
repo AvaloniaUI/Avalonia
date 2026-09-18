@@ -33,10 +33,6 @@
   <!--  Added missing resource  -->
   <Thickness x:Key="MenuFlyoutScrollerMargin">0,2,0,2</Thickness>
 
-  <!-- WinUI reference: MenuFlyout_themeresources.xaml (DefaultMenuFlyoutPresenterStyle) — a
-       ContextMenu shares the MenuFlyoutPresenter chrome: OverlayCornerRadius (8),
-       AcrylicInAppFillColorDefault background (solid fallback token), 1px SurfaceStrokeColorFlyout
-       stroke, BackgroundSizing InnerBorderEdge, 4px top/bottom item inset. -->
   <ControlTheme x:Key="{x:Type ContextMenu}" TargetType="ContextMenu" BasedOn="{StaticResource DefaultContextMenuTheme}"/>
 
   <ControlTheme x:Key="DefaultContextMenuTheme" TargetType="ContextMenu">

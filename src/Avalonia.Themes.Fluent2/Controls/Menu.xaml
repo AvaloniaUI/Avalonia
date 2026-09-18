@@ -11,13 +11,9 @@
     </Border>
   </Design.PreviewWith>
 
-  <!-- WinUI MenuBar_themeresources.xaml: MenuBarHeight is 40, items float with a 4px margin. -->
   <x:Double x:Key="MenuBarHeight">40</x:Double>
   <Thickness x:Key="MenuBarItemMargin">4,4,4,4</Thickness>
 
-  <!-- WinUI reference: MenuBarItem.xaml + MenuBar_themeresources.xaml. Top-level items are
-       rounded (ControlCornerRadius, 4) pills: rest transparent, hover SubtleFillColorSecondary,
-       pressed/open SubtleFillColorTertiary, no border. -->
   <ControlTheme x:Key="FluentTopLevelMenuItem" TargetType="MenuItem">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
@@ -81,7 +77,6 @@
       </Style>
     </Style>
 
-    <!--  Listen for PART_LayoutRoot:pointerover, so it will not be triggered when subitem is pressed  -->
     <Style Selector="^:pressed /template/ Border#PART_LayoutRoot:pointerover">
       <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPressed}" />
       <Style Selector="^ ContentPresenter#PART_HeaderPresenter">
@@ -89,7 +84,6 @@
       </Style>
     </Style>
 
-    <!--  WinUI MenuBarItem "Selected" state (submenu open) uses the tertiary subtle fill.  -->
     <Style Selector="^:open /template/ Border#PART_LayoutRoot">
       <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPressed}" />
     </Style>

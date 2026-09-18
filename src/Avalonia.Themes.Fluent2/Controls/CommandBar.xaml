@@ -181,17 +181,6 @@
   <x:Double x:Key="CommandBarMoreButtonColumnMinWidth">6</x:Double>
   <Thickness x:Key="CommandBarOverflowButtonMargin">14,23,14,0</Thickness>
 
-  <!-- WinUI reference: CommandBar_themeresources.xaml, AppBarButton_themeresources.xaml (winui3/release/1.6.4),
-  AppBarToggleButton_themeresources.xaml, AppBarSeparator_themeresources.xaml (via Uno.UI.FluentTheme.v2).
-  AppBar idiom: transparent bar (CommandBarBackground = ControlFillColorTransparent; the open state uses
-  AcrylicInAppFillColorDefault with a 1px CardStrokeColorDefaultSolid border), subtle-fill command pills
-  with ControlCornerRadius and an 83ms fill cross-fade, 16px icons (AppBarButtonContentHeight) with 12px
-  labels, checked toggles on AccentFillColorDefault with TextOnAccent text, and 1px
-  DividerStrokeColorDefault separators (AppBarSeparatorMargin 2,8). WinUI's default closed CommandBar has
-  no bottom divider, so none is drawn here. The v1 SystemControl* brush references were re-pointed to the
-  Fluent 2 tokens in this file; no shared-file keys are defined for these controls. -->
-
-  <!-- CommandBar ellipsis (more) button: same subtle-fill treatment as AppBarButton. -->
   <ControlTheme x:Key="Fluent2CommandBarEllipsisButtonTheme" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource CommandBarButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CommandBarButtonForeground}" />
@@ -257,7 +246,6 @@
   </ControlTheme>
   <ControlTheme x:Key="{x:Type CommandBarButton}" TargetType="CommandBarButton" BasedOn="{StaticResource DefaultFluentCommandBarButtonStyle}"/>
 
-  <!-- CommandBarButton ControlTheme (WinUI DefaultAppBarButtonStyle) -->
   <ControlTheme x:Key="DefaultFluentCommandBarButtonStyle" TargetType="CommandBarButton">
     <Setter Property="Background" Value="{DynamicResource CommandBarButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CommandBarButtonForeground}" />
@@ -414,7 +402,6 @@
   </ControlTheme>
   <ControlTheme x:Key="{x:Type CommandBarToggleButton}" TargetType="CommandBarToggleButton" BasedOn="{StaticResource DefaultCommandBarToggleButtonStyle}"/>
 
-  <!-- CommandBarToggleButton ControlTheme (WinUI DefaultAppBarToggleButtonStyle) -->
   <ControlTheme x:Key="DefaultCommandBarToggleButtonStyle" TargetType="CommandBarToggleButton">
     <Setter Property="Background" Value="{DynamicResource CommandBarToggleButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CommandBarToggleButtonForeground}" />
@@ -667,8 +654,7 @@
     </Style>
   </ControlTheme>
 
-  <!-- CommandBarSeparator ControlTheme (WinUI DefaultAppBarSeparatorStyle:
-  1px DividerStrokeColorDefault, AppBarSeparatorMargin 2,8, corner radius 0.5) -->
+
   <ControlTheme x:Key="{x:Type CommandBarSeparator}" TargetType="CommandBarSeparator" BasedOn="{StaticResource DefaultCommandBarSeparatorTheme}"/>
 
   <ControlTheme x:Key="DefaultCommandBarSeparatorTheme" TargetType="CommandBarSeparator">
@@ -696,7 +682,6 @@
     </Style>
   </ControlTheme>
 
-  <!-- CommandBar ControlTheme (WinUI XamlDefaultCommandBar) -->
   <ControlTheme x:Key="{x:Type CommandBar}" TargetType="CommandBar" BasedOn="{StaticResource DefaultCommandBarTheme}"/>
 
   <ControlTheme x:Key="DefaultCommandBarTheme" TargetType="CommandBar">
@@ -758,8 +743,6 @@
               </ItemsControl>
             </DockPanel>
 
-            <!-- Overflow popup (WinUI overflow presenter: AcrylicInAppFillColorDefault surface,
-            SurfaceStrokeColorFlyout 1px border, OverlayCornerRadius, min width 160) -->
             <Popup x:Name="PART_OverflowPopup"
                    IsOpen="{TemplateBinding IsOpen, Mode=TwoWay}"
                    PlacementTarget="{Binding #LayoutRoot}"
@@ -795,8 +778,6 @@
       </ControlTemplate>
     </Setter>
 
-    <!-- Open state: CommandBarBackgroundOpen / CommandBarBorderBrushOpen (thickness stays 1 to avoid
-    a layout jump; the rest-state border is transparent). -->
     <Style Selector="^[IsOpen=True] /template/ Border#LayoutRoot">
       <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultSolidBrush}" />
