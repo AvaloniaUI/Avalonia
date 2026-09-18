@@ -1,4 +1,32 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+        x:Class="Sandbox.MainWindow"
+        Title="AtSpi Selection Repro"
+        Width="380" Height="300">
+  <!--
+    Repro for the AT-SPI Selection bug: org.a11y.atspi.Selection.GetSelectedChild
+    returns the null reference for a ComboBox, while NSelectedChildren reports 1.
+    The ListBox below is the control case: its selected item is a realized child,
+    so GetSelectedChild resolves it.
+
+    Drive it with atspi-selection-repro.py in this directory.
+  -->
+  <StackPanel Margin="16" Spacing="12">
+    <TextBlock TextWrapping="Wrap"
+               Text="Run atspi-selection-repro.py to query these two controls over AT-SPI." />
+
+    <TextBlock Text="ComboBox (selected item is not a child of the combo box):" />
+    <ComboBox Name="comboBox" SelectedIndex="1">
+      <ComboBoxItem>Item 0</ComboBoxItem>
+      <ComboBoxItem>Item 1</ComboBoxItem>
+      <ComboBoxItem>Item 2</ComboBoxItem>
+    </ComboBox>
+
+    <TextBlock Text="ListBox (selected item is a realized child):" />
+    <ListBox Name="listBox" SelectedIndex="1" Height="96">
+      <ListBoxItem>Item 0</ListBoxItem>
+      <ListBoxItem>Item 1</ListBoxItem>
+      <ListBoxItem>Item 2</ListBoxItem>
+    </ListBox>
+  </StackPanel>
 </Window>
