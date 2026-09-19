@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
@@ -56,7 +57,7 @@ namespace Avalonia.Media
             set { SetValue(Point3Property, value); }
         }
 
-        internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(IGeometryContext ctx)
         {
             ctx.CubicBezierTo(Point1, Point2, Point3, IsStroked);
         }

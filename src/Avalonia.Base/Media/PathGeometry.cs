@@ -89,18 +89,15 @@ namespace Avalonia.Media
                 return null;
 
             var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-            var geometry = factory.CreateStreamGeometry();
+            using var builder = factory.CreateStreamGeometryBuilder();
 
-            using (var ctx = new StreamGeometryContext(geometry.Open()))
+            builder.SetFillRule(FillRule);
+            foreach (var f in figures)
             {
-                ctx.SetFillRule(FillRule);
-                foreach (var f in figures)
-                {
-                    f.ApplyTo(ctx);
-                }
+                f.ApplyTo(builder);
             }
 
-            return geometry;
+            return builder.ToGeometry();
         }
 
         private void OnFiguresChanged(PathFigures? figures)
