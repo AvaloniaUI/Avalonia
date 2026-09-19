@@ -90,6 +90,11 @@ internal partial class Program
                 options.PreferFileDialogPolyfill = preferDialogsPolyfill;
             }
 
+            if (bool.TryParse(queryParams[nameof(options.PreferManagedThreadDispatcher)], out var preferManagedDispatcher))
+            {
+                options.PreferManagedThreadDispatcher = preferManagedDispatcher;
+            }
+
             if (queryParams[nameof(options.RenderingMode)] is { } renderingModePairs)
             {
                 options.RenderingMode = renderingModePairs
