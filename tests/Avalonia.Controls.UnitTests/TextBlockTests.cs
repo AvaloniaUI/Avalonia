@@ -129,6 +129,38 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextLayout_Should_Use_FontVariations_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var variations = FontVariationSettings.Parse("wght=700");
+                var target = new TextBlock { Text = "Hello World", FontVariations = variations };
+
+                target.Measure(Size.Infinity);
+
+                Assert.NotNull(target.TextLayout.TextLines[0].TextRuns[0].Properties);
+                Assert.Equal(variations, target.TextLayout.TextLines[0].TextRuns[0].Properties!.Typeface.FontVariations);
+            }
+        }
+
+        [Fact]
+        public void Changing_FontVariations_Should_Invalidate_Measure()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new TextBlock { Text = "Hello World" };
+
+                target.Measure(Size.Infinity);
+
+                Assert.True(target.IsMeasureValid);
+
+                target.FontVariations = FontVariationSettings.Parse("wght=700");
+
+                Assert.False(target.IsMeasureValid);
+            }
+        }
+
+        [Fact]
         public void Changing_InlinesCollection_Should_Invalidate_Measure()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

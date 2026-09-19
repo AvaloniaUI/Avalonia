@@ -271,6 +271,23 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void WithVariations_Shares_Clones_Within_A_Quantization_Cell()
+        {
+            // Under animation an axis sweeps through arbitrary float user values; the
+            // F2Dot14 quantization in CreateNormalizedPosition collapses sub-resolution
+            // differences so the sweep reuses clones instead of growing the cache
+            // per progress value.
+            var gt = LoadTypeface(InterVariableAsset);
+
+            var a = gt.WithVariations(new FontVariationSettings(
+                new[] { new FontVariation(s_wghtTag, 700) }));
+            var b = gt.WithVariations(new FontVariationSettings(
+                new[] { new FontVariation(s_wghtTag, 700.001) }));
+
+            Assert.Same(a, b);
+        }
+
+        [Fact]
         public void WithVariations_Selects_Named_Instance_By_Index()
         {
             // Instance index 8 in Inter Variable is Black (wght=900); selecting it by

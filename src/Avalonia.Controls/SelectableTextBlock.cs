@@ -193,7 +193,7 @@ namespace Avalonia.Controls
 
         protected override TextLayout CreateTextLayout(string? text)
         {
-            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch, FontVariations);
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
