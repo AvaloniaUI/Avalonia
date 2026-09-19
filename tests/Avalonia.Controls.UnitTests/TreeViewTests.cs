@@ -800,6 +800,46 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Changing_SelectedItem_Should_Report_Deselected_Item()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            var first = data[0].Children[0];
+            var second = data[0].Children[1];
+
+            target.SelectedItem = first;
+
+            var events = new List<(System.Collections.IList removed, System.Collections.IList added)>();
+            target.SelectionChanged += (s, e) => events.Add((e.RemovedItems, e.AddedItems));
+
+            target.SelectedItem = second;
+
+            var e = Assert.Single(events);
+            Assert.Same(second, Assert.Single(e.added));
+            Assert.Same(first, Assert.Single(e.removed));
+        }
+
+        [Fact]
+        public void SelectAll_Should_Raise_A_Single_SelectionChanged_Event()
+        {
+            using var app = Start();
+            var data = CreateTestTreeData();
+            var target = CreateTarget(data: data);
+            target.SelectionMode = SelectionMode.Multiple;
+
+            var events = new List<(System.Collections.IList removed, System.Collections.IList added)>();
+            target.SelectionChanged += (s, e) => events.Add((e.RemovedItems, e.AddedItems));
+
+            target.SelectAll();
+
+            var e = Assert.Single(events);
+            Assert.Empty(e.removed);
+            Assert.Equal(target.SelectedItems.Count, e.added.Count);
+            Assert.True(e.added.Count > 1);
+        }
+
+        [Fact]
         public void Removing_Selected_Root_Item_Should_Clear_Selection()
         {
             using var app = Start();
