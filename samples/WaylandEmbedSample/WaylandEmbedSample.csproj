@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Work around a HarfBuzzSharp.NativeAssets.Win32 packaging bug: its nuspec lists a win-arm64
+         libHarfBuzzSharp.pdb that isn't shipped, so GenerateDepsFile throws FileNotFoundException when
+         building an exe. Excluding .pdb from reference-related files stops the deps task enumerating it.
+         (Same failure affects the existing XEmbedSample in this environment.) -->
+    <AllowedReferenceRelatedFileExtensions>.xml</AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GtkSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Avalonia.X11 transitively references Avalonia.Skia, so UseSkia() is available without a direct ref. -->
+    <ProjectReference Include="..\..\src\Avalonia.Wayland\Avalonia.Wayland.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
+    <!-- FluentTheme is a transitive runtime dep of X11 but needs a compile-time ref for App.Initialize(). -->
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
+    <!-- HarfBuzz text shaping was split out of Skia; UseSkia() no longer registers ITextShaperImpl. -->
+    <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Wayland.Embedding\Avalonia.Wayland.Embedding.csproj" />
+    <!-- Example GtkSharp glue (GTK init, wl_surface extraction, scenario helpers) — not shipped on NuGet. -->
+    <ProjectReference Include="..\..\src\Avalonia.Wayland.Embedding.Gtk\Avalonia.Wayland.Embedding.Gtk.csproj" />
+    <!-- Reverse of XEmbedSample: here Avalonia hosts and GTK is the Wayland client.
+         Reuse the harfbuzz/GtkSharp dlopen workaround verbatim. -->
+    <Compile Include="..\XEmbedSample\HarfbuzzWorkaround.cs" />
+  </ItemGroup>
+
+</Project>
