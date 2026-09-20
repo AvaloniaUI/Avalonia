@@ -1,9 +1,6 @@
 <Project>
   <PropertyGroup>
     <AvaloniaAllowWebGl2 Condition="'$(AvaloniaAllowWebGl2)' == ''">true</AvaloniaAllowWebGl2>
-
-    <ShouldIncludeNativeSkiaSharp Condition=" '$(ShouldIncludeNativeSkiaSharp)' == '' ">true</ShouldIncludeNativeSkiaSharp>
-    <ShouldIncludeNativeHarfBuzzSharp Condition=" '$(ShouldIncludeNativeHarfBuzzSharp)' == '' ">true</ShouldIncludeNativeHarfBuzzSharp>
   </PropertyGroup>
 
   <!-- StaticWebAssets/StaticWebAssetEndpoints are automatically included in the nupkg by the Microsoft.NET.Sdk.StaticWebAssets SDK. -->
