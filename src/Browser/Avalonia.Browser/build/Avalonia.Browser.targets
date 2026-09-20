@@ -10,11 +10,6 @@
     <EmccExportedRuntimeMethod Include="GL" />
     <EmccExportedRuntimeMethod Include="PThread" Condition="'$(WasmEnableThreads)' == 'true'" />
   </ItemGroup>
-  
-  <!-- Fallback for applications without StaticWebAssetsEnabled (legacy WASM SDK) -->
-  <ItemGroup Condition="'$(ShouldIncludeAvaloniaLegacyAssets)' == 'true'">
-    <WasmExtraFilesToDeploy Include="$(MSBuildThisFileDirectory)/../staticwebassets/**/*.*" TargetPath="$(_AvaloniaRuntimeAssetsLocation)/%(FileName)%(Extension)" />
-  </ItemGroup>
 
   <PropertyGroup Condition="'$(ShouldIncludeNativeSkiaSharp)' == 'true' or '$(ShouldIncludeNativeHarfBuzzSharp)' == 'true'">
     <WasmBuildNative Condition="'$(WasmBuildNative)' == ''">true</WasmBuildNative>

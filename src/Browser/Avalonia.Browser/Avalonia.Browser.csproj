@@ -1,9 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.StaticWebAssets">
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WebAppDir>$(MSBuildThisFileDirectory)webapp</WebAppDir>
+    <WebAppOutputDir>$(MSBuildThisFileDirectory)wwwroot</WebAppOutputDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- wwwroot is produced by esbuild during the build (see BunRunBuild below) -->
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <!-- We don't use scoped css/modules -->
+    <ScopedCssEnabled>false</ScopedCssEnabled>
+    <JSModulesEnabled>false</JSModulesEnabled>
+    <!-- We ship hand-written build/Avalonia.Browser.props and .targets. -->
+    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,11 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- See https://github.com/dotnet/sdk/blob/9d4d2c4ca35b0856af7df63d6a38b3259aa6917c/src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.Pack.targets#L64-L66 -->
-    <Content Include="build\Microsoft.AspNetCore.StaticWebAssets.props">
-      <Pack>true</Pack>
-      <PackagePath>build/</PackagePath>
-    </Content>
     <Content Include="build\Avalonia.Browser.props">
       <Pack>true</Pack>
       <PackagePath>build/;buildTransitive/;buildMultiTargeting/</PackagePath>
@@ -36,10 +44,6 @@
     <Content Include="build\Avalonia.Browser.targets">
       <Pack>true</Pack>
       <PackagePath>build/;buildTransitive/</PackagePath>
-    </Content>
-    <Content Include="staticwebassets/**/*.*">
-      <Pack>true</Pack>
-      <PackagePath>staticwebassets/</PackagePath>
     </Content>
   </ItemGroup>
 
@@ -49,8 +53,26 @@
     <!-- Write the stamp file, so incremental builds work -->
     <Touch Files="$(WebAppDir)/node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
-  <Target Name="BunRunBuild" DependsOnTargets="BunInstall" BeforeTargets="DispatchToInnerBuilds">
+
+  <ItemGroup>
+    <!-- ItemGroup defined to track BunRunBuild inputs with msbuild -->
+    <AvaloniaWebAppSource Include="$(WebAppDir)/build.js;$(WebAppDir)/package.json;$(WebAppDir)/tsconfig.json" />
+    <AvaloniaWebAppSource Include="$(WebAppDir)/modules/**/*.ts;$(WebAppDir)/types/**/*.ts" />
+  </ItemGroup>
+
+  <Target Name="BunRunBuild" DependsOnTargets="BunInstall"
+          BeforeTargets="DispatchToInnerBuilds;ResolveProjectStaticWebAssets"
+          Inputs="@(AvaloniaWebAppSource)"
+          Outputs="$(WebAppOutputDir)/avalonia.js;$(WebAppOutputDir)/storage.js;$(WebAppOutputDir)/sw.js">
     <Exec Command="dnx Bun.Unofficial.Tool build.js" WorkingDirectory="$(WebAppDir)" />
+  </Target>
+
+  <Target Name="IncludeAvaloniaWebAppContent"
+          DependsOnTargets="BunRunBuild"
+          BeforeTargets="ResolveProjectStaticWebAssets">
+    <ItemGroup>
+      <Content Include="wwwroot\**" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
   </Target>
 
   <ItemGroup>

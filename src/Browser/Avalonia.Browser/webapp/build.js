@@ -4,7 +4,7 @@ require("esbuild").build({
         "./modules/storage.ts",
         "./modules/sw.ts"
     ],
-    outdir: "../staticwebassets",
+    outdir: "../wwwroot",
     bundle: true,
     minify: true,
     format: "esm",
