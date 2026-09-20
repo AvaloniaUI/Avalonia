@@ -23,15 +23,17 @@ internal static partial class AvaloniaModule
     public const string MainModuleName = "avalonia";
     public const string StorageModuleName = "storage";
 
+    public const string AssetsBasePath = "_content/Avalonia.Browser";
+
     public static Task ImportMain() => s_importMain.Value;
 
     public static Task ImportStorage() => s_importStorage.Value;
 
-    public static string ResolveServiceWorkerPath()
-    {
-        var options = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
-        return options.FrameworkAssetPathResolver!("sw.js");
-    }
+    /// <remark>
+    /// Service locator path is resolved relative to the document root,
+    /// Not relatively to the caller framework, so we can't use FrameworkAssetPathResolver.
+    /// </remark>
+    public static string ResolveServiceWorkerPath() => $"./{AssetsBasePath}/sw.js";
 
     [JSImport("Caniuse.isMobile", AvaloniaModule.MainModuleName)]
     public static partial bool IsMobile();
