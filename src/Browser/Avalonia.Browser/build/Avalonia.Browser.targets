@@ -9,4 +9,12 @@
     <EmccExportedRuntimeMethod Include="GL" />
     <EmccExportedRuntimeMethod Include="PThread" Condition="'$(WasmEnableThreads)' == 'true'" />
   </ItemGroup>
+
+  <!--
+    Fallback for legacy WASM projects, which have no static web assets pipeline.
+  -->
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">
+    <WasmExtraFilesToDeploy Include="$(MSBuildThisFileDirectory)../staticwebassets/**/*.*"
+                            TargetPath="_content/Avalonia.Browser/%(FileName)%(Extension)" />
+  </ItemGroup>
 </Project>
