@@ -209,13 +209,9 @@ namespace Avalonia.Media.TextFormatting
                 return collapsedLine;
             }
 
-            // The trailing whitespace is the gap the line broke on, a newline included.
-            var collapsedLength = Length - TrailingWhitespaceLength;
-
-            if (collapsedLength <= 0)
-            {
-                return this;
-            }
+            // The trailing whitespace is the gap the line broke on, a newline included; an empty line keeps
+            // the symbol alone.
+            var collapsedLength = Math.Max(0, Length - TrailingWhitespaceLength);
 
             var shapedSymbol = TextFormatter.CreateSymbol(collapsingProperties.Symbol, collapsingProperties.FlowDirection);
 

@@ -862,6 +862,38 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Draw_The_Ellipsis_Alone_When_MaxLines_Cuts_After_An_Empty_Line()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    "0123456789\r\n\r\n0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 200,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var lastLine = layout.TextLines[1];
+
+                Assert.True(lastLine.HasCollapsed, "The empty line cut off by MaxLines must carry the symbol.");
+                Assert.Equal("\u2026", string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString())));
+                Assert.Equal(2, lastLine.Length);
+
+                // The line still answers for the text it stands for.
+                var hit = lastLine.GetCharacterHitFromDistance(lastLine.Width);
+                Assert.True(hit.FirstCharacterIndex >= lastLine.FirstTextSourceIndex);
+                Assert.True(lastLine.GetDistanceFromCharacterHit(hit) >= 0);
+
+                layout.Dispose();
+            }
+        }
+
+        [Fact]
         public void Should_Produce_Fixed_Height_Lines()
         {
             using (Start())
