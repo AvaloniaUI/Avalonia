@@ -806,6 +806,62 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Keep_Collapsing_With_A_Leading_Ellipsis_When_MaxLines_Cuts_A_Short_Wrapped_Line()
+        {
+            using (Start())
+            {
+                // A trimming that puts its symbol elsewhere than the end is given the line's own width, as before.
+                var word = new TextLayout("0123456789", Typeface.Default, 12, Brushes.Black);
+
+                var layout = new TextLayout(
+                    "0123456789 01234 0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.LeadingCharacterEllipsis,
+                    maxWidth: word.Width * 1.2,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+                Assert.True(layout.TextLines[1].HasCollapsed);
+
+                layout.Dispose();
+                word.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Add_Ellipsis_When_MaxHeight_Cuts_A_Short_Wrapped_Line()
+        {
+            using (Start())
+            {
+                var word = new TextLayout("0123456789", Typeface.Default, 12, Brushes.Black);
+
+                var layout = new TextLayout(
+                    "0123456789 01234 0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: word.Width * 1.2,
+                    lineHeight: 20,
+                    maxHeight: 40.5);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var lastLine = layout.TextLines[1];
+
+                Assert.True(lastLine.HasCollapsed, "The short wrapped line cut off by MaxHeight must be collapsed.");
+                Assert.Equal("01234\u2026", string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString())));
+
+                layout.Dispose();
+                word.Dispose();
+            }
+        }
+
+        [Fact]
         public void Should_Produce_Fixed_Height_Lines()
         {
             using (Start())

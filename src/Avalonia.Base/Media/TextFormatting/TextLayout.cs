@@ -636,7 +636,15 @@ namespace Avalonia.Media.TextFormatting
                         if (textLine.TextLineBreak is { IsSplit: true }
                             || (textLine.NewLineLength > 0 && _textSource.GetTextRun(_textSourceLength) is { } next && next is not TextEndOfParagraph))
                         {
-                            textLines[textLines.Count - 1] = CollapseCutLine(textLine);
+                            var collapsedLine = CollapseCutLine(textLine);
+
+                            // A trimming that collapses nothing within MaxWidth is given the line's own width, as before.
+                            if (!collapsedLine.HasCollapsed && _textTrimming != TextTrimming.None)
+                            {
+                                collapsedLine = textLine.Collapse(GetCollapsingProperties(textLine.WidthIncludingTrailingWhitespace));
+                            }
+
+                            textLines[textLines.Count - 1] = collapsedLine;
                         }
 
                         break;
