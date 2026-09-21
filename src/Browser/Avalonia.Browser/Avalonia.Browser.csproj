@@ -1,22 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.StaticWebAssets">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WebAppDir>$(MSBuildThisFileDirectory)webapp</WebAppDir>
     <WebAppOutputDir>$(MSBuildThisFileDirectory)wwwroot</WebAppOutputDir>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- wwwroot is produced by esbuild during the build (see BunRunBuild below) -->
-    <EnableDefaultContentItems>false</EnableDefaultContentItems>
-    <!-- We don't use scoped css/modules -->
-    <ScopedCssEnabled>false</ScopedCssEnabled>
-    <JSModulesEnabled>false</JSModulesEnabled>
-    <!-- We ship hand-written build/Avalonia.Browser.props and .targets. -->
-    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
-    <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
-    <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,17 +49,21 @@
   </ItemGroup>
 
   <Target Name="BunRunBuild" DependsOnTargets="BunInstall"
-          BeforeTargets="DispatchToInnerBuilds;ResolveProjectStaticWebAssets"
+          BeforeTargets="DispatchToInnerBuilds;BeforeBuild"
           Inputs="@(AvaloniaWebAppSource)"
           Outputs="$(WebAppOutputDir)/avalonia.js;$(WebAppOutputDir)/storage.js;$(WebAppOutputDir)/sw.js">
     <Exec Command="dnx Bun.Unofficial.Tool build.js" WorkingDirectory="$(WebAppDir)" />
   </Target>
 
-  <Target Name="IncludeAvaloniaWebAppContent"
+  <!--
+    Packed as plain files; build/Avalonia.Browser.targets defines the static web assets in the app.
+    Added from a target because wwwroot only exists after esbuild runs.
+  -->
+  <Target Name="IncludeAvaloniaWebAppPackageFiles"
           DependsOnTargets="BunRunBuild"
-          BeforeTargets="ResolveProjectStaticWebAssets">
+          BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <Content Include="wwwroot\**" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" />
+      <Content Include="wwwroot\**" Pack="true" PackagePath="staticwebassets/" CopyToOutputDirectory="Never" />
     </ItemGroup>
   </Target>
 

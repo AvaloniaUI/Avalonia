@@ -10,11 +10,93 @@
     <EmccExportedRuntimeMethod Include="PThread" Condition="'$(WasmEnableThreads)' == 'true'" />
   </ItemGroup>
 
-  <!--
-    Fallback for legacy WASM projects, which have no static web assets pipeline.
-  -->
+  <!-- staticwebassets/ in the package, wwwroot/ in the repo. -->
+  <PropertyGroup>
+    <_AvaloniaBrowserJsDir Condition="Exists('$(MSBuildThisFileDirectory)../staticwebassets/avalonia.js')">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../staticwebassets'))</_AvaloniaBrowserJsDir>
+    <_AvaloniaBrowserJsDir Condition="'$(_AvaloniaBrowserJsDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../wwwroot'))</_AvaloniaBrowserJsDir>
+  </PropertyGroup>
+
+  <!-- Legacy WASM projects have no static web assets pipeline. -->
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">
-    <WasmExtraFilesToDeploy Include="$(MSBuildThisFileDirectory)../staticwebassets/**/*.*"
+    <WasmExtraFilesToDeploy Include="$(_AvaloniaBrowserJsDir)**/*.*"
                             TargetPath="_content/Avalonia.Browser/%(FileName)%(Extension)" />
   </ItemGroup>
+
+  <!--
+    Assets are defined in the app's build, not packed from this project.
+    A hard fingerprint renames the file, which static hosting needs,
+    but it does not survive `dotnet pack` on the .NET 10 SDK:
+    the packed props record the resolved name and drop the marker.
+    Evaluating the expression in the app keeps it intact.
+    Mirrors _ResolveBlazorWasmOutputs in Microsoft.NET.Sdk.BlazorWebAssembly.
+    .NET 11 fixes pack, but only for consumers on the .NET 11 SDK.
+  -->
+  <Target Name="_AvaloniaBrowserDefineStaticWebAssets"
+          Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' == 'true'"
+          AfterTargets="ResolveProjectStaticWebAssets"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration;ResolveReferences">
+
+    <Error Condition="!Exists('$(_AvaloniaBrowserJsDir)avalonia.js')"
+           Code="AVA3002"
+           Text="Avalonia.Browser JavaScript assets were not found in '$(_AvaloniaBrowserJsDir)'. This usually indicates a packaging error." />
+
+    <ItemGroup>
+      <!-- Imported by specifier, so the import map rewrites them. -->
+      <_AvaloniaBrowserFingerprintedJs Include="$(_AvaloniaBrowserJsDir)avalonia.js;$(_AvaloniaBrowserJsDir)storage.js" />
+      <!-- Loaded by URL (serviceWorker.register, sourceMappingURL), which the import map does not rewrite. -->
+      <_AvaloniaBrowserPlainJs Include="$(_AvaloniaBrowserJsDir)sw.js;$(_AvaloniaBrowserJsDir)*.map" />
+
+      <!-- Separate update: %(Filename) would be a self-reference (MSB4120). -->
+      <_AvaloniaBrowserFingerprintedJs>
+        <RelativePath>_content/Avalonia.Browser/%(Filename)%(Extension)</RelativePath>
+      </_AvaloniaBrowserFingerprintedJs>
+      <_AvaloniaBrowserPlainJs>
+        <RelativePath>_content/Avalonia.Browser/%(Filename)%(Extension)</RelativePath>
+      </_AvaloniaBrowserPlainJs>
+
+      <_AvaloniaBrowserJsFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_AvaloniaBrowserFingerprintedJs)"
+      FingerprintCandidates="true"
+      FingerprintPatterns="@(_AvaloniaBrowserJsFingerprintPattern)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="All"
+      AssetRole="Primary"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="PreserveNewest"
+      ContentRoot="$(_AvaloniaBrowserJsDir)"
+      BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="_AvaloniaBrowserStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_AvaloniaBrowserPlainJs)"
+      FingerprintCandidates="false"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="All"
+      AssetRole="Primary"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="PreserveNewest"
+      ContentRoot="$(_AvaloniaBrowserJsDir)"
+      BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="_AvaloniaBrowserStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_AvaloniaBrowserStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_AvaloniaBrowserStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_AvaloniaBrowserStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_AvaloniaBrowserStaticWebAssetEndpoint)" />
+    </ItemGroup>
+  </Target>
+
 </Project>

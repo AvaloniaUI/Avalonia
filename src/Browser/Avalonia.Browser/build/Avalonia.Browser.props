@@ -2,10 +2,4 @@
   <PropertyGroup>
     <AvaloniaAllowWebGl2 Condition="'$(AvaloniaAllowWebGl2)' == ''">true</AvaloniaAllowWebGl2>
   </PropertyGroup>
-
-  <!-- StaticWebAssets/StaticWebAssetEndpoints are automatically included in the nupkg by the Microsoft.NET.Sdk.StaticWebAssets SDK. -->
-  <Import Project="$(MSBuildThisFileDirectory)/../build/Microsoft.AspNetCore.StaticWebAssets.props"
-          Condition="Exists('$(MSBuildThisFileDirectory)/../build/Microsoft.AspNetCore.StaticWebAssets.props')" />
-  <Import Project="$(MSBuildThisFileDirectory)/../build/Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
-          Condition="Exists('$(MSBuildThisFileDirectory)/../build/Microsoft.AspNetCore.StaticWebAssetEndpoints.props')" />
 </Project>
