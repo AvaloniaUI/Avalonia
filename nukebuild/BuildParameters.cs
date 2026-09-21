@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Nuke.Common;
-using Nuke.Common.CI.AzurePipelines;
+using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.IO;
 using static Nuke.Common.IO.PathConstruction;
 
@@ -47,7 +47,7 @@ public partial class Build
         public bool IsLocalBuild { get; }
         public bool IsRunningOnUnix { get; }
         public bool IsRunningOnWindows { get; }
-        public bool IsRunningOnAzure { get; }
+        public bool IsRunningOnGitHubActions { get; }
         public bool IsPullRequest { get; }
         public bool IsMainRepo { get; }
         public bool IsMasterBranch { get; }
@@ -94,15 +94,15 @@ public partial class Build
             IsRunningOnUnix = Environment.OSVersion.Platform == PlatformID.Unix ||
                               Environment.OSVersion.Platform == PlatformID.MacOSX;
             IsRunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsRunningOnAzure = Host is AzurePipelines;
+            IsRunningOnGitHubActions = Host is GitHubActions;
 
-            if (IsRunningOnAzure)
+            if (IsRunningOnGitHubActions)
             {
-                RepositoryName = AzurePipelines.Instance.RepositoryUri;
-                RepositoryBranch = AzurePipelines.Instance.SourceBranch;
-                IsPullRequest = AzurePipelines.Instance.PullRequestId.HasValue;
-                IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, AzurePipelines.Instance.RepositoryUri);
+                RepositoryName = $"{GitHubActions.Instance.ServerUrl}/{GitHubActions.Instance.Repository}";
+                RepositoryBranch = GitHubActions.Instance.Ref;
+                IsPullRequest = GitHubActions.Instance.IsPullRequest;
             }
+
             IsMainRepo =
                 StringComparer.OrdinalIgnoreCase.Equals(MainRepo,
                     RepositoryName);
@@ -121,12 +121,12 @@ public partial class Build
             ApiValidationBaseline = b.ApiValidationBaseline ?? propsApiCompatVersion;
             UpdateApiValidationSuppression = b.UpdateApiValidationSuppression ?? IsLocalBuild;
             
-            if (IsRunningOnAzure)
+            if (IsRunningOnGitHubActions)
             {
                 if (!IsNuGetRelease)
                 {
                     // Use AssemblyVersion with Build as version
-                    Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-alpha";
+                    Version += "-cibuild" + GetCiBuildNumber().ToString("0000000") + "-alpha";
                 }
 
                 PublishTestResults = true;
@@ -164,6 +164,17 @@ public partial class Build
                 xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value,
                 xdoc.Descendants().First(x => x.Name.LocalName == "ApiCompatVersion").Value
             );
+        }
+
+        long GetCiBuildNumber()
+        {
+            // The GitHub Actions number starts at 1 and isn't configurable. Avoid duplicates with old Azure Pipelines.
+            const long offset = 100000;
+
+            if (IsRunningOnGitHubActions)
+                return offset + GitHubActions.Instance.RunNumber;
+
+            throw new InvalidOperationException("Not running on a CI system");
         }
     }
 

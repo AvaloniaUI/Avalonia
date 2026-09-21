@@ -1,0 +1,96 @@
+name: Publish PR NuGet Packages
+
+# Publishes the packages built by the Build workflow for a pull request, including pull requests from forks,
+# so that contributors can directly test their changes.
+#
+# This runs in the context of the main repository with access to secrets, while the packages were built
+# from untrusted pull request code. That is accepted for the "all" feed only.
+# NEVER check out or execute anything from the pull request here: only download the artifacts and push them.
+# (The publish action itself is checked out from main.)
+
+on:
+  workflow_run:
+    workflows: [Build]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  publish:
+    name: Publish PR NuGet Packages
+    if: >-
+      github.event.workflow_run.event == 'pull_request'
+      && github.event.workflow_run.conclusion == 'success'
+      && vars.ALL_FEED_UPLOAD_URL != ''
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.publish.outputs.version }}
+
+    steps:
+      - name: Checkout Actions
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          sparse-checkout: .github/actions
+          persist-credentials: false
+
+      - name: Publish NuGet Packages
+        id: publish
+        uses: ./.github/actions/publish-nuget
+        with:
+          feed-url: ${{ vars.ALL_FEED_UPLOAD_URL }}
+          api-key: ${{ secrets.ALL_FEED_API_KEY }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+  comment:
+    name: Comment on Pull Request
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Post Package Version
+        uses: actions/github-script@v7
+        env:
+          HEAD_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          VERSION: ${{ needs.publish.outputs.version }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          FEED_URL: ${{ vars.ALL_FEED_DOWNLOAD_URL }}
+        with:
+          script: |
+            const { HEAD_OWNER, HEAD_BRANCH, HEAD_SHA, VERSION, RUN_URL, FEED_URL } = process.env;
+            const { owner, repo } = context.repo;
+
+            // The workflow_run payload doesn't list pull requests from forks, so look the pull request up
+            // from its head branch, and make sure it still points to the commit that was built.
+            const { data: pulls } = await github.rest.pulls.list({
+              owner, repo, state: 'open', head: `${HEAD_OWNER}:${HEAD_BRANCH}`,
+            });
+            const pr = pulls.find(p => p.head.sha === HEAD_SHA);
+            if (!pr) {
+              core.warning(`No open pull request found for ${HEAD_OWNER}:${HEAD_BRANCH} at ${HEAD_SHA}.`);
+              return;
+            }
+
+            const marker = '<!-- pr-nuget-bot -->';
+            const body =
+              `${marker}\n### NuGet packages\n\n` +
+              `The packages for this pull request have been published ([workflow run](${RUN_URL})):\n\n` +
+              `- Version: \`${VERSION}\`\n` +
+              `- Feed URL: ${FEED_URL}`;
+
+            // Update the existing comment (from a previous push) or create a new one.
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: pr.number, per_page: 100,
+            });
+            const existing = comments.find(c => c.user?.login === 'github-actions[bot]' && c.body?.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: pr.number, body });
+            }
