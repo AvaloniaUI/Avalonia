@@ -10,10 +10,10 @@
     <EmccExportedRuntimeMethod Include="PThread" Condition="'$(WasmEnableThreads)' == 'true'" />
   </ItemGroup>
 
-  <!-- staticwebassets/ in the package, wwwroot/ in the repo. -->
+  <!-- wwwroot/ in the repo, staticwebassets/ in the package. -->
   <PropertyGroup>
-    <_AvaloniaBrowserJsDir Condition="Exists('$(MSBuildThisFileDirectory)../staticwebassets/avalonia.js')">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../staticwebassets'))</_AvaloniaBrowserJsDir>
-    <_AvaloniaBrowserJsDir Condition="'$(_AvaloniaBrowserJsDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../wwwroot'))</_AvaloniaBrowserJsDir>
+    <_AvaloniaBrowserJsDir Condition="Exists('$(MSBuildThisFileDirectory)../wwwroot/avalonia.js')">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../wwwroot'))</_AvaloniaBrowserJsDir>
+    <_AvaloniaBrowserJsDir Condition="'$(_AvaloniaBrowserJsDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../staticwebassets'))</_AvaloniaBrowserJsDir>
   </PropertyGroup>
 
   <!-- Legacy WASM projects have no static web assets pipeline. -->
@@ -36,11 +36,22 @@
           AfterTargets="ResolveProjectStaticWebAssets"
           DependsOnTargets="ResolveStaticWebAssetsConfiguration;ResolveReferences">
 
-    <Error Condition="!Exists('$(_AvaloniaBrowserJsDir)avalonia.js')"
+    <!-- Design time builds do not build the project reference, so wwwroot may legitimately be absent. -->
+    <Error Condition="!Exists('$(_AvaloniaBrowserJsDir)avalonia.js') and '$(DesignTimeBuild)' != 'true'"
            Code="AVA3002"
            Text="Avalonia.Browser JavaScript assets were not found in '$(_AvaloniaBrowserJsDir)'. This usually indicates a packaging error." />
 
-    <ItemGroup>
+    <PropertyGroup>
+      <!--
+        A renamed file only resolves through the import map,
+        which the SDK emits only when OverrideHtmlAssetPlaceholders is on.
+        Without it, keep the plain names so existing apps keep working.
+      -->
+      <_AvaloniaBrowserFingerprintJs Condition="'$(OverrideHtmlAssetPlaceholders)' == 'true' and '$(StaticWebAssetsFingerprintContent)' != 'false'">true</_AvaloniaBrowserFingerprintJs>
+      <_AvaloniaBrowserFingerprintJs Condition="'$(_AvaloniaBrowserFingerprintJs)' == ''">false</_AvaloniaBrowserFingerprintJs>
+    </PropertyGroup>
+
+    <ItemGroup Condition="Exists('$(_AvaloniaBrowserJsDir)avalonia.js')">
       <!-- Imported by specifier, so the import map rewrites them. -->
       <_AvaloniaBrowserFingerprintedJs Include="$(_AvaloniaBrowserJsDir)avalonia.js;$(_AvaloniaBrowserJsDir)storage.js" />
       <!-- Loaded by URL (serviceWorker.register, sourceMappingURL), which the import map does not rewrite. -->
@@ -58,8 +69,9 @@
     </ItemGroup>
 
     <DefineStaticWebAssets
+      Condition="'@(_AvaloniaBrowserFingerprintedJs)' != ''"
       CandidateAssets="@(_AvaloniaBrowserFingerprintedJs)"
-      FingerprintCandidates="true"
+      FingerprintCandidates="$(_AvaloniaBrowserFingerprintJs)"
       FingerprintPatterns="@(_AvaloniaBrowserJsFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Computed"
@@ -73,6 +85,7 @@
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssets
+      Condition="'@(_AvaloniaBrowserPlainJs)' != ''"
       CandidateAssets="@(_AvaloniaBrowserPlainJs)"
       FingerprintCandidates="false"
       SourceId="$(PackageId)"
@@ -87,6 +100,7 @@
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
+      Condition="'@(_AvaloniaBrowserStaticWebAsset)' != ''"
       CandidateAssets="@(_AvaloniaBrowserStaticWebAsset)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
