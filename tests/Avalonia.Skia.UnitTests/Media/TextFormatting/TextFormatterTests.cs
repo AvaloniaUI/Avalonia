@@ -319,7 +319,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
-        public void Should_Produce_A_Single_Fallback_Run()
+        public void Should_Not_Absorb_Whitespace_Into_A_Fallback_Run()
         {
             using (Start())
             {
@@ -337,7 +337,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.NotNull(textLine);
 
-                Assert.Equal(1, textLine.TextRuns.Count);
+                // Four emoji in a fallback font, separated by three spaces the primary font covers:
+                // the spaces keep the primary's metrics instead of the emoji font's, so they form
+                // runs of their own.
+                Assert.Equal(7, textLine.TextRuns.Count);
+
+                for (var i = 0; i < textLine.TextRuns.Count; i++)
+                {
+                    var isSpace = i % 2 == 1;
+
+                    Assert.Equal(isSpace ? 1 : 2, textLine.TextRuns[i].Length);
+                    Assert.Equal(isSpace, defaultProperties.Typeface == textLine.TextRuns[i].Properties!.Typeface);
+                }
             }
         }
 
@@ -410,11 +421,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        // The expectations concatenate the run texts in visual run order, so where the spaces sit
+        // in the string depends on how the line is cut into runs. Each space is a run of its own
+        // now (the primary font owns it, not the Hebrew fallback), which regroups the same
+        // characters - the right-to-left rows below show the same content, differently split.
         [Theory]
         [InlineData("one שתיים three ארבע", "one שתיים thr…", FlowDirection.LeftToRight, false)]
-        [InlineData("one שתיים three ארבע", "…thrשתיים  one", FlowDirection.RightToLeft, false)]
+        [InlineData("one שתיים three ארבע", "…thr שתיים one", FlowDirection.RightToLeft, false)]
         [InlineData("one שתיים three ארבע", "one שתיים…", FlowDirection.LeftToRight, true)]
-        [InlineData("one שתיים three ארבע", "…שתיים  one", FlowDirection.RightToLeft, true)]
+        [InlineData("one שתיים three ארבע", "… שתיים one", FlowDirection.RightToLeft, true)]
         public void TextTrimming_Should_Trim_Correctly(string text, string trimmed, FlowDirection direction, bool wordEllipsis)
         {
             const double Width = 160.0;

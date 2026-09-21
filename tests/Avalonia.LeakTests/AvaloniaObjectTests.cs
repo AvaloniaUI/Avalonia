@@ -155,6 +155,124 @@ namespace Avalonia.LeakTests
         }
 
         [Fact]
+        public void CompiledBinding_StreamObservable_With_Alive_Source_Does_Not_Keep_Target_Alive()
+        {
+            // Issue #5872: a binding to a long-lived observable via the '^' stream operator should
+            // not keep the target alive, in the same way as every other binding type above.
+            var observable = new Subject<string>();
+            var source = new Class3 { Observable = observable };
+
+            WeakReference SetupBinding()
+            {
+                var path = new CompiledBindingPathBuilder()
+                    .Property(
+                        new ClrPropertyInfo(
+                            nameof(Class3.Observable),
+                            target => ((Class3)target).Observable,
+                            null,
+                            typeof(IObservable<string>)),
+                        PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
+                    .StreamObservable<string>()
+                    .Build();
+
+                var target = new TextBlock();
+
+                target.Bind(TextBlock.TextProperty, new CompiledBindingExtension
+                {
+                    Source = source,
+                    Path = path
+                });
+
+                observable.OnNext("foo");
+                Assert.Equal("foo", target.Text);
+
+                return new WeakReference(target);
+            }
+
+            var weakTarget = SetupBinding();
+
+            CollectGarbage();
+            Assert.False(weakTarget.IsAlive);
+
+            // Keep the source and its observable alive to simulate a resource that outlives the target.
+            GC.KeepAlive(source);
+            GC.KeepAlive(observable);
+        }
+
+        [Fact]
+        public void ToBinding_Observable_With_Alive_Source_Does_Not_Keep_Target_Alive()
+        {
+            // Issue #18176 (duplicate of #5872): a binding created from an observable via
+            // ToBinding() should not keep the target alive while the observable is alive.
+            var observable = new Subject<string>();
+
+            WeakReference SetupBinding()
+            {
+                var target = new TextBlock();
+
+                target.Bind(TextBlock.TextProperty, observable.ToBinding());
+
+                observable.OnNext("foo");
+                Assert.Equal("foo", target.Text);
+
+                return new WeakReference(target);
+            }
+
+            var weakTarget = SetupBinding();
+
+            CollectGarbage();
+            Assert.False(weakTarget.IsAlive);
+
+            // Keep the observable alive to simulate a resource that outlives the target.
+            GC.KeepAlive(observable);
+        }
+
+        [Fact]
+        public void StreamObservable_Binding_With_Alive_Target_Keeps_Source_Alive()
+        {
+            // The weak subscription introduced for #5872 must not collect the source observable
+            // while the binding target is still alive: an active binding still needs its source.
+            var target = new TextBlock();
+
+            WeakReference SetupBinding()
+            {
+                var observable = new Subject<string>();
+                var source = new Class3 { Observable = observable };
+
+                var path = new CompiledBindingPathBuilder()
+                    .Property(
+                        new ClrPropertyInfo(
+                            nameof(Class3.Observable),
+                            o => ((Class3)o).Observable,
+                            null,
+                            typeof(IObservable<string>)),
+                        PropertyInfoAccessorFactory.CreateInpcPropertyAccessor)
+                    .StreamObservable<string>()
+                    .Build();
+
+                target.Bind(TextBlock.TextProperty, new CompiledBindingExtension
+                {
+                    Source = source,
+                    Path = path
+                });
+
+                observable.OnNext("foo");
+                Assert.Equal("foo", target.Text);
+
+                return new WeakReference(observable);
+            }
+
+            var weakObservable = SetupBinding();
+
+            CollectGarbage();
+
+            // The target is still alive, so its binding must keep the source observable alive.
+            Assert.True(weakObservable.IsAlive);
+
+            GC.KeepAlive(target);
+        }
+
+        [Fact]
         public void Binding_To_AttachedProperty_With_Alive_Source_Does_Not_Keep_Target_Alive()
         {
             var source = new StyledElement { Name = "foo" };
@@ -211,6 +329,11 @@ namespace Avalonia.LeakTests
             public void DoSomething()
             {
             }
+        }
+
+        private sealed class Class3
+        {
+            public IObservable<string>? Observable { get; set; }
         }
 
         private sealed class Class2 : INotifyPropertyChanged

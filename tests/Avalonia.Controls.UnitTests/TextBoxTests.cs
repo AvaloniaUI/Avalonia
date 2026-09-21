@@ -1,8 +1,7 @@
-#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -13,7 +12,6 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.TextInput;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -1562,6 +1560,108 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        public static TheoryData<Type> ExpectedClipboardExceptions =>
+        [
+            typeof(TimeoutException),
+            typeof(OperationCanceledException),
+            typeof(UnauthorizedAccessException),
+            typeof(COMException)
+        ];
+
+        [Theory]
+        [MemberData(nameof(ExpectedClipboardExceptions))]
+        public void Cut_Does_Not_Delete_Selection_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateTextBoxInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+            {
+                var unhandled = RunAndCaptureUnhandledException(target.Cut);
+
+                Assert.Null(unhandled);
+            }
+
+            Assert.Equal(1, clipboardImpl.SetDataCount);
+            Assert.Equal("abcd", target.Text);
+            Assert.Equal(1, target.SelectionStart);
+            Assert.Equal(3, target.SelectionEnd);
+            Assert.Equal(["Failed to write text to clipboard: {Error}"], messages);
+        }
+
+        [Fact]
+        public void Cut_Deletes_Selection_When_Clipboard_Succeeds()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var target = CreateTextBoxInTopLevel(clipboardImpl: null);
+
+            var unhandled = RunAndCaptureUnhandledException(target.Cut);
+
+            Assert.Null(unhandled);
+            Assert.Equal("ad", target.Text);
+        }
+
+        [Theory]
+        [MemberData(nameof(ExpectedClipboardExceptions))]
+        public void Copy_Does_Not_Throw_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateTextBoxInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+            {
+                var unhandled = RunAndCaptureUnhandledException(target.Copy);
+
+                Assert.Null(unhandled);
+            }
+
+            Assert.Equal(1, clipboardImpl.SetDataCount);
+            Assert.Equal("abcd", target.Text);
+            Assert.Equal(["Failed to write text to clipboard: {Error}"], messages);
+        }
+
+        [Theory]
+        [MemberData(nameof(ExpectedClipboardExceptions))]
+        public void Paste_Does_Not_Change_Text_When_Clipboard_Fails(Type exceptionType)
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var clipboardImpl = new ThrowingClipboardImplStub(exceptionType);
+            var target = CreateTextBoxInTopLevel(clipboardImpl);
+            var messages = new List<string>();
+
+            using (TestLogSink.Start((_, _, _, messageTemplate, _) => messages.Add(messageTemplate)))
+            {
+                var unhandled = RunAndCaptureUnhandledException(target.Paste);
+
+                Assert.Null(unhandled);
+            }
+
+            Assert.Equal(1, clipboardImpl.TryGetDataCount);
+            Assert.Equal("abcd", target.Text);
+            Assert.False(target.CanUndo);
+            Assert.Equal(["Failed to read text from clipboard: {Error}"], messages);
+        }
+
+        [Fact]
+        public void Clipboard_Operations_Do_Not_Swallow_Unexpected_Exceptions()
+        {
+            using var app = UnitTestApplication.Start(Services);
+
+            var target = CreateTextBoxInTopLevel(new ThrowingClipboardImplStub(typeof(InvalidOperationException)));
+
+            Assert.IsType<InvalidOperationException>(RunAndCaptureUnhandledException(target.Cut));
+            Assert.IsType<InvalidOperationException>(RunAndCaptureUnhandledException(target.Copy));
+            Assert.IsType<InvalidOperationException>(RunAndCaptureUnhandledException(target.Paste));
+        }
+
         [Fact]
         public void Command_States_Update_When_ReadOnly_And_PasswordChar_Change()
         {
@@ -2296,6 +2396,42 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Preedit_Survives_Reentrant_Layout_Invalidation_From_CaretBoundsChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "hello",
+                CaretIndex = 5
+            };
+
+            var impl = CreateMockTopLevelImpl();
+            var topLevel = new TestTopLevel(impl.Object)
+            {
+                Template = CreateTopLevelTemplate(),
+                Content = textBox
+            };
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            var client = GetInputMethodClient(textBox);
+            var presenter = textBox.FindDescendantOfType<TextPresenter>();
+            Assert.NotNull(presenter);
+
+            // A CaretBoundsChanged subscriber may synchronously invalidate the text layout
+            // (the IME candidate window or a caret-following overlay forcing a layout pass
+            // does exactly that). The preedit update must still complete against the layout
+            // it computed with instead of dereferencing the reentrantly cleared field.
+            presenter.CaretBoundsChanged += (_, _) => presenter.HideCaret();
+
+            client.SetPreeditText("かん", 2);
+
+            Assert.Equal("かん", presenter.PreeditText);
+        }
+
+        [Fact]
         public void InputMethodClient_Selection_Setter_Uses_Document_Offsets_For_Multiline_Text()
         {
             using var _ = UnitTestApplication.Start(Services);
@@ -2469,6 +2605,145 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public async Task Pointer_Selection_Is_Published_To_Primary_Selection()
+        {
+            using (UnitTestApplication.Start(CreatePrimarySelectionServices()))
+            {
+                var target = new TextBox { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Left, new Point(5, 300));
+                mouse.Move(target, new Point(700, 300));
+                mouse.Up(target, MouseButton.Left, new Point(700, 300));
+
+                Assert.Equal("0123", target.SelectedText);
+                Assert.Equal("0123", await window.TryGetClipboard(ClipboardType.PrimarySelection)!.TryGetTextAsync());
+            }
+        }
+
+        [Fact]
+        public async Task Pointer_Selection_Is_Not_Published_To_Primary_Selection_For_Password_Box()
+        {
+            using (UnitTestApplication.Start(CreatePrimarySelectionServices()))
+            {
+                var target = new TextBox { Text = "0123", PasswordChar = '*' };
+                var window = new Window { Content = target };
+                window.Show();
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Left, new Point(5, 300));
+                mouse.Move(target, new Point(700, 300));
+                mouse.Up(target, MouseButton.Left, new Point(700, 300));
+
+                Assert.Null(await window.TryGetClipboard(ClipboardType.PrimarySelection)!.TryGetTextAsync());
+            }
+        }
+
+        [Fact]
+        public async Task Middle_Click_Pastes_Primary_Selection_At_Click_Position()
+        {
+            using (UnitTestApplication.Start(CreatePrimarySelectionServices()))
+            {
+                var target = new TextBox { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                await window.TryGetClipboard(ClipboardType.PrimarySelection)!.SetTextAsync("abc");
+
+                PastingFromClipboardEventArgs? pastingArgs = null;
+                target.PastingFromClipboard += (_, e) => pastingArgs = Assert.IsType<PastingFromClipboardEventArgs>(e);
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Middle, new Point(700, 300));
+                mouse.Up(target, MouseButton.Middle, new Point(700, 300));
+
+                Assert.Equal("0123abc", target.Text);
+                Assert.NotNull(pastingArgs);
+                Assert.Same(window.TryGetClipboard(ClipboardType.PrimarySelection), pastingArgs.Clipboard);
+
+                // The pasted-over selection was not changed by the gesture, so it must not be published.
+                Assert.Equal("abc", await window.TryGetClipboard(ClipboardType.PrimarySelection)!.TryGetTextAsync());
+            }
+        }
+
+        [Fact]
+        public async Task Middle_Click_Does_Not_Paste_When_ReadOnly()
+        {
+            using (UnitTestApplication.Start(CreatePrimarySelectionServices()))
+            {
+                var target = new TextBox { Text = "0123", IsReadOnly = true };
+                var window = new Window { Content = target };
+                window.Show();
+
+                await window.TryGetClipboard(ClipboardType.PrimarySelection)!.SetTextAsync("abc");
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Middle, new Point(700, 300));
+                mouse.Up(target, MouseButton.Middle, new Point(700, 300));
+
+                Assert.Equal("0123", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Middle_Click_Does_Nothing_Without_Primary_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TextBox { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                Assert.Null(window.TryGetClipboard(ClipboardType.PrimarySelection));
+
+                var mouse = new MouseTestHelper();
+                mouse.Down(target, MouseButton.Middle, new Point(700, 300));
+                mouse.Up(target, MouseButton.Middle, new Point(700, 300));
+
+                Assert.Equal("0123", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Paste_Raises_Event_When_No_Clipboard_Is_Available()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TextBox { Text = "0123" };
+                var window = new Window { Content = target };
+                window.Show();
+
+                Assert.Null(window.Clipboard);
+
+                PastingFromClipboardEventArgs? pastingArgs = null;
+                target.PastingFromClipboard += (_, e) =>
+                {
+                    pastingArgs = Assert.IsType<PastingFromClipboardEventArgs>(e);
+                    e.Handled = true;
+                };
+
+                target.Paste();
+
+                Assert.NotNull(pastingArgs);
+                Assert.Null(pastingArgs.Clipboard);
+            }
+        }
+
+        internal static TestServices CreatePrimarySelectionServices()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IPlatformClipboardManagerImpl))))
+                .Returns(new PlatformClipboardManager(
+                    new Clipboard(new HeadlessClipboardImplStub()),
+                    new Clipboard(new HeadlessClipboardImplStub())));
+
+            return TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
@@ -2603,12 +2878,44 @@ namespace Avalonia.Controls.UnitTests
         {
         }
 
-        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()
+        private static TextBox CreateTextBoxInTopLevel(IClipboardImpl? clipboardImpl)
+        {
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abcd",
+                SelectionStart = 1,
+                SelectionEnd = 3
+            };
+
+            var topLevel = new TestTopLevel(CreateMockTopLevelImpl(clipboardImpl).Object)
+            {
+                Template = CreateTopLevelTemplate(),
+                Content = textBox
+            };
+            topLevel.ApplyTemplate();
+            topLevel.LayoutManager.ExecuteInitialLayoutPass();
+
+            textBox.Measure(Size.Infinity);
+
+            return textBox;
+        }
+
+        private static Exception? RunAndCaptureUnhandledException(Action action)
+        {
+            using var syncContext = UnitTestSynchronizationContext.Begin();
+
+            action();
+
+            return Record.Exception(syncContext.ExecutePostedCallbacks);
+        }
+
+        private static Mock<ITopLevelImpl> CreateMockTopLevelImpl(IClipboardImpl? clipboardImpl = null)
         {
             var clipboard = new Mock<ITopLevelImpl>();
             clipboard.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
             clipboard.Setup(r => r.TryGetFeature(typeof(IClipboard)))
-                .Returns(new Clipboard(new HeadlessClipboardImplStub()));
+                .Returns(new Clipboard(clipboardImpl ?? new HeadlessClipboardImplStub()));
             clipboard.SetupGet(x => x.RenderScaling).Returns(1);
             return clipboard;
         }

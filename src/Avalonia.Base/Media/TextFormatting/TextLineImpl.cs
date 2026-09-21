@@ -834,7 +834,10 @@ namespace Avalonia.Media.TextFormatting
                     return false;
                 }
 
-                if (currentBounds.Rectangle.Left == lastBounds.Rectangle.Right)
+                // The two edges are computed by summing glyph advances along different paths, so
+                // abutting bounds can land an ULP apart - compare them the way the rest of layout
+                // compares coordinates, or a single directional span gets reported as two.
+                if (MathUtilities.AreClose(currentBounds.Rectangle.Left, lastBounds.Rectangle.Right))
                 {
                     foreach (var runBounds in currentBounds.TextRunBounds)
                     {
@@ -846,7 +849,7 @@ namespace Avalonia.Media.TextFormatting
                     return true;
                 }
 
-                if (currentBounds.Rectangle.Right == lastBounds.Rectangle.Left)
+                if (MathUtilities.AreClose(currentBounds.Rectangle.Right, lastBounds.Rectangle.Left))
                 {
                     for (int i = 0; i < currentBounds.TextRunBounds.Count; i++)
                     {

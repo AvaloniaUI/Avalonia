@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IResourceHost, IOptionalFeatureProvider
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IThemeVariantRoot, IResourceHost, IOptionalFeatureProvider
     {
         /// <summary>
         /// The application-global data templates.
@@ -96,6 +96,8 @@ namespace Avalonia
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1031", Justification = "This property is supposed to be a styled readonly property.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1030", Justification = "False positive.")]
         public ThemeVariant ActualThemeVariant => GetValue(ActualThemeVariantProperty);
+
+        bool IThemeVariantRoot.IsThemeVariantRoot => true;
 
         /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
@@ -250,11 +252,7 @@ namespace Avalonia
             AvaloniaSynchronizationContext.InstallIfNeeded();
             InputManager = new InputManager();
 
-            if (PlatformSettings is { } settings)
-            {
-                settings.ColorValuesChanged += OnColorValuesChanged;
-                OnColorValuesChanged(settings, settings.GetColorValues());
-            }
+            InitializeThemeVariant();
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IAccessKeyHandler>().ToTransient<AccessKeyHandler>()
@@ -328,21 +326,7 @@ namespace Avalonia
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == RequestedThemeVariantProperty)
-            {
-                if (change.GetNewValue<ThemeVariant>() is { } themeVariant)
-                {
-                    if (themeVariant == ThemeVariant.Default)
-                    {
-                        ClearValue(ActualThemeVariantProperty);
-                    }
-                    else
-                    {
-                        SetValue(ActualThemeVariantProperty, themeVariant);
-                    }
-                }
-            }
-            else if (change.Property == ActualThemeVariantProperty)
+            if (change.Property == ActualThemeVariantProperty)
             {
                 ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -350,8 +334,13 @@ namespace Avalonia
 
         private void OnColorValuesChanged(object? sender, PlatformColorValues e)
         {
-            if ((RequestedThemeVariant ?? ThemeVariant.Default) == ThemeVariant.Default)
-                SetValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant);
+            ThemeVariant.UpdateActualThemeVariant(this);
+        }
+
+        internal void InitializeThemeVariant()
+        {
+            PlatformSettings?.ColorValuesChanged += OnColorValuesChanged;
+            ThemeVariant.UpdateActualThemeVariant(this);
         }
     }
 }

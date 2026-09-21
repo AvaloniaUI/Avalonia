@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
@@ -322,6 +323,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PastingFromClipboard"/> event.
         /// </summary>
+        /// <remarks>
+        /// The event is raised with <see cref="PastingFromClipboardEventArgs"/>.
+        /// </remarks>
+        // TODO13: retype to RoutedEvent<PastingFromClipboardEventArgs>.
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(PastingFromClipboard), RoutingStrategies.Bubble);
@@ -385,6 +390,7 @@ namespace Avalonia.Controls
         private bool _canRedo;
 
         private int _wordSelectionStart = -1;
+        private (int Start, int End) _selectionAtPointerPress;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
         private int _currentClickCount;
@@ -958,6 +964,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when content is being pasted from the clipboard
         /// </summary>
+        /// <remarks>
+        /// The event is raised with <see cref="PastingFromClipboardEventArgs"/>.
+        /// </remarks>
+        // TODO13: retype to EventHandler<PastingFromClipboardEventArgs>.
         public event EventHandler<RoutedEventArgs>? PastingFromClipboard
         {
             add => AddHandler(PastingFromClipboardEvent, value);
@@ -1112,10 +1122,9 @@ namespace Avalonia.Controls
 
         private void UpdateCommandStates()
         {
-            var text = GetSelection();
-            var isSelectionNullOrEmpty = string.IsNullOrEmpty(text);
-            CanCopy = !IsPasswordBox && !isSelectionNullOrEmpty;
-            CanCut = !IsPasswordBox && !isSelectionNullOrEmpty && !IsReadOnly;
+            var hasSelection = HasSelection();
+            CanCopy = !IsPasswordBox && hasSelection;
+            CanCut = !IsPasswordBox && hasSelection && !IsReadOnly;
             CanPaste = !IsReadOnly;
         }
 
@@ -1308,7 +1317,17 @@ namespace Avalonia.Controls
                 if (clipboard == null)
                     return;
 
-                await clipboard.SetTextAsync(text);
+                try
+                {
+                    await clipboard.SetTextAsync(text);
+                }
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
+                {
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
+                    return;
+                }
+
                 DeleteSelection();
             }
         }
@@ -1330,15 +1349,17 @@ namespace Avalonia.Controls
             if (!eventArgs.Handled)
             {
                 var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard is null)
+                    return;
 
                 try
                 {
-                    if (clipboard != null)
-                        await clipboard.SetTextAsync(text);
+                    await clipboard.SetTextAsync(text);
                 }
-                catch (UnauthorizedAccessException uex)
+                catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
                 {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to write text to clipboard: {Error}", uex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                        ?.Log(this, "Failed to write text to clipboard: {Error}", ex);
                 }
             }
         }
@@ -1348,31 +1369,28 @@ namespace Avalonia.Controls
         /// </summary>
         public async void Paste()
         {
-            var eventArgs = new RoutedEventArgs(PastingFromClipboardEvent);
+            await PasteCoreAsync(TopLevel.GetTopLevel(this)?.Clipboard);
+        }
+
+        private async Task PasteCoreAsync(IClipboard? clipboard)
+        {
+            var eventArgs = new PastingFromClipboardEventArgs(PastingFromClipboardEvent, clipboard);
             RaiseEvent(eventArgs);
-            if (eventArgs.Handled)
+            if (eventArgs.Handled || clipboard is null)
             {
                 return;
             }
 
             string? text = null;
 
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-
-            if (clipboard != null)
+            try
             {
-                try
-                {
-                    text = await clipboard.TryGetTextAsync();
-                }
-                catch (TimeoutException)
-                {
-                    // Silently ignore.
-                }
-                catch (UnauthorizedAccessException uex)
-                {
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "Failed to read text from clipboard: {Error}", uex);
-                }
+                text = await clipboard.TryGetTextAsync();
+            }
+            catch (Exception ex) when (ClipboardHelper.IsExpectedClipboardException(ex))
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)
+                    ?.Log(this, "Failed to read text from clipboard: {Error}", ex);
             }
 
             if (string.IsNullOrEmpty(text))
@@ -1830,6 +1848,7 @@ namespace Avalonia.Controls
             _isInTouchMode = false;
             _isInTouchSelectionMode = false;
             _isDoubleTapped = e.ClickCount == 2;
+            _selectionAtPointerPress = GetSelectionRange();
             if (text != null && clickInfo.Pointer?.Captured is not Border)
             {
                 if (e.Pointer.Type == PointerType.Mouse && clickInfo.Properties.IsLeftButtonPressed)
@@ -2086,7 +2105,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            using var _ = _imClient.BeginChange();
+            using var change = _imClient.BeginChange();
 
             if (e.Pointer.Type != PointerType.Mouse && !_isInTouchSelectionMode)
             {
@@ -2124,6 +2143,33 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                 }
             }
+
+            if (e.InitialPressMouseButton == MouseButton.Middle)
+            {
+                // Middle-click pastes the primary selection at the click position on platforms supporting it.
+                if (!IsReadOnly && TopLevel.GetTopLevel(this)?.TryGetClipboard(ClipboardType.PrimarySelection) is { } primarySelection)
+                {
+                    _presenter.MoveCaretToPoint(e.GetPosition(_presenter));
+
+                    var caretIndex = _presenter.CaretIndex;
+                    SetCurrentValue(CaretIndexProperty, caretIndex);
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+
+                    _ = PasteCoreAsync(primarySelection);
+                    e.Handled = true;
+                }
+            }
+            else if (e.InitialPressMouseButton == MouseButton.Left)
+            {
+                var (start, end) = GetSelectionRange();
+                if (!IsPasswordBox && start != end && (start, end) != _selectionAtPointerPress)
+                {
+                    // The pointer gesture changed the selection, publish it to the primary selection.
+                    _ = PrimarySelectionHelper.PublishTextAsync(this, GetSelection);
+                }
+            }
+
             _isInTouchSelectionMode = false;
             _isInTouchCaretMode = false;
             _hasTouchSelection = false;
@@ -2439,6 +2485,24 @@ namespace Avalonia.Controls
             SetCurrentValue(CaretIndexProperty, SelectionStart);
 
             return false;
+        }
+
+        /// <summary>
+        /// Reports the same emptiness conditions as <see cref="GetSelection"/>, without building
+        /// the selected string.
+        /// </summary>
+        private bool HasSelection()
+        {
+            var (start, end) = GetSelectionRange();
+
+            if (start == end)
+            {
+                return false;
+            }
+
+            var textLength = Text?.Length ?? 0;
+
+            return textLength > 0 && end <= textLength;
         }
 
         private string GetSelection()

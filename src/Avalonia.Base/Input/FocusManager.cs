@@ -80,7 +80,22 @@ namespace Avalonia.Input
 
             if (_focusRoot?.GetValue(FocusedElementProperty) is { } restore && restore != Current)
             {
-                return FocusCore(keyboardDevice, restore, method, keyModifiers);
+                if (!CanFocus(restore))
+                {
+                    // Previous effective focus is no longer part of the focus root's visual tree. We clear the focused element
+                    _focusRoot.ClearValue(FocusedElementProperty);
+
+                    if (Current != null && GetFocusScope(Current) != _focusRoot)
+                    {
+                        _focusRoot = null;
+
+                        return false;
+                    }
+                }
+                else
+                {
+                    return FocusCore(keyboardDevice, restore, method, keyModifiers);
+                }
             }
 
             _focusRoot = null;

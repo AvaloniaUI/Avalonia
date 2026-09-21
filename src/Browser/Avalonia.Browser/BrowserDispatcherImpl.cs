@@ -11,7 +11,7 @@ internal class BrowserDispatcherImpl : IDispatcherImpl
 {
     private readonly Thread _thread;
     private readonly Stopwatch _clock;
-    private bool _signaled;
+    private int _signaled;
     private int? _timerId;
 
     public BrowserDispatcherImpl()
@@ -26,7 +26,7 @@ internal class BrowserDispatcherImpl : IDispatcherImpl
         
         TimerHelper.Timeout = () =>
         {
-            _signaled = false;
+            Interlocked.Exchange(ref _signaled, 0);
             Signaled?.Invoke();
         };
     }
@@ -40,11 +40,11 @@ internal class BrowserDispatcherImpl : IDispatcherImpl
 
     public void Signal()
     {
-        if (_signaled)
+        if (Interlocked.CompareExchange(ref _signaled, 1, 0) != 0)
             return;
 
         // NOTE: by HTML5 spec minimal timeout is 4ms, but Chrome seems to work well with 1ms as well.
-        var interval = 1;
+        const int interval = 1;
         TimerHelper.SetTimeout(interval);
     }
 

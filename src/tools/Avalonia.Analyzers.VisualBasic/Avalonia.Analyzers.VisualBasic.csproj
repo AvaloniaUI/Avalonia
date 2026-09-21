@@ -21,6 +21,9 @@
     <Compile Include="../Avalonia.Analyzers.CSharp/AvaloniaAnalysisException.cs" />
     <Compile Include="../Avalonia.Analyzers.CSharp/AvaloniaPropertyAnalyzer.CompileAnalyzer.cs" />
     <Compile Include="../Avalonia.Analyzers.CSharp/AvaloniaPropertyAnalyzer.cs" />
+    <Compile Include="..\Avalonia.Analyzers.CSharp\DiagnosticIds.cs">
+      <Link>DiagnosticIds.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <Import Project="../../../build/TrimmingEnable.props" />

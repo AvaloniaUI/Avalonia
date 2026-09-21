@@ -13,8 +13,8 @@ namespace Avalonia.Rendering.Composition.Expressions
     {
         private readonly DelegateExpressionFfi _registry;
 
-        static float Lerp(float a, float b, float p) => p * (b - a) + a;
-        static double Lerp(double a, double b, double p) => p * (b - a) + a;
+        static float Lerp(float a, float b, float p) => float.Lerp(a, b, p);
+        static double Lerp(double a, double b, double p) => double.Lerp(a, b, p);
 
         static Matrix3x2 Inverse(Matrix3x2 m)
         {
