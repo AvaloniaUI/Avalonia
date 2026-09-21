@@ -51,7 +51,7 @@
   <Target Name="BunRunBuild" DependsOnTargets="BunInstall"
           BeforeTargets="DispatchToInnerBuilds;BeforeBuild"
           Inputs="@(AvaloniaWebAppSource)"
-          Outputs="$(WebAppOutputDir)/avalonia.js;$(WebAppOutputDir)/storage.js;$(WebAppOutputDir)/sw.js">
+          Outputs="$(WebAppOutputDir)/avalonia.js;$(WebAppOutputDir)/storage.js;$(WebAppOutputDir)/avalonia-sw.js">
     <Exec Command="dnx Bun.Unofficial.Tool build.js" WorkingDirectory="$(WebAppDir)" />
   </Target>
 

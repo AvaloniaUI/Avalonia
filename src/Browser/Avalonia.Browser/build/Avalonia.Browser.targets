@@ -10,16 +10,19 @@
     <EmccExportedRuntimeMethod Include="PThread" Condition="'$(WasmEnableThreads)' == 'true'" />
   </ItemGroup>
 
-  <!-- wwwroot/ in the repo, staticwebassets/ in the package. -->
+  <!-- staticwebassets/ in the package, wwwroot/ in the repo. -->
   <PropertyGroup>
-    <_AvaloniaBrowserJsDir Condition="Exists('$(MSBuildThisFileDirectory)../wwwroot/avalonia.js')">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../wwwroot'))</_AvaloniaBrowserJsDir>
-    <_AvaloniaBrowserJsDir Condition="'$(_AvaloniaBrowserJsDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../staticwebassets'))</_AvaloniaBrowserJsDir>
+    <_AvaloniaBrowserJsDir Condition="Exists('$(MSBuildThisFileDirectory)../staticwebassets/avalonia.js')">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../staticwebassets'))</_AvaloniaBrowserJsDir>
+    <_AvaloniaBrowserJsDir Condition="'$(_AvaloniaBrowserJsDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../wwwroot'))</_AvaloniaBrowserJsDir>
   </PropertyGroup>
 
   <!-- Legacy WASM projects have no static web assets pipeline. -->
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">
     <WasmExtraFilesToDeploy Include="$(_AvaloniaBrowserJsDir)**/*.*"
+                            Exclude="$(_AvaloniaBrowserJsDir)avalonia-sw.js*"
                             TargetPath="_content/Avalonia.Browser/%(FileName)%(Extension)" />
+    <WasmExtraFilesToDeploy Include="$(_AvaloniaBrowserJsDir)avalonia-sw.js*"
+                            TargetPath="%(FileName)%(Extension)" />
   </ItemGroup>
 
   <!--
@@ -35,6 +38,15 @@
           Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' == 'true'"
           AfterTargets="ResolveProjectStaticWebAssets"
           DependsOnTargets="ResolveStaticWebAssetsConfiguration;ResolveReferences">
+
+    <PropertyGroup>
+      <!--
+        Re-check now that the project reference has been built.
+        esbuild writes wwwroot/, so file scope evaluation cannot see it on a clean tree,
+        and a staticwebassets/ left over from before that change must not win.
+      -->
+      <_AvaloniaBrowserJsDir Condition="Exists('$(MSBuildThisFileDirectory)../wwwroot/avalonia.js')">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../wwwroot'))</_AvaloniaBrowserJsDir>
+    </PropertyGroup>
 
     <!-- Design time builds do not build the project reference, so wwwroot may legitimately be absent. -->
     <Error Condition="!Exists('$(_AvaloniaBrowserJsDir)avalonia.js') and '$(DesignTimeBuild)' != 'true'"
@@ -54,16 +66,26 @@
     <ItemGroup Condition="Exists('$(_AvaloniaBrowserJsDir)avalonia.js')">
       <!-- Imported by specifier, so the import map rewrites them. -->
       <_AvaloniaBrowserFingerprintedJs Include="$(_AvaloniaBrowserJsDir)avalonia.js;$(_AvaloniaBrowserJsDir)storage.js" />
-      <!-- Loaded by URL (serviceWorker.register, sourceMappingURL), which the import map does not rewrite. -->
-      <_AvaloniaBrowserPlainJs Include="$(_AvaloniaBrowserJsDir)sw.js;$(_AvaloniaBrowserJsDir)*.map" />
+      <!-- Loaded by URL (sourceMappingURL), which the import map does not rewrite. -->
+      <_AvaloniaBrowserContentJs Include="$(_AvaloniaBrowserJsDir)avalonia.js.map;$(_AvaloniaBrowserJsDir)storage.js.map" />
+      <!--
+        serviceWorker.register resolves against the document and scopes the worker to its own directory.
+        The save picker polyfill looks it up with getRegistration(), which matches the document URL,
+        so the worker only resolves from the app root.
+      -->
+      <_AvaloniaBrowserRootJs Include="$(_AvaloniaBrowserJsDir)avalonia-sw.js;$(_AvaloniaBrowserJsDir)avalonia-sw.js.map" />
 
       <!-- Separate update: %(Filename) would be a self-reference (MSB4120). -->
       <_AvaloniaBrowserFingerprintedJs>
         <RelativePath>_content/Avalonia.Browser/%(Filename)%(Extension)</RelativePath>
       </_AvaloniaBrowserFingerprintedJs>
-      <_AvaloniaBrowserPlainJs>
+      <_AvaloniaBrowserContentJs>
         <RelativePath>_content/Avalonia.Browser/%(Filename)%(Extension)</RelativePath>
-      </_AvaloniaBrowserPlainJs>
+      </_AvaloniaBrowserContentJs>
+      <_AvaloniaBrowserRootJs>
+        <RelativePath>%(Filename)%(Extension)</RelativePath>
+      </_AvaloniaBrowserRootJs>
+      <_AvaloniaBrowserPlainJs Include="@(_AvaloniaBrowserContentJs);@(_AvaloniaBrowserRootJs)" />
 
       <_AvaloniaBrowserJsFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
     </ItemGroup>

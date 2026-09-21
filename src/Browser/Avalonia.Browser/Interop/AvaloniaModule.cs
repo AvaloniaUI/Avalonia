@@ -29,11 +29,13 @@ internal static partial class AvaloniaModule
 
     public static Task ImportStorage() => s_importStorage.Value;
 
-    /// <remark>
-    /// Service locator path is resolved relative to the document root,
-    /// Not relatively to the caller framework, so we can't use FrameworkAssetPathResolver.
-    /// </remark>
-    public static string ResolveServiceWorkerPath() => $"./{AssetsBasePath}/sw.js";
+    /// <remarks>
+    /// serviceWorker.register resolves the path against the document, not the caller framework,
+    /// so FrameworkAssetPathResolver does not apply. The worker also has to sit at the app root:
+    /// it is scoped to its own directory, and the save picker polyfill looks it up with
+    /// getRegistration(), which matches against the document URL.
+    /// </remarks>
+    public static string ResolveServiceWorkerPath() => "./avalonia-sw.js";
 
     [JSImport("Caniuse.isMobile", AvaloniaModule.MainModuleName)]
     public static partial bool IsMobile();
