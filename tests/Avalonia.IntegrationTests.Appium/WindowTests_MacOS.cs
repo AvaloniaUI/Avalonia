@@ -28,9 +28,6 @@ namespace Avalonia.IntegrationTests.Appium
                 Thread.Sleep(300); // sync with timer
                 
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
-
-                var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
-
                 Assert.Equal(1, secondaryWindowIndex);
             }
         }
