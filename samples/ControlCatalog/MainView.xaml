@@ -210,7 +210,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Data="{Binding SettingsItem.IconData}"/>
-          <TextBlock Text="{Binding SettingsItem.Header}" 
+          <TextBlock Text="{Binding SettingsItem.Header}"
                      VerticalAlignment="Center"
                      Margin="12,0,0,0"
                      Flex.Grow="1"

@@ -117,6 +117,7 @@ namespace ControlCatalog
             {
                 app._themeStylesContainer.Add(new Style());
                 app._themeStylesContainer.Add(new Style());
+                app._themeStylesContainer.Add(new Style());
             }
 
             if (theme == CatalogTheme.Fluent)
