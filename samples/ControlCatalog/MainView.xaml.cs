@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Styling;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
@@ -34,6 +35,11 @@ namespace ControlCatalog
 
             SizeChanged += OnDrawerSizeChanged;
             UpdateAdaptiveLayout();
+
+            if (Application.Current is { } app)
+            {
+                app.RequestedThemeVariant = ThemeVariant.Default;
+            }
         }
 
         private void MainView_Unloaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

@@ -22,10 +22,11 @@
   </Design.DataContext>
   <DrawerPage.Resources>
     <ResourceDictionary>
+      <x:Double x:Key="TabbedPageTabItemHeaderFontSize">20</x:Double>
+      <Thickness x:Key="TabbedPageTabStripPadding">10</Thickness>
       <ControlTheme x:Key="{x:Type local:MainView}"
                     TargetType="local:MainView"
                     BasedOn="{StaticResource {x:Type DrawerPage}}" />
-
     </ResourceDictionary>
   </DrawerPage.Resources>
   <DrawerPage.Styles>
