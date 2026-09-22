@@ -56,6 +56,7 @@
       <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="ControlFillColorInputActiveBrush" />
       <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
       <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="SliderTrackFillError" ResourceKey="SystemFillColorCriticalBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="SliderContainerBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -79,6 +80,7 @@
       <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="ControlFillColorInputActiveBrush" />
       <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
       <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
+      <StaticResource x:Key="SliderTrackFillError" ResourceKey="SystemFillColorCriticalBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -407,6 +409,15 @@
       </Style>
     </Style>
 
+    <Style Selector="^:pointerover:error">
+      <Style Selector="^ /template/ Thumb">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillError}" />
+      </Style>
+      <Style Selector="^ /template/ RepeatButton#PART_DecreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillError}" />
+      </Style>
+    </Style>
+
     <!--  Pressed State  -->
     <Style Selector="^:pressed">
       <Style Selector="^ /template/ Grid#SliderContainer">
@@ -421,6 +432,15 @@
 
       <Style Selector="^ /template/ Thumb">
         <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPressed}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:pressed:error">
+      <Style Selector="^ /template/ Thumb">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillError}" />
+      </Style>
+      <Style Selector="^ /template/ RepeatButton#PART_DecreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillError}" />
       </Style>
     </Style>
 
@@ -444,9 +464,12 @@
     </Style>
 
     <Style Selector="^:error">
-      <Setter Property="Foreground" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource SliderTrackFillError}" />
       <Style Selector="^ /template/ Thumb">
-        <Setter Property="Background" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillError}" />
+      </Style>
+      <Style Selector="^ /template/ RepeatButton#PART_DecreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillError}" />
       </Style>
     </Style>
 

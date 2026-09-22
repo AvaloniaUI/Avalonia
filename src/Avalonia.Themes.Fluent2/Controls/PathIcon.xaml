@@ -17,8 +17,13 @@
     <Setter Property="Width" Value="{DynamicResource IconElementThemeWidth}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}">
-          <Viewbox Height="{TemplateBinding Height}" Width="{TemplateBinding Width}">
+        <Border Background="{TemplateBinding Background}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"
+                Padding="{TemplateBinding Padding}">
+          <Viewbox>
             <Path Fill="{TemplateBinding Foreground}" Data="{TemplateBinding Data}" Stretch="Uniform" />
           </Viewbox>
         </Border>

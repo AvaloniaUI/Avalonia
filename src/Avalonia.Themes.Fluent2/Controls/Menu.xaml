@@ -19,7 +19,6 @@
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForeground}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Margin" Value="{DynamicResource MenuBarItemMargin}" />
-    <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
     <Setter Property="Padding" Value="{DynamicResource MenuBarItemPadding}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -104,6 +103,7 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Height" Value="{DynamicResource MenuBarHeight}" />
     <Setter Property="ItemContainerTheme" Value="{StaticResource FluentTopLevelMenuItem}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}"

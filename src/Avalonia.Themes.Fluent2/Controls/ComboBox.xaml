@@ -355,6 +355,12 @@
       </Style>
     </Style>
 
+    <Style Selector="^:dropdownopen">
+      <Style Selector="^ /template/ Rectangle#Pill">
+        <Setter Property="Opacity" Value="1" />
+      </Style>
+    </Style>
+
     <!--  Focused State  -->
     <Style Selector="^:focus-visible">
       <Style Selector="^ /template/ Border#HighlightBackground">
