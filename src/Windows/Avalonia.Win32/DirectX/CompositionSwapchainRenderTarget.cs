@@ -25,6 +25,22 @@ internal interface ISwapchainVisualHost
 }
 
 /// <summary>
+/// A platform render surface that renders into a composition swapchain displayed by the given host.
+/// </summary>
+internal sealed class CompositionSwapchainSurface : IDirect3D11TexturePlatformSurface2
+{
+    private readonly ISwapchainVisualHost _host;
+
+    public CompositionSwapchainSurface(ISwapchainVisualHost host)
+    {
+        _host = host;
+    }
+
+    public IDirect3D11TextureRenderTarget2 CreateRenderTarget(IPlatformGraphicsContext graphicsContext, IntPtr d3dDevice) =>
+        new CompositionSwapchainRenderTarget(graphicsContext, d3dDevice, _host);
+}
+
+/// <summary>
 /// Renders into a DXGI flip-model swapchain created for composition and attached
 /// as visual content via <see cref="ISwapchainVisualHost"/>. Unlike the composition
 /// drawing surface targets, this allows DWM to use optimized presentation modes
