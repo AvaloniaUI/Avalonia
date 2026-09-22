@@ -86,7 +86,7 @@
       <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
       <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
     </ResourceDictionary>
-    <ResourceDictionary x:Key="Dark">      
+    <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="TextFillColorPrimaryBrush" />
@@ -164,6 +164,7 @@
 
   <StreamGeometry x:Key="CheckBoxIndeterminatePathData">M3.997 13H20a1 1 0 1 0 0-2H3.997a1 1 0 1 0 0 2Z</StreamGeometry>
   <StreamGeometry x:Key="CheckMarkPathData">M5.5 10.586 1.707 6.793A1 1 0 0 0 .293 8.207l4.5 4.5a1 1 0 0 0 1.414 0l11-11A1 1 0 0 0 15.793.293L5.5 10.586Z</StreamGeometry>
+  
   <x:Double x:Key="CheckBoxMinHeight">32</x:Double>
   <x:Double x:Key="CheckBoxMinWidth">0</x:Double>
   <x:Double x:Key="CheckBoxSize">20</x:Double>

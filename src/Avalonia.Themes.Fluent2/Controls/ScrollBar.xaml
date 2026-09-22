@@ -92,6 +92,7 @@
   <x:Double x:Key="ScrollBarButtonArrowIconFontSize">10</x:Double>
   <TransformOperations x:Key="ScrollBarVerticalThumbCollapsedTransform">scaleX(0.3333)</TransformOperations>
   <TransformOperations x:Key="ScrollBarHorizontalThumbCollapsedTransform">scaleY(0.3333)</TransformOperations>
+  
   <StreamGeometry x:Key="CaretDown">M6.102 8c-1.074 0-1.648 1.265-.94 2.073l5.521 6.31a1.75 1.75 0 0 0 2.634 0l5.522-6.31c.707-.808.133-2.073-.94-2.073H6.101Z</StreamGeometry>
   <StreamGeometry x:Key="CaretUp">M6.102 16.981c-1.074 0-1.648-1.265-.94-2.073l5.521-6.31a1.75 1.75 0 0 1 2.634 0l5.522 6.31c.707.809.133 2.073-.94 2.073H6.101Z</StreamGeometry>
   <StreamGeometry x:Key="CaretLeft">M15 17.898c0 1.074-1.265 1.648-2.073.941l-6.31-5.522a1.75 1.75 0 0 1 0-2.634l6.31-5.522c.808-.707 2.073-.133 2.073.941v11.796Z</StreamGeometry>

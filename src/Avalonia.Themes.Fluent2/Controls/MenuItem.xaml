@@ -51,10 +51,12 @@
 
   <conv:PlatformKeyGestureConverter x:Key="KeyGestureConverter" />
   <x:Double x:Key="MenuFlyoutSubItemPopupHorizontalOffset">-4</x:Double>
+  <x:Double x:Key="MenuItemChevronSize">10</x:Double>
   <Thickness x:Key="MenuIconPresenterMargin">0,0,12,0</Thickness>
   <Thickness x:Key="MenuInputGestureTextMargin">24,0,0,0</Thickness>
   <Thickness x:Key="MenuFlyoutItemMargin">4,2,4,2</Thickness>
-  <StreamGeometry x:Key="MenuItemChevronPathData">M 1,0 10,10 l -9,10 -1,-1 L 8,10 -0,1 Z</StreamGeometry>
+
+  <StreamGeometry x:Key="MenuItemChevronPathData">M8.293 4.293a1 1 0 0 0 0 1.414L14.586 12l-6.293 6.293a1 1 0 1 0 1.414 1.414l7-7a1 1 0 0 0 0-1.414l-7-7a1 1 0 0 0-1.414 0Z</StreamGeometry>
 
   <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemTheme}"/>
 
@@ -113,15 +115,14 @@
                          VerticalAlignment="Center"
                          FontSize="12"
                          Foreground="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"/>
-              <Path Name="PART_ChevronPath"
-                    Stretch="Uniform"
-                    Width="6"
-                    Height="12"
-                    Data="{StaticResource MenuItemChevronPathData}"
-                    Fill="{DynamicResource MenuFlyoutSubItemChevron}"
-                    Margin="{DynamicResource MenuFlyoutItemChevronMargin}"
-                    VerticalAlignment="Center"
-                    Grid.Column="4" />
+              <PathIcon Name="PART_ChevronPath"
+                        Width="{StaticResource MenuItemChevronSize}"
+                        Height="{StaticResource MenuItemChevronSize}"
+                        Data="{StaticResource MenuItemChevronPathData}"
+                        Foreground="{DynamicResource MenuFlyoutSubItemChevron}"
+                        Margin="{DynamicResource MenuFlyoutItemChevronMargin}"
+                        VerticalAlignment="Center"
+                        Grid.Column="4" />
             </Grid>
           </Border>
           <Popup Name="PART_Popup"
@@ -153,7 +154,7 @@
 
     <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
       <Setter Property="RecognizesAccessKey" Value="True" />
-    </Style> 
+    </Style>
 
     <Style Selector="^:icon /template/ ContentControl#PART_IconPresenter">
       <Setter Property="IsVisible" Value="True" />
@@ -168,8 +169,8 @@
       <Style Selector="^ /template/ TextBlock#PART_InputGestureText">
         <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
       </Style>
-      <Style Selector="^ /template/ Path#PART_ChevronPath">
-        <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronPointerOver}" />
+      <Style Selector="^ /template/ PathIcon#PART_ChevronPath">
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronPointerOver}" />
       </Style>
     </Style>
 
@@ -181,8 +182,8 @@
       <Style Selector="^ TextBlock#PART_InputGestureText">
         <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
       </Style>
-      <Style Selector="^ Path#PART_ChevronPath">
-        <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronPressed}" />
+      <Style Selector="^ PathIcon#PART_ChevronPath">
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronPressed}" />
       </Style>
     </Style>
 
@@ -196,16 +197,16 @@
       <Style Selector="^ /template/ TextBlock#PART_InputGestureText">
         <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
       </Style>
-      <Style Selector="^ /template/ Path#PART_ChevronPath">
-        <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronDisabled}" />
+      <Style Selector="^ /template/ PathIcon#PART_ChevronPath">
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronDisabled}" />
       </Style>
     </Style>
 
-    <Style Selector="^:open /template/ Path#PART_ChevronPath">
-      <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronSubMenuOpened}" />
+    <Style Selector="^:open /template/ PathIcon#PART_ChevronPath">
+      <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronSubMenuOpened}" />
     </Style>
 
-    <Style Selector="^:empty /template/ Path#PART_ChevronPath">
+    <Style Selector="^:empty /template/ PathIcon#PART_ChevronPath">
       <Setter Property="IsVisible" Value="False" />
     </Style>
 
@@ -216,7 +217,7 @@
         </ControlTemplate>
       </Setter>
     </Style>
-    
+
     <Style Selector="^ /template/ Image#PART_ToggleIconImage">
       <Setter Property="IsVisible" Value="True" />
     </Style>

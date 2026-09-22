@@ -85,8 +85,8 @@
   <Thickness x:Key="TreeViewItemExpandCollapseChevronMargin">12, 0, 12, 0</Thickness>
   <Thickness x:Key="TreeViewItemPresenterMargin">4,2,4,2</Thickness>
   <Thickness x:Key="TreeViewItemPresenterPadding">0,3,0,5</Thickness>
-  <StreamGeometry x:Key="TreeViewItemCollapsedChevronPathData">M 1,0 10,10 l -9,10 -1,-1 L 8,10 -0,1 Z</StreamGeometry>
-  <StreamGeometry x:Key="TreeViewItemExpandedChevronPathData">M0,1 L10,10 20,1 19,0 10,8 1,0 Z</StreamGeometry>
+  <StreamGeometry x:Key="TreeViewItemCollapsedChevronPathData">M8.293 4.293a1 1 0 0 0 0 1.414L14.586 12l-6.293 6.293a1 1 0 1 0 1.414 1.414l7-7a1 1 0 0 0 0-1.414l-7-7a1 1 0 0 0-1.414 0Z</StreamGeometry>
+  <StreamGeometry x:Key="TreeViewItemExpandedChevronPathData">M4.293 8.293a1 1 0 0 1 1.414 0L12 14.586l6.293-6.293a1 1 0 1 1 1.414 1.414l-7 7a1 1 0 0 1-1.414 0l-7-7a1 1 0 0 1 0-1.414Z</StreamGeometry>
 
   <ControlTheme x:Key="FluentTreeViewExpandCollapseChevron" TargetType="ToggleButton">
     <Setter Property="Margin" Value="0" />

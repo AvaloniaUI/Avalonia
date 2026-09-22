@@ -17,27 +17,28 @@
 
   <x:Double x:Key="PaneToggleButtonWidth">40</x:Double>
   <x:Double x:Key="PaneToggleButtonHeight">36</x:Double>
-  <Thickness x:Key="NavigationViewItemButtonMargin">4,2</Thickness>
-  <Thickness x:Key="NavigationViewButtonHolderGridMargin">0,4</Thickness>
-  <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
-  <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
-  <Thickness x:Key="NavigationViewMinimalContentGridBorderThickness">0,1,0,0</Thickness>
-  <CornerRadius x:Key="NavigationViewMinimalContentGridCornerRadius">0</CornerRadius>
-  <Thickness x:Key="TopNavigationViewContentGridBorderThickness">0,1,0,0</Thickness>
-  <CornerRadius x:Key="TopNavigationViewContentGridCornerRadius">0</CornerRadius>
+  <x:Double x:Key="PaneToggleButtonIconSize">16</x:Double>
+  <Thickness x:Key="DrawerPageItemButtonMargin">4,2</Thickness>
+  <Thickness x:Key="DrawerPageButtonHolderGridMargin">0,4</Thickness>
+  <Thickness x:Key="DrawerPageContentGridBorderThickness">1,1,0,0</Thickness>
+  <CornerRadius x:Key="DrawerPageContentGridCornerRadius">8,0,0,0</CornerRadius>
+  <Thickness x:Key="DrawerPageMinimalContentGridBorderThickness">0,1,0,0</Thickness>
+  <CornerRadius x:Key="DrawerPageMinimalContentGridCornerRadius">0</CornerRadius>
+  <Thickness x:Key="TopDrawerPageContentGridBorderThickness">0,1,0,0</Thickness>
+  <CornerRadius x:Key="TopDrawerPageContentGridCornerRadius">0</CornerRadius>
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
-      <StaticResource x:Key="NavigationViewContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-      <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="DrawerPageDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="NavigationViewContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
-      <StaticResource x:Key="NavigationViewContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-      <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="DrawerPageDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -88,12 +89,12 @@
   <ControlTheme x:Key="{x:Type DrawerPage}" TargetType="DrawerPage" BasedOn="{StaticResource DefaultDrawerPageTheme}"/>
 
   <ControlTheme x:Key="DefaultDrawerPageTheme" TargetType="DrawerPage">
-    <Setter Property="Background" Value="{DynamicResource NavigationViewContentBackground}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource NavigationViewContentGridBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource NavigationViewContentGridBorderThickness}" />
-    <Setter Property="CornerRadius" Value="{DynamicResource NavigationViewContentGridCornerRadius}" />
+    <Setter Property="Background" Value="{DynamicResource DrawerPageContentBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource DrawerPageContentGridBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource DrawerPageContentGridBorderThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource DrawerPageContentGridCornerRadius}" />
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-    <Setter Property="DrawerBackground" Value="{DynamicResource NavigationViewExpandedPaneBackground}" />
+    <Setter Property="DrawerBackground" Value="{DynamicResource DrawerPageExpandedPaneBackground}" />
     <Setter Property="BackdropBrush" Value="Transparent" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -115,8 +116,8 @@
                   <PathIcon
                     IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
                     Data="{DynamicResource DrawerPaneButtonIcon}"
-                    Width="16"
-                    Height="16"
+                    Width="{StaticResource PaneToggleButtonIconSize}"
+                    Height="{StaticResource PaneToggleButtonIconSize}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>
                   <ContentPresenter
@@ -166,8 +167,8 @@
                       <PathIcon
                         IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
                         Data="{DynamicResource DrawerPaneButtonIcon}"
-                        Width="16"
-                        Height="16"
+                        Width="{StaticResource PaneToggleButtonIconSize}"
+                        Height="{StaticResource PaneToggleButtonIconSize}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
                       <ContentPresenter
@@ -207,8 +208,8 @@
                       <PathIcon
                         IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}"
                         Data="{DynamicResource DrawerPaneButtonIcon}"
-                        Width="16"
-                        Height="16"
+                        Width="{StaticResource PaneToggleButtonIconSize}"
+                        Height="{StaticResource PaneToggleButtonIconSize}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
                       <ContentPresenter
@@ -251,10 +252,10 @@
     </Setter>
 
     <Style Selector="^[DisplayMode=Overlay] /template/ SplitView#PART_SplitView:open">
-      <Setter Property="PaneBackground" Value="{DynamicResource NavigationViewDefaultPaneBackground}" />
+      <Setter Property="PaneBackground" Value="{DynamicResource DrawerPageDefaultPaneBackground}" />
     </Style>
     <Style Selector="^[DisplayMode=CompactOverlay] /template/ SplitView#PART_SplitView:open">
-      <Setter Property="PaneBackground" Value="{DynamicResource NavigationViewDefaultPaneBackground}" />
+      <Setter Property="PaneBackground" Value="{DynamicResource DrawerPageDefaultPaneBackground}" />
     </Style>
 
     <Style Selector="^[DisplayMode=Inline] /template/ Border#PART_TopBar">
@@ -268,8 +269,8 @@
     </Style>
 
     <Style Selector="^[DisplayMode=Overlay]">
-      <Setter Property="BorderThickness" Value="{DynamicResource NavigationViewMinimalContentGridBorderThickness}" />
-      <Setter Property="CornerRadius" Value="{DynamicResource NavigationViewMinimalContentGridCornerRadius}" />
+      <Setter Property="BorderThickness" Value="{DynamicResource DrawerPageMinimalContentGridBorderThickness}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource DrawerPageMinimalContentGridCornerRadius}" />
     </Style>
 
     <Style Selector="^:placement-right">
@@ -277,8 +278,8 @@
       <Setter Property="CornerRadius" Value="0,8,0,0" />
     </Style>
     <Style Selector="^:placement-top">
-      <Setter Property="BorderThickness" Value="{DynamicResource TopNavigationViewContentGridBorderThickness}" />
-      <Setter Property="CornerRadius" Value="{DynamicResource TopNavigationViewContentGridCornerRadius}" />
+      <Setter Property="BorderThickness" Value="{DynamicResource TopDrawerPageContentGridBorderThickness}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource TopDrawerPageContentGridCornerRadius}" />
     </Style>
     <Style Selector="^:placement-bottom">
       <Setter Property="BorderThickness" Value="0,0,0,1" />
