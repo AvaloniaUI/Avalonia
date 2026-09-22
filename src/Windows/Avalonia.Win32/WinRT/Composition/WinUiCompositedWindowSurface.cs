@@ -164,7 +164,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 var scale = sceneInfo.Scaling;
                 _window.ResizeIfNeeded(size);
                 _window.ApplyEffects(sceneInfo.TransparencyLevel,
-                    (sceneInfo.TopLevelSpecificSceneInfo as Win32TopLevelSceneInfo)?.ThemeVariant ??
+                    (sceneInfo.PlatformSpecificSceneInfo as Win32TopLevelSceneInfo)?.ThemeVariant ??
                     PlatformThemeVariant.Light);
                 _window.SetSurface(_surface);
                 

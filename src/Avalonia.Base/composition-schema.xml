@@ -61,7 +61,7 @@
         <Property Name="Scaling" Type="double"/>
         <Property Name="Size" Type="Size" />
         <Property Name="TransparencyLevel" Type="CompositionTransparencyLevel" />
-        <Property Name="TopLevelSpecificSceneInfo" Type="object?" />
+        <Property Name="PlatformSpecificSceneInfo" Type="object?" />
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>
     <KeyFrameAnimation Name="Double" Type="double"/>

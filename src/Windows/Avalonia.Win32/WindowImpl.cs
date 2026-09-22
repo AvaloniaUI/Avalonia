@@ -217,9 +217,9 @@ namespace Avalonia.Win32
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public object? TopLevelSpecificSceneInfo => _sceneInfo;
+        public object? PlatformSpecificSceneInfo => _sceneInfo;
 
-        public Action<object?>? TopLevelSpecificSceneInfoChanged { get; set; }
+        public Action<object?>? PlatformSpecificSceneInfoChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -945,7 +945,7 @@ namespace Avalonia.Win32
             if (_sceneInfo.ThemeVariant != _currentThemeVariant)
             {
                 _sceneInfo = new Win32TopLevelSceneInfo(_currentThemeVariant);
-                TopLevelSpecificSceneInfoChanged?.Invoke(_sceneInfo);
+                PlatformSpecificSceneInfoChanged?.Invoke(_sceneInfo);
             }
             if (Win32Platform.WindowsVersion.Build >= 22000)
             {

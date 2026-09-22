@@ -81,12 +81,12 @@ namespace Avalonia.Platform
         /// to be passed to the platform render target with each frame.
         /// The object must be immutable; implementations must publish a new instance on change.
         /// </summary>
-        object? TopLevelSpecificSceneInfo => null;
+        object? PlatformSpecificSceneInfo => null;
 
         /// <summary>
-        /// Gets or sets a method called when <see cref="TopLevelSpecificSceneInfo"/> changes.
+        /// Gets or sets a method called when <see cref="PlatformSpecificSceneInfo"/> changes.
         /// </summary>
-        Action<object?>? TopLevelSpecificSceneInfoChanged { get => null; set { } }
+        Action<object?>? PlatformSpecificSceneInfoChanged { get => null; set { } }
 
         /// <summary>
         /// Gets the compositor that's compatible with the toplevel
