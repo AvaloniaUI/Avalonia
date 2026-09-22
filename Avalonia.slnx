@@ -122,7 +122,6 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="azure-pipelines-integrationtests.yml" />
-    <File Path="azure-pipelines.yml" />
     <File Path="CODE_OF_CONDUCT.md" />
     <File Path="CONTRIBUTING.md" />
     <File Path="Directory.Build.props" />
@@ -162,6 +161,7 @@
     <Project Path="tests/Avalonia.RenderTests.WpfCompare/Avalonia.RenderTests.WpfCompare.csproj" />
     <Project Path="tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj" />
     <Project Path="tests/Avalonia.Skia.UnitTests/Avalonia.Skia.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Themes.UnitTests/Avalonia.Themes.UnitTests.csproj" />
     <Project Path="tests/Avalonia.UnitTests/Avalonia.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Wayland.UnitTests/Avalonia.Wayland.UnitTests.csproj" />
   </Folder>

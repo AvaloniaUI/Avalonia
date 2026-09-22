@@ -1,0 +1,187 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'release/**'
+      - 'force-ci/**'
+      - 'xpf/**'
+      - '!release/latest'
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+
+  linux:
+    name: Linux
+    runs-on: ubuntu-24.04
+
+    steps:
+      - &step-checkout
+        name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - &step-dotnet
+        name: Install .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+          global-json-file: global.json
+
+      - name: Install Workloads
+        run: dotnet workload install android macos wasm-tools
+
+      - name: Run Build
+        run: |
+          dotnet --info
+          printenv
+          ./build.sh --target CiLinux --configuration=Release
+
+  macos:
+    name: macOS
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
+    steps:
+      - *step-checkout
+
+      - *step-dotnet
+
+      - name: Install Workloads
+        run: dotnet workload install android ios tvos maccatalyst macos wasm-tools
+
+      - name: Run Build
+        run: |
+          dotnet --info
+          printenv
+          ./build.sh --target CiMacOS --configuration Release
+
+      - name: Upload Native Library
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-macos
+          path: artifacts/native/Release/
+
+      - name: Upload NuGet Packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-macos
+          path: artifacts/nuget
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-macos
+          path: artifacts/sbom
+
+  windows:
+    name: Windows
+    runs-on: windows-2025
+
+    steps:
+      - *step-checkout
+
+      - *step-dotnet
+
+      - name: Install Workloads
+        run: dotnet workload install android ios tvos maccatalyst macos wasm-tools
+
+      - name: Run Build
+        run: ./build.cmd --target CiWindows --configuration Release
+
+      - name: Upload NuGet Packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-windows
+          path: artifacts/nuget
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-windows
+          path: artifacts/sbom
+
+  # Only release/x.y.z branches (with an optional prerelease suffix) are releasable, not release/x.y ones.
+  # Expressions have no regex support, so a small job classifies the branch instead.
+  branch-info:
+    name: Branch Info
+    runs-on: ubuntu-24.04
+    outputs:
+      is-release: ${{ steps.classify.outputs.is-release }}
+    steps:
+      - name: Classify Branch
+        id: classify
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if [[ "$REF" =~ ^refs/heads/release/[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            is_release=true
+          else
+            is_release=false
+          fi
+          echo "Ref: $REF, is release: $is_release"
+          echo "is-release=$is_release" >> "$GITHUB_OUTPUT"
+
+  # Note: pull requests are published by publish-nuget-pr.yml instead, which runs once this workflow completes.
+
+  publish-nightly:
+    name: Publish Nightly NuGet Packages
+    needs: [linux, windows, macos, branch-info]
+    # Everything except pull requests, merge queue runs and release/x.y.z branches (release/x.y ones are nightlies too).
+    if: >-
+      github.event_name != 'pull_request'
+      && github.event_name != 'merge_group'
+      && needs.branch-info.outputs.is-release != 'true'
+      && vars.NIGHTLY_FEED_UPLOAD_URL != ''
+    runs-on: ubuntu-24.04
+
+    steps:
+      - &step-checkout-actions
+        name: Checkout Actions
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/actions
+          persist-credentials: false
+
+      - name: Publish NuGet Packages
+        uses: ./.github/actions/publish-nuget
+        with:
+          feed-url: ${{ vars.NIGHTLY_FEED_UPLOAD_URL }}
+          api-key: ${{ secrets.NIGHTLY_FEED_API_KEY }}
+
+  # Pushes to release/x.y.z build automatically, but publishing waits for a manual approval of the "release" environment.
+  publish-release:
+    name: Publish Release NuGet Packages
+    needs: [linux, windows, macos, branch-info]
+    if: >-
+      github.event_name != 'pull_request'
+      && github.event_name != 'merge_group'
+      && needs.branch-info.outputs.is-release == 'true'
+    runs-on: ubuntu-24.04
+    environment: release
+
+    steps:
+      - *step-checkout-actions
+
+      - name: Publish NuGet Packages
+        uses: ./.github/actions/publish-nuget
+        with:
+          feed-url: ${{ vars.RELEASE_MANAGER_UPLOAD_URL }}
+          api-key: ${{ secrets.RELEASE_MANAGER_API_KEY }}

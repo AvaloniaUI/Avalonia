@@ -73,6 +73,7 @@
       "tests\\Avalonia.RenderTests.WpfCompare\\Avalonia.RenderTests.WpfCompare.csproj",
       "tests\\Avalonia.Skia.RenderTests\\Avalonia.Skia.RenderTests.csproj",
       "tests\\Avalonia.Skia.UnitTests\\Avalonia.Skia.UnitTests.csproj",
+      "tests\\Avalonia.Themes.UnitTests\\Avalonia.Themes.UnitTests.csproj",
       "tests\\Avalonia.UnitTests\\Avalonia.UnitTests.csproj",
       "tests\\Avalonia.Wayland.UnitTests\\Avalonia.Wayland.UnitTests.csproj",
       "tests\\TestFiles\\BuildTasks\\PInvoke\\PInvoke.csproj"
