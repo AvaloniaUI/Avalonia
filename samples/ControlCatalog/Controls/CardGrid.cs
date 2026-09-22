@@ -60,7 +60,6 @@ namespace ControlCatalog.Controls
         }
 
         private int _columns = 1;
-        private double _columnWidth;
         private double[] _rowHeights = Array.Empty<double>();
 
         private int VisibleCount
@@ -123,7 +122,7 @@ namespace ControlCatalog.Controls
                 ? _columns * Math.Max(1, MinItemWidth) + columnSpacing * (_columns - 1)
                 : availableSize.Width;
 
-            _columnWidth = Math.Max(0, (width - columnSpacing * (_columns - 1)) / _columns);
+            var columnWidth = Math.Max(0, (width - columnSpacing * (_columns - 1)) / _columns);
 
             var rows = count == 0 ? 0 : (count + _columns - 1) / _columns;
             _rowHeights = rows == 0 ? Array.Empty<double>() : new double[rows];
@@ -136,7 +135,7 @@ namespace ControlCatalog.Controls
                     continue;
                 }
 
-                child.Measure(new Size(_columnWidth, double.PositiveInfinity));
+                child.Measure(new Size(columnWidth, double.PositiveInfinity));
                 var row = index / _columns;
                 _rowHeights[row] = Math.Max(_rowHeights[row], child.DesiredSize.Height);
                 index++;

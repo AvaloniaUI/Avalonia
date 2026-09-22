@@ -15,7 +15,7 @@
                    PlaceholderText="Type something" />
           <Border Width="360"
                   HorizontalAlignment="Left"
-                  Background="{DynamicResource CatalogCodeBackground}"
+                  Background="{DynamicResource CatalogCardBackground}"
                   CornerRadius="6"
                   Padding="10,8">
             <TextBlock Name="TextEventLog" Classes="sample-caption" TextWrapping="Wrap" MinHeight="76" />
@@ -42,7 +42,7 @@
                    Text="Select part of this line, then try Ctrl+X, Ctrl+C and Ctrl+V." />
           <Border Width="360"
                   HorizontalAlignment="Left"
-                  Background="{DynamicResource CatalogCodeBackground}"
+                  Background="{DynamicResource CatalogCardBackground}"
                   CornerRadius="6"
                   Padding="10,8">
             <TextBlock Name="ClipboardLog" Classes="sample-caption" TextWrapping="Wrap" MinHeight="76" />

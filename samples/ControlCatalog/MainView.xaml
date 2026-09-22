@@ -107,84 +107,32 @@
                         </ItemsPanelTemplate>
                       </ItemsControl.ItemsPanel>
                       <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="models:PageItem">
-                <StackPanel IsVisible="{Binding IsVisible}">
-                  <controls:SelectableButton Margin="1,2"
-                                             IsVisible="{Binding !HasSamples}"
-                                             Theme="{StaticResource SelectableItemButton}"
-                                             Command="{Binding $parent[local:MainView].ViewModel.NavigateToPageCommand}"
-                                             CommandParameter="{Binding}">
-                    <controls:SelectableButton.IsSelected>
-                      <MultiBinding Mode="OneWay" Converter="{x:Static ObjectConverters.AreAllEqual}">
-                        <Binding Path="$parent[local:MainView].ViewModel.CurrentPageItem.Header"/>
-                        <Binding Path="Header"/>
-                      </MultiBinding>
-                    </controls:SelectableButton.IsSelected>
-                    <FlexPanel Classes="navItemFlex">
-                      <PathIcon Width="16" Height="16"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Data="{Binding IconData}"/>
-                      <TextBlock Text="{Binding Header}"
-                                 VerticalAlignment="Center"
-                                 Margin="12,0,0,0"
-                                 Flex.Grow="1"
-                                 IsVisible="{Binding $parent[local:MainView].ViewModel.IsDrawerOpened}"
-                                 TextTrimming="CharacterEllipsis"/>
-                    </FlexPanel>
-                  </controls:SelectableButton>
-
-                  <!-- A gallery also lists its samples, so the drawer can deep-link to one without the
-                       round trip through the gallery page. -->
-                  <controls:HomeItemExpander Margin="1,2"
-                                             IsVisible="{Binding HasSamples}"
-                                             Theme="{StaticResource HomeSectionExpander}"
-                                             IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
-                                             CanExpand="{Binding $parent[local:MainView].ViewModel.IsDrawerOpened}"
-                                             Command="{Binding $parent[local:MainView].ViewModel.NavigateToPageCommand}"
-                                             CommandParameter="{Binding}">
-                    <controls:HomeItemExpander.IsSelected>
-                      <Binding Path="IsCurrent" Mode="OneWay"/>
-                    </controls:HomeItemExpander.IsSelected>
-                    <controls:HomeItemExpander.Header>
-                      <FlexPanel Classes="navItemFlex">
-                        <PathIcon Width="16" Height="16"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"
-                                  Data="{Binding IconData}"/>
-                        <TextBlock Text="{Binding Header}"
-                                   VerticalAlignment="Center"
-                                   Margin="12,0,0,0"
-                                   Flex.Grow="1"
-                                   IsVisible="{Binding $parent[local:MainView].ViewModel.IsDrawerOpened}"
-                                   TextTrimming="CharacterEllipsis"/>
-                      </FlexPanel>
-                    </controls:HomeItemExpander.Header>
-                    <controls:HomeItemExpander.Content>
-                      <ItemsControl ItemsSource="{Binding Samples}" Margin="20,0,0,2">
-                        <ItemsControl.ItemsPanel>
-                          <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical"/>
-                          </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate x:DataType="controls:SampleInfo">
-                            <controls:SelectableButton Margin="1,2"
-                                                       Theme="{StaticResource SelectableItemButton}"
-                                                       ToolTip.Tip="{Binding Description}"
-                                                       Command="{Binding $parent[local:MainView].ViewModel.NavigateToSampleCommand}"
-                                                       CommandParameter="{Binding}">
-                              <TextBlock Text="{Binding Title}"
+                        <DataTemplate x:DataType="models:PageItem">
+                          <controls:SelectableButton Margin="1,2"
+                                                     IsVisible="{Binding IsVisible}"
+                                                     Theme="{StaticResource SelectableItemButton}"
+                                                     Command="{Binding $parent[local:MainView].ViewModel.NavigateToPageCommand}"
+                                                     CommandParameter="{Binding}">
+                            <controls:SelectableButton.IsSelected>
+                              <MultiBinding Mode="OneWay" Converter="{x:Static ObjectConverters.AreAllEqual}">
+                                <Binding Path="$parent[local:MainView].ViewModel.CurrentPageItem.Header"/>
+                                <Binding Path="Header"/>
+                              </MultiBinding>
+                            </controls:SelectableButton.IsSelected>
+                            <FlexPanel Classes="navItemFlex">
+                              <PathIcon Width="16" Height="16"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Data="{Binding IconData}"/>
+                              <TextBlock Text="{Binding Header}"
                                          VerticalAlignment="Center"
+                                         Margin="12,0,0,0"
+                                         Flex.Grow="1"
+                                         IsVisible="{Binding $parent[local:MainView].ViewModel.IsDrawerOpened}"
                                          TextTrimming="CharacterEllipsis"/>
-                            </controls:SelectableButton>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-                    </controls:HomeItemExpander.Content>
-                  </controls:HomeItemExpander>
-                </StackPanel>
-              </DataTemplate>
+                            </FlexPanel>
+                          </controls:SelectableButton>
+                        </DataTemplate>
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
                   </controls:HomeItemExpander.Content>
@@ -272,7 +220,5 @@
     </DataTemplate>
   </DrawerPage.DrawerFooterTemplate>
 
-  <!-- The shell paints the catalog page surface, so pages can stay transparent and the content area is
-       flush with the navigation bar above it. -->
-  <NavigationPage Name="NavPage" Background="{DynamicResource CatalogPageBackground}"/>
+  <NavigationPage Name="NavPage"/>
 </DrawerPage>

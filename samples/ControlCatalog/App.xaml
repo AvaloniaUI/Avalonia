@@ -72,11 +72,6 @@
       <Setter Property="MaxWidth" Value="760" />
       <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
-    <Style Selector="TextBlock.sample-group">
-      <Setter Property="FontSize" Value="13" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-      <Setter Property="Foreground" Value="{DynamicResource CatalogSubtleForeground}" />
-    </Style>
     <Style Selector="TextBlock.sample-card-title">
       <Setter Property="FontSize" Value="14" />
       <Setter Property="FontWeight" Value="SemiBold" />

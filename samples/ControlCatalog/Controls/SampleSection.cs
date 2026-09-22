@@ -1,4 +1,3 @@
-using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -121,8 +120,6 @@ namespace ControlCatalog.Controls
             get => GetValue(StageHeightProperty);
             set => SetValue(StageHeightProperty, value);
         }
-
-        protected override Type StyleKeyOverride => typeof(SampleSection);
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {

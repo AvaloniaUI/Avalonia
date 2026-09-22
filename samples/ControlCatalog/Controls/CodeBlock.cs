@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input.Platform;
-using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace ControlCatalog.Controls
 {
@@ -29,7 +28,7 @@ namespace ControlCatalog.Controls
     /// </summary>
     [TemplatePart(PART_Text, typeof(SelectableTextBlock))]
     [TemplatePart(PART_CopyButton, typeof(Button))]
-    public class CodeBlock : TemplatedControl
+    public partial class CodeBlock : TemplatedControl
     {
         private const string PART_Text = "PART_Text";
         private const string PART_CopyButton = "PART_CopyButton";
@@ -52,7 +51,7 @@ namespace ControlCatalog.Controls
 
         private SelectableTextBlock? _text;
         private Button? _copyButton;
-        private CancellationTokenSource? _copyReset;
+        private IDisposable? _copyReset;
 
         /// <summary>
         /// The snippet. Leading indentation common to every line is trimmed when it is rendered.
@@ -78,8 +77,6 @@ namespace ControlCatalog.Controls
             get => GetValue(IsExpandedProperty);
             set => SetValue(IsExpandedProperty, value);
         }
-
-        protected override Type StyleKeyOverride => typeof(CodeBlock);
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -110,7 +107,7 @@ namespace ControlCatalog.Controls
                 var code = change.GetNewValue<string?>();
                 if (!string.IsNullOrWhiteSpace(code))
                 {
-                    var lines = Dedent(code!).Split('\n').Length;
+                    var lines = Dedent(code).Split('\n').Length;
                     SetCurrentValue(IsExpandedProperty, lines <= CollapseThreshold);
                 }
 
@@ -129,37 +126,22 @@ namespace ControlCatalog.Controls
                 return;
             }
 
-            await clipboard.SetTextAsync(Realign(Dedent(code)));
+            await clipboard.SetTextAsync(Format(code));
 
-            if (_copyButton is null)
+            if (_copyButton is not { } button)
             {
                 return;
             }
 
-            _copyReset?.Cancel();
+            button.Content = "Copied";
             _copyReset?.Dispose();
-            _copyReset = new CancellationTokenSource();
-            var token = _copyReset.Token;
-
-            _copyButton.Content = "Copied";
-
-            try
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1.5), token);
-            }
-            catch (OperationCanceledException)
-            {
-                return;
-            }
-
-            _copyButton.Content = "Copy";
+            _copyReset = DispatcherTimer.RunOnce(() => button.Content = "Copy", TimeSpan.FromSeconds(1.5));
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
 
-            _copyReset?.Cancel();
             _copyReset?.Dispose();
             _copyReset = null;
 
@@ -183,7 +165,7 @@ namespace ControlCatalog.Controls
                 return;
             }
 
-            foreach (var (text, kind) in Tokenize(Realign(Dedent(Code!)), Language))
+            foreach (var (text, kind) in Tokenize(Format(Code), Language))
             {
                 var run = new Run(text);
                 if (kind is not null)
@@ -195,6 +177,9 @@ namespace ControlCatalog.Controls
                 _text.Inlines?.Add(run);
             }
         }
+
+        private string Format(string code) =>
+            Language == CodeLanguage.Xaml ? Realign(Dedent(code)) : Dedent(code);
 
         /// <summary>
         /// Removes the indentation every line shares, so a snippet written inside deeply nested XAML
@@ -235,11 +220,11 @@ namespace ControlCatalog.Controls
             return builder.ToString().TrimEnd();
         }
 
-        private static readonly System.Text.RegularExpressions.Regex s_openingTag =
-            new(@"^(\s*)<[\w:.]+\s+\S", System.Text.RegularExpressions.RegexOptions.Compiled);
+        [GeneratedRegex(@"^(\s*)<[\w:.]+\s+\S")]
+        private static partial Regex OpeningTagRegex();
 
-        private static readonly System.Text.RegularExpressions.Regex s_attributeLine =
-            new(@"^\s*([\w.:]+\s*=|/?>)", System.Text.RegularExpressions.RegexOptions.Compiled);
+        [GeneratedRegex(@"^\s*([\w.:]+\s*=|/?>)")]
+        private static partial Regex AttributeLineRegex();
 
         /// <summary>
         /// Aligns wrapped attributes under the first attribute of the element they belong to.
@@ -261,7 +246,7 @@ namespace ControlCatalog.Controls
                     continue;
                 }
 
-                var opening = s_openingTag.Match(line);
+                var opening = OpeningTagRegex().Match(line);
                 if (opening.Success)
                 {
                     // Column just past "<Tag ", measured on the line as it will be rendered.
@@ -271,7 +256,7 @@ namespace ControlCatalog.Controls
                     continue;
                 }
 
-                if (anchor >= 0 && s_attributeLine.IsMatch(line))
+                if (anchor >= 0 && AttributeLineRegex().IsMatch(line))
                 {
                     lines[i] = new string(' ', anchor) + line.TrimStart(' ');
                     continue;
@@ -297,19 +282,20 @@ namespace ControlCatalog.Controls
         /// Splits a snippet into spans paired with the theme resource key that colours them.
         /// A null key means the block's own foreground.
         /// </summary>
-        internal static IEnumerable<(string Text, string? BrushKey)> Tokenize(string code, CodeLanguage language) =>
+        internal static List<(string Text, string? BrushKey)> Tokenize(string code, CodeLanguage language) =>
             language == CodeLanguage.CSharp ? TokenizeCSharp(code) : TokenizeXaml(code);
 
-        private static IEnumerable<(string, string?)> TokenizeXaml(string code)
+        private static List<(string Text, string? BrushKey)> TokenizeXaml(string code)
         {
+            var tokens = new List<(string Text, string? BrushKey)>();
             var i = 0;
             var run = new StringBuilder();
 
-            IEnumerable<(string, string?)> Flush()
+            void Flush()
             {
                 if (run.Length > 0)
                 {
-                    yield return (run.ToString(), null);
+                    tokens.Add((run.ToString(), null));
                     run.Clear();
                 }
             }
@@ -318,17 +304,17 @@ namespace ControlCatalog.Controls
             {
                 if (code.AsSpan(i).StartsWith("<!--"))
                 {
-                    foreach (var t in Flush()) yield return t;
+                    Flush();
                     var end = code.IndexOf("-->", i, StringComparison.Ordinal);
                     end = end < 0 ? code.Length : end + 3;
-                    yield return (code[i..end], "CatalogCodeComment");
+                    tokens.Add((code[i..end], "CatalogCodeComment"));
                     i = end;
                     continue;
                 }
 
                 if (code[i] == '<')
                 {
-                    foreach (var t in Flush()) yield return t;
+                    Flush();
                     var j = i + 1;
                     if (j < code.Length && code[j] == '/')
                     {
@@ -340,28 +326,26 @@ namespace ControlCatalog.Controls
                         j++;
                     }
 
-                    yield return (code[i..j], "CatalogCodeTag");
+                    tokens.Add((code[i..j], "CatalogCodeKeyword"));
                     i = j;
                     continue;
                 }
 
                 if (code[i] == '"')
                 {
-                    foreach (var t in Flush()) yield return t;
+                    Flush();
                     var end = code.IndexOf('"', i + 1);
                     end = end < 0 ? code.Length : end + 1;
-                    var literal = code[i..end];
-                    // A markup extension inside the string gets its own colour.
-                    yield return (literal, literal.Contains('{') ? "CatalogCodeMarkup" : "CatalogCodeString");
+                    tokens.Add((code[i..end], "CatalogCodeString"));
                     i = end;
                     continue;
                 }
 
                 if (code[i] is '>' or '/' && (i + 1 >= code.Length || code[i] == '>' || code[i + 1] == '>'))
                 {
-                    foreach (var t in Flush()) yield return t;
+                    Flush();
                     var len = code[i] == '/' && i + 1 < code.Length ? 2 : 1;
-                    yield return (code.Substring(i, len), "CatalogCodeTag");
+                    tokens.Add((code.Substring(i, len), "CatalogCodeKeyword"));
                     i += len;
                     continue;
                 }
@@ -383,8 +367,8 @@ namespace ControlCatalog.Controls
 
                     if (k < code.Length && code[k] == '=')
                     {
-                        foreach (var t in Flush()) yield return t;
-                        yield return (word, "CatalogCodeAttribute");
+                        Flush();
+                        tokens.Add((word, "CatalogCodeAttribute"));
                         i = j;
                         continue;
                     }
@@ -398,19 +382,21 @@ namespace ControlCatalog.Controls
                 i++;
             }
 
-            foreach (var t in Flush()) yield return t;
+            Flush();
+            return tokens;
         }
 
-        private static IEnumerable<(string, string?)> TokenizeCSharp(string code)
+        private static List<(string Text, string? BrushKey)> TokenizeCSharp(string code)
         {
+            var tokens = new List<(string Text, string? BrushKey)>();
             var i = 0;
             var run = new StringBuilder();
 
-            IEnumerable<(string, string?)> Flush()
+            void Flush()
             {
                 if (run.Length > 0)
                 {
-                    yield return (run.ToString(), null);
+                    tokens.Add((run.ToString(), null));
                     run.Clear();
                 }
             }
@@ -419,17 +405,17 @@ namespace ControlCatalog.Controls
             {
                 if (code.AsSpan(i).StartsWith("//"))
                 {
-                    foreach (var t in Flush()) yield return t;
+                    Flush();
                     var end = code.IndexOf('\n', i);
                     end = end < 0 ? code.Length : end;
-                    yield return (code[i..end], "CatalogCodeComment");
+                    tokens.Add((code[i..end], "CatalogCodeComment"));
                     i = end;
                     continue;
                 }
 
                 if (code[i] == '"')
                 {
-                    foreach (var t in Flush()) yield return t;
+                    Flush();
                     var j = i + 1;
                     while (j < code.Length && code[j] != '"')
                     {
@@ -437,7 +423,7 @@ namespace ControlCatalog.Controls
                     }
 
                     j = Math.Min(j + 1, code.Length);
-                    yield return (code[i..j], "CatalogCodeString");
+                    tokens.Add((code[i..j], "CatalogCodeString"));
                     i = j;
                     continue;
                 }
@@ -453,8 +439,8 @@ namespace ControlCatalog.Controls
                     var word = code[i..j];
                     if (s_csharpKeywords.Contains(word))
                     {
-                        foreach (var t in Flush()) yield return t;
-                        yield return (word, "CatalogCodeKeyword");
+                        Flush();
+                        tokens.Add((word, "CatalogCodeKeyword"));
                     }
                     else
                     {
@@ -465,25 +451,12 @@ namespace ControlCatalog.Controls
                     continue;
                 }
 
-                if (char.IsDigit(code[i]))
-                {
-                    var j = i;
-                    while (j < code.Length && (char.IsLetterOrDigit(code[j]) || code[j] == '.'))
-                    {
-                        j++;
-                    }
-
-                    foreach (var t in Flush()) yield return t;
-                    yield return (code[i..j], "CatalogCodeNumber");
-                    i = j;
-                    continue;
-                }
-
                 run.Append(code[i]);
                 i++;
             }
 
-            foreach (var t in Flush()) yield return t;
+            Flush();
+            return tokens;
         }
     }
 }

@@ -82,10 +82,6 @@
           <TextBox Width="300"
                    FlowDirection="RightToLeft"
                    Text="مرحبا بالعالم، هذا نص من اليمين إلى اليسار." />
-          <TextBlock Classes="sample-caption"
-                     TextWrapping="Wrap"
-                     MaxWidth="440"
-                     Text="The CJK paragraph uses a bundled WenQuanYi Micro Hei face, which is several megabytes; loading it only when this sample is opened is one reason the page is a gallery." />
         </StackPanel>
         <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox FlowDirection="RightToLeft" Text="..." />]]></x:String></controls:SampleSection.Code>
       </controls:SampleSection>

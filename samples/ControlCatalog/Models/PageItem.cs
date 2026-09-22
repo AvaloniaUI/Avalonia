@@ -22,29 +22,6 @@ public class PageItem(string header, Func<Page> factory, StreamGeometry iconData
     /// </summary>
     public IReadOnlyList<SampleInfo>? Samples { get; } = samples;
 
-    /// <summary>
-    /// Whether the drawer lists this page's samples. Only gallery pages expand.
-    /// </summary>
-    public bool HasSamples => Samples is { Count: > 0 };
-
-    /// <summary>
-    /// True while this page is the one being shown. The drawer marks the page with it.
-    /// </summary>
-    public bool IsCurrent
-    {
-        get;
-        set => RaiseAndSetIfChanged(ref field, value);
-    }
-
-    /// <summary>
-    /// Whether this page's samples are listed in the drawer.
-    /// </summary>
-    public bool IsExpanded
-    {
-        get;
-        set => RaiseAndSetIfChanged(ref field, value);
-    }
-
     private string SearchKey { get; } = BuildSearchKey(header, description, section?.Title, samples);
 
     public bool IsVisible

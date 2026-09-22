@@ -11,7 +11,6 @@ using Avalonia.Controls.Chrome;
 using Avalonia.Dialogs;
 using Avalonia.Media;
 using Avalonia.Styling;
-using ControlCatalog.Controls;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
 using MiniMvvm;
@@ -42,7 +41,6 @@ namespace ControlCatalog.ViewModels
             });
             SettingsItem = new PageItem("Settings", () => new SettingsPage(SettingsViewModel), StreamGeometry.Parse(Icons.Settings), "Theme, transparency and window options", null);
             NavigateToPageCommand = MiniCommand.Create<PageItem>(NavigateToItem);
-            NavigateToSampleCommand = MiniCommand.Create<SampleInfo>(NavigateToSample);
             SettingsCommand = MiniCommand.Create(async () =>
             {
                 if (CurrentPageItem == SettingsItem)
@@ -78,12 +76,6 @@ namespace ControlCatalog.ViewModels
             field ??= _pageSections.Where(s => !string.IsNullOrEmpty(s.Title)).ToArray();
 
         public INavigation? Navigator { get; internal set; }
-
-        /// <summary>
-        /// The page currently shown by the navigator, so a deep link can ask a gallery to open a sample
-        /// without the shell duplicating the gallery's push logic.
-        /// </summary>
-        private Page? _currentPage;
 
         public bool ExtendClientAreaEnabled
         {
@@ -198,16 +190,10 @@ namespace ControlCatalog.ViewModels
                     return;
                 }
 
-                // With the drawer shut the page list is hidden, so the section itself carries the marker;
-                // a gallery's sample list collapses with it, and reopens for the current page only.
+                // With the drawer shut the page list is hidden, so the section itself carries the marker.
                 foreach (var section in _pageSections)
                 {
                     section.IsExpanded = value && section.IsCurrent;
-
-                    foreach (var page in section.Items ?? Array.Empty<PageItem>())
-                    {
-                        page.IsExpanded = value && page.IsCurrent;
-                    }
                 }
             }
         } = true;
@@ -249,8 +235,6 @@ namespace ControlCatalog.ViewModels
 
         public MiniCommand NavigateToPageCommand { get; }
 
-        public MiniCommand NavigateToSampleCommand { get; }
-
         public MiniCommand SettingsCommand { get; }
 
         public MiniCommand HomeCommand { get; }
@@ -279,37 +263,6 @@ namespace ControlCatalog.ViewModels
             _ = NavigateToAsync(item);
         }
 
-        /// <summary>
-        /// Opens a gallery sample from the drawer: shows the gallery page, then pushes the sample on top of it.
-        /// </summary>
-        public void NavigateToSample(SampleInfo sample)
-        {
-            // Registries are shared between the gallery and its drawer entry, so the owner is found by reference.
-            var item = _pageSections
-                .SelectMany(section => section.Items ?? Array.Empty<PageItem>())
-                .FirstOrDefault(page => page.Samples?.Contains(sample) == true);
-
-            if (item is not null)
-            {
-                _ = NavigateToSampleAsync(item, sample);
-            }
-        }
-
-        private async Task NavigateToSampleAsync(PageItem item, SampleInfo sample)
-        {
-            await NavigateToAsync(item);
-
-            if (_currentPage is SampleGalleryPage gallery)
-            {
-                await gallery.OpenAsync(sample);
-            }
-
-            if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
-            {
-                IsDrawerOpened = false;
-            }
-        }
-
         private async Task NavigateToAsync(PageItem? item)
         {
             if (item is null || Navigator is null)
@@ -324,28 +277,18 @@ namespace ControlCatalog.ViewModels
             if (item != CurrentPageItem)
             {
                 var page = item.CreatePage();
-                _currentPage = page;
                 CurrentPageItem = item;
                 OpenedSection = item.Section;
 
                 foreach (var section in _pageSections)
                 {
-                    section.IsCurrent = section.Title == item.Section;
+                    // A section's own page counts too, so the section stays open when the drawer comes back.
+                    section.CurrentPage = section.PageItem == item || section.Title == item.Section ? item : null;
 
                     if (section.IsCurrent && IsDrawerOpened)
                     {
                         section.IsExpanded = true;
                     }
-
-                    foreach (var navPage in section.Items ?? Array.Empty<PageItem>())
-                    {
-                        navPage.IsCurrent = navPage == item;
-                    }
-                }
-
-                if (item.HasSamples && IsDrawerOpened)
-                {
-                    item.IsExpanded = true;
                 }
 
                 await Navigator.ReplaceAsync(page);
@@ -385,13 +328,6 @@ namespace ControlCatalog.ViewModels
             foreach (var section in _pageSections)
             {
                 section.IsExpanded = isDefaultVisible ? section.IsCurrent : section.IsSectionVisible;
-            }
-
-            // Search matches whole pages, so the sample lists collapse while it runs and only the current
-            // gallery reopens when it clears.
-            foreach (var page in allPages)
-            {
-                page.IsExpanded = isDefaultVisible && page.IsCurrent;
             }
         }
     }

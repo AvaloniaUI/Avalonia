@@ -15,19 +15,22 @@ public class HomeSection : ViewModelBase
     public bool IsSectionVisible => Items?.Any(x => x.IsVisible) == true;
 
     /// <summary>
-    /// True when the page being shown belongs to this section.
+    /// The page being shown, when it is this section's own page or one of its pages.
     /// </summary>
-    public bool IsCurrent
+    public PageItem? CurrentPage
     {
         get;
         set
         {
             if (RaiseAndSetIfChanged(ref field, value))
             {
+                RaisePropertyChanged(nameof(IsCurrent));
                 RaisePropertyChanged(nameof(ShowsSelection));
             }
         }
     }
+
+    public bool IsCurrent => CurrentPage is not null;
 
     /// <summary>
     /// Whether the section's pages are listed. Set when the user opens a section, when a search matches,
@@ -46,10 +49,10 @@ public class HomeSection : ViewModelBase
     }
 
     /// <summary>
-    /// The section carries the selection marker only while its pages are hidden. Once it is open the
-    /// current page carries it, so the drawer never shows two markers at once.
+    /// The section carries the selection marker for its own page, and for one of its pages while they are
+    /// hidden. Once it is open the current page carries it, so the drawer never shows two markers at once.
     /// </summary>
-    public bool ShowsSelection => IsCurrent && !IsExpanded;
+    public bool ShowsSelection => CurrentPage == PageItem || (IsCurrent && !IsExpanded);
 
     public PageItem PageItem { get; }
 

@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Avalonia;
-using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Styling;
+using MiniMvvm;
 
 namespace ControlCatalog.Controls
 {
@@ -28,8 +27,18 @@ namespace ControlCatalog.Controls
             AvaloniaProperty.RegisterDirect<SampleGalleryPage, IReadOnlyList<SampleInfo>>(
                 nameof(Samples), o => o.Samples, (o, v) => o.Samples = v);
 
-        private IReadOnlyList<SampleInfo> _samples = Array.Empty<SampleInfo>();
+        public static readonly DirectProperty<SampleGalleryPage, IReadOnlyList<SampleInfoGroup>> GroupsProperty =
+            AvaloniaProperty.RegisterDirect<SampleGalleryPage, IReadOnlyList<SampleInfoGroup>>(
+                nameof(Groups), o => o.Groups);
+
+        private IReadOnlyList<SampleInfo> _samples = [];
+        private IReadOnlyList<SampleInfoGroup> _groups = [];
         private bool _opening;
+
+        public SampleGalleryPage()
+        {
+            OpenSampleCommand = MiniCommand.Create<SampleInfo>(sample => _ = OpenAsync(sample));
+        }
 
         /// <summary>
         /// One or two sentences saying what the control is for. Shown above the sample cards.
@@ -42,180 +51,41 @@ namespace ControlCatalog.Controls
 
         /// <summary>
         /// The samples to offer. Cards are grouped by <see cref="SampleInfo.Group"/> and the groups are ordered
-        /// by <see cref="SampleGroups.Order"/>.
+        /// as in <see cref="SampleGroups"/>.
         /// </summary>
         public IReadOnlyList<SampleInfo> Samples
         {
             get => _samples;
-            set => SetAndRaise(SamplesProperty, ref _samples, value ?? Array.Empty<SampleInfo>());
+            set => SetAndRaise(SamplesProperty, ref _samples, value ?? []);
         }
 
-        protected override Type StyleKeyOverride => typeof(SampleGalleryPage);
-
-        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        public IReadOnlyList<SampleInfoGroup> Groups
         {
-            base.OnApplyTemplate(e);
-            RebuildContent();
+            get => _groups;
+            private set => SetAndRaise(GroupsProperty, ref _groups, value);
         }
+
+        public ICommand OpenSampleCommand { get; }
+
+        // Pages derive from this class, and a theme is looked up by the exact type.
+        protected override Type StyleKeyOverride => typeof(SampleGalleryPage);
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == SamplesProperty)
-                RebuildContent();
+            {
+                // GroupBy keeps first appearance order, so unknown groups stay in registry order at the end.
+                Groups = Samples
+                    .GroupBy(sample => sample.Group)
+                    .OrderBy(group => SampleGroups.IndexOf(group.Key))
+                    .Select(group => new SampleInfoGroup(group.Key, group.ToArray()))
+                    .ToArray();
+            }
         }
 
-        private void RebuildContent() => Content = BuildHome();
-
-        private Control BuildHome()
-        {
-            var stack = new StackPanel { Spacing = 20 };
-
-            var description = new TextBlock
-            {
-                Classes = { "sample-description" },
-                Text = Description,
-                IsVisible = !string.IsNullOrEmpty(Description)
-            };
-            description.Bind(TextBlock.TextProperty, this.GetObservable(DescriptionProperty));
-            stack.Children.Add(description);
-
-            foreach (var (group, samples) in GroupSamples())
-            {
-                var groupStack = new StackPanel { Spacing = 10 };
-                groupStack.Children.Add(new TextBlock
-                {
-                    Classes = { "sample-group" },
-                    Text = group
-                });
-
-                var grid = new CardGrid { MinItemWidth = 220 };
-                foreach (var sample in samples)
-                {
-                    grid.Children.Add(CreateCard(sample));
-                }
-
-                groupStack.Children.Add(grid);
-                stack.Children.Add(groupStack);
-            }
-
-            return new ScrollViewer
-            {
-                Padding = new Thickness(24, 20, 24, 28),
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                Content = stack
-            };
-        }
-
-        private IEnumerable<(string Group, List<SampleInfo> Samples)> GroupSamples()
-        {
-            var groups = new List<(string Group, List<SampleInfo> Samples)>();
-
-            foreach (var sample in Samples)
-            {
-                var index = groups.FindIndex(g => string.Equals(g.Group, sample.Group, StringComparison.Ordinal));
-                if (index < 0)
-                {
-                    groups.Add((sample.Group, new List<SampleInfo>()));
-                    index = groups.Count - 1;
-                }
-
-                groups[index].Samples.Add(sample);
-            }
-
-            // Known groups in canonical order, then unknown groups in the order they first appear.
-            var ordered = new List<(string Group, List<SampleInfo> Samples)>(groups.Count);
-            foreach (var index in SampleGroups.Order.Select(SampleGroups.IndexOf).OrderBy(i => i))
-            {
-                foreach (var group in groups)
-                {
-                    if (SampleGroups.IndexOf(group.Group) == index)
-                    {
-                        ordered.Add(group);
-                    }
-                }
-            }
-
-            foreach (var group in groups)
-            {
-                if (SampleGroups.IndexOf(group.Group) == int.MaxValue)
-                {
-                    ordered.Add(group);
-                }
-            }
-
-            return ordered;
-        }
-
-        private static Control CreateErrorContent(SampleInfo sample, Exception ex)
-        {
-            var text = new SelectableTextBlock
-            {
-                Classes = { "sample-caption" },
-                Text = ex.ToString(),
-                FontFamily = new FontFamily("Cascadia Code,Cascadia Mono,Consolas,Menlo,monospace")
-            };
-
-            return new ScrollViewer
-            {
-                Padding = new Thickness(24, 20),
-                Content = new StackPanel
-                {
-                    Spacing = 12,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Classes = { "sample-card-title" },
-                            Text = "The sample \"" + sample.Title + "\" failed to load."
-                        },
-                        text
-                    }
-                }
-            };
-        }
-
-        private Button CreateCard(SampleInfo sample)
-        {
-            var card = new Button
-            {
-                Classes = { "sample-card" },
-                Content = new StackPanel
-                {
-                    Spacing = 4,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Classes = { "sample-card-title" },
-                            Text = sample.Title
-                        },
-                        new TextBlock
-                        {
-                            Classes = { "sample-card-description" },
-                            Text = sample.Description
-                        }
-                    }
-                }
-            };
-
-            if (this.TryFindResource("SampleCardTheme", out var theme) && theme is ControlTheme cardTheme)
-            {
-                card.Theme = cardTheme;
-            }
-
-            AutomationProperties.SetName(card, sample.Title);
-            AutomationProperties.SetHelpText(card, sample.Description);
-            card.Click += async (_, _) => await OpenAsync(sample);
-            return card;
-        }
-
-        /// <summary>
-        /// Opens <paramref name="sample"/> on the hosting navigation stack, creating its content first. Public so
-        /// the shell can deep-link to a sample from the navigation drawer as well as from a card.
-        /// </summary>
-        public async Task OpenAsync(SampleInfo sample)
+        private async Task OpenAsync(SampleInfo sample)
         {
             var navigation = Navigation;
             if (_opening || navigation is null)
@@ -239,7 +109,7 @@ namespace ControlCatalog.Controls
                 var page = new ContentPage
                 {
                     Header = sample.Title,
-                    // The shell paints the catalog page background, so a sample only draws its own content.
+                    // Transparent like the catalog pages, so window transparency shows through.
                     Background = Brushes.Transparent,
                     Content = content,
                     HorizontalContentAlignment = HorizontalAlignment.Stretch,
@@ -251,6 +121,31 @@ namespace ControlCatalog.Controls
             {
                 _opening = false;
             }
+        }
+
+        private static Control CreateErrorContent(SampleInfo sample, Exception ex)
+        {
+            return new ScrollViewer
+            {
+                Padding = new Thickness(24, 20),
+                Content = new StackPanel
+                {
+                    Spacing = 12,
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Classes = { "sample-card-title" },
+                            Text = "The sample \"" + sample.Title + "\" failed to load."
+                        },
+                        new SelectableTextBlock
+                        {
+                            Classes = { "sample-caption" },
+                            Text = ex.ToString()
+                        }
+                    }
+                }
+            };
         }
     }
 }

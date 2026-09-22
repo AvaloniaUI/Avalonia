@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Controls.Primitives;
 
 namespace ControlCatalog.Controls
@@ -10,6 +9,5 @@ namespace ControlCatalog.Controls
     /// </summary>
     public class SampleGroup : HeaderedItemsControl
     {
-        protected override Type StyleKeyOverride => typeof(SampleGroup);
     }
 }

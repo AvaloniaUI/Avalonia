@@ -15,8 +15,8 @@
                    Text="Selection set from XAML, then changed from code."
                    SelectionStart="5"
                    SelectionEnd="22"
-                   SelectionBrush="{DynamicResource CatalogAccentBrush}"
-                   SelectionForegroundBrush="{DynamicResource CatalogOnAccentForeground}"
+                   SelectionBrush="Teal"
+                   SelectionForegroundBrush="White"
                    ClearSelectionOnLostFocus="False" />
           <TextBlock Name="SelectionStatus" Classes="sample-caption" TextWrapping="Wrap" />
         </StackPanel>
@@ -31,8 +31,8 @@
         </controls:SampleSection.Options>
         <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox SelectionStart="5"
          SelectionEnd="22"
-         SelectionBrush="{DynamicResource CatalogAccentBrush}"
-         SelectionForegroundBrush="{DynamicResource CatalogOnAccentForeground}"
+         SelectionBrush="Teal"
+         SelectionForegroundBrush="White"
          ClearSelectionOnLostFocus="False" />]]></x:String></controls:SampleSection.Code>
       </controls:SampleSection>
 
@@ -44,7 +44,7 @@
                    Width="360"
                    HorizontalAlignment="Left"
                    Text="Click anywhere in this box to move the caret."
-                   CaretBrush="{DynamicResource CatalogAccentBrush}" />
+                   CaretBrush="Teal" />
           <TextBlock Classes="sample-caption"
                      Text="{Binding #CaretBox.CaretIndex, StringFormat='CaretIndex: {0}'}" />
         </StackPanel>
@@ -61,7 +61,7 @@
             </ComboBox>
           </StackPanel>
         </controls:SampleSection.Options>
-        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox CaretBrush="{DynamicResource CatalogAccentBrush}"
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox CaretBrush="Teal"
          CaretBlinkInterval="0:0:0.15" />]]></x:String></controls:SampleSection.Code>
       </controls:SampleSection>
 
