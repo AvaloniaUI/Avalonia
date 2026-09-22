@@ -144,7 +144,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="ButtonLayoutBorder"
-                          Margin="{DynamicResource TextBoxInnerButtonMargin}"
+                          Margin="{DynamicResource TextBoxInnerRightButtonMargin}"
                           BorderBrush="{DynamicResource TextControlButtonBorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           Background="{DynamicResource TextControlButtonBackground}"
