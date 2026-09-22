@@ -198,7 +198,7 @@ namespace Avalonia.Controls
             if (_visibleChildren is not { Length: > 0 } children)
             {
                 _state.Lines.Clear();
-                return availableSize;
+                return default;
             }
 
             var isColumn = Direction is FlexDirection.Column or FlexDirection.ColumnReverse;

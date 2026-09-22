@@ -3,17 +3,27 @@ using System.Globalization;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Media;
+using MiniMvvm;
 
 namespace ControlCatalog.Models;
 
-public class PageItem(string header, Func<Page> factory, StreamGeometry iconData, string description, string section)
+public class PageItem(string header, Func<Page> factory, StreamGeometry iconData, string description, HomeSection? section) : ViewModelBase
 {
     public string Header { get; } = header;
     public StreamGeometry? IconData { get; } = iconData;
     public string? Description { get; } = description;
-    private string SearchKey { get; } = CreateSearchKey(header, section);
+    public string Section { get; } = section?.Title ?? "";
+    private string SearchKey { get; } = CreateSearchKey(header, section?.Title ?? "");
 
-    public bool IsVisible { get; set; } = true;
+    public bool IsVisible
+    {
+        get;
+        set
+        {
+            RaiseAndSetIfChanged(ref field, value);
+            section?.RaiseSectionVisibilityChanged();
+        }
+    } = true;
 
     public Page CreatePage() => factory();
 
