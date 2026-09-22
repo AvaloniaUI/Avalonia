@@ -766,21 +766,19 @@ namespace Avalonia.Win32
         {
             e.Pointer.Capture(null);
 
+            if (!e.Pointer.IsPrimary)
+            {
+                throw new InvalidOperationException("BeginMoveDrag Failed");
+            }
+
             Dispatcher.UIThread.Post(() =>
             {
-                if (e.Pointer.IsPrimary)
-                {
-                    // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
-                    // and WM_LBUTTONUP return value just signify whether the WndProc handled the
-                    // message or not, so they are not interesting
+                // SendMessage's return value is dependent on the message send.  WM_SYSCOMMAND
+                // and WM_LBUTTONUP return value just signify whether the WndProc handled the
+                // message or not, so they are not interesting
 
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
-                    SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
-                }
-                else
-                {
-                    throw new InvalidOperationException("BeginMoveDrag Failed");
-                }
+                SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)SC_MOUSEMOVE, IntPtr.Zero);
+                SendMessage(_hwnd, (int)WindowsMessage.WM_LBUTTONUP, IntPtr.Zero, IntPtr.Zero);
             }, DispatcherPriority.Send);
         }
 

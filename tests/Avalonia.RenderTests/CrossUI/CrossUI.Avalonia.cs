@@ -244,8 +244,7 @@ namespace Avalonia.Skia.RenderTests.CrossUI
                 dst.Opacity = src.Opacity;
                 dst.Transform = ConvertTransform(src.Transform);
                 dst.TransformOrigin = new RelativePoint(default, RelativeUnit.Absolute);
-                if (src.RelativeTransform != null)
-                    throw new PlatformNotSupportedException();
+                dst.RelativeTransform = ConvertTransform(src.RelativeTransform);
                 return dst;
             }
 
@@ -272,6 +271,15 @@ namespace Avalonia.Skia.RenderTests.CrossUI
                 return Sync(new SolidColorBrush(br.Color), brush);
             if (brush is CrossDrawingBrush db)
                 return SyncTile(new DrawingBrush(ConvertDrawing(db.Drawing)), db);
+            if (brush is CrossImageBrush ib)
+                return SyncTile(new ImageBrush(new Bitmap(ib.Path)), ib);
+            if (brush is CrossLinearGradientBrush linear)
+                return SyncGradient(
+                    new LinearGradientBrush()
+                    {
+                        StartPoint = ConvertPoint(linear.StartPoint, linear.MappingMode),
+                        EndPoint = ConvertPoint(linear.EndPoint, linear.MappingMode)
+                    }, linear);
             if (brush is CrossRadialGradientBrush radial)
                 return SyncGradient(
                     new RadialGradientBrush()

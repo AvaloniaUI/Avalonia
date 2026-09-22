@@ -43,6 +43,12 @@ public class CrossGradientBrush : CrossBrush
     public BrushMappingMode MappingMode;
 }
 
+public class CrossLinearGradientBrush : CrossGradientBrush
+{
+    public Avalonia.Point StartPoint = new(0, 0);
+    public Avalonia.Point EndPoint = new(1, 1);
+}
+
 public class CrossRadialGradientBrush : CrossGradientBrush
 {
     public Avalonia.Point Center;
@@ -166,6 +172,11 @@ public abstract record class CrossPathSegment(bool IsStroked)
 public class CrossDrawingBrush : CrossTileBrush
 {
     public required CrossDrawing Drawing { get; set; }
+}
+
+public class CrossImageBrush : CrossTileBrush
+{
+    public required string Path { get; set; }
 }
 
 public class CrossPen
