@@ -303,12 +303,12 @@
       ContentRoot="$(_AvaloniaBrowserWebRoot)"
       BasePath="$(StaticWebAssetBasePath)">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-      <Output TaskParameter="Assets" ItemName="_AvaloniaBrowserStaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_AvaloniaBrowserWebRootAsset" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
-      Condition=" '@(_AvaloniaBrowserStaticWebAsset)' != '' "
-      CandidateAssets="@(_AvaloniaBrowserStaticWebAsset)"
+      Condition=" '@(_AvaloniaBrowserWebRootAsset)' != '' "
+      CandidateAssets="@(_AvaloniaBrowserWebRootAsset)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
