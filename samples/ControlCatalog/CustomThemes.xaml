@@ -34,7 +34,7 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <ControlTheme x:Key="ButtonCardTheme" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+  <ControlTheme x:Key="ButtonCardTheme" TargetType="Button">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter Property="Background" Value="{DynamicResource CatalogCardBackground}" />
@@ -44,6 +44,20 @@
     <Setter Property="Padding" Value="16, 14" />
     <Setter Property="MinHeight" Value="118" />
     <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          Padding="{TemplateBinding Padding}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+      </ControlTemplate>
+    </Setter>
 
     <Style Selector="^ /template/ ContentPresenter">
       <Setter Property="BoxShadow" Value="0 1 3 0 #0D000000" />
@@ -155,26 +169,6 @@
     </Setter>
   </ControlTheme>
 
-  <ControlTheme x:Key="CatalogQuietToggleTheme" TargetType="ToggleButton">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Padding" Value="6,2" />
-    <Setter Property="Cursor" Value="Hand" />
-    <Setter Property="Foreground" Value="{DynamicResource CatalogSubtleForeground}" />
-    <Setter Property="Template">
-      <ControlTemplate>
-        <ContentPresenter Background="Transparent"
-                          Padding="{TemplateBinding Padding}"
-                          Content="{TemplateBinding Content}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          TextElement.Foreground="{TemplateBinding Foreground}" />
-      </ControlTemplate>
-    </Setter>
-    <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource CatalogAccentForeground}" />
-    </Style>
-  </ControlTheme>
-
   <ControlTheme x:Key="CatalogQuietButtonTheme" TargetType="Button">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
@@ -212,7 +206,8 @@
             <Grid Name="PART_Header" DockPanel.Dock="Top"
                   ColumnDefinitions="Auto,*,Auto" Margin="4,3">
               <ToggleButton Name="PART_Toggle"
-                            Theme="{StaticResource CatalogQuietToggleTheme}"
+                            Theme="{StaticResource CatalogQuietButtonTheme}"
+                            Padding="6,2"
                             IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                   <PathIcon Name="PART_Chevron"
@@ -314,24 +309,26 @@
                                     HorizontalContentAlignment="Stretch" />
                 </StackPanel>
               </Border>
-              <controls:CodeBlock Name="PART_Code"
-                                  DockPanel.Dock="Bottom"
-                                  IsVisible="False"
-                                  Code="{TemplateBinding Code}"
-                                  Language="{TemplateBinding CodeLanguage}" />
-              <Border Name="PART_Stage"
-                      Background="{DynamicResource CatalogStageBackground}"
-                      CornerRadius="6"
-                      Padding="16"
-                      ClipToBounds="True"
-                      MinHeight="{TemplateBinding StageMinHeight}"
-                      Height="{TemplateBinding StageHeight}">
-                <ContentPresenter Name="PART_ContentPresenter"
-                                  Content="{TemplateBinding Content}"
-                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-              </Border>
+              <DockPanel Name="PART_Main" VerticalSpacing="12">
+                <controls:CodeBlock Name="PART_Code"
+                                    DockPanel.Dock="Bottom"
+                                    IsVisible="False"
+                                    Code="{TemplateBinding Code}"
+                                    Language="{TemplateBinding CodeLanguage}" />
+                <Border Name="PART_Stage"
+                        Background="{DynamicResource CatalogStageBackground}"
+                        CornerRadius="6"
+                        Padding="16"
+                        ClipToBounds="True"
+                        MinHeight="{TemplateBinding StageMinHeight}"
+                        Height="{TemplateBinding StageHeight}">
+                  <ContentPresenter Name="PART_ContentPresenter"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </Border>
+              </DockPanel>
             </DockPanel>
           </Grid>
         </Border>
@@ -353,6 +350,10 @@
 
     <Style Selector="^:has-options /template/ Border#PART_Options">
       <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:fixed-stage /template/ DockPanel#PART_Main">
+      <Setter Property="VerticalAlignment" Value="Top" />
     </Style>
 
     <Style Selector="^:narrow /template/ Border#PART_Options">

@@ -12,7 +12,14 @@ namespace ControlCatalog.Pages
 
             NewLineCombo.SelectionChanged += OnNewLineChanged;
             NewLineBox.TextChanged += OnNewLineTextChanged;
+            NewLineBox.Loaded += OnNewLineBoxLoaded;
             ApplyNewLine();
+        }
+
+        private void OnNewLineBoxLoaded(object? sender, RoutedEventArgs e)
+        {
+            NewLineBox.Loaded -= OnNewLineBoxLoaded;
+            UpdateStatus();
         }
 
         private void OnNewLineChanged(object? sender, SelectionChangedEventArgs e)

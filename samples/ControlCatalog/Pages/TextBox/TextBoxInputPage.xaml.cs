@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 
 namespace ControlCatalog.Pages
@@ -8,16 +9,19 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
 
-            LengthBox.TextChanged += OnLengthBoxTextChanged;
+            LengthBox.PropertyChanged += OnLengthBoxPropertyChanged;
             PasswordCharCombo.SelectionChanged += OnPasswordCharChanged;
             MaskCombo.SelectionChanged += OnMaskChanged;
 
             UpdateLengthStatus();
         }
 
-        private void OnLengthBoxTextChanged(object? sender, TextChangedEventArgs e)
+        private void OnLengthBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateLengthStatus();
+            if (e.Property == TextBox.TextProperty || e.Property == TextBox.MaxLengthProperty)
+            {
+                UpdateLengthStatus();
+            }
         }
 
         private void OnPasswordCharChanged(object? sender, SelectionChangedEventArgs e)

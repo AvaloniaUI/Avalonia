@@ -20,7 +20,7 @@ namespace ControlCatalog.Controls
     /// a description, the live example as content, and an optional options panel that sits beside the example
     /// on wide layouts and below it on narrow ones.
     /// </summary>
-    [PseudoClasses(pcHasOptions, pcHasCode, pcNarrow, pcStageFlush, pcStageNone)]
+    [PseudoClasses(pcHasOptions, pcHasCode, pcNarrow, pcStageFlush, pcStageNone, pcFixedStage)]
     public class SampleSection : HeaderedContentControl
     {
         private const string pcHasOptions = ":has-options";
@@ -28,6 +28,7 @@ namespace ControlCatalog.Controls
         private const string pcNarrow = ":narrow";
         private const string pcStageFlush = ":stage-flush";
         private const string pcStageNone = ":stage-none";
+        private const string pcFixedStage = ":fixed-stage";
 
         /// <summary>
         /// Below this width the options panel moves under the example instead of beside it.
@@ -138,6 +139,10 @@ namespace ControlCatalog.Controls
                 var stage = change.GetNewValue<SampleStage>();
                 PseudoClasses.Set(pcStageFlush, stage == SampleStage.Flush);
                 PseudoClasses.Set(pcStageNone, stage == SampleStage.None);
+            }
+            else if (change.Property == StageHeightProperty)
+            {
+                PseudoClasses.Set(pcFixedStage, !double.IsNaN(change.GetNewValue<double>()));
             }
         }
 

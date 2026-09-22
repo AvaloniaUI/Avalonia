@@ -77,6 +77,8 @@ namespace ControlCatalog.ViewModels
 
         public INavigation? Navigator { get; internal set; }
 
+        private bool _isSearching;
+
         public bool ExtendClientAreaEnabled
         {
             get;
@@ -120,13 +122,6 @@ namespace ControlCatalog.ViewModels
         }
 
         public bool CanMaximize
-        {
-            get;
-            set => RaiseAndSetIfChanged(ref field, value);
-        }
-
-
-        public string? OpenedSection
         {
             get;
             set => RaiseAndSetIfChanged(ref field, value);
@@ -193,7 +188,7 @@ namespace ControlCatalog.ViewModels
                 // With the drawer shut the page list is hidden, so the section itself carries the marker.
                 foreach (var section in _pageSections)
                 {
-                    section.IsExpanded = value && section.IsCurrent;
+                    section.IsExpanded = value && (_isSearching ? section.IsSectionVisible : section.IsCurrent);
                 }
             }
         } = true;
@@ -278,7 +273,6 @@ namespace ControlCatalog.ViewModels
             {
                 var page = item.CreatePage();
                 CurrentPageItem = item;
-                OpenedSection = item.Section;
 
                 foreach (var section in _pageSections)
                 {
@@ -308,6 +302,7 @@ namespace ControlCatalog.ViewModels
 
             var querySearchKey = query != null ? PageItem.CreateSearchKey(query) : "";
             var isDefaultVisible = string.IsNullOrWhiteSpace(query) || string.IsNullOrWhiteSpace(querySearchKey);
+            _isSearching = !isDefaultVisible;
 
             foreach (var page in allPages)
             {

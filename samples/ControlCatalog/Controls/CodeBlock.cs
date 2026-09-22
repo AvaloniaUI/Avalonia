@@ -413,11 +413,12 @@ namespace ControlCatalog.Controls
                     continue;
                 }
 
-                if (code[i] == '"')
+                if (code[i] is '"' or '\'')
                 {
                     Flush();
+                    var quote = code[i];
                     var j = i + 1;
-                    while (j < code.Length && code[j] != '"')
+                    while (j < code.Length && code[j] != quote)
                     {
                         j += code[j] == '\\' ? 2 : 1;
                     }

@@ -20,12 +20,9 @@ namespace ControlCatalog.Controls
         public static readonly StyledProperty<double> RowSpacingProperty =
             AvaloniaProperty.Register<CardGrid, double>(nameof(RowSpacing), 12);
 
-        public static readonly StyledProperty<int> MaxColumnsProperty =
-            AvaloniaProperty.Register<CardGrid, int>(nameof(MaxColumns), 0);
-
         static CardGrid()
         {
-            AffectsMeasure<CardGrid>(MinItemWidthProperty, ColumnSpacingProperty, RowSpacingProperty, MaxColumnsProperty);
+            AffectsMeasure<CardGrid>(MinItemWidthProperty, ColumnSpacingProperty, RowSpacingProperty);
         }
 
         /// <summary>
@@ -48,15 +45,6 @@ namespace ControlCatalog.Controls
         {
             get => GetValue(RowSpacingProperty);
             set => SetValue(RowSpacingProperty, value);
-        }
-
-        /// <summary>
-        /// Upper bound on the column count. Zero means unbounded.
-        /// </summary>
-        public int MaxColumns
-        {
-            get => GetValue(MaxColumnsProperty);
-            set => SetValue(MaxColumnsProperty, value);
         }
 
         private int _columns = 1;
@@ -101,11 +89,6 @@ namespace ControlCatalog.Controls
             // Column width depends only on the available width, not on how many children there are, so a
             // group with one card gets the same card width as a group with six.
             columns = Math.Max(1, columns);
-
-            if (MaxColumns > 0)
-            {
-                columns = Math.Min(columns, MaxColumns);
-            }
 
             return columns;
         }
