@@ -135,6 +135,17 @@ public class Win32PlatformOptions
     };
 
     /// <summary>
+    /// When <see cref="CompositionMode"/> resolves to <see cref="Win32CompositionMode.WinUIComposition"/> or
+    /// <see cref="Win32CompositionMode.DirectComposition"/>, render into a DXGI flip-model swapchain attached
+    /// as composition visual content instead of a composition drawing surface.
+    /// This allows DWM to use optimized presentation modes (independent flip) for fullscreen windows
+    /// and reduces latency, at the cost of every window owning two full-size buffers and, on the
+    /// WinUI composition path, looser visual synchronization during interactive resize.
+    /// The default value is null, which lets the framework decide (currently: disabled).
+    /// </summary>
+    public bool? UseCompositionSwapchain { get; set; }
+
+    /// <summary>
     /// When <see cref="CompositionMode"/> is set to <see cref="Win32CompositionMode.WinUIComposition"/>, create rounded corner blur brushes
     /// If set to null the brushes will be created using default settings (sharp corners)
     /// This can be useful when you need a rounded-corner blurred Windows 10 app, or borderless Windows 11 app.

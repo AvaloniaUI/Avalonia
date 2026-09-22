@@ -77,6 +77,18 @@ namespace Avalonia.Platform
         Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
         /// <summary>
+        /// Gets an opaque platform-specific object with extra information about the scene,
+        /// to be passed to the platform render target with each frame.
+        /// The object must be immutable; implementations must publish a new instance on change.
+        /// </summary>
+        object? TopLevelSpecificSceneInfo => null;
+
+        /// <summary>
+        /// Gets or sets a method called when <see cref="TopLevelSpecificSceneInfo"/> changes.
+        /// </summary>
+        Action<object?>? TopLevelSpecificSceneInfoChanged { get => null; set { } }
+
+        /// <summary>
         /// Gets the compositor that's compatible with the toplevel
         /// </summary>
         Compositor Compositor { get; }
