@@ -35,7 +35,6 @@
 
   <x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
   <Thickness x:Key="ToolTipThemeBorderThickness">1</Thickness>
-  <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
 
   <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip" BasedOn="{StaticResource DefaultToolTipTheme}"/>
 
