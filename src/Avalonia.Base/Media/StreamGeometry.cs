@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -8,7 +7,7 @@ namespace Avalonia.Media
     /// </summary>
     public class StreamGeometry : Geometry
     {
-        IStreamGeometryImpl? _impl;
+        private IGeometryImpl? _impl;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometry"/> class.
@@ -21,7 +20,7 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="StreamGeometry"/> class.
         /// </summary>
         /// <param name="impl">The platform-specific implementation.</param>
-        private StreamGeometry(IStreamGeometryImpl impl)
+        private StreamGeometry(IGeometryImpl? impl)
         {
             _impl = impl;
         }
@@ -37,7 +36,7 @@ namespace Avalonia.Media
 
             using (var context = streamGeometry.Open())
             using (var parser = new PathMarkupParser(context))
-            {               
+            {
                 parser.Parse(s);
             }
 
@@ -46,9 +45,7 @@ namespace Avalonia.Media
 
         /// <inheritdoc/>
         public override Geometry Clone()
-        {
-            return new StreamGeometry(StreamImpl.Clone()) { Transform = Transform };
-        }
+            => new StreamGeometry(_impl) { Transform = Transform };
 
         /// <summary>
         /// Opens the geometry to start defining it.
@@ -56,16 +53,36 @@ namespace Avalonia.Media
         /// <returns>
         /// A <see cref="StreamGeometryContext"/> which can be used to define the geometry.
         /// </returns>
+        /// <remarks>
+        /// The new figures are added to the existing ones. The geometry is updated when the context is disposed.
+        /// </remarks>
         public StreamGeometryContext Open()
         {
-            return new StreamGeometryContext(StreamImpl.Open());
+            return new StreamGeometryContext(CreateBuilder(_impl), this);
+        }
+
+        internal void SetImpl(IGeometryImpl impl)
+        {
+            _impl = impl;
+            InvalidateGeometry();
         }
 
         /// <inheritdoc/>
-        private protected override IGeometryImpl? CreateDefiningGeometry() => StreamImpl;
+        private protected override IGeometryImpl? CreateDefiningGeometry()
+        {
+            if (_impl is null)
+            {
+                using var builder = CreateBuilder(null);
+                _impl = builder.ToGeometry();
+            }
 
-        // The stream itself. PlatformImpl can't be used for this: it is wrapped when Transform is set.
-        private IStreamGeometryImpl StreamImpl =>
-            _impl ??= AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>().CreateStreamGeometry();
+            return _impl;
+        }
+
+        private static IStreamGeometryBuilder CreateBuilder(IGeometryImpl? source)
+        {
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+            return factory.CreateStreamGeometryBuilder(source);
+        }
     }
 }

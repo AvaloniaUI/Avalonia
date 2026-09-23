@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
@@ -22,7 +23,7 @@ namespace Avalonia.Media
             set { SetValue(PointProperty, value); }
         }
 
-        internal override void ApplyTo(StreamGeometryContext ctx)
+        internal override void ApplyTo(IGeometryContext ctx)
         {
             ctx.LineTo(Point, IsStroked);
         }

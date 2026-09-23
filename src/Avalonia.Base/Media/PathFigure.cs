@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
@@ -128,7 +129,7 @@ namespace Avalonia.Media
         public override string ToString()
             => FormattableString.Invariant($"M {StartPoint} {string.Join(" ", _segments ?? Enumerable.Empty<PathSegment>())}{(IsClosed ? "Z" : "")}");
 
-        internal void ApplyTo(StreamGeometryContext ctx)
+        internal void ApplyTo(IGeometryContext ctx)
         {
             ctx.BeginFigure(StartPoint, IsFilled);
 

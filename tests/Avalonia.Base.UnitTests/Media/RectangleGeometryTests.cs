@@ -25,13 +25,12 @@ namespace Avalonia.Base.UnitTests.Media
 
         private static TestServices GetServices()
         {
-            var context = Mock.Of<IStreamGeometryContextImpl>();
             var transformedGeometry = new Mock<ITransformedGeometryImpl>();
-            var streamGeometry = Mock.Of<IStreamGeometryImpl>(x => 
-                x.Open() == context &&
+            var geometry = Mock.Of<IGeometryImpl>(x =>
                 x.WithTransform(It.IsAny<Matrix>()) == transformedGeometry.Object);
+            var builder = Mock.Of<IStreamGeometryBuilder>(x => x.ToGeometry() == geometry);
             var renderInterface = Mock.Of<IPlatformRenderInterface>(x =>
-                x.CreateStreamGeometry() == streamGeometry);
+                x.CreateStreamGeometryBuilder(It.IsAny<IGeometryImpl?>()) == builder);
             return new TestServices(renderInterface: renderInterface);
         }
     }
