@@ -19,13 +19,18 @@ public class TestApplication : Application
         false;
 #endif
 
+    /// <summary>
+    /// Shared with every headless window, so tests can flip a mode and restore it afterwards.
+    /// </summary>
+    public static AvaloniaHeadlessPlatformOptions Options { get; } = new()
+    {
+        UseHeadlessDrawing = false,
+        OverlayPopups = false,
+        UseSharedMouseDevice = UsesSharedMouseDevice
+    };
+
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<TestApplication>()
         .UseHarfBuzz()
         .UseSkia()
-        .UseHeadless(new AvaloniaHeadlessPlatformOptions
-        {
-            UseHeadlessDrawing = false,
-            OverlayPopups = false,
-            UseSharedMouseDevice = UsesSharedMouseDevice
-        });
+        .UseHeadless(Options);
 }
