@@ -11,6 +11,25 @@ namespace Avalonia.Base.UnitTests.Layout
     public class LayoutableTests
     {
         [Theory]
+        [InlineData(100, 100, 1)]
+        [InlineData(200, 100, 2)]
+        [InlineData(100, 200, 2)]
+        public void Measuring_With_Changed_Constraint_Should_Repeat_Arrange(
+            double width, double height, int expectedArrangeCount)
+        {
+            var target = new TestLayoutable();
+            var bounds = new Rect(0, 0, 100, 100);
+
+            target.Measure(bounds.Size);
+            target.Arrange(bounds);
+
+            target.Measure(new Size(width, height));
+            target.Arrange(bounds);
+
+            Assert.Equal(expectedArrangeCount, target.ArrangeCount);
+        }
+
+        [Theory]
         [InlineData(0, 0, 0, 0, 100, 100)]
         [InlineData(10, 0, 0, 0, 90, 100)]
         [InlineData(10, 0, 5, 0, 85, 100)]
@@ -466,6 +485,7 @@ namespace Avalonia.Base.UnitTests.Layout
 
         private class TestLayoutable : Layoutable
         {
+            public int ArrangeCount { get; private set; }
             public Size ArrangeSize { get; private set; }
             public Size MeasureResult { get; set; } = new Size(10, 10);
             public Size MeasureSize { get; private set; }
@@ -478,6 +498,7 @@ namespace Avalonia.Base.UnitTests.Layout
 
             protected override Size ArrangeOverride(Size finalSize)
             {
+                ++ArrangeCount;
                 ArrangeSize = finalSize;
                 return base.ArrangeOverride(finalSize);
             }
