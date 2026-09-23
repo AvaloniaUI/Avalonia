@@ -54,12 +54,12 @@
     </Setter>
 
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
       <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewNavigationButtonBorderBrushPointerOver}" />
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPointerOver}" />
     </Style>
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}" />
       <Setter Property="Foreground" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter">
@@ -115,7 +115,7 @@
                       Margin="2,3,2,4"
                       Padding="1"
                       HorizontalContentAlignment="Left">
-                <Path Stroke="{DynamicResource TextFillColorSecondaryBrush}"
+                <Path Stroke="{DynamicResource TextFillColorSecondary}"
                       StrokeThickness="1"
                       Data="M 0,5 L 6,0 L 12,5"
                       HorizontalAlignment="Center"
@@ -128,7 +128,7 @@
                       Margin="2,3,2,4"
                       Padding="1"
                       HorizontalContentAlignment="Left">
-                <Path Stroke="{DynamicResource TextFillColorSecondaryBrush}"
+                <Path Stroke="{DynamicResource TextFillColorSecondary}"
                       StrokeThickness="1"
                       Data="M 0,0 L 6,5 L 12,0"
                       HorizontalAlignment="Center"
@@ -137,7 +137,7 @@
               <Rectangle Name="HeaderDivider"
                          Grid.ColumnSpan="3"
                          Height="1"
-                         Fill="{DynamicResource DividerStrokeColorDefaultBrush}"
+                         Fill="{DynamicResource DividerStrokeColorDefault}"
                          VerticalAlignment="Bottom" />
             </Grid>
             <!--Border below is used only for MonthView but it can't be moved inside of Grid because CalendarItem expects it to be empty and it will cause side-effects-->

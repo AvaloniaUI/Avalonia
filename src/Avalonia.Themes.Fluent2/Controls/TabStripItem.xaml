@@ -14,18 +14,18 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefaultBrush"/>
-      <StaticResource x:Key="TabStripItemDisabledPillFill" ResourceKey="AccentFillColorDisabledBrush"/>
+      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefault"/>
+      <StaticResource x:Key="TabStripItemDisabledPillFill" ResourceKey="AccentFillColorDisabled"/>
       <StaticResource x:Key="TabStripItemBorderBrush" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushPressed" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush"/>
-      <StaticResource x:Key="TabStripItemForeground" ResourceKey="TextFillColorPrimaryBrush"/>
-      <StaticResource x:Key="TabStripItemForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
-      <StaticResource x:Key="TabStripItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush"/>
-      <StaticResource x:Key="TabStripItemForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
-      <StaticResource x:Key="TabStripItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
+      <StaticResource x:Key="TabStripItemForeground" ResourceKey="TextFillColorPrimary"/>
+      <StaticResource x:Key="TabStripItemForegroundPointerOver" ResourceKey="TextFillColorSecondary"/>
+      <StaticResource x:Key="TabStripItemForegroundSelected" ResourceKey="TextFillColorPrimary"/>
+      <StaticResource x:Key="TabStripItemForegroundPressed" ResourceKey="TextFillColorTertiary"/>
+      <StaticResource x:Key="TabStripItemForegroundDisabled" ResourceKey="TextFillColorDisabled"/>
       <StaticResource x:Key="TabStripItemBackground" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBackgroundSelected" ResourceKey="SystemControlTransparentBrush"/>
@@ -33,18 +33,18 @@
       <StaticResource x:Key="TabStripItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush"/>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefaultBrush"/>
-      <StaticResource x:Key="TabStripItemDisabledPillFill" ResourceKey="AccentFillColorDisabledBrush"/>
+      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefault"/>
+      <StaticResource x:Key="TabStripItemDisabledPillFill" ResourceKey="AccentFillColorDisabled"/>
       <StaticResource x:Key="TabStripItemBorderBrush" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushPressed" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush"/>
-      <StaticResource x:Key="TabStripItemForeground" ResourceKey="TextFillColorPrimaryBrush"/>
-      <StaticResource x:Key="TabStripItemForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush"/>
-      <StaticResource x:Key="TabStripItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush"/>
-      <StaticResource x:Key="TabStripItemForegroundPressed" ResourceKey="TextFillColorTertiaryBrush"/>
-      <StaticResource x:Key="TabStripItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush"/>
+      <StaticResource x:Key="TabStripItemForeground" ResourceKey="TextFillColorPrimary"/>
+      <StaticResource x:Key="TabStripItemForegroundPointerOver" ResourceKey="TextFillColorSecondary"/>
+      <StaticResource x:Key="TabStripItemForegroundSelected" ResourceKey="TextFillColorPrimary"/>
+      <StaticResource x:Key="TabStripItemForegroundPressed" ResourceKey="TextFillColorTertiary"/>
+      <StaticResource x:Key="TabStripItemForegroundDisabled" ResourceKey="TextFillColorDisabled"/>
       <StaticResource x:Key="TabStripItemBackground" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBackgroundSelected" ResourceKey="SystemControlTransparentBrush"/>

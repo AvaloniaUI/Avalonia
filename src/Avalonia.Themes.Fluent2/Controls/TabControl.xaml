@@ -19,10 +19,10 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TabControlBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TabControlBackground" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TabControlBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TabControlBackground" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

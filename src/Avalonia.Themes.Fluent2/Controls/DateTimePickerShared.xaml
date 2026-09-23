@@ -31,7 +31,7 @@
       <Setter Property="IsHitTestVisible" Value="False"/>
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimary}"/>
       </Style>
       <Style Selector="^ /template/ Rectangle#SelectionIndicator">
         <Setter Property="IsVisible" Value="False"/>
@@ -54,7 +54,7 @@
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}">
           <ContentPresenter x:Name="PART_ContentPresenter"
-                  Background="{DynamicResource SubtleFillColorTransparentBrush}"
+                  Background="{DynamicResource SubtleFillColorTransparent}"
                   BackgroundSizing="{TemplateBinding BackgroundSizing}"
                   BorderBrush="{DynamicResource DateTimePickerFlyoutButtonBorderBrush}"
                   BorderThickness="{DynamicResource DateTimeFlyoutButtonBorderThickness}"
@@ -99,8 +99,8 @@
     <Setter Property="Height" Value="{DynamicResource LoopingSelectorUpDownButtonHeight}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefault}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondary}" />
     <Setter Property="IsVisible" Value="False"/>
     <Setter Property="Opacity" Value="0"/>
     <Setter Property="Transitions">
@@ -121,10 +121,10 @@
     </Setter>
     <!-- Re-declared after this theme's Foreground setter so the hover/press swaps still win. -->
     <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}"/>
     </Style>
     <Style Selector="^:pressed">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}"/>
     </Style>
   </ControlTheme>
 
@@ -133,8 +133,8 @@
     <Setter Property="Height" Value="{DynamicResource LoopingSelectorUpDownButtonHeight}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefault}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondary}" />
     <Setter Property="IsVisible" Value="False"/>
     <Setter Property="Opacity" Value="0"/>
     <Setter Property="Transitions">
@@ -155,10 +155,10 @@
     </Setter>
     <!-- Re-declared after this theme's Foreground setter so the hover/press swaps still win. -->
     <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}"/>
     </Style>
     <Style Selector="^:pressed">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}"/>
     </Style>
   </ControlTheme>
 </ResourceDictionary>

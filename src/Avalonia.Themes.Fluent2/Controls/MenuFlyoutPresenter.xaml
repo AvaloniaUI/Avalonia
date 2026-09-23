@@ -3,46 +3,46 @@
                     x:ClassModifier="internal">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="MenuFlyoutItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="MenuFlyoutItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="MenuFlyoutItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundPressed" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="MenuFlyoutItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

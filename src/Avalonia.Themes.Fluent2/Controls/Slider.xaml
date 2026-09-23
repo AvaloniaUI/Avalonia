@@ -36,51 +36,51 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="SliderContainerBackground" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
-      <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentFillColorTertiaryBrush" />
-      <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentFillColorDisabledBrush" />
-      <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
-      <StaticResource x:Key="SliderTrackValueFill" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
-      <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="AccentFillColorTertiaryBrush" />
-      <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
-      <StaticResource x:Key="SliderTickBarFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
-      <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="ControlFillColorInputActiveBrush" />
-      <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
+      <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentFillColorSecondary" />
+      <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentFillColorDisabled" />
+      <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
+      <StaticResource x:Key="SliderTrackValueFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="AccentFillColorSecondary" />
+      <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="AccentFillColorDisabled" />
+      <StaticResource x:Key="SliderTickBarFill" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
+      <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="ControlFillColorInputActive" />
+      <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefault" />
       <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
-      <StaticResource x:Key="SliderTrackFillError" ResourceKey="SystemFillColorCriticalBrush" />
+      <StaticResource x:Key="SliderTrackFillError" ResourceKey="SystemFillColorCritical" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="SliderContainerBackground" ResourceKey="SystemControlTransparentBrush" />
-      <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
-      <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentFillColorTertiaryBrush" />
-      <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentFillColorDisabledBrush" />
-      <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
-      <StaticResource x:Key="SliderTrackValueFill" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
-      <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="AccentFillColorTertiaryBrush" />
-      <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
-      <StaticResource x:Key="SliderTickBarFill" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
-      <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="ControlFillColorInputActiveBrush" />
-      <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
+      <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="SliderThumbBackground" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="AccentFillColorSecondary" />
+      <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="AccentFillColorDisabled" />
+      <StaticResource x:Key="SliderTrackFill" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
+      <StaticResource x:Key="SliderTrackValueFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="AccentFillColorSecondary" />
+      <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="AccentFillColorDisabled" />
+      <StaticResource x:Key="SliderTickBarFill" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
+      <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="ControlFillColorInputActive" />
+      <StaticResource x:Key="SliderOuterThumbBackground" ResourceKey="ControlSolidFillColorDefault" />
       <StaticResource x:Key="SliderThumbBorderBrush" ResourceKey="ControlElevationBorderBrush" />
-      <StaticResource x:Key="SliderTrackFillError" ResourceKey="SystemFillColorCriticalBrush" />
+      <StaticResource x:Key="SliderTrackFillError" ResourceKey="SystemFillColorCritical" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

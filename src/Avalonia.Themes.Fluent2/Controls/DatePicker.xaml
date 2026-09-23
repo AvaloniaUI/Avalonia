@@ -30,62 +30,62 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefault" />
       <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
       <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
-      <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
-      <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
-      <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-      <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefault" />
+      <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondary" />
+      <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiary" />
+      <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabled" />
+      <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefault" />
 
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrush" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimary" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefault" />
       <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
       <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
-      <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
-      <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
-      <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-      <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="ControlFillColorDefault" />
+      <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondary" />
+      <StaticResource x:Key="DatePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiary" />
+      <StaticResource x:Key="DatePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabled" />
+      <StaticResource x:Key="DatePickerButtonForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefault" />
 
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrush" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="TextFillColorPrimary" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -278,7 +278,7 @@
               </Panel>
 
               <Border Name="HighlightRect" IsHitTestVisible="False" ZIndex="-1"
-                      Background="{DynamicResource AccentFillColorDefaultBrush}"
+                      Background="{DynamicResource AccentFillColorDefault}"
                       CornerRadius="{DynamicResource ControlCornerRadius}"
                       Margin="4,2,4,2"
                       Grid.Column="0" VerticalAlignment="Center"

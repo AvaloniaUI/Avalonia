@@ -3,18 +3,18 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimary" />
       <LinearGradientBrush x:Key="NavigationBarShadowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
         <GradientStop Color="#0C000000" Offset="0" />
         <GradientStop Color="#00000000" Offset="1" />
       </LinearGradientBrush>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="NavigationBarBackground" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="NavigationBarBorderBrush" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="NavigationBarForeground" ResourceKey="TextFillColorPrimary" />
       <LinearGradientBrush x:Key="NavigationBarShadowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
         <GradientStop Color="#0C000000" Offset="0" />
         <GradientStop Color="#00000000" Offset="1" />
@@ -115,16 +115,16 @@
                   <Setter Property="CornerRadius" Value="4" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:disabled">
                   <Setter Property="Opacity" Value="0.4" />
                 </Style>
                 <Style Selector="Button#PART_BackButton:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="BorderBrush" Value="{DynamicResource FocusStrokeColorOuterBrush}" />
+                  <Setter Property="BorderBrush" Value="{DynamicResource FocusStrokeColorOuter}" />
                   <Setter Property="BorderThickness" Value="2" />
                   <Setter Property="CornerRadius" Value="4" />
                 </Style>
@@ -136,10 +136,10 @@
                   <Setter Property="CornerRadius" Value="0" />
                 </Style>
                 <Style Selector="Button#PART_OverflowButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
                 </Style>
                 <Style Selector="Button#PART_OverflowButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                  <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}" />
                 </Style>
               </Grid.Styles>
 

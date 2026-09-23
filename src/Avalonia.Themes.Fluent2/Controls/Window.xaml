@@ -5,8 +5,8 @@
   <ControlTheme x:Key="{x:Type Window}" TargetType="Window" BasedOn="{StaticResource DefaultWindowTheme}"/>
 
   <ControlTheme x:Key="DefaultWindowTheme" TargetType="Window">
-    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}"/>
-    <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBase}"/>
+    <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource SolidBackgroundFillColorBase}" />
     <Setter Property="TopLevel.SystemBarColor" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}"/>

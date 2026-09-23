@@ -22,58 +22,58 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TreeViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
-      <StaticResource x:Key="TreeViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TreeViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TreeViewItemBackgroundDisabled" ResourceKey="SubtleFillColorDisabled" />
+      <StaticResource x:Key="TreeViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TreeViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorDisabled" />
+      <StaticResource x:Key="TreeViewItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TreeViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TreeViewItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TreeViewItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TreeViewItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TreeViewItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TreeViewItemBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TreeViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
-      <StaticResource x:Key="TreeViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TreeViewItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TreeViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TreeViewItemBackgroundDisabled" ResourceKey="SubtleFillColorDisabled" />
+      <StaticResource x:Key="TreeViewItemBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TreeViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorDisabled" />
+      <StaticResource x:Key="TreeViewItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TreeViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TreeViewItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TreeViewItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TreeViewItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TreeViewItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TreeViewItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TreeViewItemBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -289,7 +289,7 @@
       <Setter Property="RenderTransform" Value="scaleY(1)" />
     </Style>
     <Style Selector="^:disabled /template/ Rectangle#SelectionIndicator">
-      <Setter Property="Fill" Value="{DynamicResource TextFillColorDisabledBrush}" />
+      <Setter Property="Fill" Value="{DynamicResource TextFillColorDisabled}" />
     </Style>
 
     <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">

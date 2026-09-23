@@ -37,8 +37,8 @@
   <ControlTheme x:Key="DefaultGroupBoxTheme"
                 TargetType="GroupBox">
     <Setter Property="BorderThickness" Value="{DynamicResource GroupBoxBorderThickness}" />
-    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefault}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefault}" />
     <Setter Property="Padding" Value="{DynamicResource GroupBoxPadding}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
@@ -52,7 +52,7 @@
                               Content="{TemplateBinding Header}"
                               FontSize="{DynamicResource ControlContentThemeFontSize}"
                               FontWeight="SemiBold"
-                              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                              Foreground="{DynamicResource TextFillColorPrimary}"
                               ContentTemplate="{TemplateBinding HeaderTemplate}"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"

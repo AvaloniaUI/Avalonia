@@ -54,23 +54,23 @@
       <StaticResource x:Key="ExpanderHeaderForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ExpanderHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ExpanderHeaderForegroundPressed" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="ExpanderHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="ExpanderHeaderForegroundDisabled" ResourceKey="TextFillColorDisabled" />
       <StaticResource x:Key="ExpanderHeaderBorderBrush" ResourceKey="CardStrokeColorDefault" />
       <StaticResource x:Key="ExpanderHeaderBorderBrushPointerOver" ResourceKey="CardStrokeColorDefault" />
       <StaticResource x:Key="ExpanderHeaderBorderBrushPressed" ResourceKey="CardStrokeColorDefault" />
-      <StaticResource x:Key="ExpanderHeaderBorderBrushDisabled" ResourceKey="CardStrokeColorDefaultBrush" />
-      <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ExpanderChevronBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="ExpanderChevronBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="ExpanderChevronBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrushDisabled" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ExpanderChevronBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="ExpanderChevronBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="ExpanderChevronBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ExpanderChevronForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ExpanderChevronForegroundPressed" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="ExpanderChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ExpanderChevronBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ExpanderChevronBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ExpanderChevronBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
 
       <StaticResource x:Key="ExpanderContentBackground" ResourceKey="CardBackgroundFillColorSecondary" />
       <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="CardStrokeColorDefault" />
@@ -83,23 +83,23 @@
       <StaticResource x:Key="ExpanderHeaderForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ExpanderHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ExpanderHeaderForegroundPressed" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="ExpanderHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="ExpanderHeaderForegroundDisabled" ResourceKey="TextFillColorDisabled" />
       <StaticResource x:Key="ExpanderHeaderBorderBrush" ResourceKey="CardStrokeColorDefault" />
       <StaticResource x:Key="ExpanderHeaderBorderBrushPointerOver" ResourceKey="CardStrokeColorDefault" />
       <StaticResource x:Key="ExpanderHeaderBorderBrushPressed" ResourceKey="CardStrokeColorDefault" />
-      <StaticResource x:Key="ExpanderHeaderBorderBrushDisabled" ResourceKey="CardStrokeColorDefaultBrush" />
-      <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ExpanderChevronBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="ExpanderChevronBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="ExpanderChevronBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderHeaderBorderBrushDisabled" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ExpanderChevronBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="ExpanderChevronBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="ExpanderChevronBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ExpanderChevronForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ExpanderChevronForegroundPressed" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="ExpanderChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ExpanderChevronBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ExpanderChevronBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ExpanderChevronBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ExpanderChevronForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ExpanderChevronBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
 
       <StaticResource x:Key="ExpanderContentBackground" ResourceKey="CardBackgroundFillColorSecondary" />
       <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="CardStrokeColorDefault" />

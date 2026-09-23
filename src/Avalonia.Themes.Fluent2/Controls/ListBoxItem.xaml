@@ -17,26 +17,26 @@
   
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ListBoxItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="ListBoxItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="ListBoxItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="ListBoxItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="ListBoxItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="ListBoxItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="ListBoxItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ListBoxItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
       <StaticResource x:Key="ListBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFillDisabled" ResourceKey="AccentFillColorDisabled" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ListBoxItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="ListBoxItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="ListBoxItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="ListBoxItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <StaticResource x:Key="ListBoxItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="ListBoxItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="ListBoxItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="ListBoxItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
       <StaticResource x:Key="ListBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFillDisabled" ResourceKey="AccentFillColorDisabled" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

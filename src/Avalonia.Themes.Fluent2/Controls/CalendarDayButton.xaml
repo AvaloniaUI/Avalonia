@@ -80,18 +80,18 @@
     <!-- Hover/press are subtle-fill circles in Windows 11. This theme has no hover-fill alias for
          CalendarView (WinUI 2 used a reveal border instead), so Fluent 2 tokens are referenced directly. -->
     <Style Selector="^:pointerover /template/ Border#Root">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
     </Style>
 
     <Style Selector="^:pressed /template/ Border#Root">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}" />
     </Style>
 
     <!-- WinUI calls this OutOfFocus (out of scope). Windows 11 drops the gray backplate and dims the
          text only. CalendarViewOutOfScopeForeground still aliases a legacy WinUI 2 brush in this theme,
          so the Fluent 2 token is referenced directly. -->
     <Style Selector="^:inactive /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiary}" />
     </Style>
 
     <Style Selector="^:selected">
@@ -107,7 +107,7 @@
       <!-- CalendarViewSelectedForeground is not aliased in this theme yet, so the Fluent 2 token
            for accent text is referenced directly. -->
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimary}" />
       </Style>
     </Style>
 
@@ -115,13 +115,13 @@
       <!-- Today is a filled accent circle. There is no CalendarViewTodayBackground alias in this
            theme, so the Fluent 2 accent fill tokens are referenced directly. -->
       <Style Selector="^ /template/ Border#Root">
-        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefault}" />
       </Style>
       <Style Selector="^:pointerover /template/ Border#Root">
-        <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondary}" />
       </Style>
       <Style Selector="^:pressed /template/ Border#Root">
-        <Setter Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorTertiary}" />
       </Style>
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource CalendarViewTodayForeground}" />

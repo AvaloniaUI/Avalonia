@@ -13,7 +13,7 @@
   <ControlTheme x:Key="{x:Type Label}" TargetType="Label" BasedOn="{StaticResource DefaultLabelTheme}"/>
 
   <ControlTheme x:Key="DefaultLabelTheme" TargetType="Label">
-    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}" />
     <Setter Property="Padding" Value="3"/>
     <Setter Property="Template">
       <ControlTemplate>
@@ -35,7 +35,7 @@
     </Style>
 
     <Style Selector="^:disabled">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabled}" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

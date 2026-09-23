@@ -22,12 +22,12 @@
   </Design.PreviewWith>
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="AutoCompleteBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="AutoCompleteBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="AutoCompleteBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="AutoCompleteBoxSuggestionsListBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

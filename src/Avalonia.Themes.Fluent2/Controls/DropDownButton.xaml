@@ -65,7 +65,7 @@
                         Data="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        Foreground="{DynamicResource TextFillColorSecondary}"/>
             </Grid>
           </Border>
         </ControlTemplate>
@@ -85,7 +85,7 @@
       <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
     </Style>
     <Style Selector="^:pointerover /template/ PathIcon#DropDownGlyph">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiary}" />
     </Style>
 
     <!--  Pressed State  -->
@@ -97,7 +97,7 @@
       <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
     </Style>
     <Style Selector="^:pressed /template/ PathIcon#DropDownGlyph">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiary}" />
     </Style>
 
     <!--  Disabled State  -->

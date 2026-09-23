@@ -15,7 +15,7 @@
               <StackPanel
                   Margin="0,14,0,16"
                   Spacing="4"
-                  TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                  TextElement.Foreground="{DynamicResource TextFillColorPrimary}">
                 <TextBlock FontWeight="SemiBold"
                            FontSize="14"
                            Text="{Binding Title}"
@@ -23,7 +23,7 @@
                 <TextBlock
                     MaxHeight="80"
                     FontSize="14"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Foreground="{DynamicResource TextFillColorSecondary}"
                     Text="{Binding Message}"
                     TextWrapping="Wrap" />
               </StackPanel>
@@ -32,7 +32,7 @@
               <TextBlock
                   Margin="0,14,0,14"
                   FontSize="14"
-                  Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                  Foreground="{DynamicResource TextFillColorPrimary}"
                   Text="{Binding}"
                   TextWrapping="Wrap" />
             </DataTemplate>

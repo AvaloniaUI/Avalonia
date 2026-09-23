@@ -136,7 +136,7 @@
         </internal:ResourceSelectorConverter>
       </ResourceDictionary>
     </ControlTheme.Resources>
-    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBase}"/>
     <Setter Property="Template"
             x:DataType="internal:ManagedFileChooserViewModel">
       <ControlTemplate>
@@ -162,7 +162,7 @@
               </ListBox.ItemTemplate>
             </ListBox>
             <DockPanel x:Name="NavBar" DockPanel.Dock="Top" Margin="8,5,8,0" VerticalAlignment="Center">
-              <Rectangle Fill="{DynamicResource DividerStrokeColorDefaultBrush}" Height="1" Margin="0,5,0,0" DockPanel.Dock="Bottom"/>
+              <Rectangle Fill="{DynamicResource DividerStrokeColorDefault}" Height="1" Margin="0,5,0,0" DockPanel.Dock="Bottom"/>
               <DockPanel Margin="4,0">
                 <Button Command="{Binding GoUp}" DockPanel.Dock="Left" Margin="0,0,8,0">
                   <Path Data="M 0 7 L 7 0 L 14 7 M 7 0 L 7 16" Stroke="{CompiledBinding $parent[Button].Foreground}" StrokeThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,1,0,-1"/>
@@ -179,7 +179,7 @@
               </DockPanel>
             </DockPanel>
             <DockPanel Margin="8,0,8,5" DockPanel.Dock="Bottom">
-              <Rectangle Fill="{DynamicResource DividerStrokeColorDefaultBrush}" Height="1" Margin="0,0,0,5" DockPanel.Dock="Top"/>
+              <Rectangle Fill="{DynamicResource DividerStrokeColorDefault}" Height="1" Margin="0,0,0,5" DockPanel.Dock="Top"/>
               <DockPanel Margin="4,0">
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
                   <ComboBox DockPanel.Dock="Right"
@@ -211,7 +211,7 @@
                 </Grid.ColumnDefinitions>
                 <Grid.Styles>
                   <Style Selector="GridSplitter">
-                    <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefault}"/>
                     <Setter Property="Template">
                       <ControlTemplate>
                         <Border VerticalAlignment="Stretch" BorderThickness="0" Background="#01000000">
@@ -221,13 +221,13 @@
                     </Setter>
                   </Style>
                 </Grid.Styles>
-                <TextBlock Grid.Column="1" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{DynamicResource StringManagedFileChooserNameColumn}" />
+                <TextBlock Grid.Column="1" Foreground="{DynamicResource TextFillColorSecondary}" Text="{DynamicResource StringManagedFileChooserNameColumn}" />
                 <GridSplitter Grid.Column="2" />
-                <TextBlock Grid.Column="3" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{DynamicResource StringManagedFileChooserDateModifiedColumn}" />
+                <TextBlock Grid.Column="3" Foreground="{DynamicResource TextFillColorSecondary}" Text="{DynamicResource StringManagedFileChooserDateModifiedColumn}" />
                 <GridSplitter Grid.Column="4" />
-                <TextBlock Grid.Column="5" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{DynamicResource StringManagedFileChooserTypeColumn}" />
+                <TextBlock Grid.Column="5" Foreground="{DynamicResource TextFillColorSecondary}" Text="{DynamicResource StringManagedFileChooserTypeColumn}" />
                 <GridSplitter Grid.Column="6" />
-                <TextBlock Grid.Column="7" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{DynamicResource StringManagedFileChooserSizeColumn}" />
+                <TextBlock Grid.Column="7" Foreground="{DynamicResource TextFillColorSecondary}" Text="{DynamicResource StringManagedFileChooserSizeColumn}" />
                 <GridSplitter Grid.Column="8" />
               </Grid>
               <ListBox x:Name="PART_Files"
@@ -279,8 +279,8 @@
     </Setter>
     <Style Selector="^ /template/ ListBox#QuickLinks">
       <Setter Property="Margin" Value="0"/>
-      <Setter Property="Background" Value="{DynamicResource LayerFillColorDefaultBrush}"/>
-      <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource LayerFillColorDefault}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefault}"/>
       <Setter Property="BorderThickness" Value="0,0,1,0"/>
       <Setter Property="Width" Value="240"/>
       <Setter Property="Padding" Value="0,20"/>
@@ -303,7 +303,7 @@
             <ControlTemplate>
               <Border x:Name="LayoutRoot" CornerRadius="2" Margin="10,0">
                 <Panel>
-                  <Border x:Name="SelectedLine" HorizontalAlignment="Left" Margin="2,6" CornerRadius="0.5" Width="3" Background="{DynamicResource AccentFillColorDefaultBrush}" IsVisible="{TemplateBinding IsSelected}"/>
+                  <Border x:Name="SelectedLine" HorizontalAlignment="Left" Margin="2,6" CornerRadius="0.5" Width="3" Background="{DynamicResource AccentFillColorDefault}" IsVisible="{TemplateBinding IsSelected}"/>
                   <ContentPresenter Name="PART_ContentPresenter"
                               Background="Transparent"
                               BorderBrush="Transparent"
@@ -320,10 +320,10 @@
           </Setter>
 
           <Style Selector="^:pointerover /template/ Border#LayoutRoot">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}"/>
           </Style>
           <Style Selector="^:selected /template/ Border#LayoutRoot">
-            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}"/>
           </Style>
         </ControlTheme>
       </Setter>

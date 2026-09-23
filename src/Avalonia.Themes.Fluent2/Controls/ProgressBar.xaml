@@ -24,14 +24,14 @@
   </Design.PreviewWith>
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefault" />
       <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlStrongStrokeColorDefault" />
-      <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefault" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefault" />
       <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlStrongStrokeColorDefault" />
-      <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefault" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
   <x:Double x:Key="ProgressBarMinHeight">3</x:Double>
@@ -107,7 +107,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsVisible="{TemplateBinding ShowProgressText}">
-              <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+              <TextBlock Foreground="{DynamicResource TextFillColorPrimary}">
                   <TextBlock.Text>
                     <MultiBinding Converter="{StaticResource StringFormatConverter}">
                       <TemplateBinding Property="ProgressTextFormat"/>

@@ -136,7 +136,7 @@
         <Setter Property="Foreground" Value="{DynamicResource ComboBoxItemForegroundSelectedDisabled}" />
       </Style>
       <Style Selector="^:disabled /template/ Rectangle#Pill">
-        <Setter Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+        <Setter Property="Fill" Value="{DynamicResource AccentFillColorDisabled}" />
       </Style>
       <!--  Selected PointerOver state  -->
       <Style Selector="^:pointerover /template/ Border#LayoutRoot">

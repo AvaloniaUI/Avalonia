@@ -57,7 +57,7 @@
               <Border Name="PaneBorder"
                       Background="{TemplateBinding PaneBackground}"
                       BackgroundSizing="InnerBorderEdge"
-                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyout}"
                       BorderThickness="0">
                 <ContentPresenter x:Name="PART_PanePresenter"
                                   Content="{TemplateBinding Pane}"
@@ -147,7 +147,7 @@
               <Border Name="PaneBorder"
                       Background="{TemplateBinding PaneBackground}"
                       BackgroundSizing="InnerBorderEdge"
-                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyout}"
                       BorderThickness="0">
                 <ContentPresenter x:Name="PART_PanePresenter"
                                   Content="{TemplateBinding Pane}"
@@ -235,7 +235,7 @@
               <Border Name="PaneBorder"
                       Background="{TemplateBinding PaneBackground}"
                       BackgroundSizing="InnerBorderEdge"
-                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyout}"
                       BorderThickness="0">
                 <ContentPresenter x:Name="PART_PanePresenter"
                                   Content="{TemplateBinding Pane}"
@@ -326,7 +326,7 @@
               <Border Name="PaneBorder"
                       Background="{TemplateBinding PaneBackground}"
                       BackgroundSizing="InnerBorderEdge"
-                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                      BorderBrush="{DynamicResource SurfaceStrokeColorFlyout}"
                       BorderThickness="0">
                 <ContentPresenter x:Name="PART_PanePresenter"
                                   Content="{TemplateBinding Pane}"

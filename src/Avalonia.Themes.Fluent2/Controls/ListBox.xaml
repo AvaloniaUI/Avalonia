@@ -14,11 +14,11 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ListBoxBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ListBoxBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
@@ -26,9 +26,9 @@
   <Thickness x:Key="ListBoxThemeBorderThickness">0</Thickness>
 
   <ControlTheme x:Key="FluentListViewTheme" TargetType="ListBox">
-    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}" />
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefault}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ListBoxThemeBorderThickness}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
@@ -64,7 +64,7 @@
   <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox" BasedOn="{StaticResource FluentListViewTheme}"/>
 
   <ControlTheme x:Key="FluentListBoxTheme" TargetType="ListBox">
-    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}" />
     <Setter Property="Background" Value="{DynamicResource ListBoxBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ListBoxBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ListBoxThemeBorderThickness}" />

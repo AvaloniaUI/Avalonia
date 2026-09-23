@@ -4,9 +4,9 @@
     <Design.PreviewWith>
       <Border Padding="20">
         <Grid Width="200" Height="80" ColumnDefinitions="*,Auto,*">
-          <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+          <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefault}" />
           <GridSplitter Grid.Column="1" />
-          <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+          <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorDefault}" />
         </Grid>
       </Border>
     </Design.PreviewWith>
@@ -21,7 +21,7 @@
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="PreviewContent">
         <Template>
-          <Rectangle Fill="{DynamicResource AccentFillColorDefaultBrush}" />
+          <Rectangle Fill="{DynamicResource AccentFillColorDefault}" />
         </Template>
       </Setter>
       <Setter Property="Template">
@@ -34,11 +34,11 @@
       </Setter>
 
       <Style Selector="^:pointerover">
-        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
       </Style>
 
       <Style Selector="^:pressed">
-        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
       </Style>
     </ControlTheme>
 </ResourceDictionary>

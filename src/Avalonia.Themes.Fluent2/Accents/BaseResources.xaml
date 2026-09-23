@@ -6,7 +6,7 @@
   <FontFamily x:Key="ContentControlThemeFontFamily">fonts:Inter#Inter, $Default</FontFamily>
   <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
 
-  <sys:TimeSpan x:Key="ControlFastAnimationDuration">00:00:00.167</sys:TimeSpan>  
+  <sys:TimeSpan x:Key="ControlFastAnimationDuration">00:00:00.167</sys:TimeSpan>
   <sys:TimeSpan x:Key="ControlNormalAnimationDuration">00:00:00.250</sys:TimeSpan>
   <sys:TimeSpan x:Key="ControlFastAnimationAfterDuration">00:00:00.168</sys:TimeSpan>
   <sys:TimeSpan x:Key="ControlFasterAnimationDuration">00:00:00.083</sys:TimeSpan>
@@ -64,24 +64,17 @@
     <ResourceDictionary x:Key="Default">
       <SolidColorBrush x:Key="SystemControlBackgroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
       <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="{StaticResource SystemAltHighColor}" />
-      <SolidColorBrush x:Key="SystemControlBackgroundAltMediumHighBrush"
-                       Color="{StaticResource SystemAltMediumHighColor}" />
+      <SolidColorBrush x:Key="SystemControlBackgroundAltMediumHighBrush" Color="{StaticResource SystemAltMediumHighColor}" />
       <SolidColorBrush x:Key="SystemControlBackgroundAltMediumBrush" Color="{StaticResource SystemAltMediumColor}" />
-      <SolidColorBrush x:Key="SystemControlBackgroundAltMediumLowBrush"
-                       Color="{StaticResource SystemAltMediumLowColor}" />
+      <SolidColorBrush x:Key="SystemControlBackgroundAltMediumLowBrush" Color="{StaticResource SystemAltMediumLowColor}" />
       <SolidColorBrush x:Key="SystemControlBackgroundBaseHighBrush" Color="{StaticResource SystemBaseHighColor}" />
       <SolidColorBrush x:Key="SystemControlBackgroundBaseLowBrush" Color="{StaticResource SystemBaseLowColor}" />
       <SolidColorBrush x:Key="SystemControlBackgroundBaseMediumBrush" Color="{StaticResource SystemBaseMediumColor}" />
-      <SolidColorBrush x:Key="SystemControlBackgroundBaseMediumHighBrush"
-                       Color="{StaticResource SystemBaseMediumHighColor}" />
-      <SolidColorBrush x:Key="SystemControlBackgroundBaseMediumLowBrush"
-                       Color="{StaticResource SystemBaseMediumLowColor}" />
-      <SolidColorBrush x:Key="SystemControlBackgroundChromeBlackHighBrush"
-                       Color="{StaticResource SystemChromeBlackHighColor}" />
-      <SolidColorBrush x:Key="SystemControlBackgroundChromeBlackMediumBrush"
-                       Color="{StaticResource SystemChromeBlackMediumColor}" />
-      <SolidColorBrush x:Key="SystemControlBackgroundChromeBlackLowBrush"
-                       Color="{StaticResource SystemChromeBlackLowColor}" />
+      <SolidColorBrush x:Key="SystemControlBackgroundBaseMediumHighBrush" Color="{StaticResource SystemBaseMediumHighColor}" />
+      <SolidColorBrush x:Key="SystemControlBackgroundBaseMediumLowBrush" Color="{StaticResource SystemBaseMediumLowColor}" />
+      <SolidColorBrush x:Key="SystemControlBackgroundChromeBlackHighBrush" Color="{StaticResource SystemChromeBlackHighColor}" />
+      <SolidColorBrush x:Key="SystemControlBackgroundChromeBlackMediumBrush" Color="{StaticResource SystemChromeBlackMediumColor}" />
+      <SolidColorBrush x:Key="SystemControlBackgroundChromeBlackLowBrush" Color="{StaticResource SystemChromeBlackLowColor}" />
       <SolidColorBrush x:Key="SystemControlBackgroundChromeBlackMediumLowBrush"
                        Color="{StaticResource SystemChromeBlackMediumLowColor}" />
       <SolidColorBrush x:Key="SystemControlBackgroundChromeMediumBrush"

@@ -18,60 +18,60 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TextControlForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TextControlBackground" ResourceKey="ControlFillColorDefaultBrush" />
-      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-      <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderFocusedBrush" />
-      <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackgroundBrush" />
-      <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
-      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ControlFillColorInputActiveBrush" />
+      <StaticResource x:Key="TextControlForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TextControlBackground" ResourceKey="ControlFillColorDefault" />
+      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="ControlFillColorSecondary" />
+      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="ControlFillColorDisabled" />
+      <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderBrushFocused" />
+      <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackground" />
+      <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TextControlButtonBorderBrush" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="TextFillColorTertiary" />
+      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ControlFillColorInputActive" />
       <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
       <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
-      <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="TextFillColorSecondary" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TextControlForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TextControlBackground" ResourceKey="ControlFillColorDefaultBrush" />
-      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-      <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderFocusedBrush" />
-      <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackgroundBrush" />
-      <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
-      <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
-      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ControlFillColorInputActiveBrush" />
+      <StaticResource x:Key="TextControlForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TextControlBackground" ResourceKey="ControlFillColorDefault" />
+      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="ControlFillColorSecondary" />
+      <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="ControlFillColorDisabled" />
+      <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderBrushFocused" />
+      <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackground" />
+      <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TextControlButtonBorderBrush" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparent" />
+      <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="TextFillColorTertiary" />
+      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ControlFillColorInputActive" />
       <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
       <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
-      <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="TextFillColorSecondary" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

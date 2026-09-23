@@ -2,86 +2,86 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="TabbedPageTabStripBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
-      <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefault" />
+      <StaticResource x:Key="TabbedPageTabItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TabbedPageBackground" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="TabbedPageTabStripBackground" ResourceKey="SolidBackgroundFillColorTransparent" />
-      <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="TabbedPageTabStripBorderBrush" ResourceKey="DividerStrokeColorDefault" />
+      <StaticResource x:Key="TabbedPageTabItemBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemBackgroundSelectedDisabled" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TabbedPageTabItemForegroundSelectedDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TabbedPageTabItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelected" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TopTabbedPageTabItemForegroundSelectedPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelected" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="TopTabbedPageTabItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
   <Design.PreviewWith>
@@ -208,7 +208,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="IndicatorTemplate">
       <DataTemplate>
-        <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+        <Border Background="{DynamicResource AccentFillColorDefault}"
                 CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                 Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                 Width="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
@@ -399,7 +399,7 @@
     <Style Selector="^[TabStripPlacement=Right]">
       <Setter Property="IndicatorTemplate">
         <DataTemplate>
-          <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+          <Border Background="{DynamicResource AccentFillColorDefault}"
                   CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                   Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                   Height="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
@@ -414,7 +414,7 @@
     <Style Selector="^[TabStripPlacement=Left]">
       <Setter Property="IndicatorTemplate">
         <DataTemplate>
-          <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+          <Border Background="{DynamicResource AccentFillColorDefault}"
                   CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                   Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                   Height="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
@@ -429,7 +429,7 @@
 
     <!-- Focus visible -->
     <Style Selector="^:focus-visible /template/ Border#PART_LayoutRoot">
-      <Setter Property="BorderBrush" Value="{DynamicResource FocusStrokeColorOuterBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource FocusStrokeColorOuter}" />
       <Setter Property="BorderThickness" Value="2" />
     </Style>
   </ControlTheme>

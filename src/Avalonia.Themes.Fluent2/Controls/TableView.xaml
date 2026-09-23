@@ -16,14 +16,14 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="TableViewForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TableViewBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="TableViewBackground" ResourceKey="ControlFillColorDefault" />
       <StaticResource x:Key="TableViewBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
       <StaticResource x:Key="TableViewBorderThickness" ResourceKey="ListBoxThemeBorderThickness" />
       <StaticResource x:Key="TableViewHeaderBackground" ResourceKey="ControlFillColorSecondary" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="TableViewForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-      <StaticResource x:Key="TableViewBackground" ResourceKey="ControlFillColorDefaultBrush" />
+      <StaticResource x:Key="TableViewBackground" ResourceKey="ControlFillColorDefault" />
       <StaticResource x:Key="TableViewBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
       <StaticResource x:Key="TableViewBorderThickness" ResourceKey="ListBoxThemeBorderThickness" />
       <StaticResource x:Key="TableViewHeaderBackground" ResourceKey="ControlFillColorSecondary" />

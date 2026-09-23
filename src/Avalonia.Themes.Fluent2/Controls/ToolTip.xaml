@@ -19,14 +19,14 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ToolTipForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -41,7 +41,7 @@
 
   <ControlTheme x:Key="DefaultToolTipTheme" TargetType="ToolTip">
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
-    <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefault}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="BorderBrush" Value="{DynamicResource ToolTipBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ToolTipThemeBorderThickness}" />

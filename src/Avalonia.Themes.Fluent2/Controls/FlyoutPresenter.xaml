@@ -12,12 +12,12 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

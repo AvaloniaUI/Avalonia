@@ -30,44 +30,44 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefault" />
       <StaticResource x:Key="TimePickerButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
       <StaticResource x:Key="TimePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
-      <StaticResource x:Key="TimePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
-      <StaticResource x:Key="TimePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
-      <StaticResource x:Key="TimePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-      <StaticResource x:Key="TimePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TimePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="TimePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TimePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TimePickerButtonBackground" ResourceKey="ControlFillColorDefault" />
+      <StaticResource x:Key="TimePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondary" />
+      <StaticResource x:Key="TimePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiary" />
+      <StaticResource x:Key="TimePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabled" />
+      <StaticResource x:Key="TimePickerButtonForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TimePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefault" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
+      <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefault" />
       <StaticResource x:Key="TimePickerButtonBorderBrush" ResourceKey="ControlElevationBorderBrush" />
       <StaticResource x:Key="TimePickerButtonBorderBrushPointerOver" ResourceKey="ControlElevationBorderBrush" />
-      <StaticResource x:Key="TimePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
-      <StaticResource x:Key="TimePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
-      <StaticResource x:Key="TimePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
-      <StaticResource x:Key="TimePickerButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TimePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefaultBrush" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="TimePickerButtonBorderBrushPressed" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TimePickerButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefault" />
+      <StaticResource x:Key="TimePickerButtonBackground" ResourceKey="ControlFillColorDefault" />
+      <StaticResource x:Key="TimePickerButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondary" />
+      <StaticResource x:Key="TimePickerButtonBackgroundPressed" ResourceKey="ControlFillColorTertiary" />
+      <StaticResource x:Key="TimePickerButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabled" />
+      <StaticResource x:Key="TimePickerButtonForeground" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TimePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+      <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefault" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -318,7 +318,7 @@
               </Panel>
 
               <Border x:Name="HighlightRect" IsHitTestVisible="False" ZIndex="-1"
-                      Background="{DynamicResource AccentFillColorDefaultBrush}"
+                      Background="{DynamicResource AccentFillColorDefault}"
                       CornerRadius="{DynamicResource ControlCornerRadius}"
                       Margin="4,2,4,2"
                       Grid.Column="0"

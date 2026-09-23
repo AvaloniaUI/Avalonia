@@ -37,14 +37,14 @@
   </Design.PreviewWith>
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
-      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
-      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
-      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
+      <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -262,7 +262,7 @@
     </Style>
 
     <Style Selector="^:error /template/ Border#BorderElement">
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCritical}" />
     </Style>
 
     <Style Selector="^.fluent2-compact /template/ Button#PopupIndicator">

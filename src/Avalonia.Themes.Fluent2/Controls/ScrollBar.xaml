@@ -3,56 +3,56 @@
                     x:ClassModifier="internal">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ScrollBarBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarForeground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarButtonArrowForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="ScrollBarButtonArrowForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
-      <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
-      <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ScrollBarBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarBackgroundPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarForeground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="ScrollBarButtonBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="ScrollBarButtonArrowForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="ScrollBarButtonArrowForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="ControlStrongFillColorDisabled" />
+      <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
+      <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ScrollBarBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarForeground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
-      <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarButtonBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarButtonArrowForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="ScrollBarButtonArrowForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
-      <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlStrongFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlStrongFillColorDisabledBrush" />
-      <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="ScrollBarBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarBackgroundPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarForeground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+      <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="ScrollBarButtonBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBorderBrushPressed" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="ScrollBarButtonArrowForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="ScrollBarButtonArrowForegroundPressed" ResourceKey="TextFillColorSecondary" />
+      <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="ControlStrongFillColorDisabled" />
+      <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlStrongFillColorDefault" />
+      <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
+      <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefault" />
       <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlStrongFillColorDefault" />
-      <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

@@ -29,22 +29,22 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
-      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="DrawerPageDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefault" />
+      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="DrawerPageDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefault" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefaultBrush" />
-      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-      <StaticResource x:Key="DrawerPageDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="DrawerPageContentBackground" ResourceKey="LayerFillColorDefault" />
+      <StaticResource x:Key="DrawerPageContentGridBorderBrush" ResourceKey="CardStrokeColorDefault" />
+      <StaticResource x:Key="DrawerPageExpandedPaneBackground" ResourceKey="SubtleFillColorTransparent" />
+      <StaticResource x:Key="DrawerPageDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefault" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
   <ControlTheme x:Key="Fluent2DrawerPaneToggleButton" TargetType="ToggleButton">
-    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparent}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinWidth" Value="{DynamicResource PaneToggleButtonWidth}" />
@@ -70,19 +70,19 @@
     </Setter>
 
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondary}" />
     </Style>
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiary}" />
     </Style>
     <Style Selector="^:pressed">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondary}" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+      <Setter Property="Background" Value="{DynamicResource ControlFillColorDisabled}" />
     </Style>
     <Style Selector="^:disabled">
-      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabled}" />
     </Style>
   </ControlTheme>
 
@@ -93,7 +93,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource DrawerPageContentGridBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource DrawerPageContentGridBorderThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource DrawerPageContentGridCornerRadius}" />
-    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}" />
     <Setter Property="DrawerBackground" Value="{DynamicResource DrawerPageExpandedPaneBackground}" />
     <Setter Property="BackdropBrush" Value="Transparent" />
     <Setter Property="Template">

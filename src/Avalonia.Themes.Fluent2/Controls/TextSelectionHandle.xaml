@@ -17,10 +17,10 @@
   <DrawingImage x:Key="TextSelectionHandleDrawing">
     <DrawingImage.Drawing>
       <GeometryDrawing Geometry="{DynamicResource TextSelectionHandlePath}"
-                       Brush="{DynamicResource AccentFillColorDefaultBrush}"
+                       Brush="{DynamicResource AccentFillColorDefault}"
                        >
         <GeometryDrawing.Pen>
-          <Pen Thickness="0.5" Brush="{DynamicResource ControlStrokeColorDefaultBrush}" LineJoin="Round"/>
+          <Pen Thickness="0.5" Brush="{DynamicResource ControlStrokeColorDefault}" LineJoin="Round"/>
         </GeometryDrawing.Pen>
       </GeometryDrawing>
     </DrawingImage.Drawing>
@@ -29,10 +29,10 @@
   <DrawingImage x:Key="TextCaretHandleDrawing">
     <DrawingImage.Drawing>
       <GeometryDrawing Geometry="{DynamicResource TextCaretHandlePath}"
-                       Brush="{DynamicResource AccentFillColorDefaultBrush}"
+                       Brush="{DynamicResource AccentFillColorDefault}"
                        >
         <GeometryDrawing.Pen>
-          <Pen Thickness="0.5" Brush="{DynamicResource ControlStrokeColorDefaultBrush}" LineJoin="Round"/>
+          <Pen Thickness="0.5" Brush="{DynamicResource ControlStrokeColorDefault}" LineJoin="Round"/>
         </GeometryDrawing.Pen>
       </GeometryDrawing>
     </DrawingImage.Drawing>
@@ -73,7 +73,7 @@
   <ControlTheme x:Key="{x:Type TextSelectionHandle}" TargetType="TextSelectionHandle" BasedOn="{StaticResource DefaultTextSelectionHandle}"/>
   <ControlTheme x:Key="DefaultTextSelectionHandle" TargetType="TextSelectionHandle">
     <Setter Property="Background"
-            Value="{DynamicResource AccentFillColorDefaultBrush}" />
+            Value="{DynamicResource AccentFillColorDefault}" />
     <Setter Property="HorizontalAlignment"
             Value="Center" />
     <Setter Property="Template">

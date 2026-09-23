@@ -136,7 +136,7 @@
     </Style>
 
     <Style Selector="^:error /template/ ButtonSpinner#PART_Spinner">
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCritical}" />
     </Style>
   </ControlTheme>
 
