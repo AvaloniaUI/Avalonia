@@ -12,7 +12,6 @@ using Nuke.Common.Tools.DotNet;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Serilog.Log;
-using MicroCom.CodeGenerator;
 using NuGet.Configuration;
 using NuGet.Versioning;
 using Nuke.Common.CI.AzurePipelines;
@@ -65,7 +64,7 @@ partial class Build : NukeBuild
         Information("IsLocalBuild: " + Parameters.IsLocalBuild);
         Information("IsRunningOnUnix: " + Parameters.IsRunningOnUnix);
         Information("IsRunningOnWindows: " + Parameters.IsRunningOnWindows);
-        Information("IsRunningOnAzure:" + Parameters.IsRunningOnAzure);
+        Information("IsRunningOnGitHubActions: " + Parameters.IsRunningOnGitHubActions);
         Information("IsPullRequest: " + Parameters.IsPullRequest);
         Information("IsMainRepo: " + Parameters.IsMainRepo);
         Information("IsMasterBranch: " + Parameters.IsMasterBranch);
@@ -91,7 +90,7 @@ partial class Build : NukeBuild
 
     DotNetConfigHelper ApplySettingCore(DotNetConfigHelper c)
     {
-        if (Parameters.IsRunningOnAzure)
+        if (Parameters.IsRunningOnGitHubActions)
             c.AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64"));
         c.AddProperty("PackageVersion", Parameters.Version)
             .SetConfiguration(Parameters.Configuration)
@@ -151,37 +150,21 @@ partial class Build : NukeBuild
 
     Target CompileNative => _ => _
         .DependsOn(Clean)
-        .DependsOn(GenerateCppHeaders)
         .OnlyWhenStatic(() => EnvironmentInfo.IsOsx)
         .Executes(() =>
         {
-            var project = $"{RootDirectory}/native/Avalonia.Native/src/OSX/Avalonia.Native.OSX.xcodeproj/";
-            var args = $"-project {project} -configuration {Parameters.Configuration} CONFIGURATION_BUILD_DIR={RootDirectory}/Build/Products/Release";
-            ProcessTasks.StartProcess("xcodebuild", args).AssertZeroExitCode();
+            DotNetBuild(c => ApplySetting(c)
+                .SetProjectFile(RootDirectory / "native" / "Avalonia.Native" / "Avalonia.Native.macOS.csproj")
+                .AddProperty("BuildAvaloniaNativeXcodeProject", "True"));
         });
 
     Target Compile => _ => _
-        .DependsOn(Clean, CompileNative, InitDnx)
+        .DependsOn(Clean, InitDnx)
         .Executes(() =>
         {
             DotNetBuild(c => ApplySetting(c)
                 .SetProjectFile(Parameters.MSBuildSolution)
             );
-        });
-
-    Target OutputVersion => _ => _
-        .Requires(() => VersionOutputDir)
-        .Executes(() =>
-        {
-            var versionFile = Path.Combine(Parameters.VersionOutputDir, "version.txt");
-            var currentBuildVersion = Parameters.Version;
-            Console.WriteLine("Version is: " + currentBuildVersion);
-            File.WriteAllText(versionFile, currentBuildVersion);
-
-            var prIdFile = Path.Combine(Parameters.VersionOutputDir, "prId.txt");
-            var prId = Environment.GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER");
-            Console.WriteLine("PR Number  is: " + prId);
-            File.WriteAllText(prIdFile, prId);
         });
 
     void RunCoreTest(string projectName)
@@ -282,6 +265,7 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Markup.UnitTests");
             RunCoreTest("Avalonia.Markup.Xaml.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
+            RunCoreTest("Avalonia.Themes.UnitTests");
             RunCoreTest("Avalonia.Headless.NUnit.PerAssembly.UnitTests");
             RunCoreTest("Avalonia.Headless.NUnit.PerTest.UnitTests");
             RunCoreTest("Avalonia.Headless.XUnit.PerAssembly.UnitTests");
@@ -317,15 +301,6 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.LeakTests");
         });
 
-    Target ZipFiles => _ => _
-        // CreateSbom embeds the SBOM into each .nupkg in NugetRoot, so it must run before we zip
-        // that directory - otherwise the zipped NuGet artifacts would omit the embedded SBOM.
-        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package, CreateSbom)
-        .Executes(() =>
-        {
-            var data = Parameters;
-            Zip(data.ZipNuGetArtifacts, data.NugetRoot);
-        });
 
     Target CreateIntermediateNugetPackages => _ => _
         .DependsOn(Compile)
@@ -352,7 +327,7 @@ partial class Build : NukeBuild
                 Parameters.NugetRoot / $"Avalonia.{Parameters.Version}.snupkg");
         });
 
-    Target CreateSbom => _ => _
+    Target EmbedSbom => _ => _
         .DependsOn(CreateNugetPackages)
         .Executes(() =>
         {
@@ -430,19 +405,17 @@ partial class Build : NukeBuild
         .DependsOn(CreateNugetPackages)
         .DependsOn(ValidateApiDiff);
 
-    Target CiAzureLinux => _ => _
+    Target CiLinux => _ => _
         .DependsOn(RunTests);
 
-    Target CiAzureOSX => _ => _
+    Target CiMacOS => _ => _
         .DependsOn(Package)
-        .DependsOn(ZipFiles)
-        .DependsOn(CreateSbom);
+        .DependsOn(EmbedSbom);
 
-    Target CiAzureWindows => _ => _
+    Target CiWindows => _ => _
         .DependsOn(Package)
         .DependsOn(VerifyXamlCompilation)
-        .DependsOn(ZipFiles)
-        .DependsOn(CreateSbom);
+        .DependsOn(EmbedSbom);
 
     Target BuildToNuGetCache => _ => _
         .DependsOn(CreateNugetPackages)
@@ -477,14 +450,6 @@ partial class Build : NukeBuild
 }");
             }
         });
-
-    Target GenerateCppHeaders => _ => _.Executes(() =>
-    {
-        var file = MicroComCodeGenerator.Parse(
-            File.ReadAllText(RootDirectory / "src" / "Avalonia.Native" / "avn.idl"));
-        File.WriteAllText(RootDirectory / "native" / "Avalonia.Native" / "inc" / "avalonia-native.h",
-            file.GenerateCppHeader());
-    });
 
     Target GenerateUnicodeData => _ => _.Executes(() =>
     {

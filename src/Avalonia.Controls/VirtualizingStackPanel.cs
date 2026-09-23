@@ -700,8 +700,19 @@ namespace Avalonia.Controls
                 // hence the width extent should be correct now, and we can try to scroll again.
                 scrollToElement.BringIntoView();
 
-                _scrollToElement = null;
-                _scrollToIndex = -1;
+                // A layout pass normally adopts the temporary element into the realized range and
+                // clears _scrollToElement. If it cannot (for example, because the containing pane
+                // has no usable width), the element remains an internal child. Recycle only the
+                // temporary element created by this call so it cannot remain visible and unindexed.
+                if (ReferenceEquals(_scrollToElement, scrollToElement))
+                {
+                    var scrollToIndex = _scrollToIndex;
+                    _scrollToElement = null;
+                    _scrollToIndex = -1;
+                    RecycleElement(scrollToElement, scrollToIndex);
+                    return null;
+                }
+
                 return scrollToElement;
             }
 

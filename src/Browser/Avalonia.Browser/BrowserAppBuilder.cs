@@ -29,9 +29,12 @@ public record BrowserPlatformOptions
     };
 
     /// <summary>
-    /// Defines paths where avalonia modules and service locator should be resolved.
-    /// If null, default path resolved depending on the backend (browser or blazor) is used.
+    /// Defines paths where avalonia modules should be resolved for JSHost.ImportAsync.
+    /// If null, default path resolved depending on the backend is used.
     /// </summary>
+    /// <remarks>
+    /// Default implementation resolves assets relative to the dotnet.runtime.js.
+    /// </remarks>
     public Func<string, string>? FrameworkAssetPathResolver { get; set; }
 
     /// <summary>
@@ -139,7 +142,7 @@ public static class BrowserAppBuilder
     internal static async Task<AppBuilder> PreSetupBrowser(AppBuilder builder, BrowserPlatformOptions? options)
     {
         options ??= AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
-        options.FrameworkAssetPathResolver ??= fileName => $"./{fileName}";
+        options.FrameworkAssetPathResolver ??= fileName => $"../{AvaloniaModule.AssetsBasePath}/{fileName}";
 
         AvaloniaLocator.CurrentMutable.Bind<BrowserPlatformOptions>().ToConstant(options);
 

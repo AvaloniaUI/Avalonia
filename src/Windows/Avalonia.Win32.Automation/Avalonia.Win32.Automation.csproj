@@ -15,5 +15,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Avalonia.Win32, PublicKey=$(AvaloniaPublicKey)"/>
+    <InternalsVisibleTo Include="Avalonia.IntegrationTests.Win32, PublicKey=$(AvaloniaPublicKey)"/>
   </ItemGroup>
 </Project>

@@ -18,6 +18,13 @@ public interface IExternalObjectsRenderInterfaceContextFeature
     /// </summary>
     IReadOnlyList<string> SupportedSemaphoreTypes { get; }
 
+    /// <summary>
+    /// Returns the DRM format/modifier pairs the current GPU backend can import as
+    /// <see cref="KnownPlatformGraphicsExternalImageHandleTypes.DmaBufFileDescriptor"/> images,
+    /// or null when the backend cannot enumerate them.
+    /// </summary>
+    IReadOnlyList<PlatformGraphicsDrmFormat>? SupportedDmaBufFormats => null;
+
     IPlatformRenderInterfaceImportedImage ImportImage(IPlatformHandle handle,
         PlatformGraphicsExternalImageProperties properties);
 
