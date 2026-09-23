@@ -13,15 +13,15 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
+      <StaticResource x:Key="FlyoutThemeBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="FlyoutThemeBorderThickness">1</Thickness>
   <Thickness x:Key="FlyoutContentPadding">16,15,16,17</Thickness>
   <ControlTheme x:Key="{x:Type FlyoutPresenter}" TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterTheme}"/>
 
@@ -30,8 +30,8 @@
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Background" Value="{DynamicResource FlyoutPresenterBackground}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
-    <Setter Property="BorderBrush" Value="{DynamicResource FlyoutBorderThemeBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource FlyoutBorderThemeThickness}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FlyoutThemeBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource FlyoutThemeBorderThickness}" />
     <Setter Property="Padding" Value="{DynamicResource FlyoutContentPadding}" />
     <Setter Property="MinWidth" Value="{DynamicResource FlyoutThemeMinWidth}" />
     <Setter Property="MaxWidth" Value="{DynamicResource FlyoutThemeMaxWidth}" />

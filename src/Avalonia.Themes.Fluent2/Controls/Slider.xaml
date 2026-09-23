@@ -87,7 +87,7 @@
 
   <x:Double x:Key="SliderOutsideTickBarThemeHeight">4</x:Double>
   <x:Double x:Key="SliderTrackThemeHeight">4</x:Double>
-  <Thickness x:Key="SliderBorderThemeThickness">0</Thickness>
+  <Thickness x:Key="SliderThemeBorderThickness">0</Thickness>
   <Thickness x:Key="SliderTopHeaderMargin">0,0,0,4</Thickness>
   <GridLength x:Key="SliderPreContentMargin">14</GridLength>
   <GridLength x:Key="SliderPostContentMargin">14</GridLength>
@@ -174,7 +174,7 @@
 
   <ControlTheme x:Key="DefaultSliderTheme" TargetType="Slider">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource SliderThemeBorderThickness}" />
     <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SliderThumbBorderBrush}" />
     <Style Selector="^:horizontal">

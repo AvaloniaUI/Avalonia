@@ -26,12 +26,9 @@
       <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
       <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderFocusedBrush" />
       <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
-      <x:Double x:Key="TextControlPlaceholderOpacity">1</x:Double>
       <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver"
-                      ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundDisabled"
-                      ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackgroundBrush" />
       <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
@@ -40,15 +37,13 @@
       <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlButtonForegroundPressed"
-                      ResourceKey="TextFillColorTertiaryBrush" />
+      <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
       <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ControlFillColorInputActiveBrush" />
       <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
       <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
       <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundFocused"
-                      ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="TextFillColorSecondaryBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="TextControlForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -60,10 +55,8 @@
       <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="TextControlElevationBorderFocusedBrush" />
       <StaticResource x:Key="TextControlBorderBrushDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
       <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver"
-                      ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundDisabled"
-                      ResourceKey="TextFillColorDisabledBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackgroundBrush" />
       <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
@@ -72,15 +65,13 @@
       <StaticResource x:Key="TextControlButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="TextControlButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
       <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="TextControlButtonForegroundPressed"
-                      ResourceKey="TextFillColorTertiaryBrush" />
+      <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
       <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="ControlFillColorInputActiveBrush" />
       <StaticResource x:Key="TextControlBorderBrush" ResourceKey="TextControlElevationBorderBrush" />
       <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="TextControlElevationBorderBrush" />
       <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
-      <StaticResource x:Key="TextControlPlaceholderForegroundFocused"
-                      ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="TextFillColorSecondaryBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -89,10 +80,11 @@
   <Thickness x:Key="TextBoxInnerLeftButtonMargin">4,4,0,4</Thickness>
   <x:Double x:Key="TextBoxIconSize">10</x:Double>
   <x:Double x:Key="TextBoxButtonWidth">30</x:Double>
+  <x:Double x:Key="TextControlPlaceholderOpacity">1</x:Double>
 
-  <StreamGeometry x:Key="TextBoxClearButtonData">m4.21 4.387.083-.094a1 1 0 0 1 1.32-.083l.094.083L12 10.585l6.293-6.292a1 1 0 1 1 1.414 1.414L13.415 12l6.292 6.293a1 1 0 0 1 .083 1.32l-.083.094a1 1 0 0 1-1.32.083l-.094-.083L12 13.415l-6.293 6.292a1 1 0 0 1-1.414-1.414L10.585 12 4.293 5.707a1 1 0 0 1-.083-1.32l.083-.094-.083.094Z</StreamGeometry>
-  <StreamGeometry x:Key="PasswordBoxRevealButtonData">M12 9.005a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM12 5.5c4.613 0 8.596 3.15 9.701 7.564a.75.75 0 1 1-1.455.365 8.503 8.503 0 0 0-16.493.004.75.75 0 0 1-1.455-.363A10.003 10.003 0 0 1 12 5.5Z</StreamGeometry>
-  <StreamGeometry x:Key="PasswordBoxHideButtonData">M2.22 2.22a.75.75 0 0 0-.073.976l.073.084 4.034 4.035a9.986 9.986 0 0 0-3.955 5.75.75.75 0 0 0 1.455.364 8.49 8.49 0 0 1 3.58-5.034l1.81 1.81A4 4 0 0 0 14.8 15.86l5.919 5.92a.75.75 0 0 0 1.133-.977l-.073-.084-6.113-6.114.001-.002-6.95-6.946.002-.002-1.133-1.13L3.28 2.22a.75.75 0 0 0-1.06 0ZM12 5.5c-1 0-1.97.148-2.889.425l1.237 1.236a8.503 8.503 0 0 1 9.899 6.272.75.75 0 0 0 1.455-.363A10.003 10.003 0 0 0 12 5.5Zm.195 3.51 3.801 3.8a4.003 4.003 0 0 0-3.801-3.8Z</StreamGeometry>
+  <StreamGeometry x:Key="TextBoxClearButtonIcon">m4.21 4.387.083-.094a1 1 0 0 1 1.32-.083l.094.083L12 10.585l6.293-6.292a1 1 0 1 1 1.414 1.414L13.415 12l6.292 6.293a1 1 0 0 1 .083 1.32l-.083.094a1 1 0 0 1-1.32.083l-.094-.083L12 13.415l-6.293 6.292a1 1 0 0 1-1.414-1.414L10.585 12 4.293 5.707a1 1 0 0 1-.083-1.32l.083-.094-.083.094Z</StreamGeometry>
+  <StreamGeometry x:Key="PasswordBoxRevealButtonIcon">M12 9.005a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM12 5.5c4.613 0 8.596 3.15 9.701 7.564a.75.75 0 1 1-1.455.365 8.503 8.503 0 0 0-16.493.004.75.75 0 0 1-1.455-.363A10.003 10.003 0 0 1 12 5.5Z</StreamGeometry>
+  <StreamGeometry x:Key="PasswordBoxHideButtonIcon">M2.22 2.22a.75.75 0 0 0-.073.976l.073.084 4.034 4.035a9.986 9.986 0 0 0-3.955 5.75.75.75 0 0 0 1.455.364 8.49 8.49 0 0 1 3.58-5.034l1.81 1.81A4 4 0 0 0 14.8 15.86l5.919 5.92a.75.75 0 0 0 1.133-.977l-.073-.084-6.113-6.114.001-.002-6.95-6.946.002-.002-1.133-1.13L3.28 2.22a.75.75 0 0 0-1.06 0ZM12 5.5c-1 0-1.97.148-2.889.425l1.237 1.236a8.503 8.503 0 0 1 9.899 6.272.75.75 0 0 0 1.455-.363A10.003 10.003 0 0 0 12 5.5Zm.195 3.51 3.801 3.8a4.003 4.003 0 0 0-3.801-3.8Z</StreamGeometry>
 
   <MenuFlyout x:Key="DefaultTextBoxContextFlyout" ShowMode="{OnFormFactor Desktop=Standard, Mobile=Transient}">
     <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" InputGesture="{x:Static TextBox.CutGesture}" />
@@ -174,7 +166,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
     <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlThemeBorderThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
@@ -310,7 +302,7 @@
       <Style Selector="^ /template/ Border#PART_BorderElement">
         <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}"/>
-        <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource TextControlThemeBorderThicknessFocused}" />
       </Style>
     </Style>
 
@@ -334,11 +326,11 @@
                         IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}"
                         ClipToBounds="True">
             <Panel>
-              <PathIcon Data="{StaticResource PasswordBoxRevealButtonData}"
+              <PathIcon Data="{StaticResource PasswordBoxRevealButtonIcon}"
                         Height="{StaticResource TextBoxIconSize}"
                         Width="{StaticResource TextBoxIconSize}"
                         IsVisible="{Binding !$parent[ToggleButton].IsChecked}"/>
-              <PathIcon Data="{StaticResource PasswordBoxHideButtonData}"
+              <PathIcon Data="{StaticResource PasswordBoxHideButtonIcon}"
                         Height="{StaticResource TextBoxIconSize}"
                         Width="{StaticResource TextBoxIconSize}"
                         IsVisible="{Binding $parent[ToggleButton].IsChecked}"/>
@@ -354,7 +346,7 @@
           <Button Theme="{StaticResource FluentTextBoxButton}"
                   Command="{Binding $parent[TextBox].Clear}"
                   ClipToBounds="True">
-            <PathIcon Data="{StaticResource TextBoxClearButtonData}"
+            <PathIcon Data="{StaticResource TextBoxClearButtonIcon}"
                       Height="{StaticResource TextBoxIconSize}"
                       Width="{StaticResource TextBoxIconSize}"/>
           </Button>

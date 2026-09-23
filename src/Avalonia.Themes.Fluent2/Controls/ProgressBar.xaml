@@ -38,7 +38,7 @@
   <x:Double x:Key="ProgressBarTrackHeight">1</x:Double>
   <CornerRadius x:Key="ProgressBarCornerRadius">1.5</CornerRadius>
   <CornerRadius x:Key="ProgressBarTrackCornerRadius">0.5</CornerRadius>
-      <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
+      <Thickness x:Key="ProgressBarThemeBorderThickness">0</Thickness>
 
   <converters:StringFormatConverter x:Key="StringFormatConverter"/>
 
@@ -47,7 +47,7 @@
   <ControlTheme x:Key="DefaultProgressBarTheme" TargetType="ProgressBar">
     <Setter Property="Foreground" Value="{DynamicResource ProgressBarForeground}" />
     <Setter Property="Background" Value="{DynamicResource ProgressBarBackground}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarThemeBorderThickness}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ProgressBarBorderBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ProgressBarCornerRadius}" />
     <Setter Property="MinHeight" Value="{DynamicResource ProgressBarMinHeight}" />

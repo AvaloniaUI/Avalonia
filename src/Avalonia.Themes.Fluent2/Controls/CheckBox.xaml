@@ -169,7 +169,7 @@
   <x:Double x:Key="CheckBoxMinWidth">0</x:Double>
   <x:Double x:Key="CheckBoxSize">20</x:Double>
   <x:Double x:Key="CheckBoxGlyphSize">12</x:Double>
-  <Thickness x:Key="CheckBoxBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="CheckBoxThemeBorderThickness">1</Thickness>
   <Thickness x:Key="CheckBoxContentMargin">8,7,8,0</Thickness>
 
   <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxTheme}"/>
@@ -200,7 +200,7 @@
             <Border x:Name="NormalRectangle"
                     BorderBrush="{DynamicResource CheckBoxCheckBackgroundStrokeUnchecked}"
                     Background="{DynamicResource CheckBoxCheckBackgroundFillUnchecked}"
-                    BorderThickness="{DynamicResource CheckBoxBorderThemeThickness}"
+                    BorderThickness="{DynamicResource CheckBoxThemeBorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     UseLayoutRounding="False"
                     Height="{DynamicResource CheckBoxSize}"

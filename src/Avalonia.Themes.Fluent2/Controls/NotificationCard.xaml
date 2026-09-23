@@ -14,10 +14,10 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="NotificationCardErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
-      <StaticResource x:Key="NotificationCardWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush" />
-      <StaticResource x:Key="NotificationCardSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
-      <StaticResource x:Key="NotificationCardInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardErrorSeverityBackground" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardWarningSeverityBackground" ResourceKey="SystemFillColorCautionBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardSuccessSeverityBackground" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityBackground" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
       <StaticResource x:Key="NotificationCardErrorSeverityIconBackground" ResourceKey="SystemFillColorCriticalBrush" />
       <StaticResource x:Key="NotificationCardWarningSeverityIconBackground" ResourceKey="SystemFillColorCautionBrush" />
       <StaticResource x:Key="NotificationCardSuccessSeverityIconBackground" ResourceKey="SystemFillColorSuccessBrush" />
@@ -33,10 +33,10 @@
       <BoxShadows x:Key="NotificationCardBoxShadows">0 4 8 0 #26000000</BoxShadows>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="NotificationCardErrorSeverityBackgroundBrush" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
-      <StaticResource x:Key="NotificationCardWarningSeverityBackgroundBrush" ResourceKey="SystemFillColorCautionBackgroundBrush" />
-      <StaticResource x:Key="NotificationCardSuccessSeverityBackgroundBrush" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
-      <StaticResource x:Key="NotificationCardInformationalSeverityBackgroundBrush" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardErrorSeverityBackground" ResourceKey="SystemFillColorCriticalBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardWarningSeverityBackground" ResourceKey="SystemFillColorCautionBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardSuccessSeverityBackground" ResourceKey="SystemFillColorSuccessBackgroundBrush" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityBackground" ResourceKey="SystemFillColorAttentionBackgroundBrush" />
       <StaticResource x:Key="NotificationCardErrorSeverityIconBackground" ResourceKey="SystemFillColorCriticalBrush" />
       <StaticResource x:Key="NotificationCardWarningSeverityIconBackground" ResourceKey="SystemFillColorCautionBrush" />
       <StaticResource x:Key="NotificationCardSuccessSeverityIconBackground" ResourceKey="SystemFillColorSuccessBrush" />
@@ -63,11 +63,11 @@
   <x:Double x:Key="NotificationCardIconFontSize">16</x:Double>
   <Thickness x:Key="NotificationCardPanelMargin">0,0,16,0</Thickness>
 
-  <StreamGeometry x:Key="NotificationCardInformationIconGeometry">M12 1.999c5.524 0 10.002 4.478 10.002 10.002 0 5.523-4.478 10.001-10.002 10.001-5.524 0-10.002-4.478-10.002-10.001C1.998 6.477 6.476 1.999 12 1.999Zm-.004 8.25a1 1 0 0 0-.992.885l-.007.116.003 5.502.007.117a1 1 0 0 0 1.987-.002L13 16.75l-.003-5.501-.007-.117a1 1 0 0 0-.994-.882ZM12 6.5a1.251 1.251 0 1 0 0 2.503A1.251 1.251 0 0 0 12 6.5Z</StreamGeometry>
-  <StreamGeometry x:Key="NotificationCardSuccessIconGeometry">M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.22 6.97-4.47 4.47-1.97-1.97a.75.75 0 0 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.06 0l5-5a.75.75 0 1 0-1.06-1.06Z</StreamGeometry>
-  <StreamGeometry x:Key="NotificationCardWarningIconGeometry">M12 2c5.523 0 10 4.478 10 10s-4.477 10-10 10S2 17.522 2 12 6.477 2 12 2Zm.002 13.004a.999.999 0 1 0 0 1.997.999.999 0 0 0 0-1.997ZM12 7a1 1 0 0 0-.993.884L11 8l.002 5.001.007.117a1 1 0 0 0 1.986 0l.007-.117L13 8l-.007-.117A1 1 0 0 0 12 7Z</StreamGeometry>
-  <StreamGeometry x:Key="NotificationCardErrorIconGeometry">M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.53 6.47-.084-.073a.75.75 0 0 0-.882-.007l-.094.08L12 10.939l-2.47-2.47-.084-.072a.75.75 0 0 0-.882-.007l-.094.08-.073.084a.75.75 0 0 0-.007.882l.08.094L10.939 12l-2.47 2.47-.072.084a.75.75 0 0 0-.007.882l.08.094.084.073a.75.75 0 0 0 .882.007l.094-.08L12 13.061l2.47 2.47.084.072a.75.75 0 0 0 .882.007l.094-.08.073-.084a.75.75 0 0 0 .007-.882l-.08-.094L13.061 12l2.47-2.47.072-.084a.75.75 0 0 0 .007-.882l-.08-.094-.084-.073.084.073Z</StreamGeometry>
-  <StreamGeometry x:Key="NotificationCardDismissIconGeometry">m4.21 4.387.083-.094a1 1 0 0 1 1.32-.083l.094.083L12 10.585l6.293-6.292a1 1 0 1 1 1.414 1.414L13.415 12l6.292 6.293a1 1 0 0 1 .083 1.32l-.083.094a1 1 0 0 1-1.32.083l-.094-.083L12 13.415l-6.293 6.292a1 1 0 0 1-1.414-1.414L10.585 12 4.293 5.707a1 1 0 0 1-.083-1.32l.083-.094-.083.094Z</StreamGeometry>
+  <StreamGeometry x:Key="NotificationCardInformationIcon">M12 1.999c5.524 0 10.002 4.478 10.002 10.002 0 5.523-4.478 10.001-10.002 10.001-5.524 0-10.002-4.478-10.002-10.001C1.998 6.477 6.476 1.999 12 1.999Zm-.004 8.25a1 1 0 0 0-.992.885l-.007.116.003 5.502.007.117a1 1 0 0 0 1.987-.002L13 16.75l-.003-5.501-.007-.117a1 1 0 0 0-.994-.882ZM12 6.5a1.251 1.251 0 1 0 0 2.503A1.251 1.251 0 0 0 12 6.5Z</StreamGeometry>
+  <StreamGeometry x:Key="NotificationCardSuccessIcon">M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.22 6.97-4.47 4.47-1.97-1.97a.75.75 0 0 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.06 0l5-5a.75.75 0 1 0-1.06-1.06Z</StreamGeometry>
+  <StreamGeometry x:Key="NotificationCardWarningIcon">M12 2c5.523 0 10 4.478 10 10s-4.477 10-10 10S2 17.522 2 12 6.477 2 12 2Zm.002 13.004a.999.999 0 1 0 0 1.997.999.999 0 0 0 0-1.997ZM12 7a1 1 0 0 0-.993.884L11 8l.002 5.001.007.117a1 1 0 0 0 1.986 0l.007-.117L13 8l-.007-.117A1 1 0 0 0 12 7Z</StreamGeometry>
+  <StreamGeometry x:Key="NotificationCardErrorIcon">M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.53 6.47-.084-.073a.75.75 0 0 0-.882-.007l-.094.08L12 10.939l-2.47-2.47-.084-.072a.75.75 0 0 0-.882-.007l-.094.08-.073.084a.75.75 0 0 0-.007.882l.08.094L10.939 12l-2.47 2.47-.072.084a.75.75 0 0 0-.007.882l.08.094.084.073a.75.75 0 0 0 .882.007l.094-.08L12 13.061l2.47 2.47.084.072a.75.75 0 0 0 .882.007l.094-.08.073-.084a.75.75 0 0 0 .007-.882l-.08-.094L13.061 12l2.47-2.47.072-.084a.75.75 0 0 0 .007-.882l-.08-.094-.084-.073.084.073Z</StreamGeometry>
+  <StreamGeometry x:Key="NotificationCardDismissIcon">m4.21 4.387.083-.094a1 1 0 0 1 1.32-.083l.094.083L12 10.585l6.293-6.292a1 1 0 1 1 1.414 1.414L13.415 12l6.292 6.293a1 1 0 0 1 .083 1.32l-.083.094a1 1 0 0 1-1.32.083l-.094-.083L12 13.415l-6.293 6.292a1 1 0 0 1-1.414-1.414L10.585 12 4.293 5.707a1 1 0 0 1-.083-1.32l.083-.094-.083.094Z</StreamGeometry>
 
   <ControlTheme x:Key="Fluent2NotificationCardCloseButtonTheme" TargetType="Button"  BasedOn="{StaticResource DefaultButtonTheme}">
     <Setter Property="Width" Value="{StaticResource NotificationCardCloseButtonSize}" />
@@ -91,7 +91,7 @@
         <LayoutTransformControl Name="PART_LayoutTransformControl" UseRenderTransform="True">
           <Border BoxShadow="{DynamicResource NotificationCardBoxShadows}">
             <Border x:Name="CardBorder"
-                    Background="{DynamicResource NotificationCardInformationalSeverityBackgroundBrush}"
+                    Background="{DynamicResource NotificationCardInformationalSeverityBackground}"
                     BackgroundSizing="InnerBorderEdge"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
@@ -110,7 +110,7 @@
                         Margin="{StaticResource NotificationCardIconMargin}"
                         VerticalAlignment="Top"
                         Stretch="Uniform"
-                        Data="{StaticResource NotificationCardInformationIconGeometry}"
+                        Data="{StaticResource NotificationCardInformationIcon}"
                         Fill="{DynamicResource NotificationCardInformationalSeverityIconBackground}" />
                   <ContentPresenter Name="PART_ContentPresenter"
                                     Grid.Column="1"
@@ -157,7 +157,7 @@
                     </Button.Resources>
                     <PathIcon Width="{StaticResource NotificationCardCloseButtonIconSize}"
                               Height="{StaticResource NotificationCardCloseButtonIconSize}"
-                              Data="{StaticResource NotificationCardDismissIconGeometry}" />
+                              Data="{StaticResource NotificationCardDismissIcon}" />
                   </Button>
                 </Grid>
               </Border>
@@ -220,34 +220,34 @@
     <!-- Severity states, per NotificationCard_themeresources:
     background = SystemFillColor*BackgroundBrush, badge icon = SystemFillColor*Brush. -->
     <Style Selector="^:information /template/ Border#CardBorder">
-      <Setter Property="Background" Value="{DynamicResource NotificationCardInformationalSeverityBackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource NotificationCardInformationalSeverityBackground}"/>
     </Style>
     <Style Selector="^:information /template/ Path#SeverityIcon">
-      <Setter Property="Data" Value="{StaticResource NotificationCardInformationIconGeometry}"/>
+      <Setter Property="Data" Value="{StaticResource NotificationCardInformationIcon}"/>
       <Setter Property="Fill" Value="{DynamicResource NotificationCardInformationalSeverityIconBackground}"/>
     </Style>
 
     <Style Selector="^:success /template/ Border#CardBorder">
-      <Setter Property="Background" Value="{DynamicResource NotificationCardSuccessSeverityBackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource NotificationCardSuccessSeverityBackground}"/>
     </Style>
     <Style Selector="^:success /template/ Path#SeverityIcon">
-      <Setter Property="Data" Value="{StaticResource NotificationCardSuccessIconGeometry}"/>
+      <Setter Property="Data" Value="{StaticResource NotificationCardSuccessIcon}"/>
       <Setter Property="Fill" Value="{DynamicResource NotificationCardSuccessSeverityIconBackground}"/>
     </Style>
 
     <Style Selector="^:warning /template/ Border#CardBorder">
-      <Setter Property="Background" Value="{DynamicResource NotificationCardWarningSeverityBackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource NotificationCardWarningSeverityBackground}"/>
     </Style>
     <Style Selector="^:warning /template/ Path#SeverityIcon">
-      <Setter Property="Data" Value="{StaticResource NotificationCardWarningIconGeometry}"/>
+      <Setter Property="Data" Value="{StaticResource NotificationCardWarningIcon}"/>
       <Setter Property="Fill" Value="{DynamicResource NotificationCardWarningSeverityIconBackground}"/>
     </Style>
 
     <Style Selector="^:error /template/ Border#CardBorder">
-      <Setter Property="Background" Value="{DynamicResource NotificationCardErrorSeverityBackgroundBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource NotificationCardErrorSeverityBackground}"/>
     </Style>
     <Style Selector="^:error /template/ Path#SeverityIcon">
-      <Setter Property="Data" Value="{StaticResource NotificationCardErrorIconGeometry}"/>
+      <Setter Property="Data" Value="{StaticResource NotificationCardErrorIcon}"/>
       <Setter Property="Fill" Value="{DynamicResource NotificationCardErrorSeverityIconBackground}"/>
     </Style>
   </ControlTheme>

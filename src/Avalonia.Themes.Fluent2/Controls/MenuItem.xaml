@@ -119,7 +119,7 @@
                         Width="{StaticResource MenuItemChevronSize}"
                         Height="{StaticResource MenuItemChevronSize}"
                         Data="{StaticResource MenuItemChevronPathData}"
-                        Foreground="{DynamicResource MenuFlyoutSubItemChevron}"
+                        Foreground="{DynamicResource MenuFlyoutSubItemChevronForeground}"
                         Margin="{DynamicResource MenuFlyoutItemChevronMargin}"
                         VerticalAlignment="Center"
                         Grid.Column="4" />
@@ -134,7 +134,7 @@
             <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                     BackgroundSizing="InnerBorderEdge"
                     BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
-                    BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
+                    BorderThickness="{DynamicResource MenuFlyoutPresenterThemeBorderThickness}"
                     Padding="{DynamicResource MenuFlyoutPresenterThemePadding}"
                     MaxWidth="{DynamicResource FlyoutThemeMaxWidth}"
                     MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
@@ -170,7 +170,7 @@
         <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
       </Style>
       <Style Selector="^ /template/ PathIcon#PART_ChevronPath">
-        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronPointerOver}" />
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronForegroundPointerOver}" />
       </Style>
     </Style>
 
@@ -183,7 +183,7 @@
         <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
       </Style>
       <Style Selector="^ PathIcon#PART_ChevronPath">
-        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronPressed}" />
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronForegroundPressed}" />
       </Style>
     </Style>
 
@@ -198,12 +198,12 @@
         <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
       </Style>
       <Style Selector="^ /template/ PathIcon#PART_ChevronPath">
-        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronDisabled}" />
+        <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronForegroundDisabled}" />
       </Style>
     </Style>
 
     <Style Selector="^:open /template/ PathIcon#PART_ChevronPath">
-      <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronSubMenuOpened}" />
+      <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutSubItemChevronForegroundSubMenuOpened}" />
     </Style>
 
     <Style Selector="^:empty /template/ PathIcon#PART_ChevronPath">

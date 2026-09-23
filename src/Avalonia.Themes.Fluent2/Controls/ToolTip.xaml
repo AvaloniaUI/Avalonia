@@ -34,7 +34,7 @@
   <Thickness x:Key="ToolTipBorderPadding">9,6,9,8</Thickness>
 
   <x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
-  <Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="ToolTipThemeBorderThickness">1</Thickness>
   <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
 
   <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip" BasedOn="{StaticResource DefaultToolTipTheme}"/>
@@ -44,7 +44,7 @@
     <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="BorderBrush" Value="{DynamicResource ToolTipBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource ToolTipBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ToolTipThemeBorderThickness}" />
     <Setter Property="FontSize" Value="{DynamicResource ToolTipContentThemeFontSize}" />
     <Setter Property="Padding" Value="{DynamicResource ToolTipBorderPadding}" />
     <Setter Property="MaxWidth" Value="{DynamicResource ToolTipContentMaxWidth}" />

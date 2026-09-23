@@ -38,7 +38,7 @@
   <ControlTheme x:Key="DefaultContextMenuTheme" TargetType="ContextMenu">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutPresenterBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource MenuFlyoutPresenterThemeBorderThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
     <Setter Property="Focusable" Value="True" />
     <Setter Property="MaxWidth" Value="{DynamicResource FlyoutThemeMaxWidth}" />

@@ -39,7 +39,7 @@
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
     <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlThemeBorderThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="MaxDropDownHeight" Value="{DynamicResource AutoCompleteListMaxHeight}" />
@@ -73,7 +73,7 @@
             <Border Name="PART_SuggestionsContainer"
                     Padding="{DynamicResource AutoCompleteListMargin}"
                     BackgroundSizing="InnerBorderEdge"
-                    BorderThickness="{DynamicResource AutoCompleteListBorderThemeThickness}"
+                    BorderThickness="{DynamicResource AutoCompleteListThemeBorderThickness}"
                     BorderBrush="{DynamicResource AutoCompleteBoxSuggestionsListBorderBrush}"
                     Background="{DynamicResource AutoCompleteBoxSuggestionsListBackground}"
                     CornerRadius="{DynamicResource OverlayCornerRadius}">

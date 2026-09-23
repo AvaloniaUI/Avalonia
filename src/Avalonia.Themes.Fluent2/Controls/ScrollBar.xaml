@@ -25,9 +25,7 @@
       <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarThumbBackgroundColor" ResourceKey="ControlStrongFillColorDefault" />
-      <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="ControlStrongFillColorDefault" />
-      <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
+      <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
       <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
@@ -53,14 +51,12 @@
       <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-      <StaticResource x:Key="ScrollBarThumbBackgroundColor" ResourceKey="ControlStrongFillColorDefault" />
-      <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="ControlStrongFillColorDefault" />
-      <StaticResource x:Key="ScrollBarPanningThumbBackground" ResourceKey="ControlStrongFillColorDefaultBrush" />
+      <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlStrongFillColorDefault" />
       <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <x:Double x:Key="ScrollBarTrackBorderThemeThickness">0</x:Double>
+  <x:Double x:Key="ScrollBarTrackThemeBorderThickness">0</x:Double>
 
   <Design.PreviewWith>
     <Border Padding="20">
@@ -93,13 +89,13 @@
   <TransformOperations x:Key="ScrollBarVerticalThumbCollapsedTransform">scaleX(0.3333)</TransformOperations>
   <TransformOperations x:Key="ScrollBarHorizontalThumbCollapsedTransform">scaleY(0.3333)</TransformOperations>
   
-  <StreamGeometry x:Key="CaretDown">M6.102 8c-1.074 0-1.648 1.265-.94 2.073l5.521 6.31a1.75 1.75 0 0 0 2.634 0l5.522-6.31c.707-.808.133-2.073-.94-2.073H6.101Z</StreamGeometry>
-  <StreamGeometry x:Key="CaretUp">M6.102 16.981c-1.074 0-1.648-1.265-.94-2.073l5.521-6.31a1.75 1.75 0 0 1 2.634 0l5.522 6.31c.707.809.133 2.073-.94 2.073H6.101Z</StreamGeometry>
-  <StreamGeometry x:Key="CaretLeft">M15 17.898c0 1.074-1.265 1.648-2.073.941l-6.31-5.522a1.75 1.75 0 0 1 0-2.634l6.31-5.522c.808-.707 2.073-.133 2.073.941v11.796Z</StreamGeometry>
-  <StreamGeometry x:Key="CaretRight">M9 17.898c0 1.074 1.265 1.648 2.073.941l6.31-5.522a1.75 1.75 0 0 0 0-2.634l-6.31-5.522C10.265 4.454 9 5.028 9 6.102v11.796Z</StreamGeometry>
+  <StreamGeometry x:Key="CaretDownIcon">M6.102 8c-1.074 0-1.648 1.265-.94 2.073l5.521 6.31a1.75 1.75 0 0 0 2.634 0l5.522-6.31c.707-.808.133-2.073-.94-2.073H6.101Z</StreamGeometry>
+  <StreamGeometry x:Key="CaretUpIcon">M6.102 16.981c-1.074 0-1.648-1.265-.94-2.073l5.521-6.31a1.75 1.75 0 0 1 2.634 0l5.522 6.31c.707.809.133 2.073-.94 2.073H6.101Z</StreamGeometry>
+  <StreamGeometry x:Key="CaretLeftIcon">M15 17.898c0 1.074-1.265 1.648-2.073.941l-6.31-5.522a1.75 1.75 0 0 1 0-2.634l6.31-5.522c.808-.707 2.073-.133 2.073.941v11.796Z</StreamGeometry>
+  <StreamGeometry x:Key="CaretRightIcon">M9 17.898c0 1.074 1.265 1.648 2.073.941l6.31-5.522a1.75 1.75 0 0 0 0-2.634l-6.31-5.522C10.265 4.454 9 5.028 9 6.102v11.796Z</StreamGeometry>
 
   <ControlTheme x:Key="FluentScrollBarThumb" TargetType="Thumb">
-    <Setter Property="Background" Value="{DynamicResource ScrollBarPanningThumbBackground}"/>
+    <Setter Property="Background" Value="{DynamicResource ScrollBarThumbBackground}"/>
     <Setter Property="CornerRadius" Value="{DynamicResource ScrollBarThumbCornerRadius}"/>
     <Setter Property="Template">
       <Setter.Value>
@@ -200,7 +196,7 @@
                 <Rectangle x:Name="TrackRect"
                            Fill="{DynamicResource ScrollBarTrackFill}"
                            Stroke="{DynamicResource ScrollBarTrackStroke}"
-                           StrokeThickness="{DynamicResource ScrollBarTrackBorderThemeThickness}"
+                           StrokeThickness="{DynamicResource ScrollBarTrackThemeBorderThickness}"
                            RadiusX="{DynamicResource ScrollBarTrackCornerRadius}"
                            RadiusY="{DynamicResource ScrollBarTrackCornerRadius}"
                            Opacity="0"
@@ -233,7 +229,7 @@
                       <Setter Property="RenderTransform" Value="scale(0.875)"/>
                     </Style>
                   </RepeatButton.Styles>
-                  <PathIcon Data="{StaticResource CaretUp}"
+                  <PathIcon Data="{StaticResource CaretUpIcon}"
                             Classes="Arrow"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
@@ -292,7 +288,7 @@
                       <Setter Property="RenderTransform" Value="scale(0.875)"/>
                     </Style>
                   </RepeatButton.Styles>
-                  <PathIcon Data="{StaticResource CaretDown}"
+                  <PathIcon Data="{StaticResource CaretDownIcon}"
                             Classes="Arrow"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
@@ -315,7 +311,7 @@
                 <Rectangle x:Name="TrackRect"
                            Fill="{DynamicResource ScrollBarTrackFill}"
                            Stroke="{DynamicResource ScrollBarTrackStroke}"
-                           StrokeThickness="{DynamicResource ScrollBarTrackBorderThemeThickness}"
+                           StrokeThickness="{DynamicResource ScrollBarTrackThemeBorderThickness}"
                            RadiusX="{DynamicResource ScrollBarTrackCornerRadius}"
                            RadiusY="{DynamicResource ScrollBarTrackCornerRadius}"
                            Opacity="0"
@@ -349,7 +345,7 @@
                       <Setter Property="RenderTransform" Value="scale(0.875)"/>
                     </Style>
                   </RepeatButton.Styles>
-                  <PathIcon Data="{StaticResource CaretRight}"
+                  <PathIcon Data="{StaticResource CaretRightIcon}"
                             Classes="Arrow"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
@@ -406,7 +402,7 @@
                       <Setter Property="RenderTransform" Value="scale(0.875)"/>
                     </Style>
                   </RepeatButton.Styles>
-                  <PathIcon Data="{StaticResource CaretLeft}"
+                  <PathIcon Data="{StaticResource CaretLeftIcon}"
                             Classes="Arrow"
                             Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
                             Height="{DynamicResource ScrollBarButtonArrowIconFontSize}"/>
@@ -428,7 +424,7 @@
         <Setter Property="Opacity" Value="1" />
       </Style>
       <Style Selector="^ /template/ Thumb">
-        <Setter Property="Background" Value="{DynamicResource ScrollBarThumbBackgroundColor}" />
+        <Setter Property="Background" Value="{DynamicResource ScrollBarThumbBackground}" />
         <Setter Property="RenderTransform" Value="none" />
       </Style>
       <Style Selector="^ /template/ RepeatButton">

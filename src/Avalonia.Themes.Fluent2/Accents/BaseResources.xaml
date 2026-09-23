@@ -14,8 +14,8 @@
 
   <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
   <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
-  <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
-  <Thickness x:Key="TextControlBorderThemeThicknessFocused">1,1,1,2</Thickness>
+  <Thickness x:Key="TextControlThemeBorderThickness">1</Thickness>
+  <Thickness x:Key="TextControlThemeBorderThicknessFocused">1,1,1,2</Thickness>
   <Thickness x:Key="TextControlThemePadding">10,5,6,6</Thickness>
   <sys:Double x:Key="IconElementThemeHeight">20</sys:Double>
   <sys:Double x:Key="IconElementThemeWidth">20</sys:Double>
@@ -37,7 +37,7 @@
 
   <x:Double x:Key="AutoCompleteListMaxHeight">374</x:Double>
   <Thickness x:Key="AutoCompleteListMargin">0,4,0,4</Thickness>
-  <Thickness x:Key="AutoCompleteListBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="AutoCompleteListThemeBorderThickness">1</Thickness>
   <Thickness x:Key="AutoCompleteListPadding">-1,0,-1,0</Thickness>
   <x:Double x:Key="TextControlThemeMinHeight">32</x:Double>
   <x:Double x:Key="TextControlThemeMinWidth">64</x:Double>

@@ -44,7 +44,7 @@
               <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                       BackgroundSizing="InnerBorderEdge"
                       BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
-                      BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
+                      BorderThickness="{DynamicResource MenuFlyoutPresenterThemeBorderThickness}"
                       Padding="{DynamicResource MenuFlyoutPresenterThemePadding}"
                       MaxWidth="{DynamicResource FlyoutThemeMaxWidth}"
                       MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"

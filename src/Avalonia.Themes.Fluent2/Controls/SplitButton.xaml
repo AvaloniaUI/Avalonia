@@ -86,7 +86,7 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <Thickness x:Key="SplitButtonBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="SplitButtonThemeBorderThickness">1</Thickness>
 
   <x:Double x:Key="SplitButtonPrimaryButtonSize">32</x:Double>
   <x:Double x:Key="SplitButtonSecondaryButtonSize">32</x:Double>
@@ -186,7 +186,7 @@
     <Setter Property="Background" Value="{DynamicResource SplitButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource SplitButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SplitButtonBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource SplitButtonBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource SplitButtonThemeBorderThickness}" />
     <Setter Property="MinHeight" Value="{DynamicResource SplitButtonMinHeight}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />

@@ -11,12 +11,21 @@
         </ContentPage>
       </CarouselPage>
     </Border>
-  </Design.PreviewWith>
+  </Design.PreviewWith>  
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <StaticResource x:Key="CarouselPageBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <StaticResource x:Key="CarouselPageBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
 
   <ControlTheme x:Key="{x:Type CarouselPage}" TargetType="CarouselPage" BasedOn="{StaticResource DefaultCarouselPageTheme}"/>
 
   <ControlTheme x:Key="DefaultCarouselPageTheme" TargetType="CarouselPage">
-    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
+    <Setter Property="Background" Value="{DynamicResource CarouselPageBackground}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Carousel Name="PART_Carousel"

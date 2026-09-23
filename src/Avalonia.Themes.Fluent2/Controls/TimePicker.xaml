@@ -73,7 +73,7 @@
 
   <x:Double x:Key="TimePickerFlyoutPresenterItemHeight">40</x:Double>
   <x:Double x:Key="TimePickerSpacerThemeWidth">1</x:Double>
-  <Thickness x:Key="TimePickerBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="TimePickerThemeBorderThickness">1</Thickness>
   <x:Double x:Key="TimePickerFlyoutPresenterHighlightHeight">40</x:Double>
   <x:Double x:Key="TimePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
   <x:Double x:Key="TimePickerThemeMinWidth">242</x:Double>
@@ -130,7 +130,7 @@
     <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrush}"/>
-    <Setter Property="BorderThickness" Value="{DynamicResource TimePickerBorderThemeThickness}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource TimePickerThemeBorderThickness}"/>
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />

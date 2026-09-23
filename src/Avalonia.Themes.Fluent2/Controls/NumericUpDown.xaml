@@ -55,7 +55,7 @@
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
     <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlThemeBorderThickness}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
@@ -124,7 +124,7 @@
                   MinWidth="40"
                   VerticalAlignment="Stretch"
                   ClipToBounds="True">
-            <PathIcon Data="{StaticResource TextBoxClearButtonData}"
+            <PathIcon Data="{StaticResource TextBoxClearButtonIcon}"
                       Foreground="{DynamicResource TextControlButtonForeground}"
                       VerticalAlignment="Center"
                       HorizontalAlignment="Center"
@@ -162,7 +162,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
     <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlThemeBorderThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
@@ -278,7 +278,7 @@
       <Style Selector="^ /template/ Border#PART_BorderElement">
         <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}"/>
-        <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource TextControlThemeBorderThicknessFocused}" />
       </Style>
     </Style>
 

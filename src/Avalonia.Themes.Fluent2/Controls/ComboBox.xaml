@@ -97,7 +97,7 @@
       <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
       <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
-      <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ComboBoxItemPillFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
@@ -146,12 +146,12 @@
       <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
       <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyoutBrush" />
-      <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ComboBoxItemPillFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
   <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
-  <Thickness x:Key="ComboBoxBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="ComboBoxThemeBorderThickness">1</Thickness>
   <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
   <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
   <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>
@@ -179,7 +179,7 @@
     <Setter Property="Foreground" Value="{DynamicResource ComboBoxForeground}" />
     <Setter Property="Background" Value="{DynamicResource ComboBoxBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource ComboBoxBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ComboBoxThemeBorderThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
@@ -266,7 +266,7 @@
                 <SolidColorBrush x:Key="TextControlBackgroundFocused">Transparent</SolidColorBrush>
                 <SolidColorBrush x:Key="TextControlBackgroundPointerOver">Transparent</SolidColorBrush>
                 <SolidColorBrush x:Key="TextControlBorderBrushFocused">Transparent</SolidColorBrush>
-                <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                <Thickness x:Key="TextControlThemeBorderThicknessFocused">0</Thickness>
               </TextBox.Resources>
             </TextBox>
 

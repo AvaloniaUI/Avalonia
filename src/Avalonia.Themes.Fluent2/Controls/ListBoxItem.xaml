@@ -24,8 +24,8 @@
       <StaticResource x:Key="ListBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="ListBoxItemForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
@@ -35,8 +35,8 @@
       <StaticResource x:Key="ListBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFillDisabled" ResourceKey="AccentFillColorDisabledBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -82,7 +82,7 @@
                      IsHitTestVisible="False"
                      UseLayoutRounding="False"
                      RenderTransform="scaleY(0)"
-                     Fill="{DynamicResource ListViewItemSelectionIndicatorBrush}">
+                     Fill="{DynamicResource ListViewItemSelectionIndicatorFill}">
             <Rectangle.Transitions>
               <Transitions>
                 <TransformOperationsTransition Property="RenderTransform" Duration="{StaticResource ControlFastAnimationDuration}" Easing="0,0 0,1" />
@@ -123,7 +123,7 @@
       </Style>
 
       <Style Selector="^:disabled /template/ Rectangle#SelectionIndicator">
-        <Setter Property="Fill" Value="{DynamicResource ListViewItemSelectionIndicatorDisabledBrush}" />
+        <Setter Property="Fill" Value="{DynamicResource ListViewItemSelectionIndicatorFillDisabled}" />
       </Style>
 
       <!--  Selected Unfocused State  -->

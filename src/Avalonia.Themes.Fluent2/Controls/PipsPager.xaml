@@ -4,11 +4,11 @@
     <PipsPager NumberOfPages="5" SelectedPageIndex="2" />
   </Design.PreviewWith>
 
-  <StreamGeometry x:Key="PipsPagerPreviousPageButtonData">M15 17.898c0 1.074-1.265 1.648-2.073.941l-6.31-5.522a1.75 1.75 0 0 1 0-2.634l6.31-5.522c.808-.707 2.073-.133 2.073.941v11.796Z</StreamGeometry>
-  <StreamGeometry x:Key="PipsPagerNextPageButtonData">M9 17.898c0 1.074 1.265 1.648 2.073.941l6.31-5.522a1.75 1.75 0 0 0 0-2.634l-6.31-5.522C10.265 4.454 9 5.028 9 6.102v11.796Z</StreamGeometry>
+  <StreamGeometry x:Key="PipsPagerPreviousPageButtonIcon">M15 17.898c0 1.074-1.265 1.648-2.073.941l-6.31-5.522a1.75 1.75 0 0 1 0-2.634l6.31-5.522c.808-.707 2.073-.133 2.073.941v11.796Z</StreamGeometry>
+  <StreamGeometry x:Key="PipsPagerNextPageButtonIcon">M9 17.898c0 1.074 1.265 1.648 2.073.941l6.31-5.522a1.75 1.75 0 0 0 0-2.634l-6.31-5.522C10.265 4.454 9 5.028 9 6.102v11.796Z</StreamGeometry>
 
-  <StreamGeometry x:Key="PipsPagerPreviousPageButtonVerticalData">M6.102 16.981c-1.074 0-1.648-1.265-.94-2.073l5.521-6.31a1.75 1.75 0 0 1 2.634 0l5.522 6.31c.707.809.133 2.073-.94 2.073H6.101Z</StreamGeometry>
-  <StreamGeometry x:Key="PipsPagerNextPageButtonVerticalData">M6.102 8c-1.074 0-1.648 1.265-.94 2.073l5.521 6.31a1.75 1.75 0 0 0 2.634 0l5.522-6.31c.707-.808.133-2.073-.94-2.073H6.101Z</StreamGeometry>
+  <StreamGeometry x:Key="PipsPagerPreviousPageButtonVerticalIcon">M6.102 16.981c-1.074 0-1.648-1.265-.94-2.073l5.521-6.31a1.75 1.75 0 0 1 2.634 0l5.522 6.31c.707.809.133 2.073-.94 2.073H6.101Z</StreamGeometry>
+  <StreamGeometry x:Key="PipsPagerNextPageButtonVerticalIcon">M6.102 8c-1.074 0-1.648 1.265-.94 2.073l5.521 6.31a1.75 1.75 0 0 0 2.634 0l5.522-6.31c.707-.808.133-2.073-.94-2.073H6.101Z</StreamGeometry>
 
   <x:Double x:Key="PipsPagerButtonWidth">20</x:Double>
   <x:Double x:Key="PipsPagerButtonHeight">12</x:Double>
@@ -188,7 +188,7 @@
                   VerticalAlignment="Center"
                   HorizontalAlignment="Center">
             <PathIcon Name="PreviousButtonIcon" Width="{StaticResource PipsPagerNavigationButtonPathSize}" Height="{StaticResource PipsPagerNavigationButtonPathSize}"
-                      Data="{StaticResource PipsPagerPreviousPageButtonData}" />
+                      Data="{StaticResource PipsPagerPreviousPageButtonIcon}" />
           </Button>
 
           <ListBox Name="PART_PipsPagerList"
@@ -225,7 +225,7 @@
                   VerticalAlignment="Center"
                   HorizontalAlignment="Center">
             <PathIcon Name="NextButtonIcon" Width="{StaticResource PipsPagerNavigationButtonPathSize}" Height="{StaticResource PipsPagerNavigationButtonPathSize}"
-                      Data="{StaticResource PipsPagerNextPageButtonData}" />
+                      Data="{StaticResource PipsPagerNextPageButtonIcon}" />
           </Button>
         </StackPanel>
       </ControlTemplate>
@@ -246,10 +246,10 @@
     </Style>
 
     <Style Selector="^:vertical /template/ Button#PART_PreviousButton PathIcon#PreviousButtonIcon">
-      <Setter Property="Data" Value="{StaticResource PipsPagerPreviousPageButtonVerticalData}" />
+      <Setter Property="Data" Value="{StaticResource PipsPagerPreviousPageButtonVerticalIcon}" />
     </Style>
     <Style Selector="^:vertical /template/ Button#PART_NextButton PathIcon#NextButtonIcon">
-      <Setter Property="Data" Value="{StaticResource PipsPagerNextPageButtonVerticalData}" />
+      <Setter Property="Data" Value="{StaticResource PipsPagerNextPageButtonVerticalIcon}" />
     </Style>
 
     <Style Selector="^:first-page /template/ Button#PART_PreviousButton">

@@ -13,7 +13,6 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
       <StaticResource x:Key="ToggleButtonBackground" ResourceKey="ControlFillColorDefaultBrush" />
       <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
       <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="ControlFillColorTertiaryBrush" />
@@ -91,7 +90,7 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
+  <Thickness x:Key="ToggleButtonBorderThickness">1</Thickness>
 
   <ControlTheme x:Key="{x:Type ToggleButton}" TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonTheme}"/>
   <ControlTheme x:Key="DefaultToggleButtonTheme" TargetType="ToggleButton">
@@ -99,7 +98,7 @@
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource ToggleButtonBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ToggleButtonBorderThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />

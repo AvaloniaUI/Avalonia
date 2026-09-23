@@ -14,22 +14,22 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ListBoxBorder" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="ListBoxBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ListBoxBorder" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="ListBoxBorderBrush" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="ListBoxBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
+  <Thickness x:Key="ListBoxThemeBorderThickness">0</Thickness>
 
   <ControlTheme x:Key="FluentListViewTheme" TargetType="ListBox">
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource ListBoxBorderThemeThickness}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ListBoxThemeBorderThickness}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
@@ -66,8 +66,8 @@
   <ControlTheme x:Key="FluentListBoxTheme" TargetType="ListBox">
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     <Setter Property="Background" Value="{DynamicResource ListBoxBackground}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ListBoxBorder}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource ListBoxBorderThemeThickness}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ListBoxBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ListBoxThemeBorderThickness}" />
     <Setter Property="ItemContainerTheme" Value="{StaticResource DefaultListBoxItemStyle}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
