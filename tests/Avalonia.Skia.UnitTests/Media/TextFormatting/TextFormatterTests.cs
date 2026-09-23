@@ -250,6 +250,36 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [InlineData("‮abc‬", 1)] // RLO ... PDF
+        [InlineData("‫abc‬", 2)] // RLE ... PDF
+        [InlineData("⁧abc⁩", 2)] // RLI ... PDI
+        public void Should_Resolve_Explicit_Formatting_After_Another_Paragraph(string text, int expectedLevel)
+        {
+            using (Start())
+            {
+                var defaultProperties =
+                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                formatter.FormatLine(new SingleBufferTextSource("abc", defaultProperties), 0,
+                    double.PositiveInfinity, paragraphProperties);
+
+                var textLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties), 0,
+                    double.PositiveInfinity, paragraphProperties);
+
+                Assert.NotNull(textLine);
+
+                var textRun = textLine.TextRuns.OfType<ShapedTextRun>()
+                    .Single(x => x.Text.Span.IndexOf('a') >= 0);
+
+                Assert.Equal(expectedLevel, textRun.BidiLevel);
+            }
+        }
+
         [Fact]
         public void Should_Format_TextRuns_With_TextRunStyles()
         {
