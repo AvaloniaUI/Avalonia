@@ -23,7 +23,7 @@ namespace Avalonia.Skia
 
         public PlatformRenderTargetState State => _surface.State;
 
-        class GlGpuSession : ISkiaGpuRenderSession
+        class GlGpuSession : ISkiaGpuRenderSession, ISkiaGpuRenderSessionSurfaceFormat
         {
             private readonly GRBackendRenderTarget _backendRenderTarget;
             private readonly SKSurface _surface;
@@ -32,15 +32,22 @@ namespace Avalonia.Skia
             public GlGpuSession(GRContext grContext,
                 GRBackendRenderTarget backendRenderTarget,
                 SKSurface surface,
-                IGlPlatformSurfaceRenderingSession glSession)
+                IGlPlatformSurfaceRenderingSession glSession,
+                SKColorType colorType,
+                SKColorSpace? colorSpace)
             {
                 GrContext = grContext;
                 _backendRenderTarget = backendRenderTarget;
                 _surface = surface;
                 _glSession = glSession;
-                
+                ColorType = colorType;
+                ColorSpace = colorSpace;
+
                 SurfaceOrigin = glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft;
             }
+
+            public SKColorType ColorType { get; }
+            public SKColorSpace? ColorSpace { get; }
             public void Dispose()
             {
                 _surface.Canvas.Flush();
@@ -69,7 +76,9 @@ namespace Avalonia.Skia
                 gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
 
                 var size = glSession.Size;
-                var colorType = SKColorType.Rgba8888;
+                // scRGB needs a float surface, so the color space decides the color type here.
+                var colorSpace = _surface.GetPresentationColorSpace();
+                var colorType = colorSpace.ToSKColorType(SKColorType.Rgba8888);
                 var scaling = glSession.Scaling;
                 if (size.Width <= 0 || size.Height <= 0 || scaling < 0)
                 {
@@ -91,11 +100,12 @@ namespace Avalonia.Skia
                     var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, samples, disp.StencilSize, glInfo);
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
-                        colorType, _surfaceProperties);
+                        colorType, colorSpace.ToSKColorSpace(), _surfaceProperties);
 
                     success = true;
 
-                    return new GlGpuSession(_grContext, renderTarget, surface, glSession);
+                    return new GlGpuSession(_grContext, renderTarget, surface, glSession, colorType,
+                        colorSpace.ToSKColorSpace());
                 }
             }
             finally

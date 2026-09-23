@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Media;
 using Avalonia.Metal;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -75,19 +77,44 @@ class MetalDevice : IMetalDevice
 class MetalPlatformSurface : IMetalPlatformSurface
 {
     private readonly IAvnTopLevel _topLevel;
+    private readonly PresentationColorSpace _preferredColorSpace;
 
-    public MetalPlatformSurface(IAvnTopLevel topLevel)
+    public MetalPlatformSurface(IAvnTopLevel topLevel, PresentationColorSpace preferredColorSpace)
     {
         _topLevel = topLevel;
+        _preferredColorSpace = preferredColorSpace;
+
+        // Resolving the request does not need a layer, so the concrete color space is already known
+        // before the first frame. Going through the native enum and back does the resolving, a wide
+        // gamut request becomes Display P3 here. It is only corrected later if tagging really fails.
+        CurrentColorSpace = preferredColorSpace.ToAvnColorSpace().ToPresentationColorSpace();
     }
+
+    public PresentationColorSpace CurrentColorSpace { get; private set; }
+
+    public event EventHandler? CurrentColorSpaceChanged;
+
     public IMetalPlatformSurfaceRenderTarget CreateMetalRenderTarget(IMetalDevice device)
     {
         if (!Dispatcher.UIThread.CheckAccess())
             throw new RenderTargetNotReadyException();
-        
+
         var dev = (MetalDevice)device;
-        var target = _topLevel.CreateMetalRenderTarget(dev.Native);
-        return new MetalRenderTarget(target);
+        var target = _topLevel.CreateMetalRenderTarget(dev.Native, _preferredColorSpace.ToAvnColorSpace());
+        var renderTarget = new MetalRenderTarget(target);
+        SetCurrentColorSpace(renderTarget.ColorSpace);
+        return renderTarget;
+    }
+
+    private void SetCurrentColorSpace(PresentationColorSpace colorSpace)
+    {
+        if (CurrentColorSpace == colorSpace)
+            return;
+
+        CurrentColorSpace = colorSpace;
+
+        // Render targets are created off the UI thread, but the event is for application code.
+        Dispatcher.UIThread.Post(() => CurrentColorSpaceChanged?.Invoke(this, EventArgs.Empty));
     }
 }
 
@@ -172,14 +199,18 @@ internal class MetalExternalObjectsFeature : IMetalExternalObjectsFeature
         _device.SubmitSignal(((SharedEvent)@event).Native, signalValue);
 }
 
-internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
+internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget, IColorManagedRenderTarget
 {
     private IAvnMetalRenderTarget? _native;
 
     public MetalRenderTarget(IAvnMetalRenderTarget native)
     {
         _native = native;
+        // What the native side really applied, which can differ from what was requested.
+        ColorSpace = native.ColorSpace.ToPresentationColorSpace();
     }
+
+    public PresentationColorSpace ColorSpace { get; }
 
     private IAvnMetalRenderTarget Native
     {
