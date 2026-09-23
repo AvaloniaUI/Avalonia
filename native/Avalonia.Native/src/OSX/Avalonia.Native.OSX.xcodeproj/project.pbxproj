@@ -63,6 +63,7 @@
 		ED3791C42862E1F40080BD62 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */; };
 		ED754D262A97306B0078B4DF /* PlatformRenderTimer.mm in Sources */ = {isa = PBXBuildFile; fileRef = ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */; };
 		EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */ = {isa = PBXBuildFile; fileRef = EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */; };
+		A52259012F9A000100000001 /* SpellCheck.mm in Sources */ = {isa = PBXBuildFile; fileRef = A52259002F9A000100000001 /* SpellCheck.mm */; };
 		F10084842BFF1F9E0024303E /* TopLevelImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = F10084832BFF1F9E0024303E /* TopLevelImpl.h */; };
 		F10084862BFF1FB40024303E /* TopLevelImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = F10084852BFF1FB40024303E /* TopLevelImpl.mm */; };
 		F931F8682E2D43A7004E081E /* clipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = F931F8672E2D43A4004E081E /* clipboard.h */; };
@@ -134,6 +135,7 @@
 		ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		ED754D252A97306B0078B4DF /* PlatformRenderTimer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformRenderTimer.mm; sourceTree = "<group>"; };
 		EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformSettings.mm; sourceTree = "<group>"; };
+		A52259002F9A000100000001 /* SpellCheck.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SpellCheck.mm; sourceTree = "<group>"; };
 		F10084832BFF1F9E0024303E /* TopLevelImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TopLevelImpl.h; sourceTree = "<group>"; };
 		F10084852BFF1FB40024303E /* TopLevelImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TopLevelImpl.mm; sourceTree = "<group>"; };
 		F931F8672E2D43A4004E081E /* clipboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = clipboard.h; sourceTree = "<group>"; };
@@ -215,6 +217,7 @@
 				37A517B22159597E00FBA241 /* Screens.mm */,
 				37C09D8721580FE4006A6758 /* StorageProvider.mm */,
 				EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */,
+				A52259002F9A000100000001 /* SpellCheck.mm */,
 				AB7A61F02147C815003C5833 /* Products */,
 				AB661C1C2148230E00291242 /* Frameworks */,
 				18391676ECF0E983F4964357 /* WindowBaseImpl.mm */,
@@ -365,6 +368,7 @@
 				1AC7F1432DCA0C2E003A161B /* crapium.mm in Sources */,
 				18391D8CD1756DC858DC1A09 /* PopupImpl.mm in Sources */,
 				EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */,
+				A52259012F9A000100000001 /* SpellCheck.mm in Sources */,
 				64B1EA48E308E574685AFB07 /* metal.mm in Sources */,
 				64B1EF3C757B71526FFAF436 /* noarc.mm in Sources */,
 			);

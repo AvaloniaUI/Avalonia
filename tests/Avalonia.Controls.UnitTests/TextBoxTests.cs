@@ -31,11 +31,11 @@ namespace Avalonia.Controls.UnitTests
     public class TextBoxTests : ScopedTestBase
     {
         [Fact]
-        public void Spell_Check_Is_Unset_By_Default_For_Natural_Text_Inputs()
+        public void Spell_Check_Is_Disabled_By_Default_For_Natural_Text_Inputs()
         {
-            Assert.Null(TextInputOptions.GetIsSpellCheckEnabled(new TextBox()));
-            Assert.Null(TextInputOptions.GetIsSpellCheckEnabled(new AutoCompleteBox()));
-            Assert.Null(TextInputOptions.GetIsSpellCheckEnabled(new ComboBox()));
+            Assert.False(SpellCheck.GetIsEnabled(new TextBox()));
+            Assert.False(SpellCheck.GetIsEnabled(new AutoCompleteBox()));
+            Assert.False(SpellCheck.GetIsEnabled(new ComboBox()));
         }
 
         [Fact]
@@ -44,14 +44,14 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
 
                 var target = CreateTextBoxInTopLevel(
                     "Ths sample",
-                    tb => TextInputOptions.SetIsSpellCheckEnabled(tb, null));
+                    tb => SpellCheck.SetIsEnabled(tb, false));
 
                 Assert.False(target.HasSpellCheckManager);
                 Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
@@ -65,7 +65,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -77,7 +77,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var root = new Panel { Children = { target } };
-                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+                SpellCheck.SetIsEnabled(root, true);
 
                 var topLevel = new TestTopLevel(CreateMockTopLevelImpl().Object)
                 {
@@ -98,9 +98,9 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Spell_Check_Is_Disabled_By_Default_For_Formatted_Text_Inputs()
         {
-            Assert.False(TextInputOptions.GetIsSpellCheckEnabled(new MaskedTextBox()));
-            Assert.False(TextInputOptions.GetIsSpellCheckEnabled(new NumericUpDown()));
-            Assert.False(TextInputOptions.GetIsSpellCheckEnabled(new CalendarDatePicker()));
+            Assert.False(SpellCheck.GetIsEnabled(new MaskedTextBox()));
+            Assert.False(SpellCheck.GetIsEnabled(new NumericUpDown()));
+            Assert.False(SpellCheck.GetIsEnabled(new CalendarDatePicker()));
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(
                     new TestSpellCheckProvider(
-                        new[] { new SpellCheckResult(0, 3, "Ths") },
+                        new[] { new TestSpellCheckResult(0, 3, "Ths") },
                         new[] { "This", "The" }));
 
                 var target = CreateTextBoxInTopLevel("Ths sample");
@@ -119,8 +119,8 @@ namespace Avalonia.Controls.UnitTests
                 target.RaiseEvent(new ContextRequestedEventArgs());
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                Assert.True(target.HasSpellCheckSuggestions);
-                Assert.Equal(new[] { "This", "The" }, target.SpellCheckSuggestions);
+                Assert.NotEmpty(SpellCheck.GetSuggestions(target));
+                Assert.Equal(new[] { "This", "The" }, SpellCheck.GetSuggestions(target));
             }
         }
 
@@ -131,7 +131,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(
                     new TestSpellCheckProvider(
-                        new[] { new SpellCheckResult(0, 3, "Ths") },
+                        new[] { new TestSpellCheckResult(0, 3, "Ths") },
                         new[]
                         {
                             "Suggestion 1",
@@ -164,7 +164,7 @@ namespace Avalonia.Controls.UnitTests
                         "Suggestion 7",
                         "Suggestion 8"
                     },
-                    target.SpellCheckSuggestions);
+                    SpellCheck.GetSuggestions(target));
             }
         }
 
@@ -176,8 +176,8 @@ namespace Avalonia.Controls.UnitTests
                 var provider = new TestSpellCheckProvider(
                     new[]
                     {
-                        new SpellCheckResult(0, 3, "Ths"),
-                        new SpellCheckResult(4, 4, "wrng")
+                        new TestSpellCheckResult(0, 3, "Ths"),
+                        new TestSpellCheckResult(4, 4, "wrng")
                     },
                     new[] { "wrong" });
 
@@ -191,7 +191,7 @@ namespace Avalonia.Controls.UnitTests
                     Height = 32
                 };
 
-                TextInputOptions.SetIsSpellCheckEnabled(target, true);
+                SpellCheck.SetIsEnabled(target, true);
                 var window = new Window
                 {
                     Content = target,
@@ -215,7 +215,7 @@ namespace Avalonia.Controls.UnitTests
                 presenter.RaiseEvent(contextRequested);
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                Assert.True(target.HasSpellCheckSuggestions);
+                Assert.NotEmpty(SpellCheck.GetSuggestions(target));
                 Assert.Equal("wrng", provider.LastSuggestedWord);
                 Assert.Equal(0, target.SelectionStart);
                 Assert.Equal(target.Text!.Length, target.SelectionEnd);
@@ -233,7 +233,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(
                     new TestSpellCheckProvider(
-                        new[] { new SpellCheckResult(0, 3, "Ths") },
+                        new[] { new TestSpellCheckResult(0, 3, "Ths") },
                         new[] { "This" }));
 
                 var target = CreateTextBoxInTopLevel("Ths sample");
@@ -244,7 +244,7 @@ namespace Avalonia.Controls.UnitTests
                 target.ApplySpellCheckSuggestion("This");
 
                 Assert.Equal("This sample", target.Text);
-                Assert.False(target.HasSpellCheckSuggestions);
+                Assert.Empty(SpellCheck.GetSuggestions(target));
             }
         }
 
@@ -257,7 +257,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths"), new SpellCheckResult(4, 4, "wrng"), new SpellCheckResult(9, 4, "errr") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths"), new TestSpellCheckResult(4, 4, "wrng"), new TestSpellCheckResult(9, 4, "errr") },
                     new[] { "wrong" });
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
                 var target = CreateTextBoxInTopLevel("Ths\nwrng\nerrr");
@@ -284,21 +284,21 @@ namespace Avalonia.Controls.UnitTests
             {
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(
                     new TestSpellCheckProvider(
-                        new[] { new SpellCheckResult(0, 3, "Ths") },
+                        new[] { new TestSpellCheckResult(0, 3, "Ths") },
                         new[] { "This" }));
 
                 var target = CreateTextBoxInTopLevel("Ths sample");
                 target.CaretIndex = 1;
                 target.RaiseEvent(new ContextRequestedEventArgs());
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
-                Assert.True(target.HasSpellCheckSuggestions);
+                Assert.NotEmpty(SpellCheck.GetSuggestions(target));
 
                 target.CaretIndex = target.Text!.Length;
                 target.RaiseEvent(new ContextRequestedEventArgs());
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                Assert.False(target.HasSpellCheckSuggestions);
-                Assert.Empty(target.SpellCheckSuggestions);
+                Assert.Empty(SpellCheck.GetSuggestions(target));
+                Assert.Empty(SpellCheck.GetSuggestions(target));
             }
         }
 
@@ -320,7 +320,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     new[] { "This" },
                     isLanguageSupported: false);
 
@@ -347,26 +347,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Changing_Effective_Provider_Language_Invalidates_Cached_Results()
+        public void Changing_Language_Invalidates_Cached_Results()
         {
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
-                    Array.Empty<string>())
-                {
-                    LanguageIdentity = "en-US"
-                };
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
 
-                var target = CreateTextBoxInTopLevel("Ths sample");
+                var target = CreateTextBoxInTopLevel(
+                    "Ths sample",
+                    tb => SpellCheck.SetLanguage(tb, "en-US"));
                 FireSpellCheckTimer();
                 Assert.Equal("Ths", GetDecoratedText(target));
 
-                provider.Results = Array.Empty<SpellCheckResult>();
-                provider.LanguageIdentity = "fr-FR";
-                target.Text = "Ths samples";
+                provider.Results = Array.Empty<ISpellCheckResult>();
+                SpellCheck.SetLanguage(target, "fr-FR");
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 FireSpellCheckTimer();
 
@@ -382,14 +380,14 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     new[] { "This" });
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
 
                 var target = CreateTextBoxInTopLevel(
                     "Ths sample",
-                    textBox => TextInputOptions.SetIsSpellCheckEnabled(textBox, false));
+                    textBox => SpellCheck.SetIsEnabled(textBox, false));
 
                 Assert.False(target.HasSpellCheckManager);
                 Assert.Equal(0, provider.CheckCount);
@@ -403,7 +401,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "123") },
+                    new[] { new TestSpellCheckResult(0, 3, "123") },
                     new[] { "one two three" });
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -413,7 +411,7 @@ namespace Avalonia.Controls.UnitTests
                     textBox =>
                     {
                         TextInputOptions.SetContentType(textBox, TextInputContentType.Number);
-                        TextInputOptions.SetIsSpellCheckEnabled(textBox, true);
+                        SpellCheck.SetIsEnabled(textBox, true);
                     });
 
                 Assert.False(target.HasSpellCheckManager);
@@ -428,7 +426,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     new[] { "This" });
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -438,7 +436,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(target.HasSpellCheckManager);
                 Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
 
-                TextInputOptions.SetIsSpellCheckEnabled(target, false);
+                SpellCheck.SetIsEnabled(target, false);
 
                 Assert.False(target.HasSpellCheckManager);
                 Assert.Equal(0, provider.CheckCount);
@@ -476,7 +474,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -501,9 +499,9 @@ namespace Avalonia.Controls.UnitTests
                 var provider = new TestSpellCheckProvider(
                     new[]
                     {
-                        new SpellCheckResult(0, 3, "Ths"),
-                        new SpellCheckResult(0, 4, "wrod"),
-                        new SpellCheckResult(0, 5, "wrods")
+                        new TestSpellCheckResult(0, 3, "Ths"),
+                        new TestSpellCheckResult(0, 4, "wrod"),
+                        new TestSpellCheckResult(0, 5, "wrods")
                     },
                     Array.Empty<string>());
 
@@ -538,7 +536,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 4, "wrod") },
+                    new[] { new TestSpellCheckResult(0, 4, "wrod") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -573,10 +571,10 @@ namespace Avalonia.Controls.UnitTests
                 var provider = new TestSpellCheckProvider(
                     new[]
                     {
-                        new SpellCheckResult(0, 3, "Ths"),
-                        new SpellCheckResult(0, 4, "wrod"),
-                        new SpellCheckResult(0, 5, "wrodx"),
-                        new SpellCheckResult(0, 4, "qwik")
+                        new TestSpellCheckResult(0, 3, "Ths"),
+                        new TestSpellCheckResult(0, 4, "wrod"),
+                        new TestSpellCheckResult(0, 5, "wrodx"),
+                        new TestSpellCheckResult(0, 4, "qwik")
                     },
                     Array.Empty<string>());
 
@@ -625,7 +623,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(FocusServices.With(renderInterface: new HeadlessPlatformRenderInterface())))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 4, "wrod") },
+                    new[] { new TestSpellCheckResult(0, 4, "wrod") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -658,8 +656,8 @@ namespace Avalonia.Controls.UnitTests
                 var provider = new TestSpellCheckProvider(
                     new[]
                     {
-                        new SpellCheckResult(0, 4, "wrod"),
-                        new SpellCheckResult(0, 6, "anothr")
+                        new TestSpellCheckResult(0, 4, "wrod"),
+                        new TestSpellCheckResult(0, 6, "anothr")
                     },
                     Array.Empty<string>());
 
@@ -685,7 +683,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(FocusServices.With(renderInterface: new HeadlessPlatformRenderInterface())))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 4, "wrod") },
+                    new[] { new TestSpellCheckResult(0, 4, "wrod") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -742,33 +740,33 @@ namespace Avalonia.Controls.UnitTests
                 provider.CompleteSuggestions();
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                Assert.False(target.HasSpellCheckSuggestions);
-                Assert.Empty(target.SpellCheckSuggestions);
+                Assert.Empty(SpellCheck.GetSuggestions(target));
+                Assert.Empty(SpellCheck.GetSuggestions(target));
             }
         }
 
         [Fact]
-        public void Provider_Receives_Null_Culture_Unless_LocaleHints_Are_Set()
+        public void Provider_Receives_Explicit_Culture_And_Rechecks_When_It_Changes()
         {
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
 
-                var target = CreateTextBoxInTopLevel("Ths sample");
+                var target = CreateTextBoxInTopLevel(
+                    "Ths sample",
+                    tb => SpellCheck.SetLanguage(tb, "en-US"));
 
                 Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                // No language set: the provider decides.
                 Assert.True(provider.HasCheckedCulture);
-                Assert.Null(provider.LastCheckedCulture);
+                Assert.Equal("en-US", provider.LastCheckedCulture?.Name);
 
-                // Use the first valid hint and recheck when it changes.
-                TextInputOptions.SetLocaleHints(target, new[] { "not-a-culture-tag-xx", "de-DE" });
+                SpellCheck.SetLanguage(target, "de-DE");
 
                 Assert.Empty(GetDecoratedText(target));
                 Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
@@ -780,12 +778,42 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void System_Culture_Change_Recreates_The_Session_When_No_Culture_Is_Set()
+        {
+            var platformSettings = new SpellCheckPlatformSettings("en-US");
+
+            using (UnitTestApplication.Start(Services.With(platformSettings: platformSettings)))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+                FireSpellCheckTimer();
+
+                Assert.Equal("en-US", provider.LastCheckedCulture?.Name);
+                Assert.Equal("Ths", GetDecoratedText(target));
+
+                provider.Results = Array.Empty<ISpellCheckResult>();
+                platformSettings.SetPreferredApplicationLanguage("fr-FR");
+
+                Assert.Empty(GetDecoratedText(target));
+                FireSpellCheckTimer();
+
+                Assert.Equal("fr-FR", provider.LastCheckedCulture?.Name);
+                Assert.Equal(2, provider.CheckCount);
+            }
+        }
+
+        [Fact]
         public void Provider_Exception_Is_Logged_And_Preserves_Unrelated_Results()
         {
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -838,7 +866,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     new[] { "This" });
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -852,7 +880,7 @@ namespace Avalonia.Controls.UnitTests
                 target.CaretIndex = 1;
                 target.RaiseEvent(new ContextRequestedEventArgs());
 
-                Assert.False(target.HasSpellCheckSuggestions);
+                Assert.Empty(SpellCheck.GetSuggestions(target));
                 Assert.Null(provider.LastSuggestedWord);
 
                 target.ApplySpellCheckSuggestion("This");
@@ -870,7 +898,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -888,7 +916,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -929,7 +957,6 @@ namespace Avalonia.Controls.UnitTests
 
                 var platformOptions = TextInputMethodManager.CreateTextInputOptions(target, eventArgs.Client);
                 Assert.True(platformOptions.IsSensitive);
-                Assert.False(platformOptions.IsSpellCheckAllowed());
             }
         }
 
@@ -939,13 +966,13 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
 
                 var (target, topLevel) = CreateTextBoxInTopLevelWithRoot("Ths sample");
-                TextInputOptions.SetSpellCheckProvider(target, provider);
+                SpellCheck.SetProvider(target, provider);
 
                 Assert.True(target.HasSpellCheckManager);
                 Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
@@ -967,16 +994,16 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var root = new Panel();
-                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+                SpellCheck.SetIsEnabled(root, true);
 
                 var masked = new MaskedTextBox { Mask = "000-000" };
                 root.Children.Add(masked);
 
-                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(masked));
+                Assert.False(SpellCheck.GetIsEnabled(masked));
 
                 // An explicit value on the control itself still wins.
-                TextInputOptions.SetIsSpellCheckEnabled(masked, true);
-                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(masked));
+                SpellCheck.SetIsEnabled(masked, true);
+                Assert.True(SpellCheck.GetIsEnabled(masked));
             }
         }
 
@@ -986,7 +1013,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -997,9 +1024,9 @@ namespace Avalonia.Controls.UnitTests
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.Equal("Ths", GetDecoratedText(target));
 
-                TextInputOptions.SetSpellCheckProvider(
+                SpellCheck.SetProvider(
                     target,
-                    new TestSpellCheckProvider(Array.Empty<SpellCheckResult>(), Array.Empty<string>()));
+                    new TestSpellCheckProvider(Array.Empty<ISpellCheckResult>(), Array.Empty<string>()));
 
                 Assert.Empty(GetDecoratedText(target));
             }
@@ -1087,7 +1114,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 4, "wrng") },
+                    new[] { new TestSpellCheckResult(0, 4, "wrng") },
                     Array.Empty<string>());
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -1133,7 +1160,7 @@ namespace Avalonia.Controls.UnitTests
                     }.RegisterInNameScope(scope));
 
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 4, "wrng") },
+                    new[] { new TestSpellCheckResult(0, 4, "wrng") },
                     Array.Empty<string>());
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
 
@@ -1173,7 +1200,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    Array.Empty<SpellCheckResult>(),
+                    Array.Empty<ISpellCheckResult>(),
                     Array.Empty<string>());
                 var text = "Ths " + new string('a', 10_001);
 
@@ -1204,7 +1231,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, int.MaxValue) },
+                    new[] { new TestSpellCheckResult(0, int.MaxValue) },
                     Array.Empty<string>());
                 var text = "mispelledlongwordmispelledlongword";
 
@@ -1236,7 +1263,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var provider = new TestSpellCheckProvider(
-                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
                     new[] { "This" });
 
                 AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
@@ -1250,7 +1277,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(1, provider.CheckCount);
                 Assert.Equal("Ths", provider.LastCheckedText);
                 Assert.True(target.HasSpellCheckManager);
-                Assert.True(target.HasSpellCheckSuggestions);
+                Assert.NotEmpty(SpellCheck.GetSuggestions(target));
             }
         }
 
@@ -1262,8 +1289,8 @@ namespace Avalonia.Controls.UnitTests
                 var provider = new TestSpellCheckProvider(
                     new[]
                     {
-                        new SpellCheckResult(0, 3, "Ths"),
-                        new SpellCheckResult(4, 4, "wrng")
+                        new TestSpellCheckResult(0, 3, "Ths"),
+                        new TestSpellCheckResult(4, 4, "wrng")
                     },
                     new[] { "fixed" });
 
@@ -1293,8 +1320,8 @@ namespace Avalonia.Controls.UnitTests
                 var provider = new TestSpellCheckProvider(
                     new[]
                     {
-                        new SpellCheckResult(4, 4, "wrng"),
-                        new SpellCheckResult(0, 3, "Ths")
+                        new TestSpellCheckResult(4, 4, "wrng"),
+                        new TestSpellCheckResult(0, 3, "Ths")
                     },
                     Array.Empty<string>());
 
@@ -3896,6 +3923,253 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Suggestion_Query_Waits_For_A_Pending_Background_Check_Instead_Of_Canceling_It()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                // Real asynchronous completion must resume on the UI thread, as it does in an application.
+                SynchronizationContext.SetSynchronizationContext(new AvaloniaSynchronizationContext());
+
+                var provider = new QueuedSpellCheckProvider();
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                var background = Assert.Single(provider.Checks);
+
+                target.CaretIndex = 1;
+                target.RaiseEvent(new ContextRequestedEventArgs());
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                // The context runs one call at a time, so the suggestion check is queued behind the background check.
+                Assert.Single(provider.Checks);
+                Assert.False(background.CancellationToken.IsCancellationRequested);
+
+                background.Complete(new TestSpellCheckResult(0, 3, "Ths", new[] { "This" }));
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("Ths", GetDecoratedText(target));
+
+                var queued = Assert.Single(provider.Checks, c => c != background);
+                queued.Complete(new TestSpellCheckResult(0, 3, "Ths", new[] { "This" }));
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(new[] { "This" }, SpellCheck.GetSuggestions(target));
+                Assert.True(SpellCheck.GetHasSuggestions(target));
+                Assert.Equal("Ths", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Locale_Hints_Are_Used_When_No_Spell_Check_Language_Is_Set()
+        {
+            using (UnitTestApplication.Start(Services.With(platformSettings: new SpellCheckPlatformSettings("en-US"))))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel(
+                    "Ths sample",
+                    t => TextInputOptions.SetLocaleHints(t, new[] { "de-DE" }));
+                FireSpellCheckTimer();
+
+                Assert.Equal("de-DE", provider.LastCheckedCulture?.Name);
+
+                SpellCheck.SetLanguage(target, "fr-FR");
+                FireSpellCheckTimer();
+
+                Assert.Equal("fr-FR", provider.LastCheckedCulture?.Name);
+
+                SpellCheck.SetLanguage(target, null);
+                TextInputOptions.SetLocaleHints(target, null);
+                FireSpellCheckTimer();
+
+                Assert.Equal("en-US", provider.LastCheckedCulture?.Name);
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Context_Is_Disposed_When_Culture_Provider_Or_Attachment_Changes()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TrackingSpellCheckProvider();
+                var (target, topLevel) = CreateTextBoxInTopLevelWithRoot(
+                    "Ths sample",
+                    t => SpellCheck.SetProvider(t, provider));
+                FireSpellCheckTimer();
+
+                var first = Assert.Single(provider.Contexts);
+                Assert.False(first.IsDisposed);
+
+                SpellCheck.SetLanguage(target, "fr-FR");
+                FireSpellCheckTimer();
+
+                Assert.True(first.IsDisposed);
+                Assert.Equal(2, provider.Contexts.Count);
+                var second = provider.Contexts[1];
+
+                var otherProvider = new TrackingSpellCheckProvider();
+                SpellCheck.SetProvider(target, otherProvider);
+                FireSpellCheckTimer();
+
+                Assert.True(second.IsDisposed);
+                var third = Assert.Single(otherProvider.Contexts);
+
+                topLevel.Content = null;
+
+                Assert.True(third.IsDisposed);
+                Assert.All(provider.Contexts, c => Assert.Equal(1, c.DisposeCount));
+                Assert.Equal(1, third.DisposeCount);
+            }
+        }
+
+        [Fact]
+        public void Applying_A_Suggestion_Is_A_Single_Undo_Step()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(
+                    new TestSpellCheckProvider(
+                        new[] { new TestSpellCheckResult(0, 3, "Ths") },
+                        new[] { "This" }));
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+                target.CaretIndex = 1;
+                target.RaiseEvent(new ContextRequestedEventArgs());
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                target.ApplySpellCheckSuggestion("This");
+                Assert.Equal("This sample", target.Text);
+
+                target.Undo();
+                Assert.Equal("Ths sample", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Unresolvable_Spell_Check_Language_Turns_Checking_Off_With_One_Warning()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+                var messages = new List<string>();
+                var values = new List<object?>();
+
+                using (TestLogSink.Start((_, _, _, template, args) =>
+                {
+                    messages.Add(template);
+                    values.AddRange(args);
+                }))
+                {
+                    var target = CreateTextBoxInTopLevel("Ths sample", tb => SpellCheck.SetLanguage(tb, "not a language tag"));
+                    target.Text = "Ths samples";
+                    target.Text = "Ths sampless";
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                    Assert.False(target.HasSpellCheckManager);
+                    Assert.Equal(0, provider.CheckCount);
+                    Assert.Single(messages, m => m.Contains("cannot be resolved"));
+                    Assert.Contains("not a language tag", values);
+                }
+            }
+        }
+
+        [Fact]
+        public void Missing_Dictionary_Is_Logged_Once()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new TestSpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>(),
+                    isLanguageSupported: false);
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+                var messages = new List<string>();
+
+                using (TestLogSink.Start((_, _, _, template, _) => messages.Add(template)))
+                {
+                    var target = CreateTextBoxInTopLevel("Ths sample", tb => SpellCheck.SetLanguage(tb, "en-AU"));
+                    FireSpellCheckTimer();
+                    target.Text = "Ths samples";
+                    FireSpellCheckTimer();
+
+                    Assert.Equal(0, provider.CheckCount);
+                    Assert.Single(messages, m => m.Contains("has no dictionary"));
+                }
+            }
+        }
+
+        private sealed class QueuedSpellCheckProvider : ISpellCheckProvider
+        {
+            public List<PendingCheck> Checks { get; } = new();
+
+            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
+
+            public ISpellCheckContext CreateContext(CultureInfo culture) => new Context(this);
+
+            private sealed class Context(QueuedSpellCheckProvider owner) : SpellCheckContextBase
+            {
+                protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+                    ReadOnlyMemory<char> text,
+                    CancellationToken cancellationToken)
+                {
+                    var pending = new PendingCheck(cancellationToken);
+                    owner.Checks.Add(pending);
+                    return new ValueTask<IReadOnlyList<ISpellCheckResult>>(pending.Task);
+                }
+            }
+
+            public sealed class PendingCheck(CancellationToken cancellationToken)
+            {
+                private readonly TaskCompletionSource<IReadOnlyList<ISpellCheckResult>> _completion = new();
+
+                public CancellationToken CancellationToken { get; } = cancellationToken;
+
+                public Task<IReadOnlyList<ISpellCheckResult>> Task => _completion.Task;
+
+                public void Complete(params ISpellCheckResult[] results) => _completion.SetResult(results);
+            }
+        }
+
+        private sealed class TrackingSpellCheckProvider : ISpellCheckProvider
+        {
+            public List<Context> Contexts { get; } = new();
+
+            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
+
+            public ISpellCheckContext CreateContext(CultureInfo culture)
+            {
+                var context = new Context();
+                Contexts.Add(context);
+                return context;
+            }
+
+            public sealed class Context : SpellCheckContextBase
+            {
+                public int DisposeCount { get; private set; }
+
+                protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+                    ReadOnlyMemory<char> text,
+                    CancellationToken cancellationToken) =>
+                    new(Array.Empty<ISpellCheckResult>());
+
+                protected override void DisposeCore() => DisposeCount++;
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
@@ -3964,7 +4238,7 @@ namespace Avalonia.Controls.UnitTests
                 Text = text
             };
 
-            TextInputOptions.SetIsSpellCheckEnabled(target, true);
+            SpellCheck.SetIsEnabled(target, true);
 
             configure?.Invoke(target);
 
@@ -3980,16 +4254,16 @@ namespace Avalonia.Controls.UnitTests
             return (target, topLevel);
         }
 
-        private static string CreateMisspelledLines(int count, out IReadOnlyList<SpellCheckResult> results)
+        private static string CreateMisspelledLines(int count, out IReadOnlyList<ISpellCheckResult> results)
         {
             var text = new StringBuilder();
-            var spellCheckResults = new List<SpellCheckResult>(count);
+            var spellCheckResults = new List<ISpellCheckResult>(count);
 
             for (var i = 0; i < count; i++)
             {
                 var word = FormattableString.Invariant($"wrng{i:00}");
 
-                spellCheckResults.Add(new SpellCheckResult(text.Length, word.Length, word));
+                spellCheckResults.Add(new TestSpellCheckResult(text.Length, word.Length, word));
                 text.Append(word);
                 text.Append('\n');
             }
@@ -4197,12 +4471,25 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class TestSpellCheckProvider : ISpellCheckProvider, ISpellCheckProviderWithLanguageIdentity
+        private sealed class SpellCheckPlatformSettings(string language) : DefaultPlatformSettings
+        {
+            private string _language = language;
+
+            public override string PreferredApplicationLanguage => _language;
+
+            public void SetPreferredApplicationLanguage(string value)
+            {
+                _language = value;
+                OnPreferredApplicationLanguageChanged();
+            }
+        }
+
+        private class TestSpellCheckProvider : ISpellCheckProvider
         {
             private readonly IReadOnlyList<string> _suggestions;
 
             public TestSpellCheckProvider(
-                IReadOnlyList<SpellCheckResult> results,
+                IReadOnlyList<ISpellCheckResult> results,
                 IReadOnlyList<string> suggestions,
                 bool isLanguageSupported = true)
             {
@@ -4225,118 +4512,149 @@ namespace Avalonia.Controls.UnitTests
 
             public bool LanguageSupported { get; set; }
 
-            public IReadOnlyList<SpellCheckResult> Results { get; set; }
+            public IReadOnlyList<ISpellCheckResult> Results { get; set; }
 
-            public string? LanguageIdentity { get; set; }
+            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
 
-            public bool IsLanguageSupported(CultureInfo? culture) => LanguageSupported;
-
-            string? ISpellCheckProviderWithLanguageIdentity.GetLanguageIdentity(CultureInfo? culture) =>
-                LanguageIdentity;
-
-            public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlyMemory<char> textMemory,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            public ISpellCheckContext? CreateContext(CultureInfo culture)
             {
-                var text = textMemory.Span;
-                CheckCount++;
-                var textValue = text.ToString();
-                LastCheckedText = textValue;
                 LastCheckedCulture = culture;
                 HasCheckedCulture = true;
-
-                if (CheckException is { } exception)
-                {
-                    throw exception;
-                }
-
-                if (Results.Count == 0)
-                {
-                    return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
-                }
-
-                List<SpellCheckResult>? results = null;
-
-                for (var i = 0; i < Results.Count; i++)
-                {
-                    var result = Results[i];
-
-                    if (result.Word is { Length: > 0 } word)
-                    {
-                        var searchStart = 0;
-
-                        while (searchStart < textValue.Length)
-                        {
-                            var start = textValue.IndexOf(word, searchStart, StringComparison.Ordinal);
-
-                            if (start < 0)
-                            {
-                                break;
-                            }
-
-                            var end = start + word.Length;
-
-                            if (!SpellCheckResultCache.IsWordCharBefore(textValue, start) &&
-                                !SpellCheckResultCache.IsWordCharAt(textValue, end))
-                            {
-                                results ??= new List<SpellCheckResult>();
-                                results.Add(result with { Start = start, Length = word.Length });
-                            }
-
-                            searchStart = end;
-                        }
-                    }
-                    else if (result.Start >= 0 && result.Start < textValue.Length)
-                    {
-                        results ??= new List<SpellCheckResult>();
-                        results.Add(result);
-                    }
-                }
-
-                return new ValueTask<IReadOnlyList<SpellCheckResult>>(
-                    results is null || results.Count == 0 ? Array.Empty<SpellCheckResult>() : results);
+                return LanguageSupported ? new Session(this) : null;
             }
 
-            public ValueTask<IReadOnlyList<string>> SuggestAsync(
+            private ValueTask<IReadOnlyList<string>> SuggestCoreAsync(
                 string word,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+                CancellationToken cancellationToken)
             {
                 LastSuggestedWord = word;
                 return new ValueTask<IReadOnlyList<string>>(_suggestions);
+            }
+
+            private sealed class Session : SpellCheckContextBase
+            {
+                private readonly TestSpellCheckProvider _owner;
+
+                public Session(TestSpellCheckProvider owner)
+                {
+                    _owner = owner;
+                }
+
+                protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+                    ReadOnlyMemory<char> textMemory,
+                    CancellationToken cancellationToken)
+                {
+                    var text = textMemory.Span;
+                    _owner.CheckCount++;
+                    var textValue = text.ToString();
+                    _owner.LastCheckedText = textValue;
+
+                    if (_owner.CheckException is { } exception)
+                    {
+                        throw exception;
+                    }
+
+                    if (_owner.Results.Count == 0)
+                    {
+                        return new ValueTask<IReadOnlyList<ISpellCheckResult>>(Array.Empty<ISpellCheckResult>());
+                    }
+
+                    List<ISpellCheckResult>? results = null;
+
+                    for (var i = 0; i < _owner.Results.Count; i++)
+                    {
+                        var result = _owner.Results[i];
+                        var testResult = result as TestSpellCheckResult;
+
+                        if (testResult?.Word is { Length: > 0 } word)
+                        {
+                            var searchStart = 0;
+
+                            while (searchStart < textValue.Length)
+                            {
+                                var start = textValue.IndexOf(word, searchStart, StringComparison.Ordinal);
+
+                                if (start < 0)
+                                {
+                                    break;
+                                }
+
+                                var end = start + word.Length;
+
+                                if (!SpellCheckResultCache.IsWordCharBefore(textValue, start) &&
+                                    !SpellCheckResultCache.IsWordCharAt(textValue, end))
+                                {
+                                    results ??= new List<ISpellCheckResult>();
+                                    results.Add(new ProviderResult(this, start, word.Length, word));
+                                }
+
+                                searchStart = end;
+                            }
+                        }
+                        else if (result.Start >= 0 && result.Start < textValue.Length)
+                        {
+                            results ??= new List<ISpellCheckResult>();
+                            var length = result.Length;
+                            var checkedWord = length <= textValue.Length - result.Start
+                                ? textValue.Substring(result.Start, length)
+                                : string.Empty;
+                            results.Add(new ProviderResult(this, result.Start, length, checkedWord));
+                        }
+                    }
+
+                    return new ValueTask<IReadOnlyList<ISpellCheckResult>>(
+                        results is null || results.Count == 0 ? Array.Empty<ISpellCheckResult>() : results);
+                }
+
+                public ValueTask<IReadOnlyList<string>> SuggestWordAsync(
+                    string word,
+                    CancellationToken cancellationToken) =>
+                    _owner.SuggestCoreAsync(word, cancellationToken);
+            }
+
+            private sealed class ProviderResult : SpellCheckResultBase
+            {
+                private readonly Session _session;
+                private readonly string _word;
+
+                public ProviderResult(Session session, int start, int length, string word)
+                    : base(session, start, length)
+                {
+                    _session = session;
+                    _word = word;
+                }
+
+                protected override ValueTask<IReadOnlyList<string>> SuggestCoreAsync(
+                    CancellationToken cancellationToken) =>
+                    _session.SuggestWordAsync(_word, cancellationToken);
             }
         }
 
         private class BlockingSpellCheckProvider : ISpellCheckProvider
         {
-            private readonly TaskCompletionSource<IReadOnlyList<SpellCheckResult>> _checkCompletion = new(
+            private readonly TaskCompletionSource<IReadOnlyList<ISpellCheckResult>> _checkCompletion = new(
                 TaskCreationOptions.RunContinuationsAsynchronously);
 
             public CancellationToken CheckCancellationToken { get; private set; }
 
-            public bool IsLanguageSupported(CultureInfo? culture) => true;
+            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
 
-            public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlyMemory<char> textMemory,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
-            {
-                CheckCancellationToken = cancellationToken;
-                return new ValueTask<IReadOnlyList<SpellCheckResult>>(_checkCompletion.Task);
-            }
+            public ISpellCheckContext CreateContext(CultureInfo culture) => new Session(this);
 
-            public ValueTask<IReadOnlyList<string>> SuggestAsync(
-                string word,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            private sealed class Session(BlockingSpellCheckProvider owner) : SpellCheckContextBase
             {
-                return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
+                protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+                    ReadOnlyMemory<char> textMemory,
+                    CancellationToken cancellationToken)
+                {
+                    owner.CheckCancellationToken = cancellationToken;
+                    return new ValueTask<IReadOnlyList<ISpellCheckResult>>(owner._checkCompletion.Task);
+                }
             }
 
             public void Complete()
             {
-                _checkCompletion.SetResult(Array.Empty<SpellCheckResult>());
+                _checkCompletion.SetResult(Array.Empty<ISpellCheckResult>());
             }
         }
 
@@ -4347,24 +4665,29 @@ namespace Avalonia.Controls.UnitTests
 
             public CancellationToken SuggestionCancellationToken { get; private set; }
 
-            public bool IsLanguageSupported(CultureInfo? culture) => true;
+            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
 
-            public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlyMemory<char> text,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            public ISpellCheckContext CreateContext(CultureInfo culture) => new Session(this);
+
+            private sealed class Session(BlockingSuggestionSpellCheckProvider owner) : SpellCheckContextBase
             {
-                return new ValueTask<IReadOnlyList<SpellCheckResult>>(
-                    new[] { new SpellCheckResult(0, 3, "Ths") });
+                protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+                    ReadOnlyMemory<char> text,
+                    CancellationToken cancellationToken) =>
+                    new(new[] { new Result(this) });
+
+                public ValueTask<IReadOnlyList<string>> SuggestBlockingAsync(CancellationToken token)
+                {
+                    owner.SuggestionCancellationToken = token;
+                    return new ValueTask<IReadOnlyList<string>>(owner._suggestionCompletion.Task);
+                }
             }
 
-            public ValueTask<IReadOnlyList<string>> SuggestAsync(
-                string word,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            private sealed class Result(Session session) : SpellCheckResultBase(session, 0, 3)
             {
-                SuggestionCancellationToken = cancellationToken;
-                return new ValueTask<IReadOnlyList<string>>(_suggestionCompletion.Task);
+                protected override ValueTask<IReadOnlyList<string>> SuggestCoreAsync(
+                    CancellationToken cancellationToken) =>
+                    session.SuggestBlockingAsync(cancellationToken);
             }
 
             public void CompleteSuggestions()
@@ -4377,30 +4700,26 @@ namespace Avalonia.Controls.UnitTests
         {
             public int CheckCount { get; private set; }
 
-            public bool IsLanguageSupported(CultureInfo? culture) => true;
+            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
 
-            public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlyMemory<char> text,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            public ISpellCheckContext CreateContext(CultureInfo culture) => new Session(this);
+
+            private sealed class Session(TransientSpellCheckProvider owner) : SpellCheckContextBase
             {
-                CheckCount++;
-
-                if (CheckCount == 1)
+                protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+                    ReadOnlyMemory<char> text,
+                    CancellationToken cancellationToken)
                 {
-                    throw new InvalidOperationException("temporarily unavailable");
+                    owner.CheckCount++;
+
+                    if (owner.CheckCount == 1)
+                    {
+                        throw new InvalidOperationException("temporarily unavailable");
+                    }
+
+                    return new ValueTask<IReadOnlyList<ISpellCheckResult>>(
+                        new[] { new TestSpellCheckResult(0, 3, "Ths") });
                 }
-
-                return new ValueTask<IReadOnlyList<SpellCheckResult>>(
-                    new[] { new SpellCheckResult(0, 3, "Ths") });
-            }
-
-            public ValueTask<IReadOnlyList<string>> SuggestAsync(
-                string word,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
-            {
-                return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
             }
         }
     }

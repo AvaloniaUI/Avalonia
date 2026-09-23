@@ -23,8 +23,8 @@
 
   <MenuFlyout x:Key="DefaultTextBoxContextFlyout" ShowMode="{OnFormFactor Desktop=Standard, Mobile=Transient}">
     <MenuItem Header="{DynamicResource StringTextFlyoutSpellingText}"
-              IsVisible="{Binding $parent[TextBox].HasSpellCheckSuggestions}"
-              ItemsSource="{Binding $parent[TextBox].SpellCheckSuggestions}">
+              IsVisible="{Binding $parent[TextBox].(SpellCheck.HasSuggestions)}"
+              ItemsSource="{Binding $parent[TextBox].(SpellCheck.Suggestions)}">
       <MenuItem.ItemContainerTheme>
         <!-- DataContext is the suggestion; the container supplies Header. -->
         <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="x:String">
@@ -33,15 +33,15 @@
         </ControlTheme>
       </MenuItem.ItemContainerTheme>
     </MenuItem>
-    <Separator IsVisible="{Binding $parent[TextBox].HasSpellCheckSuggestions}" />
+    <Separator IsVisible="{Binding $parent[TextBox].(SpellCheck.HasSuggestions)}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" InputGesture="{x:Static TextBox.CutGesture}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}"/>
     <MenuItem Header="{DynamicResource StringTextFlyoutPasteText}" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" InputGesture="{x:Static TextBox.PasteGesture}"/>
   </MenuFlyout>
   <MenuFlyout x:Key="HorizontalTextBoxContextFlyout" ShowMode="{OnFormFactor Desktop=Standard, Mobile=Transient}" FlyoutPresenterTheme="{StaticResource HorizontalMenuFlyoutPresenter}" ItemContainerTheme="{StaticResource HorizontalMenuItem}">
     <MenuItem Header="{DynamicResource StringTextFlyoutSpellingText}"
-              IsVisible="{Binding $parent[TextBox].HasSpellCheckSuggestions}"
-              ItemsSource="{Binding $parent[TextBox].SpellCheckSuggestions}">
+              IsVisible="{Binding $parent[TextBox].(SpellCheck.HasSuggestions)}"
+              ItemsSource="{Binding $parent[TextBox].(SpellCheck.Suggestions)}">
       <MenuItem.ItemContainerTheme>
         <!-- DataContext is the suggestion; the container supplies Header. -->
         <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="x:String">
@@ -50,7 +50,7 @@
         </ControlTheme>
       </MenuItem.ItemContainerTheme>
     </MenuItem>
-    <Separator IsVisible="{Binding $parent[TextBox].HasSpellCheckSuggestions}" />
+    <Separator IsVisible="{Binding $parent[TextBox].(SpellCheck.HasSuggestions)}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" IsVisible="{Binding $parent[TextBox].CanCut}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" IsVisible="{Binding $parent[TextBox].CanCopy}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutPasteText}" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" />
@@ -123,7 +123,6 @@
     <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
-    <Setter Property="SpellCheckErrorBrush" Value="{DynamicResource TextControlSpellCheckErrorBrush}" />
     <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -201,7 +200,6 @@
                                      RevealPassword="{TemplateBinding RevealPassword}"
                                      SelectionBrush="{TemplateBinding SelectionBrush}"
                                      SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                     SpellCheckErrorBrush="{TemplateBinding SpellCheckErrorBrush}"
                                      CaretBrush="{TemplateBinding CaretBrush}"
                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>

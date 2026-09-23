@@ -204,7 +204,7 @@ namespace Avalonia.Controls.UnitTests
                 var datePicker = CreateControl();
                 var textBox = GetTextBox(datePicker);
 
-                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+                Assert.False(SpellCheck.GetIsEnabled(textBox));
             }
         }
 
@@ -216,9 +216,9 @@ namespace Avalonia.Controls.UnitTests
                 var datePicker = CreateControl();
                 var textBox = GetTextBox(datePicker);
 
-                TextInputOptions.SetIsSpellCheckEnabled(datePicker, true);
+                SpellCheck.SetIsEnabled(datePicker, true);
 
-                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+                Assert.True(SpellCheck.GetIsEnabled(textBox));
             }
         }
 
@@ -228,7 +228,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var root = new Panel();
-                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+                SpellCheck.SetIsEnabled(root, true);
 
                 var datePicker = CreateControl();
                 root.Children.Add(datePicker);
@@ -236,7 +236,7 @@ namespace Avalonia.Controls.UnitTests
                 var textBox = GetTextBox(datePicker);
 
                 // An inherited opt-in must not override the control's default.
-                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+                Assert.False(SpellCheck.GetIsEnabled(textBox));
             }
         }
 

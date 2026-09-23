@@ -124,11 +124,11 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var layout = presenter.TextLayout;
 
-                presenter.SetSpellCheckRanges(new[] { new SpellCheckResult(0, 3) });
+                presenter.SetSpellCheckRanges(new[] { new TestSpellCheckResult(0, 3) });
 
                 // Adding underlines must preserve shaping and selection formatting.
                 Assert.Same(layout, presenter.TextLayout);
-                Assert.Equal(new[] { new SpellCheckResult(0, 3) }, presenter.SpellCheckRanges);
+                Assert.Equal(new[] { new TestSpellCheckResult(0, 3) }, presenter.SpellCheckRanges);
 
                 var selectedRun = presenter.TextLayout.TextLines
                     .SelectMany(x => x.TextRuns)
@@ -156,13 +156,13 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 presenter.Measure(new Size(1000, 1000));
 
-                presenter.SetSpellCheckRanges(new[] { new SpellCheckResult(0, 3), new SpellCheckResult(9, 6) });
+                presenter.SetSpellCheckRanges(new[] { new TestSpellCheckResult(0, 3), new TestSpellCheckResult(9, 6) });
 
                 // Two misspellings on one line: one underline each.
                 Assert.Equal(2, presenter.GetSpellCheckUnderlinesForTests().Count);
 
                 // A range that only exists past the end of the text produces nothing.
-                presenter.SetSpellCheckRanges(new[] { new SpellCheckResult(40, 3) });
+                presenter.SetSpellCheckRanges(new[] { new TestSpellCheckResult(40, 3) });
                 Assert.Empty(presenter.GetSpellCheckUnderlinesForTests());
             }
         }
@@ -184,7 +184,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Assert.Equal(2, presenter.TextLayout.TextLines.Count);
 
                 // One range covering both words is drawn once per line it touches.
-                presenter.SetSpellCheckRanges(new[] { new SpellCheckResult(0, 9) });
+                presenter.SetSpellCheckRanges(new[] { new TestSpellCheckResult(0, 9) });
 
                 Assert.Equal(2, presenter.GetSpellCheckUnderlinesForTests().Count);
             }
@@ -203,7 +203,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 };
 
                 presenter.Measure(new Size(1000, 1000));
-                presenter.SetSpellCheckRanges(new[] { new SpellCheckResult(0, 4) });
+                presenter.SetSpellCheckRanges(new[] { new TestSpellCheckResult(0, 4) });
 
                 Assert.Single(presenter.GetSpellCheckUnderlinesForTests());
             }
@@ -222,7 +222,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 };
 
                 presenter.Measure(new Size(1000, 1000));
-                presenter.SetSpellCheckRanges(new[] { new SpellCheckResult(0, 3), new SpellCheckResult(9, 6) });
+                presenter.SetSpellCheckRanges(new[] { new TestSpellCheckResult(0, 3), new TestSpellCheckResult(9, 6) });
 
                 // Composition text is inserted at the caret; ranges after it shift, ranges before it stay.
                 presenter.PreeditText = "xx";
@@ -245,7 +245,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 };
 
                 presenter.Measure(new Size(1000, 1000));
-                presenter.SetSpellCheckRanges(new[] { new SpellCheckResult(0, 6) });
+                presenter.SetSpellCheckRanges(new[] { new TestSpellCheckResult(0, 6) });
 
                 // The original word is split around the composition text rather than underlining it.
                 Assert.Equal(2, presenter.GetSpellCheckUnderlinesForTests().Count);

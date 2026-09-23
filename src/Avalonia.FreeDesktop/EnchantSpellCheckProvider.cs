@@ -15,8 +15,8 @@ namespace Avalonia.FreeDesktop;
 /// Spell checking through libenchant-2.
 /// </summary>
 /// <remarks>
-/// Share the broker and dictionaries to avoid repeated loads. Use them only on the UI thread;
-/// native resources live until process exit.
+/// Share the broker and dictionaries to avoid repeated loads. Contexts keep all dictionary access on their
+/// creating UI thread; native resources live until process exit.
 /// </remarks>
 internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
 {
@@ -29,113 +29,158 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
     private readonly HashSet<string> _unsupportedDictionaries = new(StringComparer.OrdinalIgnoreCase);
     private IntPtr _broker;
     private bool _unavailable;
-    private string? _userLanguage;
-    private bool _userLanguageResolved;
-
     private EnchantSpellCheckProvider()
     {
     }
 
-    public bool IsLanguageSupported(CultureInfo? culture)
+    public IReadOnlyList<CultureInfo> SupportedCultures
     {
-        return GetDictionary(culture) != IntPtr.Zero;
-    }
-
-    public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        ReadOnlyMemory<char> textMemory,
-        CultureInfo? culture,
-        CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var text = textMemory.Span;
-        var dictionary = GetDictionary(culture);
-
-        if (dictionary == IntPtr.Zero || text.IsEmpty || IsWhiteSpace(text))
+        get
         {
-            return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
-        }
+            EnsureBroker();
 
-        List<SpellCheckResult>? results = null;
-        var words = new CheckableWordEnumerator(text);
+            if (_broker == IntPtr.Zero)
+                return Array.Empty<CultureInfo>();
 
-        while (words.MoveNext(out var offset, out var length))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var word = text.Slice(offset, length);
-
-            if (!IsWordCorrect(dictionary, word))
-            {
-                (results ??= new List<SpellCheckResult>()).Add(new SpellCheckResult(offset, length));
-            }
-        }
-
-        return new ValueTask<IReadOnlyList<SpellCheckResult>>(
-            results is null ? Array.Empty<SpellCheckResult>() : results);
-    }
-
-    public ValueTask<IReadOnlyList<string>> SuggestAsync(
-        string word,
-        CultureInfo? culture,
-        CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var dictionary = GetDictionary(culture);
-
-        if (dictionary == IntPtr.Zero || string.IsNullOrWhiteSpace(word))
-        {
-            return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
-        }
-
-        byte[]? rented = null;
-
-        try
-        {
-            var utf8Word = EncodeUtf8(word, stackalloc byte[StackallocByteLimit], ref rented, out var byteLength);
-            nuint count = 0;
-            IntPtr suggestions;
-
-            fixed (byte* wordPtr = utf8Word)
-            {
-                suggestions = EnchantDictSuggest(dictionary, wordPtr, byteLength, &count);
-            }
-
-            if (suggestions == IntPtr.Zero || count == 0)
-            {
-                return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
-            }
+            var languageTags = new List<string>();
+            var handle = GCHandle.Alloc(languageTags);
 
             try
             {
-                var length = checked((int)count);
-                var pointers = (IntPtr*)suggestions;
-                var results = new List<string>(length);
-
-                for (var i = 0; i < length; i++)
-                {
-                    var value = PtrToStringUtf8(pointers[i]);
-
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        results.Add(value);
-                    }
-                }
-
-                return new ValueTask<IReadOnlyList<string>>(results);
+                EnchantBrokerListDicts(_broker, s_dictionaryCallback, GCHandle.ToIntPtr(handle));
             }
             finally
             {
-                EnchantDictFreeStringList(dictionary, suggestions);
+                handle.Free();
             }
-        }
-        finally
-        {
-            if (rented is not null)
+
+            var cultures = new List<CultureInfo>(languageTags.Count);
+
+            foreach (var languageTag in languageTags)
             {
-                ArrayPool<byte>.Shared.Return(rented);
+                try
+                {
+                    cultures.Add(CultureInfo.GetCultureInfo(languageTag.Replace('_', '-')));
+                }
+                catch (CultureNotFoundException)
+                {
+                }
+            }
+
+            return cultures;
+        }
+    }
+
+    public ISpellCheckContext? CreateContext(CultureInfo culture)
+    {
+        var dictionary = GetDictionary(culture);
+        return dictionary == IntPtr.Zero ? null : new EnchantContext(dictionary);
+    }
+
+    private sealed class EnchantContext : SpellCheckContextBase
+    {
+        private readonly IntPtr _dictionary;
+
+        public EnchantContext(IntPtr dictionary)
+        {
+            _dictionary = dictionary;
+        }
+
+        protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+            ReadOnlyMemory<char> textMemory,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var text = textMemory.Span;
+
+            if (text.IsEmpty || IsWhiteSpace(text))
+                return new ValueTask<IReadOnlyList<ISpellCheckResult>>(Array.Empty<ISpellCheckResult>());
+
+            List<ISpellCheckResult>? results = null;
+            var words = new CheckableWordEnumerator(text);
+
+            while (words.MoveNext(out var offset, out var length))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var word = text.Slice(offset, length);
+
+                if (!IsWordCorrect(_dictionary, word))
+                {
+                    (results ??= new List<ISpellCheckResult>()).Add(
+                        new EnchantResult(this, offset, length, word.ToString()));
+                }
+            }
+
+            return new ValueTask<IReadOnlyList<ISpellCheckResult>>(
+                results is null ? Array.Empty<ISpellCheckResult>() : results);
+        }
+
+        public ValueTask<IReadOnlyList<string>> SuggestCoreAsync(
+            string word,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (string.IsNullOrWhiteSpace(word))
+                return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
+
+            byte[]? rented = null;
+
+            try
+            {
+                var utf8Word = EncodeUtf8(word, stackalloc byte[StackallocByteLimit], ref rented, out var byteLength);
+                nuint count = 0;
+                IntPtr suggestions;
+
+                fixed (byte* wordPtr = utf8Word)
+                    suggestions = EnchantDictSuggest(_dictionary, wordPtr, byteLength, &count);
+
+                if (suggestions == IntPtr.Zero || count == 0)
+                    return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
+
+                try
+                {
+                    var length = checked((int)count);
+                    var pointers = (IntPtr*)suggestions;
+                    var results = new List<string>(length);
+
+                    for (var i = 0; i < length; i++)
+                    {
+                        var value = PtrToStringUtf8(pointers[i]);
+
+                        if (!string.IsNullOrEmpty(value))
+                            results.Add(value);
+                    }
+
+                    return new ValueTask<IReadOnlyList<string>>(results);
+                }
+                finally
+                {
+                    EnchantDictFreeStringList(_dictionary, suggestions);
+                }
+            }
+            finally
+            {
+                if (rented is not null)
+                    ArrayPool<byte>.Shared.Return(rented);
             }
         }
+    }
+
+    private sealed class EnchantResult : SpellCheckResultBase
+    {
+        private readonly EnchantContext _context;
+        private readonly string _word;
+
+        public EnchantResult(EnchantContext context, int start, int length, string word)
+            : base(context, start, length)
+        {
+            _context = context;
+            _word = word;
+        }
+
+        protected override ValueTask<IReadOnlyList<string>> SuggestCoreAsync(CancellationToken cancellationToken) =>
+            _context.SuggestCoreAsync(_word, cancellationToken);
     }
 
     private static bool IsWhiteSpace(ReadOnlySpan<char> text)
@@ -291,7 +336,7 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
         return buffer.Slice(0, byteLength + 1);
     }
 
-    private IntPtr GetDictionary(CultureInfo? culture)
+    private IntPtr GetDictionary(CultureInfo culture)
     {
         if (_unavailable)
         {
@@ -375,38 +420,11 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
         }
     }
 
-    // Use Enchant's locale, then fall back to the process cultures.
-    private IEnumerable<string> GetLanguageTags(CultureInfo? culture)
+    private static IEnumerable<string> GetLanguageTags(CultureInfo culture)
     {
-        if (culture is not null)
+        foreach (var tag in GetLanguageTags(culture.Name, culture.TwoLetterISOLanguageName))
         {
-            foreach (var tag in GetLanguageTags(culture.Name, culture.TwoLetterISOLanguageName))
-            {
-                yield return tag;
-            }
-
-            yield break;
-        }
-
-        var userLanguage = GetUserLanguage();
-
-        if (!string.IsNullOrEmpty(userLanguage))
-        {
-            foreach (var tag in GetLanguageTags(userLanguage, null))
-            {
-                yield return tag;
-            }
-        }
-
-        foreach (var fallback in new[] { CultureInfo.CurrentUICulture, CultureInfo.CurrentCulture })
-        {
-            if (!string.IsNullOrEmpty(fallback.Name))
-            {
-                foreach (var tag in GetLanguageTags(fallback.Name, fallback.TwoLetterISOLanguageName))
-                {
-                    yield return tag;
-                }
-            }
+            yield return tag;
         }
     }
 
@@ -440,52 +458,22 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
         }
     }
 
-    private string? GetUserLanguage()
+    private static readonly EnchantDictDescribeCallback s_dictionaryCallback = OnDictionary;
+
+    private static void OnDictionary(
+        IntPtr languageTag,
+        IntPtr providerName,
+        IntPtr providerDescription,
+        IntPtr providerFile,
+        IntPtr userData)
     {
-        if (_userLanguageResolved)
+        var value = PtrToStringUtf8(languageTag);
+
+        if (!string.IsNullOrEmpty(value) &&
+            GCHandle.FromIntPtr(userData).Target is List<string> languageTags)
         {
-            return _userLanguage;
+            languageTags.Add(value);
         }
-
-        _userLanguageResolved = true;
-
-        try
-        {
-            var pointer = EnchantGetUserLanguage();
-
-            if (pointer != IntPtr.Zero)
-            {
-                try
-                {
-                    // Strip encoding and modifiers from LANG.
-                    var value = PtrToStringUtf8(pointer);
-                    var cut = value?.IndexOfAny(new[] { '.', '@' }) ?? -1;
-
-                    if (cut >= 0)
-                    {
-                        value = value!.Substring(0, cut);
-                    }
-
-                    // An unset locale ("C" / "POSIX") is not a language.
-                    if (!string.IsNullOrEmpty(value) && value != "C" && value != "POSIX")
-                    {
-                        _userLanguage = value;
-                    }
-                }
-                finally
-                {
-                    Free(pointer);
-                }
-            }
-        }
-        catch (EntryPointNotFoundException)
-        {
-        }
-        catch (DllNotFoundException)
-        {
-        }
-
-        return _userLanguage;
     }
 
     private static string? PtrToStringUtf8(IntPtr pointer)
@@ -512,6 +500,20 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
     [DllImport(EnchantLibrary, EntryPoint = "enchant_broker_request_dict", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr EnchantBrokerRequestDict(IntPtr broker, byte* languageTag);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void EnchantDictDescribeCallback(
+        IntPtr languageTag,
+        IntPtr providerName,
+        IntPtr providerDescription,
+        IntPtr providerFile,
+        IntPtr userData);
+
+    [DllImport(EnchantLibrary, EntryPoint = "enchant_broker_list_dicts", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void EnchantBrokerListDicts(
+        IntPtr broker,
+        EnchantDictDescribeCallback callback,
+        IntPtr userData);
+
     [DllImport(EnchantLibrary, EntryPoint = "enchant_dict_check", CallingConvention = CallingConvention.Cdecl)]
     private static extern int EnchantDictCheck(IntPtr dictionary, byte* word, nint length);
 
@@ -521,10 +523,4 @@ internal sealed unsafe class EnchantSpellCheckProvider : ISpellCheckProvider
     [DllImport(EnchantLibrary, EntryPoint = "enchant_dict_free_string_list", CallingConvention = CallingConvention.Cdecl)]
     private static extern void EnchantDictFreeStringList(IntPtr dictionary, IntPtr stringList);
 
-    // Returns a malloc'd copy of the user's language (from the environment); freed with free().
-    [DllImport(EnchantLibrary, EntryPoint = "enchant_get_user_language", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr EnchantGetUserLanguage();
-
-    [DllImport("libc", EntryPoint = "free", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void Free(IntPtr pointer);
 }

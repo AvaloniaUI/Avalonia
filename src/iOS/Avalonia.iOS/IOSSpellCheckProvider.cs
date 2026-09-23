@@ -14,129 +14,119 @@ namespace Avalonia.iOS;
 
 internal sealed class IOSSpellCheckProvider : ISpellCheckProvider
 {
-    private UITextChecker? _checker;
     private string[]? _availableLanguages;
-    private string? _defaultLanguage;
-    private bool _defaultLanguageResolved;
 
-    public bool IsLanguageSupported(CultureInfo? culture)
+    public IReadOnlyList<CultureInfo> SupportedCultures
     {
-        return ResolveLanguage(culture) is not null;
+        get
+        {
+            var available = GetAvailableLanguages();
+            var cultures = new List<CultureInfo>(available.Length);
+
+            foreach (var language in available)
+            {
+                try
+                {
+                    cultures.Add(CultureInfo.GetCultureInfo(language.Replace('_', '-')));
+                }
+                catch (CultureNotFoundException)
+                {
+                }
+            }
+
+            return cultures;
+        }
     }
 
-    public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-        ReadOnlyMemory<char> textMemory,
-        CultureInfo? culture,
-        CancellationToken cancellationToken = default)
+    public ISpellCheckContext? CreateContext(CultureInfo culture)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
         var language = ResolveLanguage(culture);
+        return language is null ? null : new IOSContext(language);
+    }
 
-        if (textMemory.IsEmpty || language is null || GetChecker() is not { } checker)
+    private sealed class IOSContext : SpellCheckContextBase
+    {
+        private readonly string _language;
+        private readonly UITextChecker _checker = new();
+
+        public IOSContext(string language)
         {
-            return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
+            _language = language;
         }
 
-        var text = textMemory.ToString();
-        List<SpellCheckResult>? results = null;
-        var range = new NSRange(0, text.Length);
-        nint offset = 0;
-
-        while (offset < text.Length)
+        protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+            ReadOnlyMemory<char> textMemory,
+            CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var misspelled = checker.RangeOfMisspelledWordInString(text, range, offset, false, language);
-
-            if (misspelled.Location == NSRange.NotFound || misspelled.Length <= 0)
+            if (textMemory.IsEmpty)
             {
-                break;
+                return new ValueTask<IReadOnlyList<ISpellCheckResult>>(Array.Empty<ISpellCheckResult>());
             }
 
-            var start = checked((int)misspelled.Location);
-            var length = checked((int)misspelled.Length);
+            var text = textMemory.ToString();
+            List<ISpellCheckResult>? results = null;
+            var range = new NSRange(0, text.Length);
+            nint offset = 0;
 
-            if (start < 0 || start + length > text.Length)
+            while (offset < text.Length)
             {
-                break;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var misspelled = _checker.RangeOfMisspelledWordInString(text, range, offset, false, _language);
+
+                if (misspelled.Location == NSRange.NotFound || misspelled.Length <= 0)
+                    break;
+
+                var start = checked((int)misspelled.Location);
+                var length = checked((int)misspelled.Length);
+
+                if (start < 0 || start + length > text.Length)
+                    break;
+
+                (results ??= new List<ISpellCheckResult>()).Add(
+                    new IOSResult(this, start, length, text.Substring(start, length)));
+                offset = start + length;
             }
 
-            (results ??= new List<SpellCheckResult>()).Add(new SpellCheckResult(start, length));
-            offset = start + length;
+            return new ValueTask<IReadOnlyList<ISpellCheckResult>>(
+                results is null ? Array.Empty<ISpellCheckResult>() : results);
         }
 
-        return new ValueTask<IReadOnlyList<SpellCheckResult>>(
-            results is null ? Array.Empty<SpellCheckResult>() : results);
+        public ValueTask<IReadOnlyList<string>> SuggestCoreAsync(string word, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return new ValueTask<IReadOnlyList<string>>(
+                _checker.GuessesForWordRange(new NSRange(0, word.Length), word, _language) ?? Array.Empty<string>());
+        }
+
+        protected override void DisposeCore()
+        {
+            _checker.Dispose();
+        }
     }
 
-    public ValueTask<IReadOnlyList<string>> SuggestAsync(
-        string word,
-        CultureInfo? culture,
-        CancellationToken cancellationToken = default)
+    private sealed class IOSResult : SpellCheckResultBase
     {
-        cancellationToken.ThrowIfCancellationRequested();
+        private readonly IOSContext _context;
+        private readonly string _word;
 
-        var language = ResolveLanguage(culture);
-
-        if (string.IsNullOrWhiteSpace(word) || language is null || GetChecker() is not { } checker)
+        public IOSResult(IOSContext context, int start, int length, string word)
+            : base(context, start, length)
         {
-            return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
+            _context = context;
+            _word = word;
         }
 
-        return new ValueTask<IReadOnlyList<string>>(
-            checker.GuessesForWordRange(new NSRange(0, word.Length), word, language) ?? Array.Empty<string>());
-    }
-
-    private UITextChecker? GetChecker()
-    {
-        if (_checker is not null)
-        {
-            return _checker;
-        }
-
-        // Let initialization errors reach the manager so they can be logged and retried.
-        return _checker = new UITextChecker();
+        protected override ValueTask<IReadOnlyList<string>> SuggestCoreAsync(CancellationToken cancellationToken) =>
+            _context.SuggestCoreAsync(_word, cancellationToken);
     }
 
     // Match UIKit's language tags, falling back to another region of the same language.
-    private string? ResolveLanguage(CultureInfo? culture)
+    private string? ResolveLanguage(CultureInfo culture)
     {
-        if (culture is null)
-        {
-            if (!_defaultLanguageResolved)
-            {
-                _defaultLanguage = ResolveDefaultLanguage();
-                // Cache only successful resolution so native failures can be retried.
-                _defaultLanguageResolved = true;
-            }
-
-            return _defaultLanguage;
-        }
-
         return GetSupportedLanguageTag(culture.Name, culture.TwoLetterISOLanguageName);
-    }
-
-    private string? ResolveDefaultLanguage()
-    {
-        foreach (var preferred in NSLocale.PreferredLanguages)
-        {
-            if (string.IsNullOrEmpty(preferred))
-            {
-                continue;
-            }
-
-            if (GetSupportedLanguageTag(preferred, null) is { } supported)
-            {
-                return supported;
-            }
-        }
-
-        var current = CultureInfo.CurrentCulture;
-
-        return string.IsNullOrEmpty(current.Name)
-            ? null
-            : GetSupportedLanguageTag(current.Name, current.TwoLetterISOLanguageName);
     }
 
     private string? GetSupportedLanguageTag(string languageTag, string? neutralLanguageTag)

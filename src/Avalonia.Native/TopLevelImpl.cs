@@ -368,7 +368,9 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         if (featureType == typeof(ISpellCheckProvider))
         {
             // Avoid native checker startup until spell checking is requested.
-            return OperatingSystem.IsMacOS() ? MacOSSpellCheckProvider.Instance : null;
+            return OperatingSystem.IsMacOS()
+                ? MacOSSpellCheckProvider.GetShared(Factory)
+                : null;
         }
 
         if (featureType == typeof(IScreenImpl))

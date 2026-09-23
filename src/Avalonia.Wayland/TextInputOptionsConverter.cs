@@ -64,8 +64,11 @@ internal static class TextInputOptionsConverter
         if (options.ShowSuggestions == true)
         {
             hint |= ZwpTextInputV3.ContentHintEnum.Completion;
-            if (options.IsSpellCheckAllowed())
+
+            if (SpellCheckPolicy.IsAllowed(options))
+            {
                 hint |= ZwpTextInputV3.ContentHintEnum.Spellcheck;
+            }
         }
 
         // Password always overrides: even with ShowSuggestions=true, never reveal text.

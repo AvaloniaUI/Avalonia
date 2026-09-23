@@ -12,25 +12,7 @@ partial class AvaloniaView
         public UITextAutocapitalizationType AutocapitalizationType { get; private set; }
 
         [Export("autocorrectionType")]
-        public UITextAutocorrectionType AutocorrectionType
-        {
-            get
-            {
-                var options = _view._options ?? TextInputOptions.Default;
-
-                if (!options.IsSpellCheckAllowed())
-                {
-                    return UITextAutocorrectionType.No;
-                }
-
-                return options.ShowSuggestions switch
-                {
-                    false => UITextAutocorrectionType.No,
-                    true => UITextAutocorrectionType.Yes,
-                    _ => UITextAutocorrectionType.Default
-                };
-            }
-        }
+        public UITextAutocorrectionType AutocorrectionType => GetAutocorrectionType(_view._options);
 
         [Export("keyboardType")]
         public UIKeyboardType KeyboardType =>
@@ -81,21 +63,31 @@ partial class AvaloniaView
             || (_view._options?.IsSensitive ?? false);
 
         [Export("spellCheckingType")]
-        public UITextSpellCheckingType SpellCheckingType
+        public UITextSpellCheckingType SpellCheckingType => GetSpellCheckingType(_view._options);
+
+        // Blocked fields never autocorrect. Other fields follow the user's keyboard setting.
+        internal static UITextAutocorrectionType GetAutocorrectionType(TextInputOptions? options)
         {
-            get
+            options ??= TextInputOptions.Default;
+
+            if (options.ShowSuggestions == false || !SpellCheckPolicy.IsAllowed(options))
             {
-                var options = _view._options ?? TextInputOptions.Default;
-
-                if (!options.IsSpellCheckAllowed())
-                {
-                    return UITextSpellCheckingType.No;
-                }
-
-                return options.IsSpellCheckEnabled == true
-                    ? UITextSpellCheckingType.Yes
-                    : UITextSpellCheckingType.Default;
+                return UITextAutocorrectionType.No;
             }
+
+            return options.ShowSuggestions == true ? UITextAutocorrectionType.Yes : UITextAutocorrectionType.Default;
+        }
+
+        internal static UITextSpellCheckingType GetSpellCheckingType(TextInputOptions? options)
+        {
+            options ??= TextInputOptions.Default;
+
+            if (options.ShowSuggestions == false || !SpellCheckPolicy.IsAllowed(options))
+            {
+                return UITextSpellCheckingType.No;
+            }
+
+            return options.ShowSuggestions == true ? UITextSpellCheckingType.Yes : UITextSpellCheckingType.Default;
         }
 
         [Export("textContentType")] public NSString TextContentType { get; set; } = new NSString("text/plain");

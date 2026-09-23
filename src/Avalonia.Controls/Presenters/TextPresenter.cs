@@ -36,12 +36,6 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(SelectionForegroundBrush));
 
-        /// <summary>
-        /// Defines the <see cref="SpellCheckErrorBrush"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IBrush?> SpellCheckErrorBrushProperty =
-            AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(SpellCheckErrorBrush));
-
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrush));
 
@@ -114,7 +108,7 @@ namespace Avalonia.Controls.Presenters
         private Point? _previousOffset;
         private TextSelectorLayer? _layer;
         // Draw underlines without reshaping text; cache the geometry per TextLayout.
-        private IReadOnlyList<SpellCheckResult>? _spellCheckRanges;
+        private IReadOnlyList<ISpellCheckResult>? _spellCheckRanges;
         private TextLayout? _spellCheckGeometryLayout;
         private double _spellCheckGeometryTop;
         private StreamGeometry? _spellCheckGeometry;
@@ -124,7 +118,7 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, SelectionForegroundBrushProperty, SpellCheckErrorBrushProperty, TextElement.ForegroundProperty, ShowSelectionHighlightProperty);
+            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, SelectionForegroundBrushProperty, TextElement.ForegroundProperty, ShowSelectionHighlightProperty);
         }
 
         public TextPresenter() { }
@@ -320,15 +314,6 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the brush used to underline misspelled words. When null a default red is used.
-        /// </summary>
-        public IBrush? SpellCheckErrorBrush
-        {
-            get => GetValue(SpellCheckErrorBrushProperty);
-            set => SetValue(SpellCheckErrorBrushProperty, value);
-        }
-
         public IBrush? CaretBrush
         {
             get => GetValue(CaretBrushProperty);
@@ -440,7 +425,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         // Ranges use Text offsets, excluding IME preedit text.
-        internal IReadOnlyList<SpellCheckResult>? SpellCheckRanges => _spellCheckRanges;
+        internal IReadOnlyList<ISpellCheckResult>? SpellCheckRanges => _spellCheckRanges;
 
         // Map layout offsets back to Text, excluding IME preedit text.
         internal int GetTextPositionFromLayoutPosition(int layoutPosition)
@@ -469,7 +454,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         // Ranges use Text offsets and must be sorted by start; the layout is unchanged.
-        internal bool SetSpellCheckRanges(IReadOnlyList<SpellCheckResult>? ranges)
+        internal bool SetSpellCheckRanges(IReadOnlyList<ISpellCheckResult>? ranges)
         {
             if (ranges is { Count: 0 })
             {
@@ -494,7 +479,7 @@ namespace Avalonia.Controls.Presenters
             _spellCheckGeometryLayout = null;
         }
 
-        private static bool AreSpellCheckRangesEqual(IReadOnlyList<SpellCheckResult>? left, IReadOnlyList<SpellCheckResult>? right)
+        private static bool AreSpellCheckRangesEqual(IReadOnlyList<ISpellCheckResult>? left, IReadOnlyList<ISpellCheckResult>? right)
         {
             if (ReferenceEquals(left, right))
             {
@@ -541,7 +526,7 @@ namespace Avalonia.Controls.Presenters
                 return;
             }
 
-            var brush = SpellCheckErrorBrush ?? s_defaultSpellCheckErrorBrush;
+            var brush = s_defaultSpellCheckErrorBrush;
             if (_spellCheckPen is null ||
                 !ReferenceEquals(_spellCheckPenBrush, brush) ||
                 _spellCheckPen.Thickness != thickness)
@@ -571,7 +556,7 @@ namespace Avalonia.Controls.Presenters
         // Map source ranges around IME preedit text, then build one underline per visual run.
         private List<Rect> BuildSpellCheckUnderlines(
             TextLayout textLayout,
-            IReadOnlyList<SpellCheckResult> ranges,
+            IReadOnlyList<ISpellCheckResult> ranges,
             double top,
             double thickness)
         {
@@ -680,12 +665,12 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private static int GetLayoutStart(SpellCheckResult range, int caretIndex, int preeditLength)
+        private static int GetLayoutStart(ISpellCheckResult range, int caretIndex, int preeditLength)
         {
             return preeditLength > 0 && range.Start >= caretIndex ? range.Start + preeditLength : range.Start;
         }
 
-        private static int GetLayoutEnd(SpellCheckResult range, int caretIndex, int preeditLength)
+        private static int GetLayoutEnd(ISpellCheckResult range, int caretIndex, int preeditLength)
         {
             var end = range.Start + range.Length;
             return preeditLength > 0 && end > caretIndex ? end + preeditLength : end;

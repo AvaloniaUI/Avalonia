@@ -107,12 +107,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
 
         /// <summary>
-        /// Defines the <see cref="SpellCheckErrorBrush"/> property
-        /// </summary>
-        public static readonly StyledProperty<IBrush?> SpellCheckErrorBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SpellCheckErrorBrush));
-
-        /// <summary>
         /// Defines the <see cref="SelectionForegroundBrush"/> property
         /// </summary>
         public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
@@ -289,24 +283,6 @@ namespace Avalonia.Controls
                 o => o.CanPaste);
 
         /// <summary>
-        /// Defines the <see cref="SpellCheckSuggestions"/> property
-        /// </summary>
-        [Unstable("SpellCheckSuggestions is theme plumbing and may change or become internal in a minor release.")]
-        public static readonly DirectProperty<TextBox, IReadOnlyList<string>> SpellCheckSuggestionsProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, IReadOnlyList<string>>(
-                nameof(SpellCheckSuggestions),
-                o => o.SpellCheckSuggestions);
-
-        /// <summary>
-        /// Defines the <see cref="HasSpellCheckSuggestions"/> property
-        /// </summary>
-        [Unstable("HasSpellCheckSuggestions is theme plumbing and may change or become internal in a minor release.")]
-        public static readonly DirectProperty<TextBox, bool> HasSpellCheckSuggestionsProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, bool>(
-                nameof(HasSpellCheckSuggestions),
-                o => o.HasSpellCheckSuggestions);
-
-        /// <summary>
         /// Defines the <see cref="IsUndoEnabled"/> property
         /// </summary>
         public static readonly StyledProperty<bool> IsUndoEnabledProperty =
@@ -409,8 +385,6 @@ namespace Avalonia.Controls
         private bool _canCut;
         private bool _canCopy;
         private bool _canPaste;
-        private IReadOnlyList<string> _spellCheckSuggestions = Array.Empty<string>();
-        private bool _hasSpellCheckSuggestions;
         private CancellationTokenSource? _spellCheckSuggestionCancellation;
         private int _spellCheckSuggestionStart = -1;
         private int _spellCheckSuggestionLength;
@@ -561,16 +535,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(SelectionBrushProperty);
             set => SetValue(SelectionBrushProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the brush used to underline misspelled words when spell checking is enabled.
-        /// A null value uses the theme default.
-        /// </summary>
-        public IBrush? SpellCheckErrorBrush
-        {
-            get => GetValue(SpellCheckErrorBrushProperty);
-            set => SetValue(SpellCheckErrorBrushProperty, value);
         }
 
         /// <summary>
@@ -928,30 +892,6 @@ namespace Avalonia.Controls
             private set => SetAndRaise(CanPasteProperty, ref _canPaste, value);
         }
 
-        /// <summary>
-        /// Gets replacement suggestions for the misspelled word at the current context position.
-        /// </summary>
-        /// <remarks>
-        /// Populated for context menus; cleared when text, caret, or selection changes.
-        /// </remarks>
-        [Unstable("SpellCheckSuggestions is theme plumbing and may change or become internal in a minor release.")]
-        public IReadOnlyList<string> SpellCheckSuggestions
-        {
-            get => _spellCheckSuggestions;
-            private set => SetAndRaise(SpellCheckSuggestionsProperty, ref _spellCheckSuggestions, value);
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether spell check suggestions are available for the current context position.
-        /// </summary>
-        /// <remarks>See <see cref="SpellCheckSuggestions"/> for when this value is meaningful.</remarks>
-        [Unstable("HasSpellCheckSuggestions is theme plumbing and may change or become internal in a minor release.")]
-        public bool HasSpellCheckSuggestions
-        {
-            get => _hasSpellCheckSuggestions;
-            private set => SetAndRaise(HasSpellCheckSuggestionsProperty, ref _hasSpellCheckSuggestions, value);
-        }
-
         internal bool HasSpellCheckManager => _spellCheckManager is not null;
 
         /// <summary>
@@ -1236,8 +1176,9 @@ namespace Avalonia.Controls
                 ClearUndoRedo();
             }
 
-            if (change.Property == TextInputOptions.IsSpellCheckEnabledProperty ||
-                change.Property == TextInputOptions.SpellCheckProviderProperty ||
+            if (change.Property == SpellCheck.IsEnabledProperty ||
+                change.Property == SpellCheck.ProviderProperty ||
+                change.Property == SpellCheck.LanguageProperty ||
                 change.Property == TextInputOptions.ContentTypeProperty ||
                 change.Property == TextInputOptions.IsSensitiveProperty ||
                 change.Property == TextInputOptions.LocaleHintsProperty ||
@@ -1341,8 +1282,7 @@ namespace Avalonia.Controls
             }
 
             _spellCheckManager = null;
-            manager.Clear();
-            manager.SetPresenter(null, null);
+            manager.Dispose();
         }
 
         private void UpdateSpellCheckSuggestions(ContextRequestedEventArgs? contextRequested = null)
@@ -1439,7 +1379,7 @@ namespace Avalonia.Controls
         }
 
         private async void UpdateSpellCheckSuggestionsAsync(
-            ValueTask<(SpellCheckResult Result, IReadOnlyList<string> Suggestions)?> suggestions,
+            ValueTask<(ISpellCheckResult Result, IReadOnlyList<string> Suggestions)?> suggestions,
             CancellationTokenSource cancellation)
         {
             try
@@ -1467,7 +1407,7 @@ namespace Avalonia.Controls
         }
 
         private void ApplySpellCheckSuggestions(
-            (SpellCheckResult Result, IReadOnlyList<string> Suggestions)? suggestions,
+            (ISpellCheckResult Result, IReadOnlyList<string> Suggestions)? suggestions,
             CancellationTokenSource cancellation)
         {
             if (cancellation.IsCancellationRequested ||
@@ -1484,8 +1424,7 @@ namespace Avalonia.Controls
 
             _spellCheckSuggestionStart = value.Result.Start;
             _spellCheckSuggestionLength = value.Result.Length;
-            SpellCheckSuggestions = value.Suggestions;
-            HasSpellCheckSuggestions = value.Suggestions.Count > 0;
+            SpellCheck.SetSuggestions(this, value.Suggestions);
         }
 
         private void CancelSpellCheckSuggestionQuery()
@@ -1512,14 +1451,9 @@ namespace Avalonia.Controls
             _spellCheckSuggestionStart = -1;
             _spellCheckSuggestionLength = 0;
 
-            if (_spellCheckSuggestions.Count > 0)
+            if (SpellCheck.GetSuggestions(this).Count > 0)
             {
-                SpellCheckSuggestions = Array.Empty<string>();
-            }
-
-            if (_hasSpellCheckSuggestions)
-            {
-                HasSpellCheckSuggestions = false;
+                SpellCheck.SetSuggestions(this, null);
             }
         }
 
@@ -1803,8 +1737,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Applies a suggestion to the last queried word.
-        /// Does nothing if the text changed or the control is read-only.
+        /// Replaces the misspelled word found by the last context request.
+        /// Does nothing if there is none, the text changed, or the control is read-only.
         /// </summary>
         /// <param name="suggestion">The replacement text.</param>
         [Unstable("ApplySpellCheckSuggestion is theme plumbing and may change in a minor release.")]
@@ -1823,6 +1757,17 @@ namespace Avalonia.Controls
             {
                 ClearSpellCheckSuggestions();
                 return;
+            }
+
+            // Close the menu first, because applying removes the clicked item before it can close the menu.
+            if (ContextFlyout is { IsOpen: true } flyout)
+            {
+                flyout.Hide();
+            }
+
+            if (ContextMenu is { IsOpen: true } menu)
+            {
+                menu.Close();
             }
 
             using var _ = _imClient.BeginChange();

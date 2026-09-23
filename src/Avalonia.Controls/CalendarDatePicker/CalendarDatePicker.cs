@@ -89,7 +89,7 @@ namespace Avalonia.Controls
         public CalendarDatePicker()
         {
             // Let the inner TextBox inherit this opt-out for date input.
-            SetCurrentValue(TextInputOptions.IsSpellCheckEnabledProperty, false);
+            SetCurrentValue(SpellCheck.IsEnabledProperty, false);
             SetCurrentValue(FirstDayOfWeekProperty, DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek);
             _defaultText = string.Empty;
             SetCurrentValue(DisplayDateProperty, DateTime.Today);

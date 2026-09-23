@@ -512,7 +512,7 @@
                              AutomationProperties.Name="Hexadecimal Color"
                              Height="32"
                              MaxLength="9"
-                             TextInputOptions.IsSpellCheckEnabled="False"
+                             SpellCheck.IsEnabled="False"
                              HorizontalAlignment="Stretch"
                              CornerRadius="0,4,4,0" />
                   </Grid>

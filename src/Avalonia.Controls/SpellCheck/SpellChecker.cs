@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input.TextInput;
@@ -14,14 +13,13 @@ internal static class SpellChecker
     // Native checks may block the UI thread. Limit chunk size and yield between calls.
     internal const int MaxProviderCheckLength = 2048;
 
-    public static async ValueTask<IReadOnlyList<SpellCheckResult>> CheckRangesAsync(
+    public static async ValueTask<IReadOnlyList<ISpellCheckResult>> CheckRangesAsync(
         string text,
         List<SpellCheckRange> ranges,
-        ISpellCheckProvider provider,
-        CultureInfo? culture,
+        SpellCheckContextGate context,
         CancellationToken cancellationToken)
     {
-        List<SpellCheckResult>? normalized = null;
+        List<ISpellCheckResult>? normalized = null;
         var boundaries = new SpellCheckTokenization.WordBoundaryFinder(text);
 
         for (var i = 0; i < ranges.Count; i++)
@@ -40,15 +38,15 @@ internal static class SpellChecker
 
                 if (length > 0 && !IsWhiteSpace(text.AsSpan(checkStart, length)))
                 {
-                    var results = await provider.CheckAsync(
-                        text.AsMemory(checkStart, length), culture, cancellationToken);
+                    var results = await context.CheckAsync(
+                        text.AsMemory(checkStart, length), cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
                     if (results.Count > 0)
                     {
                         AddNormalizedResults(
-                            results, checkStart, length, normalized ??= new List<SpellCheckResult>(results.Count));
+                            results, checkStart, length, normalized ??= new List<ISpellCheckResult>(results.Count));
                     }
                 }
 
@@ -64,7 +62,7 @@ internal static class SpellChecker
 
         if (normalized is null || normalized.Count == 0)
         {
-            return Array.Empty<SpellCheckResult>();
+            return Array.Empty<ISpellCheckResult>();
         }
 
         SortResults(normalized);
@@ -105,10 +103,10 @@ internal static class SpellChecker
     }
 
     private static void AddNormalizedResults(
-        IReadOnlyList<SpellCheckResult> results,
+        IReadOnlyList<ISpellCheckResult> results,
         int rangeStart,
         int textLength,
-        List<SpellCheckResult> normalized)
+        List<ISpellCheckResult> normalized)
     {
         foreach (var result in results)
         {
@@ -119,7 +117,7 @@ internal static class SpellChecker
 
             var length = Math.Min(result.Length, textLength - result.Start);
 
-            normalized.Add(result with { Start = rangeStart + result.Start, Length = length });
+            normalized.Add(OffsetSpellCheckResult.Create(result, rangeStart + result.Start, length));
         }
     }
 
@@ -136,7 +134,7 @@ internal static class SpellChecker
         return true;
     }
 
-    private static void SortResults(List<SpellCheckResult> results)
+    private static void SortResults(List<ISpellCheckResult> results)
     {
         results.Sort(static (x, y) =>
         {

@@ -81,7 +81,7 @@ namespace Avalonia.Controls
         public MaskedTextBox()
         {
             // Use a current value because an inherited opt-in would override a type default.
-            SetCurrentValue(TextInputOptions.IsSpellCheckEnabledProperty, false);
+            SetCurrentValue(SpellCheck.IsEnabledProperty, false);
         }
 
         /// <summary>

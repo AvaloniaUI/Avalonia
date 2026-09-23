@@ -7,8 +7,8 @@
 
   <MenuFlyout x:Key="SimpleTextBoxContextFlyout" ShowMode="{OnFormFactor Desktop=Standard, Mobile=Transient}" Placement="Bottom">
     <MenuItem Header="{DynamicResource StringTextFlyoutSpellingText}"
-              IsVisible="{Binding $parent[TextBox].HasSpellCheckSuggestions}"
-              ItemsSource="{Binding $parent[TextBox].SpellCheckSuggestions}">
+              IsVisible="{Binding $parent[TextBox].(SpellCheck.HasSuggestions)}"
+              ItemsSource="{Binding $parent[TextBox].(SpellCheck.Suggestions)}">
       <MenuItem.ItemContainerTheme>
         <!-- DataContext is the suggestion; the container supplies Header. -->
         <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="x:String">
@@ -17,7 +17,7 @@
         </ControlTheme>
       </MenuItem.ItemContainerTheme>
     </MenuItem>
-    <Separator IsVisible="{Binding $parent[TextBox].HasSpellCheckSuggestions}" />
+    <Separator IsVisible="{Binding $parent[TextBox].(SpellCheck.HasSuggestions)}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding $parent[TextBox].Cut}"
               IsEnabled="{Binding $parent[TextBox].CanCut}" InputGesture="{x:Static TextBox.CutGesture}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding $parent[TextBox].Copy}"
@@ -101,7 +101,6 @@
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}" />
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}" />
-    <Setter Property="SpellCheckErrorBrush" Value="{DynamicResource ErrorBrush}" />
     <Setter Property="Padding" Value="4" />
     <Setter Property="ContextFlyout" Value="{StaticResource SimpleTextBoxContextFlyout}" />
     <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
@@ -171,7 +170,6 @@
                                    PasswordChar="{TemplateBinding PasswordChar}"
                                    RevealPassword="{TemplateBinding RevealPassword}"
                                    SelectionBrush="{TemplateBinding SelectionBrush}"
-                                   SpellCheckErrorBrush="{TemplateBinding SpellCheckErrorBrush}"
                                    SelectionEnd="{TemplateBinding SelectionEnd}"
                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
                                    SelectionStart="{TemplateBinding SelectionStart}"

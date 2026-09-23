@@ -153,7 +153,7 @@ namespace Avalonia.Controls.UnitTests
         {
             RunTest((control, textbox) =>
             {
-                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textbox));
+                Assert.False(SpellCheck.GetIsEnabled(textbox));
             });
         }
 
@@ -162,9 +162,9 @@ namespace Avalonia.Controls.UnitTests
         {
             RunTest((control, textbox) =>
             {
-                TextInputOptions.SetIsSpellCheckEnabled(control, true);
+                SpellCheck.SetIsEnabled(control, true);
 
-                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textbox));
+                Assert.True(SpellCheck.GetIsEnabled(textbox));
             });
         }
 
@@ -174,7 +174,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var root = new Panel();
-                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+                SpellCheck.SetIsEnabled(root, true);
 
                 var control = CreateControl();
                 root.Children.Add(control);
@@ -187,7 +187,7 @@ namespace Avalonia.Controls.UnitTests
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 // An inherited opt-in must not override the control's default.
-                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+                Assert.False(SpellCheck.GetIsEnabled(textBox));
             }
         }
 

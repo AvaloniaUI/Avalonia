@@ -6,8 +6,8 @@ namespace Avalonia.Controls;
 
 internal sealed class SpellCheckHighlighter
 {
-    private List<SpellCheckResult>? _visible;
-    private List<SpellCheckResult>? _spare;
+    private List<ISpellCheckResult>? _visible;
+    private List<ISpellCheckResult>? _spare;
 
     public void Clear(TextPresenter? presenter)
     {
@@ -24,13 +24,13 @@ internal sealed class SpellCheckHighlighter
     // Hide the word being typed while the caret remains in it.
     public void Apply(
         TextPresenter presenter,
-        IReadOnlyList<SpellCheckResult> results,
+        IReadOnlyList<ISpellCheckResult> results,
         List<SpellCheckRange> visibleRanges,
         SpellCheckRange? typingWord = null,
         int caretIndex = -1)
     {
         // Reuse the spare list without changing the one still held by the presenter.
-        var visible = _spare ?? new List<SpellCheckResult>(_visible?.Capacity ?? 4);
+        var visible = _spare ?? new List<ISpellCheckResult>(_visible?.Capacity ?? 4);
         visible.Clear();
         var rangeIndex = 0;
 
@@ -70,7 +70,7 @@ internal sealed class SpellCheckHighlighter
         }
     }
 
-    private static bool IsBeingTyped(SpellCheckResult result, SpellCheckRange? typingWord, int caretIndex)
+    private static bool IsBeingTyped(ISpellCheckResult result, SpellCheckRange? typingWord, int caretIndex)
     {
         if (typingWord is not { } word)
         {

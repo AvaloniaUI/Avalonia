@@ -14,9 +14,7 @@ public partial class TextBoxSpellCheckPage : UserControl
     public TextBoxSpellCheckPage()
     {
         InitializeComponent();
-        TextInputOptions.SetSpellCheckProvider(CustomProviderTextBox, new SampleSpellCheckProvider());
-        // Without LocaleHints, the platform checker chooses the language.
-        TextInputOptions.SetLocaleHints(GermanTextBox, new[] { "de-DE" });
+        SpellCheck.SetProvider(CustomProviderTextBox, new SampleSpellCheckProvider());
         LongSpellCheckTextBox.Text = CreateLongSpellCheckText();
     }
 
@@ -35,31 +33,55 @@ public partial class TextBoxSpellCheckPage : UserControl
         return builder.ToString();
     }
 
+    // A custom provider only implements the three public interfaces.
     private sealed class SampleSpellCheckProvider : ISpellCheckProvider
     {
-        public bool IsLanguageSupported(CultureInfo? culture) => true;
+        public IReadOnlyList<CultureInfo> SupportedCultures { get; } =
+            new[] { CultureInfo.InvariantCulture };
 
-        public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-            ReadOnlyMemory<char> textMemory,
-            CultureInfo? culture,
+        // This sample checks one made up word, so it accepts any culture.
+        public ISpellCheckContext CreateContext(CultureInfo culture) => new SampleContext();
+    }
+
+    private sealed class SampleContext : ISpellCheckContext
+    {
+        private const string Misspelling = "avlnia";
+        private bool _disposed;
+
+        public ValueTask<IReadOnlyList<ISpellCheckResult>> CheckAsync(
+            ReadOnlyMemory<char> text,
             CancellationToken cancellationToken = default)
         {
-            var text = textMemory.Span;
-            const string misspelling = "avlnia";
-            var index = text.IndexOf(misspelling, StringComparison.OrdinalIgnoreCase);
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            return new ValueTask<IReadOnlyList<SpellCheckResult>>(
+            var index = text.Span.IndexOf(Misspelling, StringComparison.OrdinalIgnoreCase);
+
+            return new ValueTask<IReadOnlyList<ISpellCheckResult>>(
                 index < 0
-                    ? Array.Empty<SpellCheckResult>()
-                    : new[] { new SpellCheckResult(index, misspelling.Length, text.Slice(index, misspelling.Length).ToString()) });
+                    ? Array.Empty<ISpellCheckResult>()
+                    : new ISpellCheckResult[] { new SampleResult(this, index, Misspelling.Length) });
         }
 
-        public ValueTask<IReadOnlyList<string>> SuggestAsync(
-            string word,
-            CultureInfo? culture,
-            CancellationToken cancellationToken = default)
+        public ValueTask<IReadOnlyList<string>> SuggestAsync(CancellationToken cancellationToken)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            cancellationToken.ThrowIfCancellationRequested();
             return new ValueTask<IReadOnlyList<string>>(new[] { "Avalonia" });
         }
+
+        public void Dispose() => _disposed = true;
+    }
+
+    private sealed class SampleResult(SampleContext context, int start, int length) : ISpellCheckResult
+    {
+        public int Start => start;
+
+        public int Length => length;
+
+        public string? Description => null;
+
+        public ValueTask<IReadOnlyList<string>> SuggestAsync(CancellationToken cancellationToken = default) =>
+            context.SuggestAsync(cancellationToken);
     }
 }

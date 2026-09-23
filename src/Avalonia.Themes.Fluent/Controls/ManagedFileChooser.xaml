@@ -171,7 +171,7 @@
                 </Button>
                 <TextBox x:Name="Location"
                          Text="{Binding Location}"
-                         TextInputOptions.IsSpellCheckEnabled="False">
+                         SpellCheck.IsEnabled="False">
                   <TextBox.KeyBindings>
                     <KeyBinding Command="{Binding EnterPressed}" Gesture="Enter"/>
                   </TextBox.KeyBindings>
@@ -189,7 +189,7 @@
                   <TextBox Text="{Binding FileName}"
                            PlaceholderText="{DynamicResource StringManagedFileChooserFileNamePlaceholder}"
                            IsVisible="{Binding !SelectingFolder}"
-                           TextInputOptions.IsSpellCheckEnabled="False" />
+                           SpellCheck.IsEnabled="False" />
                 </DockPanel>
                 <CheckBox IsChecked="{Binding ShowHiddenFiles}" Content="{DynamicResource StringManagedFileChooserShowHiddenFilesText}" DockPanel.Dock="Left"/>
                 <UniformGrid x:Name="Finalize" HorizontalAlignment="Right" Rows="1">

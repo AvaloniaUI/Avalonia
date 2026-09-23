@@ -38,7 +38,7 @@ namespace Avalonia.Controls.UnitTests
                 target.RaiseEvent(new ContextRequestedEventArgs());
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                Assert.Equal(new[] { "the" }, target.SpellCheckSuggestions);
+                Assert.Equal(new[] { "the" }, SpellCheck.GetSuggestions(target));
                 Assert.Equal(1, hunspellProvider.CheckCount);
                 Assert.Equal(0, nativeProvider.CheckCount);
             }
@@ -55,13 +55,13 @@ namespace Avalonia.Controls.UnitTests
                 var target = CreateTextBoxInTopLevel(
                     "teh sample",
                     nativeProvider,
-                    topLevel => TextInputOptions.SetSpellCheckProvider(topLevel, hunspellProvider));
+                    topLevel => SpellCheck.SetProvider(topLevel, hunspellProvider));
                 target.CaretIndex = 1;
 
                 target.RaiseEvent(new ContextRequestedEventArgs());
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
-                Assert.Equal(new[] { "the" }, target.SpellCheckSuggestions);
+                Assert.Equal(new[] { "the" }, SpellCheck.GetSuggestions(target));
                 Assert.Equal(1, hunspellProvider.CheckCount);
                 Assert.Equal(0, nativeProvider.CheckCount);
             }
@@ -85,7 +85,7 @@ namespace Avalonia.Controls.UnitTests
                 Text = text
             };
 
-            TextInputOptions.SetIsSpellCheckEnabled(target, true);
+            SpellCheck.SetIsEnabled(target, true);
 
             var topLevel = new TestTopLevel(CreateMockTopLevelImpl(platformProvider).Object)
             {
@@ -131,56 +131,55 @@ namespace Avalonia.Controls.UnitTests
         {
             public int CheckCount { get; private set; }
 
-            public bool IsLanguageSupported(CultureInfo? culture) => true;
+            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
 
-            public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlyMemory<char> textMemory,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            public ISpellCheckContext CreateContext(CultureInfo culture) => new Session(this);
+
+            private sealed class Session(HunspellStyleSpellCheckProvider owner) : SpellCheckContextBase
             {
-                var text = textMemory.Span;
-                CheckCount++;
+                protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+                    ReadOnlyMemory<char> textMemory,
+                    CancellationToken cancellationToken)
+                {
+                    var text = textMemory.Span;
+                    owner.CheckCount++;
 
-                var index = text.IndexOf("teh", StringComparison.Ordinal);
+                    var index = text.IndexOf("teh", StringComparison.Ordinal);
 
-                return new ValueTask<IReadOnlyList<SpellCheckResult>>(
-                    index < 0
-                        ? Array.Empty<SpellCheckResult>()
-                        : new[] { new SpellCheckResult(index, 3, "teh") });
-            }
-
-            public ValueTask<IReadOnlyList<string>> SuggestAsync(
-                string word,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
-            {
-                return new ValueTask<IReadOnlyList<string>>(new[] { "the" });
+                    return new ValueTask<IReadOnlyList<ISpellCheckResult>>(
+                        index < 0
+                            ? Array.Empty<ISpellCheckResult>()
+                            : new[] { new TestSpellCheckResult(index, 3, "teh", new[] { "the" }) });
+                }
             }
         }
 
-        private sealed class TestSpellCheckProvider(string suggestion) : ISpellCheckProvider
+        private sealed class TestSpellCheckProvider : ISpellCheckProvider
         {
-            public int CheckCount { get; private set; }
+            private readonly string _suggestion;
 
-            public bool IsLanguageSupported(CultureInfo? culture) => true;
-
-            public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlyMemory<char> textMemory,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            public TestSpellCheckProvider(string suggestion)
             {
-                var text = textMemory.Span;
-                CheckCount++;
-                return new ValueTask<IReadOnlyList<SpellCheckResult>>(
-                    new[] { new SpellCheckResult(0, text.Length, text.ToString()) });
+                _suggestion = suggestion;
             }
 
-            public ValueTask<IReadOnlyList<string>> SuggestAsync(
-                string word,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            public int CheckCount { get; private set; }
+
+            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
+
+            public ISpellCheckContext CreateContext(CultureInfo culture) => new Session(this);
+
+            private sealed class Session(TestSpellCheckProvider owner) : SpellCheckContextBase
             {
-                return new ValueTask<IReadOnlyList<string>>(new[] { suggestion });
+                protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+                    ReadOnlyMemory<char> textMemory,
+                    CancellationToken cancellationToken)
+                {
+                    var text = textMemory.Span;
+                    owner.CheckCount++;
+                    return new ValueTask<IReadOnlyList<ISpellCheckResult>>(
+                        new[] { new TestSpellCheckResult(0, text.Length, text.ToString(), new[] { owner._suggestion }) });
+                }
             }
         }
     }

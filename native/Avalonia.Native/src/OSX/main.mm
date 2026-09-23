@@ -447,6 +447,20 @@ public:
         }
     }
 
+    virtual HRESULT CreateSpellCheckProvider(IAvnSpellCheckProvider** ppv) override
+    {
+        START_COM_CALL;
+
+        @autoreleasepool
+        {
+            if (ppv == nullptr)
+                return E_POINTER;
+
+            *ppv = ::CreateSpellCheckProvider();
+            return S_OK;
+        }
+    }
+
     virtual HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv) override
     {
         START_COM_CALL;
@@ -565,4 +579,3 @@ AvnPoint ConvertPointY (AvnPoint p)
     
     return p;
 }
-

@@ -196,20 +196,13 @@ namespace Avalonia.Android.Platform.Input
                 if (options.Multiline)
                     outAttrs.InputType |= InputTypes.TextFlagMultiLine;
 
-                var isTextInput = (outAttrs.InputType & InputTypes.MaskClass) == InputTypes.ClassText;
-                var canUseSpellCheck = options.IsSpellCheckAllowed();
-
-                if (isTextInput)
+                if ((outAttrs.InputType & InputTypes.MaskClass) == InputTypes.ClassText)
                 {
-                    if (!canUseSpellCheck)
+                    if (options.ShowSuggestions == false || !SpellCheckPolicy.IsAllowed(options))
                     {
                         outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
                     }
-
-                    if (canUseSpellCheck &&
-                        (options.ShowSuggestions == true ||
-                         (options.ShowSuggestions != false &&
-                          options.IsSpellCheckEnabled == true)))
+                    else if (options.ShowSuggestions == true)
                     {
                         outAttrs.InputType |= InputTypes.TextFlagAutoCorrect;
                     }

@@ -394,7 +394,7 @@ namespace Avalonia.Controls
         public NumericUpDown()
         {
             // Let the inner TextBox inherit this opt-out; explicit values can still override it.
-            SetCurrentValue(TextInputOptions.IsSpellCheckEnabledProperty, false);
+            SetCurrentValue(SpellCheck.IsEnabledProperty, false);
             Initialized += (sender, e) =>
             {
                 if (!_internalValueSet && IsInitialized)

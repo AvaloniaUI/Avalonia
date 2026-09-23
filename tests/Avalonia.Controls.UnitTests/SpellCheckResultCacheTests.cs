@@ -17,7 +17,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var cache = new SpellCheckResultCache();
             var ranges = new List<SpellCheckRange> { new(0, text.Length) };
-            var results = misspellings.Select(m => new SpellCheckResult(m.Start, m.Length)).ToList();
+            var results = misspellings.Select(m => new TestSpellCheckResult(m.Start, m.Length)).ToList();
 
             cache.Set(text, ranges, results, merge: false);
             return cache;
@@ -212,7 +212,8 @@ namespace Avalonia.Controls.UnitTests
                 new(start, end, startIsInsideWord: start > 0, endIsInsideWord: end < text.Length)
             };
 
-            var results = await SpellChecker.CheckRangesAsync(text, ranges, provider, null, TestContext.Current.CancellationToken);
+            var results = await SpellChecker.CheckRangesAsync(
+                text, ranges, provider.Session, TestContext.Current.CancellationToken);
 
             Assert.Empty(provider.CheckedLengths);
             Assert.Empty(results);
@@ -226,7 +227,7 @@ namespace Avalonia.Controls.UnitTests
                 var text = new string('a', SpellChecker.MaxProviderCheckLength * 3) + "@example.com wrng";
                 var provider = new RecordingSpellCheckProvider();
                 var check = SpellChecker.CheckRangesAsync(text, new List<SpellCheckRange> { new(0, text.Length) },
-                    provider, null, TestContext.Current.CancellationToken).AsTask();
+                    provider.Session, TestContext.Current.CancellationToken).AsTask();
 
                 while (!check.IsCompleted)
                     Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
@@ -250,7 +251,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var ranges = new List<SpellCheckRange> { new(start, end, true, true) };
                 var provider = new RecordingSpellCheckProvider();
-                var check = SpellChecker.CheckRangesAsync(text, ranges, provider, null,
+                var check = SpellChecker.CheckRangesAsync(text, ranges, provider.Session,
                     TestContext.Current.CancellationToken).AsTask();
 
                 while (!check.IsCompleted)
@@ -266,7 +267,7 @@ namespace Avalonia.Controls.UnitTests
                 // A clipped edge word must not cause complete words to be checked again.
                 provider.CheckedTexts.Clear();
                 check = SpellChecker.CheckRangesAsync(text, cache.GetUncheckedRanges(text, ranges),
-                    provider, null, TestContext.Current.CancellationToken).AsTask();
+                    provider.Session, TestContext.Current.CancellationToken).AsTask();
                 while (!check.IsCompleted)
                     Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 await check;
@@ -285,7 +286,7 @@ namespace Avalonia.Controls.UnitTests
                 var text = string.Concat(Enumerable.Repeat(segment, 2000));
                 var provider = new RecordingSpellCheckProvider();
                 var check = SpellChecker.CheckRangesAsync(text, new List<SpellCheckRange> { new(0, text.Length) },
-                    provider, null, TestContext.Current.CancellationToken).AsTask();
+                    provider.Session, TestContext.Current.CancellationToken).AsTask();
 
                 while (!check.IsCompleted)
                     Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
@@ -367,7 +368,7 @@ namespace Avalonia.Controls.UnitTests
                 var provider = new RecordingSpellCheckProvider();
                 var ranges = new List<SpellCheckRange> { new(0, text.Length) };
                 var check = SpellChecker.CheckRangesAsync(
-                    text, ranges, provider, null, TestContext.Current.CancellationToken).AsTask();
+                    text, ranges, provider.Session, TestContext.Current.CancellationToken).AsTask();
 
                 Assert.False(check.IsCompleted);
 
@@ -385,27 +386,37 @@ namespace Avalonia.Controls.UnitTests
 
         private sealed class RecordingSpellCheckProvider : ISpellCheckProvider
         {
-            public List<int> CheckedLengths { get; } = new();
-            public List<string> CheckedTexts { get; } = new();
-
-            public bool IsLanguageSupported(CultureInfo? culture) => true;
-
-            public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
-                ReadOnlyMemory<char> text,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            public RecordingSpellCheckProvider()
             {
-                CheckedLengths.Add(text.Length);
-                CheckedTexts.Add(text.ToString());
-                return new ValueTask<IReadOnlyList<SpellCheckResult>>(Array.Empty<SpellCheckResult>());
+                Session = new SpellCheckContextGate(new RecordingSpellCheckContext(this));
             }
 
-            public ValueTask<IReadOnlyList<string>> SuggestAsync(
-                string word,
-                CultureInfo? culture,
-                CancellationToken cancellationToken = default)
+            public List<int> CheckedLengths { get; } = new();
+            public List<string> CheckedTexts { get; } = new();
+            public SpellCheckContextGate Session { get; }
+
+            public IReadOnlyList<CultureInfo> SupportedCultures => Array.Empty<CultureInfo>();
+
+            public ISpellCheckContext CreateContext(CultureInfo culture) =>
+                new RecordingSpellCheckContext(this);
+
+            private sealed class RecordingSpellCheckContext : SpellCheckContextBase
             {
-                return new ValueTask<IReadOnlyList<string>>(Array.Empty<string>());
+                private readonly RecordingSpellCheckProvider _owner;
+
+                public RecordingSpellCheckContext(RecordingSpellCheckProvider owner)
+                {
+                    _owner = owner;
+                }
+
+                protected override ValueTask<IReadOnlyList<ISpellCheckResult>> CheckCoreAsync(
+                    ReadOnlyMemory<char> text,
+                    CancellationToken cancellationToken)
+                {
+                    _owner.CheckedLengths.Add(text.Length);
+                    _owner.CheckedTexts.Add(text.ToString());
+                    return new ValueTask<IReadOnlyList<ISpellCheckResult>>(Array.Empty<ISpellCheckResult>());
+                }
             }
         }
 
@@ -432,7 +443,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("bbbx|cccx", Unchecked(cache, text));
 
             var holes = cache.GetUncheckedRanges(text, new List<SpellCheckRange> { new(0, text.Length) });
-            cache.Set(text, holes, new[] { new SpellCheckResult(9, 4) }, merge: true);
+            cache.Set(text, holes, new[] { new TestSpellCheckResult(9, 4) }, merge: true);
 
             Assert.Equal("aaa|cccx", Decorated(cache, text));
             Assert.True(cache.AreRangesChecked(text, new List<SpellCheckRange> { new(0, text.Length) }));
@@ -445,7 +456,7 @@ namespace Avalonia.Controls.UnitTests
             var text = "hello wonderful world";
 
             // Only "hello " has been checked so far.
-            cache.Set(text, new List<SpellCheckRange> { new(0, 6) }, Array.Empty<SpellCheckResult>(), merge: false);
+            cache.Set(text, new List<SpellCheckRange> { new(0, 6) }, Array.Empty<ISpellCheckResult>(), merge: false);
 
             // A viewport starting in the middle of "wonderful" must not check half a word.
             var visible = new List<SpellCheckRange> { new(9, text.Length) };
@@ -463,12 +474,12 @@ namespace Avalonia.Controls.UnitTests
             cache.Set(
                 text,
                 new List<SpellCheckRange> { new(0, 5, endIsInsideWord: true) },
-                Array.Empty<SpellCheckResult>(),
+                Array.Empty<ISpellCheckResult>(),
                 merge: false);
             cache.Set(
                 text,
                 new List<SpellCheckRange> { new(5, text.Length, startIsInsideWord: true) },
-                Array.Empty<SpellCheckResult>(),
+                Array.Empty<ISpellCheckResult>(),
                 merge: true);
 
             var visible = new List<SpellCheckRange> { new(0, text.Length) };
@@ -485,7 +496,7 @@ namespace Avalonia.Controls.UnitTests
             cache.Set(
                 text,
                 new List<SpellCheckRange> { new(5, text.Length, startIsInsideWord: true) },
-                Array.Empty<SpellCheckResult>(),
+                Array.Empty<ISpellCheckResult>(),
                 merge: true);
 
             Assert.Equal("misspelled", Decorated(cache, text));
@@ -502,7 +513,7 @@ namespace Avalonia.Controls.UnitTests
                 new(10, 15)
             };
 
-            cache.Set(text, checkedRanges, Array.Empty<SpellCheckResult>(), merge: false);
+            cache.Set(text, checkedRanges, Array.Empty<ISpellCheckResult>(), merge: false);
 
             Assert.True(cache.AreRangesChecked(text, checkedRanges));
 
@@ -524,7 +535,7 @@ namespace Avalonia.Controls.UnitTests
             var cache = CreateChecked("Ths sample", (0, 3));
 
             Assert.True(cache.TryGetMisspelledWord("Ths sample", caretIndex: 2, selectionStart: 2, selectionEnd: 2, out var result));
-            Assert.Equal("Ths", result.Word);
+            Assert.Equal("Ths", "Ths sample".Substring(result.Start, result.Length));
 
             Assert.False(cache.TryGetMisspelledWord("Ths sample", caretIndex: 6, selectionStart: 6, selectionEnd: 6, out _));
         }

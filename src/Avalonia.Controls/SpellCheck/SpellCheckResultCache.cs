@@ -8,11 +8,11 @@ namespace Avalonia.Controls;
 // Keeps checked ranges and misspellings across edits and scrolling.
 internal sealed class SpellCheckResultCache
 {
-    private IReadOnlyList<SpellCheckResult> _results = Array.Empty<SpellCheckResult>();
+    private IReadOnlyList<ISpellCheckResult> _results = Array.Empty<ISpellCheckResult>();
     private IReadOnlyList<SpellCheckRange> _checkedRanges = Array.Empty<SpellCheckRange>();
     private string? _checkedText;
 
-    public IReadOnlyList<SpellCheckResult> Results => _results;
+    public IReadOnlyList<ISpellCheckResult> Results => _results;
 
     // Suppressed while the caret stays in this word.
     public SpellCheckRange? LastEditedWord { get; private set; }
@@ -22,7 +22,7 @@ internal sealed class SpellCheckResultCache
     // Keep LastEditedWord until the next edit or caret move.
     public void Clear()
     {
-        _results = Array.Empty<SpellCheckResult>();
+        _results = Array.Empty<ISpellCheckResult>();
         _checkedRanges = Array.Empty<SpellCheckRange>();
         _checkedText = null;
     }
@@ -30,7 +30,7 @@ internal sealed class SpellCheckResultCache
     public void Set(
         string text,
         List<SpellCheckRange> ranges,
-        IReadOnlyList<SpellCheckResult> results,
+        IReadOnlyList<ISpellCheckResult> results,
         bool merge)
     {
         // Clipped tokens were not checked and must not overwrite cached results.
@@ -296,9 +296,9 @@ internal sealed class SpellCheckResultCache
         int caretIndex,
         int selectionStart,
         int selectionEnd,
-        out SpellCheckResult result)
+        out ISpellCheckResult result)
     {
-        result = default;
+        result = null!;
 
         if (_results.Count == 0 || string.IsNullOrEmpty(text))
         {
@@ -322,16 +322,13 @@ internal sealed class SpellCheckResultCache
                 continue;
             }
 
-            result = candidate.Word is not null
-                ? candidate
-                : candidate with
-                {
-                    Word = candidateStart >= 0 && candidateEnd <= text.Length
-                        ? text.Substring(candidateStart, candidate.Length)
-                        : null
-                };
+            if (candidateStart >= 0 && candidateEnd <= text.Length)
+            {
+                result = candidate;
+                return true;
+            }
 
-            return true;
+            return false;
         }
 
         return false;
@@ -501,8 +498,8 @@ internal sealed class SpellCheckResultCache
             System.Globalization.UnicodeCategory.EnclosingMark;
     }
 
-    private static IReadOnlyList<SpellCheckResult> RebaseResults(
-        IReadOnlyList<SpellCheckResult> results,
+    private static IReadOnlyList<ISpellCheckResult> RebaseResults(
+        IReadOnlyList<ISpellCheckResult> results,
         int invalidStart,
         int oldInvalidEnd,
         int delta,
@@ -513,7 +510,7 @@ internal sealed class SpellCheckResultCache
             return results;
         }
 
-        List<SpellCheckResult>? rebased = null;
+        List<ISpellCheckResult>? rebased = null;
 
         for (var i = 0; i < results.Count; i++)
         {
@@ -522,7 +519,7 @@ internal sealed class SpellCheckResultCache
 
             if (end <= invalidStart)
             {
-                (rebased ??= new List<SpellCheckResult>(results.Count)).Add(result);
+                (rebased ??= new List<ISpellCheckResult>(results.Count)).Add(result);
             }
             else if (result.Start >= oldInvalidEnd)
             {
@@ -530,13 +527,14 @@ internal sealed class SpellCheckResultCache
 
                 if (start >= 0 && start + result.Length <= newTextLength)
                 {
-                    (rebased ??= new List<SpellCheckResult>(results.Count)).Add(result with { Start = start });
+                    (rebased ??= new List<ISpellCheckResult>(results.Count)).Add(
+                        OffsetSpellCheckResult.Create(result, start, result.Length));
                 }
             }
             // Drop results touched by the edit so they can be checked again.
         }
 
-        return rebased is null ? Array.Empty<SpellCheckResult>() : rebased;
+        return rebased is null ? Array.Empty<ISpellCheckResult>() : rebased;
     }
 
     private static IReadOnlyList<SpellCheckRange> RebaseCheckedRanges(
@@ -606,10 +604,10 @@ internal sealed class SpellCheckResultCache
         }
     }
 
-    private static IReadOnlyList<SpellCheckResult> MergeResults(
-        IReadOnlyList<SpellCheckResult> existing,
+    private static IReadOnlyList<ISpellCheckResult> MergeResults(
+        IReadOnlyList<ISpellCheckResult> existing,
         List<SpellCheckRange> ranges,
-        IReadOnlyList<SpellCheckResult> results)
+        IReadOnlyList<ISpellCheckResult> results)
     {
         var newResults = CopySortedResults(results);
 
@@ -618,7 +616,7 @@ internal sealed class SpellCheckResultCache
             return newResults;
         }
 
-        var merged = new List<SpellCheckResult>(existing.Count + results.Count);
+        var merged = new List<ISpellCheckResult>(existing.Count + results.Count);
         var rangeIndex = 0;
         var newResultIndex = 0;
 
@@ -650,7 +648,7 @@ internal sealed class SpellCheckResultCache
             merged.Add(newResults[newResultIndex++]);
         }
 
-        return merged.Count == 0 ? Array.Empty<SpellCheckResult>() : merged;
+        return merged.Count == 0 ? Array.Empty<ISpellCheckResult>() : merged;
     }
 
     private static IReadOnlyList<SpellCheckRange> MergeCheckedRanges(
@@ -708,19 +706,19 @@ internal sealed class SpellCheckResultCache
         }
     }
 
-    private static void SortResults(List<SpellCheckResult> results)
+    private static void SortResults(List<ISpellCheckResult> results)
     {
         results.Sort(static (x, y) => CompareResults(x, y));
     }
 
-    private static IReadOnlyList<SpellCheckResult> CopySortedResults(IReadOnlyList<SpellCheckResult> results)
+    private static IReadOnlyList<ISpellCheckResult> CopySortedResults(IReadOnlyList<ISpellCheckResult> results)
     {
         if (results.Count == 0)
         {
-            return Array.Empty<SpellCheckResult>();
+            return Array.Empty<ISpellCheckResult>();
         }
 
-        var copy = new List<SpellCheckResult>(results);
+        var copy = new List<ISpellCheckResult>(results);
 
         for (var i = 1; i < copy.Count; i++)
         {
@@ -734,7 +732,7 @@ internal sealed class SpellCheckResultCache
         return copy;
     }
 
-    private static int CompareResults(SpellCheckResult x, SpellCheckResult y)
+    private static int CompareResults(ISpellCheckResult x, ISpellCheckResult y)
     {
         var start = x.Start.CompareTo(y.Start);
         return start != 0 ? start : x.Length.CompareTo(y.Length);

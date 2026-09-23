@@ -24,7 +24,6 @@ namespace Avalonia.Input.TextInput
             TextInputOptions.LowercaseProperty.Changed.Subscribe(OnTextInputOptionsChanged);
             TextInputOptions.UppercaseProperty.Changed.Subscribe(OnTextInputOptionsChanged);
             TextInputOptions.ShowSuggestionsProperty.Changed.Subscribe(OnTextInputOptionsChanged);
-            TextInputOptions.IsSpellCheckEnabledProperty.Changed.Subscribe(OnTextInputOptionsChanged);
             TextInputOptions.LocaleHintsProperty.Changed.Subscribe(OnTextInputOptionsChanged);
         }
 

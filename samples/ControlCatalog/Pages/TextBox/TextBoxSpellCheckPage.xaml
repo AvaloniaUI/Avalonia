@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.TextBoxSpellCheckPage"
-             TextInputOptions.IsSpellCheckEnabled="True">
+             SpellCheck.IsEnabled="True">
   <ScrollViewer>
     <StackPanel Orientation="Vertical" Spacing="18" Margin="24,16,24,24">
       <WrapPanel Margin="-8,0">
@@ -17,7 +17,7 @@
           <TextBox Width="320"
                    TextWrapping="Wrap"
                    Text="Ths sample has mispelled wrds."
-                   TextInputOptions.IsSpellCheckEnabled="False" />
+                   SpellCheck.IsEnabled="False" />
         </StackPanel>
 
         <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
@@ -37,8 +37,9 @@
         </StackPanel>
 
         <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
-          <TextBlock Text="German (TextInputOptions.LocaleHints)" FontWeight="SemiBold" />
+          <TextBlock Text="German (SpellCheck.Language)" FontWeight="SemiBold" />
           <TextBox x:Name="GermanTextBox"
+                   SpellCheck.Language="de-DE"
                    Width="320"
                    TextWrapping="Wrap"
                    Text="Dieser Satz enthält ein Fehlr und eine falsche Wort." />
@@ -50,14 +51,6 @@
                    TextWrapping="Wrap"
                    FlowDirection="RightToLeft"
                    Text="שלום עולם — Ths is mixed-direction text." />
-        </StackPanel>
-
-        <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
-          <TextBlock Text="Custom underline brush" FontWeight="SemiBold" />
-          <TextBox Width="320"
-                   TextWrapping="Wrap"
-                   SpellCheckErrorBrush="DarkOrange"
-                   Text="Ths sample has mispelled wrds." />
         </StackPanel>
 
         <StackPanel Orientation="Vertical" Spacing="8" Margin="8">

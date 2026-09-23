@@ -694,6 +694,11 @@ enum AvnLiveSetting
     LiveSettingAssertive,
 }
 
+struct AvnSpellCheckRange
+{
+    int Start, Length;
+}
+
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
@@ -718,6 +723,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateTrayIcon(IAvnTrayIcon** ppv);
      HRESULT CreateApplicationCommands(IAvnApplicationCommands** ppv);
      HRESULT CreatePlatformSettings(IAvnPlatformSettings** ppv);
+     HRESULT CreateSpellCheckProvider(IAvnSpellCheckProvider** ppv);
      HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv);
      HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv);
      HRESULT ImportMTLSharedEvent([intptr]void* idMtlSharedEvent, IAvnMTLSharedEvent** ppv);
@@ -1198,6 +1204,27 @@ interface IAvnStringArray : IUnknown
 {
      uint GetCount();
      HRESULT Get(uint index, IAvnString**ppv);
+}
+
+[uuid(78ac196c-fca9-4cf5-aef4-547a8745393e)]
+interface IAvnSpellCheckProvider : IUnknown
+{
+     HRESULT GetSupportedCultures(IAvnStringArray** ppv);
+     HRESULT TryCreateContext(IAvnString* culture, IAvnSpellCheckContext** ppv);
+}
+
+[uuid(0f1d6f3e-5a0b-4c55-9a52-3c1f0d6b8e21)]
+interface IAvnSpellCheckContext : IUnknown
+{
+     HRESULT Check(IAvnString* text, IAvnSpellCheckRanges** ppv);
+     HRESULT GetSuggestions(IAvnString* text, int start, int length, IAvnStringArray** ppv);
+}
+
+[uuid(9b7c2e44-1d3f-4e8a-b6a1-5f2e8c4d7a90)]
+interface IAvnSpellCheckRanges : IUnknown
+{
+     uint GetCount();
+     HRESULT Get(uint index, AvnSpellCheckRange* ret);
 }
 
 [uuid(a13d2382-3b3a-4d1c-9b27-8f34653d3f01)]

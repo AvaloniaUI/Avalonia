@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Avalonia.FreeDesktop;
 using Avalonia.Input.TextInput;
 using Xunit;
@@ -16,6 +19,30 @@ public class EnchantSpellCheckProviderTests
         var window = (WindowImpl)RuntimeHelpers.GetUninitializedObject(typeof(WindowImpl));
 
         Assert.Same(EnchantSpellCheckProvider.Instance, window.TryGetFeature(typeof(ISpellCheckProvider)));
+    }
+
+    [Fact]
+    public async Task Enchant_Context_Checks_And_Suggests_When_A_Dictionary_Is_Installed()
+    {
+        using var context = EnchantSpellCheckProvider.Instance.CreateContext(CultureInfo.GetCultureInfo("en-US"));
+
+        Assert.SkipWhen(context is null, "libenchant-2 with an en_US dictionary is not installed.");
+
+        var results = await context.CheckAsync("Ths sample has mispelled wrds".AsMemory(), TestContext.Current.CancellationToken);
+
+        Assert.Equal(new[] { (0, 3), (15, 9), (25, 4) }, results.Select(r => (r.Start, r.Length)));
+
+        var suggestions = await results[0].SuggestAsync(TestContext.Current.CancellationToken);
+        Assert.Contains("This", suggestions);
+
+        context.Dispose();
+        Assert.Throws<ObjectDisposedException>(() => { _ = results[0].SuggestAsync(TestContext.Current.CancellationToken); });
+    }
+
+    [Fact]
+    public void Enchant_Returns_No_Context_For_A_Culture_Without_A_Dictionary()
+    {
+        Assert.Null(EnchantSpellCheckProvider.Instance.CreateContext(CultureInfo.GetCultureInfo("yo-NG")));
     }
 
     [Theory]
