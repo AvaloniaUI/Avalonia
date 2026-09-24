@@ -47,7 +47,7 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new StreamGeometry(StreamImpl.Clone()) { Transform = Transform };
+            return new StreamGeometry(((IStreamGeometryImpl)PlatformImpl!).Clone());
         }
 
         /// <summary>
@@ -58,14 +58,19 @@ namespace Avalonia.Media
         /// </returns>
         public StreamGeometryContext Open()
         {
-            return new StreamGeometryContext(StreamImpl.Open());
+            return new StreamGeometryContext(((IStreamGeometryImpl)PlatformImpl!).Open());
         }
 
         /// <inheritdoc/>
-        private protected override IGeometryImpl? CreateDefiningGeometry() => StreamImpl;
+        private protected override IGeometryImpl? CreateDefiningGeometry()
+        {
+            if (_impl == null)
+            {
+                var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+                _impl = factory.CreateStreamGeometry();
+            }
 
-        // The stream itself. PlatformImpl can't be used for this: it is wrapped when Transform is set.
-        private IStreamGeometryImpl StreamImpl =>
-            _impl ??= AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>().CreateStreamGeometry();
+            return _impl;
+        }
     }
 }
