@@ -151,7 +151,7 @@
                       BorderThickness="0">
                 <Border.Transitions>
                   <Transitions>
-                    <BrushTransition
+                    <BrushTransition Property="Background"
                       Duration="{StaticResource SplitViewPaneAnimationOpenDuration}"
                       Easing="{StaticResource SplitViewPaneAnimationEasing}"/>
                   </Transitions>
