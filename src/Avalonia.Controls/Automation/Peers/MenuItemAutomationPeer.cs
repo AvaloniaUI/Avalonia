@@ -1,11 +1,15 @@
 using System;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Automation.Peers
 {
-    public class MenuItemAutomationPeer : ControlAutomationPeer, IToggleProvider
+    public class MenuItemAutomationPeer : ControlAutomationPeer,
+        IExpandCollapseProvider,
+        IInvokeProvider,
+        IToggleProvider
     {
         public MenuItemAutomationPeer(MenuItem owner)
             : base(owner)
@@ -17,6 +21,53 @@ namespace Avalonia.Automation.Peers
 
         ToggleState IToggleProvider.ToggleState
             => Owner.IsChecked ? ToggleState.On : ToggleState.Off;
+
+        public ExpandCollapseState ExpandCollapseState
+        {
+            get
+            {
+                if (!Owner.HasSubMenu)
+                    return ExpandCollapseState.LeafNode;
+                return Owner.IsSubMenuOpen ?
+                    ExpandCollapseState.Expanded :
+                    ExpandCollapseState.Collapsed;
+            }
+        }
+
+        public bool ShowsMenu => Owner.HasSubMenu;
+
+        public void Invoke()
+        {
+            EnsureEnabled();
+
+            var (command, commandParameter) = (Owner.Command, Owner.CommandParameter);
+            if (command?.CanExecute(commandParameter) == false)
+                throw new ElementNotEnabledException();
+
+            // This feels like a bit of a hack: ideally we'd add a new method to MenuItem or
+            // IMenuInteractionHandler for invoking a menu item, but given that we only need it
+            // here and adding a new method would involve an API review, let's KISS for now.
+            if (Owner.MenuInteractionHandler is DefaultMenuInteractionHandler handler)
+                handler.Click(Owner);
+            else
+                ((IMenuItem)Owner).RaiseClick();
+        }
+
+        public void Expand()
+        {
+            EnsureEnabled();
+            if (!Owner.HasSubMenu)
+                throw new InvalidOperationException();
+            Owner.Open();
+        }
+
+        public void Collapse()
+        {
+            EnsureEnabled();
+            if (!Owner.HasSubMenu)
+                throw new InvalidOperationException();
+            Owner.Close();
+        }
 
         void IToggleProvider.Toggle()
         {
@@ -83,6 +134,10 @@ namespace Avalonia.Automation.Peers
 
         protected override object? GetProviderCore(Type providerType)
         {
+            if (providerType == typeof(IExpandCollapseProvider) && !Owner.HasSubMenu)
+                return null;
+            if (providerType == typeof(IInvokeProvider) && Owner.HasSubMenu)
+                return null;
             if (providerType == typeof(IToggleProvider) && Owner.ToggleType == MenuItemToggleType.None)
                 return null;
 
@@ -97,6 +152,13 @@ namespace Avalonia.Automation.Peers
                     TogglePatternIdentifiers.ToggleStateProperty,
                     ToState(e.GetOldValue<bool>()),
                     ToState(e.GetNewValue<bool>()));
+            }
+            else if (e.Property == MenuItem.IsSubMenuOpenProperty && Owner.HasSubMenu)
+            {
+                RaisePropertyChangedEvent(
+                    ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty,
+                    e.GetOldValue<bool>() ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed,
+                    e.GetNewValue<bool>() ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed);
             }
         }
 
