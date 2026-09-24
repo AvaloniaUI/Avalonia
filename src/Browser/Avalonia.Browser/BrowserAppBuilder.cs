@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,9 +61,11 @@ public record BrowserPlatformOptions
     public bool PreferFileDialogPolyfill { get; set; }
 
     /// <summary>
-    /// Defines if Avalonia should create a controlled dispatcher loop on the web worker thread.
-    /// If used only when WasmEnableThreads is set to true. Default value is true.
+    /// Has no effect. When WasmEnableThreads is set to true, Avalonia always runs a controlled
+    /// dispatcher loop on the web worker thread.
     /// </summary>
+    [Obsolete("The managed thread dispatcher is always used when WasmEnableThreads is enabled. This option has no effect.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public bool? PreferManagedThreadDispatcher { get; set; } = true;
 }
 
@@ -92,7 +95,7 @@ public static class BrowserAppBuilder
                 lifetime.View = new AvaloniaView(mainDivId);
             });
 
-        if (BrowserWindowingPlatform.IsManagedDispatcherEnabled)
+        if (BrowserWindowingPlatform.IsThreadingEnabled)
         {
             var tcs = new TaskCompletionSource();
             var thread = new Thread(() =>
