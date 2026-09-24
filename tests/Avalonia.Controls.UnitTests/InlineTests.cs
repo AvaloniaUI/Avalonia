@@ -62,6 +62,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Inherit_FontVariations_In_Nested_Inlines()
+        {
+            var span = new Span();
+            var innerSpan = new Span();
+            var run = new Run("Test");
+            span.FontVariations = FontVariationSettings.Parse("wght=700");
+            innerSpan.Inlines.Add(run);
+            span.Inlines.Add(innerSpan);
+
+            var textRuns = new List<TextRun>();
+            span.BuildTextRun(textRuns, default);
+
+            var runProperties = textRuns[0].Properties;
+            Assert.NotNull(runProperties);
+            Assert.Equal(FontVariationSettings.Parse("wght=700"), runProperties.Typeface.FontVariations);
+        }
+
+        [Fact]
         public void Should_Inherit_Background_In_Nested_Inlines()
         {
             var backgroundBrush = Brushes.Red;
