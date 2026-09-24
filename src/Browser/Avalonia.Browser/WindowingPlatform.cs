@@ -107,7 +107,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         }
         else
         {
-            Dispatcher.InitializeUIThreadDispatcher(new BrowserDispatcherImpl());
+            Dispatcher.InitializeUIThreadDispatcher(new BrowserSingleThreadedDispatcherImpl());
         }
 
         // GC thread is the same as the main one when MT is disabled
