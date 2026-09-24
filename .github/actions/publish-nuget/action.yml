@@ -1,0 +1,69 @@
+name: Publish NuGet Packages
+description: Downloads the NuGet packages built by the Build workflow and pushes them to a feed.
+
+inputs:
+  feed-url:
+    description: URL of the NuGet feed to push the packages to.
+    required: true
+  api-key:
+    description: API key of the NuGet feed.
+    required: true
+  run-id:
+    description: ID of the Build workflow run to take the packages from. Defaults to the current run.
+    required: false
+    default: ''
+
+outputs:
+  version:
+    description: Version of the published packages.
+    value: ${{ steps.version.outputs.version }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Install .NET
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.0.x
+
+    # A token is only needed when downloading from another run.
+    - name: Download Windows NuGet Packages
+      uses: actions/download-artifact@v7
+      with:
+        name: nuget-windows
+        path: nuget-windows
+        run-id: ${{ inputs.run-id || github.run_id }}
+        github-token: ${{ (inputs.run-id && github.token) || '' }}
+
+    - name: Download macOS NuGet Packages
+      uses: actions/download-artifact@v7
+      with:
+        name: nuget-macos
+        path: nuget-macos
+        run-id: ${{ inputs.run-id || github.run_id }}
+        github-token: ${{ (inputs.run-id && github.token) || '' }}
+
+    - name: Get Package Version
+      id: version
+      shell: bash
+      run: |
+        package=$(basename nuget-windows/Avalonia.[0-9]*.nupkg)
+        version=${package#Avalonia.}
+        version=${version%.nupkg}
+        if [[ ! "$version" =~ ^[0-9A-Za-z.+-]+$ ]]; then
+          echo "::error::Could not determine the package version from '$package'."
+          exit 1
+        fi
+        echo "Package version: $version"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+
+    - name: Push to Feed
+      shell: bash
+      env:
+        NUGET_FEED_URL: ${{ inputs.feed-url }}
+        NUGET_API_KEY: ${{ inputs.api-key }}
+      run: |
+        dotnet nuget push "nuget-windows/*.nupkg" "nuget-macos/Avalonia.Native.*.nupkg" \
+          --source "$NUGET_FEED_URL" \
+          --api-key "$NUGET_API_KEY"

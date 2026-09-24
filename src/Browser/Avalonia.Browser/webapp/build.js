@@ -2,9 +2,9 @@ require("esbuild").build({
     entryPoints: [
         "./modules/avalonia.ts",
         "./modules/storage.ts",
-        "./modules/sw.ts"
+        "./modules/avalonia-sw.ts"
     ],
-    outdir: "../staticwebassets",
+    outdir: "../wwwroot",
     bundle: true,
     minify: true,
     format: "esm",
