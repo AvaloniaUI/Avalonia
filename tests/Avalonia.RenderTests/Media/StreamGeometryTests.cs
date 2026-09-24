@@ -48,5 +48,105 @@ namespace Avalonia.Skia.RenderTests
                     }
             await RenderToFile(grid);
         }
+
+        [Fact]
+        public async Task Stretched_Path_With_Transformed_Geometry()
+        {
+            var geometry = new StreamGeometry();
+
+            using (var context = geometry.Open())
+            {
+                context.BeginFigure(new Point(0, 0), true);
+                context.LineTo(new Point(80, 0));
+                context.LineTo(new Point(80, 40));
+                context.LineTo(new Point(0, 40));
+                context.EndFigure(true);
+            }
+
+            geometry.Transform = new RotateTransform(30);
+
+            var target = new Path
+            {
+                Data = geometry,
+                Fill = new SolidColorBrush(Colors.CornflowerBlue),
+                Stroke = new SolidColorBrush(Colors.Black),
+                StrokeThickness = 2,
+                Stretch = Stretch.Uniform,
+                Width = 200,
+                Height = 200
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Transformed_Geometry_Can_Be_Reopened()
+        {
+            var geometry = new StreamGeometry { Transform = new TranslateTransform(60, 30) };
+
+            using (var context = geometry.Open())
+            {
+                context.BeginFigure(new Point(20, 20), true);
+                context.LineTo(new Point(120, 20));
+                context.LineTo(new Point(70, 100));
+                context.EndFigure(true);
+            }
+
+            var target = new Path
+            {
+                Data = geometry,
+                Fill = new SolidColorBrush(Colors.Gold),
+                Stroke = new SolidColorBrush(Colors.Black),
+                StrokeThickness = 2,
+                Width = 200,
+                Height = 200
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task PathGeometry_Can_Be_Opened()
+        {
+            var geometry = new PathGeometry();
+
+            using (var context = geometry.Open())
+            {
+                context.BeginFigure(new Point(20, 20), false);
+                context.LineTo(new Point(100, 100));
+                context.LineTo(new Point(180, 20));
+                context.EndFigure(false);
+            }
+
+            var target = new Path
+            {
+                Data = geometry,
+                Stroke = new SolidColorBrush(Colors.Crimson),
+                StrokeThickness = 6,
+                Width = 200,
+                Height = 200
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Stretched_Path_With_PathGeometry_Data()
+        {
+            var target = new Path
+            {
+                Data = PathGeometry.Parse("M 3,2 L 17,2 L 17,7 L 10,18 L 3,7 Z"),
+                Fill = new SolidColorBrush(Colors.MediumSeaGreen),
+                Stretch = Stretch.Uniform,
+                Width = 200,
+                Height = 200
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }
