@@ -107,7 +107,7 @@
       <!-- CalendarViewSelectedForeground is not aliased in this theme yet, so the Fluent 2 token
            for accent text is referenced directly. -->
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimary}" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}" />
       </Style>
     </Style>
 
@@ -115,13 +115,13 @@
       <!-- Today is a filled accent circle. There is no CalendarViewTodayBackground alias in this
            theme, so the Fluent 2 accent fill tokens are referenced directly. -->
       <Style Selector="^ /template/ Border#Root">
-        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefault}" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
       </Style>
       <Style Selector="^:pointerover /template/ Border#Root">
-        <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondary}" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
       </Style>
       <Style Selector="^:pressed /template/ Border#Root">
-        <Setter Property="Background" Value="{DynamicResource AccentFillColorTertiary}" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
       </Style>
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource CalendarViewTodayForeground}" />

@@ -49,7 +49,7 @@
                 BackgroundSizing="InnerBorderEdge"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 Background="{TemplateBinding Background}"
-                Padding="{StaticResource GroupBoxPadding}"
+                Padding="{TemplateBinding Padding}"
                 BorderThickness="{TemplateBinding BorderThickness}">
           <Grid RowDefinitions="Auto,*">
             <!-- Header above the card content area -->

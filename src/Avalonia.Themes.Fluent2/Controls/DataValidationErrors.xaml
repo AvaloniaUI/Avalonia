@@ -95,7 +95,7 @@
               <Setter Property="Margin" Value="8,0" />
             </Style>
             <Style Selector="Panel#PART_InlineErrorTemplatePanel ToolTip">
-              <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefault}" />
+              <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
               <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorFlyout}" />
               <Setter Property="BorderThickness" Value="1" />
               <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />

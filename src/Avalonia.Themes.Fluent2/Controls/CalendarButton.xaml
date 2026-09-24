@@ -92,7 +92,7 @@
          in this theme, so the Fluent 2 accent fill tokens are referenced directly. -->
     <Style Selector="^:selected">
       <Style Selector="^ /template/ Border#Root">
-        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefault}" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
       </Style>
 
       <Style Selector="^ /template/ Border#Border">
@@ -109,7 +109,7 @@
           <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewSelectedHoverBorderBrush}" />
         </Style>
         <Style Selector="^ /template/ Border#Root">
-          <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondary}" />
+          <Setter Property="Background" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
         </Style>
       </Style>
 
@@ -118,7 +118,7 @@
           <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewSelectedPressedBorderBrush}" />
         </Style>
         <Style Selector="^ /template/ Border#Root">
-          <Setter Property="Background" Value="{DynamicResource AccentFillColorTertiary}" />
+          <Setter Property="Background" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
         </Style>
       </Style>
     </Style>

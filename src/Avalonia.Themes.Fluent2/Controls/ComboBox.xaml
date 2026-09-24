@@ -95,9 +95,9 @@
       <StaticResource x:Key="ComboBoxDropDownGlyphForegroundDisabled" ResourceKey="TextFillColorDisabled" />
       <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocused" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
-      <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
-      <StaticResource x:Key="ComboBoxItemPillFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="ComboBoxItemPillFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="TextFillColorPrimary" />
@@ -144,9 +144,9 @@
       <StaticResource x:Key="ComboBoxDropDownGlyphForegroundDisabled" ResourceKey="TextFillColorDisabled" />
       <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocused" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
-      <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
-      <StaticResource x:Key="ComboBoxItemPillFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="ComboBoxItemPillFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

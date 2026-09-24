@@ -40,7 +40,7 @@
 
   <ControlTheme x:Key="DefaultToolTipTheme" TargetType="ToolTip">
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
-    <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefault}" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
     <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
     <Setter Property="BorderBrush" Value="{DynamicResource ToolTipBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ToolTipThemeBorderThickness}" />

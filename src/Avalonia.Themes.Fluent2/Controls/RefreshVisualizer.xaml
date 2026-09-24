@@ -23,7 +23,7 @@
     <Setter Property="Background"
             Value="{DynamicResource RefreshVisualizerBackground}"/>
     <Setter Property="Foreground"
-            Value="{DynamicResource AccentFillColorDefault}"/>
+            Value="{DynamicResource AccentFillColorDefaultBrush}"/>
     <Setter Property="Content">
       <Template>
         <PathIcon Name="PART_Icon"

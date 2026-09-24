@@ -29,7 +29,7 @@
       <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="TextControlPlaceholderForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackground" />
+      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackgroundBrush" />
       <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparent" />
       <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
       <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
@@ -57,7 +57,7 @@
       <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="TextControlPlaceholderForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackground" />
+      <StaticResource x:Key="TextControlSelectionHighlightColor" ResourceKey="AccentFillColorSelectedTextBackgroundBrush" />
       <StaticResource x:Key="TextControlButtonBackground" ResourceKey="ControlFillColorTransparent" />
       <StaticResource x:Key="TextControlButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
       <StaticResource x:Key="TextControlButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />

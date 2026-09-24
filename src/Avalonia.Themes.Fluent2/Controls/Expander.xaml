@@ -108,6 +108,7 @@
 
   <!-- Shared header/content -->
   <x:Double x:Key="ExpanderMinHeight">48</x:Double>
+  <x:TimeSpan x:Key="ExpanderChevronAnimationDuration">00:00:00.0625</x:TimeSpan>
 
   <!-- Header -->
   <HorizontalAlignment x:Key="ExpanderHeaderHorizontalContentAlignment">Stretch</HorizontalAlignment>
@@ -179,7 +180,7 @@
 
     <Style Selector="^[Tag=expanded] /template/ Path#ExpandCollapseChevron">
       <Style.Animations>
-        <Animation FillMode="Both" Duration="0:0:0.0625">
+        <Animation FillMode="Both" Duration="{StaticResource ExpanderChevronAnimationDuration}">
           <KeyFrame Cue="100%">
             <Setter Property="RotateTransform.Angle" Value="180" />
           </KeyFrame>
@@ -189,7 +190,7 @@
 
     <Style Selector="^[Tag=collapsed] /template/ Path#ExpandCollapseChevron">
       <Style.Animations>
-        <Animation FillMode="Both" Duration="0:0:0.0625">
+        <Animation FillMode="Both" Duration="{StaticResource ExpanderChevronAnimationDuration}">
           <KeyFrame Cue="0%">
             <Setter Property="RotateTransform.Angle" Value="180" />
           </KeyFrame>

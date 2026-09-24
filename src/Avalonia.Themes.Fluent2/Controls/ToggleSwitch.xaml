@@ -30,13 +30,13 @@
       <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="ControlStrongStrokeColorDefault" />
       <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="ControlStrongStrokeColorDefault" />
       <StaticResource x:Key="ToggleSwitchStrokeOffDisabled" ResourceKey="ControlStrongStrokeColorDisabled" />
-      <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentFillColorDisabled" />
-      <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondary" />
@@ -61,13 +61,13 @@
       <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="ControlStrongStrokeColorDefault" />
       <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="ControlStrongStrokeColorDefault" />
       <StaticResource x:Key="ToggleSwitchStrokeOffDisabled" ResourceKey="ControlStrongStrokeColorDisabled" />
-      <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="AccentFillColorDisabled" />
-      <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="TextFillColorSecondary" />

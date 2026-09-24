@@ -14,7 +14,7 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefault"/>
+      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefaultBrush"/>
       <StaticResource x:Key="TabStripItemDisabledPillFill" ResourceKey="AccentFillColorDisabled"/>
       <StaticResource x:Key="TabStripItemBorderBrush" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush"/>
@@ -33,7 +33,7 @@
       <StaticResource x:Key="TabStripItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush"/>
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefault"/>
+      <StaticResource x:Key="TabStripItemPillFill" ResourceKey="AccentFillColorDefaultBrush"/>
       <StaticResource x:Key="TabStripItemDisabledPillFill" ResourceKey="AccentFillColorDisabled"/>
       <StaticResource x:Key="TabStripItemBorderBrush" ResourceKey="SystemControlTransparentBrush"/>
       <StaticResource x:Key="TabStripItemBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush"/>

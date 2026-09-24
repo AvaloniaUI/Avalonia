@@ -21,10 +21,10 @@
       <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlStrongFillColorDefault" />
       <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlStrongFillColorDefault" />
       <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
-      <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefault" />
-      <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefault" />
-      <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefault" />
-      <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlStrongFillColorDefault" />
       <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
@@ -47,10 +47,10 @@
       <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="ControlStrongFillColorDefault" />
       <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="ControlStrongFillColorDefault" />
       <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="ControlStrongFillColorDisabled" />
-      <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefault" />
-      <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefault" />
-      <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefault" />
-      <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="ScrollBarTrackFill" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="ScrollBarTrackFillPointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+      <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="ScrollBarThumbBackground" ResourceKey="ControlStrongFillColorDefault" />
       <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
@@ -88,11 +88,66 @@
   <x:Double x:Key="ScrollBarButtonArrowIconFontSize">10</x:Double>
   <TransformOperations x:Key="ScrollBarVerticalThumbCollapsedTransform">scaleX(0.3333)</TransformOperations>
   <TransformOperations x:Key="ScrollBarHorizontalThumbCollapsedTransform">scaleY(0.3333)</TransformOperations>
-  
+
   <StreamGeometry x:Key="CaretDownIcon">M6.102 8c-1.074 0-1.648 1.265-.94 2.073l5.521 6.31a1.75 1.75 0 0 0 2.634 0l5.522-6.31c.707-.808.133-2.073-.94-2.073H6.101Z</StreamGeometry>
   <StreamGeometry x:Key="CaretUpIcon">M6.102 16.981c-1.074 0-1.648-1.265-.94-2.073l5.521-6.31a1.75 1.75 0 0 1 2.634 0l5.522 6.31c.707.809.133 2.073-.94 2.073H6.101Z</StreamGeometry>
   <StreamGeometry x:Key="CaretLeftIcon">M15 17.898c0 1.074-1.265 1.648-2.073.941l-6.31-5.522a1.75 1.75 0 0 1 0-2.634l6.31-5.522c.808-.707 2.073-.133 2.073.941v11.796Z</StreamGeometry>
   <StreamGeometry x:Key="CaretRightIcon">M9 17.898c0 1.074 1.265 1.648 2.073.941l6.31-5.522a1.75 1.75 0 0 0 0-2.634l-6.31-5.522C10.265 4.454 9 5.028 9 6.102v11.796Z</StreamGeometry>
+
+  <MenuFlyout x:Key="VerticalScrollBarContextFlyout">
+    <MenuItem Header="{DynamicResource StringScrollBarScrollHere}"
+              Command="{Binding $parent[ScrollBar].ScrollHere}"
+              AutomationProperties.AutomationId="ScrollHere" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarTop}"
+              Command="{Binding $parent[ScrollBar].ScrollToHome}"
+              AutomationProperties.AutomationId="Top" />
+    <MenuItem Header="{DynamicResource StringScrollBarBottom}"
+              Command="{Binding $parent[ScrollBar].ScrollToEnd}"
+              AutomationProperties.AutomationId="Bottom" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarPageUp}"
+              Command="{Binding $parent[ScrollBar].PageUp}"
+              AutomationProperties.AutomationId="PageUp" />
+    <MenuItem Header="{DynamicResource StringScrollBarPageDown}"
+              Command="{Binding $parent[ScrollBar].PageDown}"
+              AutomationProperties.AutomationId="PageDown" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollUp}"
+              Command="{Binding $parent[ScrollBar].LineUp}"
+              AutomationProperties.AutomationId="ScrollUp" />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollDown}"
+              Command="{Binding $parent[ScrollBar].LineDown}"
+              AutomationProperties.AutomationId="ScrollDown" />
+  </MenuFlyout>
+
+  <MenuFlyout x:Key="HorizontalScrollBarContextFlyout">
+    <MenuItem Header="{DynamicResource StringScrollBarScrollHere}"
+              Command="{Binding $parent[ScrollBar].ScrollHere}"
+              AutomationProperties.AutomationId="ScrollHere" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarLeftEdge}"
+              Command="{Binding $parent[ScrollBar].ScrollToHome}"
+              AutomationProperties.AutomationId="LeftEdge" />
+    <MenuItem Header="{DynamicResource StringScrollBarRightEdge}"
+              Command="{Binding $parent[ScrollBar].ScrollToEnd}"
+              AutomationProperties.AutomationId="RightEdge" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarPageLeft}"
+              Command="{Binding $parent[ScrollBar].PageLeft}"
+              AutomationProperties.AutomationId="PageLeft" />
+    <MenuItem Header="{DynamicResource StringScrollBarPageRight}"
+              Command="{Binding $parent[ScrollBar].PageRight}"
+              AutomationProperties.AutomationId="PageRight" />
+    <Separator />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollLeft}"
+              Command="{Binding $parent[ScrollBar].LineLeft}"
+              AutomationProperties.AutomationId="ScrollLeft" />
+    <MenuItem Header="{DynamicResource StringScrollBarScrollRight}"
+              Command="{Binding $parent[ScrollBar].LineRight}"
+              AutomationProperties.AutomationId="ScrollRight" />
+  </MenuFlyout>
+
 
   <ControlTheme x:Key="FluentScrollBarThumb" TargetType="Thumb">
     <Setter Property="Background" Value="{DynamicResource ScrollBarThumbBackground}"/>
@@ -186,6 +241,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ScrollBarBorderBrush}" />
 
     <Style Selector="^:vertical">
+      <Setter Property="ContextFlyout" Value="{StaticResource VerticalScrollBarContextFlyout}" />
       <Setter Property="Template">
         <ControlTemplate>
           <Grid x:Name="Root">
@@ -301,6 +357,7 @@
     </Style>
 
     <Style Selector="^:horizontal">
+      <Setter Property="ContextFlyout" Value="{StaticResource HorizontalScrollBarContextFlyout}" />
       <Setter Property="Template">
         <ControlTemplate>
           <Grid x:Name="Root">

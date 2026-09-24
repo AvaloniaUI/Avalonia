@@ -44,10 +44,10 @@
       <StaticResource x:Key="TimePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
       <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="ControlStrokeColorDefault" />
@@ -64,10 +64,10 @@
       <StaticResource x:Key="TimePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="TimePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="TimePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="TimePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
       <StaticResource x:Key="TimePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
-      <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="TimePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -318,7 +318,7 @@
               </Panel>
 
               <Border x:Name="HighlightRect" IsHitTestVisible="False" ZIndex="-1"
-                      Background="{DynamicResource AccentFillColorDefault}"
+                      Background="{DynamicResource AccentFillColorDefaultBrush}"
                       CornerRadius="{DynamicResource ControlCornerRadius}"
                       Margin="4,2,4,2"
                       Grid.Column="0"

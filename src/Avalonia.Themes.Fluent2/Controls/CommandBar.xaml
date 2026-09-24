@@ -44,9 +44,9 @@
       <StaticResource x:Key="CommandBarToggleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
       <StaticResource x:Key="CommandBarToggleButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
       <StaticResource x:Key="CommandBarToggleButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabled" />
-      <StaticResource x:Key="CommandBarToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="CommandBarToggleButtonForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="CommandBarToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
@@ -77,12 +77,12 @@
       <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundCheckedDisabled" ResourceKey="TextFillColorDisabled" />
       <StaticResource x:Key="CommandSeparatorForeground" ResourceKey="DividerStrokeColorDefault" />
       <StaticResource x:Key="CommandBarBackground" ResourceKey="ControlFillColorTransparent" />
-      <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolid" />
       <StaticResource x:Key="CommandBarForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="CommandBarHighContrastBorder" ResourceKey="ControlFillColorTransparent" />
       <StaticResource x:Key="CommandBarEllipsisIconForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-      <StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="CommandBarOverflowPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <StaticResource x:Key="CommandBarLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
     </ResourceDictionary>
@@ -103,9 +103,9 @@
       <StaticResource x:Key="CommandBarToggleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
       <StaticResource x:Key="CommandBarToggleButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
       <StaticResource x:Key="CommandBarToggleButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabled" />
-      <StaticResource x:Key="CommandBarToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="CommandBarToggleButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="CommandBarToggleButtonForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="CommandBarToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
@@ -136,12 +136,12 @@
       <StaticResource x:Key="CommandBarToggleButtonOverflowLabelForegroundCheckedDisabled" ResourceKey="TextFillColorDisabled" />
       <StaticResource x:Key="CommandSeparatorForeground" ResourceKey="DividerStrokeColorDefault" />
       <StaticResource x:Key="CommandBarBackground" ResourceKey="ControlFillColorTransparent" />
-      <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="CommandBarBorderBrushOpen" ResourceKey="CardStrokeColorDefaultSolid" />
       <StaticResource x:Key="CommandBarForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="CommandBarHighContrastBorder" ResourceKey="ControlFillColorTransparent" />
       <StaticResource x:Key="CommandBarEllipsisIconForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-      <StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="AcrylicInAppFillColorDefault" />
+      <StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
       <StaticResource x:Key="CommandBarOverflowPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
       <StaticResource x:Key="CommandBarLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
     </ResourceDictionary>
@@ -779,7 +779,7 @@
     </Setter>
 
     <Style Selector="^[IsOpen=True] /template/ Border#LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefault}" />
+      <Setter Property="Background" Value="{DynamicResource AcrylicInAppFillColorDefaultBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultSolid}" />
     </Style>
   </ControlTheme>

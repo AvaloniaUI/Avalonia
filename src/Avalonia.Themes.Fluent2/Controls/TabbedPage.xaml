@@ -208,7 +208,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="IndicatorTemplate">
       <DataTemplate>
-        <Border Background="{DynamicResource AccentFillColorDefault}"
+        <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
                 CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                 Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                 Width="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
@@ -399,7 +399,7 @@
     <Style Selector="^[TabStripPlacement=Right]">
       <Setter Property="IndicatorTemplate">
         <DataTemplate>
-          <Border Background="{DynamicResource AccentFillColorDefault}"
+          <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
                   CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                   Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                   Height="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"
@@ -414,7 +414,7 @@
     <Style Selector="^[TabStripPlacement=Left]">
       <Setter Property="IndicatorTemplate">
         <DataTemplate>
-          <Border Background="{DynamicResource AccentFillColorDefault}"
+          <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
                   CornerRadius="{DynamicResource TabbedPageTabItemHeaderIndicatorCornerRadius}"
                   Margin="{DynamicResource TabbedPageTabItemHeaderIndicatorMargin}"
                   Height="{DynamicResource TabbedPageTabItemSelectionIndicatorWidth}"

@@ -2,15 +2,15 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <SolidColorBrush x:Key="AccentTextFillColorPrimary" Color="{DynamicResource SystemAccentColorDark2}" />
-      <SolidColorBrush x:Key="AccentTextFillColorSecondary" Color="{DynamicResource SystemAccentColorDark3}" />
-      <SolidColorBrush x:Key="AccentTextFillColorTertiary" Color="{DynamicResource SystemAccentColorDark1}" />
-      <SolidColorBrush x:Key="AccentFillColorSelectedTextBackground" Color="{DynamicResource SystemAccentColor}" />
-      <SolidColorBrush x:Key="AccentFillColorDefault" Color="{DynamicResource SystemAccentColorDark1}" />
-      <SolidColorBrush x:Key="AccentFillColorSecondary" Color="{DynamicResource SystemAccentColorDark1}" Opacity="0.9" />
-      <SolidColorBrush x:Key="AccentFillColorTertiary" Color="{DynamicResource SystemAccentColorDark1}" Opacity="0.8" />
-      <SolidColorBrush x:Key="SystemFillColorAttention" Color="{DynamicResource SystemAccentColor}" />
-      <SolidColorBrush x:Key="ApplicationPageBackgroundTheme" Color="{StaticResource SolidBackgroundFillColorBase}" />
+      <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="{DynamicResource SystemAccentColorDark2}" />
+      <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="{DynamicResource SystemAccentColorDark3}" />
+      <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="{DynamicResource SystemAccentColorDark1}" />
+      <SolidColorBrush x:Key="AccentFillColorSelectedTextBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorDark1}" />
+      <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{DynamicResource SystemAccentColorDark1}" Opacity="0.9" />
+      <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{DynamicResource SystemAccentColorDark1}" Opacity="0.8" />
+      <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
 
       <!-- Elevation borders. Light: strong edge flipped to the bottom via scaleY(-1). -->
       <LinearGradientBrush x:Key="ControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,3" TransformOrigin="50%,50%">
@@ -59,27 +59,27 @@
       </LinearGradientBrush>
 
       <!-- Acrylic surfaces as solid fallback colors. -->
-      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefault" Color="#F9F9F9" />
-      <SolidColorBrush x:Key="AcrylicInAppFillColorDefault" Color="#F9F9F9" />
-      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverse" Color="#2C2C2C" />
-      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverse" Color="#2C2C2C" />
-      <SolidColorBrush x:Key="AcrylicBackgroundFillColorBase" Color="#EEEEEE" />
-      <SolidColorBrush x:Key="AcrylicInAppFillColorBase" Color="#EEEEEE" />
-      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefault" Color="{DynamicResource SystemAccentColorLight3}" />
-      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorDefault" Color="{DynamicResource SystemAccentColorLight3}" />
-      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBase" Color="{DynamicResource SystemAccentColorLight3}" />
-      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorBase" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="#F9F9F9" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="#F9F9F9" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#2C2C2C" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverseBrush" Color="#2C2C2C" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="#EEEEEE" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorBaseBrush" Color="#EEEEEE" />
+      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorBaseBrush" Color="{DynamicResource SystemAccentColorLight3}" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <SolidColorBrush x:Key="AccentTextFillColorPrimary" Color="{DynamicResource SystemAccentColorLight3}" />
-      <SolidColorBrush x:Key="AccentTextFillColorSecondary" Color="{DynamicResource SystemAccentColorLight3}" />
-      <SolidColorBrush x:Key="AccentTextFillColorTertiary" Color="{DynamicResource SystemAccentColorLight2}" />
-      <SolidColorBrush x:Key="AccentFillColorSelectedTextBackground" Color="{DynamicResource SystemAccentColor}" />
-      <SolidColorBrush x:Key="AccentFillColorDefault" Color="{DynamicResource SystemAccentColorLight2}" />
-      <SolidColorBrush x:Key="AccentFillColorSecondary" Color="{DynamicResource SystemAccentColorLight2}" Opacity="0.9" />
-      <SolidColorBrush x:Key="AccentFillColorTertiary" Color="{DynamicResource SystemAccentColorLight2}" Opacity="0.8" />
-      <SolidColorBrush x:Key="SystemFillColorAttention" Color="{DynamicResource SystemAccentColorLight2}" />
-      <SolidColorBrush x:Key="ApplicationPageBackgroundTheme" Color="{StaticResource SolidBackgroundFillColorBase}" />
+      <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="{DynamicResource SystemAccentColorLight3}" />
+      <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="{DynamicResource SystemAccentColorLight2}" />
+      <SolidColorBrush x:Key="AccentFillColorSelectedTextBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+      <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorLight2}" />
+      <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{DynamicResource SystemAccentColorLight2}" Opacity="0.9" />
+      <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{DynamicResource SystemAccentColorLight2}" Opacity="0.8" />
+      <SolidColorBrush x:Key="SystemFillColorAttentionBrush" Color="{DynamicResource SystemAccentColorLight2}" />
+      <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
 
       <!-- Elevation borders. Dark: the standard control border keeps the stronger edge at the top. -->
       <LinearGradientBrush x:Key="ControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,3">
@@ -123,16 +123,16 @@
       </LinearGradientBrush>
 
       <!-- Acrylic surfaces as solid fallback colors. -->
-      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefault" Color="#2C2C2C" />
-      <SolidColorBrush x:Key="AcrylicInAppFillColorDefault" Color="#2C2C2C" />
-      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverse" Color="#F9F9F9" />
-      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverse" Color="#F9F9F9" />
-      <SolidColorBrush x:Key="AcrylicBackgroundFillColorBase" Color="#1C1C1C" />
-      <SolidColorBrush x:Key="AcrylicInAppFillColorBase" Color="#1C1C1C" />
-      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefault" Color="{DynamicResource SystemAccentColorDark1}" />
-      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorDefault" Color="{DynamicResource SystemAccentColorDark1}" />
-      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBase" Color="{DynamicResource SystemAccentColorDark2}" />
-      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorBase" Color="{DynamicResource SystemAccentColorDark2}" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultBrush" Color="#2C2C2C" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultBrush" Color="#2C2C2C" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorDefaultInverseBrush" Color="#F9F9F9" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorDefaultInverseBrush" Color="#F9F9F9" />
+      <SolidColorBrush x:Key="AcrylicBackgroundFillColorBaseBrush" Color="#1C1C1C" />
+      <SolidColorBrush x:Key="AcrylicInAppFillColorBaseBrush" Color="#1C1C1C" />
+      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorDark1}" />
+      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorDark1}" />
+      <SolidColorBrush x:Key="AccentAcrylicBackgroundFillColorBaseBrush" Color="{DynamicResource SystemAccentColorDark2}" />
+      <SolidColorBrush x:Key="AccentAcrylicInAppFillColorBaseBrush" Color="{DynamicResource SystemAccentColorDark2}" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

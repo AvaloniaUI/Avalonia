@@ -14,7 +14,7 @@
       </ListBox>
     </Border>
   </Design.PreviewWith>
-  
+
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="ListBoxItemForegroundDisabled" ResourceKey="TextFillColorDisabled" />
@@ -24,7 +24,7 @@
       <StaticResource x:Key="ListBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
       <StaticResource x:Key="ListViewItemSelectionIndicatorFillDisabled" ResourceKey="AccentFillColorDisabled" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
@@ -35,7 +35,7 @@
       <StaticResource x:Key="ListBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
       <StaticResource x:Key="ListBoxItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
-      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="ListViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
       <StaticResource x:Key="ListViewItemSelectionIndicatorFillDisabled" ResourceKey="AccentFillColorDisabled" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
@@ -167,9 +167,6 @@
         </Border>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForegroundDisabled}" />
-    </Style>
 
     <!--  PointerOver State  -->
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
@@ -183,7 +180,7 @@
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForeground}" />
     </Style>
-    <Style Selector="^:pointerover /template/ Rectangle#PressedBackground">
+    <Style Selector="^:pressed /template/ Rectangle#PressedBackground">
       <Setter Property="Fill" Value="{DynamicResource ListBoxItemBackgroundPressed}" />
     </Style>
 
@@ -220,6 +217,10 @@
       <Style Selector="^:pressed /template/ Rectangle#PressedBackground">
         <Setter Property="Fill" Value="{DynamicResource ListBoxItemBackgroundSelectedPressed}" />
       </Style>
+    </Style>
+
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource ListBoxItemForegroundDisabled}" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

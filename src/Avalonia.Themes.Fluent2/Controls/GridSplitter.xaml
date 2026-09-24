@@ -21,7 +21,7 @@
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="PreviewContent">
         <Template>
-          <Rectangle Fill="{DynamicResource AccentFillColorDefault}" />
+          <Rectangle Fill="{DynamicResource AccentFillColorDefaultBrush}" />
         </Template>
       </Setter>
       <Setter Property="Template">

@@ -303,7 +303,7 @@
             <ControlTemplate>
               <Border x:Name="LayoutRoot" CornerRadius="2" Margin="10,0">
                 <Panel>
-                  <Border x:Name="SelectedLine" HorizontalAlignment="Left" Margin="2,6" CornerRadius="0.5" Width="3" Background="{DynamicResource AccentFillColorDefault}" IsVisible="{TemplateBinding IsSelected}"/>
+                  <Border x:Name="SelectedLine" HorizontalAlignment="Left" Margin="2,6" CornerRadius="0.5" Width="3" Background="{DynamicResource AccentFillColorDefaultBrush}" IsVisible="{TemplateBinding IsSelected}"/>
                   <ContentPresenter Name="PART_ContentPresenter"
                               Background="Transparent"
                               BorderBrush="Transparent"

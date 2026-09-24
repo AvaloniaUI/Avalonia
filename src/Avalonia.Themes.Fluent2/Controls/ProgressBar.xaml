@@ -24,12 +24,12 @@
   </Design.PreviewWith>
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefaultBrush" />
       <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlStrongStrokeColorDefault" />
       <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefault" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="ProgressBarForeground" ResourceKey="AccentFillColorDefaultBrush" />
       <StaticResource x:Key="ProgressBarBackground" ResourceKey="ControlStrongStrokeColorDefault" />
       <StaticResource x:Key="ProgressBarBorderBrush" ResourceKey="ControlStrokeColorDefault" />
     </ResourceDictionary>

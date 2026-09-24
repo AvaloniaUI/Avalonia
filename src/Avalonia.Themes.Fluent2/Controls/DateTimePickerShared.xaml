@@ -99,7 +99,7 @@
     <Setter Property="Height" Value="{DynamicResource LoopingSelectorUpDownButtonHeight}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefault}" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondary}" />
     <Setter Property="IsVisible" Value="False"/>
     <Setter Property="Opacity" Value="0"/>
@@ -133,7 +133,7 @@
     <Setter Property="Height" Value="{DynamicResource LoopingSelectorUpDownButtonHeight}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefault}" />
+    <Setter Property="Background" Value="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondary}" />
     <Setter Property="IsVisible" Value="False"/>
     <Setter Property="Opacity" Value="0"/>

@@ -37,9 +37,9 @@
       <StaticResource x:Key="SplitButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondary" />
       <StaticResource x:Key="SplitButtonBackgroundPressed" ResourceKey="ControlFillColorTertiary" />
       <StaticResource x:Key="SplitButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabled" />
-      <StaticResource x:Key="SplitButtonBackgroundChecked" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="SplitButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="SplitButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="SplitButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="SplitButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="SplitButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="SplitButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="SplitButtonForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="SplitButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
@@ -63,9 +63,9 @@
       <StaticResource x:Key="SplitButtonBackgroundPointerOver" ResourceKey="ControlFillColorSecondary" />
       <StaticResource x:Key="SplitButtonBackgroundPressed" ResourceKey="ControlFillColorTertiary" />
       <StaticResource x:Key="SplitButtonBackgroundDisabled" ResourceKey="ControlFillColorDisabled" />
-      <StaticResource x:Key="SplitButtonBackgroundChecked" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="SplitButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="SplitButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="SplitButtonBackgroundChecked" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="SplitButtonBackgroundCheckedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="SplitButtonBackgroundCheckedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="SplitButtonBackgroundCheckedDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="SplitButtonForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="SplitButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />

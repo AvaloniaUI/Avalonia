@@ -44,10 +44,10 @@
       <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
       <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
 
       <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
@@ -73,10 +73,10 @@
       <StaticResource x:Key="DatePickerButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="DatePickerButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
       <StaticResource x:Key="DatePickerButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="DatePickerFlyoutPresenterBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
       <StaticResource x:Key="DatePickerFlyoutPresenterSpacerFill" ResourceKey="DividerStrokeColorDefault" />
-      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="DatePickerFlyoutPresenterHighlightFill" ResourceKey="AccentFillColorDefaultBrush" />
 
       <StaticResource x:Key="DateTimePickerFlyoutButtonBackground" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="DateTimePickerFlyoutButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
@@ -278,7 +278,7 @@
               </Panel>
 
               <Border Name="HighlightRect" IsHitTestVisible="False" ZIndex="-1"
-                      Background="{DynamicResource AccentFillColorDefault}"
+                      Background="{DynamicResource AccentFillColorDefaultBrush}"
                       CornerRadius="{DynamicResource ControlCornerRadius}"
                       Margin="4,2,4,2"
                       Grid.Column="0" VerticalAlignment="Center"

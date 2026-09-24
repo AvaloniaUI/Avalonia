@@ -27,7 +27,7 @@
       <StaticResource x:Key="TabItemHeaderForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
       <StaticResource x:Key="TabItemHeaderForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
       <StaticResource x:Key="TabItemHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="TabItemHeaderSelectedPipeFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="TabItemHeaderSelectedPipeFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <StaticResource x:Key="TabItemHeaderBackgroundUnselected" ResourceKey="SystemControlTransparentBrush" />
@@ -44,7 +44,7 @@
       <StaticResource x:Key="TabItemHeaderForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
       <StaticResource x:Key="TabItemHeaderForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
       <StaticResource x:Key="TabItemHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-      <StaticResource x:Key="TabItemHeaderSelectedPipeFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="TabItemHeaderSelectedPipeFill" ResourceKey="AccentFillColorDefaultBrush" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

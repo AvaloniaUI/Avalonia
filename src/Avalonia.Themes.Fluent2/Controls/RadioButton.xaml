@@ -33,13 +33,13 @@
       <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="ControlAltFillColorTertiary" />
       <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="ControlAltFillColorQuarternary" />
       <StaticResource x:Key="RadioButtonOuterEllipseFillDisabled" ResourceKey="ControlAltFillColorDisabled" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokeDisabled" ResourceKey="AccentFillColorDisabled" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="RadioButtonCheckGlyphFill" ResourceKey="TextOnAccentFillColorPrimary" />
       <StaticResource x:Key="RadioButtonCheckGlyphFillPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />
@@ -75,13 +75,13 @@
       <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="ControlAltFillColorTertiary" />
       <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="ControlAltFillColorQuarternary" />
       <StaticResource x:Key="RadioButtonOuterEllipseFillDisabled" ResourceKey="ControlAltFillColorDisabled" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokeDisabled" ResourceKey="AccentFillColorDisabled" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="RadioButtonCheckGlyphFill" ResourceKey="TextOnAccentFillColorPrimary" />
       <StaticResource x:Key="RadioButtonCheckGlyphFillPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />

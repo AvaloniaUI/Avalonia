@@ -37,12 +37,12 @@
   </Design.PreviewWith>
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
       <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefault" />
+      <StaticResource x:Key="SpinnerPopupBackground" ResourceKey="AcrylicBackgroundFillColorDefaultBrush" />
       <StaticResource x:Key="SpinnerPopupBorderBrush" ResourceKey="SurfaceStrokeColorFlyout" />
       <StaticResource x:Key="SpinnerPopupSpinButtonBackground" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
@@ -225,6 +225,7 @@
 
                 <ContentPresenter Name="PART_ContentPresenter"
                                   Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                   Padding="{TemplateBinding Padding}" />

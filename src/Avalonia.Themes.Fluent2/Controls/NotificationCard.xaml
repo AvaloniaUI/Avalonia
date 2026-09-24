@@ -21,14 +21,14 @@
       <StaticResource x:Key="NotificationCardErrorSeverityIconBackground" ResourceKey="SystemFillColorCritical" />
       <StaticResource x:Key="NotificationCardWarningSeverityIconBackground" ResourceKey="SystemFillColorCaution" />
       <StaticResource x:Key="NotificationCardSuccessSeverityIconBackground" ResourceKey="SystemFillColorSuccess" />
-      <StaticResource x:Key="NotificationCardInformationalSeverityIconBackground" ResourceKey="SystemFillColorAttention" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityIconBackground" ResourceKey="SystemFillColorAttentionBrush" />
       <StaticResource x:Key="NotificationCardErrorSeverityIconForeground" ResourceKey="TextFillColorInverse" />
       <StaticResource x:Key="NotificationCardWarningSeverityIconForeground" ResourceKey="TextFillColorInverse" />
       <StaticResource x:Key="NotificationCardSuccessSeverityIconForeground" ResourceKey="TextFillColorInverse" />
       <StaticResource x:Key="NotificationCardInformationalSeverityIconForeground" ResourceKey="TextFillColorInverse" />
       <StaticResource x:Key="NotificationCardTitleForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="NotificationCardMessageForeground" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="NotificationCardHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimary" />
+      <StaticResource x:Key="NotificationCardHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
       <StaticResource x:Key="NotificationCardBorderBrush" ResourceKey="CardStrokeColorDefault" />
       <BoxShadows x:Key="NotificationCardBoxShadows">0 4 8 0 #26000000</BoxShadows>
     </ResourceDictionary>
@@ -40,14 +40,14 @@
       <StaticResource x:Key="NotificationCardErrorSeverityIconBackground" ResourceKey="SystemFillColorCritical" />
       <StaticResource x:Key="NotificationCardWarningSeverityIconBackground" ResourceKey="SystemFillColorCaution" />
       <StaticResource x:Key="NotificationCardSuccessSeverityIconBackground" ResourceKey="SystemFillColorSuccess" />
-      <StaticResource x:Key="NotificationCardInformationalSeverityIconBackground" ResourceKey="SystemFillColorAttention" />
+      <StaticResource x:Key="NotificationCardInformationalSeverityIconBackground" ResourceKey="SystemFillColorAttentionBrush" />
       <StaticResource x:Key="NotificationCardErrorSeverityIconForeground" ResourceKey="TextFillColorInverse" />
       <StaticResource x:Key="NotificationCardWarningSeverityIconForeground" ResourceKey="TextFillColorInverse" />
       <StaticResource x:Key="NotificationCardSuccessSeverityIconForeground" ResourceKey="TextFillColorInverse" />
       <StaticResource x:Key="NotificationCardInformationalSeverityIconForeground" ResourceKey="TextFillColorInverse" />
       <StaticResource x:Key="NotificationCardTitleForeground" ResourceKey="TextFillColorPrimary" />
       <StaticResource x:Key="NotificationCardMessageForeground" ResourceKey="TextFillColorPrimary" />
-      <StaticResource x:Key="NotificationCardHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimary" />
+      <StaticResource x:Key="NotificationCardHyperlinkButtonForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />
       <StaticResource x:Key="NotificationCardBorderBrush" ResourceKey="CardStrokeColorDefault" />
       <BoxShadows x:Key="NotificationCardBoxShadows">0 4 8 0 #26000000</BoxShadows>
     </ResourceDictionary>

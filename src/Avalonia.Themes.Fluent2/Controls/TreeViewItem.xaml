@@ -22,7 +22,7 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="TreeViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="TreeViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
       <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="TreeViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
       <StaticResource x:Key="TreeViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
@@ -49,7 +49,7 @@
       <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparent" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="TreeViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefault" />
+      <StaticResource x:Key="TreeViewItemSelectionIndicatorFill" ResourceKey="AccentFillColorDefaultBrush" />
       <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SubtleFillColorTransparent" />
       <StaticResource x:Key="TreeViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
       <StaticResource x:Key="TreeViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />

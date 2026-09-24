@@ -12,9 +12,9 @@
 
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
-      <StaticResource x:Key="AccentButtonBackground" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="AccentButtonBackground" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="AccentButtonBackgroundDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="AccentButtonForeground" ResourceKey="TextOnAccentFillColorPrimary" />
       <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />
@@ -38,9 +38,9 @@
       <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="ControlStrokeColorDefault" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
-      <StaticResource x:Key="AccentButtonBackground" ResourceKey="AccentFillColorDefault" />
-      <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="AccentFillColorSecondary" />
-      <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="AccentFillColorTertiary" />
+      <StaticResource x:Key="AccentButtonBackground" ResourceKey="AccentFillColorDefaultBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+      <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="AccentFillColorTertiaryBrush" />
       <StaticResource x:Key="AccentButtonBackgroundDisabled" ResourceKey="AccentFillColorDisabled" />
       <StaticResource x:Key="AccentButtonForeground" ResourceKey="TextOnAccentFillColorPrimary" />
       <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="TextOnAccentFillColorPrimary" />

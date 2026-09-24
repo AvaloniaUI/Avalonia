@@ -174,7 +174,7 @@
                      PlacementTarget="{TemplateBinding}"
                      IsLightDismissEnabled="True">
                 <Border Name="PopupBorder"
-                        Background="{DynamicResource AcrylicBackgroundFillColorDefault}"
+                        Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
                         BackgroundSizing="InnerBorderEdge"
                         BorderBrush="{DynamicResource SurfaceStrokeColorFlyout}"
                         BorderThickness="1"
