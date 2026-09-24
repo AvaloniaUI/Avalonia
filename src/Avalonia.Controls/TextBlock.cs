@@ -733,6 +733,8 @@ namespace Avalonia.Controls
             InvalidateMeasure();
         }
 
+        internal bool HasTextLayout => _textLayout is not null;
+
         /// <remarks>
         /// InvalidateMeasure only raises OnMeasureInvalidated while the measure is still
         /// valid, so a second invalidation before the next measure pass would leave the
@@ -742,6 +744,13 @@ namespace Avalonia.Controls
         {
             _textLayout?.Dispose();
             _textLayout = null;
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            DisposeTextLayout();
         }
 
         protected override void OnMeasureInvalidated()
