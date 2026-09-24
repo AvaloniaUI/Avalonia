@@ -1,5 +1,6 @@
 import { JsExports } from "./jsExports";
 import { RuntimeAPI } from "../../types/dotnet";
+import { createPost, Post } from "./singleThreadedDispatcher";
 
 /*
  * Producer side of the browser input ring buffer.
@@ -85,7 +86,7 @@ export class InputQueue {
     private static overflow: Uint8Array[] = [];
     private static overflowStart = 0;
 
-    private static wakeChannel: MessageChannel | undefined;
+    private static readonly postWake: Post = createPost("user-blocking", () => InputQueue.onWake());
 
     public static get isAttached(): boolean {
         return this.basePtr !== 0;
@@ -181,7 +182,6 @@ export class InputQueue {
         this.post(WheelRecordSize);
     }
 
-
     public static postKey(type: InputRecordType, topLevelId: number, args: KeyboardEvent): boolean {
         if (!this.isAttached) {
             return false;
@@ -261,7 +261,7 @@ export class InputQueue {
         }
 
         if (wasEmpty) {
-            this.scheduleWake();
+            this.postWake();
         }
     }
 
@@ -326,16 +326,6 @@ export class InputQueue {
         view.setUint16(2, 0, true);
         view.setUint32(4, size, true);
         this.copyIn(this.paddingHeader, 8, offset);
-    }
-
-    private static scheduleWake(): void {
-        if (!this.wakeChannel) {
-            this.wakeChannel = new MessageChannel();
-            this.wakeChannel.port1.onmessage = () => InputQueue.onWake();
-        }
-        // A macrotask, not a microtask: microtasks would run before the DOM handler's task ends
-        // and re-create the per-event entry into C#.
-        this.wakeChannel.port2.postMessage(null);
     }
 
     private static onWake(): void {

@@ -9,11 +9,11 @@ namespace Avalonia.Browser;
 
 // Dispatcher backend for single-threaded WASM. The browser event loop is the only loop:
 // wake-ups are posted as macrotasks and everything runs on the main thread, so no locking is needed.
-// Pending input is the browser input ring (see BrowserInputQueue), not navigator.scheduling.isInputPending:
-// the latter stays true for as long as the pointer keeps moving and starves low-priority jobs, while
-// the ring only reports input that was queued since the last input wake.
-internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWithPendingInput,
-    IDispatcherImplWithExplicitBackgroundProcessing
+// Pending input is deliberately not queried: the browser dispatches input between our tasks on its own,
+// and gating low-priority jobs on isInputPending starves them for as long as the pointer keeps moving.
+// Input already written to the ring (see BrowserInputQueue) doesn't count as pending either: no DOM handler
+// can run while managed code does, so the ring only fills between our tasks and is readable at any time.
+internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWithExplicitBackgroundProcessing
 {
     private static BrowserSingleThreadedDispatcherImpl? s_instance;
 
@@ -37,20 +37,13 @@ internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWith
     public event Action? Timer;
     public event Action? ReadyForBackgroundProcessing;
 
-    public bool CanQueryPendingInput => true;
-
-    /// <summary>
-    /// Input that JS has queued but C# has not decoded yet.
-    /// </summary>
-    public bool HasPendingInput => BrowserInputQueue.HasPendingInput;
-
     public void Signal()
     {
         if (_signaled)
             return;
         _signaled = true;
 
-        // RunSignaled is guaranteed to be called at the end of the input wake.
+        // RunInputWake handles it at the end of the same task.
         if (_inInputWake)
             return;
 
@@ -58,7 +51,9 @@ internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWith
     }
 
     /// <summary>
-    /// Runs <paramref name="drainInput"/> followed by a single Signaled call, in the same browser task.
+    /// Runs <paramref name="drainInput"/>, then whatever processing it requested, in the same browser task.
+    /// Decoded input is posted at Input priority, which the dispatcher runs from the background processing
+    /// callback, so without this every burst of input would cost one more task.
     /// </summary>
     public void RunInputWake(Action drainInput)
     {
@@ -72,7 +67,10 @@ internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWith
             _inInputWake = false;
         }
 
-        RunSignaled();
+        if (_signaled)
+            RunSignaled();
+        if (_backgroundRequested)
+            RunBackgroundProcessing();
     }
 
     private void RunSignaled()
@@ -81,11 +79,22 @@ internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWith
         Signaled?.Invoke();
     }
 
+    private void RunBackgroundProcessing()
+    {
+        _backgroundRequested = false;
+        ReadyForBackgroundProcessing?.Invoke();
+    }
+
     public void RequestBackgroundProcessing()
     {
         if (_backgroundRequested)
             return;
         _backgroundRequested = true;
+
+        // RunInputWake handles it at the end of the same task.
+        if (_inInputWake)
+            return;
+
         JsRequestBackgroundProcessing();
     }
 
@@ -125,10 +134,7 @@ internal partial class BrowserSingleThreadedDispatcherImpl : IDispatcherImplWith
     [JSExport]
     public static void OnReadyForBackgroundProcessing()
     {
-        if (s_instance is not { } impl)
-            return;
-        impl._backgroundRequested = false;
-        impl.ReadyForBackgroundProcessing?.Invoke();
+        s_instance?.RunBackgroundProcessing();
     }
 
     [JSExport]

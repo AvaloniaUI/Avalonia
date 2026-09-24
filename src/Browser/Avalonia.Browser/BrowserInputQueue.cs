@@ -73,15 +73,6 @@ internal static unsafe class BrowserInputQueue
     private static int Flags => Volatile.Read(ref *(int*)(s_control + OffsetFlags));
 
     /// <summary>
-    /// True when the ring or the JS overflow list hold records that were not decoded yet.
-    /// Plain memory reads, safe to call from the dispatcher's queue lock.
-    /// Reports false while a drain is in progress: those records are being handed to the dispatcher
-    /// right now, and the Signaled handler runs as soon as the drain completes.
-    /// </summary>
-    public static bool HasPendingInput =>
-        s_control != null && !s_draining && (Head != Tail || (Flags & FlagOverflow) != 0);
-
-    /// <summary>
     /// Decodes every queued record into the per-top-level <see cref="RawEventGrouper"/>.
     /// Does not dispatch anything by itself.
     /// </summary>
