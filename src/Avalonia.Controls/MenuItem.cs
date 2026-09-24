@@ -389,7 +389,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IEnumerable<IMenuItem> IMenuElement.SubItems => LogicalChildren.OfType<IMenuItem>();
 
-        private IMenuInteractionHandler? MenuInteractionHandler =>
+        internal IMenuInteractionHandler? MenuInteractionHandler =>
             this.FindLogicalAncestorOfType<MenuBase>()?.InteractionHandler ??
             this.FindAncestorOfType<MenuBase>()?.InteractionHandler;
 
