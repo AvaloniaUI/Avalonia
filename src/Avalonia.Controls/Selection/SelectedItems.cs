@@ -35,7 +35,18 @@ namespace Avalonia.Controls.Selection
                 }
                 else if (Items is not null && Ranges is not null)
                 {
-                    return Items[IndexRange.GetAt(Ranges, index)];
+                    var itemIndex = IndexRange.GetAt(Ranges, index);
+
+                    // The source collection may have shrunk or been cleared since the
+                    // selection ranges were computed (e.g. AutoCompleteBox clearing its
+                    // filtered view while the drop-down still has a selection). Don't
+                    // throw in that case - return the default value instead.
+                    if (itemIndex < 0 || itemIndex >= Items.Count)
+                    {
+                        return default;
+                    }
+
+                    return Items[itemIndex];
                 }
                 else
                 {
@@ -79,7 +90,20 @@ namespace Avalonia.Controls.Selection
                 {
                     for (var i = range.Begin; i <= range.End; ++i)
                     {
-                        yield return items is object ? items[i] : default;
+                        // Skip indices that no longer exist in the source collection
+                        // (it may have been cleared or shrunk after the selection was
+                        // made - see this[int] above).
+                        if (items is object)
+                        {
+                            if (i >= 0 && i < items.Count)
+                            {
+                                yield return items[i];
+                            }
+                        }
+                        else
+                        {
+                            yield return default;
+                        }
                     }
                 }
             }
