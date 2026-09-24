@@ -21,4 +21,8 @@ export class GeneralHelpers {
         const args = Array.prototype.slice.call(arguments, 2);
         return instance[name].apply(instance, args);
     }
+
+    public static callLambda(instance: any): void {
+        instance();
+    }
 }
