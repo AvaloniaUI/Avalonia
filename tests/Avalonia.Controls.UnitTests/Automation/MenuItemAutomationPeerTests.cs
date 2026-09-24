@@ -315,6 +315,23 @@ public class MenuItemAutomationPeerTests : ScopedTestBase
     }
 
     [Fact]
+    public void Collapse_Does_Nothing_For_Collapsed_Top_Level_Menu_Item()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+        var first = new MenuItem { Header = "First", Items = { new MenuItem { Header = "Child" } } };
+        var second = new MenuItem { Header = "Second", Items = { new MenuItem { Header = "Child" } } };
+        var menu = new Menu { Items = { first, second } };
+        CreateWindow(menu);
+
+        GetExpandCollapseProvider(second).Expand();
+        GetExpandCollapseProvider(first).Collapse();
+
+        Assert.True(second.IsSubMenuOpen);
+        Assert.True(menu.IsOpen);
+    }
+
+    [Fact]
     public void Collapse_Leaves_Menu_Open_For_Nested_Menu_Item()
     {
         // The nested submenu opens a popup from within a popup.

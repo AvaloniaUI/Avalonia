@@ -67,6 +67,8 @@ namespace Avalonia.Automation.Peers
             EnsureEnabled();
             if (!Owner.HasSubMenu)
                 throw new InvalidOperationException();
+            if (!Owner.IsSubMenuOpen)
+                return;
 
             // Match clicking an open top-level header, which closes the whole menu rather than
             // leaving the menu bar active with no submenu open.
