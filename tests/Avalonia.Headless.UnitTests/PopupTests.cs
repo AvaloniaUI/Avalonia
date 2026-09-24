@@ -357,49 +357,43 @@ public class PopupTests
 #endif
     public void Window_Position_Is_Fixed_When_Positioning_Is_Not_Supported()
     {
-        TestApplication.Options.SupportsWindowPositioning = false;
-        try
+        using var _ = TestApplication.Reconfigure(new() { SupportsWindowPositioning = false });
+
+        var target = new Border
         {
-            var target = new Border
-            {
-                Width = 20,
-                Height = 20,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(30, 40, 0, 0),
-                Background = Brushes.Red
-            };
-            var popup = new Popup
-            {
-                PlacementTarget = target,
-                Placement = PlacementMode.Bottom,
-                Child = new Border { Width = 20, Height = 20 }
-            };
-            var window = new Window
-            {
-                Width = 100,
-                Height = 100,
-                Content = new Panel { Children = { target, popup } }
-            };
-            window.Position = new PixelPoint(100, 200);
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-
-            AssertHelper.Equal(PixelPoint.Origin, window.Position);
-            AssertHelper.Equal(new PixelPoint(10, 20), window.PointToScreen(new Point(10, 20)));
-
-            popup.Open();
-            Dispatcher.UIThread.RunJobs();
-
-            var popupRoot = GetPopupTopLevel(popup);
-            AssertHelper.Equal(new PixelPoint(30, 60), popupRoot.PointToScreen(default));
-
-            window.Close();
-        }
-        finally
+            Width = 20,
+            Height = 20,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(30, 40, 0, 0),
+            Background = Brushes.Red
+        };
+        var popup = new Popup
         {
-            TestApplication.Options.SupportsWindowPositioning = true;
-        }
+            PlacementTarget = target,
+            Placement = PlacementMode.Bottom,
+            Child = new Border { Width = 20, Height = 20 }
+        };
+        var window = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = new Panel { Children = { target, popup } }
+        };
+        window.Position = new PixelPoint(100, 200);
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        AssertHelper.Equal(PixelPoint.Origin, window.Position);
+        AssertHelper.Equal(new PixelPoint(10, 20), window.PointToScreen(new Point(10, 20)));
+
+        popup.Open();
+        Dispatcher.UIThread.RunJobs();
+
+        var popupRoot = GetPopupTopLevel(popup);
+        AssertHelper.Equal(new PixelPoint(30, 60), popupRoot.PointToScreen(default));
+
+        window.Close();
     }
 
 #if NUNIT
@@ -409,53 +403,47 @@ public class PopupTests
 #endif
     public void Desktop_Coordinates_Are_Logical_When_Enabled()
     {
-        TestApplication.Options.UseLogicalDesktopCoordinates = true;
-        try
+        using var _ = TestApplication.Reconfigure(new() { UseLogicalDesktopCoordinates = true });
+
+        var target = new Border
         {
-            var target = new Border
-            {
-                Width = 20,
-                Height = 20,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(30, 40, 0, 0),
-                Background = Brushes.Red
-            };
-            var popup = new Popup
-            {
-                PlacementTarget = target,
-                Placement = PlacementMode.Bottom,
-                Child = new Border { Width = 20, Height = 20 }
-            };
-            var window = new Window
-            {
-                Width = 100,
-                Height = 100,
-                Content = new Panel { Children = { target, popup } }
-            };
-            window.Position = new PixelPoint(100, 200);
-            window.Show();
-            window.SetRenderScaling(2);
-            Dispatcher.UIThread.RunJobs();
-
-            AssertHelper.Equal(2, window.RenderScaling);
-            AssertHelper.Equal(1, window.DesktopScaling);
-            AssertHelper.Equal(new PixelPoint(110, 220), window.PointToScreen(new Point(10, 20)));
-            AssertHelper.Equal(new Point(10, 20), window.PointToClient(new PixelPoint(110, 220)));
-
-            popup.Open();
-            Dispatcher.UIThread.RunJobs();
-
-            var popupRoot = GetPopupTopLevel(popup);
-            AssertHelper.Equal(2, popupRoot.RenderScaling);
-            AssertHelper.Equal(new PixelPoint(130, 260), popupRoot.PointToScreen(default));
-
-            window.Close();
-        }
-        finally
+            Width = 20,
+            Height = 20,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(30, 40, 0, 0),
+            Background = Brushes.Red
+        };
+        var popup = new Popup
         {
-            TestApplication.Options.UseLogicalDesktopCoordinates = false;
-        }
+            PlacementTarget = target,
+            Placement = PlacementMode.Bottom,
+            Child = new Border { Width = 20, Height = 20 }
+        };
+        var window = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = new Panel { Children = { target, popup } }
+        };
+        window.Position = new PixelPoint(100, 200);
+        window.Show();
+        window.SetRenderScaling(2);
+        Dispatcher.UIThread.RunJobs();
+
+        AssertHelper.Equal(2, window.RenderScaling);
+        AssertHelper.Equal(1, window.DesktopScaling);
+        AssertHelper.Equal(new PixelPoint(110, 220), window.PointToScreen(new Point(10, 20)));
+        AssertHelper.Equal(new Point(10, 20), window.PointToClient(new PixelPoint(110, 220)));
+
+        popup.Open();
+        Dispatcher.UIThread.RunJobs();
+
+        var popupRoot = GetPopupTopLevel(popup);
+        AssertHelper.Equal(2, popupRoot.RenderScaling);
+        AssertHelper.Equal(new PixelPoint(130, 260), popupRoot.PointToScreen(default));
+
+        window.Close();
     }
 
     internal static TopLevel GetPopupTopLevel(Popup popup)
