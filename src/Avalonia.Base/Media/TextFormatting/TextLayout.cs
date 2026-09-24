@@ -575,7 +575,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 _textSourceLength = 0;
 
-                TextLine? previousLine = null;
+                TextLineImpl? previousLine = null;
 
                 var textFormatter = TextFormatter.Current;
 
@@ -605,12 +605,11 @@ namespace Avalonia.Media.TextFormatting
                     if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight)
                         && MathUtilities.GreaterThan(Height + textLine.Height, MaxHeight))
                     {
-                        if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
+                        // The line formatted here is the text that follows the previous one, whether that one
+                        // was wrapped or ended on a hard line break.
+                        if (previousLine != null)
                         {
-                            var collapsedLine =
-                                previousLine.Collapse(GetCollapsingProperties(MaxWidth));
-
-                            textLines[textLines.Count - 1] = collapsedLine;
+                            textLines[textLines.Count - 1] = CollapseCutLine(previousLine);
                         }
 
                         break;
@@ -632,9 +631,20 @@ namespace Avalonia.Media.TextFormatting
                     //Fulfill max lines constraint
                     if (MaxLines > 0 && textLines.Count >= MaxLines)
                     {
-                        if (textLine.TextLineBreak is { IsSplit: true })
+                        // A line ending on a hard line break carries no TextLineBreak, so the source is asked
+                        // whether text follows it.
+                        if (textLine.TextLineBreak is { IsSplit: true }
+                            || (textLine.NewLineLength > 0 && _textSource.GetTextRun(_textSourceLength) is { } next && next is not TextEndOfParagraph))
                         {
-                            textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(textLine.WidthIncludingTrailingWhitespace));
+                            var collapsedLine = CollapseCutLine(textLine);
+
+                            // A trimming that collapses nothing within MaxWidth is given the line's own width, as before.
+                            if (!collapsedLine.HasCollapsed && _textTrimming != TextTrimming.None)
+                            {
+                                collapsedLine = textLine.Collapse(GetCollapsingProperties(textLine.WidthIncludingTrailingWhitespace));
+                            }
+
+                            textLines[textLines.Count - 1] = collapsedLine;
                         }
 
                         break;
@@ -731,6 +741,20 @@ namespace Avalonia.Media.TextFormatting
                 _metrics.Baseline = currentLine.Baseline;
                 first = false;
             }
+        }
+
+        /// <summary>
+        /// Collapses a line the layout cut the text after, so it ends with the trimming's symbol.
+        /// </summary>
+        /// <param name="textLine">The last line drawn.</param>
+        /// <returns>The collapsed line, or the line itself without a trimming.</returns>
+        /// <remarks>
+        /// The symbol takes the width the line has left under <see cref="MaxWidth"/>; a line with none left is cut
+        /// within <see cref="MaxWidth"/> as an overflowed line is.
+        /// </remarks>
+        private TextLine CollapseCutLine(TextLineImpl textLine)
+        {
+            return textLine.CollapseCutLine(GetCollapsingProperties(MaxWidth));
         }
 
         /// <summary>

@@ -666,6 +666,233 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Theory]
+        [MemberData(nameof(MaxLinesEllipsisData))]
+        public void Should_Add_Ellipsis_When_MaxLines_Cuts_After_Hard_Line_Break(TextTrimming trimming)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    "0123456789\r\n0123456789\r\n0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: trimming,
+                    maxWidth: 200,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var lastLine = layout.TextLines[1];
+                var lastLineText = string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString()));
+
+                Assert.True(lastLine.HasCollapsed, "The line ending on a hard line break cut off by MaxLines must be collapsed.");
+                Assert.Equal("0123456789\u2026", lastLineText);
+                Assert.True(lastLine.Width <= 200);
+
+                layout.Dispose();
+            }
+        }
+
+        [Theory]
+        [InlineData("0123456789\r\n0123456789")]
+        [InlineData("0123456789\r\n0123456789\r\n")]
+        public void Should_Not_Add_Ellipsis_When_No_Text_Follows_MaxLines(string text)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 200,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+                Assert.False(layout.TextLines[1].HasCollapsed);
+                Assert.Equal("0123456789", string.Concat(layout.TextLines[1].TextRuns.Select(r => r.Text.ToString())).TrimEnd());
+
+                layout.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Add_Ellipsis_When_MaxHeight_Cuts_After_Hard_Line_Break()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    "0123456789\r\n0123456789\r\n0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 200,
+                    lineHeight: 20,
+                    maxHeight: 40.5);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var lastLine = layout.TextLines[1];
+
+                Assert.True(lastLine.HasCollapsed, "The line ending on a hard line break cut off by MaxHeight must be collapsed.");
+                Assert.Equal("0123456789\u2026", string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString())));
+
+                layout.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Add_Ellipsis_When_MaxLines_Cuts_A_Short_Wrapped_Line()
+        {
+            using (Start())
+            {
+                // The second line holds five characters, since the word after it does not fit beside them.
+                var word = new TextLayout("0123456789", Typeface.Default, 12, Brushes.Black);
+                var maxWidth = word.Width * 1.2;
+
+                var layout = new TextLayout(
+                    "0123456789 01234 0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: maxWidth,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var lastLine = layout.TextLines[1];
+
+                Assert.True(lastLine.HasCollapsed, "The short wrapped line cut off by MaxLines must be collapsed.");
+                Assert.Equal("01234\u2026", string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString())));
+                Assert.True(lastLine.Width <= maxWidth);
+
+                layout.Dispose();
+                word.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Append_Ellipsis_When_MaxLines_Cuts_After_Hard_Line_Break_Without_MaxWidth()
+        {
+            using (Start())
+            {
+                // With no width to keep, the symbol is appended to the line rather than cut into it.
+                var layout = new TextLayout(
+                    "0123456789\r\n0123456789\r\n0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var lastLine = layout.TextLines[1];
+
+                Assert.True(lastLine.HasCollapsed);
+                Assert.Equal("0123456789\u2026", string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString())));
+                Assert.True(lastLine.Width > layout.TextLines[0].Width);
+
+                layout.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Keep_Collapsing_With_A_Leading_Ellipsis_When_MaxLines_Cuts_A_Short_Wrapped_Line()
+        {
+            using (Start())
+            {
+                // A trimming that puts its symbol elsewhere than the end is given the line's own width, as before.
+                var word = new TextLayout("0123456789", Typeface.Default, 12, Brushes.Black);
+
+                var layout = new TextLayout(
+                    "0123456789 01234 0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.LeadingCharacterEllipsis,
+                    maxWidth: word.Width * 1.2,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+                Assert.True(layout.TextLines[1].HasCollapsed);
+
+                layout.Dispose();
+                word.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Add_Ellipsis_When_MaxHeight_Cuts_A_Short_Wrapped_Line()
+        {
+            using (Start())
+            {
+                var word = new TextLayout("0123456789", Typeface.Default, 12, Brushes.Black);
+
+                var layout = new TextLayout(
+                    "0123456789 01234 0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: word.Width * 1.2,
+                    lineHeight: 20,
+                    maxHeight: 40.5);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var lastLine = layout.TextLines[1];
+
+                Assert.True(lastLine.HasCollapsed, "The short wrapped line cut off by MaxHeight must be collapsed.");
+                Assert.Equal("01234\u2026", string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString())));
+
+                layout.Dispose();
+                word.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Should_Draw_The_Ellipsis_Alone_When_MaxLines_Cuts_After_An_Empty_Line()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    "0123456789\r\n\r\n0123456789",
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    textTrimming: TextTrimming.CharacterEllipsis,
+                    maxWidth: 200,
+                    maxLines: 2);
+
+                Assert.Equal(2, layout.TextLines.Count);
+
+                var lastLine = layout.TextLines[1];
+
+                Assert.True(lastLine.HasCollapsed, "The empty line cut off by MaxLines must carry the symbol.");
+                Assert.Equal("\u2026", string.Concat(lastLine.TextRuns.Select(r => r.Text.ToString())));
+                Assert.Equal(2, lastLine.Length);
+
+                // The line still answers for the text it stands for.
+                var hit = lastLine.GetCharacterHitFromDistance(lastLine.Width);
+                Assert.True(hit.FirstCharacterIndex >= lastLine.FirstTextSourceIndex);
+                Assert.True(lastLine.GetDistanceFromCharacterHit(hit) >= 0);
+
+                layout.Dispose();
+            }
+        }
+
         [Fact]
         public void Should_Produce_Fixed_Height_Lines()
         {
