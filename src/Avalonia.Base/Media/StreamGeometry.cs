@@ -47,7 +47,7 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new StreamGeometry(((IStreamGeometryImpl)PlatformImpl!).Clone());
+            return new StreamGeometry(StreamImpl.Clone()) { Transform = Transform };
         }
 
         /// <summary>
@@ -58,8 +58,22 @@ namespace Avalonia.Media
         /// </returns>
         public StreamGeometryContext Open()
         {
-            return new StreamGeometryContext(((IStreamGeometryImpl)PlatformImpl!).Open());
+            var isTransformed = PlatformImpl is ITransformedGeometryImpl;
+            var context = new StreamGeometryContext(StreamImpl.Open());
+
+            if (isTransformed)
+            {
+                // The wrapper holds a transformed copy, so it has to be rebuilt after writing.
+                InvalidateGeometry();
+            }
+
+            return context;
         }
+
+        // Derived classes build their own defining geometry, so start from PlatformImpl.
+        private IStreamGeometryImpl StreamImpl => (IStreamGeometryImpl)(PlatformImpl is ITransformedGeometryImpl transformed
+            ? transformed.SourceGeometry
+            : PlatformImpl!);
 
         /// <inheritdoc/>
         private protected override IGeometryImpl? CreateDefiningGeometry()
