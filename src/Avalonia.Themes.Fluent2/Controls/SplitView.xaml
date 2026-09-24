@@ -149,6 +149,13 @@
                       BackgroundSizing="InnerBorderEdge"
                       BorderBrush="{DynamicResource SurfaceStrokeColorFlyout}"
                       BorderThickness="0">
+                <Border.Transitions>
+                  <Transitions>
+                    <BrushTransition
+                      Duration="{StaticResource SplitViewPaneAnimationOpenDuration}"
+                      Easing="{StaticResource SplitViewPaneAnimationEasing}"/>
+                  </Transitions>
+                </Border.Transitions>
                 <ContentPresenter x:Name="PART_PanePresenter"
                                   Content="{TemplateBinding Pane}"
                                   ContentTemplate="{TemplateBinding PaneTemplate}"/>

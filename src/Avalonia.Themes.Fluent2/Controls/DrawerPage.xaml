@@ -94,7 +94,6 @@
     <Setter Property="BorderThickness" Value="{DynamicResource DrawerPageContentGridBorderThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource DrawerPageContentGridCornerRadius}" />
     <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimary}" />
-    <Setter Property="DrawerBackground" Value="{DynamicResource DrawerPageExpandedPaneBackground}" />
     <Setter Property="BackdropBrush" Value="Transparent" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -251,10 +250,11 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^[DisplayMode=Overlay] /template/ SplitView#PART_SplitView:open">
-      <Setter Property="PaneBackground" Value="{DynamicResource DrawerPageDefaultPaneBackground}" />
+    <Style Selector="^ /template/ SplitView#PART_SplitView">
+      <Setter Property="PaneBackground" Value="{DynamicResource DrawerPageExpandedPaneBackground}" />
     </Style>
-    <Style Selector="^[DisplayMode=CompactOverlay] /template/ SplitView#PART_SplitView:open">
+
+    <Style Selector="^[DisplayMode=Overlay] /template/ SplitView#PART_SplitView:open, ^[DisplayMode=CompactOverlay] /template/ SplitView#PART_SplitView:open">
       <Setter Property="PaneBackground" Value="{DynamicResource DrawerPageDefaultPaneBackground}" />
     </Style>
 
