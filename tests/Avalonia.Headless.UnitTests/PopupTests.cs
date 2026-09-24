@@ -203,6 +203,249 @@ public class PopupTests
         window.Close();
     }
 
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Nested_Popup_Placement_Respects_Parent_Popup_Position()
+    {
+        var nestedTarget = new Border
+        {
+            Width = 20,
+            Height = 20,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(10, 5, 0, 0),
+            Background = Brushes.Green
+        };
+        var nestedPopup = new Popup
+        {
+            PlacementTarget = nestedTarget,
+            Placement = PlacementMode.Bottom,
+            Child = new Border { Width = 20, Height = 20 }
+        };
+        var target = new Border
+        {
+            Width = 20,
+            Height = 20,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(30, 40, 0, 0),
+            Background = Brushes.Red
+        };
+        var popup = new Popup
+        {
+            PlacementTarget = target,
+            Placement = PlacementMode.Bottom,
+            Child = new Panel { Width = 20, Height = 50, Children = { nestedTarget, nestedPopup } }
+        };
+        var window = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = new Panel { Children = { target, popup } }
+        };
+        window.Position = new PixelPoint(100, 200);
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        popup.Open();
+        Dispatcher.UIThread.RunJobs();
+        nestedPopup.Open();
+        Dispatcher.UIThread.RunJobs();
+
+        var popupRoot = GetPopupTopLevel(popup);
+        var nestedRoot = GetPopupTopLevel(nestedPopup);
+        AssertHelper.Equal(target.PointToScreen(new Point(0, 20)), popupRoot.PointToScreen(default));
+        AssertHelper.Equal(nestedTarget.PointToScreen(new Point(0, 20)), nestedRoot.PointToScreen(default));
+
+        window.Close();
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Popup_Placement_Respects_Render_Scaling()
+    {
+        var target = new Border
+        {
+            Width = 20,
+            Height = 20,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(30, 40, 0, 0),
+            Background = Brushes.Red
+        };
+        var popup = new Popup
+        {
+            PlacementTarget = target,
+            Placement = PlacementMode.Bottom,
+            Child = new Border { Width = 20, Height = 20 }
+        };
+        var window = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = new Panel { Children = { target, popup } }
+        };
+        window.Position = new PixelPoint(100, 200);
+        window.Show();
+        window.SetRenderScaling(2);
+        Dispatcher.UIThread.RunJobs();
+
+        popup.Open();
+        Dispatcher.UIThread.RunJobs();
+
+        var popupRoot = GetPopupTopLevel(popup);
+        AssertHelper.Equal(target.PointToScreen(new Point(0, 20)), popupRoot.PointToScreen(default));
+        AssertHelper.Equal(2, popupRoot.RenderScaling);
+
+        window.Close();
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Popup_Follows_Window_Move()
+    {
+        var target = new Border
+        {
+            Width = 20,
+            Height = 20,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(30, 40, 0, 0),
+            Background = Brushes.Red
+        };
+        var popup = new Popup
+        {
+            PlacementTarget = target,
+            Placement = PlacementMode.Bottom,
+            Child = new Border { Width = 20, Height = 20 }
+        };
+        var window = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = new Panel { Children = { target, popup } }
+        };
+        window.Position = new PixelPoint(100, 200);
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        popup.Open();
+        Dispatcher.UIThread.RunJobs();
+
+        window.Position = new PixelPoint(300, 400);
+        Dispatcher.UIThread.RunJobs();
+
+        var popupRoot = GetPopupTopLevel(popup);
+        AssertHelper.Equal(new PixelPoint(330, 460), popupRoot.PointToScreen(default));
+
+        window.Close();
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Window_Position_Is_Fixed_When_Positioning_Is_Not_Supported()
+    {
+        using var _ = TestApplication.Reconfigure(new() { SupportsWindowPositioning = false });
+
+        var target = new Border
+        {
+            Width = 20,
+            Height = 20,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(30, 40, 0, 0),
+            Background = Brushes.Red
+        };
+        var popup = new Popup
+        {
+            PlacementTarget = target,
+            Placement = PlacementMode.Bottom,
+            Child = new Border { Width = 20, Height = 20 }
+        };
+        var window = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = new Panel { Children = { target, popup } }
+        };
+        window.Position = new PixelPoint(100, 200);
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        AssertHelper.Equal(PixelPoint.Origin, window.Position);
+        AssertHelper.Equal(new PixelPoint(10, 20), window.PointToScreen(new Point(10, 20)));
+
+        popup.Open();
+        Dispatcher.UIThread.RunJobs();
+
+        var popupRoot = GetPopupTopLevel(popup);
+        AssertHelper.Equal(new PixelPoint(30, 60), popupRoot.PointToScreen(default));
+
+        window.Close();
+    }
+
+#if NUNIT
+    [AvaloniaTest]
+#elif XUNIT
+    [AvaloniaFact]
+#endif
+    public void Desktop_Coordinates_Are_Logical_When_Enabled()
+    {
+        using var _ = TestApplication.Reconfigure(new() { UseLogicalDesktopCoordinates = true });
+
+        var target = new Border
+        {
+            Width = 20,
+            Height = 20,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(30, 40, 0, 0),
+            Background = Brushes.Red
+        };
+        var popup = new Popup
+        {
+            PlacementTarget = target,
+            Placement = PlacementMode.Bottom,
+            Child = new Border { Width = 20, Height = 20 }
+        };
+        var window = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = new Panel { Children = { target, popup } }
+        };
+        window.Position = new PixelPoint(100, 200);
+        window.Show();
+        window.SetRenderScaling(2);
+        Dispatcher.UIThread.RunJobs();
+
+        AssertHelper.Equal(2, window.RenderScaling);
+        AssertHelper.Equal(1, window.DesktopScaling);
+        AssertHelper.Equal(new PixelPoint(110, 220), window.PointToScreen(new Point(10, 20)));
+        AssertHelper.Equal(new Point(10, 20), window.PointToClient(new PixelPoint(110, 220)));
+
+        popup.Open();
+        Dispatcher.UIThread.RunJobs();
+
+        var popupRoot = GetPopupTopLevel(popup);
+        AssertHelper.Equal(2, popupRoot.RenderScaling);
+        AssertHelper.Equal(new PixelPoint(130, 260), popupRoot.PointToScreen(default));
+
+        window.Close();
+    }
+
     internal static TopLevel GetPopupTopLevel(Popup popup)
     {
         AssertHelper.NotNull(popup.Child);
