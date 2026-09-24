@@ -180,7 +180,7 @@ namespace Avalonia.Win32
 
         private double GetTaskBarMonScalingOrDefault()
         {
-            if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8_1)
+            if (GetDpiForMonitorAvailable)
             {
                 uint dpiX, dpiY;
 
