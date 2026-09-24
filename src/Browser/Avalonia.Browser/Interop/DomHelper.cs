@@ -43,6 +43,7 @@ internal static partial class DomHelper
     [JSExport]
     public static Task DarkModeChanged(bool isDarkMode, bool isHighContrast)
     {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
         (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnColorValuesChanged(isDarkMode, isHighContrast);
         return Task.CompletedTask;
     }
@@ -50,6 +51,7 @@ internal static partial class DomHelper
     [JSExport]
     public static Task DocumentVisibilityChanged(string visibilityState)
     {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
         (AvaloniaLocator.Current.GetService<IActivatableLifetime>() as BrowserActivatableLifetime)?.OnVisibilityStateChanged(visibilityState);
         return Task.CompletedTask;
     }
@@ -57,6 +59,7 @@ internal static partial class DomHelper
     [JSExport]
     public static Task LanguageChanged(string language)
     {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
         (AvaloniaLocator.Current.GetService<IPlatformSettings>() as BrowserPlatformSettings)?.OnPreferredLanguageChanged(language);
         return Task.CompletedTask;
     }
@@ -64,6 +67,7 @@ internal static partial class DomHelper
     [JSExport]
     public static Task ScreensChanged()
     {
+        using var _ = JsCallbackHelper.EnsureDispatcherContext();
         (AvaloniaLocator.Current.GetService<IScreenImpl>() as BrowserScreens)?.OnChanged();
         return Task.CompletedTask;
     }
