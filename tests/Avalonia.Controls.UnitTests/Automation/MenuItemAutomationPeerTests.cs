@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
@@ -286,12 +287,53 @@ public class MenuItemAutomationPeerTests : ScopedTestBase
 
         var child = new MenuItem { Header = "Child" };
         var topLevel = new MenuItem { Header = "Top", Items = { child } };
-        CreateWindow(new Menu { Items = { topLevel } });
+        var menu = new Menu { Items = { topLevel } };
+        CreateWindow(menu);
 
         GetExpandCollapseProvider(topLevel).Expand();
 
+        Assert.True(menu.IsOpen);
         Assert.True(topLevel.IsSubMenuOpen);
         Assert.True(child.IsAttachedToVisualTree);
+    }
+
+    [Fact]
+    public void Collapse_Closes_Menu_For_Top_Level_Menu_Item()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+        var topLevel = new MenuItem { Header = "Top", Items = { new MenuItem { Header = "Child" } } };
+        var menu = new Menu { Items = { topLevel } };
+        CreateWindow(menu);
+        var provider = GetExpandCollapseProvider(topLevel);
+
+        provider.Expand();
+        provider.Collapse();
+
+        Assert.False(topLevel.IsSubMenuOpen);
+        Assert.False(menu.IsOpen);
+    }
+
+    [Fact]
+    public void Collapse_Leaves_Menu_Open_For_Nested_Menu_Item()
+    {
+        // The nested submenu opens a popup from within a popup.
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+            windowingPlatform: new MockWindowingPlatform(popupImpl: CreateNestablePopup)));
+
+        var nested = new MenuItem { Header = "Nested", Items = { new MenuItem { Header = "Child" } } };
+        var topLevel = new MenuItem { Header = "Top", Items = { nested } };
+        var menu = new Menu { Items = { topLevel } };
+        CreateWindow(menu);
+        var nestedProvider = GetExpandCollapseProvider(nested);
+
+        GetExpandCollapseProvider(topLevel).Expand();
+        nestedProvider.Expand();
+        nestedProvider.Collapse();
+
+        Assert.False(nested.IsSubMenuOpen);
+        Assert.True(topLevel.IsSubMenuOpen);
+        Assert.True(menu.IsOpen);
     }
 
     [Fact]
@@ -306,7 +348,7 @@ public class MenuItemAutomationPeerTests : ScopedTestBase
         var clicked = new List<object?>();
 
         menu.AddHandler(MenuItem.ClickEvent, (_, e) => clicked.Add(e.Source));
-        topLevel.IsSubMenuOpen = true;
+        GetExpandCollapseProvider(topLevel).Expand();
         GetInvokeProvider(child).Invoke();
 
         Assert.Equal([child], clicked);
@@ -322,7 +364,9 @@ public class MenuItemAutomationPeerTests : ScopedTestBase
         var menu = new Menu { Items = { topLevel } };
         CreateWindow(menu);
 
-        topLevel.IsSubMenuOpen = true;
+        GetExpandCollapseProvider(topLevel).Expand();
+        Assert.True(menu.IsOpen);
+
         GetInvokeProvider(child).Invoke();
 
         Assert.False(topLevel.IsSubMenuOpen);
@@ -336,12 +380,14 @@ public class MenuItemAutomationPeerTests : ScopedTestBase
 
         var child = new MenuItem { Header = "Child", StaysOpenOnClick = true };
         var topLevel = new MenuItem { Header = "Top", Items = { child } };
-        CreateWindow(new Menu { Items = { topLevel } });
+        var menu = new Menu { Items = { topLevel } };
+        CreateWindow(menu);
 
-        topLevel.IsSubMenuOpen = true;
+        GetExpandCollapseProvider(topLevel).Expand();
         GetInvokeProvider(child).Invoke();
 
         Assert.True(topLevel.IsSubMenuOpen);
+        Assert.True(menu.IsOpen);
     }
 
     [Fact]
@@ -353,7 +399,7 @@ public class MenuItemAutomationPeerTests : ScopedTestBase
         var topLevel = new MenuItem { Header = "Top", Items = { child } };
         CreateWindow(new Menu { Items = { topLevel } });
 
-        topLevel.IsSubMenuOpen = true;
+        GetExpandCollapseProvider(topLevel).Expand();
         GetInvokeProvider(child).Invoke();
 
         Assert.True(child.IsChecked);
@@ -398,6 +444,13 @@ public class MenuItemAutomationPeerTests : ScopedTestBase
     }
 
     private static MenuItem CreateSubmenuItem() => new() { Items = { new MenuItem() } };
+
+    private static IPopupImpl CreateNestablePopup(IWindowBaseImpl parent)
+    {
+        var popup = MockWindowingPlatform.CreatePopupMock(parent);
+        popup.Setup(x => x.CreatePopup()).Returns(() => CreateNestablePopup(popup.Object));
+        return popup.Object;
+    }
 
     private static Window CreateWindow(Menu menu)
     {

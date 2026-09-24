@@ -3,6 +3,7 @@ using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 
 namespace Avalonia.Automation.Peers
 {
@@ -66,7 +67,13 @@ namespace Avalonia.Automation.Peers
             EnsureEnabled();
             if (!Owner.HasSubMenu)
                 throw new InvalidOperationException();
-            Owner.Close();
+
+            // Match clicking an open top-level header, which closes the whole menu rather than
+            // leaving the menu bar active with no submenu open.
+            if (Owner.IsTopLevel && Owner.Parent is IMainMenu mainMenu)
+                mainMenu.Close();
+            else
+                Owner.Close();
         }
 
         void IToggleProvider.Toggle()
