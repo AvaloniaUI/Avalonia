@@ -35,6 +35,7 @@
 
   <x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
   <Thickness x:Key="ToolTipThemeBorderThickness">1</Thickness>
+  <x:TimeSpan x:Key="ToolTipOpacityTransitionDuration">00:00:00.15</x:TimeSpan>
 
   <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip" BasedOn="{StaticResource DefaultToolTipTheme}"/>
 
@@ -51,7 +52,7 @@
     <Setter Property="Opacity" Value="0" />
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+        <DoubleTransition Property="Opacity" Duration="{StaticResource ToolTipOpacityTransitionDuration}" />
       </Transitions>
     </Setter>
     <Setter Property="Template">

@@ -81,12 +81,12 @@
   <x:Double x:Key="TreeViewItemIndent">16</x:Double>
   <x:Double x:Key="TreeViewItemContentHeight">20</x:Double>
   <x:Double x:Key="TreeViewItemMinHeight">28</x:Double>
-  <x:Double x:Key="TreeViewItemExpandCollapseChevronSize">12</x:Double>
+  <x:Double x:Key="TreeViewItemExpandCollapseChevronSize">10</x:Double>
   <Thickness x:Key="TreeViewItemExpandCollapseChevronMargin">12, 0, 12, 0</Thickness>
   <Thickness x:Key="TreeViewItemPresenterMargin">4,2,4,2</Thickness>
   <Thickness x:Key="TreeViewItemPresenterPadding">0,3,0,5</Thickness>
-  <StreamGeometry x:Key="TreeViewItemCollapsedChevronPathData">M8.293 4.293a1 1 0 0 0 0 1.414L14.586 12l-6.293 6.293a1 1 0 1 0 1.414 1.414l7-7a1 1 0 0 0 0-1.414l-7-7a1 1 0 0 0-1.414 0Z</StreamGeometry>
-  <StreamGeometry x:Key="TreeViewItemExpandedChevronPathData">M4.293 8.293a1 1 0 0 1 1.414 0L12 14.586l6.293-6.293a1 1 0 1 1 1.414 1.414l-7 7a1 1 0 0 1-1.414 0l-7-7a1 1 0 0 1 0-1.414Z</StreamGeometry>
+  <StaticResource x:Key="TreeViewItemCollapsedChevronPathData" ResourceKey="ChevronRightPathData"/>
+  <StaticResource x:Key="TreeViewItemExpandedChevronPathData" ResourceKey="ChevronDownPathData"/>
 
   <ControlTheme x:Key="FluentTreeViewExpandCollapseChevron" TargetType="ToggleButton">
     <Setter Property="Margin" Value="0" />

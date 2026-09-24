@@ -56,7 +56,7 @@
   <Thickness x:Key="MenuInputGestureTextMargin">24,0,0,0</Thickness>
   <Thickness x:Key="MenuFlyoutItemMargin">4,2,4,2</Thickness>
 
-  <StreamGeometry x:Key="MenuItemChevronPathData">M8.293 4.293a1 1 0 0 0 0 1.414L14.586 12l-6.293 6.293a1 1 0 1 0 1.414 1.414l7-7a1 1 0 0 0 0-1.414l-7-7a1 1 0 0 0-1.414 0Z</StreamGeometry>
+  <StaticResource x:Key="MenuItemChevronPathData" ResourceKey="ChevronRightPathData"/>
 
   <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemTheme}"/>
 

@@ -62,6 +62,11 @@
   <Thickness x:Key="NotificationCardIconMargin">0,16,14,16</Thickness>
   <x:Double x:Key="NotificationCardIconFontSize">16</x:Double>
   <Thickness x:Key="NotificationCardPanelMargin">0,0,16,0</Thickness>
+  <x:TimeSpan x:Key="NotificationCardOpenAnimationDuration">0:0:0.45</x:TimeSpan>
+  <x:TimeSpan x:Key="NotificationCardCloseAnimationDuration">0:0:0.75</x:TimeSpan>
+
+  <QuadraticEaseIn x:Key="NotificationCardOpenAnimationEasing"/>
+  <QuadraticEaseOut x:Key="NotificationCardCloseAnimationEasing"/>
 
   <StreamGeometry x:Key="NotificationCardInformationIcon">M12 1.999c5.524 0 10.002 4.478 10.002 10.002 0 5.523-4.478 10.001-10.002 10.001-5.524 0-10.002-4.478-10.002-10.001C1.998 6.477 6.476 1.999 12 1.999Zm-.004 8.25a1 1 0 0 0-.992.885l-.007.116.003 5.502.007.117a1 1 0 0 0 1.987-.002L13 16.75l-.003-5.501-.007-.117a1 1 0 0 0-.994-.882ZM12 6.5a1.251 1.251 0 1 0 0 2.503A1.251 1.251 0 0 0 12 6.5Z</StreamGeometry>
   <StreamGeometry x:Key="NotificationCardSuccessIcon">M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.22 6.97-4.47 4.47-1.97-1.97a.75.75 0 0 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.06 0l5-5a.75.75 0 1 0-1.06-1.06Z</StreamGeometry>
@@ -168,7 +173,8 @@
     </Setter>
 
     <ControlTheme.Animations>
-      <Animation Duration="0:0:0.45" Easing="QuadraticEaseIn" FillMode="Forward">
+      <Animation Duration="{StaticResource NotificationCardOpenAnimationDuration}" 
+                 Easing="{StaticResource NotificationCardOpenAnimationEasing}" FillMode="Forward">
         <KeyFrame Cue="0%">
           <Setter Property="Opacity" Value="0"/>
           <Setter Property="TranslateTransform.Y" Value="20"/>
@@ -190,7 +196,9 @@
     <Style Selector="^[IsClosing=true] /template/ LayoutTransformControl#PART_LayoutTransformControl">
       <Setter Property="RenderTransformOrigin" Value="50%,0%"/>
       <Style.Animations>
-        <Animation Duration="0:0:0.75" Easing="QuadraticEaseOut" FillMode="Forward">
+        <Animation Duration="{StaticResource NotificationCardCloseAnimationDuration}" 
+                   Easing="{StaticResource NotificationCardCloseAnimationEasing}" 
+                   FillMode="Forward">
           <KeyFrame Cue="0%">
             <Setter Property="TranslateTransform.X" Value="0"/>
             <Setter Property="ScaleTransform.ScaleY" Value="1"/>

@@ -41,6 +41,8 @@
       <Thickness x:Key="ProgressBarThemeBorderThickness">0</Thickness>
 
   <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+  
+  <x:TimeSpan x:Key="ProgressBarOpacityTransitionDuration">00:00:00.197</x:TimeSpan>
 
   <ControlTheme x:Key="{x:Type ProgressBar}" TargetType="ProgressBar" BasedOn="{StaticResource DefaultProgressBarTheme}"/>
 
@@ -68,14 +70,14 @@
                   CornerRadius="0.5">
                 <Border.Transitions>
                   <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
+                    <DoubleTransition Property="Opacity" Duration="{StaticResource ProgressBarOpacityTransitionDuration}" />
                   </Transitions>
                 </Border.Transitions>
               </Border>
               <Panel x:Name="DeterminateRoot" Opacity="1">
                 <Panel.Transitions>
                   <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
+                    <DoubleTransition Property="Opacity" Duration="{StaticResource ProgressBarOpacityTransitionDuration}" />
                   </Transitions>
                 </Panel.Transitions>
                 <Border
@@ -87,7 +89,7 @@
               <Panel x:Name="IndeterminateRoot" Opacity="0">
                 <Panel.Transitions>
                   <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
+                    <DoubleTransition Property="Opacity" Duration="{StaticResource ProgressBarOpacityTransitionDuration}" />
                   </Transitions>
                 </Panel.Transitions>
                 <Border

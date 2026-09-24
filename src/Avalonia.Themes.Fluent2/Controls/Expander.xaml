@@ -108,7 +108,11 @@
 
   <!-- Shared header/content -->
   <x:Double x:Key="ExpanderMinHeight">48</x:Double>
-  <x:TimeSpan x:Key="ExpanderChevronAnimationDuration">00:00:00.0625</x:TimeSpan>
+  <StaticResource x:Key="ExpanderChevronAnimationDuration" ResourceKey="ControlFastAnimationDuration"/>
+  <StaticResource x:Key="ExpanderChevronUpPathData" ResourceKey="ChevronUpPathData"/>
+  <StaticResource x:Key="ExpanderChevronDownPathData" ResourceKey="ChevronDownPathData"/>
+  <StaticResource x:Key="ExpanderChevronLeftPathData" ResourceKey="ChevronLeftPathData"/>
+  <StaticResource x:Key="ExpanderChevronRightPathData" ResourceKey="ChevronRightPathData"/>
 
   <!-- Header -->
   <HorizontalAlignment x:Key="ExpanderHeaderHorizontalContentAlignment">Stretch</HorizontalAlignment>
@@ -118,6 +122,7 @@
   <Thickness x:Key="ExpanderChevronBorderThickness">0</Thickness>
   <Thickness x:Key="ExpanderChevronMargin">20,0,8,0</Thickness>
   <x:Double x:Key="ExpanderChevronButtonSize">32</x:Double>
+  <x:Double x:Key="ExpanderChevronIconSize">10</x:Double>
 
   <!-- Content -->
   <Thickness x:Key="ExpanderContentPadding">16</Thickness>
@@ -161,44 +166,30 @@
                     BorderBrush="{DynamicResource ExpanderChevronBorderBrush}"
                     BorderThickness="{DynamicResource ExpanderChevronBorderThickness}"
                     Background="{DynamicResource ExpanderChevronBackground}">
-              <Path x:Name="ExpandCollapseChevron"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    RenderTransformOrigin="50%,50%"
-                    Stretch="None"
-                    Stroke="{DynamicResource ExpanderChevronForeground}"
-                    StrokeThickness="1">
-                <Path.RenderTransform>
+              <PathIcon x:Name="ExpandCollapseChevron"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Width="{DynamicResource ExpanderChevronIconSize}"
+                        Height="{DynamicResource ExpanderChevronIconSize}"
+                        Foreground="{DynamicResource ExpanderChevronForeground}">
+                <PathIcon.Transitions>
+                  <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform"
+                                                   Duration="{StaticResource ExpanderChevronAnimationDuration}"/>
+                  </Transitions>
+                </PathIcon.Transitions>
+                <PathIcon.RenderTransform>
                   <RotateTransform />
-                </Path.RenderTransform>
-              </Path>
+                </PathIcon.RenderTransform>
+              </PathIcon>
             </Border>
           </Grid>
         </Border>
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^[Tag=expanded] /template/ Path#ExpandCollapseChevron">
-      <Style.Animations>
-        <Animation FillMode="Both" Duration="{StaticResource ExpanderChevronAnimationDuration}">
-          <KeyFrame Cue="100%">
-            <Setter Property="RotateTransform.Angle" Value="180" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <Style Selector="^[Tag=collapsed] /template/ Path#ExpandCollapseChevron">
-      <Style.Animations>
-        <Animation FillMode="Both" Duration="{StaticResource ExpanderChevronAnimationDuration}">
-          <KeyFrame Cue="0%">
-            <Setter Property="RotateTransform.Angle" Value="180" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="RotateTransform.Angle" Value="0" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
+    <Style Selector="^[Tag=expanded] /template/ PathIcon#ExpandCollapseChevron">
+      <Setter Property="RenderTransform" Value="rotate(180deg)"/>
     </Style>
 
     <!-- PointerOver -->
@@ -213,8 +204,8 @@
       <Setter Property="Background" Value="{DynamicResource ExpanderChevronBackgroundPointerOver}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ExpanderChevronBorderBrushPointerOver}" />
     </Style>
-    <Style Selector="^:pointerover /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Stroke" Value="{DynamicResource ExpanderChevronForegroundPointerOver}" />
+    <Style Selector="^:pointerover /template/ PathIcon#ExpandCollapseChevron">
+      <Setter Property="Foreground" Value="{DynamicResource ExpanderChevronForegroundPointerOver}" />
     </Style>
 
     <!-- Pressed -->
@@ -229,8 +220,8 @@
       <Setter Property="Background" Value="{DynamicResource ExpanderChevronBackgroundPressed}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ExpanderChevronBorderBrushPressed}" />
     </Style>
-    <Style Selector="^:pressed /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Stroke" Value="{DynamicResource ExpanderChevronForegroundPressed}" />
+    <Style Selector="^:pressed /template/ PathIcon#ExpandCollapseChevron">
+      <Setter Property="Foreground" Value="{DynamicResource ExpanderChevronForegroundPressed}" />
     </Style>
 
     <!-- Disabled -->
@@ -245,33 +236,33 @@
       <Setter Property="Background" Value="{DynamicResource ExpanderChevronBackgroundDisabled}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ExpanderChevronBorderBrushDisabled}" />
     </Style>
-    <Style Selector="^:disabled /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Stroke" Value="{DynamicResource ExpanderChevronForegroundDisabled}" />
+    <Style Selector="^:disabled /template/ PathIcon#ExpandCollapseChevron">
+      <Setter Property="Foreground" Value="{DynamicResource ExpanderChevronForegroundDisabled}" />
     </Style>
 
   </ControlTheme>
 
   <ControlTheme x:Key="FluentExpanderToggleButtonUpTheme" TargetType="ToggleButton" BasedOn="{StaticResource FluentExpanderToggleButtonTheme}">
-    <Style Selector="^ /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Data" Value="M 0 6 L 6 0 L 12 6" />
+    <Style Selector="^ /template/ PathIcon#ExpandCollapseChevron">
+      <Setter Property="Data" Value="{StaticResource ExpanderChevronUpPathData}" />
     </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="FluentExpanderToggleButtonDownTheme" TargetType="ToggleButton" BasedOn="{StaticResource FluentExpanderToggleButtonTheme}">
-    <Style Selector="^ /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Data" Value="M 0 0 L 6 6 L 12 0" />
+    <Style Selector="^ /template/ PathIcon#ExpandCollapseChevron">
+      <Setter Property="Data" Value="{StaticResource ExpanderChevronDownPathData}" />
     </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="FluentExpanderToggleButtonLeftTheme" TargetType="ToggleButton" BasedOn="{StaticResource FluentExpanderToggleButtonTheme}">
-    <Style Selector="^ /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Data" Value="M 6 0 L 0 6 L 6 12" />
+    <Style Selector="^ /template/ PathIcon#ExpandCollapseChevron">
+      <Setter Property="Data" Value="{StaticResource ExpanderChevronLeftPathData}" />
     </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="FluentExpanderToggleButtonRightTheme" TargetType="ToggleButton" BasedOn="{StaticResource FluentExpanderToggleButtonTheme}">
-    <Style Selector="^ /template/ Path#ExpandCollapseChevron">
-      <Setter Property="Data" Value="M 0 0 L 6 6 L 0 12" />
+    <Style Selector="^ /template/ PathIcon#ExpandCollapseChevron">
+      <Setter Property="Data" Value="{StaticResource ExpanderChevronRightPathData}" />
     </Style>
   </ControlTheme>
 
@@ -288,9 +279,6 @@
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <Setter Property="ContentTransition">
-      <CrossFade Duration="0:0:0.25" />
-    </Setter>
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel MinWidth="{TemplateBinding MinWidth}"
