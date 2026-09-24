@@ -1016,6 +1016,14 @@ namespace Avalonia.Skia
 
                             var origin = originPoint.ToSKPoint();
 
+                            // Skia leaves the area that no gradient circle reaches unpainted, which only
+                            // happens when the origin is outside the circle. Everywhere else the gradient
+                            // covers the whole area, and a backdrop would show through its transparent parts.
+                            var originOffsetX = originPoint.X - centerPoint.X;
+                            var originOffsetY = originPoint.Y - centerPoint.Y;
+                            var originIsOutside =
+                                originOffsetX * originOffsetX + originOffsetY * originOffsetY > radiusX * radiusX;
+
                             var endOffset = stopOffsets[stopOffsets.Length - 1];
 
                             var start = origin;
@@ -1056,16 +1064,16 @@ namespace Avalonia.Skia
                                 stopOffsets = reversedStops;
                             }
 
-                            // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
-                            using (var shader = SKShader.CreateCompose(
-                                       SKShader.CreateColor(stopColors[0]),
-                                       transform.HasValue
-                                           ? SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
-                                              stopColors, stopOffsets, tileMode, transform.Value.ToSKMatrix())
-                                           : SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
-                                              stopColors, stopOffsets, tileMode)
-                                        )
-                                    )
+                            // Fill that unpainted area with the colour the gradient clamps to, like D2D does.
+                            var gradient = transform.HasValue
+                                ? SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
+                                    stopColors, stopOffsets, tileMode, transform.Value.ToSKMatrix())
+                                : SKShader.CreateTwoPointConicalGradient(start, radiusStart, end, radiusEnd,
+                                    stopColors, stopOffsets, tileMode);
+
+                            using (var shader = originIsOutside
+                                       ? SKShader.CreateCompose(SKShader.CreateColor(stopColors[0]), gradient)
+                                       : gradient)
                             {
                                 paintWrapper.Paint.Shader = shader;
                             }
