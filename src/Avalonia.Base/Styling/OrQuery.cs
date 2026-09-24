@@ -50,12 +50,7 @@ namespace Avalonia.Styling
 
         internal override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe, string? containerName = null)
         {
-            if (control is not Visual visual)
-            {
-                return SelectorMatch.NeverThisType;
-            }
-
-            var activators = new OrQueryActivatorBuilder(visual);
+            var activators = new OrQueryActivatorBuilder(control);
             var neverThisInstance = false;
 
             var count = _queries.Count;
