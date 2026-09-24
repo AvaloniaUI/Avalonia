@@ -85,7 +85,7 @@
                      Fill="{DynamicResource ListViewItemSelectionIndicatorFill}">
             <Rectangle.Transitions>
               <Transitions>
-                <TransformOperationsTransition Property="RenderTransform" Duration="{StaticResource ControlFastAnimationDuration}" Easing="0,0 0,1" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="{StaticResource ControlFastAnimationDuration}" Easing="{StaticResource ControlFastOutSlowInKeySpline}" />
               </Transitions>
             </Rectangle.Transitions>
           </Rectangle>

@@ -61,7 +61,7 @@
                 <Transitions>
                   <DoubleTransition Property="Height"
                                                  Duration="{DynamicResource ComboBoxItemScaleAnimationDuration}"
-                                                 Easing="0,0,0,1"/>
+                                                 Easing="{StaticResource ControlFastOutSlowInKeySpline}"/>
                 </Transitions>
               </Rectangle.Transitions>
             </Rectangle>
