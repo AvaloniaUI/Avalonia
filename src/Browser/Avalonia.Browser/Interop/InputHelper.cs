@@ -31,16 +31,13 @@ internal static partial class InputHelper
     public static partial int SpillOverflow();
 
     /// <summary>
-    /// Called once per burst of queued input, from a JS macrotask. Single-threaded runtime only.
+    /// Called once per burst of queued input, from a JS macrotask.
     /// </summary>
     [JSExport]
     public static void OnInputWake()
     {
         using var _ = JsCallbackHelper.EnsureDispatcherContext();
-        if (BrowserWindowingPlatform.DispatcherImpl is { } dispatcherImpl)
-            dispatcherImpl.RunInputWake(BrowserInputQueue.Drain);
-        else
-            BrowserInputQueue.Drain(); // managed dispatcher: the UI thread pumps the grouper queue itself
+        BrowserInputQueue.Drain();
     }
 
     /// <summary>

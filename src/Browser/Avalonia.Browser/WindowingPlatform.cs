@@ -29,11 +29,6 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
     /// </summary>
     internal static AutomaticRawEventGrouperDispatchQueue? AutomaticEventGrouperDispatchQueue { get; private set; }
 
-    /// <summary>
-    /// The dispatcher implementation when running without the managed dispatcher; null otherwise.
-    /// </summary>
-    internal static BrowserSingleThreadedDispatcherImpl? DispatcherImpl { get; private set; }
-
     private static IRawEventGrouperDispatchQueue? s_eventGrouperDispatchQueue;
 
     internal static readonly bool IsThreadingEnabled = DetectThreadSupport();
@@ -122,8 +117,7 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         }
         else
         {
-            DispatcherImpl = new BrowserSingleThreadedDispatcherImpl();
-            Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl);
+            Dispatcher.InitializeUIThreadDispatcher(new BrowserSingleThreadedDispatcherImpl());
             AutomaticEventGrouperDispatchQueue = new AutomaticRawEventGrouperDispatchQueue(Dispatcher.UIThread);
             s_eventGrouperDispatchQueue = AutomaticEventGrouperDispatchQueue;
         }
