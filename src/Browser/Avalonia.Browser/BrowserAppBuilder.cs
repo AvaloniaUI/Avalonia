@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,9 +30,12 @@ public record BrowserPlatformOptions
     };
 
     /// <summary>
-    /// Defines paths where avalonia modules and service locator should be resolved.
-    /// If null, default path resolved depending on the backend (browser or blazor) is used.
+    /// Defines paths where avalonia modules should be resolved for JSHost.ImportAsync.
+    /// If null, default path resolved depending on the backend is used.
     /// </summary>
+    /// <remarks>
+    /// Default implementation resolves assets relative to the dotnet.runtime.js.
+    /// </remarks>
     public Func<string, string>? FrameworkAssetPathResolver { get; set; }
 
     /// <summary>
@@ -57,9 +61,11 @@ public record BrowserPlatformOptions
     public bool PreferFileDialogPolyfill { get; set; }
 
     /// <summary>
-    /// Defines if Avalonia should create a controlled dispatcher loop on the web worker thread.
-    /// If used only when WasmEnableThreads is set to true. Default value is true.
+    /// Has no effect. When WasmEnableThreads is set to true, Avalonia always runs a controlled
+    /// dispatcher loop on the web worker thread.
     /// </summary>
+    [Obsolete("The managed thread dispatcher is always used when WasmEnableThreads is enabled. This option has no effect.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public bool? PreferManagedThreadDispatcher { get; set; } = true;
 }
 
@@ -89,7 +95,7 @@ public static class BrowserAppBuilder
                 lifetime.View = new AvaloniaView(mainDivId);
             });
 
-        if (BrowserWindowingPlatform.IsManagedDispatcherEnabled)
+        if (BrowserWindowingPlatform.IsThreadingEnabled)
         {
             var tcs = new TaskCompletionSource();
             var thread = new Thread(() =>
@@ -139,7 +145,7 @@ public static class BrowserAppBuilder
     internal static async Task<AppBuilder> PreSetupBrowser(AppBuilder builder, BrowserPlatformOptions? options)
     {
         options ??= AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
-        options.FrameworkAssetPathResolver ??= fileName => $"./{fileName}";
+        options.FrameworkAssetPathResolver ??= fileName => $"../{AvaloniaModule.AssetsBasePath}/{fileName}";
 
         AvaloniaLocator.CurrentMutable.Bind<BrowserPlatformOptions>().ToConstant(options);
 

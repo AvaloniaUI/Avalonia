@@ -865,8 +865,8 @@ public class CompositorHitTestingTests : CompositorTestsBase
 
             s.TopLevel.Content = border;
 
-            s.AssertHitTest(new RectangleGeometry(new Rect(75, 100, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.Intersects));
-            s.AssertHitTest(new RectangleGeometry(new Rect(125, 100, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.Intersects));
+            s.AssertHitTest(new RectangleGeometry(new Rect(75, 100, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.FullyContains));
+            s.AssertHitTest(new RectangleGeometry(new Rect(125, 45, 10, 10)), null, new GeometryHitTestResult(border, IntersectionResult.Intersects));
             s.AssertHitTest(new RectangleGeometry(new Rect(175, 100, 10, 10)), null);
         }
     }
@@ -1492,6 +1492,26 @@ public class CompositorHitTestingTests : CompositorTestsBase
                 s.AssertHitTest(geometry, null, 
                     new GeometryHitTestResult(border, expectedResult));
             }
+        }
+    }
+
+    [Fact]
+    public void HitTest_Geometry_Should_Handle_Line_Target()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            var line = new Line
+            {
+                Stroke = Brushes.Red,
+                StrokeThickness = 4,
+                StartPoint = new Point(5, 5),
+                EndPoint = new Point(190, 5)
+            };
+
+            s.TopLevel.Content = line;
+
+            s.AssertHitTest(new RectangleGeometry(new Rect(0, 0, 50, 50)), null,
+                new GeometryHitTestResult(line, IntersectionResult.Intersects));
         }
     }
 }

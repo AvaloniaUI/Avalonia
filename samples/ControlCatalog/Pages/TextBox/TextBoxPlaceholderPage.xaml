@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ControlCatalog.Controls"
+             x:Class="ControlCatalog.Pages.TextBoxPlaceholderPage">
+  <ScrollViewer Padding="24,20,24,28">
+    <StackPanel Spacing="16">
+
+      <controls:SampleSection Header="Placeholder"
+                              Description="PlaceholderText is drawn while the box is empty. UseFloatingPlaceholder keeps it visible above the text once something is typed, and PlaceholderForeground recolours it."
+                              StageMinHeight="110">
+        <StackPanel Spacing="8" HorizontalAlignment="Left">
+          <TextBox Name="PlaceholderBox"
+                   Width="280"
+                   PlaceholderText="Full name"
+                   Classes.accentPlaceholder="{Binding #AccentPlaceholderCheck.IsChecked}">
+            <TextBox.Styles>
+              <Style Selector="TextBox.accentPlaceholder">
+                <Setter Property="PlaceholderForeground" Value="{DynamicResource CatalogAccentForeground}" />
+              </Style>
+            </TextBox.Styles>
+          </TextBox>
+          <TextBlock Classes="sample-caption"
+                     TextWrapping="Wrap"
+                     Text="Watermark, UseFloatingWatermark and WatermarkForeground are the older names for the same three properties." />
+        </StackPanel>
+        <controls:SampleSection.Options>
+          <StackPanel Spacing="8">
+            <CheckBox Content="UseFloatingPlaceholder" IsChecked="{Binding #PlaceholderBox.UseFloatingPlaceholder}" />
+            <CheckBox Name="AccentPlaceholderCheck" Content="Accent PlaceholderForeground" IsChecked="False" />
+          </StackPanel>
+        </controls:SampleSection.Options>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox PlaceholderText="Full name"
+         UseFloatingPlaceholder="True"
+         PlaceholderForeground="{DynamicResource CatalogAccentForeground}" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Inner content"
+                              Description="InnerLeftContent and InnerRightContent put any control inside the border of the box, beside the editable area.">
+        <StackPanel Spacing="8" HorizontalAlignment="Left">
+          <TextBox Name="InnerContentBox" Width="320" PlaceholderText="example.com">
+            <TextBox.InnerLeftContent>
+              <TextBlock Text="https://"
+                         Margin="10,0,0,0"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource CatalogSubtleForeground}" />
+            </TextBox.InnerLeftContent>
+            <TextBox.InnerRightContent>
+              <Button Content="Clear" Margin="4" Padding="10,2" Click="OnClearInnerContentBox" />
+            </TextBox.InnerRightContent>
+          </TextBox>
+        </StackPanel>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox PlaceholderText="example.com">
+  <TextBox.InnerLeftContent>
+    <TextBlock Text="https://" VerticalAlignment="Center" />
+  </TextBox.InnerLeftContent>
+  <TextBox.InnerRightContent>
+    <Button Content="Clear" Click="OnClear" />
+  </TextBox.InnerRightContent>
+</TextBox>]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+      <controls:SampleSection Header="Built-in buttons"
+                              Description="The clearButton and revealPasswordButton classes fill InnerRightContent from the theme. The clear button appears while the focused box has text; the reveal button appears whenever the box has text."
+                              StageMinHeight="110">
+        <StackPanel Spacing="12" HorizontalAlignment="Left">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="sample-caption" Text="Classes=&quot;clearButton&quot; (focus the box to see the button)" />
+            <TextBox Classes="clearButton" Width="280" Text="Clear this" PlaceholderText="Nothing to clear" />
+          </StackPanel>
+          <StackPanel Spacing="4">
+            <TextBlock Classes="sample-caption" Text="Classes=&quot;revealPasswordButton&quot;" />
+            <TextBox Classes="revealPasswordButton"
+                     Width="280"
+                     PasswordChar="*"
+                     PlaceholderText="Password"
+                     UseFloatingPlaceholder="True"
+                     Text="correct horse battery" />
+          </StackPanel>
+        </StackPanel>
+        <controls:SampleSection.Code><x:String xml:space="preserve"><![CDATA[<TextBox Classes="clearButton" Text="Clear this" />
+<TextBox Classes="revealPasswordButton" PasswordChar="*" Text="secret" />]]></x:String></controls:SampleSection.Code>
+      </controls:SampleSection>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

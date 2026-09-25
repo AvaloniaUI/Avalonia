@@ -1,7 +1,8 @@
 <ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.OpenGlLeasePage"
-             xmlns:openGl="clr-namespace:ControlCatalog.Pages.OpenGl">
+             xmlns:openGl="clr-namespace:ControlCatalog.Pages.OpenGl"
+             Header="OpenGL Lease">
     <Grid>
         <Control x:Name="Viewport" AttachedToVisualTree="ViewportAttachedToVisualTree" DetachedFromVisualTree="ViewportDetachedFromVisualTree"/>
         <openGl:GlPageKnobs x:Name="Knobs" PropertyChanged="KnobsPropertyChanged" />
