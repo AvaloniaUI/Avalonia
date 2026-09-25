@@ -18,17 +18,11 @@ internal static partial class InputHelper
     public static partial void SubscribeInputEvents(JSObject htmlElement, int topLevelId);
 
     /// <summary>
-    /// Hands the ring buffer control block to JS. <paramref name="threadingEnabled"/> tells JS that
+    /// Hands the input queue control block to JS. <paramref name="threadingEnabled"/> tells JS that
     /// synchronous exports cannot be called from the browser main thread.
     /// </summary>
     [JSImport("InputQueue.attach", AvaloniaModule.MainModuleName)]
     public static partial void AttachInputQueue(int controlBlockPtr, bool threadingEnabled);
-
-    /// <summary>
-    /// Asks JS to move spilled records back into the (empty) ring. Returns the number of records moved.
-    /// </summary>
-    [JSImport("InputQueue.spillOverflow", AvaloniaModule.MainModuleName)]
-    public static partial int SpillOverflow();
 
     /// <summary>
     /// Called once per burst of queued input, from a JS macrotask.
@@ -51,7 +45,7 @@ internal static partial class InputHelper
     }
 
     /// <summary>
-    /// Drains the ring and dispatches everything inline. Returns the handled state of the last event,
+    /// Drains the input queue and dispatches everything inline. Returns the handled state of the last event,
     /// which is the one whose DOM handler is asking. Single-threaded runtime only.
     /// </summary>
     [JSExport]

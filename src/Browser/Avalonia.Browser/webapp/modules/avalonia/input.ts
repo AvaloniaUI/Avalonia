@@ -327,7 +327,7 @@ export class InputHelper {
     }
 
     public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
-        // Key events go through the input ring and are flushed synchronously, so Avalonia's handled
+        // Key events go through the input queue and are flushed synchronously, so Avalonia's handled
         // state is known before the browser applies the default action.
         const keyDownHandler = (args: KeyboardEvent) => {
             const handled = InputQueue.postKey(InputRecordType.KeyDown, topLevelId, args);
@@ -359,7 +359,7 @@ export class InputHelper {
     public static subscribeTextEvents(
         element: HTMLInputElement,
         topLevelId: number) {
-        // Text events bypass the input ring; flushing first keeps them ordered after queued input.
+        // Text events bypass the input queue; flushing first keeps them ordered after queued input.
         const compositionStartHandler = (args: CompositionEvent) => {
             InputQueue.flush();
             JsExports.InputHelper.OnCompositionStart(topLevelId);
@@ -410,7 +410,7 @@ export class InputHelper {
         element: HTMLInputElement,
         topLevelId: number
     ) {
-        // Pointer and wheel events are encoded into the input ring and consumed by C# in one batch
+        // Pointer and wheel events are encoded into the input queue and consumed by C# in one batch
         // per burst; the browser default action is suppressed unconditionally.
         const pointerMoveHandler = (args: PointerEvent) => {
             InputQueue.postPointer(InputRecordType.PointerMove, topLevelId, args);
@@ -464,7 +464,7 @@ export class InputHelper {
             const items: ReadableDataItem[] =
                 this.getDataTransferItems(dataTransfer).map((item) => ({ type: "dataTransferItem", value: item }));
 
-            // Drag events bypass the input ring; flushing first keeps them ordered after queued input.
+            // Drag events bypass the input queue; flushing first keeps them ordered after queued input.
             InputQueue.flush();
             JsExports.InputHelper.OnDragDrop(topLevelId, args.type, args.offsetX, args.offsetY, InputQueue.getModifiers(args), dataTransfer, items);
         };

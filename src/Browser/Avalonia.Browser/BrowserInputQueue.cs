@@ -9,33 +9,40 @@ using Avalonia.Input.Raw;
 namespace Avalonia.Browser;
 
 /// <summary>
-/// Consumer side of the browser input ring buffer.
-/// The ring lives in WASM linear memory.
-/// JavaScript appends encoded input records to it and this class decodes them into raw input events.
+/// Consumer side of the browser input queue.
+/// The queue is a chain of segments in WASM linear memory. JavaScript appends encoded input records
+/// to the last segment, allocating a new one with malloc when a record doesn't fit, and this class
+/// decodes them into raw input events, freeing every segment it has read past.
 /// </summary>
 internal static unsafe class BrowserInputQueue
 {
-    // Control block layout (bytes). Must match inputQueue.ts.
-    private const int AbiVersion = 1;
-    private const int ControlBlockSize = 32;
+    // Layouts (bytes). Must match inputQueue.ts.
+    // Control block, all i32:
+    //   0 abiVersion  4 segmentSize  8 head (C#)  12 tail (JS)
+    // head and tail are absolute addresses; the queue is empty when they are equal.
+    private const int AbiVersion = 2;
+    private const int ControlBlockSize = 16;
     private const int OffsetAbiVersion = 0;
-    private const int OffsetCapacity = 4;
+    private const int OffsetSegmentSize = 4;
     private const int OffsetHead = 8;
     private const int OffsetTail = 12;
-    private const int OffsetFlags = 16;
-    private const int FlagOverflow = 1;
 
-    // Record header layout (bytes). Must match inputQueue.ts.
+    // Segment header, all i32: 0 next (0 until sealed)  4 end (0 until sealed). Records follow it.
+    // JS writes end, then next, then publishes a tail in the next segment.
+    private const int SegmentHeaderSize = 8;
+    private const int OffsetNext = 0;
+    private const int OffsetEnd = 4;
+
+    // Record header: 0 type u16  2 reserved u16  4 size u32  8 topLevelId i32  12 reserved i32
     private const int HeaderSize = 16;
     private const int OffsetType = 0;
     private const int OffsetSize = 4;
     private const int OffsetTopLevelId = 8;
 
-    private const int DefaultCapacity = 64 * 1024;
+    private const int DefaultSegmentSize = 64 * 1024;
 
     private enum RecordType : ushort
     {
-        Padding = 0,
         PointerMove = 1,
         PointerDown = 2,
         PointerUp = 3,
@@ -46,31 +53,27 @@ internal static unsafe class BrowserInputQueue
     }
 
     private static byte* s_control;
-    private static byte* s_data;
-    private static int s_capacity;
+    private static byte* s_segment;
     private static bool s_draining;
-
-    public static bool IsInitialized => s_control != null;
 
     public static void Initialize()
     {
         if (s_control != null)
             return;
 
-        s_capacity = DefaultCapacity;
-        s_control = (byte*)NativeMemory.AlignedAlloc((nuint)(ControlBlockSize + s_capacity), 8);
-        NativeMemory.Clear(s_control, (nuint)(ControlBlockSize + s_capacity));
-        s_data = s_control + ControlBlockSize;
+        // Segments are allocated by JS with the same malloc, and freed here with NativeMemory.Free.
+        s_segment = (byte*)NativeMemory.Alloc(SegmentHeaderSize + DefaultSegmentSize);
+        *(int*)(s_segment + OffsetNext) = 0;
+        *(int*)(s_segment + OffsetEnd) = 0;
 
+        s_control = (byte*)NativeMemory.Alloc(ControlBlockSize);
         *(int*)(s_control + OffsetAbiVersion) = AbiVersion;
-        *(int*)(s_control + OffsetCapacity) = s_capacity;
+        *(int*)(s_control + OffsetSegmentSize) = DefaultSegmentSize;
+        *(int*)(s_control + OffsetHead) = (int)(nint)(s_segment + SegmentHeaderSize);
+        *(int*)(s_control + OffsetTail) = (int)(nint)(s_segment + SegmentHeaderSize);
 
         InputHelper.AttachInputQueue((int)(nint)s_control, BrowserWindowingPlatform.IsThreadingEnabled);
     }
-
-    private static int Head => *(int*)(s_control + OffsetHead);
-    private static int Tail => Volatile.Read(ref *(int*)(s_control + OffsetTail));
-    private static int Flags => Volatile.Read(ref *(int*)(s_control + OffsetFlags));
 
     /// <summary>
     /// Decodes every queued record into the per-top-level <see cref="RawEventGrouper"/>.
@@ -84,17 +87,7 @@ internal static unsafe class BrowserInputQueue
         s_draining = true;
         try
         {
-            while (true)
-            {
-                DrainRing();
-
-                if ((Flags & FlagOverflow) == 0)
-                    break;
-
-                // The ring is empty now; let JS move as many spilled records back as fit.
-                if (InputHelper.SpillOverflow() == 0)
-                    break;
-            }
+            DrainSegments();
         }
         finally
         {
@@ -103,7 +96,7 @@ internal static unsafe class BrowserInputQueue
     }
 
     /// <summary>
-    /// Drains the ring and dispatches everything inline, returning the handled state of the last event.
+    /// Drains the queue and dispatches everything inline, returning the handled state of the last event.
     /// Only valid on a single-threaded runtime, where the dispatcher runs on the browser main thread.
     /// </summary>
     public static bool FlushSync()
@@ -127,35 +120,37 @@ internal static unsafe class BrowserInputQueue
         }
     }
 
-    private static void DrainRing()
+    private static void DrainSegments()
     {
-        var head = Head;
+        var head = (byte*)*(int*)(s_control + OffsetHead);
         while (true)
         {
-            if (head == Tail)
+            var tail = (byte*)Volatile.Read(ref *(int*)(s_control + OffsetTail));
+            if (head == tail)
                 return;
 
-            var record = s_data + head;
-            var type = (RecordType)(*(ushort*)(record + OffsetType));
-            var size = *(int*)(record + OffsetSize);
-
-            if (size <= 0 || head + size > s_capacity)
+            var end = (byte*)Volatile.Read(ref *(int*)(s_segment + OffsetEnd));
+            if (head == end)
             {
-                // Corrupted ring; resynchronise with the producer instead of looping forever.
-                head = Tail;
-                Volatile.Write(ref *(int*)(s_control + OffsetHead), head);
-                return;
+                // Sealed and fully read. The tail has moved on, so the next segment is linked already.
+                var next = (byte*)Volatile.Read(ref *(int*)(s_segment + OffsetNext));
+                NativeMemory.Free(s_segment);
+                s_segment = next;
+                head = next + SegmentHeaderSize;
+            }
+            else
+            {
+                var type = (RecordType)(*(ushort*)(head + OffsetType));
+                var size = *(int*)(head + OffsetSize);
+                var limit = end != null ? end : tail;
+                if (size < HeaderSize || head + size > limit)
+                    throw new InvalidOperationException("Corrupted browser input queue.");
+
+                Decode(type, head);
+                head += size;
             }
 
-            if (type != RecordType.Padding)
-                Decode(type, record);
-
-            head += size;
-            if (head >= s_capacity)
-                head = 0;
-
-            // Publish only after the record was fully read: the producer may reuse the space right away.
-            Volatile.Write(ref *(int*)(s_control + OffsetHead), head);
+            Volatile.Write(ref *(int*)(s_control + OffsetHead), (int)(nint)head);
         }
     }
 

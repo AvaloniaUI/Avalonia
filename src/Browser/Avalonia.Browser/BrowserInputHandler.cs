@@ -212,9 +212,9 @@ internal class BrowserInputHandler
     }
 
     /// <summary>
-    /// Direct-path events bypass the ring. On the single-threaded runtime they are dispatched inline,
+    /// Direct-path events bypass the input queue. On the single-threaded runtime they are dispatched inline,
     /// because the caller needs a synchronous result (drop effect, handled state) and the JS side has
-    /// already flushed the ring so ordering is preserved. With the managed dispatcher they are
+    /// already flushed the input queue so ordering is preserved. With the managed dispatcher they are
     /// queued like everything else, and the result is not observable.
     /// </summary>
     private void ScheduleDirectInput(RawInputEventArgs args)
