@@ -21,8 +21,8 @@ namespace ControlCatalog.ViewModels
     {
         public SettingsViewModel SettingsViewModel { get; } = new SettingsViewModel();
 
-        public PageItem HomeItem { get; } = new PageItem("Home", () => new HomePage(), StreamGeometry.Parse(Icons.Home), "Overview of everything in the catalog", null);
-        public PageItem SettingsItem { get; }
+        public static PageItem HomeItem { get; } = new PageItem("Home", () => new HomePage(), StreamGeometry.Parse(Icons.Home), "Overview of everything in the catalog", null);
+        public static PageItem? SettingsItem { get; private set;}
 
         public MainWindowViewModel()
         {
@@ -175,6 +175,12 @@ namespace ControlCatalog.ViewModels
             set => RaiseAndSetIfChanged(ref field, value);
         }
 
+        public PageItem? LastActivePageItem
+        {
+            get;
+            set => RaiseAndSetIfChanged(ref field, value);
+        }
+
         public bool IsDrawerOpened
         {
             get;
@@ -289,6 +295,8 @@ namespace ControlCatalog.ViewModels
 
                 if (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay)
                     IsDrawerOpened = false;
+
+                LastActivePageItem = item;
             }
         }
 
