@@ -26,14 +26,14 @@
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
+                Padding="{TemplateBinding Padding}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <Panel>
             <ContentPresenter Name="PART_HeaderPresenter"
                               Content="{TemplateBinding Header}"
                               ContentTemplate="{TemplateBinding HeaderTemplate}"
                               VerticalAlignment="Center"
-                              HorizontalAlignment="Stretch"
-                              Margin="{TemplateBinding Padding}"/>
+                              HorizontalAlignment="Stretch"/>
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"

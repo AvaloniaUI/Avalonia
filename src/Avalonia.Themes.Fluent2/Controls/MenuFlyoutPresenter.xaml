@@ -54,7 +54,7 @@
   <Thickness x:Key="MenuFlyoutPresenterThemeBorderThickness">1</Thickness>
   <x:Double x:Key="HorizontalMenuFlyoutThemeMinWidth">32</x:Double>
   <Thickness x:Key="HorizontalMenuFlyoutItemMargin">2,0,2,0</Thickness>
-  <Thickness x:Key="HorizontalMenuFlyoutItemThemePaddingNarrow">8,4,8,7</Thickness>
+  <Thickness x:Key="HorizontalMenuFlyoutItemThemePadding">8,4,8,7</Thickness>
   <Thickness x:Key="MenuFlyoutItemThemePadding">11,8,11,9</Thickness>
   <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,5</Thickness>
 
@@ -77,10 +77,10 @@
                 BackgroundSizing="InnerBorderEdge"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
-                Padding="{DynamicResource FlyoutBorderThemePadding}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                         Theme="{StaticResource FluentMenuScrollViewer}"
+                        Margin="{TemplateBinding Padding}"
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
