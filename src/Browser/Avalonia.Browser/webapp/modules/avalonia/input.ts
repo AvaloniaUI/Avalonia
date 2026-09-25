@@ -411,7 +411,8 @@ export class InputHelper {
         topLevelId: number
     ) {
         // Pointer and wheel events are encoded into the input queue and consumed by C# in one batch
-        // per burst; the browser default action is suppressed unconditionally.
+        // per burst; pointer presses are flushed synchronously on the single-threaded runtime.
+        // The browser default action is suppressed unconditionally.
         const pointerMoveHandler = (args: PointerEvent) => {
             InputQueue.postPointer(InputRecordType.PointerMove, topLevelId, args);
             args.preventDefault();

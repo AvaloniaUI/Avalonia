@@ -12,8 +12,10 @@ import { createPost, Post } from "./singleThreadedDispatcher";
  * Layouts below must match BrowserInputQueue.cs.
  *
  * Control block (all i32):
- *   0 abiVersion  4 segmentSize  8 head (C#)  12 tail (JS)
+ *   0 abiVersion  4 segmentSize  8 head (C#)  12 tail (JS)  16 wakeRequested
  *   head and tail are absolute addresses; the queue is empty when they are equal.
+ *   JS sets wakeRequested after publishing a tail and posts a wake if it was clear; C# clears it
+ *   before reading the tail, so a record published after the consumer's last read always gets a wake.
  * Segment header (all i32):
  *   0 next  4 end   both 0 until the segment is sealed; records follow the header.
  * Record header:
@@ -61,6 +63,7 @@ const OffsetAbiVersion = 0;
 const OffsetSegmentSize = 4;
 const OffsetHead = 8;
 const OffsetTail = 12;
+const OffsetWakeRequested = 16;
 
 const SegmentHeaderSize = 8;
 const OffsetNext = 0;
@@ -138,7 +141,6 @@ export class InputQueue {
             }
         }
 
-        const wasEmpty = this.isEmpty();
         const p = this.reserve(size);
         const view = this.getView();
         this.writeHeader(view, p, type, size, topLevelId);
@@ -163,7 +165,13 @@ export class InputQueue {
             }
         }
 
-        this.commit(p + size, wasEmpty);
+        this.commit(p + size);
+
+        // Presses are dispatched inside the DOM handler: actions that need a user gesture, like focusing
+        // the text input to bring up the iOS on-screen keyboard, must run before the handler returns.
+        if (type === InputRecordType.PointerDown || type === InputRecordType.PointerUp) {
+            this.flushSync();
+        }
     }
 
     public static postWheel(topLevelId: number, args: WheelEvent): void {
@@ -171,7 +179,6 @@ export class InputQueue {
             return;
         }
 
-        const wasEmpty = this.isEmpty();
         const p = this.reserve(WheelRecordSize);
         const view = this.getView();
         this.writeHeader(view, p, InputRecordType.Wheel, WheelRecordSize, topLevelId);
@@ -184,7 +191,7 @@ export class InputQueue {
         view.setInt32(b + 40, args.deltaMode, true);
         view.setInt32(b + 44, InputQueue.getModifiers(args), true);
 
-        this.commit(p + WheelRecordSize, wasEmpty);
+        this.commit(p + WheelRecordSize);
     }
 
     public static postKey(type: InputRecordType, topLevelId: number, args: KeyboardEvent): boolean {
@@ -196,7 +203,6 @@ export class InputQueue {
         const code = args.code ?? "";
         const size = InputQueue.alignUp(KeyRecordHeaderSize + (key.length + code.length) * 2);
 
-        const wasEmpty = this.isEmpty();
         const p = this.reserve(size);
         const view = this.getView();
         this.writeHeader(view, p, type, size, topLevelId);
@@ -213,7 +219,7 @@ export class InputQueue {
             view.setUint16(offset, code.charCodeAt(i), true);
         }
 
-        this.commit(p + size, wasEmpty);
+        this.commit(p + size);
 
         return this.flushSync();
     }
@@ -270,11 +276,12 @@ export class InputQueue {
         return segment + SegmentHeaderSize;
     }
 
-    private static commit(tail: number, wasEmpty: boolean): void {
+    private static commit(tail: number): void {
         this.tail = tail;
-        Atomics.store(this.heapI32(), (this.controlPtr + OffsetTail) >> 2, tail);
+        const i32 = this.heapI32();
+        Atomics.store(i32, (this.controlPtr + OffsetTail) >> 2, tail);
 
-        if (wasEmpty) {
+        if (Atomics.exchange(i32, (this.controlPtr + OffsetWakeRequested) >> 2, 1) === 0) {
             this.postWake();
         }
     }

@@ -18,14 +18,17 @@ internal static unsafe class BrowserInputQueue
 {
     // Layouts (bytes). Must match inputQueue.ts.
     // Control block, all i32:
-    //   0 abiVersion  4 segmentSize  8 head (C#)  12 tail (JS)
+    //   0 abiVersion  4 segmentSize  8 head (C#)  12 tail (JS)  16 wakeRequested
     // head and tail are absolute addresses; the queue is empty when they are equal.
+    // JS sets wakeRequested after publishing a tail and posts a wake if it was clear; C# clears it
+    // before reading the tail, so a record published after the last read always gets a wake.
     private const int AbiVersion = 2;
-    private const int ControlBlockSize = 16;
+    private const int ControlBlockSize = 20;
     private const int OffsetAbiVersion = 0;
     private const int OffsetSegmentSize = 4;
     private const int OffsetHead = 8;
     private const int OffsetTail = 12;
+    private const int OffsetWakeRequested = 16;
 
     // Segment header, all i32: 0 next (0 until sealed)  4 end (0 until sealed). Records follow it.
     // JS writes end, then next, then publishes a tail in the next segment.
@@ -71,6 +74,7 @@ internal static unsafe class BrowserInputQueue
         *(int*)(s_control + OffsetSegmentSize) = DefaultSegmentSize;
         *(int*)(s_control + OffsetHead) = (int)(nint)(s_segment + SegmentHeaderSize);
         *(int*)(s_control + OffsetTail) = (int)(nint)(s_segment + SegmentHeaderSize);
+        *(int*)(s_control + OffsetWakeRequested) = 0;
 
         InputHelper.AttachInputQueue((int)(nint)s_control, BrowserWindowingPlatform.IsThreadingEnabled);
     }
@@ -122,6 +126,9 @@ internal static unsafe class BrowserInputQueue
 
     private static void DrainSegments()
     {
+        // Full fence: the clear must be visible before the tail is read below.
+        Interlocked.Exchange(ref *(int*)(s_control + OffsetWakeRequested), 0);
+
         var head = (byte*)*(int*)(s_control + OffsetHead);
         while (true)
         {
