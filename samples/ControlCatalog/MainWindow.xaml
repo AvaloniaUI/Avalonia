@@ -16,7 +16,6 @@
         WindowState="{Binding SettingsViewModel.WindowState, Mode=TwoWay}"
         WindowDecorations="{Binding SettingsViewModel.CurrentWindowDecorations}"
         FlowDirection="{Binding SettingsViewModel.CurrentFlowDirection}"
-        RequestedThemeVariant="{Binding SettingsViewModel.CurrentThemeVariant}"
         x:DataType="vm:MainWindowViewModel">
   <NativeMenu.Menu>
     <NativeMenu>

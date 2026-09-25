@@ -14,7 +14,6 @@ namespace ControlCatalog.Controls
         public MainViewHost(MainWindowViewModel mainWindowViewModel)
         {
             _viewModel = mainWindowViewModel;
-            _viewModel.SettingsViewModel.PropertyChanged += SettingsViewModel_PropertyChanged;
         }
 
         private void SettingsViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -27,7 +26,7 @@ namespace ControlCatalog.Controls
             if (TopLevel.GetTopLevel(this) is { } topLevel)
             {
                 App.ApplyTopLevelTransparency(topLevel, _viewModel.SettingsViewModel.CurrentWindowTransparencyLevel);
-                topLevel.RequestedThemeVariant = _viewModel.SettingsViewModel.CurrentThemeVariant;
+                App.Current?.RequestedThemeVariant = _viewModel.SettingsViewModel.CurrentThemeVariant;
             }
         }
 
@@ -41,8 +40,10 @@ namespace ControlCatalog.Controls
             base.OnAttachedToVisualTree(e);
 
             (App.Current as App)?.ThemeUpdated += MainViewHost_ThemeUpdated;
+            _viewModel.SettingsViewModel.PropertyChanged += SettingsViewModel_PropertyChanged;
 
             RecreatePage();
+            ApplySettings();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -50,6 +51,7 @@ namespace ControlCatalog.Controls
             base.OnDetachedFromVisualTree(e);
 
             (App.Current as App)?.ThemeUpdated -= MainViewHost_ThemeUpdated;
+            _viewModel.SettingsViewModel.PropertyChanged -= SettingsViewModel_PropertyChanged;
         }
 
         private void RecreatePage()

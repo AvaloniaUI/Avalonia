@@ -51,6 +51,10 @@ namespace ControlCatalog.Pages
             {
                 App.SetCatalogThemes(viewModel.CurrentCatalogTheme);
             }
+            else if (e.PropertyName == nameof(viewModel.CurrentThemeVariant))
+            {
+                App.Current?.RequestedThemeVariant = viewModel.CurrentThemeVariant;
+            }
             else if (TopLevel.GetTopLevel(this) is { } topLevel && e.PropertyName == nameof(viewModel.CurrentWindowTransparencyLevel))
             {
                 App.ApplyTopLevelTransparency(topLevel, viewModel.CurrentWindowTransparencyLevel);
