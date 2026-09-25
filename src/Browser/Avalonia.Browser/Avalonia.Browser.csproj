@@ -33,6 +33,10 @@
       <Pack>true</Pack>
       <PackagePath>build/;buildTransitive/</PackagePath>
     </Content>
+    <Content Include="native\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>native/</PackagePath>
+    </Content>
   </ItemGroup>
 
   <Target Name="BunInstall" Inputs="$(WebAppDir)/package.json" Outputs="$(WebAppDir)/node_modules/.install-stamp">
