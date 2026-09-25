@@ -59,6 +59,13 @@
                       BackgroundSizing="InnerBorderEdge"
                       BorderBrush="{DynamicResource SurfaceStrokeColorFlyout}"
                       BorderThickness="0">
+                <Border.Transitions>
+                  <Transitions>
+                    <BrushTransition Property="Background"
+                                     Duration="{StaticResource SplitViewPaneAnimationOpenDuration}"
+                                     Easing="{StaticResource SplitViewPaneAnimationEasing}"/>
+                  </Transitions>
+                </Border.Transitions>
                 <ContentPresenter x:Name="PART_PanePresenter"
                                   Content="{TemplateBinding Pane}"
                                   ContentTemplate="{TemplateBinding PaneTemplate}" />
@@ -152,8 +159,8 @@
                 <Border.Transitions>
                   <Transitions>
                     <BrushTransition Property="Background"
-                      Duration="{StaticResource SplitViewPaneAnimationOpenDuration}"
-                      Easing="{StaticResource SplitViewPaneAnimationEasing}"/>
+                                     Duration="{StaticResource SplitViewPaneAnimationOpenDuration}"
+                                     Easing="{StaticResource SplitViewPaneAnimationEasing}"/>
                   </Transitions>
                 </Border.Transitions>
                 <ContentPresenter x:Name="PART_PanePresenter"
@@ -244,6 +251,13 @@
                       BackgroundSizing="InnerBorderEdge"
                       BorderBrush="{DynamicResource SurfaceStrokeColorFlyout}"
                       BorderThickness="0">
+                <Border.Transitions>
+                  <Transitions>
+                    <BrushTransition Property="Background"
+                                     Duration="{StaticResource SplitViewPaneAnimationOpenDuration}"
+                                     Easing="{StaticResource SplitViewPaneAnimationEasing}"/>
+                  </Transitions>
+                </Border.Transitions>
                 <ContentPresenter x:Name="PART_PanePresenter"
                                   Content="{TemplateBinding Pane}"
                                   ContentTemplate="{TemplateBinding PaneTemplate}" />
@@ -335,6 +349,13 @@
                       BackgroundSizing="InnerBorderEdge"
                       BorderBrush="{DynamicResource SurfaceStrokeColorFlyout}"
                       BorderThickness="0">
+                <Border.Transitions>
+                  <Transitions>
+                    <BrushTransition Property="Background"
+                                     Duration="{StaticResource SplitViewPaneAnimationOpenDuration}"
+                                     Easing="{StaticResource SplitViewPaneAnimationEasing}"/>
+                  </Transitions>
+                </Border.Transitions>
                 <ContentPresenter x:Name="PART_PanePresenter"
                                   Content="{TemplateBinding Pane}"
                                   ContentTemplate="{TemplateBinding PaneTemplate}"/>
@@ -401,6 +422,40 @@
           <Setter Property="Grid.Row" Value="0"/>
           <Setter Property="Grid.RowSpan" Value="1"/>
         </Style>
+      </Style>
+    </Style>
+
+    <Style Selector="^:open:overlay, ^:open:inline">
+      <Style Selector="^ /template/ Panel#PART_PaneRoot">
+        <Style.Animations>
+          <Animation IterationCount="1"
+                     FillMode="Forward"
+                     PlaybackBehavior="Always">
+            <KeyFrame Cue="0%">
+              <Setter Property="IsVisible" Value="True"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="IsVisible" Value="True"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+      </Style>
+    </Style>
+
+    <Style Selector="^:closed:overlay, ^:closed:inline">
+      <Style Selector="^ /template/ Panel#PART_PaneRoot">
+        <Style.Animations>
+          <Animation IterationCount="1"
+                     FillMode="Forward"
+                     Duration="{StaticResource SplitViewPaneAnimationCloseDuration}">
+            <KeyFrame Cue="0%">
+              <Setter Property="IsVisible" Value="True"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="IsVisible" Value="False"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
       </Style>
     </Style>
 
