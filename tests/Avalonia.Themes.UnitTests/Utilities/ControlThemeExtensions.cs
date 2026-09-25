@@ -109,13 +109,6 @@ internal static class ControlThemeExtensions
                 }
             }
 
-            // ContentControl derived controls inherit its template.
-            if (template is null && typeof(ContentControl).IsAssignableFrom(targetType))
-            {
-                template = TemplatedControl.TemplateProperty.GetDefaultValue(typeof(ContentControl))
-                           ?? throw new InvalidOperationException("ContentControl must always have default template");
-            }
-
             if (template == null && styleBase is ControlTheme controlTheme)
             {
                 // If we don't find any template in the current StyleBase
@@ -124,6 +117,13 @@ internal static class ControlThemeExtensions
 
                 if (baseStyle != null)
                     ResolveTemplateInStyle(baseStyle);
+            }
+
+            // ContentControl derived controls inherit its template.
+            if (template is null && typeof(ContentControl).IsAssignableFrom(targetType))
+            {
+                template = TemplatedControl.TemplateProperty.GetDefaultValue(typeof(ContentControl))
+                           ?? throw new InvalidOperationException("ContentControl must always have default template");
             }
         }
     }
