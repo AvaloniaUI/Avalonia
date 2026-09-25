@@ -49,9 +49,8 @@ partial class WindowImpl
                 _surfaceProxy.SetTitle(Parent._title);
 
             // Re-send cached app id to the new surface
-            var effectiveAppId = Parent._appId ?? Parent.Client.Options.AppId;
-            if (effectiveAppId != null)
-                _surfaceProxy.SetAppId(effectiveAppId);
+            if (Parent._appId != null)
+                _surfaceProxy.SetAppId(Parent._appId);
 
             // Re-apply cached min/max size constraints after a fresh worker
             // surface is created. null on both sides means SetMinMaxSize was

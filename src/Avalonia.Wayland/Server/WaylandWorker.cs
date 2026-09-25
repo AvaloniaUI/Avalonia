@@ -31,8 +31,6 @@ partial class WaylandWorker
     public WaylandPlatformGraphics PlatformGraphics { get; } = new();
     private Thread? _thread;
     public IRawEventGrouperDispatchQueue InputDispatchQueue { get; }
-    public WaylandPlatformOptions Options { get; private set; } = new();
-
 
     public Compositor Compositor { get; }
     public WaylandWorkerClient Client { get; }
@@ -294,7 +292,6 @@ partial class WaylandWorker
     void StartCore(WaylandPlatformOptions options, WaylandConnection? probedConnection, WlDisplay? foreignDisplay,
         TaskCompletionSource<ExceptionDispatchInfo?>? initTcs)
     {
-        Options = options;
         new Thread(() =>
         {
             if(probedConnection!=null)

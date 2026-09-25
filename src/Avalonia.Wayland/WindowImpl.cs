@@ -238,7 +238,7 @@ internal partial class WindowImpl : WindowBaseImpl, IWindowImpl, IWaylandOptions
     public void SetAppId(string? appId)
     {
         _appId = appId;
-        _surfaceProxy?.SetAppId(appId ?? Client.Options.AppId);
+        _surfaceProxy?.SetAppId(appId);
     }
 
     public void SetParent(IWindowImpl? parent)

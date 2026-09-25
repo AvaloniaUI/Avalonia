@@ -666,9 +666,10 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
         if (_title != null)
             _xdgTopLevel.SetTitle(_title);
 
-        // Re-apply cached app id on reconnect.
-        if (_appId != null)
-            _xdgTopLevel.SetAppId(_appId);
+        // Re-apply cached app id on reconnect (or default to Globals.AppId).
+        var effectiveAppId = _appId ?? Globals.AppId;
+        if (effectiveAppId != null)
+            _xdgTopLevel.SetAppId(effectiveAppId);
 
         // Re-apply cached min/max if they were ever set on a previous
         // (now-dead) connection. The OnConnected commit below will
@@ -719,7 +720,9 @@ class WXdgTopLevel : WXdgShellSurface, IWXdgTopLevel
     public void SetAppId(string? appId)
     {
         _appId = appId;
-        _xdgTopLevel?.SetAppId(appId ?? string.Empty);
+        var effectiveAppId = appId ?? Globals?.AppId;
+        if (effectiveAppId != null)
+            _xdgTopLevel?.SetAppId(effectiveAppId);
     }
 
     public void SetMinMaxSize(Size? minSize, Size? maxSize)
