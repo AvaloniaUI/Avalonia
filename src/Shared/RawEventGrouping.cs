@@ -243,7 +243,7 @@ internal class RawEventGrouper : IDisposable
             current.IntermediatePoints = null;
         }
 
-        last.Position = current.Position;
+        last.Point = current.Point;
         last.Timestamp = current.Timestamp;
         last.InputModifiers = current.InputModifiers;
     }
