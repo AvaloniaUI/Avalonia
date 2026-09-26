@@ -64,7 +64,7 @@ partial class WindowBaseImpl
 
             if (args is RawKeyEventArgs keyArgs)
             {
-                if (keyArgs.Type == RawKeyEventType.KeyDown)
+                if (keyArgs.Type == RawKeyEventType.KeyDown && Parent.IsEnabled)
                 {
                     StartKeyRepeat(keyArgs.Key, keyArgs.PhysicalKey, keyArgs.Modifiers, keyArgs.KeySymbol);
                 }
@@ -106,7 +106,7 @@ partial class WindowBaseImpl
             _keyRepeatTimer.Start();
         }
 
-        protected void StopKeyRepeat()
+        internal void StopKeyRepeat()
         {
             if (_keyRepeatTimer != null)
             {
@@ -118,7 +118,7 @@ partial class WindowBaseImpl
 
         private void OnKeyRepeatTick(object? sender, EventArgs e)
         {
-            if (InputRoot is null || _keyRepeatTimer == null)
+            if (IsDisposed || !Parent.IsEnabled || InputRoot is null || _keyRepeatTimer == null)
             {
                 StopKeyRepeat();
                 return;
