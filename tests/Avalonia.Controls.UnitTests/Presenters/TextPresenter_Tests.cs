@@ -102,6 +102,29 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void CursorRectangle_Should_Reflect_Caret_Position()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var presenter = new TextPresenter
+                {
+                    Text = "Hello",
+                    CaretIndex = 2
+                };
+
+                presenter.Measure(Size.Infinity);
+                presenter.Arrange(new Rect(default, presenter.DesiredSize));
+                presenter.UpdateLayout();
+
+                var cursor = presenter.CursorRectangle;
+
+                Assert.True(cursor.Height > 0);
+                Assert.Equal(0, cursor.Width);
+                Assert.True(cursor.X > 0);
+            }
+        }
+
+        [Fact]
         public void HideCaret_Should_Keep_The_Text_Layout()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
