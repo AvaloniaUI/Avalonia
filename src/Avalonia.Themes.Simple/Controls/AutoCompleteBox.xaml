@@ -22,6 +22,7 @@
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                    PlaceholderText="{TemplateBinding PlaceholderText}"
                    PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                   UseFloatingPlaceholder="{TemplateBinding UseFloatingPlaceholder}"
                    MaxLength="{TemplateBinding MaxLength}"
                    InnerLeftContent="{TemplateBinding InnerLeftContent}"
                    InnerRightContent="{TemplateBinding InnerRightContent}"
