@@ -6,19 +6,38 @@ namespace Avalonia.Browser.Interop;
 
 internal static partial class AvaloniaModule
 {
-    private static readonly Lazy<Task> s_importMain = new(ImportMainToCurrentContext);
-    
-    public static Task ImportMainToCurrentContext()
+    // Resolved by the document import map during ImportMainOnThisThread, for contexts that have no import map.
+    private static string? s_mainModuleUrl;
+    private static string? s_storageModuleUrl;
+
+    private static readonly Lazy<Task> s_importMain = new(async () =>
     {
         var options = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
-        return JSHost.ImportAsync(MainModuleName, options.FrameworkAssetPathResolver!("avalonia.js"));
-    }
+        await JSHost.ImportAsync(MainModuleName, options.FrameworkAssetPathResolver!("avalonia.js"));
+
+        s_mainModuleUrl = GetModuleUrl();
+        s_storageModuleUrl = ResolveModuleUrl("./storage.js");
+    });
 
     private static readonly Lazy<Task> s_importStorage = new(() =>
     {
         var options = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
-        return JSHost.ImportAsync(StorageModuleName, options.FrameworkAssetPathResolver!("storage.js"));
+        return JSHost.ImportAsync(StorageModuleName, s_storageModuleUrl ?? options.FrameworkAssetPathResolver!("storage.js"));
     });
+
+    /// <summary>
+    /// Imports the main module into a web worker, which needs its own copy of every module it calls into.
+    /// </summary>
+    public static Task ImportMainToWorkerContext()
+    {
+        if (s_mainModuleUrl is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(ImportMain)} has to complete on the main thread before a worker can import the module.");
+        }
+
+        return JSHost.ImportAsync(MainModuleName, s_mainModuleUrl);
+    }
 
     public const string MainModuleName = "avalonia";
     public const string StorageModuleName = "storage";
@@ -45,4 +64,10 @@ internal static partial class AvaloniaModule
 
     [JSImport("registerServiceWorker", AvaloniaModule.MainModuleName)]
     public static partial void RegisterServiceWorker(string path, string? scope);
+
+    [JSImport("getModuleUrl", AvaloniaModule.MainModuleName)]
+    private static partial string GetModuleUrl();
+
+    [JSImport("resolveModuleUrl", AvaloniaModule.MainModuleName)]
+    private static partial string ResolveModuleUrl(string name);
 }
