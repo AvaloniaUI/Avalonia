@@ -30,10 +30,6 @@
                     IsSnapToTickEnabled="True"
                     TickFrequency="1" />
           </StackPanel>
-          <Button VerticalAlignment="Center"
-                  Content="Clear"
-                  Click="Clear_Click"
-                  ToolTip.Tip="Double-clicking the canvas clears it too" />
         </WrapPanel>
         <!-- Tabular digits keep the numbers from jittering as they change. -->
         <DockPanel TextElement.FontSize="12" TextElement.FontFeatures="+tnum">
