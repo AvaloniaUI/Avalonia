@@ -31,22 +31,39 @@ public class KeyboardRepeatTests
             window.Release();
         window.DispatchPendingInput();
         window.Enable(true);
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         Assert.Single(window.Keys);
     }
 
-    [Fact]
-    public void Disabling_and_reenabling_owner_stops_repeat_without_release()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Disabling_and_reenabling_owner_preserves_repeat_until_release(bool tickWhileDisabled)
     {
         if (!OperatingSystem.IsLinux())
             Assert.Skip("The Wayland worker uses Linux eventfd.");
         using var app = UnitTestApplication.Start(TestServices.RealFocus);
+        var timer = new ManualTimerDispatcher();
+        _ = new Dispatcher(timer);
         using var window = new TestWindow();
         window.Press();
         window.Enable(false);
-        window.Enable(true);
-        Dispatcher.UIThread.RunJobs();
+        if (tickWhileDisabled)
+        {
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            timer.Advance(100);
+        }
         Assert.Single(window.Keys);
+
+        window.Enable(true);
+        timer.Advance(100);
+        Assert.True(window.Keys.Count >= 2);
+
+        window.Release();
+        window.DispatchPendingInput();
+        var count = window.Keys.Count;
+        timer.Advance(100);
+        Assert.Equal(count, window.Keys.Count);
     }
 
     [Fact]
@@ -58,7 +75,7 @@ public class KeyboardRepeatTests
         using var window = new TestWindow();
         window.Press();
         window.Enable(false);
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         Assert.Single(window.Keys);
     }
 
@@ -72,7 +89,7 @@ public class KeyboardRepeatTests
         window.Enable(false);
         window.Press();
         window.Enable(true);
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         Assert.Empty(window.Keys);
     }
 
@@ -86,7 +103,7 @@ public class KeyboardRepeatTests
         using var app = UnitTestApplication.Start(TestServices.RealFocus);
         using var window = new TestWindow();
         window.Press();
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         Assert.True(window.Keys.Count >= 2);
         if (leave)
             window.Events.OnKeyboardLeave();
@@ -94,7 +111,7 @@ public class KeyboardRepeatTests
             window.Release();
         window.DispatchPendingInput();
         var count = window.Keys.Count;
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         Assert.Equal(count, window.Keys.Count);
     }
 
@@ -107,8 +124,27 @@ public class KeyboardRepeatTests
         using var window = new TestWindow();
         window.Press();
         window.Dispose();
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         Assert.Single(window.Keys);
+    }
+
+    private sealed class ManualTimerDispatcher : IDispatcherImpl
+    {
+        public bool CurrentThreadIsLoopThread => true;
+        public long Now { get; private set; }
+        public event Action? Signaled;
+        public event Action? Timer;
+
+        public void Signal() { }
+        public void UpdateTimer(long? dueTimeInMs) { }
+
+        public void Advance(long milliseconds)
+        {
+            Now += milliseconds;
+            Timer?.Invoke();
+            Signaled?.Invoke();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+        }
     }
 
     private sealed class TestWindow : WindowBaseImpl

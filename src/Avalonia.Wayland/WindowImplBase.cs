@@ -34,18 +34,7 @@ internal abstract partial class WindowBaseImpl : IWindowBaseImpl
     protected KeyboardDevice Keyboard  { get; }
     public double RenderScaling { get; set; } = 1;
     protected WaylandCursorImpl? CurrentCursor { get; private set; }
-    protected bool IsEnabled
-    {
-        get;
-        set
-        {
-            field = value;
-            // A modal dialog can disable its owner before queued key-up/leave events are dispatched.
-            // Cancel immediately, even if it is reenabled before the next repeat tick.
-            if (!value)
-                CurrentSink?.StopKeyRepeat();
-        }
-    } = true;
+    protected bool IsEnabled  { get; set; } = true;
     protected bool IsDisposed  { get; private set; }
     
     internal IReadOnlyList<object> CurrentOutputIds { get; set; } = Array.Empty<object>();

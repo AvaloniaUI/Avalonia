@@ -106,7 +106,7 @@ partial class WindowBaseImpl
             _keyRepeatTimer.Start();
         }
 
-        internal void StopKeyRepeat()
+        protected void StopKeyRepeat()
         {
             if (_keyRepeatTimer != null)
             {
@@ -118,7 +118,7 @@ partial class WindowBaseImpl
 
         private void OnKeyRepeatTick(object? sender, EventArgs e)
         {
-            if (IsDisposed || !Parent.IsEnabled || InputRoot is null || _keyRepeatTimer == null)
+            if (IsDisposed || InputRoot is null || _keyRepeatTimer == null)
             {
                 StopKeyRepeat();
                 return;
@@ -130,8 +130,10 @@ partial class WindowBaseImpl
             if (_keyRepeatTimer.Interval != repeatInterval)
                 _keyRepeatTimer.Interval = repeatInterval;
 
-            Parent.Input?.Invoke(new RawKeyEventArgs(Keyboard, 0, InputRoot,
-                RawKeyEventType.KeyDown, _repeatKey, _repeatModifiers, _repeatPhysicalKey, _repeatKeySymbol));
+            // Keep repeat active until key-up or focus loss, but suppress input to a disabled owner.
+            if (Parent.IsEnabled)
+                Parent.Input?.Invoke(new RawKeyEventArgs(Keyboard, 0, InputRoot,
+                    RawKeyEventType.KeyDown, _repeatKey, _repeatModifiers, _repeatPhysicalKey, _repeatKeySymbol));
         }
     }
 
