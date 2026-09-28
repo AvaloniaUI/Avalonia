@@ -1,3 +1,4 @@
+﻿using System;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -63,5 +64,36 @@ public class CompositionRecordingVisualTests : ScopedTestBase
         Assert.Equal(80, subtreeBounds.Value.Right);
 
         recording.Dispose();
+    }
+
+    [Fact]
+    public void Assigning_A_Disposed_Recording_Throws()
+    {
+        var recording = DrawingRecording.Create(_services.Compositor, ctx =>
+            ctx.DrawRectangle(Brushes.Crimson, null, new Rect(0, 0, 50, 50)));
+        recording.Dispose();
+
+        var visual = _services.Compositor.CreateRecordingVisual();
+
+        Assert.Throws<ObjectDisposedException>(() => visual.Recording = recording);
+        Assert.Null(visual.Recording);
+    }
+
+    [Fact]
+    public void Hit_Test_Treats_A_Recording_Disposed_While_Assigned_As_Empty()
+    {
+        var recording = DrawingRecording.Create(_services.Compositor, ctx =>
+            ctx.DrawRectangle(Brushes.Crimson, null, new Rect(0, 0, 50, 50)));
+        var visual = _services.Compositor.CreateRecordingVisual();
+        visual.Recording = recording;
+        Assert.True(visual.HitTest(new Point(10, 10)));
+
+        // Disposing a recording that is still assigned is the caller's mistake, but hit
+        // testing runs during input routing, far from the code that made it.
+        recording.Dispose();
+
+        Assert.False(visual.HitTest(new Point(10, 10)));
+        Assert.Equal(IntersectionResult.Empty,
+            visual.HitTest(new RectangleGeometry(new Rect(0, 0, 20, 20))));
     }
 }

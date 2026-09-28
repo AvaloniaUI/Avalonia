@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
@@ -60,6 +61,18 @@ public class DrawingRecordingBrushTests : ScopedTestBase
         var brush = new DrawingRecordingBrush();
         var content = ((ISceneBrush)brush).CreateContent();
         Assert.Null(content);
+    }
+
+    [Fact]
+    public void Setting_A_Disposed_Recording_Throws()
+    {
+        var recording = DrawingRecording.Create(ctx =>
+        {
+            ctx.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 10, 10));
+        });
+        recording.Dispose();
+
+        Assert.Throws<ArgumentException>(() => new DrawingRecordingBrush(recording));
     }
 
     [Fact]
