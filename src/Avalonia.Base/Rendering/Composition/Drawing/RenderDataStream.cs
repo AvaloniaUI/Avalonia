@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
@@ -51,6 +51,9 @@ internal partial class RenderDataStream : IDisposable
                     break;
                 case ICustomDrawOperation operation:
                     operation.Dispose();
+                    break;
+                case IRef<RecordedStream> recorded:
+                    recorded.Dispose();
                     break;
             }
         }
@@ -148,13 +151,13 @@ internal partial class RenderDataStream : IDisposable
         });
     }
 
-    public void DrawRecording(RenderDataStream stream, Matrix transform)
+    public void DrawRecording(IRef<RecordedStream> recorded, Matrix transform)
     {
         _writer.WritePayload(new DrawRecordingPayload
         {
             ServerRenderData = RenderDataResources.NullHandle,
             ClientRenderData = RenderDataResources.NullHandle,
-            Stream = _resources.Intern(stream),
+            Stream = _resources.InternShared(recorded),
             Transform = transform
         });
     }

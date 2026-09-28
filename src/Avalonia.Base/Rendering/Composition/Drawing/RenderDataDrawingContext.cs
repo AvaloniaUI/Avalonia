@@ -357,7 +357,7 @@ internal class RenderDataDrawingContext : DrawingContext
         }
         else
         {
-            Stream.DrawRecording(recording.Stream!, transform);
+            Stream.DrawRecording(recording.StreamRef!, transform);
         }
     }
 

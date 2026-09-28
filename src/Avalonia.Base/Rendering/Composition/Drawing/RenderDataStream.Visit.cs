@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -100,7 +100,7 @@ internal partial class RenderDataStream
                         visitor.OnDrawRecording(
                             (ServerCompositionRenderData?)_resources[p.ServerRenderData],
                             (CompositionRenderData?)_resources[p.ClientRenderData],
-                            (RenderDataStream?)_resources[p.Stream],
+                            (_resources[p.Stream] as IRef<RecordedStream>)?.Item.Stream,
                             p.Transform);
                         break;
                     }
