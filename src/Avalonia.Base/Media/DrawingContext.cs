@@ -151,6 +151,11 @@ namespace Avalonia.Media
         /// <paramref name="transform"/>. Replay contexts compose the transform around the
         /// draw; recording contexts fuse both into a single node.
         /// </summary>
+        /// <remarks>
+        /// Reached only through the public <c>DrawRecording</c> overloads, after they have
+        /// rejected a null or disposed recording, so implementations can rely on the
+        /// recording's stream or render data being present.
+        /// </remarks>
         internal abstract void DrawRecordingCore(DrawingRecording recording, Matrix transform);
 
         /// <summary>
