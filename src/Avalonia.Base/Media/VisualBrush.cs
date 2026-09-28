@@ -60,7 +60,7 @@ namespace Avalonia.Media
             return recorder.GetImmediateSceneBrushContent(this, new(Visual.Bounds.Size), true);
         }
         
-        IImmutableBrush IMutableBrush.ToImmutable() => SceneBrushSnapshot.Take(this);
+        IImmutableBrush IMutableBrush.ToImmutable() => ISceneBrush.Snapshot(this);
 
         internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
             static c => new ServerCompositionSimpleContentBrush(c.Server);
