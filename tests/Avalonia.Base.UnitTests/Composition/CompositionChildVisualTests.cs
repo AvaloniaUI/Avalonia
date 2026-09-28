@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Xunit;
