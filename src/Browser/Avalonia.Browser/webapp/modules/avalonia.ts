@@ -14,6 +14,15 @@ import { SoftwareRenderTarget } from "./avalonia/rendering/softwareRenderTarget"
 import { WebGlRenderTarget } from "./avalonia/rendering/webGlRenderTarget";
 import { ScreenHelper } from "./avalonia/screens";
 
+function getModuleUrl(): string {
+    return import.meta.url;
+}
+
+function resolveModuleUrl(name: string): string {
+    const meta = import.meta as ImportMeta & { resolve?(specifier: string): string };
+    return meta.resolve ? meta.resolve(name) : new URL(name, import.meta.url).href;
+}
+
 async function registerServiceWorker(path: string, scope: string | undefined) {
     if ("serviceWorker" in navigator) {
         await globalThis.navigator.serviceWorker.register(path, scope ? { scope } : undefined);
@@ -36,5 +45,7 @@ export {
     WebRenderTargetRegistry,
     SoftwareRenderTarget,
     WebGlRenderTarget,
-    registerServiceWorker
+    registerServiceWorker,
+    getModuleUrl,
+    resolveModuleUrl
 };
