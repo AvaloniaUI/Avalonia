@@ -30,9 +30,9 @@ public class CompositionRecordingVisual : CompositionContainerVisual
 
     /// <summary>
     /// The recording rendered by this visual, drawn behind any child visuals.
-    /// Must be bound to the same <see cref="Compositor"/> as the visual; the
-    /// caller keeps ownership and must keep the recording alive (and undisposed)
-    /// while it is assigned.
+    /// Must be bound to the same <see cref="Compositor"/> as the visual and not disposed;
+    /// the caller keeps ownership. A recording disposed while still assigned renders and
+    /// hit-tests as empty.
     /// </summary>
     public DrawingRecording? Recording
     {
@@ -44,6 +44,9 @@ public class CompositionRecordingVisual : CompositionContainerVisual
 
             if (value != null)
             {
+                if (value.IsDisposed)
+                    throw new ObjectDisposedException(
+                        nameof(DrawingRecording), "Cannot assign a disposed DrawingRecording.");
                 if (!value.IsCompositorBound || value.Compositor != Compositor)
                     throw new ArgumentException(
                         "The recording must be bound to the same compositor as the visual.",
@@ -73,15 +76,20 @@ public class CompositionRecordingVisual : CompositionContainerVisual
         writer.Write((byte)(_recordingChanged ? 1 : 0));
         if (_recordingChanged)
         {
-            writer.WriteObject(_recording?.RenderData?.Server);
+            writer.WriteObject(LiveRecording?.RenderData?.Server);
             _recordingChanged = false;
         }
 
         base.SerializeChangesCore(writer);
     }
 
-    internal override bool HitTest(Point pt) => _recording?.HitTest(pt) ?? false;
+    internal override bool HitTest(Point pt) => LiveRecording?.HitTest(pt) ?? false;
 
     internal override IntersectionResult HitTest(Geometry geometry) =>
-        _recording?.HitTest(geometry) ?? IntersectionResult.Empty;
+        LiveRecording?.HitTest(geometry) ?? IntersectionResult.Empty;
+
+    // A recording disposed while still assigned is the caller's mistake, but serialization
+    // and hit testing run inside commits and input routing, far from the code that made it,
+    // so the visual treats it as empty content there instead of throwing.
+    private DrawingRecording? LiveRecording => _recording is { IsDisposed: false } recording ? recording : null;
 }

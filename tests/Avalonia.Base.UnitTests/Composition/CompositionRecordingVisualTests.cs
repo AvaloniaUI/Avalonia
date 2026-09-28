@@ -80,6 +80,29 @@ public class CompositionRecordingVisualTests : ScopedTestBase
     }
 
     [Fact]
+    public void Recording_Disposed_Before_The_Commit_Serializes_As_Empty()
+    {
+        var recording = DrawingRecording.Create(_services.Compositor, ctx =>
+            ctx.DrawRectangle(Brushes.Crimson, null, new Rect(20, 20, 60, 60)));
+        var visual = _services.Compositor.CreateRecordingVisual();
+
+        var host = new Control { Width = 100, Height = 100 };
+        _services.TopLevel.Content = host;
+        _services.RunJobs();
+        ElementComposition.SetElementChildVisual(host, visual);
+
+        visual.Recording = recording;
+        recording.Dispose();
+
+        _services.RunJobs();
+        _services.Compositor.Commit();
+        _services.Compositor.Server.Render(false);
+
+        var server = (ServerCompositionRecordingVisual)visual.Server;
+        Assert.Null(server.ComputeOwnContentBounds());
+    }
+
+    [Fact]
     public void Hit_Test_Treats_A_Recording_Disposed_While_Assigned_As_Empty()
     {
         var recording = DrawingRecording.Create(_services.Compositor, ctx =>
