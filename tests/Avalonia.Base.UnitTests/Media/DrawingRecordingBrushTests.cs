@@ -76,15 +76,15 @@ public class DrawingRecordingBrushTests : ScopedTestBase
     }
 
     [Fact]
-    public void SceneBrush_Content_Is_Null_When_Recording_Is_Disposed()
+    public void SceneBrush_Content_Is_Null_When_Recording_Is_Disposed_While_Assigned()
     {
         var recording = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 10, 10));
         });
+        var brush = new DrawingRecordingBrush(recording);
         recording.Dispose();
 
-        var brush = new DrawingRecordingBrush(recording);
         var content = ((ISceneBrush)brush).CreateContent();
         Assert.Null(content);
     }

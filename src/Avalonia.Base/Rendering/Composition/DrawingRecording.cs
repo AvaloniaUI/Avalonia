@@ -135,21 +135,22 @@ public sealed class DrawingRecording : IDisposable
     public bool IsDisposed => _disposed;
 
     /// <summary>
-    /// The recorded stream for immutable recordings, or null once disposed.
+    /// The recorded stream of an immutable recording; null for a compositor-bound one.
     /// </summary>
     /// <remarks>
-    /// Unlike the public members, this returns null instead of throwing when disposed. It
-    /// feeds render and serialization paths, and an exception inside a compositor commit
-    /// would take down the frame for every other visual; the public members throw on the
-    /// caller's own stack instead.
+    /// Null says which kind of recording this is, never whether it has been disposed.
+    /// Callers check <see cref="IsDisposed"/> for that.
     /// </remarks>
-    internal RenderDataStream? Stream => _disposed ? null : _stream;
+    internal RenderDataStream? Stream => _stream;
 
     /// <summary>
-    /// The composition render data for compositor-bound recordings, or null once disposed.
+    /// The composition render data of a compositor-bound recording; null for an immutable one.
     /// </summary>
-    /// <remarks>Returns null rather than throwing for the reason given on <see cref="Stream"/>.</remarks>
-    internal CompositionRenderData? RenderData => _disposed ? null : _renderData;
+    /// <remarks>
+    /// Null says which kind of recording this is, never whether it has been disposed.
+    /// Callers check <see cref="IsDisposed"/> for that.
+    /// </remarks>
+    internal CompositionRenderData? RenderData => _renderData;
 
     /// <summary>
     /// The server-side render data for compositor-bound recordings.
