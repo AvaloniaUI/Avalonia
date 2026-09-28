@@ -705,7 +705,7 @@ namespace Avalonia.Controls
             if (!IsKeyboardNavigationEnabled || _tabControl == null)
                 return;
 
-            // If focus in in tabbed page, but owned by a focusable element, we do not change pages.
+            // If focus is in tabbed page, but owned by a focusable element, we do not change pages.
             if (IsKeyboardFocusWithin && !IsFocused)
             {
                 // If focus is owned by a tab item, continue as usual.
