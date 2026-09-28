@@ -705,6 +705,15 @@ namespace Avalonia.Controls
             if (!IsKeyboardNavigationEnabled || _tabControl == null)
                 return;
 
+            if (IsKeyboardFocusWithin && !IsFocused)
+            {
+                var focused = KeyboardDevice.Instance?.FocusedElement;
+                if (!(focused is TabItem item && _tabControl.LogicalChildren.Contains(item)))
+                {
+                    return;
+                }
+            }
+
             var resolved = ResolveTabPlacement();
             bool isHorizontal = resolved == TabPlacement.Top || resolved == TabPlacement.Bottom;
             bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
