@@ -1,4 +1,4 @@
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -60,10 +60,6 @@ internal partial class RenderDataStream
         public void OnDrawRecording(ServerCompositionRenderData? server, CompositionRenderData? client,
             RenderDataStream? stream, Matrix transform)
         {
-            // Replay always draws through the server-side data (server brush and
-            // pen instances), matching what the compositor renders on both the
-            // UI-thread and render-thread replay paths; an immutable child
-            // replays its own retained stream.
             if (transform.IsIdentity)
             {
                 RenderRecordingContent(server, stream);
@@ -76,6 +72,9 @@ internal partial class RenderDataStream
             _context.Transform = saved;
         }
 
+        // Replay always draws through the server-side data (server brush and pen
+        // instances), matching what the compositor renders on both the UI-thread and
+        // render-thread replay paths; an immutable child replays its own retained stream.
         private void RenderRecordingContent(ServerCompositionRenderData? server, RenderDataStream? stream)
         {
             if (server != null)
