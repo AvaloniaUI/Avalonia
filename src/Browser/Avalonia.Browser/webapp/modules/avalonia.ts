@@ -6,6 +6,7 @@ import { NativeControlHost } from "./avalonia/nativeControlHost";
 import { NavigationHelper } from "./avalonia/navigationHelper";
 import { GeneralHelpers } from "./avalonia/generalHelpers";
 import { TimerHelper } from "./avalonia/timer";
+import { SingleThreadedDispatcherHelper } from "./avalonia/singleThreadedDispatcher";
 import { CanvasSurface } from "./avalonia/rendering/canvasSurface";
 import { WebRenderTargetRegistry } from "./avalonia/rendering/webRenderTargetRegistry";
 import { WebRenderTarget } from "./avalonia/rendering/webRenderTarget";
@@ -29,6 +30,7 @@ export {
     GeneralHelpers,
     ScreenHelper,
     TimerHelper,
+    SingleThreadedDispatcherHelper,
     WebRenderTarget,
     CanvasSurface,
     WebRenderTargetRegistry,
