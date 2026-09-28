@@ -25,11 +25,13 @@
     <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" InputGesture="{x:Static TextBox.CutGesture}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}"/>
     <MenuItem Header="{DynamicResource StringTextFlyoutPasteText}" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" InputGesture="{x:Static TextBox.PasteGesture}"/>
+    <MenuItem Header="{DynamicResource StringTextFlyoutSelectAllText}" Command="{Binding $parent[TextBox].SelectAll}" IsEnabled="{Binding $parent[TextBox].CanSelectAll}" InputGesture="{x:Static TextBox.SelectAllGesture}"/>
   </MenuFlyout>
   <MenuFlyout x:Key="HorizontalTextBoxContextFlyout" ShowMode="{OnFormFactor Desktop=Standard, Mobile=Transient}" FlyoutPresenterTheme="{StaticResource HorizontalMenuFlyoutPresenter}" ItemContainerTheme="{StaticResource HorizontalMenuItem}">
     <MenuItem Header="{DynamicResource StringTextFlyoutCutText}" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" IsVisible="{Binding $parent[TextBox].CanCut}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutCopyText}" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" IsVisible="{Binding $parent[TextBox].CanCopy}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutPasteText}" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" />
+    <MenuItem Header="{DynamicResource StringTextFlyoutSelectAllText}" Command="{Binding $parent[TextBox].SelectAll}" IsEnabled="{Binding $parent[TextBox].CanSelectAll}" IsVisible="{Binding $parent[TextBox].CanSelectAll}" />
   </MenuFlyout>
 
   <ControlTheme x:Key="FluentTextBoxButton" TargetType="Button">
@@ -113,17 +115,17 @@
         <DataValidationErrors>
           <Panel>
             <Border
-            Name="PART_BorderElement"
-            Background="{TemplateBinding Background}"
-            BorderBrush="{TemplateBinding BorderBrush}"
-            BorderThickness="{TemplateBinding BorderThickness}"
-            CornerRadius="{TemplateBinding CornerRadius}"
-            MinWidth="{TemplateBinding MinWidth}"
-            MinHeight="{TemplateBinding MinHeight}">
+              Name="PART_BorderElement"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              MinWidth="{TemplateBinding MinWidth}"
+              MinHeight="{TemplateBinding MinHeight}">
             </Border>
 
             <Border
-            Margin="{TemplateBinding BorderThickness}">
+              Margin="{TemplateBinding BorderThickness}">
               <Grid ColumnDefinitions="Auto,*,Auto" >
                 <ContentPresenter Grid.Column="0"
                                   Grid.ColumnSpan="1"

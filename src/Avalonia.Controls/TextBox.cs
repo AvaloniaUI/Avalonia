@@ -56,6 +56,11 @@ namespace Avalonia.Controls
         public static KeyGesture? PasteGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.Paste.FirstOrDefault();
 
         /// <summary>
+        /// Gets a platform-specific <see cref="KeyGesture"/> for the SelectAll action
+        /// </summary>
+        public static KeyGesture? SelectAllGesture => Application.Current?.PlatformSettings?.HotkeyConfiguration.SelectAll.FirstOrDefault();
+
+        /// <summary>
         /// Defines the <see cref="IsInactiveSelectionHighlightEnabled"/> property
         /// </summary>
         public static readonly StyledProperty<bool> IsInactiveSelectionHighlightEnabledProperty =
@@ -281,6 +286,14 @@ namespace Avalonia.Controls
                 o => o.CanPaste);
 
         /// <summary>
+        /// Defines the <see cref="CanSelectAll"/> property
+        /// </summary>
+        public static readonly DirectProperty<TextBox, bool> CanSelectAllProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(
+                nameof(CanSelectAll),
+                o => o.CanSelectAll);
+
+        /// <summary>
         /// Defines the <see cref="IsUndoEnabled"/> property
         /// </summary>
         public static readonly StyledProperty<bool> IsUndoEnabledProperty =
@@ -385,6 +398,7 @@ namespace Avalonia.Controls
         private bool _canCut;
         private bool _canCopy;
         private bool _canPaste;
+        private bool _canSelectAll;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
         private bool _canUndo;
         private bool _canRedo;
@@ -884,6 +898,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Property for determining if the Paste command can be executed.
+        /// </summary>
+        public bool CanSelectAll
+        {
+            get => _canSelectAll;
+            private set => SetAndRaise(CanSelectAllProperty, ref _canSelectAll, value);
+        }
+
+        /// <summary>
         /// Property for determining whether undo/redo is enabled
         /// </summary>
         public bool IsUndoEnabled
@@ -1126,6 +1149,7 @@ namespace Avalonia.Controls
             CanCopy = !IsPasswordBox && hasSelection;
             CanCut = !IsPasswordBox && hasSelection && !IsReadOnly;
             CanPaste = !IsReadOnly;
+            CanSelectAll = Text?.Length > 0;
         }
 
         protected override void OnGotFocus(FocusChangedEventArgs e)

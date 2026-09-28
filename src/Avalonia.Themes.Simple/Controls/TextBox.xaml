@@ -12,6 +12,8 @@
               IsEnabled="{Binding $parent[TextBox].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}" />
     <MenuItem Header="{DynamicResource StringTextFlyoutPasteText}" Command="{Binding $parent[TextBox].Paste}"
               IsEnabled="{Binding $parent[TextBox].CanPaste}" InputGesture="{x:Static TextBox.PasteGesture}" />
+    <MenuItem Header="{DynamicResource StringTextFlyoutSelectAllText}" Command="{Binding $parent[TextBox].SelectAll}"
+              IsEnabled="{Binding $parent[TextBox].CanSelectAll}" InputGesture="{x:Static TextBox.SelectAllGesture}" />
   </MenuFlyout>
 
   <ControlTheme x:Key="SimpleTextBoxClearButtonTheme"
