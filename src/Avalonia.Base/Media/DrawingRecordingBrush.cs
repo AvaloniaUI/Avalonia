@@ -50,8 +50,9 @@ namespace Avalonia.Media
         /// Gets or sets the <see cref="DrawingRecording"/> to paint with. An immutable
         /// recording paints on any compositor; a compositor-bound one paints only on the
         /// compositor it is bound to, and painting it elsewhere logs an error and draws
-        /// nothing. A disposed recording cannot be assigned; one disposed while assigned
-        /// paints nothing.
+        /// nothing. A disposed recording cannot be assigned. Disposing one while it is assigned
+        /// leaves content the brush has already built painting, since that content holds its
+        /// own reference; the brush builds no new content from it.
         /// </summary>
         public DrawingRecording? Recording
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
+using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -15,7 +16,7 @@ namespace Avalonia.Rendering.Composition;
 /// </summary>
 public sealed class DrawingRecording : IDisposable
 {
-    private readonly RenderDataStream? _stream;
+    private readonly IRef<RecordedStream>? _stream;
     private readonly CompositionRenderData? _renderData;
     private readonly IReadOnlyList<DrawingRecording>? _ownedChildren;
     private Rect? _immutableBounds;
@@ -27,7 +28,7 @@ public sealed class DrawingRecording : IDisposable
 
     internal DrawingRecording(RenderDataStream stream, IReadOnlyList<DrawingRecording>? ownedChildren = null)
     {
-        _stream = stream;
+        _stream = RefCountable.Create(new RecordedStream(stream));
         _ownedChildren = ownedChildren;
     }
 
@@ -105,7 +106,7 @@ public sealed class DrawingRecording : IDisposable
                 return _renderData.Bounds ?? default;
             // An immutable stream never changes, so the walk result is cached.
             return _immutableBounds ??=
-                ServerCompositionRenderData.ApplyRenderBoundsRounding(_stream!.CalculateBounds()) ?? default;
+                ServerCompositionRenderData.ApplyRenderBoundsRounding(ImmutableStream.CalculateBounds()) ?? default;
         }
     }
 
@@ -126,7 +127,7 @@ public sealed class DrawingRecording : IDisposable
         if (_renderData != null)
             return _renderData.GetBounds(transform) ?? default;
         return ServerCompositionRenderData.ApplyRenderBoundsRounding(
-            _stream!.CalculateBounds(useClientResources: false, transform)) ?? default;
+            ImmutableStream.CalculateBounds(useClientResources: false, transform)) ?? default;
     }
 
     /// <summary>
@@ -139,9 +140,18 @@ public sealed class DrawingRecording : IDisposable
     /// </summary>
     /// <remarks>
     /// Null says which kind of recording this is, never whether it has been disposed.
-    /// Callers check <see cref="IsDisposed"/> for that.
+    /// Callers check <see cref="IsDisposed"/> first: once this recording has released its
+    /// handle, reading the stream through it throws.
     /// </remarks>
-    internal RenderDataStream? Stream => _stream;
+    internal RenderDataStream? Stream => _stream?.Item.Stream;
+
+    /// <summary>
+    /// The handle an embedding stream clones to take its own reference to this recording's
+    /// stream; null for a compositor-bound recording.
+    /// </summary>
+    internal IRef<RecordedStream>? StreamRef => _stream;
+
+    private RenderDataStream ImmutableStream => _stream!.Item.Stream;
 
     /// <summary>
     /// The composition render data of a compositor-bound recording; null for an immutable one.
@@ -194,7 +204,7 @@ public sealed class DrawingRecording : IDisposable
                 "Only immutable DrawingRecordings can render outside the compositor.");
         }
 
-        _stream.Replay(context);
+        ImmutableStream.Replay(context);
     }
 
     /// <summary>
@@ -205,7 +215,7 @@ public sealed class DrawingRecording : IDisposable
         ThrowIfDisposed();
         if (_renderData != null)
             return _renderData.HitTest(point);
-        return _stream!.HitTest(point);
+        return ImmutableStream.HitTest(point);
     }
 
     /// <summary>
@@ -216,7 +226,7 @@ public sealed class DrawingRecording : IDisposable
         ThrowIfDisposed();
         if (_renderData != null)
             return _renderData.HitTest(geometry);
-        return _stream!.HitTest(geometry);
+        return ImmutableStream.HitTest(geometry);
     }
 
     /// <summary>
@@ -283,11 +293,9 @@ public sealed class DrawingRecording : IDisposable
             UnsubscribeFromAfterCommit();
             _boundsChanged = null;
             _renderData?.Dispose();
-            // The immutable stream is deliberately not disposed: enclosing
-            // recordings and scene-brush contents reference it without a ref
-            // count (the child may be disposed independently by its owner), so
-            // returning its pooled buffers here could corrupt a replay that is
-            // still reachable. The GC reclaims the stream instead.
+            // Releases only this recording's reference: streams that embed it hold their own,
+            // so its resources are freed once the last of them is done replaying it.
+            _stream?.Dispose();
             if (_ownedChildren != null)
             {
                 foreach (var child in _ownedChildren)
