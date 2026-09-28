@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Moq;
 using Xunit;
 
@@ -700,5 +701,42 @@ public class DrawingRecordingTests
         });
 
         Assert.Equal(new Rect(-8, 0, 16, 142), parent.Bounds);
+    }
+
+    [Fact]
+    public void Disposing_A_Recording_Releases_Its_Bitmaps()
+    {
+        var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+        var rect = new Rect(0, 0, 10, 10);
+        var recording = DrawingRecording.Create(ctx => ctx.DrawBitmap(bitmap, 1, rect, rect));
+
+        // The recording holds its own reference, next to the one this test owns.
+        Assert.Equal(2, bitmap.RefCount);
+
+        recording.Dispose();
+
+        Assert.Equal(1, bitmap.RefCount);
+    }
+
+    [Fact]
+    public void Embedded_Recording_Keeps_Its_Bitmaps_Until_The_Parent_Is_Disposed()
+    {
+        var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+        var rect = new Rect(0, 0, 10, 10);
+        var child = DrawingRecording.Create(ctx => ctx.DrawBitmap(bitmap, 1, rect, rect));
+        var parent = DrawingRecording.Create(ctx => ctx.DrawRecording(child));
+
+        // The parent still replays the child's content, so disposing the child alone
+        // must not release what that content uses.
+        child.Dispose();
+        Assert.Equal(2, bitmap.RefCount);
+
+        var context = new Mock<IDrawingContextImpl>();
+        context.Setup(x => x.Transform).Returns(Matrix.Identity);
+        parent.Render(context.Object);
+        context.Verify(x => x.DrawBitmap(bitmap.Item, 1, rect, rect), Times.Once);
+
+        parent.Dispose();
+        Assert.Equal(1, bitmap.RefCount);
     }
 }
