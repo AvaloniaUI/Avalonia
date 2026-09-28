@@ -8,7 +8,7 @@ require("esbuild").build({
     bundle: true,
     minify: true,
     format: "esm",
-    target: "es2019",
+    target: "es2020",
     platform: "browser",
     sourcemap: "linked",
     loader: { ".ts": "ts" }
