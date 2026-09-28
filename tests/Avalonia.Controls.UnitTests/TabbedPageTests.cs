@@ -5,7 +5,6 @@ using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
@@ -553,7 +552,7 @@ public class TabbedPageTests
 
             NavigatedToEventArgs? navigatedToArgs = null;
             var events = new List<string>();
-            page.NavigatedTo  += (_, e) => { navigatedToArgs = e; events.Add("NavigatedTo"); };
+            page.NavigatedTo += (_, e) => { navigatedToArgs = e; events.Add("NavigatedTo"); };
             page.NavigatedFrom += (_, _) => events.Add("NavigatedFrom");
 
             tp.CallCommitSelection(0, page);
@@ -573,7 +572,7 @@ public class TabbedPageTests
 
             NavigatedFromEventArgs? navigatedFromArgs = null;
             var events = new List<string>();
-            page.NavigatedFrom += (_, e)  => { navigatedFromArgs = e; events.Add("NavigatedFrom"); };
+            page.NavigatedFrom += (_, e) => { navigatedFromArgs = e; events.Add("NavigatedFrom"); };
 
             tp.CallCommitSelection(-1, null);
 
@@ -886,6 +885,81 @@ public class TabbedPageTests
             tp.SimulateKeyDown(Key.Right);
             Assert.Equal(0, tp.SelectedIndex);
         }
+
+        [Fact]
+        public void Focused_TextBox_Prevents_TabbedPage_KeyNavigation()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var tp = new TestableTabbedPage { TabPlacement = TabPlacement.Top };
+
+                var page1 = new ContentPage { Header = "Tab1", Content = new Label(), Template = GetContentPageTemplate() };
+                var textBox = new TextBox { Template = null };
+                var page2 = new ContentPage { Header = "Tab2", Content = textBox, Template = GetContentPageTemplate() };
+                var page3 = new ContentPage { Header = "Tab3", Content = new Label(), Template = GetContentPageTemplate() };
+
+                tp.Pages = new AvaloniaList<Page> { page1, page2, page3 };
+
+                tp.Template = new FuncControlTemplate<TabbedPage>((parent, scope) =>
+                {
+                    var tc = new TabControl
+                    {
+                        Name = "PART_TabControl",
+                        Template = new FuncControlTemplate<TabControl>((_, tcScope) =>
+                            new ItemsPresenter
+                            {
+                                Name = "PART_ItemsPresenter",
+                            }.RegisterInNameScope(tcScope)),
+                    };
+                    tc.RegisterInNameScope(scope);
+                    return tc;
+                });
+
+                var root = new TestRoot { Child = tp };
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                tp.ApplyTemplate();
+                tp.SelectedIndex = 1;
+
+                root.LayoutManager.ExecuteLayoutPass();
+
+                // Focus the textbox inside the second page
+                textBox.Focus();
+
+                // Send navigation key. Navigation should NOT occur and focus stays on textbox
+                tp.SimulateKeyDown(Key.Right);
+
+                Assert.Equal(1, tp.SelectedIndex);
+                Assert.Same(textBox, root.FocusManager.GetFocusedElement());
+
+                tp.Focus();
+
+                tp.SelectedIndex = 2;
+                root.LayoutManager.ExecuteLayoutPass();
+
+                Assert.Equal(2, tp.SelectedIndex);
+                tp.SimulateKeyDown(Key.Left);
+
+                root.LayoutManager.ExecuteLayoutPass();
+                Assert.Equal(1, tp.SelectedIndex);
+            }
+        }
+
+        private static FuncControlTemplate GetContentPageTemplate()
+        {
+            return new FuncControlTemplate<ContentPage>((parent, scope) =>
+            {
+                return new Border
+                {
+                    Child = new ContentPresenter
+                    {
+                        Name = "PART_ContentPresenter",
+                        [~ContentPage.ContentProperty] = parent[~ContentPage.ContentProperty],
+                        [~ContentPage.ContentTemplateProperty] = parent[~ContentPage.ContentTemplateProperty],
+                    }.RegisterInNameScope(scope)
+                };
+            });
+        }
     }
 
     public class SelectingMultiPageTests : ScopedTestBase
@@ -1006,7 +1080,8 @@ public class TabbedPageTests
 
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = items,
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
@@ -1033,7 +1108,8 @@ public class TabbedPageTests
 
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = items,
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
@@ -1055,7 +1131,8 @@ public class TabbedPageTests
         {
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = EnumerateItems(new("First"), new("Second")),
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
@@ -1090,7 +1167,8 @@ public class TabbedPageTests
 
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = items,
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
@@ -1126,7 +1204,8 @@ public class TabbedPageTests
 
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = items,
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
@@ -1161,7 +1240,8 @@ public class TabbedPageTests
 
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = first,
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
@@ -1194,7 +1274,8 @@ public class TabbedPageTests
 
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = items,
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = "old-" + item!.Name }, supportsRecycling: false),
@@ -1227,7 +1308,8 @@ public class TabbedPageTests
 
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = items,
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = "old-" + item!.Name }, supportsRecycling: false),
@@ -1258,7 +1340,8 @@ public class TabbedPageTests
 
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = items,
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
@@ -1290,7 +1373,8 @@ public class TabbedPageTests
 
             var tp = new TabbedPage
             {
-                Width = 400, Height = 300,
+                Width = 400,
+                Height = 300,
                 ItemsSource = items,
                 PageTemplate = new FuncDataTemplate<DataItem>(
                     (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
