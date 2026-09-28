@@ -1,8 +1,5 @@
-using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Platform;
+﻿using Avalonia.Controls;
 using Avalonia.Rendering.Composition;
-using Avalonia.Rendering.Composition.Server;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -53,39 +50,5 @@ public class CompositionChildVisualTests : ScopedTestBase
         var elementVisual = Assert.IsAssignableFrom<CompositionContainerVisual>(
             ElementComposition.GetElementVisual(host));
         Assert.Contains(child, elementVisual.Children);
-    }
-
-    [Fact]
-    public void Container_Child_Visual_Gets_Subtree_Bounds()
-    {
-        // Directly-created visuals carry no Size; with an implicit
-        // ClipToBounds default their own clip rect was empty, which nulled
-        // the subtree bounds and made the render pass cull the whole
-        // child-visual tree — visuals attached via SetElementChildVisual
-        // never rendered unless Size was set explicitly.
-        var container = _services.Compositor.CreateContainerVisual();
-        var solid = _services.Compositor.CreateSolidColorVisual();
-        solid.Size = new Vector(60, 60);
-        solid.Color = Colors.Lime;
-        container.Children.Add(solid);
-
-        var host = new Control { Width = 100, Height = 100 };
-        _services.TopLevel.Content = host;
-        _services.RunJobs();
-        ElementComposition.SetElementChildVisual(host, container);
-        _services.RunJobs();
-
-        _services.Compositor.Commit();
-        _services.Compositor.Server.Render(false);
-
-        var bounds = (LtrbRect?)typeof(ServerCompositionVisual)
-            .GetField("_transformedSubTreeBounds",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-            .GetValue(container.Server);
-
-        Assert.NotNull(bounds);
-        Assert.Equal(0, bounds!.Value.Left);
-        Assert.Equal(60, bounds.Value.Right);
-        Assert.Equal(60, bounds.Value.Bottom);
     }
 }

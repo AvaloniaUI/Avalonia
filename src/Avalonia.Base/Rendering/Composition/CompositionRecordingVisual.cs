@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
@@ -23,6 +23,9 @@ public class CompositionRecordingVisual : CompositionContainerVisual
     internal CompositionRecordingVisual(Compositor compositor, ServerCompositionRecordingVisual server)
         : base(compositor, server)
     {
+        // The visual's bounds come from its recording and it is never given a Size, so
+        // clipping to its own bounds would clip to an empty rect and cull the visual.
+        ClipToBounds = false;
     }
 
     /// <summary>
