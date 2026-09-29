@@ -92,7 +92,7 @@ namespace Avalonia.Media.Fonts
                 TryGetCoveringMatchForFamily(requestedFamily, key, codepoint, culture, shapingScript, out var requestedGlyphTypeface) &&
                 IsCultureCompatible(requestedGlyphTypeface, culture, script))
             {
-                match = BuildTypefaceWithSynthesis(requestedGlyphTypeface, key);
+                match = BuildTypefaceWithSynthesis(requestedGlyphTypeface, familyName, key);
                 return true;
             }
 
@@ -105,7 +105,7 @@ namespace Avalonia.Media.Fonts
                     _glyphTypefaceCache.TryGetValue(cachedFamily, out var cachedTypefaces) &&
                     TryGetCoveringMatchForFamily(cachedTypefaces, key, codepoint, culture, shapingScript, out var cachedGlyphTypeface))
                 {
-                    match = BuildTypefaceWithSynthesis(cachedGlyphTypeface, key);
+                    match = BuildTypefaceWithSynthesis(cachedGlyphTypeface, cachedFamily, key);
                     return true;
                 }
             }
@@ -124,7 +124,7 @@ namespace Avalonia.Media.Fonts
                     _scriptFallbackCache.TryAdd(scriptKey, bestFamilyName);
                 }
 
-                match = BuildTypefaceWithSynthesis(bestGt, key);
+                match = BuildTypefaceWithSynthesis(bestGt, bestFamilyName, key);
                 return true;
             }
 
@@ -149,7 +149,7 @@ namespace Avalonia.Media.Fonts
                     // Keep any existing positive hint (TryAdd won't overwrite); registering the match
                     // lets later lookups for this codepoint be served by Tier C without the platform.
                     _scriptFallbackCache.TryAdd(scriptKey, platformGt.FamilyName);
-                    match = BuildTypefaceWithSynthesis(platformGt, key);
+                    match = BuildTypefaceWithSynthesis(platformGt, null, key);
                     return true;
                 }
 
@@ -162,9 +162,9 @@ namespace Avalonia.Media.Fonts
             }
 
             // --- Tier E: last-resort cache sweep ---
-            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, shapingScript, isLastResort: true, out var lrGt, out _))
+            if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, shapingScript, isLastResort: true, out var lrGt, out var lrFamilyName))
             {
-                match = BuildTypefaceWithSynthesis(lrGt, key);
+                match = BuildTypefaceWithSynthesis(lrGt, lrFamilyName, key);
                 return true;
             }
 
@@ -316,11 +316,18 @@ namespace Avalonia.Media.Fonts
         /// family lookup resolves it (named instance, axis value, nearest position, simulation) and
         /// the result is cached under the requested key, which the returned typeface resolves
         /// through. Varied clones and simulated faces share the face's character map, so the result
-        /// still maps the codepoint.
+        /// still maps the codepoint. <paramref name="matchedFamilyName"/> is the family the face was
+        /// found in, or <see langword="null"/> when it came from the platform.
         /// </summary>
-        private Typeface BuildTypefaceWithSynthesis(GlyphTypeface glyphTypeface, FontCollectionKey requestedKey)
+        private Typeface BuildTypefaceWithSynthesis(GlyphTypeface glyphTypeface, string? matchedFamilyName,
+            FontCollectionKey requestedKey)
         {
-            var familyName = glyphTypeface.FamilyName;
+            // The face of an instance family is named by the root family, which resolves the
+            // requested key at the root's own optical size and custom axis values. Staying in the
+            // instance family keeps the typeface resolving to the position it was matched at.
+            var familyName = matchedFamilyName is not null && _instanceFamilies.ContainsKey(matchedFamilyName) ?
+                matchedFamilyName :
+                glyphTypeface.FamilyName;
 
             // An entry already cached under the requested key is what the returned typeface
             // resolves to, so resolving again would only repeat the work.
